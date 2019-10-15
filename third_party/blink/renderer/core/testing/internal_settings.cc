@@ -549,6 +549,13 @@ void InternalSettings::setAutoplayPolicy(const String& policy_str,
   GetSettings()->SetAutoplayPolicy(policy);
 }
 
+void InternalSettings::setUniversalAccessFromFileURLs(
+    bool enabled,
+    ExceptionState& exception_state) {
+  InternalSettingsGuardForSettings();
+  GetSettings()->SetAllowUniversalAccessFromFileURLs(enabled);
+}
+
 void InternalSettings::PrepareForLeakDetection() {
   // Prepares for leak detection by removing all InternalSetting objects from
   // Pages.

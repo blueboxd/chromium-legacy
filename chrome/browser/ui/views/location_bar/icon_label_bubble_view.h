@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -188,6 +189,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
   bool is_animation_paused() const { return is_animation_paused_; }
 
  private:
+  class HighlightPathGenerator;
+
   // Spacing between the image and the label.
   int GetInternalSpacing() const;
 
@@ -216,9 +219,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // called directly, use AnimateOut() instead, which handles label visibility.
   void HideAnimation();
 
-  // Updates the highlight path for ink drops and focus rings using the current
-  // bounds and the separator visibility.
-  void UpdateHighlightPath();
+  // Gets the highlight path for ink drops and focus rings using the current
+  // bounds and separator visibility.
+  SkPath GetHighlightPath() const;
 
   // Sets the border padding around this view.
   void UpdateBorder();

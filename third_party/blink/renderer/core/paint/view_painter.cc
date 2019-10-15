@@ -45,7 +45,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     return;
 
   // The background rect always includes at least the visible content size.
-  IntRect background_rect(PixelSnappedIntRect(layout_view_.BackgroundRect()));
+  PhysicalRect background_rect(layout_view_.BackgroundRect());
 
   // When printing, paint the entire unclipped scrolling content area.
   if (paint_info.IsPrinting())
@@ -63,7 +63,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     // DocumentRect is relative to ScrollOrigin. Add ScrollOrigin to let it be
     // in the space of ContentsProperties(). See ScrollTranslation in
     // object_paint_properties.h for details.
-    document_rect.MoveBy(layout_view_.ScrollOrigin());
+    document_rect.Move(PhysicalOffset(layout_view_.ScrollOrigin()));
     background_rect.Unite(document_rect);
     background_client = &layout_view_.GetScrollableArea()
                              ->GetScrollingBackgroundDisplayItemClient();
@@ -74,12 +74,13 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   }
 
   if (layout_view_.HasBoxDecorationBackground()) {
-    PaintBoxDecorationBackgroundInternal(paint_info, background_rect,
-                                         *background_client);
+    PaintBoxDecorationBackgroundInternal(
+        paint_info, PixelSnappedIntRect(background_rect), *background_client);
   }
   if (has_touch_action_rect) {
     BoxPainter(layout_view_)
-        .RecordHitTestData(paint_info, PhysicalRect(background_rect),
+        .RecordHitTestData(paint_info,
+                           PhysicalRect(PixelSnappedIntRect(background_rect)),
                            *background_client);
   }
 

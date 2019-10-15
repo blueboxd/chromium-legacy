@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
+#include "base/strings/string_util.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/update_client/protocol_serializer.h"
 
@@ -28,17 +29,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Share |data| between |MakeProtocolRequest| args
   FuzzedDataProvider data_provider(data, size);
   const size_t max_arg_size = size / 7;
+  auto GetUtf8String = [&data_provider, max_arg_size]() -> std::string {
+    std::string s = data_provider.ConsumeRandomLengthString(max_arg_size);
+    return base::IsStringUTF8(s) ? s : "";
+  };
+
   protocol_request::Request request = MakeProtocolRequest(
-      data_provider.ConsumeRandomLengthString(max_arg_size) /* session_id */,
-      data_provider.ConsumeRandomLengthString(max_arg_size) /* prod_id */,
-      data_provider.ConsumeRandomLengthString(
-          max_arg_size) /* browser_version */,
-      data_provider.ConsumeRandomLengthString(max_arg_size) /* lang */,
-      data_provider.ConsumeRandomLengthString(max_arg_size) /* channel */,
-      data_provider.ConsumeRandomLengthString(max_arg_size) /* os_long_name */,
-      data_provider.ConsumeRandomLengthString(
-          max_arg_size) /* download_preference */,
-      additional_attributes, &updater_state_attributes, std::move(apps));
+      "{" + GetUtf8String() + "}" /* session_id */,
+      GetUtf8String() /* prod_id */, GetUtf8String() /* browser_version */,
+      GetUtf8String() /* lang */, GetUtf8String() /* channel */,
+      GetUtf8String() /* os_long_name */,
+      GetUtf8String() /* download_preference */, additional_attributes,
+      &updater_state_attributes, std::move(apps));
 
   update_client::ProtocolHandlerFactoryJSON factory;
   std::unique_ptr<ProtocolSerializer> serializer = factory.CreateSerializer();

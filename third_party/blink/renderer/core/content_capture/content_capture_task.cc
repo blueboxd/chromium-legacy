@@ -196,7 +196,7 @@ bool ContentCaptureTask::RunInternal() {
 }
 
 void ContentCaptureTask::Run(TimerBase*) {
-  TRACE_EVENT0("content-capture", "RunTask");
+  TRACE_EVENT0("content_capture", "RunTask");
   is_scheduled_ = false;
   if (!RunInternal()) {
     ScheduleInternal(ScheduleReason::kRetryTask);
@@ -229,7 +229,7 @@ void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
 
   delay_task_->StartOneShot(delay, FROM_HERE);
   is_scheduled_ = true;
-  TRACE_EVENT_INSTANT1("content-capture", "ScheduleTask",
+  TRACE_EVENT_INSTANT1("content_capture", "ScheduleTask",
                        TRACE_EVENT_SCOPE_THREAD, "reason", reason);
 }
 

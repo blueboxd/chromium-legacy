@@ -392,13 +392,15 @@ void PreconnectHelper(const TestCase& test, HttpNetworkSession* session) {
 
 ClientSocketPool::GroupId GetGroupId(const TestCase& test) {
   if (test.ssl) {
-    return ClientSocketPool::GroupId(HostPortPair("www.google.com", 443),
-                                     ClientSocketPool::SocketType::kSsl,
-                                     PrivacyMode::PRIVACY_MODE_DISABLED);
+    return ClientSocketPool::GroupId(
+        HostPortPair("www.google.com", 443), ClientSocketPool::SocketType::kSsl,
+        PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+        false /* disable_secure_dns */);
   }
-  return ClientSocketPool::GroupId(HostPortPair("www.google.com", 80),
-                                   ClientSocketPool::SocketType::kHttp,
-                                   PrivacyMode::PRIVACY_MODE_DISABLED);
+  return ClientSocketPool::GroupId(
+      HostPortPair("www.google.com", 80), ClientSocketPool::SocketType::kHttp,
+      PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+      false /* disable_secure_dns */);
 }
 
 class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
@@ -424,7 +426,8 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     // Group ID that shouldn't match much.
     last_group_id_ = ClientSocketPool::GroupId(
         HostPortPair(), ClientSocketPool::SocketType::kSsl,
-        PrivacyMode::PRIVACY_MODE_ENABLED);
+        PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
+        false /* disable_secure_dns */);
   }
 
   int RequestSocket(
@@ -571,7 +574,8 @@ TEST_F(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
     HostPortPair host_port_pair("www.google.com", 443);
     SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                        PRIVACY_MODE_DISABLED,
-                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
+                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                       NetworkIsolationKey(), false /* disable_secure_dns */);
     ignore_result(CreateFakeSpdySession(session->spdy_session_pool(), key));
 
     CommonConnectJobParams common_connect_job_params =
@@ -1997,9 +2001,10 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
         base::MakeRefCounted<ClientSocketPool::SocketParams>(
             std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
             nullptr /* ssl_config_for_proxy */);
-    ClientSocketPool::GroupId group_id(host_port_pair,
-                                       ClientSocketPool::SocketType::kSsl,
-                                       PrivacyMode::PRIVACY_MODE_DISABLED);
+    ClientSocketPool::GroupId group_id(
+        host_port_pair, ClientSocketPool::SocketType::kSsl,
+        PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+        false /* disable_secure_dns */);
     int rv = connection->Init(
         group_id, socket_params, base::nullopt /* proxy_annotation_tag */,
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,

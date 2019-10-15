@@ -68,7 +68,7 @@ const char* MediaControlDownloadButtonElement::GetNameForHistograms() const {
 }
 
 void MediaControlDownloadButtonElement::DefaultEventHandler(Event& event) {
-  const KURL& url = MediaElement().currentSrc();
+  const KURL& url = MediaElement().downloadURL();
   if ((event.type() == event_type_names::kClick ||
        event.type() == event_type_names::kGesturetap) &&
       !(url.IsNull() || url.IsEmpty())) {

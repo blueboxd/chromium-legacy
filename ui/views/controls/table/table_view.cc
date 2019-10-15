@@ -34,6 +34,7 @@
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
@@ -42,7 +43,6 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
-#include "ui/views/view_class_properties.h"
 
 namespace views {
 
@@ -134,6 +134,29 @@ TableView::PaintRegion::PaintRegion() = default;
 
 TableView::PaintRegion::~PaintRegion() = default;
 
+class TableView::HighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator() = default;
+
+  // HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
+      return SkPath();
+
+    const TableView* const table = static_cast<const TableView*>(view);
+    // If there's no focus indicator fall back on the default highlight path
+    // (highlights entire view instead of active cell).
+    if (!table->GetHasFocusIndicator())
+      return SkPath();
+
+    // Draw a focus indicator around the active cell.
+    return SkPath().addRect(gfx::RectToSkRect(table->GetActiveCellBounds()));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
+};
+
 TableView::TableView(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
@@ -155,6 +178,8 @@ TableView::TableView(ui::TableModel* model,
 
   // Always focusable, even on Mac (consistent with NSTableView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<TableView::HighlightPathGenerator>());
   SetModel(model);
   if (model_)
     UpdateVirtualAccessibilityChildren();
@@ -290,23 +315,6 @@ bool TableView::GetHasFocusIndicator() const {
   return active_row != ui::ListSelectionModel::kUnselectedIndex &&
          active_visible_column_index_ !=
              ui::ListSelectionModel::kUnselectedIndex;
-}
-
-void TableView::ResetFocusIndicator() {
-  if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
-    return;
-
-  if (GetHasFocusIndicator()) {
-    // Draw a focus indicator around the active column.
-    const gfx::Rect cell_bounds(GetCellBounds(
-        ModelToView(selection_model_.active()), active_visible_column_index_));
-    auto path = std::make_unique<SkPath>();
-    path->addRect(gfx::RectToSkRect(cell_bounds));
-    SetProperty(views::kHighlightPathKey, path.release());
-  } else {
-    ClearProperty(views::kHighlightPathKey);
-  }
-  focus_ring_->SchedulePaint();
 }
 
 const TableView::VisibleColumn& TableView::GetVisibleColumn(int index) {
@@ -473,7 +481,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
                 base::i18n::IsRTL() ? ADVANCE_INCREMENT : ADVANCE_DECREMENT;
             header_->ResizeColumnViaKeyboard(active_visible_column_index_,
                                              direction);
-            ResetFocusIndicator();
+            focus_ring_->SchedulePaint();
           }
         } else {
           AdvanceActiveVisibleColumn(ADVANCE_DECREMENT);
@@ -490,7 +498,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
                 base::i18n::IsRTL() ? ADVANCE_DECREMENT : ADVANCE_INCREMENT;
             header_->ResizeColumnViaKeyboard(active_visible_column_index_,
                                              direction);
-            ResetFocusIndicator();
+            focus_ring_->SchedulePaint();
           }
         } else {
           AdvanceActiveVisibleColumn(ADVANCE_INCREMENT);
@@ -820,13 +828,13 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 
 void TableView::OnFocus() {
   SchedulePaintForSelection();
-  ResetFocusIndicator();
+  focus_ring_->SchedulePaint();
   UpdateAccessibilityFocus();
 }
 
 void TableView::OnBlur() {
   SchedulePaintForSelection();
-  ResetFocusIndicator();
+  focus_ring_->SchedulePaint();
   UpdateAccessibilityFocus();
 }
 
@@ -896,6 +904,10 @@ gfx::Rect TableView::GetCellBounds(int row, int visible_column_index) const {
     return GetRowBounds(row);
   const VisibleColumn& vis_col(visible_columns_[visible_column_index]);
   return gfx::Rect(vis_col.x, row * row_height_, vis_col.width, row_height_);
+}
+
+gfx::Rect TableView::GetActiveCellBounds() const {
+  return GetCellBounds(selection_model_.active(), active_visible_column_index_);
 }
 
 void TableView::AdjustCellBoundsForText(int visible_column_index,
@@ -1048,7 +1060,7 @@ void TableView::SetActiveVisibleColumnIndex(int index) {
                                       active_visible_column_index_));
   }
 
-  ResetFocusIndicator();
+  focus_ring_->SchedulePaint();
   UpdateAccessibilityFocus();
   OnPropertyChanged(&active_visible_column_index_, kPropertyEffectsNone);
 }
@@ -1089,7 +1101,7 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
     SetActiveVisibleColumnIndex(-1);
   }
 
-  ResetFocusIndicator();
+  focus_ring_->SchedulePaint();
   UpdateAccessibilityFocus();
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   if (observer_)

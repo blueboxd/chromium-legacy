@@ -425,6 +425,10 @@ class WebMediaPlayer {
     return base::nullopt;
   }
 
+  // Provide the media URL, after any redirects are applied.  May return an
+  // empty GURL, which will be interpreted as "use the original URL".
+  virtual GURL GetSrcAfterRedirects() { return GURL(); }
+
   virtual base::WeakPtr<WebMediaPlayer> AsWeakPtr() = 0;
 };
 

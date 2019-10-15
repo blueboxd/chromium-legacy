@@ -44,7 +44,7 @@ def ReadCssProperties(filename):
 
   # Looking for a single line like "kFontWeight = 10,"
   ENUM_REGEX = re.compile(r"""k(\w+)\s*=       # capture the enum name
-                              \s*(\d+),        # capture the id
+                              \s*(\d+),?       # capture the id
                               """, re.VERBOSE)
 
   properties = {}

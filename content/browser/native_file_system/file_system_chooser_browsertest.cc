@@ -23,6 +23,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -68,7 +69,8 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
   void EnterFullscreen(GURL url) {
     WebContentsImpl* web_contents_impl =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    web_contents_impl->EnterFullscreenMode(url, blink::FullScreenOptions());
+    web_contents_impl->EnterFullscreenMode(url,
+                                           blink::mojom::FullscreenOptions());
   }
 
   base::FilePath CreateTestFile(const std::string& contents) {

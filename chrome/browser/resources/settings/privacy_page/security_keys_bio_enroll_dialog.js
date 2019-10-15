@@ -20,13 +20,16 @@ Polymer({
 
   properties: {
     /** @private */
-    addButtonVisible_: Boolean,
-
-    /** @private */
     cancelButtonDisabled_: Boolean,
 
     /** @private */
     cancelButtonVisible_: Boolean,
+
+    /** @private */
+    confirmButtonDisabled_: Boolean,
+
+    /** @private */
+    confirmButtonVisible_: Boolean,
 
     /** @private */
     deleteInProgress_: Boolean,
@@ -51,17 +54,17 @@ Polymer({
     enrollments_: Array,
 
     /** @private */
-    okButtonDisabled_: Boolean,
-
-    /** @private */
-    okButtonVisible_: Boolean,
+    recentEnrollmentName_: String,
   },
 
   /** @private {?settings.SecurityKeysBioEnrollProxyImpl} */
   browserProxy_: null,
 
-  /** @private */
-  maxSamples_: Number,
+  /** @private {number} */
+  maxSamples_: -1,
+
+  /** @private {string} */
+  recentEnrollmentId_: '',
 
   /** @override */
   attached: function() {
@@ -94,17 +97,16 @@ Polymer({
   /** @private */
   submitPIN_: function() {
     if (!this.$.pin.validate()) {
+      this.confirmButtonDisabled_ = false;
       return;
     }
-    this.browserProxy_.providePIN(this.$.pin.value).then((retries) => {
+    this.browserProxy_.providePIN(this.$.pin.value).then(retries => {
+      this.confirmButtonDisabled_ = false;
       if (retries != null) {
         this.$.pin.showIncorrectPINError(retries);
         return;
       }
-
-      this.browserProxy_.enumerateEnrollments().then((enrollments) => {
-        this.onEnrollments_(enrollments);
-      });
+      this.showEnrollmentsPage_();
     });
   },
 
@@ -122,33 +124,39 @@ Polymer({
   dialogPageChanged_: function() {
     switch (this.dialogPage_) {
       case 'initial':
-        this.addButtonVisible_ = false;
         this.cancelButtonVisible_ = true;
-        this.okButtonVisible_ = false;
+        this.cancelButtonDisabled = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
       case 'pinPrompt':
-        this.addButtonVisible_ = false;
         this.cancelButtonVisible_ = true;
-        this.okButtonVisible_ = true;
+        this.cancelButtonDisabled = false;
+        this.confirmButtonVisible_ = true;
+        this.confirmButtonDisabled_ = false;
         this.doneButtonVisible_ = false;
         break;
       case 'enrollments':
-        this.addButtonVisible_ = true;
         this.cancelButtonVisible_ = false;
-        this.okButtonVisible_ = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = true;
         break;
       case 'enroll':
-        this.addButtonVisible_ = false;
         this.cancelButtonVisible_ = true;
-        this.okButtonVisible_ = false;
+        this.cancelButtonDisabled = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
-      case 'error':
-        this.addButtonVisible_ = false;
+      case 'chooseName':
         this.cancelButtonVisible_ = false;
-        this.okButtonVisible_ = false;
+        this.confirmButtonVisible_ = true;
+        this.confirmButtonDisabled_ = !this.recentEnrollmentName_.length;
+        this.doneButtonVisible_ = false;
+        this.$.enrollmentName.focus();
+        break;
+      case 'error':
+        this.cancelButtonVisible_ = false;
+        this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = true;
         break;
       default:
@@ -164,9 +172,12 @@ Polymer({
     this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
     this.$.arc.reset();
 
+    this.recentEnrollmentId_ = '';
+    this.recentEnrollmentName_ = '';
+
     this.dialogPage_ = 'enroll';
 
-    this.browserProxy_.startEnrolling().then((response) => {
+    this.browserProxy_.startEnrolling().then(response => {
       this.onEnrolling_(response);
     });
   },
@@ -177,10 +188,7 @@ Polymer({
    */
   onEnrolling_: function(response) {
     if (response.code == Ctap2Status.ERR_KEEPALIVE_CANCEL) {
-      // The user clicked cancel. Return to the overview dialog page.
-      this.browserProxy_.enumerateEnrollments().then((enrollments) => {
-        this.onEnrollments_(enrollments);
-      });
+      this.showEnrollmentsPage_();
       return;
     }
 
@@ -202,29 +210,48 @@ Polymer({
         100 - (100 * response.remaining / this.maxSamples_),
         response.remaining == 0);
     if (response.remaining == 0) {
+      assert(response.enrollment);
+      this.recentEnrollmentId_ = response.enrollment.id;
+      this.recentEnrollmentName_ = response.enrollment.name;
       this.cancelButtonVisible_ = false;
-      this.okButtonVisible_ = true;
+      this.confirmButtonVisible_ = true;
+      this.confirmButtonDisabled_ = false;
+      this.$.confirmButton.focus();
     }
     this.fire('bio-enroll-dialog-ready-for-testing');
   },
 
   /** @private */
-  okButtonClick_: function() {
-    // Disable the OK button while PIN verification or template enumeration is
+  confirmButtonClick_: function() {
+    // Disable |confirmButton| while PIN verification or template enumeration is
     // pending. Resetting |dialogPage_| will re-enable it.
-    this.okButtonDisabled_ = true;
+    this.confirmButtonDisabled_ = true;
     switch (this.dialogPage_) {
       case 'pinPrompt':
         this.submitPIN_();
         break;
       case 'enroll':
-        this.browserProxy_.enumerateEnrollments().then((enrollments) => {
-          this.onEnrollments_(enrollments);
-        });
+        assert(!!this.recentEnrollmentId_.length);
+        this.dialogPage_ = 'chooseName';
+        break;
+      case 'chooseName':
+        this.browserProxy_
+            .renameEnrollment(
+                this.recentEnrollmentId_, this.recentEnrollmentName_)
+            .then(enrollments => {
+              this.onEnrollments_(enrollments);
+            });
         break;
       default:
         assertNotReached();
     }
+  },
+
+  /** @private */
+  showEnrollmentsPage_: function() {
+    this.browserProxy_.enumerateEnrollments().then(enrollments => {
+      this.onEnrollments_(enrollments);
+    });
   },
 
   /** @private */
@@ -284,6 +311,11 @@ Polymer({
       this.deleteInProgress_ = false;
       this.onEnrollments_(enrollments);
     });
-  }
+  },
+
+  /** @private */
+  onEnrollmentNameInput_: function() {
+    this.confirmButtonDisabled_ = !this.recentEnrollmentName_.length;
+  },
 });
 })();

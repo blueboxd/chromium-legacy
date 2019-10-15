@@ -33,8 +33,13 @@ SkPath GetHighlightPathInternal(const View* view) {
   HighlightPathGenerator* path_generator =
       view->GetProperty(kHighlightPathGeneratorKey);
 
-  if (path_generator)
-    return path_generator->GetHighlightPath(view);
+  if (path_generator) {
+    SkPath highlight_path = path_generator->GetHighlightPath(view);
+    // The generated path might be empty or otherwise unusable. If that's the
+    // case we should fall back on the default path.
+    if (IsPathUsable(highlight_path))
+      return highlight_path;
+  }
 
   // TODO(pbos): Remove kHighlightPathKey in favor of HighlightPathGenerators.
   SkPath* highlight_path = view->GetProperty(kHighlightPathKey);

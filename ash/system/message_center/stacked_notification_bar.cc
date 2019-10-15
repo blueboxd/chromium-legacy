@@ -8,6 +8,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/rounded_label_button.h"
@@ -26,11 +27,12 @@ namespace ash {
 
 namespace {
 
-// The "Clear all" button in the stacking notification bar.
-class StackingBarClearAllButton : public views::LabelButton {
+// The label button in the stacked notification bar, can be either a "Clear all"
+// or "See all notifications" button.
+class StackingBarLabelButton : public views::LabelButton {
  public:
-  StackingBarClearAllButton(views::ButtonListener* listener,
-                            const base::string16& text)
+  StackingBarLabelButton(views::ButtonListener* listener,
+                         const base::string16& text)
       : views::LabelButton(listener, text) {
     SetEnabledTextColors(kUnifiedMenuButtonColorActive);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -45,7 +47,7 @@ class StackingBarClearAllButton : public views::LabelButton {
         kNotificationBackgroundColor);
   }
 
-  ~StackingBarClearAllButton() override = default;
+  ~StackingBarLabelButton() override = default;
 
   // views::LabelButton:
   gfx::Size CalculatePreferredSize() const override {
@@ -106,17 +108,23 @@ class StackingBarClearAllButton : public views::LabelButton {
  private:
   SkColor background_color_ = gfx::kPlaceholderColor;
 
-  DISALLOW_COPY_AND_ASSIGN(StackingBarClearAllButton);
+  DISALLOW_COPY_AND_ASSIGN(StackingBarLabelButton);
 };
 
 }  // namespace
 
-StackedNotificationBar::StackedNotificationBar(views::ButtonListener* listener)
-    : count_label_(new views::Label),
-      clear_all_button_(new StackingBarClearAllButton(
-          listener,
+StackedNotificationBar::StackedNotificationBar(
+    UnifiedMessageCenterView* message_center_view)
+    : message_center_view_(message_center_view),
+      count_label_(new views::Label),
+      clear_all_button_(new StackingBarLabelButton(
+          this,
           l10n_util::GetStringUTF16(
-              IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL))) {
+              IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL))),
+      expand_all_button_(new StackingBarLabelButton(
+          this,
+          l10n_util::GetStringUTF16(
+              IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL))) {
   SetVisible(false);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -149,6 +157,9 @@ StackedNotificationBar::StackedNotificationBar(views::ButtonListener* listener)
   clear_all_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
   AddChildView(clear_all_button_);
+
+  expand_all_button_->SetVisible(false);
+  AddChildView(expand_all_button_);
 }
 
 StackedNotificationBar::~StackedNotificationBar() = default;
@@ -181,6 +192,19 @@ void StackedNotificationBar::SetAnimationState(
     UnifiedMessageCenterAnimationState animation_state) {
   animation_state_ = animation_state;
   UpdateVisibility();
+}
+
+void StackedNotificationBar::SetCollapsed() {
+  clear_all_button_->SetVisible(false);
+  expand_all_button_->SetVisible(true);
+  UpdateVisibility();
+  Layout();
+}
+
+void StackedNotificationBar::SetExpanded() {
+  clear_all_button_->SetVisible(true);
+  expand_all_button_->SetVisible(false);
+  Layout();
 }
 
 void StackedNotificationBar::AddNotificationIcon(
@@ -296,12 +320,14 @@ void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
 
   // We draw a border here than use a views::Border so the ink drop highlight
   // of the clear all button overlays the border.
-  canvas->DrawSharpLine(
-      gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
-      gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kSeparator,
-          AshColorProvider::AshColorMode::kLight));
+  if (clear_all_button_->GetVisible()) {
+    canvas->DrawSharpLine(
+        gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
+        gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kSeparator,
+            AshColorProvider::AshColorMode::kLight));
+  }
 }
 
 const char* StackedNotificationBar::GetClassName() const {
@@ -311,14 +337,25 @@ const char* StackedNotificationBar::GetClassName() const {
 void StackedNotificationBar::UpdateVisibility() {
   switch (animation_state_) {
     case UnifiedMessageCenterAnimationState::IDLE:
-      SetVisible(total_notification_count_ > 1);
+      SetVisible(total_notification_count_ > 1 ||
+                 expand_all_button_->GetVisible());
       break;
     case UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR:
       SetVisible(true);
       break;
     case UnifiedMessageCenterAnimationState::COLLAPSE:
-      SetVisible(false);
+      SetVisible(total_notification_count_ > 1 ||
+                 expand_all_button_->GetVisible());
       break;
+  }
+}
+
+void StackedNotificationBar::ButtonPressed(views::Button* sender,
+                                           const ui::Event& event) {
+  if (sender == clear_all_button_) {
+    message_center_view_->ClearAllNotifications();
+  } else if (sender == expand_all_button_) {
+    message_center_view_->ExpandMessageCenter();
   }
 }
 

@@ -393,6 +393,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     return GetEmptyBrowserInterfaceBroker();
   }
 
+  AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
+      override;
+
   WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override {
     return nullptr;
   }

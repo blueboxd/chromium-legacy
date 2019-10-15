@@ -82,6 +82,8 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
                                int target_property,
                                base::TimeTicks animation_start_time,
                                std::unique_ptr<cc::AnimationCurve>) override;
+  void NotifyLocalTimeUpdated(
+      base::Optional<base::TimeDelta> local_time) override;
 
   scoped_refptr<cc::SingleKeyframeEffectAnimation> animation_;
   CompositorAnimationDelegate* delegate_;

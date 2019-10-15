@@ -78,6 +78,7 @@ void EventAckData::FinishExternalRequestOnCoreThread(
     int render_process_id,
     int64_t version_id,
     int event_id,
+    bool worker_stopped,
     scoped_refptr<CoreThreadEventInfo> unacked_events,
     base::OnceClosure failure_callback) {
   DCHECK_CURRENTLY_ON(content::ServiceWorkerContext::GetCoreThreadId());
@@ -95,6 +96,11 @@ void EventAckData::FinishExternalRequestOnCoreThread(
 
   content::ServiceWorkerExternalRequestResult result =
       context->FinishedExternalRequest(version_id, request_uuid);
+  // If the worker was already stopped, the FinishedExternalRequest will
+  // legitimately fail.
+  if (worker_stopped)
+    return;
+
   if (result != content::ServiceWorkerExternalRequestResult::kOk) {
     LOG(ERROR) << "FinishExternalRequest failed: " << static_cast<int>(result);
     std::move(failure_callback).Run();
@@ -130,12 +136,13 @@ void EventAckData::DecrementInflightEvent(
     int render_process_id,
     int64_t version_id,
     int event_id,
+    bool worker_stopped,
     base::OnceClosure failure_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (content::ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     FinishExternalRequestOnCoreThread(context, render_process_id, version_id,
-                                      event_id, unacked_events_,
+                                      event_id, worker_stopped, unacked_events_,
                                       std::move(failure_callback));
   } else {
     content::ServiceWorkerContext::RunTask(
@@ -143,7 +150,8 @@ void EventAckData::DecrementInflightEvent(
         FROM_HERE, context,
         base::BindOnce(&EventAckData::FinishExternalRequestOnCoreThread,
                        context, render_process_id, version_id, event_id,
-                       unacked_events_, std::move(failure_callback)));
+                       worker_stopped, unacked_events_,
+                       std::move(failure_callback)));
   }
 }
 

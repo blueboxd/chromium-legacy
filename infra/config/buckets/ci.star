@@ -148,7 +148,6 @@ builder(
 def android_builder(
     *,
     name,
-    goma_backend=goma.backend.RBE_PROD,
     # TODO(tandrii): migrate to this gradually (current value of
     # goma.jobs.MANY_JOBS_FOR_CI is 500).
     # goma_jobs=goma.jobs.MANY_JOBS_FOR_CI
@@ -156,7 +155,6 @@ def android_builder(
     **kwargs):
   return builder(
       name = name,
-      goma_backend = goma_backend,
       goma_jobs = goma_jobs,
       mastername = 'chromium.android',
       **kwargs
@@ -164,38 +162,40 @@ def android_builder(
 
 android_builder(
     name = 'Android ASAN (dbg)',
-    goma_backend = None,
 )
 
 android_builder(
     name = 'Android WebView L (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView M (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView N (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView O (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView P (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android arm Builder (dbg)',
-    goma_backend = None,
     execution_timeout = 4 * time.hour,
 )
 
 android_builder(
     name = 'Android arm64 Builder (dbg)',
-    goma_backend = None,
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 4 * time.hour,
 )
@@ -203,36 +203,39 @@ android_builder(
 android_builder(
     name = 'Android x64 Builder (dbg)',
     execution_timeout = 4 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android x86 Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Cast Android (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Deterministic Android',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Deterministic Android (dbg)',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'KitKat Phone Tester (dbg)',
-    goma_backend = None,
 )
 
 android_builder(
     name = 'KitKat Tablet Tester',
-    goma_backend = None,
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 8 * time.hour,
@@ -240,12 +243,10 @@ android_builder(
 
 android_builder(
     name = 'Lollipop Phone Tester',
-    goma_backend = None,
 )
 
 android_builder(
     name = 'Lollipop Tablet Tester',
-    goma_backend = None,
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 8 * time.hour,
@@ -253,12 +254,10 @@ android_builder(
 
 android_builder(
     name = 'Marshmallow 64 bit Tester',
-    goma_backend = None,
 )
 
 android_builder(
     name = 'Marshmallow Tablet Tester',
-    goma_backend = None,
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
     execution_timeout = 8 * time.hour,
@@ -266,40 +265,45 @@ android_builder(
 
 android_builder(
     name = 'Nougat Phone Tester',
-    goma_backend = None,
 )
 
 android_builder(
     name = 'Oreo Phone Tester',
-    goma_backend = None,
 )
 
 android_builder(
     name = 'android-cronet-arm-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-arm-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-arm64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-asan-arm-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-kitkat-arm-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-lollipop-arm-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 # Runs on a specific machine with an attached phone
@@ -308,45 +312,51 @@ android_builder(
     cores = None,
     cpu = None,
     executable = luci.recipe(name = 'cronet'),
+    goma_backend = goma.backend.RBE_PROD,
     os = os.ANDROID,
 )
 
 android_builder(
     name = 'android-cronet-marshmallow-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-x86-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-cronet-x86-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-incremental-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-jumbo-rel',
-    goma_backend = None,
 )
 
 android_builder(
     name = 'android-kitkat-arm-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-marshmallow-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-rel',
-    goma_backend = None,
 )
 
 
@@ -843,60 +853,68 @@ dawn_builder(
 )
 
 
-def fuzz_builder(*, name, goma_backend=goma.backend.RBE_PROD, **kwargs):
+def fuzz_builder(*, name, **kwargs):
   return builder(
       name = name,
-      goma_backend = goma_backend,
       mastername = 'chromium.fuzz',
       **kwargs
   )
 
 fuzz_builder(
     name = 'ASAN Debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'ASan Debug (32-bit x86 with V8-ARM)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'ASAN Release',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'ASan Release (32-bit x86 with V8-ARM)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'ASAN Release Media',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'Afl Upload Linux ASan',
     executable = luci.recipe(name = 'chromium_afl'),
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'ASan Release Media (32-bit x86 with V8-ARM)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'ChromiumOS ASAN Release',
-    goma_backend = None,
 )
 
 fuzz_builder(
     name = 'MSAN Release (chained origins)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'MSAN Release (no origins)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'Mac ASAN Release',
     builderless = False,
     cores = 4,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_DEFAULT,
 )
 
@@ -904,19 +922,23 @@ fuzz_builder(
     name = 'Mac ASAN Release Media',
     builderless = False,
     cores = 4,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_DEFAULT,
 )
 
 fuzz_builder(
     name = 'TSAN Debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'TSAN Release',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
     name = 'UBSan Release',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
@@ -928,6 +950,7 @@ fuzz_builder(
     name = 'Win ASan Release',
     builderless = False,
     goma_enable_ats = True,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -935,6 +958,7 @@ fuzz_builder(
     name = 'Win ASan Release Media',
     builderless = False,
     goma_enable_ats = True,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.WINDOWS_DEFAULT
 )
 
@@ -948,61 +972,70 @@ def fuzz_libfuzzer_builder(*, name, **kwargs):
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Chrome OS ASan',
-    goma_backend = None,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux ASan',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux ASan Debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux MSan',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux UBSan',
     # Do not use builderless for this (crbug.com/980080).
     builderless = False,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux V8-ARM64 ASan',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux V8-ARM64 ASan Debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 ASan',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 ASan Debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 V8-ARM ASan',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Linux32 V8-ARM ASan Debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Mac ASan',
     cores = 24,
-    os = os.MAC_DEFAULT,
     execution_timeout = 4 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
+    os = os.MAC_DEFAULT,
 )
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Windows ASan',
-    goma_backend = None,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -1011,12 +1044,10 @@ def fyi_builder(
     *,
     name,
     execution_timeout=10 * time.hour,
-    goma_backend=goma.backend.RBE_PROD,
     **kwargs):
   return builder(
       name = name,
       execution_timeout = execution_timeout,
-      goma_backend = goma_backend,
       mastername = 'chromium.fyi',
       **kwargs
   )
@@ -1024,110 +1055,119 @@ def fyi_builder(
 fyi_builder(
     name = 'Closure Compilation Linux',
     executable = luci.recipe(name = 'closure_compilation'),
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'Jumbo Linux x64',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'Linux Viz',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'Linux remote_run Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'Linux remote_run Tester',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'Mojo Android',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'Mojo ChromiumOS',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'Mojo Linux',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'Site Isolation Android',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'VR Linux',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'android-mojo-webview-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'chromeos-amd64-generic-rel-vm-tests',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'chromeos-kevin-rel-hw-tests',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'fuchsia-fyi-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'fuchsia-fyi-x64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'fuchsia-fyi-x64-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-annotator-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-bfcache-debug',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'linux-blink-animation-use-time-delta',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-blink-heap-concurrent-marking-tsan-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-blink-heap-verification',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-chromium-tests-staging-builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-chromium-tests-staging-tests',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'linux-fieldtrial-rel',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'linux-oor-cors-rel',
-    goma_backend = None,
 )
 
 fyi_builder(
@@ -1140,19 +1180,16 @@ fyi_builder(
 # OS shouldn't matter.
 fyi_builder(
     name = 'mac-osxbeta-rel',
-    goma_backend = None,
 )
 
 fyi_builder(
     name = 'win-pixel-builder-rel',
-    goma_backend = None,
     os = None,
 )
 
 fyi_builder(
     name = 'win-pixel-tester-rel',
     os = None,
-    goma_backend = None,
 )
 
 
@@ -1161,13 +1198,11 @@ def fyi_coverage_builder(
     name,
     cores=32,
     execution_timeout=20 * time.hour,
-    goma_backend=None,
     **kwargs):
   return fyi_builder(
       name = name,
       cores = cores,
       execution_timeout = execution_timeout,
-      goma_backend = goma_backend,
       service_account = 'chromium-code-coverage-builder@chops-service-accounts.iam.gserviceaccount.com',
       **kwargs
   )
@@ -1230,7 +1265,6 @@ def fyi_ios_builder(
       name = name,
       caches = [XCODE_IOS_11_CACHE],
       cores = None,
-      goma_backend = None,
       executable = executable,
       os = os.MAC_ANY,
       **kwargs
@@ -1285,6 +1319,7 @@ def fyi_mac_builder(
 fyi_mac_builder(
     name = 'Jumbo Mac',
     cores = 4,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
@@ -1292,6 +1327,7 @@ fyi_mac_builder(
     cores = None,
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
@@ -1299,25 +1335,23 @@ fyi_mac_builder(
     cores = None,
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
     name = 'mac-hermetic-upgrade-rel',
     cores = 8,
-    goma_backend = None,
 )
 
 fyi_mac_builder(
     name = 'mac-mojo-rel',
-    goma_backend = None,
     os = os.MAC_ANY,
 )
 
 
-def fyi_windows_builder(*, name, goma_backend=None, os=os.WINDOWS_DEFAULT, **kwargs):
+def fyi_windows_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
   return fyi_builder(
       name = name,
-      goma_backend = goma_backend,
       os = os,
       **kwargs
   )
@@ -1365,100 +1399,115 @@ def gpu_fyi_linux_builder(
     *,
     name,
     execution_timeout=6 * time.hour,
-    goma_backend=goma.backend.RBE_PROD,
     **kwargs):
   return gpu_fyi_builder(
       name = name,
       execution_timeout = execution_timeout,
-      goma_backend = goma_backend,
       **kwargs
   )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 32 Vk Release (Pixel 2)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 32 dEQP Vk Release (Pixel 2)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 64 Perf (Pixel 2)',
     cores = 2,
-    goma_backend = None,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 64 Vk Release (Pixel 2)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI 64 dEQP Vk Release (Pixel 2)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (NVIDIA Shield TV)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 5)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 5X)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 6)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 6P)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Nexus 9)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI Release (Pixel 2)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI SkiaRenderer GL (Nexus 5X)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI SkiaRenderer Vulkan (Pixel 2)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'Android FYI dEQP Release (Nexus 5X)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux Ozone Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Linux dEQP Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Perf Android 64 Builder',
-    goma_backend = None,
 )
 
 gpu_fyi_linux_builder(
     name = 'Linux FYI GPU TSAN Release',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -1469,7 +1518,6 @@ def gpu_fyi_linux_ci_tester(*, name, execution_timeout=6 * time.hour, **kwargs):
       name = name,
       cores = 2,
       execution_timeout = execution_timeout,
-      goma_backend = None,
       **kwargs
   )
 
@@ -1674,25 +1722,28 @@ def gpu_fyi_mac_builder(*, name, **kwargs):
       name = name,
       cores = 4,
       execution_timeout = 6 * time.hour,
-      goma_backend = goma.backend.RBE_PROD,
       os = os.MAC_ANY,
       **kwargs
   )
 
 gpu_fyi_mac_builder(
     name = 'Mac FYI GPU ASAN Release',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_mac_builder(
     name = 'GPU FYI Mac Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_mac_builder(
     name = 'GPU FYI Mac Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_mac_builder(
     name = 'GPU FYI Mac dEQP Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -1733,50 +1784,51 @@ gpu_fyi_windows_builder(
 )
 
 
-def gpu_builder(*, name, goma_backend=goma.backend.RBE_PROD, **kwargs):
+def gpu_builder(*, name, **kwargs):
   return builder(
       name = name,
-      goma_backend = goma_backend,
       mastername = 'chromium.gpu',
       **kwargs
   )
 
 gpu_builder(
     name = 'Android Release (Nexus 5X)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_builder(
     name = 'GPU Linux Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_builder(
     name = 'GPU Linux Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_builder(
     name = 'GPU Mac Builder',
     cores = None,
-    goma_backend = None,
     os = os.MAC_ANY,
 )
 
 gpu_builder(
     name = 'GPU Mac Builder (dbg)',
     cores = None,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
+
 gpu_builder(
     name = 'GPU Win x64 Builder',
     builderless = True,
     os = os.WINDOWS_ANY,
-    goma_backend = None,
 )
 
 gpu_builder(
     name = 'GPU Win x64 Builder (dbg)',
     builderless = True,
     os = os.WINDOWS_ANY,
-    goma_backend = None,
 )
 
 
@@ -1786,7 +1838,6 @@ def gpu_linux_ci_tester(*, name, **kwargs):
   return gpu_builder(
       name = name,
       cores = 2,
-      goma_backend = None,
       os = os.LINUX_DEFAULT,
       **kwargs
   )
@@ -1824,15 +1875,9 @@ gpu_linux_ci_tester(
 )
 
 
-def linux_builder(
-    *,
-    name,
-    goma_backend=goma.backend.RBE_PROD,
-    goma_jobs=goma.jobs.MANY_JOBS_FOR_CI,
-    **kwargs):
+def linux_builder(*, name, goma_jobs=goma.jobs.MANY_JOBS_FOR_CI, **kwargs):
   return builder(
       name = name,
-      goma_backend = goma_backend,
       goma_jobs = goma_jobs,
       mastername = 'chromium.linux',
       **kwargs
@@ -1840,10 +1885,12 @@ def linux_builder(
 
 linux_builder(
     name = 'Fuchsia x64',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Cast Audio Linux',
+    goma_backend = goma.backend.RBE_PROD,
     ssd = True,
 )
 
@@ -1857,6 +1904,7 @@ linux_builder(
     name = 'Deterministic Fuchsia (dbg)',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = None,
 )
 
@@ -1864,6 +1912,7 @@ linux_builder(
     name = 'Deterministic Linux',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
@@ -1871,73 +1920,79 @@ linux_builder(
     cores = 32,
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Fuchsia ARM64',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Leak Detection Linux',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Linux Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Linux Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Linux Builder (dbg)(32)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'Linux Tests',
-    goma_backend = None,
 )
 
 linux_builder(
     name = 'Linux Tests (dbg)(1)',
-    goma_backend = None,
 )
 
 linux_builder(
     name = 'fuchsia-arm64-cast',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'fuchsia-x64-cast',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'fuchsia-x64-dbg',
-    goma_backend = None,
 )
 
 linux_builder(
     name = 'linux-gcc-rel',
-    goma_backend = None,
 )
 
 linux_builder(
     name = 'linux-jumbo-rel',
-    goma_backend = None,
 )
 
 linux_builder(
     name = 'linux-ozone-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(
     name = 'linux-trusty-rel',
+    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_TRUSTY,
 )
 
 linux_builder(
     name = 'linux_chromium_component_updater',
     executable = luci.recipe(name = 'findit/chromium/update_components'),
+    goma_backend = goma.backend.RBE_PROD,
     service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com'
 )
 

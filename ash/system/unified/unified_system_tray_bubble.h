@@ -61,6 +61,15 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Close the bubble immediately.
   void CloseNow();
 
+  // Collapse the message center bubble.
+  void CollapseMessageCenter();
+
+  // Expand the message center bubble.
+  void ExpandMessageCenter();
+
+  // Ensure the bubble is collapsed.
+  void EnsureCollapsed();
+
   // Ensure the bubble is expanded.
   void EnsureExpanded();
 
@@ -120,6 +129,10 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
   UnifiedSystemTrayView* unified_view() { return unified_view_; }
+
+  UnifiedSystemTrayController* controller_for_test() {
+    return controller_.get();
+  }
 
  private:
   friend class UnifiedSystemTrayTestApi;

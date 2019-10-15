@@ -134,8 +134,8 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // visible returns kInvalidDisplayId.
   int64_t GetDisplayId();
 
-  void NotifyVisibilityChanged(bool visible, int64_t display_id);
-  void NotifyTargetVisibilityChanged(bool visible, int64_t display_id);
+  void OnVisibilityChanged(bool visible, int64_t display_id);
+  void OnVisibilityWillChange(bool visible, int64_t display_id);
 
   // aura::client::FocusChangeObserver overrides:
   void OnWindowFocused(aura::Window* gained_focus,

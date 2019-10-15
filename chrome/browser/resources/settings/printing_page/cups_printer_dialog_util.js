@@ -141,6 +141,31 @@ cr.define('settings.printing', function() {
     }
   }
 
+  /**
+   * We sort by printer type, which is based off of a maintained list in
+   * cups_printers_types.js. If the types are the same, we sort alphabetically.
+   * @param {!PrinterListEntry} first
+   * @param {!PrinterListEntry} second
+   * @return {number}
+   */
+  function sortPrinters(first, second) {
+    if (first.printerType == second.printerType) {
+      return settings.printing.alphabeticalSort(
+          first.printerInfo, second.printerInfo);
+    }
+
+    return first.printerType - second.printerType;
+  }
+
+  /**
+   * @param {!CupsPrinterInfo} printer
+   * @param {string} searchTerm
+   * @return {boolean} True if the printer has |searchTerm| in its name.
+   */
+  function matchesSearchTerm(printer, searchTerm) {
+    return printer.printerName.toLowerCase().includes(searchTerm.toLowerCase());
+  }
+
   return {
     isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,
@@ -148,5 +173,7 @@ cr.define('settings.printing', function() {
     getBaseName: getBaseName,
     alphabeticalSort: alphabeticalSort,
     getErrorText: getErrorText,
+    sortPrinters: sortPrinters,
+    matchesSearchTerm: matchesSearchTerm,
   };
 });

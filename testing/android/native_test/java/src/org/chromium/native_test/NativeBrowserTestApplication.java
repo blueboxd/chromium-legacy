@@ -20,7 +20,7 @@ public abstract class NativeBrowserTestApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        ContextUtils.initApplicationContext(this);
+        initApplicationContext();
         if (isMainProcess() || isBrowserProcess()) {
             // We need secondary dex in order to run EmbeddedTestServer in a
             // privileged process.
@@ -30,6 +30,14 @@ public abstract class NativeBrowserTestApplication extends Application {
             CommandLine.init(new String[] {});
             ApplicationStatus.initialize(this);
         }
+    }
+
+    /**
+     * Initializes the application context. Subclasses may want to override this if the
+     * application context is initialized elsewhere.
+     */
+    protected void initApplicationContext() {
+        ContextUtils.initApplicationContext(this);
     }
 
     protected static boolean isMainProcess() {

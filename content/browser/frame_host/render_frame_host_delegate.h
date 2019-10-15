@@ -61,9 +61,9 @@ class Origin;
 }
 
 namespace blink {
-struct FullScreenOptions;
 namespace mojom {
 class FileChooserParams;
+class FullscreenOptions;
 }
 }  // namespace blink
 
@@ -266,8 +266,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Notification that the frame wants to go into fullscreen mode.
   // |origin| represents the origin of the frame that requests fullscreen.
-  virtual void EnterFullscreenMode(const GURL& origin,
-                                   const blink::FullScreenOptions& options) {}
+  virtual void EnterFullscreenMode(
+      const GURL& origin,
+      const blink::mojom::FullscreenOptions& options) {}
 
   // Notification that the frame wants to go out of fullscreen mode.
   // |will_cause_resize| indicates whether the fullscreen change causes a
@@ -455,6 +456,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void OnThemeColorChanged(RenderFrameHostImpl* source,
                                    const base::Optional<SkColor>& theme_color) {
   }
+
+  // Determine if the frame is of a low priority.
+  virtual bool IsFrameLowPriority(const RenderFrameHost* render_frame_host);
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

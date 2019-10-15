@@ -3941,6 +3941,7 @@ static int fts3AppendToNode(
 
   nPrefix = fts3PrefixCompress(pPrev->a, pPrev->n, zTerm, nTerm);
   nSuffix = nTerm - nPrefix;
+  if( nSuffix<=0 ) return FTS_CORRUPT_VTAB;
   memcpy(pPrev->a, zTerm, nTerm);
   pPrev->n = nTerm;
 
@@ -4295,7 +4296,7 @@ static int fts3IncrmergeLoad(
         NodeReader reader;
         pNode = &pWriter->aNodeWriter[i];
 
-        if ( pNode->block.a){
+        if( pNode->block.a){
           rc = nodeReaderInit(&reader, pNode->block.a, pNode->block.n);
           while( reader.aNode && rc==SQLITE_OK ) rc = nodeReaderNext(&reader);
           blobGrowBuffer(&pNode->key, reader.term.n, &rc);

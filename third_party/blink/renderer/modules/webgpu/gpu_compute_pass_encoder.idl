@@ -7,16 +7,7 @@
 [
     RuntimeEnabled=WebGPU
 ] interface GPUComputePassEncoder {
-    // GPUProgrammablePassEncoder methods
-    void setBindGroup(unsigned long index,
-                      GPUBindGroup bindGroup,
-                      optional sequence<GPUBufferSize> dynamicOffsets = []);
-    void pushDebugGroup(DOMString groupLabel);
-    void popDebugGroup();
-    void insertDebugMarker(DOMString markerLabel);
-
     void setPipeline(GPUComputePipeline pipeline);
-
     void dispatch(unsigned long x,
                   optional unsigned long y = 1,
                   optional unsigned long z = 1);
@@ -25,3 +16,4 @@
 
     void endPass();
 };
+GPUComputePassEncoder includes GPUProgrammablePassEncoder;

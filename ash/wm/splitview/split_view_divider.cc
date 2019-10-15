@@ -74,8 +74,9 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
 // mouse/gesture events in the bounds of the |DividerView| object itself.
 class DividerView : public views::View, public views::ViewTargeterDelegate {
  public:
-  explicit DividerView(SplitViewDivider* divider)
-      : controller_(SplitViewController::Get()), divider_(divider) {
+  explicit DividerView(SplitViewController* controller,
+                       SplitViewDivider* divider)
+      : controller_(controller), divider_(divider) {
     divider_view_ = new views::View();
     divider_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     divider_view_->layer()->SetColor(kSplitviewDividerColor);
@@ -122,7 +123,7 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
   // views::View:
   void Layout() override {
     divider_view_->SetBoundsRect(GetLocalBounds());
-    divider_handler_view_->Refresh();
+    divider_handler_view_->Refresh(controller_->is_resizing());
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
@@ -215,7 +216,7 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     divider_view_->SetTransform(transform);
 
-    divider_handler_view_->Refresh();
+    divider_handler_view_->Refresh(controller_->is_resizing());
   }
 
   views::View* divider_view_ = nullptr;
@@ -228,14 +229,13 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
 
 }  // namespace
 
-SplitViewDivider::SplitViewDivider(SplitViewController* controller,
-                                   aura::Window* root_window)
+SplitViewDivider::SplitViewDivider(SplitViewController* controller)
     : controller_(controller) {
   Shell::Get()->activation_client()->AddObserver(this);
-  CreateDividerWidget(root_window);
+  CreateDividerWidget(controller);
 
-  aura::Window* always_on_top_container =
-      Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
+  aura::Window* always_on_top_container = Shell::GetContainer(
+      controller->root_window(), kShellWindowId_AlwaysOnTopContainer);
   split_view_window_targeter_ = std::make_unique<aura::ScopedWindowTargeter>(
       always_on_top_container, std::make_unique<AlwaysOnTopWindowTargeter>(
                                    divider_widget_->GetNativeWindow()));
@@ -424,17 +424,17 @@ void SplitViewDivider::OnTransientChildRemoved(aura::Window* window,
     transient_windows_observer_.Remove(transient);
 }
 
-void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
+void SplitViewDivider::CreateDividerWidget(SplitViewController* controller) {
   DCHECK(!divider_widget_);
   // Native widget owns this widget.
   divider_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.parent =
-      Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
+  params.parent = Shell::GetContainer(controller->root_window(),
+                                      kShellWindowId_AlwaysOnTopContainer);
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
-  DividerView* divider_view = new DividerView(this);
+  DividerView* divider_view = new DividerView(controller, this);
   divider_widget_->set_focus_on_creation(false);
   divider_widget_->Init(std::move(params));
   divider_widget_->SetVisibilityAnimationTransition(

@@ -45,7 +45,7 @@
 #include "content/public/browser/storage_partition.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/service/download_task_scheduler.h"
+#include "chrome/browser/download/android/service/download_task_scheduler.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

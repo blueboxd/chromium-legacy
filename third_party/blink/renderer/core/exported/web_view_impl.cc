@@ -2689,7 +2689,7 @@ IntSize WebViewImpl::ContentsSize() const {
       GetPage()->DeprecatedLocalMainFrame()->ContentLayoutObject();
   if (!layout_view)
     return IntSize();
-  return layout_view->DocumentRect().Size();
+  return PixelSnappedIntRect(layout_view->DocumentRect()).Size();
 }
 
 WebSize WebViewImpl::ContentsPreferredMinimumSize() {

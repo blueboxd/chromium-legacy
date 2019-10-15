@@ -369,20 +369,6 @@ void HungRendererDialogView::WindowClosing() {
   g_instance_ = nullptr;
 }
 
-int HungRendererDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 HungRendererDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_CANCEL) {
-    return l10n_util::GetPluralStringFUTF16(
-        IDS_BROWSER_HANGMONITOR_RENDERER_END,
-        hung_pages_table_model_->RowCount());
-  }
-  return l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
-}
-
 bool HungRendererDialogView::Cancel() {
   auto* render_widget_host = hung_pages_table_model_->GetRenderWidgetHost();
   bool currently_unresponsive =
@@ -451,6 +437,15 @@ void HungRendererDialogView::Init() {
   auto hung_pages_table = std::make_unique<views::TableView>(
       hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true);
   hung_pages_table_ = hung_pages_table.get();
+
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetPluralStringFUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END,
+                                       hung_pages_table_model_->RowCount()));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT));
+  DialogModelChanged();
 
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());

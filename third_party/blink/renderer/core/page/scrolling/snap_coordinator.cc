@@ -149,10 +149,19 @@ void SnapCoordinator::UpdateAllSnapContainerData() {
 }
 
 void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
-  cc::SnapContainerData snap_container_data(
-      GetPhysicalSnapType(snap_container));
 
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
+  const auto* old_snap_container_data = scrollable_area->GetSnapContainerData();
+  auto snap_type = GetPhysicalSnapType(snap_container);
+
+  // Scrollers that don't have any snap areas assigned to them and don't snap
+  // require no further processing. These are the most common types and thus
+  // returning as early as possible ensures efficiency.
+  if (!old_snap_container_data && snap_type.is_none)
+    return;
+
+  cc::SnapContainerData snap_container_data(snap_type);
+
   DCHECK(scrollable_area);
   DCHECK(snap_containers_.Contains(&snap_container));
 
@@ -217,12 +226,11 @@ void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
     }
   }
 
-  const auto* old_snap_container_data = scrollable_area->GetSnapContainerData();
   if (!old_snap_container_data ||
-      *old_snap_container_data != snap_container_data)
+      *old_snap_container_data != snap_container_data) {
     snap_container.SetNeedsPaintPropertyUpdate();
-
-  scrollable_area->SetSnapContainerData(snap_container_data);
+    scrollable_area->SetSnapContainerData(snap_container_data);
+  }
 }
 
 static cc::ScrollSnapAlign GetPhysicalAlignment(

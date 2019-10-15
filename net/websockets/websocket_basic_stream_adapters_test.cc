@@ -68,9 +68,10 @@ class WebSocketClientSocketHandleAdapterTest : public TestWithTaskEnvironment {
             nullptr /* ssl_config_for_proxy */);
     TestCompletionCallback callback;
     int rv = connection->Init(
-        ClientSocketPool::GroupId(host_port_pair_,
-                                  ClientSocketPool::SocketType::kSsl,
-                                  PrivacyMode::PRIVACY_MODE_DISABLED),
+        ClientSocketPool::GroupId(
+            host_port_pair_, ClientSocketPool::SocketType::kSsl,
+            PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+            false /* disable_secure_dns */),
         socks_params, TRAFFIC_ANNOTATION_FOR_TESTS /* proxy_annotation_tag */,
         MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
         callback.callback(), ClientSocketPool::ProxyAuthCallback(),
@@ -285,7 +286,9 @@ class WebSocketSpdyStreamAdapterTest : public TestWithTaskEnvironment {
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED,
              SpdySessionKey::IsProxySession::kFalse,
-             SocketTag()),
+             SocketTag(),
+             NetworkIsolationKey(),
+             false /* disable_secure_dns */),
         session_(SpdySessionDependencies::SpdyCreateSession(&session_deps_)),
         ssl_(SYNCHRONOUS, OK) {}
 

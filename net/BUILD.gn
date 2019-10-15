@@ -3278,6 +3278,7 @@ if (is_linux) {
   }
 
   executable("quic_client_interop_test") {
+    testonly = true
     sources = [
       "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_client_interop_test_bin.cc",
@@ -3285,6 +3286,7 @@ if (is_linux) {
     deps = [
       ":epoll_quic_tools",
       ":net",
+      ":quic_test_tools",
       ":simple_quic_tools",
     ]
   }
@@ -5861,10 +5863,7 @@ test("net_unittests") {
       "quic/platform/impl/quic_socket_utils_test.cc",
       "third_party/quiche/src/epoll_server/simple_epoll_server_test.cc",
       "third_party/quiche/src/quic/core/chlo_extractor_test.cc",
-
-      # EndToEndTestServerPush.ServerPushOverLimitNonBlocking is flaky.
-      # See https://crbug.com/1010206
-      # "third_party/quiche/src/quic/core/http/end_to_end_test.cc",
+      "third_party/quiche/src/quic/core/http/end_to_end_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_session_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_client_stream_test.cc",
       "third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base_test.cc",

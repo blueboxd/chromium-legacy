@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 
 namespace arc {
@@ -102,11 +103,15 @@ class MockAutomationEventRouter
   MockAutomationEventRouter() {}
   ~MockAutomationEventRouter() override = default;
 
+  ui::AXTree* tree() { return &tree_; }
+
   void DispatchAccessibilityEvents(
       const ExtensionMsg_AccessibilityEventBundleParams& events) override {
-    for (auto&& event : events.events) {
+    for (auto&& event : events.events)
       event_count_[event.event_type]++;
-    }
+
+    for (const auto& update : events.updates)
+      tree_.Unserialize(update);
   }
 
   void DispatchAccessibilityLocationChange(
@@ -126,6 +131,7 @@ class MockAutomationEventRouter
       const base::Optional<gfx::Rect>& rect) override {}
 
   std::map<ax::mojom::Event, int> event_count_;
+  ui::AXTree tree_;
 };
 
 class AXTreeSourceArcTest : public testing::Test,
@@ -148,42 +154,42 @@ class AXTreeSourceArcTest : public testing::Test,
 
   AXTreeSourceArcTest()
       : router_(new MockAutomationEventRouter()),
-        tree_(new TestAXTreeSourceArc(this, router_.get())) {}
+        tree_source_(new TestAXTreeSourceArc(this, router_.get())) {}
 
  protected:
   void CallNotifyAccessibilityEvent(AXEventData* event_data) {
-    tree_->NotifyAccessibilityEvent(event_data);
+    tree_source_->NotifyAccessibilityEvent(event_data);
   }
 
   void CallGetChildren(
       AXNodeInfoData* node,
       std::vector<ArcAccessibilityInfoData*>* out_children) const {
-    AccessibilityNodeInfoDataWrapper node_data(tree_.get(), node);
-    tree_->GetChildren(&node_data, out_children);
+    AccessibilityNodeInfoDataWrapper node_data(tree_source_.get(), node);
+    tree_source_->GetChildren(&node_data, out_children);
   }
 
   void CallSerializeNode(AXNodeInfoData* node,
                          std::unique_ptr<ui::AXNodeData>* out_data) const {
     ASSERT_TRUE(out_data);
-    AccessibilityNodeInfoDataWrapper node_data(tree_.get(), node);
+    AccessibilityNodeInfoDataWrapper node_data(tree_source_.get(), node);
     *out_data = std::make_unique<ui::AXNodeData>();
-    tree_->SerializeNode(&node_data, out_data->get());
+    tree_source_->SerializeNode(&node_data, out_data->get());
   }
 
   void CallSerializeWindow(AXWindowInfoData* window,
                            std::unique_ptr<ui::AXNodeData>* out_data) const {
     ASSERT_TRUE(out_data);
-    AccessibilityWindowInfoDataWrapper window_data(tree_.get(), window);
+    AccessibilityWindowInfoDataWrapper window_data(tree_source_.get(), window);
     *out_data = std::make_unique<ui::AXNodeData>();
-    tree_->SerializeNode(&window_data, out_data->get());
+    tree_source_->SerializeNode(&window_data, out_data->get());
   }
 
   ArcAccessibilityInfoData* CallGetFromId(int32_t id) const {
-    return tree_->GetFromId(id);
+    return tree_source_->GetFromId(id);
   }
 
   bool CallGetTreeData(ui::AXTreeData* data) {
-    return tree_->GetTreeData(data);
+    return tree_source_->GetTreeData(data);
   }
 
   MockAutomationEventRouter* GetRouter() const { return router_.get(); }
@@ -192,11 +198,23 @@ class AXTreeSourceArcTest : public testing::Test,
     return router_->event_count_[type];
   }
 
+  ui::AXTree* tree() { return router_->tree(); }
+
+  void ExpectTree(const std::string& expected) {
+    const std::string& tree_text = tree()->ToString();
+    size_t first_new_line = tree_text.find("\n");
+    ASSERT_NE(std::string::npos, first_new_line);
+    ASSERT_GT(tree_text.size(), ++first_new_line);
+
+    // Omit the first line, which contains an unguessable ax tree id.
+    EXPECT_EQ(expected, tree_text.substr(first_new_line));
+  }
+
  private:
   void OnAction(const ui::AXActionData& data) const override {}
 
   const std::unique_ptr<MockAutomationEventRouter> router_;
-  const std::unique_ptr<AXTreeSourceArc> tree_;
+  const std::unique_ptr<AXTreeSourceArc> tree_source_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceArcTest);
 };
@@ -608,7 +626,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindowWithChildren) {
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   EXPECT_EQ("node text", name);
-  EXPECT_EQ(ax::mojom::Role::kGenericContainer, data->role);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, data->role);
   EXPECT_TRUE(data->GetBoolAttribute(ax::mojom::BoolAttribute::kModal));
 
   CallSerializeNode(child_node, &data);
@@ -836,6 +854,71 @@ TEST_F(AXTreeSourceArcTest, EventTypeForViewSelected) {
   SetProperty(button2, AXBooleanProperty::FOCUSED, true);
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kValueChanged));
+}
+
+TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
+  auto event = AXEventData::New();
+  event->source_id = 10;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->emplace_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 10;
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node1 = event->node_data.back().get();
+  node1->id = 1;
+  SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
+
+  // An ignored node.
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node2 = event->node_data.back().get();
+  node2->id = 2;
+
+  // |node2| is ignored by default because
+  // AXBooleanProperty::IMPORTANCE has a default false value.
+
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+  ExpectTree(
+      "id=100 window (0, 0)-(0, 0) child_ids=10\n"
+      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "modal=true child_ids=1\n"
+      "    id=1 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "child_ids=2\n"
+      "      id=2 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled\n");
+
+  EXPECT_EQ(0U, tree()->GetFromId(10)->GetUnignoredChildCount());
+
+  // An unignored node.
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node3 = event->node_data.back().get();
+  node3->id = 3;
+  SetProperty(node3, AXStringProperty::CONTENT_DESCRIPTION, "some text");
+  SetProperty(node2, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
+
+  // |node3| is unignored since it has some text.
+
+  CallNotifyAccessibilityEvent(event.get());
+  ExpectTree(
+      "id=100 window (0, 0)-(0, 0) child_ids=10\n"
+      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "modal=true child_ids=1\n"
+      "    id=1 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "child_ids=2\n"
+      "      id=2 ignored INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "child_ids=3\n"
+      "        id=3 genericContainer INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled name=some text \n");
+  EXPECT_EQ(1U, tree()->GetFromId(10)->GetUnignoredChildCount());
 }
 
 }  // namespace arc

@@ -768,12 +768,6 @@ FrameSchedulerImpl* PageSchedulerImpl::SelectFrameForUkmAttribution() {
   return nullptr;
 }
 
-WebScopedVirtualTimePauser PageSchedulerImpl::CreateWebScopedVirtualTimePauser(
-    const String& name,
-    WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
-  return WebScopedVirtualTimePauser(main_thread_scheduler_, duration, name);
-}
-
 // static
 const char PageSchedulerImpl::kHistogramPageLifecycleStateTransition[] =
     "PageScheduler.PageLifecycleStateTransition";

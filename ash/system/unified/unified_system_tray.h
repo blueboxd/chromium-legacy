@@ -68,6 +68,15 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // Activates the system tray bubble.
   void ActivateBubble();
 
+  // Collapse the message center bubble.
+  void CollapseMessageCenter();
+
+  // Expand the message center bubble.
+  void ExpandMessageCenter();
+
+  // Ensure the quick settings bubble is collapsed.
+  void EnsureQuickSettingsCollapsed();
+
   // Ensure the system tray bubble is expanded.
   void EnsureBubbleExpanded();
 

@@ -934,8 +934,12 @@ void PasswordManager::ProcessAutofillPredictions(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
   }
 
-  for (const FormStructure* form : forms)
-    predictions_[form->form_signature()] = ConvertToFormPredictions(*form);
+  for (const FormStructure* form : forms) {
+    // |driver| might be empty on iOS or in tests.
+    int driver_id = driver ? driver->GetId() : 0;
+    predictions_[form->form_signature()] =
+        ConvertToFormPredictions(driver_id, *form);
+  }
   for (auto& manager : form_managers_)
     manager->ProcessServerPredictions(predictions_);
 

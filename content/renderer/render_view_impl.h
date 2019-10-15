@@ -43,6 +43,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_ax_object.h"
@@ -144,11 +145,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // future].
   RenderWidget* GetWidget();
 
-  // Returns a |page_properties| interface. The lifetime is scoped to
-  // the RenderViewImpl.
-  PageProperties* page_properties() { return &page_properties_; }
-  const PageProperties* page_properties() const { return &page_properties_; }
-
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
@@ -207,6 +203,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // of |enable|. This is used for web tests that need to control the focus
   // synchronously from the renderer.
   void SetFocusAndActivateForTesting(bool enable);
+
+  void NavigateBackForwardSoon(int offset, bool has_user_gesture);
+  void DidCommitProvisionalHistoryLoad();
 
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
@@ -567,6 +566,10 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   const bool renderer_wide_named_frame_lookup_;
 
+  // Dependency injection for RenderWidget and compositing to inject behaviour
+  // and not depend on RenderThreadImpl in tests.
+  CompositorDependencies* const compositor_deps_;
+
   // Settings ------------------------------------------------------------------
 
   WebPreferences webkit_preferences_;
@@ -587,10 +590,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Whether the preferred size may have changed and |UpdatePreferredSize| needs
   // to be called.
   bool needs_preferred_size_update_ = true;
-
-  // Properties about the page that are of interest to subframes. These persist
-  // across main-frame navigations.
-  PageProperties page_properties_;
 
   // Loading state -------------------------------------------------------------
 
@@ -684,6 +683,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
   base::ObserverList<RenderViewObserver>::Unchecked observers_;
+
+  blink::WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

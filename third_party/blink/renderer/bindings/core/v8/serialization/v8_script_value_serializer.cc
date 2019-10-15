@@ -306,7 +306,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(image_bitmap->height());
     Vector<uint8_t> pixels = image_bitmap->CopyBitmapData();
     // Check if we succeeded to copy the BitmapData.
-    if (image_bitmap->width() * image_bitmap->height() != 0 &&
+    if (image_bitmap->width() != 0 && image_bitmap->height() != 0 &&
         pixels.size() == 0) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,

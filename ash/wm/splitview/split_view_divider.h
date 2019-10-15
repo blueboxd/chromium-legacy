@@ -38,7 +38,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
                                     public ::wm::ActivationChangeObserver,
                                     public ::wm::TransientWindowObserver {
  public:
-  SplitViewDivider(SplitViewController* controller, aura::Window* root_window);
+  SplitViewDivider(SplitViewController* controller);
   ~SplitViewDivider() override;
 
   // static version of GetDividerBoundsInScreen(bool is_dragging) function.
@@ -90,7 +90,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   views::Widget* divider_widget() { return divider_widget_; }
 
  private:
-  void CreateDividerWidget(aura::Window* root_window);
+  void CreateDividerWidget(SplitViewController* controller);
 
   SplitViewController* controller_;
 

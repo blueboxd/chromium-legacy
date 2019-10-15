@@ -47,7 +47,7 @@ KeyedService* SigninProfileAttributesUpdaterFactory::BuildServiceInstanceFor(
       IdentityManagerFactory::GetForProfile(profile),
       SigninErrorControllerFactory::GetForProfile(profile),
       &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
-      profile->GetPath());
+      profile->GetPath(), profile->GetPrefs());
 }
 
 bool SigninProfileAttributesUpdaterFactory::ServiceIsCreatedWithBrowserContext()

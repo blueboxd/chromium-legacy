@@ -1817,9 +1817,14 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     DoneWithEntry(true);
   }
 
-  // Invalidate any cached GET with a successful POST.
+  // Invalidate any cached GET with a successful POST. If the network isolation
+  // key isn't populated with the split cache active, there will be nothing to
+  // invalidate in the cache.
   if (!(effective_load_flags_ & LOAD_DISABLE_CACHE) && method_ == "POST" &&
-      NonErrorResponse(new_response_->headers->response_code())) {
+      NonErrorResponse(new_response_->headers->response_code()) &&
+      (!base::FeatureList::IsEnabled(
+           net::features::kSplitCacheByNetworkIsolationKey) ||
+       request_->network_isolation_key.IsFullyPopulated())) {
     cache_->DoomMainEntryForUrl(request_->url, request_->network_isolation_key);
   }
 

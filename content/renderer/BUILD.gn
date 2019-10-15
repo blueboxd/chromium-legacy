@@ -220,8 +220,6 @@ target(link_target_type, "renderer") {
     "navigation_state.h",
     "net_info_helper.cc",
     "net_info_helper.h",
-    "page_properties.cc",
-    "page_properties.h",
     "peripheral_content_heuristic.cc",
     "peripheral_content_heuristic.h",
     "queue_message_swap_promise.cc",

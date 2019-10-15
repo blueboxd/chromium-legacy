@@ -21,14 +21,15 @@ ScopedSurfaceRequestManager* ScopedSurfaceRequestManager::GetInstance() {
 
 base::UnguessableToken
 ScopedSurfaceRequestManager::RegisterScopedSurfaceRequest(
-    const ScopedSurfaceRequestCB& request_cb) {
+    ScopedSurfaceRequestCB request_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!request_cb.is_null());
 
   base::UnguessableToken request_token = base::UnguessableToken::Create();
 
   DCHECK(!request_callbacks_.count(request_token));
-  request_callbacks_.insert(std::make_pair(request_token, request_cb));
+  request_callbacks_.insert(
+      std::make_pair(request_token, std::move(request_cb)));
 
   return request_token;
 }
@@ -49,7 +50,7 @@ ScopedSurfaceRequestManager::GetAndUnregisterInternal(
 
   auto it = request_callbacks_.find(request_token);
   if (it != request_callbacks_.end()) {
-    request = it->second;
+    request = std::move(it->second);
     request_callbacks_.erase(it);
   }
 
@@ -84,7 +85,7 @@ void ScopedSurfaceRequestManager::CompleteRequestOnUiThread(
       GetAndUnregisterInternal(request_token);
 
   if (!request.is_null())
-    request.Run(std::move(surface));
+    std::move(request).Run(std::move(surface));
 }
 
 ScopedSurfaceRequestManager::ScopedSurfaceRequestManager() {}

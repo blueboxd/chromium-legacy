@@ -113,7 +113,7 @@ class SampledData {
   DISALLOW_COPY_AND_ASSIGN(SampledData);
 };
 
-// Collects and summarizes the status of an enterprised-managed ChromeOS device.
+// Collects and summarizes the status of an enterprise-managed ChromeOS device.
 class DeviceStatusCollector : public StatusCollector,
                               public session_manager::SessionManagerObserver,
                               public chromeos::UsageTimeStateNotifier::Observer,
@@ -189,8 +189,7 @@ class DeviceStatusCollector : public StatusCollector,
       const TpmStatusFetcher& tpm_status_fetcher,
       const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
       const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
-      const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
-      bool is_enterprise_reporting);
+      const CrosHealthdDataFetcher& cros_healthd_data_fetcher);
   ~DeviceStatusCollector() override;
 
   // StatusCollector:
@@ -448,9 +447,6 @@ class DeviceStatusCollector : public StatusCollector,
   bool report_power_status_ = false;
   bool report_storage_status_ = false;
   bool report_board_status_ = false;
-
-  // Whether reporting is for enterprise or consumer.
-  bool is_enterprise_reporting_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       activity_times_subscription_;

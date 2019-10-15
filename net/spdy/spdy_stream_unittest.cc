@@ -80,7 +80,8 @@ class SpdyStreamTest : public TestWithTaskEnvironment {
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair::FromURL(url_), ProxyServer::Direct(),
                        PRIVACY_MODE_DISABLED,
-                       SpdySessionKey::IsProxySession::kFalse, SocketTag());
+                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                       NetworkIsolationKey(), false /* disable_secure_dns */);
     return CreateSpdySession(session_.get(), key, NetLogWithSource());
   }
 
@@ -343,9 +344,10 @@ TEST_F(SpdyStreamTest, PushedStream) {
 
   data.RunUntilPaused();
 
-  const SpdySessionKey key(HostPortPair::FromURL(url_), ProxyServer::Direct(),
-                           PRIVACY_MODE_DISABLED,
-                           SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  const SpdySessionKey key(
+      HostPortPair::FromURL(url_), ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+      NetworkIsolationKey(), false /* disable_secure_dns */);
   const GURL pushed_url(kPushUrl);
   HttpRequestInfo push_request;
   push_request.url = pushed_url;

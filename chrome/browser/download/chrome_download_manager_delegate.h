@@ -33,7 +33,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_location_dialog_bridge.h"
+#include "chrome/browser/download/android/download_location_dialog_bridge.h"
 #endif
 
 class DownloadPrefs;

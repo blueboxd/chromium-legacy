@@ -529,7 +529,8 @@ void LocalFrameView::AdjustViewSize() {
     return;
 
   DCHECK_EQ(frame_->View(), this);
-  SetLayoutOverflowSize(layout_view->DocumentRect().Size());
+  SetLayoutOverflowSize(
+      PixelSnappedIntRect(layout_view->DocumentRect()).Size());
 }
 
 void LocalFrameView::AdjustViewSizeAndLayout() {
@@ -632,8 +633,9 @@ std::unique_ptr<TracedValue> LocalFrameView::AnalyzerCounters() {
   value->SetString(
       "frame",
       String::Format("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(frame_.Get())));
-  value->SetInteger("contentsHeightAfterLayout",
-                    GetLayoutView()->DocumentRect().Height());
+  value->SetInteger(
+      "contentsHeightAfterLayout",
+      PixelSnappedIntRect(GetLayoutView()->DocumentRect()).Height());
   value->SetInteger("visibleHeight", Height());
   value->SetInteger("approximateBlankCharacterCount",
                     base::saturated_cast<int>(
@@ -648,7 +650,8 @@ std::unique_ptr<TracedValue> LocalFrameView::AnalyzerCounters() {
 void LocalFrameView::PerformLayout(bool in_subtree_layout) {
   DCHECK(in_subtree_layout || layout_subtree_root_list_.IsEmpty());
 
-  int contents_height_before_layout = GetLayoutView()->DocumentRect().Height();
+  double contents_height_before_layout =
+      GetLayoutView()->DocumentRect().Height();
   TRACE_EVENT_BEGIN1(
       PERFORM_LAYOUT_TRACE_CATEGORIES, "LocalFrameView::performLayout",
       "contentsHeightBeforeLayout", contents_height_before_layout);

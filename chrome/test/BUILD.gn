@@ -1752,6 +1752,7 @@ if (!is_android) {
         "../browser/extensions/startup_helper_browsertest.cc",
         "../browser/extensions/stubs_apitest.cc",
         "../browser/extensions/subscribe_page_action_browsertest.cc",
+        "../browser/extensions/test_resources_browsertest.cc",
         "../browser/extensions/updater/extension_cache_fake.cc",
         "../browser/extensions/updater/extension_cache_fake.h",
         "../browser/extensions/updater/extension_update_client_base_browsertest.cc",
@@ -2664,6 +2665,10 @@ if (!is_android) {
       sources +=
           [ "../browser/net/trial_comparison_cert_verifier_browsertest.cc" ]
     }
+
+    if (enable_webui_tab_strip) {
+      sources += [ "../browser/ui/webui/tab_strip/tab_strip_ui_browsertest.cc" ]
+    }
   }
 }
 
@@ -2835,8 +2840,6 @@ test("unit_tests") {
     "../browser/android/contextualsearch/contextual_search_delegate_unittest.cc",
     "../browser/android/contextualsearch/contextual_search_field_trial_unittest.cc",
     "../browser/android/digital_asset_links/digital_asset_links_handler_unittest.cc",
-    "../browser/android/download/available_offline_content_provider_unittest.cc",
-    "../browser/android/download/download_manager_service_unittest.cc",
     "../browser/android/explore_sites/blacklist_site_task_unittest.cc",
     "../browser/android/explore_sites/clear_activities_task_unittest.cc",
     "../browser/android/explore_sites/clear_catalog_task_unittest.cc",
@@ -2861,6 +2864,8 @@ test("unit_tests") {
     "../browser/android/locale/locale_template_url_loader_unittest.cc",
     "../browser/android/tab_web_contents_delegate_android_unittest.cc",
     "../browser/autofill/automated_tests/cache_replayer_unittest.cc",
+    "../browser/download/android/available_offline_content_provider_unittest.cc",
+    "../browser/download/android/download_manager_service_unittest.cc",
     "../browser/security_events/security_event_recorder_impl_unittest.cc",
     "../browser/signin/e2e_tests/test_accounts_util_unittest.cc",
     "../browser/ui/webui/version_handler_win_unittest.cc",
@@ -3687,6 +3692,7 @@ test("unit_tests") {
       "../browser/importer/profile_writer_unittest.cc",
       "../browser/lifetime/application_lifetime_unittest.cc",
       "../browser/lookalikes/lookalike_url_navigation_throttle_unittest.cc",
+      "../browser/lookalikes/safety_tips/local_heuristics_unittest.cc",
       "../browser/lookalikes/safety_tips/reputation_service_unittest.cc",
 
       # Media remoting is not supported on Android for now.

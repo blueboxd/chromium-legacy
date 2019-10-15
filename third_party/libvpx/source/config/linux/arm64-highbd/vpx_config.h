@@ -10,11 +10,11 @@
 #define VPX_CONFIG_H
 #define RESTRICT    
 #define INLINE      inline
-#define ARCH_ARM 1
-#define ARCH_MIPS 0
-#define ARCH_X86 0
-#define ARCH_X86_64 0
-#define ARCH_PPC 0
+#define VPX_ARCH_ARM 1
+#define VPX_ARCH_MIPS 0
+#define VPX_ARCH_X86 0
+#define VPX_ARCH_X86_64 0
+#define VPX_ARCH_PPC 0
 #define HAVE_NEON 1
 #define HAVE_NEON_ASM 0
 #define HAVE_MIPS32 0

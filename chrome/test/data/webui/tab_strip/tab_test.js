@@ -58,54 +58,97 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('active'));
   });
 
-  test(
-      'toggles a [hide-icon_] attribute when the icon container should be ' +
-          'shown',
-      () => {
-        tabElement.tab = Object.assign({}, tab, {showIcon: true});
-        assertFalse(tabElement.hasAttribute('hide-icon_'));
-        tabElement.tab = Object.assign({}, tab, {showIcon: false});
-        assertTrue(tabElement.hasAttribute('hide-icon_'));
-      });
+  test('hides entire favicon container when showIcon is false', () => {
+    // disable transitions
+    tabElement.style.setProperty('--tabstrip-tab-transition-duration', '0ms');
 
-  test('toggles a [pinned_] attribute when pinned', () => {
-    tabElement.tab = Object.assign({}, tab, {pinned: true});
-    assertTrue(tabElement.hasAttribute('pinned_'));
-    tabElement.tab = Object.assign({}, tab, {pinned: false});
-    assertFalse(tabElement.hasAttribute('pinned_'));
+    const faviconContainerStyle = window.getComputedStyle(
+        tabElement.shadowRoot.querySelector('#faviconContainer'));
+
+    tabElement.tab = Object.assign({}, tab, {showIcon: true});
+    assertEquals(
+        faviconContainerStyle.maxWidth,
+        faviconContainerStyle.getPropertyValue('--favicon-size').trim());
+    assertEquals(faviconContainerStyle.opacity, '1');
+
+    tabElement.tab = Object.assign({}, tab, {showIcon: false});
+    assertEquals(faviconContainerStyle.maxWidth, '0px');
+    assertEquals(faviconContainerStyle.opacity, '0');
   });
 
-  test('toggles a [loading_] attribute when loading', () => {
+  test('updates dimensions based on CSS variables when pinned', () => {
+    const tabElementStyle = window.getComputedStyle(tabElement);
+    const expectedSize = '100px';
+    tabElement.style.setProperty('--tabstrip-pinned-tab-size', expectedSize);
+
+    tabElement.tab = Object.assign({}, tab, {pinned: true});
+    assertEquals(expectedSize, tabElementStyle.width);
+    assertEquals(expectedSize, tabElementStyle.height);
+
+    tabElement.style.setProperty('--tabstrip-tab-width', '100px');
+    tabElement.style.setProperty('--tabstrip-tab-height', '150px');
+    tabElement.tab = Object.assign({}, tab, {pinned: false});
+    assertEquals('100px', tabElementStyle.width);
+    assertEquals('150px', tabElementStyle.height);
+  });
+
+  test('show spinner when loading or waiting', () => {
+    function assertSpinnerVisible(color) {
+      const spinnerStyle = window.getComputedStyle(
+          tabElement.shadowRoot.querySelector('#progressSpinner'));
+      assertEquals('block', spinnerStyle.display);
+      assertEquals(color, spinnerStyle.backgroundColor);
+
+      // Also assert it becomes hidden when network state is NONE
+      tabElement.tab =
+          Object.assign({}, tab, {networkState: TabNetworkState.NONE});
+      assertEquals('none', spinnerStyle.display);
+    }
+
+    tabElement.style.setProperty(
+        '--tabstrip-tab-loading-spinning-color', 'rgb(255, 0, 0)');
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.LOADING});
-    assertTrue(tabElement.hasAttribute('loading_'));
-    tabElement.tab =
-        Object.assign({}, tab, {networkState: TabNetworkState.NONE});
-    assertFalse(tabElement.hasAttribute('loading_'));
-  });
+    assertSpinnerVisible('rgb(255, 0, 0)');
 
-  test('toggles a [waiting_] attribute when waiting', () => {
+    tabElement.style.setProperty(
+        '--tabstrip-tab-waiting-spinning-color', 'rgb(0, 255, 0)');
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.WAITING});
-    assertTrue(tabElement.hasAttribute('waiting_'));
-    tabElement.tab =
-        Object.assign({}, tab, {networkState: TabNetworkState.NONE});
-    assertFalse(tabElement.hasAttribute('waiting_'));
+    assertSpinnerVisible('rgb(0, 255, 0)');
   });
 
-  test('toggles a [blocked_] attribute when blocked', () => {
+  test('shows blocked indicator when tab is blocked', () => {
+    const blockIndicatorStyle = window.getComputedStyle(
+        tabElement.shadowRoot.querySelector('#blocked'));
     tabElement.tab = Object.assign({}, tab, {blocked: true});
-    assertTrue(tabElement.hasAttribute('blocked_'));
+    assertEquals('block', blockIndicatorStyle.display);
+    tabElement.tab = Object.assign({}, tab, {blocked: true, active: true});
+    assertEquals('none', blockIndicatorStyle.display);
     tabElement.tab = Object.assign({}, tab, {blocked: false});
-    assertFalse(tabElement.hasAttribute('blocked_'));
+    assertEquals('none', blockIndicatorStyle.display);
   });
 
-  test('toggles a [crashed] attribute when crashed', () => {
-    tabElement.tab = Object.assign({}, tab, {crashed: true});
-    assertTrue(tabElement.hasAttribute('crashed'));
-    tabElement.tab = Object.assign({}, tab, {crashed: false});
-    assertFalse(tabElement.hasAttribute('crashed'));
-  });
+  test(
+      'hides the favicon and shows the crashed icon when tab is crashed',
+      () => {
+        // disable transitions
+        tabElement.style.setProperty(
+            '--tabstrip-tab-transition-duration', '0ms');
+
+        const faviconStyle = window.getComputedStyle(
+            tabElement.shadowRoot.querySelector('#favicon'));
+        const crashedIconStyle = window.getComputedStyle(
+            tabElement.shadowRoot.querySelector('#crashedIcon'));
+
+        tabElement.tab = Object.assign({}, tab, {crashed: true});
+        assertEquals(faviconStyle.opacity, '0');
+        assertEquals(crashedIconStyle.opacity, '1');
+
+        tabElement.tab = Object.assign({}, tab, {crashed: false});
+        assertEquals(faviconStyle.opacity, '1');
+        assertEquals(crashedIconStyle.opacity, '0');
+      });
 
   test('clicking on the element activates the tab', () => {
     tabElement.click();

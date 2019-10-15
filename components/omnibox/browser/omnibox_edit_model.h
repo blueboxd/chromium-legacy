@@ -342,19 +342,19 @@ class OmniboxEditModel {
   // separate pieces of data into one call so we can update all the UI
   // efficiently:
   //   |text| is either the new temporary text from the user manually selecting
-  //     a different match, or the inline autocomplete text.  We distinguish by
-  //     checking if |destination_for_temporary_text_change| is NULL.
+  //     a different match, or the inline autocomplete text.
+  //   |is_temporary_text| is true if |text| contains the temporary text for
+  //     a match, and is false if |text| contains the inline autocomplete text.
   //   |destination_for_temporary_text_change| is NULL (if temporary text should
   //     not change) or the pre-change destination URL (if temporary text should
   //     change) so we can save it off to restore later.
   //   |keyword| is the keyword to show a hint for if |is_keyword_hint| is true,
   //     or the currently selected keyword if |is_keyword_hint| is false (see
   //     comments on keyword_ and is_keyword_hint_).
-  void OnPopupDataChanged(
-      const base::string16& text,
-      GURL* destination_for_temporary_text_change,
-      const base::string16& keyword,
-      bool is_keyword_hint);
+  void OnPopupDataChanged(const base::string16& text,
+                          bool is_temporary_text,
+                          const base::string16& keyword,
+                          bool is_keyword_hint);
 
   // Called by the OmniboxView after something changes, with details about what
   // state changes occured.  Updates internal state, updates the popup if

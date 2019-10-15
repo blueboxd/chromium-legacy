@@ -284,7 +284,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   // First username is stored in |result->username|.
   const FormFieldData* second_username = nullptr;
 
-  for (const PasswordFieldPrediction& prediction : predictions) {
+  for (const PasswordFieldPrediction& prediction : predictions.fields) {
     ProcessedField* processed_field = nullptr;
 
     CredentialFieldType field_type = DeriveFromServerFieldType(prediction.type);
@@ -385,7 +385,7 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
 
   // For the use of basic heuristics, also mark CVC fields and NOT_PASSWORD
   // fields as such.
-  for (const PasswordFieldPrediction& prediction : predictions) {
+  for (const PasswordFieldPrediction& prediction : predictions.fields) {
     ProcessedField* current_field = FindField(processed_fields, prediction);
     if (!current_field)
       continue;
@@ -902,7 +902,7 @@ bool GetMayUsePrefilledPlaceholder(
     return false;
 
   uint32_t username_id = significant_fields.username->unique_renderer_id;
-  for (const PasswordFieldPrediction& prediction : *form_predictions) {
+  for (const PasswordFieldPrediction& prediction : form_predictions->fields) {
     if (prediction.renderer_id == username_id)
       return prediction.may_use_prefilled_placeholder;
   }

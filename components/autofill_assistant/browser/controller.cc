@@ -1059,23 +1059,13 @@ void Controller::SetContactInfo(
   UpdateCollectUserDataActions();
 }
 
-void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
+void Controller::SetCreditCard(
+    std::unique_ptr<autofill::CreditCard> card,
+    std::unique_ptr<autofill::AutofillProfile> billing_profile) {
   if (!user_data_)
     return;
 
-  autofill::AutofillProfile* billing_profile =
-      !card || card->billing_address_id().empty()
-          ? nullptr
-          : GetPersonalDataManager()->GetProfileByGUID(
-                card->billing_address_id());
-  if (billing_profile) {
-    auto billing_address =
-        std::make_unique<autofill::AutofillProfile>(*billing_profile);
-    user_data_->billing_address = std::move(billing_address);
-  } else {
-    user_data_->billing_address.reset();
-  }
-
+  user_data_->billing_address = std::move(billing_profile);
   user_data_->card = std::move(card);
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get());
@@ -1117,7 +1107,7 @@ void Controller::UpdateCollectUserDataActions() {
   }
 
   bool confirm_button_enabled = CollectUserDataAction::IsUserDataComplete(
-      GetPersonalDataManager(), *user_data_, *collect_user_data_options_);
+      *user_data_, *collect_user_data_options_);
 
   UserAction confirm(collect_user_data_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);

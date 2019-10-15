@@ -44,7 +44,7 @@ class TestAppListClient : public AppListClient {
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void OnAppListTargetVisibilityChanged(bool visible) override {}
+  void OnAppListVisibilityWillChange(bool visible) override {}
   void OnAppListVisibilityChanged(bool visible) override {}
   void OnFolderCreated(int profile_id,
                        std::unique_ptr<AppListItemMetadata> item) override {}

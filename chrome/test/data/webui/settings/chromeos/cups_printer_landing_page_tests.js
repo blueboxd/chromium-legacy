@@ -61,10 +61,7 @@ function clickSaveButton(dialog) {
  * @private
  */
 function getPrinterEntries(printersElement) {
-  // List component contained by |printersElement|.
-  const listElement = printersElement.$$('settings-cups-printers-entry-list');
-
-  const entryList = listElement.$$('#printerEntryList');
+  const entryList = printersElement.$$('#printerEntryList');
   return entryList.querySelectorAll(
       'settings-cups-printers-entry:not([hidden])');
 }
@@ -117,6 +114,74 @@ function verifyPrintersList(entryList, printerList) {
     assertEquals(printerInfo.printerAddress, entryInfo.printerAddress);
     assertEquals(printerInfo.printerId, entryInfo.printerId);
     assertEquals(entryList.length, printerList.length);
+  }
+}
+
+/**
+ * Helper function to verify that printers in |printerListEntries| that contain
+ * |searchTerm| are not in |hiddenEntries|.
+ * @param {!Element} printerEntryListTestElement
+ * @param {string} searchTerm
+ */
+function verifyFilteredPrinters(printerEntryListTestElement, searchTerm) {
+  const printerListEntries =
+      Array.from(printerEntryListTestElement.querySelectorAll(
+          'settings-cups-printers-entry'));
+  const hiddenEntries = Array.from(printerEntryListTestElement.querySelectorAll(
+      'settings-cups-printers-entry[hidden]'));
+
+  for (let i = 0; i < printerListEntries.length; ++i) {
+    const entry = printerListEntries[i];
+    if (hiddenEntries.indexOf(entry) == -1) {
+      assertTrue(
+          entry.printerEntry.printerInfo.printerName.toLowerCase().includes(
+              searchTerm.toLowerCase()));
+    }
+  }
+}
+
+/**
+ * Helper function to verify that the actual visible printers match the
+ * expected printer list.
+ * @param {!Element} printerEntryListTestElement
+ * @param {!Array<!PrinterListEntry>} expectedVisiblePrinters
+ */
+function verifyVisiblePrinters(
+    printerEntryListTestElement, expectedVisiblePrinters) {
+  const actualPrinterList =
+      Array.from(printerEntryListTestElement.querySelectorAll(
+          'settings-cups-printers-entry:not([hidden])'));
+
+  assertEquals(expectedVisiblePrinters.length, actualPrinterList.length);
+  for (let i = 0; i < expectedVisiblePrinters.length; i++) {
+    const expectedPrinter = expectedVisiblePrinters[i].printerInfo;
+    const actualPrinter = actualPrinterList[i].printerEntry.printerInfo;
+
+    assertEquals(actualPrinter.printerName, expectedPrinter.printerName);
+    assertEquals(actualPrinter.printerAddress, expectedPrinter.printerAddress);
+    assertEquals(actualPrinter.printerId, expectedPrinter.printerId);
+  }
+}
+
+/**
+ * Helper function to verify that printers are hidden accordingly if they do not
+ * match the search query. Also checks if the no search results section is shown
+ * when appropriate.
+ * @param {!Element} printersElement
+ * @param {!Array<!PrinterListEntry>} expectedVisiblePrinters
+ * @param {string} searchTerm
+ */
+function verifySearchQueryResults(
+    printersElement, expectedVisiblePrinters, searchTerm) {
+  const printerEntryListTestElement = printersElement.$$('#printerEntryList');
+
+  verifyVisiblePrinters(printerEntryListTestElement, expectedVisiblePrinters);
+  verifyFilteredPrinters(printerEntryListTestElement, searchTerm);
+
+  if (expectedVisiblePrinters.length) {
+    assertTrue(printersElement.$$('#no-search-results').hidden);
+  } else {
+    assertFalse(printersElement.$$('#no-search-results').hidden);
   }
 }
 
@@ -198,6 +263,42 @@ function createCupsPrinterInfo(printerName, printerAddress, printerId) {
   return printer;
 }
 
+/**
+ * Helper function that creates a new PrinterListEntry.
+ * @param {string} printerName
+ * @param {string} printerAddress
+ * @param {string} printerId
+ * @param {string} printerType
+ * @return {!PrinterListEntry}
+ */
+function createPrinterListEntry(
+    printerName, printerAddress, printerId, printerType) {
+  const entry = {
+    printerInfo: {
+      ppdManufacturer: '',
+      ppdModel: '',
+      printerAddress: printerAddress,
+      printerDescription: '',
+      printerId: printerId,
+      printerManufacturer: '',
+      printerModel: '',
+      printerMakeAndModel: '',
+      printerName: printerName,
+      printerPPDPath: '',
+      printerPpdReference: {
+        userSuppliedPpdUrl: '',
+        effectiveMakeAndModel: '',
+        autoconf: false,
+      },
+      printerProtocol: 'ipp',
+      printerQueue: 'moreinfohere',
+      printerStatus: '',
+    },
+    printerType: printerType,
+  };
+  return entry;
+}
+
 suite('CupsSavedPrintersTests', function() {
   let page = null;
   let savedPrintersElement = null;
@@ -262,6 +363,15 @@ suite('CupsSavedPrintersTests', function() {
     page = null;
   });
 
+  /** @param {!CupsPrinterInfo} */
+  function addNewSavedPrinter(printer) {
+    printerList.push(printer);
+    cupsPrintersBrowserProxy.printerList = {printerList: printerList};
+    cr.webUIListenerCallback(
+        'on-printers-changed', cupsPrintersBrowserProxy.printerList);
+    Polymer.dom.flush();
+  }
+
   test('SavedPrintersSuccessfullyPopulates', function() {
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
@@ -275,8 +385,13 @@ suite('CupsSavedPrintersTests', function() {
           const savedPrintersList =
               savedPrintersElement.$$('settings-cups-printers-entry-list');
 
-          const printerListEntries = getPrinterEntries(savedPrintersElement);
+          let printerListEntries = getPrinterEntries(savedPrintersElement);
 
+          verifyPrintersList(printerListEntries, printerList);
+
+          addNewSavedPrinter(createCupsPrinterInfo('test5', '5', 'id5'));
+
+          printerListEntries = getPrinterEntries(savedPrintersElement);
           verifyPrintersList(printerListEntries, printerList);
         });
   });
@@ -429,6 +544,104 @@ suite('CupsSavedPrintersTests', function() {
           verifyPrintersList(savedPrinterEntries, printerList);
         });
   });
+
+  test('SavedPrintersSearchTermFiltersCorrectPrinters', function() {
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          let printerListEntries = getPrinterEntries(savedPrintersElement);
+          verifyPrintersList(printerListEntries, printerList);
+
+          searchTerm = 'google';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+
+          // Filtering "google" should result in one visible entry and two
+          // hidden entries.
+          verifySearchQueryResults(
+              savedPrintersElement,
+              [createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED)],
+              searchTerm);
+
+          // Change the search term and assert that entries are filtered
+          // correctly. Filtering "test" should result in three visible entries
+          // and one hidden entry.
+          searchTerm = 'test';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+
+          verifySearchQueryResults(
+              savedPrintersElement,
+              [
+                createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+                createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED),
+                createPrinterListEntry('test3', '3', 'id3', PrinterType.SAVED)
+              ],
+              searchTerm);
+
+          // Add more printers and assert that they are correctly filtered.
+          addNewSavedPrinter(createCupsPrinterInfo('test4', '5', 'id5'));
+          addNewSavedPrinter(createCupsPrinterInfo('google2', '6', 'id6'));
+
+          verifySearchQueryResults(
+              savedPrintersElement,
+              [
+                createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+                createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED),
+                createPrinterListEntry('test3', '3', 'id3', PrinterType.SAVED),
+                createPrinterListEntry('test4', '5', 'id5', PrinterType.SAVED)
+              ],
+              searchTerm);
+        });
+  });
+
+  test('SavedPrintersNoSearchFound', function() {
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          let printerListEntries = getPrinterEntries(savedPrintersElement);
+          verifyPrintersList(printerListEntries, printerList);
+
+          searchTerm = 'google';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+
+          // Filtering "google" should result in one visible entry and three
+          // hidden entries.
+          verifySearchQueryResults(
+              savedPrintersElement,
+              [createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED)],
+              searchTerm);
+
+          // Change search term to something that has no matches.
+          searchTerm = 'noSearchFound';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+
+          verifySearchQueryResults(savedPrintersElement, [], searchTerm);
+
+          // Change search term back to "google" and verify that the No search
+          // found message is no longer there.
+          searchTerm = 'google';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+
+          verifySearchQueryResults(
+              savedPrintersElement,
+              [createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED)],
+              searchTerm);
+        });
+  });
 });
 
 suite('CupsNearbyPrintersTests', function() {
@@ -437,6 +650,9 @@ suite('CupsNearbyPrintersTests', function() {
 
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
   let cupsPrintersBrowserProxy = null;
+
+  /** @type{!HtmlElement} */
+  let printerEntryListTestElement = null;
 
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_;
@@ -710,6 +926,10 @@ suite('CupsNearbyPrintersTests', function() {
           nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
           assertTrue(!!nearbyPrintersElement);
 
+          printerEntryListTestElement =
+              nearbyPrintersElement.$$('#printerEntryList');
+          assertTrue(!!printerEntryListTestElement);
+
           nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
 
           const expectedPrinterList =
@@ -718,4 +938,143 @@ suite('CupsNearbyPrintersTests', function() {
         });
   });
 
+  test('NearbyPrintersSearchTermFiltersCorrectPrinters', function() {
+    let discoveredPrinterList = [
+      createCupsPrinterInfo('test1', 'printerAddress1', 'printerId1'),
+      createCupsPrinterInfo('test2', 'printerAddress2', 'printerId2'),
+      createCupsPrinterInfo('google', 'printerAddress3', 'printerId3'),
+    ];
+
+    return test_util.flushTasks().then(() => {
+      nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+      assertTrue(!!nearbyPrintersElement);
+
+      printerEntryListTestElement =
+          nearbyPrintersElement.$$('#printerEntryList');
+      assertTrue(!!printerEntryListTestElement);
+
+      // Simuluate finding nearby printers.
+      cr.webUIListenerCallback(
+          'on-nearby-printers-changed', [], discoveredPrinterList);
+
+      Polymer.dom.flush();
+
+      verifyVisiblePrinters(printerEntryListTestElement, [
+        createPrinterListEntry(
+            'google', 'printerAddress3', 'printerId3', PrinterType.DISCOVERD),
+        createPrinterListEntry(
+            'test1', 'printerAddress1', 'printerId1', PrinterType.DISCOVERD),
+        createPrinterListEntry(
+            'test2', 'printerAddress2', 'printerId2', PrinterType.DISCOVERD)
+      ]);
+
+      searchTerm = 'google';
+      nearbyPrintersElement.searchTerm = searchTerm;
+      Polymer.dom.flush();
+
+      // Filtering "google" should result in one visible entry and two hidden
+      // entries.
+      verifySearchQueryResults(
+          nearbyPrintersElement, [createPrinterListEntry(
+                                     'google', 'printerAddress3', 'printerId3',
+                                     PrinterType.DISCOVERD)],
+          searchTerm);
+
+      // Filtering "test" should result in two visible entries and one hidden
+      // entry.
+      searchTerm = 'test';
+      nearbyPrintersElement.searchTerm = searchTerm;
+      Polymer.dom.flush();
+
+      verifySearchQueryResults(
+          nearbyPrintersElement,
+          [
+            createPrinterListEntry(
+                'test1', 'printerAddress1', 'printerId1',
+                PrinterType.DISCOVERD),
+            createPrinterListEntry(
+                'test2', 'printerAddress2', 'printerId2', PrinterType.DISCOVERD)
+          ],
+          searchTerm);
+
+      // Add more printers and assert that they are correctly filtered.
+      discoveredPrinterList.push(
+          createCupsPrinterInfo('test3', 'printerAddress4', 'printerId4'));
+      discoveredPrinterList.push(
+          createCupsPrinterInfo('google2', 'printerAddress5', 'printerId5'));
+
+      // Simuluate finding nearby printers.
+      cr.webUIListenerCallback(
+          'on-nearby-printers-changed', [], discoveredPrinterList);
+
+      Polymer.dom.flush();
+
+      verifySearchQueryResults(
+          nearbyPrintersElement,
+          [
+            createPrinterListEntry(
+                'test1', 'printerAddress1', 'printerId1',
+                PrinterType.DISCOVERD),
+            createPrinterListEntry(
+                'test2', 'printerAddress2', 'printerId2',
+                PrinterType.DISCOVERD),
+            createPrinterListEntry(
+                'test3', 'printerAddress4', 'printerId4', PrinterType.DISCOVERD)
+          ],
+          searchTerm);
+    });
+  });
+
+  test('NearbyPrintersNoSearchFound', function() {
+    const discoveredPrinterList = [
+      createCupsPrinterInfo('test1', 'printerAddress1', 'printerId1'),
+      createCupsPrinterInfo('google', 'printerAddress2', 'printerId2')
+    ];
+
+    return test_util.flushTasks().then(() => {
+      nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+      assertTrue(!!nearbyPrintersElement);
+
+      printerEntryListTestElement =
+          nearbyPrintersElement.$$('#printerEntryList');
+      assertTrue(!!printerEntryListTestElement);
+
+      // Simuluate finding nearby printers.
+      cr.webUIListenerCallback(
+          'on-nearby-printers-changed', [], discoveredPrinterList);
+
+      Polymer.dom.flush();
+
+      searchTerm = 'google';
+      nearbyPrintersElement.searchTerm = searchTerm;
+      Polymer.dom.flush();
+
+      // Set the search term and filter out the printers. Filtering "google"
+      // should result in one visible entry and one hidden entries.
+      verifySearchQueryResults(
+          nearbyPrintersElement, [createPrinterListEntry(
+                                     'google', 'printerAddress2', 'printerId2',
+                                     PrinterType.DISCOVERED)],
+          searchTerm);
+
+      // Change search term to something that has no matches.
+      searchTerm = 'noSearchFound';
+      nearbyPrintersElement.searchTerm = searchTerm;
+      Polymer.dom.flush();
+
+      verifySearchQueryResults(nearbyPrintersElement, [], searchTerm);
+
+      // Change search term back to "google" and verify that the No search found
+      // message is no longer there.
+      searchTerm = 'google';
+      nearbyPrintersElement.searchTerm = searchTerm;
+      Polymer.dom.flush();
+
+      verifySearchQueryResults(
+          nearbyPrintersElement, [createPrinterListEntry(
+                                     'google', 'printerAddress2', 'printerId2',
+                                     PrinterType.DISCOVERD)],
+          searchTerm);
+    });
+  });
 });

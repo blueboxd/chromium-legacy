@@ -82,12 +82,12 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
-#include "chrome/browser/android/download/chrome_duplicate_download_infobar_delegate.h"
-#include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/android/download/download_location_dialog_bridge_impl.h"
-#include "chrome/browser/android/download/download_manager_service.h"
-#include "chrome/browser/android/download/download_open_source.h"
-#include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/download/android/chrome_duplicate_download_infobar_delegate.h"
+#include "chrome/browser/download/android/download_controller.h"
+#include "chrome/browser/download/android/download_location_dialog_bridge_impl.h"
+#include "chrome/browser/download/android/download_manager_service.h"
+#include "chrome/browser/download/android/download_open_source.h"
+#include "chrome/browser/download/android/download_utils.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #else
 #include "chrome/browser/ui/browser.h"

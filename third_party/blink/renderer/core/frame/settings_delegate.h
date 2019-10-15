@@ -71,6 +71,7 @@ class CORE_EXPORT SettingsDelegate {
     kScrollbarLayoutChange,
     kColorSchemeChange,
     kSpatialNavigationChange,
+    kUniversalAccessChange,
   };
 
   virtual void SettingsChanged(ChangeType) = 0;

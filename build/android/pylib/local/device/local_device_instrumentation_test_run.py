@@ -296,9 +296,9 @@ class LocalDeviceInstrumentationTestRun(
         host_device_tuples_substituted = [
             (h, local_device_test_run.SubstituteDeviceRoot(d, device_root))
             for h, d in host_device_tuples]
-        logging.info('instrumentation data deps:')
+        logging.info('Pushing data dependencies.')
         for h, d in host_device_tuples_substituted:
-          logging.info('%r -> %r', h, d)
+          logging.debug('  %r -> %r', h, d)
         dev.PushChangedFiles(host_device_tuples_substituted,
                              delete_device_stale=True)
         if not host_device_tuples_substituted:

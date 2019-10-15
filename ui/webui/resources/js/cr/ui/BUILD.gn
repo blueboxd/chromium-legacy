@@ -9,7 +9,6 @@ group("closure_compile") {
   deps = [
     ":ui_resources",
     ":ui_resources_modules",
-    "page_manager:closure_compile",
   ]
 }
 

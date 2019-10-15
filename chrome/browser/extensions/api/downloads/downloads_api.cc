@@ -148,6 +148,11 @@ const char kDangerUnwanted[] = "unwanted";
 const char kDangerWhitelistedByPolicy[] = "whitelistedByPolicy";
 const char kDangerAsyncScanning[] = "asyncScanning";
 const char kDangerPasswordProtected[] = "passwordProtected";
+const char kDangerTooLarge[] = "blockedTooLarge";
+const char kDangerSensitiveContentWarning[] = "sensitiveContentWarning";
+const char kDangerSensitiveContentBlock[] = "sensitiveContentBlock";
+const char kDangerDeepScannedSafe[] = "deepScannedSafe";
+const char kDangerDeepScannedOpenedDangerous[] = "deepScannedOpenedDangerous";
 const char kDangerUrl[] = "url";
 const char kEndTimeKey[] = "endTime";
 const char kEndedAfterKey[] = "endedAfter";
@@ -181,13 +186,23 @@ const char kFinalUrlRegexKey[] = "finalUrlRegex";
 
 // Note: Any change to the danger type strings, should be accompanied by a
 // corresponding change to downloads.json.
-const char* const kDangerStrings[] = {
-    kDangerSafe,          kDangerFile,
-    kDangerUrl,           kDangerContent,
-    kDangerSafe,          kDangerUncommon,
-    kDangerAccepted,      kDangerHost,
-    kDangerUnwanted,      kDangerWhitelistedByPolicy,
-    kDangerAsyncScanning, kDangerPasswordProtected};
+const char* const kDangerStrings[] = {kDangerSafe,
+                                      kDangerFile,
+                                      kDangerUrl,
+                                      kDangerContent,
+                                      kDangerSafe,
+                                      kDangerUncommon,
+                                      kDangerAccepted,
+                                      kDangerHost,
+                                      kDangerUnwanted,
+                                      kDangerWhitelistedByPolicy,
+                                      kDangerAsyncScanning,
+                                      kDangerPasswordProtected,
+                                      kDangerTooLarge,
+                                      kDangerSensitiveContentWarning,
+                                      kDangerSensitiveContentBlock,
+                                      kDangerDeepScannedSafe,
+                                      kDangerDeepScannedOpenedDangerous};
 static_assert(base::size(kDangerStrings) == download::DOWNLOAD_DANGER_TYPE_MAX,
               "kDangerStrings should have DOWNLOAD_DANGER_TYPE_MAX elements");
 

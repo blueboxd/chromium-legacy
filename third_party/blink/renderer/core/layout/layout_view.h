@@ -193,7 +193,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   PaintLayerCompositor* Compositor();
   bool UsesCompositing() const;
 
-  IntRect DocumentRect() const;
+  PhysicalRect DocumentRect() const;
 
   IntervalArena* GetIntervalArena();
 

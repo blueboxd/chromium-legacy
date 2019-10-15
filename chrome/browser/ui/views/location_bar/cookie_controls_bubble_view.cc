@@ -6,6 +6,8 @@
 
 #include <memory>
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -21,6 +23,8 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
+
+using base::UserMetricsAction;
 
 namespace {
 // Singleton instance of the cookie bubble. The cookie bubble can only be
@@ -40,6 +44,7 @@ void CookieControlsBubbleView::ShowBubble(
   if (g_instance)
     return;
 
+  base::RecordAction(UserMetricsAction("CookieControls.Bubble.Opened"));
   g_instance =
       new CookieControlsBubbleView(anchor_view, web_contents, controller);
   g_instance->SetHighlightedButton(highlighted_button);
@@ -265,10 +270,12 @@ void CookieControlsBubbleView::WindowClosing() {
 
 bool CookieControlsBubbleView::Accept() {
   if (intermediate_step_ == IntermediateStep::kTurnOffButton) {
+    base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOff"));
     controller_->OnCookieBlockingEnabledForSite(false);
   } else {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);
     DCHECK_EQ(intermediate_step_, IntermediateStep::kNone);
+    base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOn"));
     intermediate_step_ = IntermediateStep::kBlockingIsOn;
     controller_->OnCookieBlockingEnabledForSite(true);
   }
@@ -283,6 +290,7 @@ void CookieControlsBubbleView::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(source, not_working_link_);
   DCHECK_EQ(status_, CookieControlsController::Status::kEnabled);
+  base::RecordAction(UserMetricsAction("CookieControls.Bubble.NotWorking"));
   // Don't go through the controller as this is an intermediary state that
   // is only relevant for the bubble UI.
   intermediate_step_ = IntermediateStep::kTurnOffButton;

@@ -405,6 +405,9 @@ void TestAnimationDelegate::NotifyAnimationTakeover(
   takeover_ = true;
 }
 
+void TestAnimationDelegate::NotifyLocalTimeUpdated(
+    base::Optional<base::TimeDelta> local_time) {}
+
 AnimationTimelinesTest::AnimationTimelinesTest()
     : client_(ThreadInstance::MAIN),
       client_impl_(ThreadInstance::IMPL),

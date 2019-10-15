@@ -26,9 +26,11 @@ namespace ash {
 // The header shown above the notification list displaying the number of hidden
 // notifications. There are currently two UI implementations toggled by the
 // NotificationStackedBarRedesign feature flag.
-class StackedNotificationBar : public views::View {
+class StackedNotificationBar : public views::View,
+                               public views::ButtonListener {
  public:
-  explicit StackedNotificationBar(views::ButtonListener* listener);
+  explicit StackedNotificationBar(
+      UnifiedMessageCenterView* message_center_view);
   ~StackedNotificationBar() override;
 
   // Sets the icons and overflow count for hidden notifications as well as the
@@ -40,9 +42,18 @@ class StackedNotificationBar : public views::View {
   // Sets the current animation state.
   void SetAnimationState(UnifiedMessageCenterAnimationState animation_state);
 
+  // Set notification bar state to collapsed.
+  void SetCollapsed();
+
+  // Set notification bar state to expanded.
+  void SetExpanded();
+
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   friend class UnifiedMessageCenterViewTest;
@@ -73,10 +84,11 @@ class StackedNotificationBar : public views::View {
   UnifiedMessageCenterAnimationState animation_state_ =
       UnifiedMessageCenterAnimationState::IDLE;
 
+  UnifiedMessageCenterView* const message_center_view_;
   views::View* notification_icons_container_;
   views::Label* const count_label_;
   views::Button* const clear_all_button_;
-
+  views::Button* const expand_all_button_;
   DISALLOW_COPY_AND_ASSIGN(StackedNotificationBar);
 };
 

@@ -30,8 +30,9 @@ BioEnrollmentHandler::~BioEnrollmentHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void BioEnrollmentHandler::EnrollTemplate(SampleCallback sample_callback,
-                                          StatusCallback completion_callback) {
+void BioEnrollmentHandler::EnrollTemplate(
+    SampleCallback sample_callback,
+    CompletionCallback completion_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kReady);
   state_ = State::kEnrolling;
@@ -221,7 +222,7 @@ void BioEnrollmentHandler::OnHavePINToken(
 
 void BioEnrollmentHandler::OnEnrollResponse(
     SampleCallback sample_callback,
-    StatusCallback completion_callback,
+    CompletionCallback completion_callback,
     base::Optional<std::vector<uint8_t>> current_template_id,
     CtapDeviceResponseCode status,
     base::Optional<BioEnrollmentResponse> response) {
@@ -239,7 +240,7 @@ void BioEnrollmentHandler::OnEnrollResponse(
 
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kReady;
-    std::move(completion_callback).Run(status);
+    std::move(completion_callback).Run(status, {});
     return;
   }
 
@@ -271,16 +272,17 @@ void BioEnrollmentHandler::OnEnrollResponse(
   }
 
   state_ = State::kReady;
-  std::move(completion_callback).Run(CtapDeviceResponseCode::kSuccess);
+  std::move(completion_callback)
+      .Run(CtapDeviceResponseCode::kSuccess, std::move(*current_template_id));
 }
 
-void BioEnrollmentHandler::OnCancel(StatusCallback callback,
+void BioEnrollmentHandler::OnCancel(CompletionCallback callback,
                                     CtapDeviceResponseCode status,
                                     base::Optional<BioEnrollmentResponse>) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, State::kCancellingEnrollment);
   state_ = State::kReady;
-  std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel);
+  std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel, {});
 }
 
 void BioEnrollmentHandler::OnEnumerateTemplates(

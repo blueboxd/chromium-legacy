@@ -381,7 +381,6 @@ typedef void(GL_BINDING_CALL* glDepthRangefProc)(GLclampf zNear, GLclampf zFar);
 typedef void(GL_BINDING_CALL* glDetachShaderProc)(GLuint program,
                                                   GLuint shader);
 typedef void(GL_BINDING_CALL* glDisableProc)(GLenum cap);
-typedef void(GL_BINDING_CALL* glDisableExtensionANGLEProc)(const char* name);
 typedef void(GL_BINDING_CALL* glDisableVertexAttribArrayProc)(GLuint index);
 typedef void(GL_BINDING_CALL* glDiscardFramebufferEXTProc)(
     GLenum target,
@@ -432,6 +431,7 @@ typedef void(GL_BINDING_CALL* glEGLImageTargetTexture2DOESProc)(
 typedef void(GL_BINDING_CALL* glEnableProc)(GLenum cap);
 typedef void(GL_BINDING_CALL* glEnableVertexAttribArrayProc)(GLuint index);
 typedef void(GL_BINDING_CALL* glEndQueryProc)(GLenum target);
+typedef void(GL_BINDING_CALL* glEndTilingQCOMProc)(GLbitfield preserveMask);
 typedef void(GL_BINDING_CALL* glEndTransformFeedbackProc)(void);
 typedef GLsync(GL_BINDING_CALL* glFenceSyncProc)(GLenum condition,
                                                  GLbitfield flags);
@@ -1416,6 +1416,11 @@ typedef void(GL_BINDING_CALL* glSignalSemaphoreEXTProc)(
     GLuint numTextureBarriers,
     const GLuint* textures,
     const GLenum* dstLayouts);
+typedef void(GL_BINDING_CALL* glStartTilingQCOMProc)(GLuint x,
+                                                     GLuint y,
+                                                     GLuint width,
+                                                     GLuint height,
+                                                     GLbitfield preserveMask);
 typedef void(GL_BINDING_CALL* glStencilFillPathInstancedNVProc)(
     GLsizei numPaths,
     GLenum pathNameType,
@@ -1941,6 +1946,7 @@ struct ExtensionsGL {
   bool b_GL_OES_vertex_array_object;
   bool b_GL_OVR_multiview;
   bool b_GL_OVR_multiview2;
+  bool b_GL_QCOM_tiled_rendering;
 };
 
 struct ProcsGL {
@@ -2045,7 +2051,6 @@ struct ProcsGL {
   glDepthRangefProc glDepthRangefFn;
   glDetachShaderProc glDetachShaderFn;
   glDisableProc glDisableFn;
-  glDisableExtensionANGLEProc glDisableExtensionANGLEFn;
   glDisableVertexAttribArrayProc glDisableVertexAttribArrayFn;
   glDiscardFramebufferEXTProc glDiscardFramebufferEXTFn;
   glDispatchComputeProc glDispatchComputeFn;
@@ -2065,6 +2070,7 @@ struct ProcsGL {
   glEnableProc glEnableFn;
   glEnableVertexAttribArrayProc glEnableVertexAttribArrayFn;
   glEndQueryProc glEndQueryFn;
+  glEndTilingQCOMProc glEndTilingQCOMFn;
   glEndTransformFeedbackProc glEndTransformFeedbackFn;
   glFenceSyncProc glFenceSyncFn;
   glFenceSyncAPPLEProc glFenceSyncAPPLEFn;
@@ -2336,6 +2342,7 @@ struct ProcsGL {
   glShaderBinaryProc glShaderBinaryFn;
   glShaderSourceProc glShaderSourceFn;
   glSignalSemaphoreEXTProc glSignalSemaphoreEXTFn;
+  glStartTilingQCOMProc glStartTilingQCOMFn;
   glStencilFillPathInstancedNVProc glStencilFillPathInstancedNVFn;
   glStencilFillPathNVProc glStencilFillPathNVFn;
   glStencilFuncProc glStencilFuncFn;
@@ -2775,7 +2782,6 @@ class GL_EXPORT GLApi {
   virtual void glDepthRangefFn(GLclampf zNear, GLclampf zFar) = 0;
   virtual void glDetachShaderFn(GLuint program, GLuint shader) = 0;
   virtual void glDisableFn(GLenum cap) = 0;
-  virtual void glDisableExtensionANGLEFn(const char* name) = 0;
   virtual void glDisableVertexAttribArrayFn(GLuint index) = 0;
   virtual void glDiscardFramebufferEXTFn(GLenum target,
                                          GLsizei numAttachments,
@@ -2818,6 +2824,7 @@ class GL_EXPORT GLApi {
   virtual void glEnableFn(GLenum cap) = 0;
   virtual void glEnableVertexAttribArrayFn(GLuint index) = 0;
   virtual void glEndQueryFn(GLenum target) = 0;
+  virtual void glEndTilingQCOMFn(GLbitfield preserveMask) = 0;
   virtual void glEndTransformFeedbackFn(void) = 0;
   virtual GLsync glFenceSyncFn(GLenum condition, GLbitfield flags) = 0;
   virtual GLsync glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) = 0;
@@ -3692,6 +3699,11 @@ class GL_EXPORT GLApi {
                                       GLuint numTextureBarriers,
                                       const GLuint* textures,
                                       const GLenum* dstLayouts) = 0;
+  virtual void glStartTilingQCOMFn(GLuint x,
+                                   GLuint y,
+                                   GLuint width,
+                                   GLuint height,
+                                   GLbitfield preserveMask) = 0;
   virtual void glStencilFillPathInstancedNVFn(
       GLsizei numPaths,
       GLenum pathNameType,
@@ -4232,8 +4244,6 @@ class GL_EXPORT GLApi {
 #define glDepthRangef ::gl::g_current_gl_context->glDepthRangefFn
 #define glDetachShader ::gl::g_current_gl_context->glDetachShaderFn
 #define glDisable ::gl::g_current_gl_context->glDisableFn
-#define glDisableExtensionANGLE \
-  ::gl::g_current_gl_context->glDisableExtensionANGLEFn
 #define glDisableVertexAttribArray \
   ::gl::g_current_gl_context->glDisableVertexAttribArrayFn
 #define glDiscardFramebufferEXT \
@@ -4261,6 +4271,7 @@ class GL_EXPORT GLApi {
 #define glEnableVertexAttribArray \
   ::gl::g_current_gl_context->glEnableVertexAttribArrayFn
 #define glEndQuery ::gl::g_current_gl_context->glEndQueryFn
+#define glEndTilingQCOM ::gl::g_current_gl_context->glEndTilingQCOMFn
 #define glEndTransformFeedback \
   ::gl::g_current_gl_context->glEndTransformFeedbackFn
 #define glFenceSync ::gl::g_current_gl_context->glFenceSyncFn
@@ -4646,6 +4657,7 @@ class GL_EXPORT GLApi {
 #define glShaderBinary ::gl::g_current_gl_context->glShaderBinaryFn
 #define glShaderSource ::gl::g_current_gl_context->glShaderSourceFn
 #define glSignalSemaphoreEXT ::gl::g_current_gl_context->glSignalSemaphoreEXTFn
+#define glStartTilingQCOM ::gl::g_current_gl_context->glStartTilingQCOMFn
 #define glStencilFillPathInstancedNV \
   ::gl::g_current_gl_context->glStencilFillPathInstancedNVFn
 #define glStencilFillPathNV ::gl::g_current_gl_context->glStencilFillPathNVFn

@@ -163,4 +163,9 @@ RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
   return nullptr;
 }
 
+bool RenderFrameHostDelegate::IsFrameLowPriority(
+    const RenderFrameHost* render_frame_host) {
+  return false;
+}
+
 }  // namespace content

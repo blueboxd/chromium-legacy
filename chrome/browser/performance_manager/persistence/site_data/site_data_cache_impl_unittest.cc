@@ -187,11 +187,9 @@ TEST_F(SiteDataCacheImplTest, ClearSiteDataForOrigins) {
   data_cache_->ClearSiteDataForOrigins(origins_to_remove);
   ::testing::Mock::VerifyAndClear(mock_db_);
 
-  // The information for the first site should have been cleared. The last
-  // loaded time should be equal to the current time.
-  EXPECT_EQ(
-      data_->last_loaded_time_for_testing().InSeconds(),
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds());
+  // The information for the first site should have been cleared.
+  EXPECT_GE((base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds(),
+            data_->last_loaded_time_for_testing().InSeconds());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesTitleInBackground());
   // The second site shouldn't have been cleared.
@@ -213,14 +211,12 @@ TEST_F(SiteDataCacheImplTest, ClearAllSiteData) {
   ::testing::Mock::VerifyAndClear(mock_db_);
 
   // The information for both sites should have been cleared.
-  EXPECT_EQ(
-      data_->last_loaded_time_for_testing().InSeconds(),
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds());
+  EXPECT_GE((base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds(),
+            data_->last_loaded_time_for_testing().InSeconds());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesTitleInBackground());
-  EXPECT_EQ(
-      data2_->last_loaded_time_for_testing().InSeconds(),
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds());
+  EXPECT_GE((base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InSeconds(),
+            data2_->last_loaded_time_for_testing().InSeconds());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader2_->UpdatesFaviconInBackground());
 

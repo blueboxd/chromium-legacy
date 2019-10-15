@@ -106,6 +106,12 @@
 // Navigates forward to the next page without waiting for the page to load.
 + (void)startGoingForward;
 
+// Returns the title of the current selected tab.
++ (NSString*)currentTabTitle;
+
+// Returns the title of the next tab. Assumes that there is a next tab.
++ (NSString*)nextTabTitle;
+
 #pragma mark - WebState Utilities (EG2)
 
 // Attempts to tap the element with |element_id| within window.frames[0] of the

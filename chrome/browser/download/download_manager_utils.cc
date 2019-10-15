@@ -23,8 +23,8 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/path_utils.h"
-#include "chrome/browser/android/download/download_controller.h"
-#include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/download/android/download_controller.h"
+#include "chrome/browser/download/android/download_manager_service.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #endif
 

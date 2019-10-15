@@ -818,8 +818,7 @@ DeviceStatusCollector::DeviceStatusCollector(
     const TpmStatusFetcher& tpm_status_fetcher,
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
     const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
-    const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
-    bool is_enterprise_reporting)
+    const CrosHealthdDataFetcher& cros_healthd_data_fetcher)
     : StatusCollector(provider,
                       chromeos::CrosSettings::Get(),
                       chromeos::PowerManagerClient::Get(),
@@ -834,8 +833,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       stateful_partition_info_fetcher_(stateful_partition_info_fetcher),
       cros_healthd_data_fetcher_(cros_healthd_data_fetcher),
       runtime_probe_(
-          chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
-      is_enterprise_reporting_(is_enterprise_reporting) {
+          chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()) {
   // protected fields of `StatusCollector`.
   max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
   max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;
@@ -943,17 +941,12 @@ DeviceStatusCollector::DeviceStatusCollector(
   chromeos::tpm_util::GetTpmVersion(base::BindOnce(
       &DeviceStatusCollector::OnTpmVersion, weak_factory_.GetWeakPtr()));
 
-  // If doing enterprise device-level reporting, observe the list of users to be
-  // reported. Consumer reporting is enforced for the signed-in registered user
-  // therefore this preference is not observed.
-  if (is_enterprise_reporting_) {
-    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-    pref_change_registrar_->Init(pref_service_);
-    pref_change_registrar_->Add(
-        prefs::kReportingUsers,
-        base::BindRepeating(&DeviceStatusCollector::ReportingUsersChanged,
-                            weak_factory_.GetWeakPtr()));
-  }
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(pref_service_);
+  pref_change_registrar_->Add(
+      prefs::kReportingUsers,
+      base::BindRepeating(&DeviceStatusCollector::ReportingUsersChanged,
+                          weak_factory_.GetWeakPtr()));
 
   DCHECK(pref_service_->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);
@@ -1003,12 +996,8 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_version_info_)) {
     report_version_info_ = true;
   }
-  if (!is_enterprise_reporting_) {
-    // Only report activity times for consumer if time limit is enabled.
-    report_activity_times_ =
-        base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy);
-  } else if (!cros_settings_->GetBoolean(chromeos::kReportDeviceActivityTimes,
-                                         &report_activity_times_)) {
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceActivityTimes,
+                                  &report_activity_times_)) {
     report_activity_times_ = true;
   }
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBootMode,
@@ -1019,21 +1008,18 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_kiosk_session_status_)) {
     report_kiosk_session_status_ = true;
   }
-  // Network interfaces are reported for enterprise devices only by default.
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceNetworkInterfaces,
                                   &report_network_interfaces_)) {
-    report_network_interfaces_ = is_enterprise_reporting_;
+    report_network_interfaces_ = true;
   }
-  // Device users are reported for enterprise devices only by default.
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceUsers,
                                   &report_users_)) {
-    report_users_ = is_enterprise_reporting_;
+    report_users_ = true;
   }
-  // Hardware status is reported for enterprise devices only by default.
   const bool already_reporting_hardware_status = report_hardware_status_;
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceHardwareStatus,
                                   &report_hardware_status_)) {
-    report_hardware_status_ = is_enterprise_reporting_;
+    report_hardware_status_ = true;
   }
   if (!cros_settings_->GetBoolean(chromeos::kReportDevicePowerStatus,
                                   &report_power_status_)) {
@@ -1076,7 +1062,7 @@ void DeviceStatusCollector::ClearCachedResourceUsage() {
 void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
   // Do nothing if device activity reporting is disabled or if it's a child
   // account. Usage time for child accounts are calculated differently.
-  if (!report_activity_times_ || !is_enterprise_reporting_ ||
+  if (!report_activity_times_ ||
       user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
     return;
   }
@@ -1085,7 +1071,6 @@ void DeviceStatusCollector::ProcessIdleState(ui::IdleState state) {
 
   // For kiosk apps we report total uptime instead of active time.
   if (state == ui::IDLE_STATE_ACTIVE || IsKioskApp()) {
-    CHECK(is_enterprise_reporting_);
     std::string user_email = GetUserForActivityReporting();
     // If it's been too long since the last report, or if the activity is
     // negative (which can happen when the clock changes), assume a single
@@ -1468,8 +1453,7 @@ std::string DeviceStatusCollector::GetUserForActivityReporting() const {
   // Report only affiliated users for enterprise reporting and signed-in user
   // for consumer reporting.
   std::string primary_user_email = primary_user->GetAccountId().GetUserEmail();
-  if (is_enterprise_reporting_ &&
-      !chromeos::ChromeUserManager::Get()->ShouldReportUser(
+  if (!chromeos::ChromeUserManager::Get()->ShouldReportUser(
           primary_user_email)) {
     return std::string();
   }
@@ -1477,10 +1461,9 @@ std::string DeviceStatusCollector::GetUserForActivityReporting() const {
 }
 
 bool DeviceStatusCollector::IncludeEmailsInActivityReports() const {
-  // In enterprise reporting including users' emails depends on
-  // kReportDeviceUsers preference. In consumer reporting only current user is
-  // reported and email address is always included.
-  return !is_enterprise_reporting_ || report_users_;
+  // Including the users' email addresses in enterprise reporting depends on the
+  // |kReportDeviceUsers| preference.
+  return report_users_;
 }
 
 bool DeviceStatusCollector::GetActivityTimes(
@@ -1522,10 +1505,6 @@ bool DeviceStatusCollector::GetActivityTimes(
 bool DeviceStatusCollector::GetVersionInfo(
     em::DeviceStatusReportRequest* status) {
   status->set_os_version(os_version_);
-  if (!is_enterprise_reporting_)
-    return true;
-
-  // Enterprise-only version reporting below.
   status->set_browser_version(version_info::GetVersionNumber());
   status->set_channel(ConvertToProtoChannel(chrome::GetChannel()));
   status->set_firmware_version(firmware_version_);
@@ -1989,13 +1968,6 @@ bool DeviceStatusCollector::GetSessionStatusForUser(
     status->set_user_dm_token(GetDMTokenForProfile(profile));
 
   // Time zone is not reported in enterprise reports.
-  if (!is_enterprise_reporting_) {
-    const std::string current_timezone =
-        base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                              ->GetCurrentTimezoneID());
-    status->set_time_zone(current_timezone);
-    anything_reported_user = true;
-  }
 
   return anything_reported_user;
 }
@@ -2012,11 +1984,10 @@ void DeviceStatusCollector::GetSessionStatus(
   if (report_kiosk_session_status_)
     anything_reported |= GetKioskSessionStatus(status);
 
-  // Only report affiliated users' data in enterprise reporting and registered
-  // user data in consumer reporting. Note that device-local accounts are also
-  // affiliated. Currently we only report for the primary user.
-  if (primary_user &&
-      (!is_enterprise_reporting_ || primary_user->IsAffiliated())) {
+  // Only report affiliated users' data in enterprise reporting. Note that
+  // device-local accounts are also affiliated. Currently we only report for the
+  // primary user.
+  if (primary_user && primary_user->IsAffiliated()) {
     anything_reported |= GetSessionStatusForUser(state, status, primary_user);
   }
 

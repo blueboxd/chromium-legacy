@@ -940,7 +940,7 @@ bool TabStrip::TabHasNetworkError(int tab_index) const {
   return tab_at(tab_index)->data().network_state == TabNetworkState::kError;
 }
 
-TabAlertState TabStrip::GetTabAlertState(int tab_index) const {
+base::Optional<TabAlertState> TabStrip::GetTabAlertState(int tab_index) const {
   return tab_at(tab_index)->data().alert_state;
 }
 
@@ -2023,6 +2023,13 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
 
 void TabStrip::OnThemeChanged() {
   FrameColorsChanged();
+}
+
+views::View* TabStrip::GetDefaultFocusableChild() {
+  int active = controller_->GetActiveIndex();
+  return active != TabStripModel::kNoTab
+             ? tab_at(active)
+             : AccessiblePaneView::GetDefaultFocusableChild();
 }
 
 BrowserRootView::DropIndex TabStrip::GetDropIndex(

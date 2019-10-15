@@ -3115,11 +3115,13 @@ class VEATestSuite : public base::TestSuite {
 
 #if BUILDFLAG(USE_VAAPI)
     base::test::ScopedFeatureList scoped_feature_list;
-    // TODO(crbug.com/811912): remove once enabled by default.
-    scoped_feature_list.InitAndEnableFeature(media::kVaapiVP9Encoder);
-    // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
-    // default.
-    scoped_feature_list.InitAndEnableFeature(media::kVaapiH264AMDEncoder);
+    std::vector<base::Feature> enabled_features = {
+        // TODO(crbug.com/811912): remove once enabled by default.
+        media::kVaapiVP9Encoder,
+        // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
+        // default.
+        media::kVaapiH264AMDEncoder};
+    scoped_feature_list.InitWithFeatures(enabled_features, {});
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();

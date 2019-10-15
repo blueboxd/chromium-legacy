@@ -62,6 +62,11 @@ NGLayoutResult::NGLayoutResult(
     rare_data->has_tallest_unbreakable_block_size = true;
 #endif
   }
+  if (builder->unconstrained_intrinsic_block_size_ != kIndefiniteSize &&
+      builder->unconstrained_intrinsic_block_size_ != intrinsic_block_size_) {
+    EnsureRareData()->unconstrained_intrinsic_block_size_ =
+        builder->unconstrained_intrinsic_block_size_;
+  }
   if (builder->custom_layout_data_) {
     EnsureRareData()->custom_layout_data =
         std::move(builder->custom_layout_data_);

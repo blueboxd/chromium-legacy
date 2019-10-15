@@ -114,6 +114,14 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Returns the AccountInfo of the newly-available account.
   AccountInfo MakePrimaryAccountAvailable(const std::string& email);
 
+  // Combination of MakeAccountAvailable() and SetCookieAccounts() for a single
+  // account. It makes an account available for the given email address, and
+  // GAIA ID, setting the cookies and the refresh token that correspond uniquely
+  // to that email address. Blocks until the account is available. Returns the
+  // AccountInfo of the newly-available account.
+  AccountInfo MakeAccountAvailableWithCookies(const std::string& email,
+                                              const std::string& gaia_id);
+
   // Clears the primary account if present, with |policy| used to determine
   // whether to keep or remove all accounts. On non-ChromeOS, results in the
   // firing of the IdentityManager and PrimaryAccountManager callbacks for

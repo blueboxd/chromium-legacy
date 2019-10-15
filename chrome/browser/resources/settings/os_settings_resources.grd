@@ -769,12 +769,6 @@
       <structure name="IDR_OS_SETTINGS_CUPS_PRINTERS_ENTRY_JS"
                  file="printing_page/cups_printers_entry.js"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CUPS_PRINTERS_ENTRY_LIST_HTML"
-                 file="printing_page/cups_printers_entry_list.html"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_CUPS_PRINTERS_ENTRY_LIST_JS"
-                 file="printing_page/cups_printers_entry_list.js"
-                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CUPS_PRINTERS_ENTRY_LIST_BEHAVIOR_HTML"
                  file="printing_page/cups_printers_entry_list_behavior.html"
                  type="chrome_html" />

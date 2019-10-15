@@ -14,6 +14,7 @@ class NGBlockNode;
 class NGBlockBreakToken;
 class NGConstraintSpace;
 struct LogicalSize;
+struct NGMarginStrut;
 
 class CORE_EXPORT NGColumnLayoutAlgorithm
     : public NGLayoutAlgorithm<NGBlockNode,
@@ -34,14 +35,16 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   // Lay out one row of columns. The layout result returned is for the last
   // column that was laid out. The rows themselves don't create fragments.
   scoped_refptr<const NGLayoutResult> LayoutRow(
-      const NGBlockBreakToken* next_column_token);
+      const NGBlockBreakToken* next_column_token,
+      NGMarginStrut*);
 
   // Lay out a column spanner. Will return a break token if we break before or
   // inside the spanner. If no break token is returned, it means that we can
   // proceed to the next row of columns.
   scoped_refptr<const NGBlockBreakToken> LayoutSpanner(
       NGBlockNode spanner_node,
-      const NGBlockBreakToken* break_token);
+      const NGBlockBreakToken* break_token,
+      NGMarginStrut*);
 
   LayoutUnit CalculateBalancedColumnBlockSize(
       const LogicalSize& column_size,

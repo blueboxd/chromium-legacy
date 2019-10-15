@@ -501,7 +501,8 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
   int rv = connection->Init(
       ClientSocketPool::GroupId(key.host_port_pair(),
                                 ClientSocketPool::SocketType::kSsl,
-                                key.privacy_mode()),
+                                key.privacy_mode(), NetworkIsolationKey(),
+                                false /* disable_secure_dns */),
       socket_params, base::nullopt /* proxy_annotation_tag */, MEDIUM,
       key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(), ClientSocketPool::ProxyAuthCallback(),

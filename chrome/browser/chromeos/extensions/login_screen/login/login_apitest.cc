@@ -11,11 +11,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_apitest_base.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/notification_observer.h"
@@ -69,11 +70,10 @@ class LoginApitest : public LoginScreenApitestBase {
   DISALLOW_COPY_AND_ASSIGN(LoginApitest);
 };
 
-// Flaky. https://crbug.com/1014239
-IN_PROC_BROWSER_TEST_F(LoginApitest, DISABLED_LaunchManagedGuestSession) {
+IN_PROC_BROWSER_TEST_F(LoginApitest, LaunchManagedGuestSession) {
   SetUpDeviceLocalAccountPolicy();
   SetUpExtensionAndRunTest(kLaunchManagedGuestSession);
-  EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+  SessionStateWaiter(session_manager::SessionState::ACTIVE).Wait();
 
   // Check that the active user is of type |USER_TYPE_PUBLIC_ACCOUNT|.
   // We cannot use the email as an identifier as a different email is generated

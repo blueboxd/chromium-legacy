@@ -55,6 +55,7 @@ interface InternalSettings : InternalSettingsGenerated {
     [RaisesException] void setImageAnimationPolicy(DOMString policy);
     [RaisesException] void setPresentationReceiver(boolean enabled);
     [RaisesException] void setAutoplayPolicy(DOMString policy);
+    [RaisesException] void setUniversalAccessFromFileURLs(boolean enabled);
 
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start.  These setters should

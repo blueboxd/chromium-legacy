@@ -33,7 +33,6 @@ class CollectUserDataAction : public Action,
   void OnPersonalDataChanged() override;
 
   static bool IsUserDataComplete(
-      autofill::PersonalDataManager* personal_data_manager,
       const UserData& user_data,
       const CollectUserDataOptions& collect_user_data_options);
 

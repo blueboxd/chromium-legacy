@@ -22,6 +22,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body_android.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -343,7 +344,7 @@ bool WebContentsDelegateAndroid::ShouldBlockMediaRequest(const GURL& url) {
 void WebContentsDelegateAndroid::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin,
-    const blink::FullScreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())

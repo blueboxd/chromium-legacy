@@ -230,7 +230,8 @@ TEST_F(HttpWithDnsOverHttpsTest, EndToEnd) {
 
   ClientSocketPool::GroupId group_id(
       HostPortPair(request_info.url.host(), request_info.url.IntPort()),
-      ClientSocketPool::SocketType::kHttp, PrivacyMode::PRIVACY_MODE_DISABLED);
+      ClientSocketPool::SocketType::kHttp, PrivacyMode::PRIVACY_MODE_DISABLED,
+      NetworkIsolationKey(), false /* disable_secure_dns */);
   EXPECT_EQ(network_session
                 ->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                 ProxyServer::Direct())

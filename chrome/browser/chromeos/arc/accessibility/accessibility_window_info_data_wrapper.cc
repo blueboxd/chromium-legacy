@@ -93,6 +93,8 @@ void AccessibilityWindowInfoDataWrapper::Serialize(
   if (!tree_source_->GetRoot())
     return;
 
+  PopulateAXRole(out_data);
+
   // String properties.
   std::string title;
   if (GetProperty(mojom::AccessibilityWindowStringProperty::TITLE, &title)) {

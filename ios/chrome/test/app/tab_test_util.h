@@ -30,6 +30,12 @@ web::WebState* GetCurrentWebState();
 // Gets next WebState and returns nullptr if less than two tabs are open.
 web::WebState* GetNextWebState();
 
+// Gets the current webState title. Assumes that the current webState exists.
+NSString* GetCurrentTabTitle();
+
+// Gets the next webState title. Assumes that the next webState exists.
+NSString* GetNextTabTitle();
+
 // Gets the WebState with the given index in the current mode (incognito or
 // normal). Returns nullptr if less than |index| + 1 tabs are open.
 web::WebState* GetWebStateAtIndexInCurrentMode(int index);

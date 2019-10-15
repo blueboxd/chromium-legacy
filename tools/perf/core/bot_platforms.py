@@ -186,7 +186,9 @@ ANDROID_NEXUS_5 = PerfPlatform(
     16, 'android')
 ANDROID_NEXUS_5X = PerfPlatform(
     'android-nexus5x-perf', 'Android MMB29Q',
-    _ANDROID_NEXUS_5X_BENCHMARK_NAMES, 16, 'android')
+    _ANDROID_NEXUS_5X_BENCHMARK_NAMES,
+    10, # Reduced from 16 per crbug.com/1014120.
+    'android')
 ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
     'Android Nexus5X WebView Perf', 'Android AOSP MOB30K',
     _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_NAMES, 16, 'android')

@@ -432,6 +432,10 @@ void URLRequest::SetLoadFlags(int flags) {
     SetPriority(MAXIMUM_PRIORITY);
 }
 
+void URLRequest::SetDisableSecureDns(bool disable_secure_dns) {
+  disable_secure_dns_ = disable_secure_dns;
+}
+
 // static
 void URLRequest::SetDefaultCookiePolicyToBlock() {
   CHECK(!g_url_requests_started);
@@ -566,6 +570,7 @@ URLRequest::URLRequest(const GURL& url,
       first_party_url_policy_(NEVER_CHANGE_FIRST_PARTY_URL),
       load_flags_(LOAD_NORMAL),
       privacy_mode_(PRIVACY_MODE_ENABLED),
+      disable_secure_dns_(false),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_upload_depth_(0),
 #endif

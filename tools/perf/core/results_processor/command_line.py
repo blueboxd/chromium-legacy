@@ -132,14 +132,15 @@ def ProcessOptions(options, standalone=False):
     chosen_formats = ['html']
 
   # The following is a temporary hack to switch on native handling of output
-  # formats for two benchmarks. This is an experiment to make sure
+  # formats for several benchmarks. This is an experiment to make sure
   # that Results Processor is ready to handle output on all platforms.
   # TODO(crbug.com/981349): Remove this after experiment is finished (i.e.
   # all formats are considered HANDLED_NATIVELY).
   force_native = False
   if 'positional_args' in options.__dict__ and options.positional_args:
     benchmark_name = options.positional_args[0]
-    if benchmark_name in ['power.desktop', 'startup.mobile']:
+    if benchmark_name in ['power.desktop', 'startup.mobile', 'jetstream2',
+                          'octane', 'blink_perf.css']:
       force_native = True
       logging.warning('Force native handling of output formats for %s',
                       benchmark_name)

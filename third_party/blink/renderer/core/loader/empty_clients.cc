@@ -30,6 +30,7 @@
 #include <memory>
 #include "cc/layers/layer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -198,6 +199,11 @@ void EmptyLocalFrameClient::SetTextCheckerClientForTesting(
 
 Frame* EmptyLocalFrameClient::FindFrame(const AtomicString& name) const {
   return nullptr;
+}
+
+AssociatedInterfaceProvider*
+EmptyLocalFrameClient::GetRemoteNavigationAssociatedInterfaces() {
+  return AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider();
 }
 
 std::unique_ptr<WebServiceWorkerProvider>

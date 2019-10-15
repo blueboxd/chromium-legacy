@@ -108,6 +108,7 @@ class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderProcessHostCreationObserver;
 class RenderProcessHostFactory;
+class RenderProcessHostTest;
 class RenderWidgetHelper;
 class SiteInstance;
 class SiteInstanceImpl;
@@ -282,6 +283,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
+
+  // Update the total and low priority count as indicated by the previous and
+  // new priorities of the underlying document.  The nullopt option is used when
+  // there is no previous/subsequent navigation (when the frame is added/removed
+  // from the RenderProcessHostImpl).
+  void UpdateFrameWithPriority(
+      base::Optional<FramePriority> previous_priority,
+      base::Optional<FramePriority> new_priority) override;
 
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.
@@ -465,6 +474,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   get_render_process_host_factory_for_testing();
 
   // Tracks which sites frames are hosted in which RenderProcessHosts.
+  // TODO(ericrobinson): These don't need to be static.
   static void AddFrameWithSite(BrowserContext* browser_context,
                                RenderProcessHost* render_process_host,
                                const GURL& site_url);
@@ -581,6 +591,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class ChildProcessLauncherBrowserTest_ChildSpawnFail_Test;
   friend class VisitRelayingRenderProcessHost;
   friend class StoragePartitonInterceptor;
+  friend class RenderProcessHostTest;
 
   // Use CreateRenderProcessHost() instead of calling this constructor
   // directly.
@@ -588,8 +599,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
                         StoragePartitionImpl* storage_partition_impl,
                         bool is_for_guests_only);
 
-  // Initializes a new IPC::ChannelProxy in |channel_|, which will be connected
-  // to the next child process launched for this host, if any.
+  // True if this ChildProcessLauncher has a non-zero number of frames attached
+  // to it and they're all low priority.  Note: This will always return false
+  // unless features::kUseFramePriorityInProcessHost is enabled.
+  bool HasOnlyLowPriorityFrames();
+
+  // Initializes a new IPC::ChannelProxy in |channel_|, which will be
+  // connected to the next child process launched for this host, if any.
   void InitializeChannelProxy();
 
   // Resets |channel_|, removing it from the attachment broker if necessary.
@@ -836,6 +852,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // processes of same visibility. It indicates process has frames that
   // intersect with the viewport.
   bool intersects_viewport_ = false;
+  // Tracks the number of low priority frames currently hosted in this process.
+  // Always 0 unless features::kUseFramePriorityInProcessHost is enabled.
+  unsigned int low_priority_frames_ = 0;
+  // Tracks the total number of frames currently hosted in this process.
+  // Always 0 unless features::kUseFramePriorityInProcessHost is enabled.
+  unsigned int total_frames_ = 0;
 #if defined(OS_ANDROID)
   // Highest importance of all clients that contribute priority.
   ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;

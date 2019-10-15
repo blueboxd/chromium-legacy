@@ -167,7 +167,9 @@ class SpdySessionTest : public PlatformTest, public WithTaskEnvironment {
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED,
              SpdySessionKey::IsProxySession::kFalse,
-             SocketTag()),
+             SocketTag(),
+             NetworkIsolationKey(),
+             false /* disable_secure_dns */),
         ssl_(SYNCHRONOUS, OK) {}
 
   ~SpdySessionTest() override {
@@ -3529,9 +3531,10 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(
-                ClientSocketPool::GroupId(host_port2,
-                                          ClientSocketPool::SocketType::kHttp,
-                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::GroupId(
+                    host_port2, ClientSocketPool::SocketType::kHttp,
+                    PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                    false /* disable_secure_dns */),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
                 base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -3575,7 +3578,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Create an idle SPDY session.
   SpdySessionKey key1(HostPortPair("www.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                      NetworkIsolationKey(), false /* disable_secure_dns */);
   base::WeakPtr<SpdySession> session1 =
       ::net::CreateSpdySession(http_session_.get(), key1, NetLogWithSource());
   EXPECT_FALSE(pool->IsStalled());
@@ -3583,7 +3587,8 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Set up an alias for the idle SPDY session, increasing its ref count to 2.
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                      NetworkIsolationKey(), false /* disable_secure_dns */);
   std::unique_ptr<SpdySessionPool::SpdySessionRequest> request;
   bool is_blocking_request_for_session = false;
   SpdySessionRequestDelegate request_delegate;
@@ -3616,9 +3621,10 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   auto connection3 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection3->Init(
-                ClientSocketPool::GroupId(host_port3,
-                                          ClientSocketPool::SocketType::kHttp,
-                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::GroupId(
+                    host_port3, ClientSocketPool::SocketType::kHttp,
+                    PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                    false /* disable_secure_dns */),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
                 base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -3696,9 +3702,10 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(ERR_IO_PENDING,
             connection2->Init(
-                ClientSocketPool::GroupId(host_port2,
-                                          ClientSocketPool::SocketType::kHttp,
-                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::GroupId(
+                    host_port2, ClientSocketPool::SocketType::kHttp,
+                    PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                    false /* disable_secure_dns */),
                 ClientSocketPool::SocketParams::CreateForHttpForTesting(),
                 base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
                 SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
@@ -3730,10 +3737,12 @@ TEST_F(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   HostPortPair host_port_pair("www.example.org", 443);
   SpdySessionKey key_privacy_enabled(
       host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_ENABLED,
-      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+      NetworkIsolationKey(), false /* disable_secure_dns */);
   SpdySessionKey key_privacy_disabled(
       host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+      NetworkIsolationKey(), false /* disable_secure_dns */);
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
@@ -6494,7 +6503,7 @@ TEST_F(AltSvcFrameTest,
   key_ = SpdySessionKey(HostPortPair::FromURL(test_url_), ProxyServer::Direct(),
                         PRIVACY_MODE_DISABLED,
                         SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                        kNetworkIsolationKey1);
+                        kNetworkIsolationKey1, false /* disable_secure_dns */);
 
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);

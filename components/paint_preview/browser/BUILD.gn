@@ -9,11 +9,19 @@ if (!is_ios) {
     sources = [
       "file_manager.cc",
       "file_manager.h",
+      "hit_tester.cc",
+      "hit_tester.h",
     ]
 
     deps = [
       "//base",
+      "//cc/base",
+      "//ui/gfx/geometry",
       "//url",
+    ]
+
+    public_deps = [
+      "//components/paint_preview/common/proto",
     ]
   }
 
@@ -22,6 +30,7 @@ if (!is_ios) {
 
     sources = [
       "file_manager_unittest.cc",
+      "hit_tester_unittest.cc",
     ]
 
     deps = [
@@ -30,6 +39,7 @@ if (!is_ios) {
       "//base/test:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//ui/gfx/geometry",
       "//url",
     ]
   }

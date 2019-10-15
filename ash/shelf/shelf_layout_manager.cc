@@ -114,6 +114,24 @@ bool IsHotseatEnabled() {
   return IsTabletModeEnabled() && chromeos::switches::ShouldShowShelfHotseat();
 }
 
+// Returns HomeLauncherGestureHandler mode that should be used to handle shelf
+// gestures.
+ash::HomeLauncherGestureHandler::Mode
+GetHomeLauncherGestureHandlerModeForDrag() {
+  if (features::IsHomerviewGestureEnabled() && IsHotseatEnabled() &&
+      Shell::Get()->home_screen_controller() &&
+      Shell::Get()->home_screen_controller()->IsHomeScreenVisible() &&
+      Shell::Get()->overview_controller() &&
+      !Shell::Get()->overview_controller()->InOverviewSession()) {
+    return HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview;
+  }
+
+  if (features::IsDragFromShelfToHomeOrOverviewEnabled())
+    return HomeLauncherGestureHandler::Mode::kDragWindowToHomeOrOverview;
+
+  return HomeLauncherGestureHandler::Mode::kSlideUpToShow;
+}
+
 // Returns the |WorkspaceWindowState| of the currently active desk on the root
 // window of |shelf_window|.
 WorkspaceWindowState GetShelfWorkspaceWindowState(aura::Window* shelf_window) {
@@ -777,8 +795,8 @@ void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
   overview_suspend_visibility_update_.reset();
 }
 
-void ShelfLayoutManager::OnAppListTargetVisibilityChanged(bool shown,
-                                                          int64_t display_id) {
+void ShelfLayoutManager::OnAppListVisibilityWillChange(bool shown,
+                                                       int64_t display_id) {
   if (!IsTabletModeEnabled())
     return;
 
@@ -1831,6 +1849,13 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
   if (!IsVisible())
     return false;
 
+  const bool up_on_shown_hotseat =
+      state_.hotseat_state == HotseatState::kShown && scroll_y < 0;
+  if (IsHotseatEnabled() && up_on_shown_hotseat) {
+    return GetHomeLauncherGestureHandlerModeForDrag() ==
+           HomeLauncherGestureHandler::Mode::kSwipeHomeToOverview;
+  }
+
   const bool up_on_extended_hotseat =
       state_.hotseat_state == HotseatState::kExtended && scroll_y < 0;
   if (IsHotseatEnabled() && !up_on_extended_hotseat)
@@ -1860,12 +1885,9 @@ bool ShelfLayoutManager::StartGestureDrag(
     drag_status_ = kDragAppListInProgress;
     HomeLauncherGestureHandler* home_launcher_handler =
         Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
-    HomeLauncherGestureHandler::Mode slide_mode =
-        features::IsDragFromShelfToHomeOrOverviewEnabled()
-            ? HomeLauncherGestureHandler::Mode::kDragWindowToHomeOrOverview
-            : HomeLauncherGestureHandler::Mode::kSlideUpToShow;
-    if (home_launcher_handler->OnPressEvent(slide_mode,
-                                            gesture_in_screen.location())) {
+    if (home_launcher_handler->OnPressEvent(
+            GetHomeLauncherGestureHandlerModeForDrag(),
+            gesture_in_screen.location())) {
       return true;
     }
     drag_status_ = previous_drag_status;

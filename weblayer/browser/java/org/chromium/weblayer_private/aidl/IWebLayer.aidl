@@ -16,7 +16,8 @@ interface IWebLayer {
   // when load completes. |webLayerContext| is a Context that refers to the
   // WebLayer implementation.
   void initAndLoadAsync(in IObjectWrapper webLayerContext,
-                        in IObjectWrapper loadedCallback) = 1;
+                        in IObjectWrapper loadedCallback,
+                        int resourcesPackageId) = 1;
 
   // Blocks until loading has completed.
   void loadSync() = 2;

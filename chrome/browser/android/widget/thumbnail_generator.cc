@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/android/chrome_jni_headers/ThumbnailGenerator_jni.h"
-#include "chrome/browser/android/download/download_media_parser.h"
+#include "chrome/browser/download/android/download_media_parser.h"
 #include "chrome/browser/download/thumbnail_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/android/java_bitmap.h"

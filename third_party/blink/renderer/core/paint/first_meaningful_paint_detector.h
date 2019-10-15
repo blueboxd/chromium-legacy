@@ -34,8 +34,8 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   virtual ~FirstMeaningfulPaintDetector() = default;
 
   void MarkNextPaintAsMeaningfulIfNeeded(const LayoutObjectCounter&,
-                                         int contents_height_before_layout,
-                                         int contents_height_after_layout,
+                                         double contents_height_before_layout,
+                                         double contents_height_after_layout,
                                          int visible_height);
   void NotifyInputEvent();
   void NotifyPaint();

@@ -1232,8 +1232,8 @@ void AppListControllerImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
-                                                           int64_t display_id) {
+void AppListControllerImpl::OnVisibilityChanged(bool visible,
+                                                int64_t display_id) {
   const bool is_home_launcher = IsTabletMode();
 
   bool real_visibility = visible;
@@ -1272,9 +1272,8 @@ void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
   }
 }
 
-void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(
-    bool visible,
-    int64_t display_id) {
+void AppListControllerImpl::OnVisibilityWillChange(bool visible,
+                                                   int64_t display_id) {
   const bool is_home_launcher = IsTabletMode();
 
   bool real_target_visibility = visible;
@@ -1295,11 +1294,11 @@ void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(
     last_target_visible_display_id_ = display_id;
 
     if (client_)
-      client_->OnAppListTargetVisibilityChanged(real_target_visibility);
+      client_->OnAppListVisibilityWillChange(real_target_visibility);
 
     for (auto& observer : observers_) {
-      observer.OnAppListTargetVisibilityChanged(real_target_visibility,
-                                                display_id);
+      observer.OnAppListVisibilityWillChange(real_target_visibility,
+                                             display_id);
     }
   }
 }
@@ -1501,7 +1500,7 @@ void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
 }
 
 bool AppListControllerImpl::IsHomeScreenVisible() {
-  return IsVisible();
+  return IsTabletMode() && IsVisible();
 }
 
 }  // namespace ash

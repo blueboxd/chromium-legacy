@@ -10,10 +10,10 @@
 #include <shellapi.h>
 #include <shobjidl.h>
 #include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/com_init_util.h"
-#include "base/win/iunknown_impl.h"
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_stats.h"
 
@@ -143,29 +143,17 @@ DownloadInterruptReason HRESULTToDownloadInterruptReason(HRESULT hr) {
   return DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
 }
 
-class FileOperationProgressSink : public base::win::IUnknownImpl,
-                                  public IFileOperationProgressSink {
+class FileOperationProgressSink
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IFileOperationProgressSink> {
  public:
   FileOperationProgressSink() = default;
 
   HRESULT GetOperationResult() { return result_; }
 
-  // base::win::IUnknownImpl:
-  STDMETHODIMP QueryInterface(REFIID riid, PVOID* ppv) override {
-    if (riid == IID_IFileOperationProgressSink) {
-      *ppv = static_cast<IFileOperationProgressSink*>(this);
-      IUnknownImpl::AddRef();
-      return S_OK;
-    }
-
-    return IUnknownImpl::QueryInterface(riid, ppv);
-  }
-
-  ULONG STDMETHODCALLTYPE AddRef() override { return IUnknownImpl::AddRef(); }
-  ULONG STDMETHODCALLTYPE Release() override { return IUnknownImpl::Release(); }
-
   // IFileOperationProgressSink:
-  HRESULT STDMETHODCALLTYPE FinishOperations(HRESULT hr) override {
+  IFACEMETHODIMP FinishOperations(HRESULT hr) override {
     // If a failure has already been captured, don't bother overriding it. That
     // way, the original failure can be propagated; in the event that the new
     // HRESULT is also a success, overwriting will not harm anything and
@@ -175,27 +163,27 @@ class FileOperationProgressSink : public base::win::IUnknownImpl,
     return S_OK;
   }
 
-  HRESULT STDMETHODCALLTYPE PauseTimer() override { return S_OK; }
-  HRESULT STDMETHODCALLTYPE PostCopyItem(DWORD,
-                                         IShellItem*,
-                                         IShellItem*,
-                                         PCWSTR,
-                                         HRESULT,
-                                         IShellItem*) override {
+  IFACEMETHODIMP PauseTimer() override { return S_OK; }
+  IFACEMETHODIMP PostCopyItem(DWORD,
+                              IShellItem*,
+                              IShellItem*,
+                              PCWSTR,
+                              HRESULT,
+                              IShellItem*) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE PostDeleteItem(DWORD,
-                                           IShellItem*,
-                                           HRESULT,
-                                           IShellItem*) override {
+  IFACEMETHODIMP PostDeleteItem(DWORD,
+                                IShellItem*,
+                                HRESULT,
+                                IShellItem*) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE PostMoveItem(DWORD,
-                                         IShellItem*,
-                                         IShellItem*,
-                                         PCWSTR,
-                                         HRESULT hr,
-                                         IShellItem*) override {
+  IFACEMETHODIMP PostMoveItem(DWORD,
+                              IShellItem*,
+                              IShellItem*,
+                              PCWSTR,
+                              HRESULT hr,
+                              IShellItem*) override {
     // Like in FinishOperations, overwriting with a different success value
     // does not have a negative impact, but replacing an existing failure will
     // cause issues.
@@ -203,44 +191,38 @@ class FileOperationProgressSink : public base::win::IUnknownImpl,
       result_ = hr;
     return S_OK;
   }
-  HRESULT STDMETHODCALLTYPE PostNewItem(DWORD,
-                                        IShellItem*,
-                                        PCWSTR,
-                                        PCWSTR,
-                                        DWORD,
-                                        HRESULT,
-                                        IShellItem*) override {
+  IFACEMETHODIMP PostNewItem(DWORD,
+                             IShellItem*,
+                             PCWSTR,
+                             PCWSTR,
+                             DWORD,
+                             HRESULT,
+                             IShellItem*) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE
+  IFACEMETHODIMP
   PostRenameItem(DWORD, IShellItem*, PCWSTR, HRESULT, IShellItem*) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE PreCopyItem(DWORD,
-                                        IShellItem*,
-                                        IShellItem*,
-                                        PCWSTR) override {
+  IFACEMETHODIMP PreCopyItem(DWORD, IShellItem*, IShellItem*, PCWSTR) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE PreDeleteItem(DWORD, IShellItem*) override {
+  IFACEMETHODIMP PreDeleteItem(DWORD, IShellItem*) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE PreMoveItem(DWORD,
-                                        IShellItem*,
-                                        IShellItem*,
-                                        PCWSTR) override {
+  IFACEMETHODIMP PreMoveItem(DWORD, IShellItem*, IShellItem*, PCWSTR) override {
     return S_OK;
   }
-  HRESULT STDMETHODCALLTYPE PreNewItem(DWORD, IShellItem*, PCWSTR) override {
+  IFACEMETHODIMP PreNewItem(DWORD, IShellItem*, PCWSTR) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE PreRenameItem(DWORD, IShellItem*, PCWSTR) override {
+  IFACEMETHODIMP PreRenameItem(DWORD, IShellItem*, PCWSTR) override {
     return E_NOTIMPL;
   }
-  HRESULT STDMETHODCALLTYPE ResetTimer() override { return S_OK; }
-  HRESULT STDMETHODCALLTYPE ResumeTimer() override { return S_OK; }
-  HRESULT STDMETHODCALLTYPE StartOperations() override { return S_OK; }
-  HRESULT STDMETHODCALLTYPE UpdateProgress(UINT, UINT) override { return S_OK; }
+  IFACEMETHODIMP ResetTimer() override { return S_OK; }
+  IFACEMETHODIMP ResumeTimer() override { return S_OK; }
+  IFACEMETHODIMP StartOperations() override { return S_OK; }
+  IFACEMETHODIMP UpdateProgress(UINT, UINT) override { return S_OK; }
 
  protected:
   ~FileOperationProgressSink() override = default;
@@ -290,11 +272,12 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
         FOF_NO_UI | FOF_NOCOPYSECURITYATTRIBS | FOFX_EARLYFAILURE);
   }
 
-  scoped_refptr<FileOperationProgressSink> sink(new FileOperationProgressSink);
+  Microsoft::WRL::ComPtr<FileOperationProgressSink> sink =
+      Microsoft::WRL::Make<FileOperationProgressSink>();
   if (SUCCEEDED(hr)) {
     hr = file_operation->MoveItem(original_path.Get(), destination_folder.Get(),
                                   new_path.BaseName().value().c_str(),
-                                  sink.get());
+                                  sink.Get());
   }
 
   if (SUCCEEDED(hr))

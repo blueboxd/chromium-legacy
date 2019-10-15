@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -119,7 +120,7 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns information about tabs at given indices.
   bool IsTabCrashed(int tab_index) const;
   bool TabHasNetworkError(int tab_index) const;
-  TabAlertState GetTabAlertState(int tab_index) const;
+  base::Optional<TabAlertState> GetTabAlertState(int tab_index) const;
 
   // Updates the loading animations displayed by tabs in the tabstrip to the
   // next frame. The |elapsed_time| parameter is shared between tabs and used to
@@ -305,6 +306,7 @@ class TabStrip : public views::AccessiblePaneView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   void OnThemeChanged() override;
+  views::View* GetDefaultFocusableChild() override;
 
   // BrowserRootView::DropTarget:
   BrowserRootView::DropIndex GetDropIndex(

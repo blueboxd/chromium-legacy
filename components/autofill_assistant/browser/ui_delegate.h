@@ -108,8 +108,11 @@ class UiDelegate {
   virtual void SetContactInfo(
       std::unique_ptr<autofill::AutofillProfile> profile) = 0;
 
-  // Sets credit card, in response to the current collect user data options.
-  virtual void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) = 0;
+  // Sets credit card and billing profile, in response to the current collect
+  // user data options.
+  virtual void SetCreditCard(
+      std::unique_ptr<autofill::CreditCard> card,
+      std::unique_ptr<autofill::AutofillProfile> billing_profile) = 0;
 
   // Sets the state of the third party terms & conditions, pertaining to the
   // current collect user data options.

@@ -42,7 +42,7 @@ CardNameFixFlowViewBridge::CardNameFixFlowViewBridge(
 
 CardNameFixFlowViewBridge::~CardNameFixFlowViewBridge() {
   if (controller_)
-    controller_->OnDismissed();
+    controller_->OnConfirmNameDialogClosed();
 }
 
 void CardNameFixFlowViewBridge::Show() {
@@ -68,6 +68,11 @@ CardNameFixFlowController* CardNameFixFlowViewBridge::GetController() {
 void CardNameFixFlowViewBridge::OnConfirmedName(
     const base::string16& confirmed_name) {
   controller_->OnNameAccepted(confirmed_name);
+  PerformClose();
+}
+
+void CardNameFixFlowViewBridge::OnDismissed() {
+  controller_->OnDismissed();
   PerformClose();
 }
 
@@ -220,7 +225,7 @@ void CardNameFixFlowViewBridge::DeleteSelf() {
 #pragma mark - Private
 
 - (void)onCancel:(id)sender {
-  _bridge->PerformClose();
+  _bridge->OnDismissed();
 }
 
 - (void)onConfirm:(id)sender {

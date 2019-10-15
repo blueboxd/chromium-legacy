@@ -54,6 +54,7 @@ mojom("mojom_platform") {
     "frame/find_in_page.mojom",
     "frame/frame.mojom",
     "frame/frame_host_test_interface.mojom",
+    "frame/fullscreen.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
     "geolocation/geolocation_service.mojom",

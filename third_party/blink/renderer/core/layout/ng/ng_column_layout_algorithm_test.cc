@@ -4374,6 +4374,77 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerInBlockWithSiblings) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, SpannerMargins) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+      }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="column-span:all; margin:10px; width:33px; height:10px;"></div>
+        <div class="content"></div>
+        <div style="column-span:all; margin:10px auto; width:44px; height:10px;"></div>
+        <div style="column-span:all; margin:20px; width:55px;"></div>
+        <div style="column-span:all; margin:10px; width:66px; height:10px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x130
+    offset:0,0 size:320x130
+      offset:10,10 size:33x10
+      offset:0,30 size:100x20
+        offset:0,0 size:100x20
+      offset:138,60 size:44x10
+      offset:20,90 size:55x0
+      offset:10,110 size:66x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, SpannerMarginsRtl) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        direction: rtl;
+      }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="column-span:all; margin:10px; width:33px; height:10px;"></div>
+        <div class="content"></div>
+        <div style="column-span:all; margin:10px auto; width:44px; height:10px;"></div>
+        <div style="column-span:all; margin:20px; width:55px;"></div>
+        <div style="column-span:all; margin:10px; width:66px; height:10px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x130
+    offset:0,0 size:320x130
+      offset:277,10 size:33x10
+      offset:220,30 size:100x20
+        offset:0,0 size:100x20
+      offset:138,60 size:44x10
+      offset:245,90 size:55x0
+      offset:244,110 size:66x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, InvalidSpanners) {
   // Spanners cannot exist inside new formatting context roots. They will just
   // be treated as normal column content then.

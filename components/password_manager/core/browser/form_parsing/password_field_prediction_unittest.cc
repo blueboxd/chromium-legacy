@@ -40,7 +40,7 @@ namespace {
 const PasswordFieldPrediction* FindFormPrediction(
     const FormPredictions& predictions,
     uint32_t renderer_id) {
-  for (const PasswordFieldPrediction& prediction : predictions) {
+  for (const PasswordFieldPrediction& prediction : predictions.fields) {
     if (prediction.renderer_id == renderer_id)
       return &prediction;
   }
@@ -89,10 +89,14 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       ++expected_predictions;
   }
 
-  FormPredictions actual_predictions = ConvertToFormPredictions(form_structure);
+  constexpr int driver_id = 1000;
+  FormPredictions actual_predictions =
+      ConvertToFormPredictions(driver_id, form_structure);
 
   // Check whether actual predictions are equal to expected ones.
-  EXPECT_EQ(expected_predictions, actual_predictions.size());
+  EXPECT_EQ(driver_id, actual_predictions.driver_id);
+  EXPECT_EQ(form_structure.form_signature(), actual_predictions.form_signature);
+  EXPECT_EQ(expected_predictions, actual_predictions.fields.size());
 
   for (size_t i = 0; i < base::size(test_fields); ++i) {
     uint32_t unique_renderer_id = form_data.fields[i].unique_renderer_id;
@@ -158,7 +162,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions_SynthesiseConfirmation) {
     }
 
     FormPredictions actual_predictions =
-        ConvertToFormPredictions(form_structure);
+        ConvertToFormPredictions(0 /*driver_id*/, form_structure);
 
     for (size_t i = 0; i < form_data.fields.size(); ++i) {
       SCOPED_TRACE(testing::Message()

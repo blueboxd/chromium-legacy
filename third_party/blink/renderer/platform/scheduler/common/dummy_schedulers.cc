@@ -121,11 +121,6 @@ class DummyPageScheduler : public PageScheduler {
     return false;
   }
   bool RequestBeginMainFrameNotExpected(bool) override { return false; }
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const String& name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration) override {
-    return WebScopedVirtualTimePauser();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyPageScheduler);

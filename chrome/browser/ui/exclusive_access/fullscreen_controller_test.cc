@@ -26,6 +26,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -194,7 +195,8 @@ void FullscreenControllerTest::SetPrivilegedFullscreen(bool is_privileged) {
 void FullscreenControllerTest::EnterActiveTabFullscreen() {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   FullscreenNotificationObserver fullscreen_observer(browser());
-  browser()->EnterFullscreenModeForTab(tab, GURL(), blink::FullScreenOptions());
+  browser()->EnterFullscreenModeForTab(tab, GURL(),
+                                       blink::mojom::FullscreenOptions());
   fullscreen_observer.Wait();
 }
 

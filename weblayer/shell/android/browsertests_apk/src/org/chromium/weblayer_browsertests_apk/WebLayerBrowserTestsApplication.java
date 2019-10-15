@@ -26,4 +26,7 @@ public class WebLayerBrowserTestsApplication extends NativeBrowserTestApplicatio
             ResourceBundle.setNoAvailableLocalePaks();
         }
     }
+
+    @Override
+    protected void initApplicationContext() {}
 }

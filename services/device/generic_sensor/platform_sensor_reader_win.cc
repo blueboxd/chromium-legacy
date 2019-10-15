@@ -7,6 +7,7 @@
 #include <Sensors.h>
 #include <comdef.h>
 #include <objbase.h>
+#include <wrl/implements.h>
 
 #include <iomanip>
 
@@ -16,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/win/iunknown_impl.h"
 #include "base/win/scoped_propvariant.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
@@ -249,37 +249,37 @@ std::unique_ptr<ReaderInitParams> CreateReaderInitParamsForSensor(
 
 }  // namespace
 
-// Class that implements ISensorEvents and IUnknown interfaces and used
-// by ISensor interface to dispatch state and data change events.
-class EventListener : public ISensorEvents, public base::win::IUnknownImpl {
+// Class that implements ISensorEvents used by the ISensor interface to dispatch
+// state and data change events.
+class EventListener
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          ISensorEvents> {
  public:
   explicit EventListener(PlatformSensorReaderWin32* platform_sensor_reader)
       : platform_sensor_reader_(platform_sensor_reader) {
     DCHECK(platform_sensor_reader_);
   }
 
-  // IUnknown interface
-  ULONG STDMETHODCALLTYPE AddRef() override { return IUnknownImpl::AddRef(); }
-  ULONG STDMETHODCALLTYPE Release() override { return IUnknownImpl::Release(); }
-
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
-    if (riid == __uuidof(ISensorEvents)) {
-      *ppv = static_cast<ISensorEvents*>(this);
-      AddRef();
-      return S_OK;
-    }
-    return IUnknownImpl::QueryInterface(riid, ppv);
+  static Microsoft::WRL::ComPtr<ISensorEvents> CreateInstance(
+      PlatformSensorReaderWin32* platform_sensor_reader) {
+    Microsoft::WRL::ComPtr<EventListener> event_listener =
+        Microsoft::WRL::Make<EventListener>(platform_sensor_reader);
+    Microsoft::WRL::ComPtr<ISensorEvents> sensor_events;
+    HRESULT hr = event_listener.As(&sensor_events);
+    DCHECK(SUCCEEDED(hr));
+    return sensor_events;
   }
 
  protected:
   ~EventListener() override = default;
 
   // ISensorEvents interface
-  STDMETHODIMP OnEvent(ISensor*, REFGUID, IPortableDeviceValues*) override {
+  IFACEMETHODIMP OnEvent(ISensor*, REFGUID, IPortableDeviceValues*) override {
     return S_OK;
   }
 
-  STDMETHODIMP OnLeave(REFSENSOR_ID sensor_id) override {
+  IFACEMETHODIMP OnLeave(REFSENSOR_ID sensor_id) override {
     // If event listener is active and sensor is disconnected, notify client
     // about the error.
     platform_sensor_reader_->SensorError();
@@ -287,7 +287,7 @@ class EventListener : public ISensorEvents, public base::win::IUnknownImpl {
     return S_OK;
   }
 
-  STDMETHODIMP OnStateChanged(ISensor* sensor, SensorState state) override {
+  IFACEMETHODIMP OnStateChanged(ISensor* sensor, SensorState state) override {
     if (sensor == nullptr)
       return E_INVALIDARG;
 
@@ -299,8 +299,8 @@ class EventListener : public ISensorEvents, public base::win::IUnknownImpl {
     return S_OK;
   }
 
-  STDMETHODIMP OnDataUpdated(ISensor* sensor,
-                             ISensorDataReport* report) override {
+  IFACEMETHODIMP OnDataUpdated(ISensor* sensor,
+                               ISensorDataReport* report) override {
     if (sensor == nullptr || report == nullptr)
       return E_INVALIDARG;
 
@@ -410,7 +410,7 @@ PlatformSensorReaderWin32::PlatformSensorReaderWin32(
       sensor_active_(false),
       client_(nullptr),
       sensor_(sensor),
-      event_listener_(new EventListener(this)) {
+      event_listener_(EventListener::CreateInstance(this)) {
   DCHECK(init_params_);
   DCHECK(init_params_->reader_func);
   DCHECK(sensor_);
@@ -454,7 +454,7 @@ bool PlatformSensorReaderWin32::StartSensor(
 
 void PlatformSensorReaderWin32::ListenSensorEvent() {
   // Set event listener.
-  HRESULT hr = sensor_->SetEventSink(event_listener_.get());
+  HRESULT hr = sensor_->SetEventSink(event_listener_.Get());
   base::UmaHistogramSparse("Sensors.Windows.ISensor.Start.Result", hr);
   if (FAILED(hr)) {
     SensorError();

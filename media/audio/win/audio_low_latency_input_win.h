@@ -292,6 +292,10 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   UINT64 total_lost_frames_ = 0;
   UINT64 largest_glitch_frames_ = 0;
 
+  // Enabled if the volume level of the audio session is set to zero when the
+  // session starts. Utilized in UMA histogram.
+  bool audio_session_starts_at_zero_volume_ = false;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioInputStream);

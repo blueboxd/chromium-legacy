@@ -6,12 +6,11 @@ package org.chromium.chrome.browser.touch_to_fill;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -27,7 +26,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 class TouchToFillView implements BottomSheet.BottomSheetContent {
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
-    private final ListView mCredentialListView;
+    private final RecyclerView mSheetItemListView;
     private final LinearLayout mContentView;
     private TouchToFillProperties.ViewEventListener mEventListener;
 
@@ -51,8 +50,10 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
         mBottomSheetController = bottomSheetController;
         mContentView = (LinearLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.touch_to_fill_sheet, null);
-        mCredentialListView = mContentView.findViewById(R.id.credential_list);
-        mCredentialListView.setOnItemClickListener(this::onItemSelected);
+        mSheetItemListView = mContentView.findViewById(R.id.sheet_item_list);
+        mSheetItemListView.setLayoutManager(new LinearLayoutManager(
+                mSheetItemListView.getContext(), LinearLayoutManager.VERTICAL, false));
+        mSheetItemListView.setItemAnimator(null);
     }
 
     /**
@@ -96,18 +97,12 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
         sheetSubtitleText.setText(subtitleText);
     }
 
-    void setCredentialListAdapter(ListAdapter adapter) {
-        mCredentialListView.setAdapter(adapter);
+    void setSheetItemListAdapter(RecyclerView.Adapter adapter) {
+        mSheetItemListView.setAdapter(adapter);
     }
 
     Context getContext() {
         return mContext;
-    }
-
-    private void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        assert adapterView == mCredentialListView : "Use this click handler only for credentials!";
-        assert mEventListener != null;
-        mEventListener.onSelectItemAt(i);
     }
 
     @Override

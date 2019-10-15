@@ -69,6 +69,8 @@ class NewTabButton : public views::ImageButton,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
+  class HighlightPathGenerator;
+
 // views::ImageButton:
 #if defined(OS_WIN)
   void OnMouseReleased(const ui::MouseEvent& event) override;

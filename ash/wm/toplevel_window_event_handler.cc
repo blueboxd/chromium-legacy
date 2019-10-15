@@ -863,20 +863,23 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
   if (!CanStartGoingBack())
     return false;
 
+  gfx::Point screen_location = event->location();
+  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
+                             &screen_location);
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       going_back_started_ = StartedAwayFromLeftArea(event);
       if (!going_back_started_)
         break;
       back_gesture_affordance_ =
-          std::make_unique<BackGestureAffordance>(event->location());
+          std::make_unique<BackGestureAffordance>(screen_location);
       return true;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      back_gesture_affordance_->SetDragProgress(event->location().x());
+      back_gesture_affordance_->SetDragProgress(screen_location.x());
       return true;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START: {
@@ -884,11 +887,11 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
         break;
       DCHECK(back_gesture_affordance_);
       if ((event->type() == ui::ET_GESTURE_SCROLL_END &&
-           event->location().x() >= kSwipingDistanceForGoingBack) ||
+           screen_location.x() >= kSwipingDistanceForGoingBack) ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
         aura::Window* root_window =
-            window_util::GetRootWindowAt(event->location());
+            window_util::GetRootWindowAt(screen_location);
         ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
                                      ui::EF_NONE);
         ignore_result(

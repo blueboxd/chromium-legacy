@@ -247,6 +247,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   EG_TEST_HELPER_ASSERT_TRUE(matchedElement, errorDescription);
 }
 
+- (NSString*)currentTabTitle {
+  return [ChromeEarlGreyAppInterface currentTabTitle];
+}
+
+- (NSString*)nextTabTitle {
+  return [ChromeEarlGreyAppInterface nextTabTitle];
+}
+
 #pragma mark - Cookie Utilities (EG2)
 
 - (NSDictionary*)cookies {

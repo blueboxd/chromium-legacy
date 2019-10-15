@@ -155,6 +155,15 @@ bool ExtensionBrowserTest::ShouldEnableInstallVerification() {
   return false;
 }
 
+base::FilePath ExtensionBrowserTest::GetTestResourcesParentDir() {
+  // Don't use |test_data_dir_| here (even though it points to
+  // chrome/test/data/extensions by default) because subclasses have the ability
+  // to alter it by overriding the SetUpCommandLine() method.
+  base::FilePath test_root_path;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
+  return test_root_path.AppendASCII("extensions");
+}
+
 // static
 const Extension* ExtensionBrowserTest::GetExtensionByPath(
     const ExtensionSet& extensions,
@@ -212,14 +221,8 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
         test_extension_cache_.get());
   }
 
-  // We don't use test_data_dir_ here because we want this to point to
-  // chrome/test/data/extensions, and subclasses have a nasty habit of altering
-  // the data dir in SetUpCommandLine().
-  base::FilePath test_root_path;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
-  test_root_path = test_root_path.AppendASCII("extensions");
-  test_protocol_handler_ =
-      base::Bind(&ExtensionProtocolTestResourcesHandler, test_root_path);
+  test_protocol_handler_ = base::Bind(&ExtensionProtocolTestResourcesHandler,
+                                      GetTestResourcesParentDir());
   SetExtensionProtocolTestHandler(&test_protocol_handler_);
 }
 

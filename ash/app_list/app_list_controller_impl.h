@@ -216,8 +216,8 @@ class ASH_EXPORT AppListControllerImpl
   void RemoveObserver(AppListControllerObserver* obsever);
 
   // Notifies observers of AppList visibility changes.
-  void NotifyAppListVisibilityChanged(bool visible, int64_t display_id);
-  void NotifyAppListTargetVisibilityChanged(bool visible, int64_t display_id);
+  void OnVisibilityChanged(bool visible, int64_t display_id);
+  void OnVisibilityWillChange(bool visible, int64_t display_id);
 
   // ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;

@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/theme_provider.h"
 
 class BrowserNonClientFrameViewBrowserTest

@@ -60,7 +60,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
     return container_->GetRootWindow();
   }
   void OnVisibilityChanged(bool visible, int64_t display_id) override {}
-  void OnTargetVisibilityChanged(bool visible, int64_t display_id) override {}
+  void OnVisibilityWillChange(bool visible, int64_t display_id) override {}
   bool IsVisible() override { return false; }
 
  private:

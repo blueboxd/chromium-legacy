@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/no_destructor.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 
 namespace blink {
@@ -93,6 +94,13 @@ void AssociatedInterfaceProvider::OverrideBinderForTesting(
   if (!local_provider_)
     local_provider_ = std::make_unique<LocalProvider>(task_runner_);
   local_provider_->SetBinderForName(name, binder);
+}
+
+AssociatedInterfaceProvider*
+AssociatedInterfaceProvider::GetEmptyAssociatedInterfaceProvider() {
+  static base::NoDestructor<AssociatedInterfaceProvider>
+      associated_interface_provider(base::ThreadTaskRunnerHandle::Get());
+  return associated_interface_provider.get();
 }
 
 }  // namespace blink

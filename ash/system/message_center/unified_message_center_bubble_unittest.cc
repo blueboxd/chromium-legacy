@@ -12,6 +12,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
@@ -68,6 +69,10 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
            tray_bounds.y();
   }
 
+  bool IsMessageCenterCollapsed() {
+    return GetMessageCenterBubble()->message_center_view()->collapsed();
+  }
+
   // Helper functions for focus cycle testing.
   void DoTab() {
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -78,6 +83,17 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
     ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
     generator.PressKey(ui::KeyboardCode::VKEY_TAB,
                        ui::EventFlags::EF_SHIFT_DOWN);
+  }
+
+  void ToggleExpanded() {
+    GetSystemTrayBubble()->controller_for_test()->ToggleExpanded();
+  }
+
+  void WaitForAnimation() {
+    while (GetSystemTrayBubble()
+               ->controller_for_test()
+               ->animation_->is_animating())
+      base::RunLoop().RunUntilIdle();
   }
 
   views::View* GetFirstMessageCenterFocusable() {
@@ -247,6 +263,47 @@ TEST_F(UnifiedMessageCenterBubbleTest, ReverseFocusCycle) {
   EXPECT_FALSE(message_center_widget->IsActive());
   EXPECT_EQ(quick_settings_widget->GetFocusManager()->GetFocusedView(),
             GetLastQuickSettingsFocusable());
+}
+
+TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
+  EnableMessageCenterRefactor();
+
+  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  int small_display_height =
+      GetSystemTrayBubble()->unified_view()->GetCollapsedSystemTrayHeight() +
+      (2 * kMessageCenterCollapseThreshold);
+  int large_display_height =
+      GetSystemTrayBubble()->unified_view()->GetExpandedSystemTrayHeight() +
+      (4 * kMessageCenterCollapseThreshold);
+  GetPrimaryUnifiedSystemTray()->CloseBubble();
+
+  // Message center should open in collapsed state when screen height is
+  // limited.
+  UpdateDisplay(base::StringPrintf("1000x%d", small_display_height));
+  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  EXPECT_TRUE(IsMessageCenterCollapsed());
+
+  ToggleExpanded();
+  WaitForAnimation();
+  EXPECT_FALSE(IsMessageCenterCollapsed());
+
+  ToggleExpanded();
+  WaitForAnimation();
+  EXPECT_TRUE(IsMessageCenterCollapsed());
+
+  GetPrimaryUnifiedSystemTray()->CloseBubble();
+
+  UpdateDisplay(base::StringPrintf("1000x%d", large_display_height));
+  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  EXPECT_FALSE(IsMessageCenterCollapsed());
+
+  ToggleExpanded();
+  WaitForAnimation();
+  EXPECT_FALSE(IsMessageCenterCollapsed());
+
+  ToggleExpanded();
+  WaitForAnimation();
+  EXPECT_FALSE(IsMessageCenterCollapsed());
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, FocusCycleWithNoNotifications) {

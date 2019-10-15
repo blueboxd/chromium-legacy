@@ -58,7 +58,6 @@ enum class UnifiedMessageCenterAnimationState {
 class ASH_EXPORT UnifiedMessageCenterView
     : public views::View,
       public MessageCenterScrollBar::Observer,
-      public views::ButtonListener,
       public views::FocusChangeListener,
       public gfx::AnimationDelegate {
  public:
@@ -96,6 +95,19 @@ class ASH_EXPORT UnifiedMessageCenterView
   // it is the last visible child.
   void FocusEntered(bool reverse);
 
+  // Expand message center to show all notifications and stacked notification
+  // bar if needed.
+  void SetExpanded();
+
+  // Collapse the message center to only show the stacked notification bar.
+  void SetCollapsed(bool animate);
+
+  // Called when user clicks the clear all button.
+  void ClearAllNotifications();
+
+  // Called when user clicks the see all notifications button.
+  void ExpandMessageCenter();
+
   // views::View:
   void AddedToWidget() override;
   void RemovedFromWidget() override;
@@ -106,9 +118,6 @@ class ASH_EXPORT UnifiedMessageCenterView
   // MessageCenterScrollBar::Observer:
   void OnMessageCenterScrolled() override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // views::FocusChangeListener:
   void OnWillChangeFocus(views::View* before, views::View* now) override;
   void OnDidChangeFocus(views::View* before, views::View* now) override;
@@ -117,6 +126,8 @@ class ASH_EXPORT UnifiedMessageCenterView
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
+
+  bool collapsed() { return collapsed_; }
 
  protected:
   // Virtual for testing.
@@ -168,6 +179,9 @@ class ASH_EXPORT UnifiedMessageCenterView
   // height of the system tray excluding the system menu (which can be expanded
   // or collapsed).
   int available_height_ = 0;
+
+  // Current state of the message center view.
+  bool collapsed_ = false;
 
   // Tracks the current animation state.
   UnifiedMessageCenterAnimationState animation_state_ =

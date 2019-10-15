@@ -1506,7 +1506,8 @@ TEST_F(ControllerTest, UserDataFormCreditCard) {
                                   Property(&UserAction::enabled, Eq(false)))))
       .Times(1);
   controller_->SetCreditCard(
-      std::make_unique<autofill::CreditCard>(*credit_card));
+      std::make_unique<autofill::CreditCard>(*credit_card),
+      /* billing_profile =*/nullptr);
 
   // Credit card with valid billing address is ok.
   auto billing_address = std::make_unique<autofill::AutofillProfile>(
@@ -1516,15 +1517,16 @@ TEST_F(ControllerTest, UserDataFormCreditCard) {
                                  "123 Zoo St.", "unit 5", "Hollywood", "CA",
                                  "91601", "US", "16505678910");
   credit_card->set_billing_address_id(billing_address->guid());
-  ON_CALL(*fake_client_.GetPersonalDataManager(),
-          GetProfileByGUID(billing_address->guid()))
-      .WillByDefault(Return(billing_address.get()));
   EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
                                   Property(&UserAction::enabled, Eq(true)))))
       .Times(1);
   controller_->SetCreditCard(
-      std::make_unique<autofill::CreditCard>(*credit_card));
+      std::make_unique<autofill::CreditCard>(*credit_card),
+      std::make_unique<autofill::AutofillProfile>(*billing_address));
   EXPECT_THAT(controller_->GetUserData()->card->Compare(*credit_card), Eq(0));
+  EXPECT_THAT(
+      controller_->GetUserData()->billing_address->Compare(*billing_address),
+      Eq(0));
 }
 
 TEST_F(ControllerTest, SetTermsAndConditions) {

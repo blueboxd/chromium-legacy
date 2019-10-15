@@ -264,12 +264,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_OVERLAY"
                  file="html/cr/ui/overlay.html" type="chrome_html"
                  compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE"
-                 file="html/cr/ui/page_manager/page.html" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_HTML_CR_UI_PAGE_MANAGER_PAGE_MANAGER"
-                 file="html/cr/ui/page_manager/page_manager.html"
-                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_POSITION_UTIL"
                  file="html/cr/ui/position_util.html" type="chrome_html"
                  compress="gzip" />
@@ -388,12 +382,6 @@ without changes to the corresponding grd file. -->
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_OVERLAY"
                  file="js/cr/ui/overlay.js" type="chrome_html"
-                 compress="gzip" />
-      <structure name="IDR_WEBUI_JS_CR_UI_PAGE_MANAGER_PAGE"
-                 file="js/cr/ui/page_manager/page.js" type="chrome_html"
-                 compress="gzip" flattenhtml="true" />
-      <structure name="IDR_WEBUI_JS_CR_UI_PAGE_MANAGER_PAGE_MANAGER"
-                 file="js/cr/ui/page_manager/page_manager.js" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_POSITION_UTIL"
                  file="js/cr/ui/position_util.js" type="chrome_html"

@@ -63,13 +63,17 @@ TEST_F(AccessibilityPrivateHooksDelegateTest, TestGetDisplayLanguage) {
   };
 
   // Test behavior.
-  EXPECT_EQ(R"("")", run_get_display_language("''"));
-  EXPECT_EQ(R"("")", run_get_display_language("'not a language code'"));
-  EXPECT_EQ(R"("English")", run_get_display_language("'en'"));
-  EXPECT_EQ(R"("English")", run_get_display_language("'en-US'"));
-  EXPECT_EQ(R"("français")", run_get_display_language("'fr'"));
-  EXPECT_EQ(R"("español")", run_get_display_language("'es'"));
-  EXPECT_EQ(R"("日本語")", run_get_display_language("'ja'"));
+  EXPECT_EQ(R"("")", run_get_display_language("'',''"));
+  EXPECT_EQ(R"("")", run_get_display_language("'not a language code','ja-JP'"));
+  EXPECT_EQ(R"("")",
+            run_get_display_language("'zh-TW', 'not a language code'"));
+  EXPECT_EQ(R"("English")", run_get_display_language("'en','en'"));
+  EXPECT_EQ(R"("English")", run_get_display_language("'en-US','en'"));
+  EXPECT_EQ(R"("français")", run_get_display_language("'fr','fr'"));
+  EXPECT_EQ(R"("español")", run_get_display_language("'es','es'"));
+  EXPECT_EQ(R"("日本語")", run_get_display_language("'ja','ja'"));
+  EXPECT_EQ(R"("anglais")", run_get_display_language("'en','fr'"));
+  EXPECT_EQ(R"("Japanese")", run_get_display_language("'ja','en'"));
 }
 
 }  // namespace extensions

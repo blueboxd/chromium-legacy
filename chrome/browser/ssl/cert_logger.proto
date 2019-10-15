@@ -184,6 +184,28 @@ message CertLoggerRequest {
   repeated CertStatus cert_status = 14;
 };
 
+message MacCertEvidenceInfo {
+  // A bitfield indicating various status of the cert, defined in
+  // cssmapple.h
+  optional uint32 status_bits = 1;
+
+  // CSSM_RETURN status codes for the cert, defined in cssmtype.h, values in
+  // cssmerr.h and cssmErrorStrings.h.
+  repeated int32 status_codes = 2;
+}
+
+message MacPlatformDebugInfo {
+  // The SecTrustResultType result from SecTrustEvaluate.
+  optional uint32 trust_result = 1;
+
+  // The OSStatus resultCode from SecTrustGetCssmResultCode.
+  optional int32 result_code = 2;
+
+  // The CSSM_TP_APPLE_EVIDENCE_INFO statusChain from SecTrustGetResult. Each
+  // entry corresponds to one of the certs in the verified chain (leaf first).
+  repeated MacCertEvidenceInfo status_chain = 3;
+}
+
 // Contains the results of verification by the trial verifier. All fields
 // have the same meaning as those of the same name in CertLoggerRequest.
 message TrialVerificationInfo {
@@ -239,4 +261,7 @@ message TrialVerificationInfo {
   // The GeneralizedTime encoded time when the trial verifier attempted to
   // verify the chain.
   optional string trial_der_verification_time = 9;
+
+  // Debug information from CertVerifyProcMac (if it was the primary verifier).
+  optional MacPlatformDebugInfo mac_platform_debug_info = 10;
 }

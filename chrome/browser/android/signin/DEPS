@@ -1,8 +1,0 @@
-specific_include_rules = {
-  # Exception while there's no solution for the fact that SetPrimaryAccount()
-  # expects an account ID (which on Android is the Gaia ID), but we receive an
-  # email address instead along with SigninManagerAndroid::OnSignInCompleted().
-  "signin_manager_android\.cc": [
-    "+components/signin/internal/identity_manager/primary_account_manager.h",
-  ],
-}

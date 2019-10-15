@@ -13,6 +13,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
@@ -114,6 +115,14 @@ Profile* Profile::FromBrowserContext(content::BrowserContext* browser_context) {
 // static
 Profile* Profile::FromWebUI(content::WebUI* web_ui) {
   return FromBrowserContext(web_ui->GetWebContents()->GetBrowserContext());
+}
+
+void Profile::AddObserver(ProfileObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Profile::RemoveObserver(ProfileObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 TestingProfile* Profile::AsTestingProfile() {
@@ -318,6 +327,10 @@ void Profile::MaybeSendDestroyedNotification() {
     sent_destroyed_notification_ = true;
 
     NotifyWillBeDestroyed(this);
+
+    for (auto& observer : observers_)
+      observer.OnProfileWillBeDestroyed(this);
+
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_DESTROYED,
         content::Source<Profile>(this),
@@ -325,6 +338,7 @@ void Profile::MaybeSendDestroyedNotification() {
   }
 }
 
+// static
 PrefStore* Profile::CreateExtensionPrefStore(Profile* profile,
                                              bool incognito_pref_store) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -356,4 +370,11 @@ void Profile::Wipe() {
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::WIPE_PROFILE,
       ChromeBrowsingDataRemoverDelegate::ALL_ORIGIN_TYPES);
+}
+
+void Profile::NotifyOffTheRecordProfileCreated(Profile* off_the_record) {
+  DCHECK_EQ(off_the_record->GetOriginalProfile(), this);
+  DCHECK(off_the_record->IsOffTheRecord());
+  for (auto& observer : observers_)
+    observer.OnOffTheRecordProfileCreated(off_the_record);
 }

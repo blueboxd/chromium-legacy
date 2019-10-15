@@ -73,6 +73,10 @@ class BLINK_COMMON_EXPORT AssociatedInterfaceProvider {
       const base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>&
           binder);
 
+  // Returns an instance of AssociatedInterfaceProvider that is safe to use but
+  // is not connected to anything.
+  static AssociatedInterfaceProvider* GetEmptyAssociatedInterfaceProvider();
+
  private:
   class LocalProvider;
 

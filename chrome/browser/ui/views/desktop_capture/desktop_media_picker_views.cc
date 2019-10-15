@@ -64,6 +64,9 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
     : parent_(parent), modality_(params.modality) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SHARE));
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -341,13 +344,6 @@ bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
 
 views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
   return GetDialogClientView()->cancel_button();
-}
-
-base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_DESKTOP_MEDIA_PICKER_SHARE
-                                       : IDS_CANCEL);
 }
 
 std::unique_ptr<views::View> DesktopMediaPickerDialogView::CreateExtraView() {

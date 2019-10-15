@@ -1261,13 +1261,12 @@ Output.prototype = {
              * Appends outputString to the output buffer in newLanguage.
              * @param {!Array<Spannable>} buff
              * @param {{isUnique: (boolean|undefined),
-             *      annotation: !Array<*>}} opt_options
+             *      annotation: !Array<*>}} options
              * @param {string} newLanguage
              * @param {string} outputString
              */
             var appendStringWithLanguage = function(
-                                               buff, options, newLanguage,
-                                               outputString) {
+                buff, options, newLanguage, outputString) {
               var speechProps = new Output.SpeechProperties();
               // Set output language.
               speechProps['lang'] = newLanguage;
@@ -1276,10 +1275,11 @@ Output.prototype = {
               // Attach associated SpeechProperties if the buffer is non-empty.
               if (buff.length > 0)
                 buff[buff.length - 1].setSpan(speechProps, 0, 0);
-            }.bind(this, buff, options);
+            };
             // Cut up node name into multiple spans with different languages.
             LanguageSwitching.assignLanguagesForStringAttribute(
-                node, 'name', appendStringWithLanguage);
+                node, 'name',
+                appendStringWithLanguage.bind(this, buff, options));
           } else {
             // Append entire node name.
             // TODO(akihiroota): Follow-up with dtseng about why we append empty

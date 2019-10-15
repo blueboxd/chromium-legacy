@@ -43,6 +43,13 @@ LanguageSwitching.PROBABILITY_THRESHOLD_ = 0.9;
 LanguageSwitching.sub_node_switching_enabled_ = false;
 
 /**
+ * An array of all available TTS voices.
+ * @type {!Array<!TtsVoice>}
+ * @private
+ */
+LanguageSwitching.availableVoices_ = [];
+
+/**
  * Initialization function for language switching.
  */
 LanguageSwitching.init = function() {
@@ -53,18 +60,29 @@ LanguageSwitching.init = function() {
       function(enabled) {
         LanguageSwitching.sub_node_switching_enabled_ = enabled;
       });
+
+  // Ensure that availableVoices_ is set and stays updated.
+  function setAvailableVoices() {
+    chrome.tts.getVoices(function(voices) {
+      LanguageSwitching.availableVoices_ = voices || [];
+    });
+  }
+  setAvailableVoices();
+  if (speechSynthesis) {
+    speechSynthesis.addEventListener(
+        'voiceschanged', setAvailableVoices, /* useCapture */ false);
+  }
 };
 
-/*
+/**
  * Main language switching function.
  * Cut up string attribute value into multiple spans with different
  * languages. Ranges and associated language information are returned by the
  * languageAnnotationsForStringAttribute() function.
  * @param {AutomationNode} node
  * @param {string} stringAttribute The string attribute for which we want to
- * get a language annotation
- * @param {Function<outputString: string, newLanguage: string>}
- *     appendStringWithLanguage
+ * get a language annotation.
+ * @param {function(string, string)} appendStringWithLanguage
  * A callback that appends outputString to the output buffer in newLanguage.
  */
 LanguageSwitching.assignLanguagesForStringAttribute = function(
@@ -117,16 +135,32 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
         stringAttributeValue, startIndex, endIndex);
     var newLanguage =
         LanguageSwitching.decideNewLanguage(node, language, probability);
+    var displayLanguage = '';
+
     if (LanguageSwitching.didLanguageSwitch(newLanguage)) {
       LanguageSwitching.currentLanguage_ = newLanguage;
-      var displayLanguage =
-          chrome.accessibilityPrivate.getDisplayLanguage(newLanguage);
-      // Prepend the human-readable language to outputString if language
-      // switched.
+      // Get human-readable language in |newLanguage|.
+      displayLanguage = chrome.accessibilityPrivate.getDisplayLanguage(
+          newLanguage /* Language code to translate */,
+          newLanguage /* Target language code */);
+      // Prepend the human-readable language to outputString.
       outputString =
           Msgs.getMsg('language_switch', [displayLanguage, outputString]);
     }
-    appendStringWithLanguage(newLanguage, outputString);
+
+    if (LanguageSwitching.hasVoiceForLanguage(newLanguage)) {
+      appendStringWithLanguage(newLanguage, outputString);
+    } else {
+      // Translate |newLanguage| into human-readable string in the UI language.
+      displayLanguage = chrome.accessibilityPrivate.getDisplayLanguage(
+          newLanguage /* Language code to translate */,
+          LanguageSwitching.browserUILanguage_ /* Target language code */);
+      outputString =
+          Msgs.getMsg('voice_unavailable_for_language', [displayLanguage]);
+      // Alert the user that we have no available voice for the language.
+      appendStringWithLanguage(
+          LanguageSwitching.browserUILanguage_, outputString);
+    }
   }
 };
 
@@ -227,5 +261,38 @@ LanguageSwitching.isValidLanguageCode = function(languageCode) {
   if (langComponentArray[0].length !== 2 && langComponentArray[0].length !== 3)
     return false;
 
+  // Use the accessibilityPrivate.getDisplayLanguage() API to validate language
+  // code. If the language code is invalid, then this API returns an empty
+  // string.
+  if (chrome.accessibilityPrivate.getDisplayLanguage(
+          languageCode, languageCode) === '') {
+    return false;
+  }
+
   return true;
+};
+
+/**
+ * Returns true if there is a tts voice that supports the given languageCode.
+ * This function is not responsible for deciding the proper output voice, it
+ * simply tells us if output in |languageCode| is possible.
+ * @param {string} languageCode
+ * @return {boolean}
+ */
+LanguageSwitching.hasVoiceForLanguage = function(languageCode) {
+  // Extract language from languageCode.
+  var languageCodeComponents = languageCode.split('-');
+  if (!languageCodeComponents || (languageCodeComponents.length === 0))
+    return false;
+  var language = languageCodeComponents[0];
+  for (var i = 0; i < LanguageSwitching.availableVoices_.length; ++i) {
+    // Note: availableVoices_[i].lang is always in the form of
+    // 'language-region'. See link for documentation on chrome.tts api:
+    // https://developer.chrome.com/apps/tts#type-TtsVoice
+    var candidateLanguage =
+        LanguageSwitching.availableVoices_[i].lang.toLowerCase().split('-')[0];
+    if (language === candidateLanguage)
+      return true;
+  }
+  return false;
 };

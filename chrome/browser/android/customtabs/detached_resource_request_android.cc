@@ -51,7 +51,7 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
   // Java only knows about the blink referrer policy.
   net::URLRequest::ReferrerPolicy url_request_referrer_policy =
       content::Referrer::ReferrerPolicyForUrlRequest(
-          static_cast<network::mojom::ReferrerPolicy>(referrer_policy));
+          content::Referrer::ConvertToPolicy(referrer_policy));
   DetachedResourceRequest::Motivation request_motivation =
       static_cast<DetachedResourceRequest::Motivation>(motivation);
 

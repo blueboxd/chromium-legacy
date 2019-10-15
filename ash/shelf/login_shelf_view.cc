@@ -53,6 +53,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_search.h"
@@ -108,25 +109,32 @@ constexpr SkColor kButtonTextColor = gfx::kGoogleGrey100;
 // The color of the button icon.
 constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
 
-std::unique_ptr<SkPath> GetButtonHighlightPath(views::View* view) {
-  auto path = std::make_unique<SkPath>();
-
+SkPath GetButtonHighlightPath(const views::View* view) {
   gfx::Rect rect(view->GetLocalBounds());
-  int height_inset =
+  const int height_inset =
       (ShelfConfig::Get()->shelf_size() - ShelfConfig::Get()->control_size()) /
       2;
   rect.Inset(gfx::Insets(height_inset, ShelfConfig::Get()->button_spacing(),
                          height_inset, 0));
 
-  int border_radius = ShelfConfig::Get()->control_border_radius();
-  path->addRoundRect(gfx::RectToSkRect(rect), border_radius, border_radius);
-  return path;
+  const int border_radius = ShelfConfig::Get()->control_border_radius();
+  return SkPath().addRoundRect(gfx::RectToSkRect(rect), border_radius,
+                               border_radius);
 }
 
-void SetButtonHighlightPath(views::View* view) {
-  view->SetProperty(views::kHighlightPathKey,
-                    GetButtonHighlightPath(view).release());
-}
+class LoginShelfButtonHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  LoginShelfButtonHighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return GetButtonHighlightPath(view);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginShelfButtonHighlightPathGenerator);
+};
 
 class LoginShelfButton : public views::LabelButton {
  public:
@@ -145,6 +153,8 @@ class LoginShelfButton : public views::LabelButton {
                                    login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
+    views::HighlightPathGenerator::Install(
+        this, std::make_unique<LoginShelfButtonHighlightPathGenerator>());
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
@@ -182,17 +192,12 @@ class LoginShelfButton : public views::LabelButton {
     return kLoginShelfButtonClassName;
   }
 
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetButtonHighlightPath(this);
-    LabelButton::OnBoundsChanged(previous_bounds);
-  }
-
   void PaintButtonContents(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(kButtonBackgroundColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawPath(*GetButtonHighlightPath(this), flags);
+    canvas->DrawPath(GetButtonHighlightPath(this), flags);
   }
 
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
@@ -254,6 +259,8 @@ class KioskAppsButton : public views::MenuButton,
         ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
+    views::HighlightPathGenerator::Install(
+        this, std::make_unique<LoginShelfButtonHighlightPathGenerator>());
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
@@ -311,17 +318,12 @@ class KioskAppsButton : public views::MenuButton,
                        kButtonMarginBottomDp, kButtonMarginRightDp);
   }
 
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    SetButtonHighlightPath(this);
-    LabelButton::OnBoundsChanged(previous_bounds);
-  }
-
   void PaintButtonContents(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(kButtonBackgroundColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawPath(*GetButtonHighlightPath(this), flags);
+    canvas->DrawPath(GetButtonHighlightPath(this), flags);
   }
 
   void SetVisible(bool visible) override {

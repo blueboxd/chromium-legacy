@@ -192,6 +192,21 @@ void UnifiedSystemTray::ActivateBubble() {
     bubble_->ActivateBubble();
 }
 
+void UnifiedSystemTray::CollapseMessageCenter() {
+  if (message_center_bubble_)
+    message_center_bubble_->CollapseMessageCenter();
+}
+
+void UnifiedSystemTray::ExpandMessageCenter() {
+  if (message_center_bubble_)
+    message_center_bubble_->ExpandMessageCenter();
+}
+
+void UnifiedSystemTray::EnsureQuickSettingsCollapsed() {
+  if (bubble_)
+    bubble_->EnsureCollapsed();
+}
+
 void UnifiedSystemTray::EnsureBubbleExpanded() {
   if (bubble_)
     bubble_->EnsureExpanded();

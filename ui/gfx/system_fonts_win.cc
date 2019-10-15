@@ -4,6 +4,8 @@
 
 #include "ui/gfx/system_fonts_win.h"
 
+#include <windows.h>
+
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
@@ -11,7 +13,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
-#include "base/win/win_client_metrics.h"
 #include "ui/gfx/platform_font.h"
 
 namespace gfx {
@@ -137,8 +138,11 @@ class SystemFonts {
   void Initialize() {
     TRACE_EVENT0("fonts", "gfx::SystemFonts::Initialize");
 
-    NONCLIENTMETRICS_XP metrics;
-    base::win::GetNonClientMetrics(&metrics);
+    NONCLIENTMETRICS metrics = {};
+    metrics.cbSize = sizeof(metrics);
+    const bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
+                                                metrics.cbSize, &metrics, 0);
+    DCHECK(success);
 
     // NOTE(dfried): When rendering Chrome, we do all of our own font scaling
     // based on a number of factors, but what Windows reports to us has some

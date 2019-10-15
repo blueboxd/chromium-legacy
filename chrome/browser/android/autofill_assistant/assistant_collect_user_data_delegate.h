@@ -27,9 +27,11 @@ class AssistantCollectUserDataDelegate {
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jobject>& jaddress);
 
-  void OnCreditCardChanged(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& jcaller,
-                           const base::android::JavaParamRef<jobject>& jcard);
+  void OnCreditCardChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jobject>& jcard,
+      const base::android::JavaParamRef<jobject>& jbilling_profile);
 
   void OnTermsAndConditionsChanged(
       JNIEnv* env,

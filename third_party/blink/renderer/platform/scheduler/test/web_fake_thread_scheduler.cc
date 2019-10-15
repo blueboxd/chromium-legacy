@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace scheduler {
@@ -104,6 +105,14 @@ void WebFakeThreadScheduler::SetRendererProcessType(
     WebRendererProcessType type) {}
 
 void WebFakeThreadScheduler::OnMainFrameRequestedForInput() {}
+
+WebScopedVirtualTimePauser
+WebFakeThreadScheduler::CreateWebScopedVirtualTimePauser(
+    const char* name,
+    WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
+  return WebScopedVirtualTimePauser(nullptr, duration,
+                                    WebString(WTF::String(name)));
+}
 
 }  // namespace scheduler
 }  // namespace blink

@@ -90,7 +90,7 @@
   {
     "name": "android-picture-in-picture-api",
     "owners": [ "beccahughes", "jazzhsu" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "android-setup-search-engine",
@@ -896,7 +896,7 @@
   {
     "name": "enable-arc-unified-audio-focus",
     "owners": [ "beccahughes", "media-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-assistant-aec",
@@ -946,7 +946,7 @@
   {
     "name": "enable-audio-focus-enforcement",
     "owners": [ "beccahughes", "media-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-aura-tooltips-on-windows",
@@ -1440,12 +1440,12 @@
   {
     "name": "enable-media-session-notifications",
     "owners": [ "beccahughes", "media-dev" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-media-session-service",
     "owners": [ "beccahughes", "media-dev" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "enable-nacl",

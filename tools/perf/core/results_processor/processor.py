@@ -100,28 +100,45 @@ def _LoadIntermediateResults(intermediate_file):
   return results
 
 
+def _AggregateTraceWorker(artifacts):
+  traces = [name for name in artifacts if name.startswith('trace/')]
+  trace_files = [artifacts.pop(name)['filePath'] for name in traces]
+  html_path = os.path.join(
+      os.path.dirname(os.path.commonprefix(trace_files)),
+      compute_metrics.HTML_TRACE_NAME)
+  trace_data.SerializeAsHtml(trace_files, html_path)
+  artifacts[compute_metrics.HTML_TRACE_NAME] = {
+    'filePath': html_path,
+    'contentType': 'text/html',
+  }
+
+
 def AggregateTraces(intermediate_results):
   """Replace individual traces with an aggregate one for each test result.
 
   For each test run with traces, generates an aggregate HTML trace. Removes
   all entries for individual traces and adds one entry for aggregate one.
   """
+  work_list = []
   for result in intermediate_results['testResults']:
     artifacts = result.get('outputArtifacts', {})
-    traces = [name for name in artifacts if name.startswith('trace/')]
-    if len(traces) > 0:
-      if compute_metrics.HTML_TRACE_NAME not in artifacts:
-        trace_files = [artifacts[name]['filePath'] for name in traces]
-        html_path = os.path.join(
-            os.path.dirname(os.path.commonprefix(trace_files)),
-            compute_metrics.HTML_TRACE_NAME)
-        trace_data.SerializeAsHtml(trace_files, html_path)
-        artifacts[compute_metrics.HTML_TRACE_NAME] = {
-          'filePath': html_path,
-          'contentType': 'text/html',
-        }
-      for trace in traces:
-        del artifacts[trace]
+    # TODO(crbug.com/981349): Stop checking for HTML_TRACE_NAME after
+    # Telemetry does not aggregate traces anymore.
+    if (any(name.startswith('trace/') for name in artifacts) and
+        compute_metrics.HTML_TRACE_NAME not in artifacts):
+      work_list.append(artifacts)
+
+  if work_list:
+    for _ in util.ApplyInParallel(_AggregateTraceWorker, work_list):
+      pass
+
+  # TODO(crbug.com/981349): This is to clean up traces that have been
+  # aggregated by Telemetry. Remove this after Telemetry no longer does this.
+  for result in intermediate_results['testResults']:
+    artifacts = result.get('outputArtifacts', {})
+    for name in artifacts.keys():
+      if name.startswith('trace/'):
+        del artifacts[name]
 
 
 def _RunIdentifier(results_label, start_time):

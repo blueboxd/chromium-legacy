@@ -60,7 +60,8 @@ void OmniboxController::OnResultChanged(bool default_match_changed) {
       InvalidateCurrentMatch();
       if (popup_)
         popup_->OnResultChanged();
-      omnibox_edit_model_->OnPopupDataChanged(base::string16(), nullptr,
+      omnibox_edit_model_->OnPopupDataChanged(base::string16(),
+                                              /*is_temporary_text=*/false,
                                               base::string16(), false);
     }
   } else if (popup_) {

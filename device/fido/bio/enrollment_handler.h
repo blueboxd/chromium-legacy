@@ -34,6 +34,8 @@ enum class BioEnrollmentStatus {
 class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
     : public FidoRequestHandlerBase {
  public:
+  using TemplateId = std::vector<uint8_t>;
+
   using ErrorCallback = base::OnceCallback<void(BioEnrollmentStatus)>;
   using GetPINCallback =
       base::RepeatingCallback<void(int64_t retries,
@@ -41,9 +43,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   using StatusCallback = base::OnceCallback<void(CtapDeviceResponseCode)>;
   using EnumerationCallback = base::OnceCallback<void(
       CtapDeviceResponseCode,
-      base::Optional<std::map<std::vector<uint8_t>, std::string>>)>;
+      base::Optional<std::map<TemplateId, std::string>>)>;
   using SampleCallback =
       base::RepeatingCallback<void(BioEnrollmentSampleStatus, uint8_t)>;
+  using CompletionCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode, TemplateId)>;
 
   BioEnrollmentHandler(
       service_manager::Connector* connector,
@@ -61,7 +65,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   // the operation has been cancelled, |completion_callback| is invoked
   // with the operation status.
   void EnrollTemplate(SampleCallback sample_callback,
-                      StatusCallback completion_callback);
+                      CompletionCallback completion_callback);
 
   // Cancels an ongoing enrollment, if any, and invokes the
   // |completion_callback| passed to EnrollTemplate() with
@@ -111,13 +115,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
                           base::Optional<pin::KeyAgreementResponse>);
   void OnHavePINToken(CtapDeviceResponseCode,
                       base::Optional<pin::TokenResponse>);
-  void OnEnrollResponse(
-      SampleCallback,
-      StatusCallback,
-      base::Optional<std::vector<uint8_t>> current_template_id,
-      CtapDeviceResponseCode,
-      base::Optional<BioEnrollmentResponse>);
-  void OnCancel(StatusCallback,
+  void OnEnrollResponse(SampleCallback,
+                        CompletionCallback,
+                        base::Optional<TemplateId> current_template_id,
+                        CtapDeviceResponseCode,
+                        base::Optional<BioEnrollmentResponse>);
+  void OnCancel(CompletionCallback,
                 CtapDeviceResponseCode,
                 base::Optional<BioEnrollmentResponse>);
   void OnEnumerateTemplates(EnumerationCallback,

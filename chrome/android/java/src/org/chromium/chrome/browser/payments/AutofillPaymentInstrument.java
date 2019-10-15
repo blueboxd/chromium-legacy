@@ -426,6 +426,12 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         return mCard;
     }
 
+    /** @return The billing address associated with this payment instrument. */
+    @Nullable
+    public AutofillProfile getBillingProfile() {
+        return mBillingAddress;
+    }
+
     @Override
     public String getPreviewString(String labelSeparator, int maxLength) {
         StringBuilder previewString = new StringBuilder(getLabel());
@@ -443,14 +449,17 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     /** @return a bit vector of the card's missing fields. */
     public int getMissingFields() {
         int missingFields = CompletionStatus.COMPLETE;
-        if (mBillingAddress == null)
+        if (mBillingAddress == null) {
             missingFields |= CompletionStatus.CREDIT_CARD_NO_BILLING_ADDRESS;
-        if (!mCard.hasValidCreditCardExpirationDate())
+        }
+        if (!mCard.hasValidCreditCardExpirationDate()) {
             missingFields |= CompletionStatus.CREDIT_CARD_EXPIRED;
+        }
 
         if (mCard.getIsLocal()) {
-            if (TextUtils.isEmpty(mCard.getName()))
+            if (TextUtils.isEmpty(mCard.getName())) {
                 missingFields |= CompletionStatus.CREDIT_CARD_NO_CARDHOLDER;
+            }
 
             if (PersonalDataManager.getInstance().getBasicCardIssuerNetwork(
                         mCard.getNumber().toString(), true)
@@ -459,8 +468,9 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             }
         }
 
-        if (!mIsMatchingMerchantsRequestedCardType)
+        if (!mIsMatchingMerchantsRequestedCardType) {
             missingFields |= CompletionStatus.CREDIT_CARD_TYPE_MISMATCH;
+        }
 
         return missingFields;
     }

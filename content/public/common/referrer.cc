@@ -5,9 +5,11 @@
 #include "content/public/common/referrer.h"
 
 #include <string>
+#include <type_traits>
 
 #include "base/numerics/safe_conversions.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/enum_utils.h"
 #include "net/base/features.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
@@ -189,6 +191,12 @@ net::URLRequest::ReferrerPolicy Referrer::GetDefaultReferrerPolicy() {
         REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN;
   }
   return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+}
+
+// static
+network::mojom::ReferrerPolicy Referrer::ConvertToPolicy(int32_t policy) {
+  return mojo::ConvertIntToMojoEnum<network::mojom::ReferrerPolicy>(policy)
+      .value_or(network::mojom::ReferrerPolicy::kDefault);
 }
 
 }  // namespace content

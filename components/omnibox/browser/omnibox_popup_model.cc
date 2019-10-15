@@ -135,7 +135,6 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   // opened the popup and made it possible to get here should have also set a
   // selected line.
   CHECK(selected_line_ != kNoMatch);
-  GURL current_destination(result.match_at(selected_line_).destination_url);
   const size_t prev_selected_line = selected_line_;
   selected_line_state_ = NORMAL;
   selected_line_ = line;
@@ -153,11 +152,13 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
   if (reset_to_default) {
-    edit_model_->OnPopupDataChanged(match.inline_autocompletion, nullptr,
-                                    keyword, is_keyword_hint);
+    edit_model_->OnPopupDataChanged(match.inline_autocompletion,
+                                    /*is_temporary_text=*/false, keyword,
+                                    is_keyword_hint);
   } else {
-    edit_model_->OnPopupDataChanged(match.fill_into_edit, &current_destination,
-                                    keyword, is_keyword_hint);
+    edit_model_->OnPopupDataChanged(match.fill_into_edit,
+                                    /*is_temporary_text=*/true, keyword,
+                                    is_keyword_hint);
   }
 }
 

@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -252,6 +253,7 @@ class WebviewLoginTest : public OobeBaseTest {
 
 // Basic signin with username and password.
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
+  base::HistogramTester histogram_tester;
   WaitForGaiaPageLoadAndPropertyUpdate();
 
   ExpectIdentifierPage();
@@ -278,6 +280,8 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(LoginDisplayHost::default_host());
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 0, 1);
 }
 
 // TODO(crbug.com/998330): The test is flaky (timeout) on Chromium OS MSAN.

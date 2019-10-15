@@ -157,13 +157,12 @@ aura::Window* AppListPresenterDelegateImpl::GetRootWindowForDisplayId(
 
 void AppListPresenterDelegateImpl::OnVisibilityChanged(bool visible,
                                                        int64_t display_id) {
-  controller_->NotifyAppListVisibilityChanged(visible, display_id);
+  controller_->OnVisibilityChanged(visible, display_id);
 }
 
-void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(
-    bool visible,
-    int64_t display_id) {
-  controller_->NotifyAppListTargetVisibilityChanged(visible, display_id);
+void AppListPresenterDelegateImpl::OnVisibilityWillChange(bool visible,
+                                                          int64_t display_id) {
+  controller_->OnVisibilityWillChange(visible, display_id);
 }
 
 bool AppListPresenterDelegateImpl::IsVisible() {

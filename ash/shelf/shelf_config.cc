@@ -112,8 +112,8 @@ void ShelfConfig::OnDisplayMetricsChanged(const display::Display& display,
   UpdateIsDense();
 }
 
-void ShelfConfig::OnAppListTargetVisibilityChanged(bool shown,
-                                                   int64_t display_id) {
+void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
+                                                int64_t display_id) {
   // Let's check that the app visibility mechanism isn't mis-firing, which
   // would lead to a lot of extraneous relayout work.
   DCHECK_NE(is_app_list_visible_, shown);

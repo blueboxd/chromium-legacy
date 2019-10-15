@@ -241,6 +241,7 @@ cr.define('cr.login', function() {
 
       this.confirmPasswordCallback = null;
       this.noPasswordCallback = null;
+      this.onePasswordCallback = null;
       this.insecureContentBlockedCallback = null;
       this.samlApiUsedCallback = null;
       this.missingGaiaInfoCallback = null;
@@ -848,7 +849,9 @@ cr.define('cr.login', function() {
 
       if (this.samlHandler_.samlApiUsed) {
         if (this.samlApiUsedCallback) {
-          this.samlApiUsedCallback();
+          // Makes distinction between Gaia and Chrome Credentials Passing API
+          // login to properly fill ChromeOS.SAML.ApiLogin metrics.
+          this.samlApiUsedCallback(this.authFlow == AuthFlow.SAML);
         }
         this.password_ = this.samlHandler_.apiPasswordBytes;
         this.onAuthCompleted_();
@@ -870,6 +873,9 @@ cr.define('cr.login', function() {
           // If we scraped exactly one password, we complete the
           // authentication right away.
           this.password_ = this.samlHandler_.firstScrapedPassword;
+          if (this.onePasswordCallback) {
+            this.onePasswordCallback();
+          }
           this.onAuthCompleted_();
           return;
         }
@@ -888,8 +894,8 @@ cr.define('cr.login', function() {
 
     /**
      * Invoked to complete the authentication using the password the user
-     * enters manually for non-principals API SAML IdPs that we couldn't
-     * scrape their password input.
+     * enters manually for SAML IdPs that do not use Chrome Credentials Passing
+     * API and we couldn't scrape their password input.
      */
     completeAuthWithManualPassword(password) {
       this.password_ = password;

@@ -15,7 +15,6 @@ namespace views {
 class BoxLayout;
 class ImageView;
 class InkDrop;
-class InkDropMask;
 class InkDropRipple;
 class Label;
 }  // namespace views
@@ -48,12 +47,10 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // views::InkDropHost:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
   // ui::LayerOwner:
@@ -67,9 +64,6 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
  private:
   // Updates the suggestion chip view's title and icon.
   void UpdateSuggestionChipView();
-
-  // Updates the focus ring draw path based on the current bounds.
-  void UpdateFocusRingPath();
 
   void InitLayout();
 

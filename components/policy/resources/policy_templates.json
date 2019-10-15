@@ -15110,7 +15110,6 @@
       ],
       'supported_on': ['chrome_os:68-'],
       'device_only': True,
-      'future': True,
       'features': {
         'dynamic_refresh': True,
       },

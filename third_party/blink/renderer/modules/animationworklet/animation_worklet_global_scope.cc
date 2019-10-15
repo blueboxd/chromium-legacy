@@ -154,18 +154,6 @@ void AnimationWorkletGlobalScope::UpdateAnimators(
     UpdateAnimation(isolate, animator, animation.worklet_animation_id,
                     animation.current_time, output);
   }
-
-  for (const auto& worklet_animation_id : input.peeked_animations) {
-    int id = worklet_animation_id.animation_id;
-    Animator* animator = animators_.at(id);
-    if (!animator || !predicate(animator))
-      continue;
-
-    AnimationWorkletDispatcherOutput::AnimationState animation_output(
-        worklet_animation_id);
-    animator->GetLocalTimes(animation_output.local_times);
-    output->animations.push_back(animation_output);
-  }
 }
 
 void AnimationWorkletGlobalScope::RegisterWithProxyClientIfNeeded() {

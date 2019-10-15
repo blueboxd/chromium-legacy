@@ -547,6 +547,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // the request is redirected.
   PrivacyMode privacy_mode() { return privacy_mode_; }
 
+  // Returns whether secure DNS should be disabled for the request.
+  bool disable_secure_dns() { return disable_secure_dns_; }
+
   void set_maybe_sent_cookies(CookieStatusList cookies);
   void set_maybe_stored_cookies(CookieAndLineStatusList cookies);
 
@@ -573,6 +576,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // before Start() is called, it must only set the flag, and if set,
   // the priority of this request must already be MAXIMUM_PRIORITY.
   void SetLoadFlags(int flags);
+
+  // Sets whether secure DNS should be disabled for the request.
+  void SetDisableSecureDns(bool disable_secure_dns);
 
   // Returns true if the request is "pending" (i.e., if Start() has been called,
   // and the response has not yet been called).
@@ -859,6 +865,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   int load_flags_;  // Flags indicating the request type for the load;
                     // expected values are LOAD_* enums above.
   PrivacyMode privacy_mode_;
+  bool disable_secure_dns_;
 
   CookieStatusList maybe_sent_cookies_;
   CookieAndLineStatusList maybe_stored_cookies_;

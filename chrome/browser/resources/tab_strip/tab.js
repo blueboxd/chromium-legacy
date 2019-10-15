@@ -76,7 +76,7 @@ export class TabElement extends CustomElement {
     this.toggleAttribute('pinned_', tab.pinned);
     this.toggleAttribute('blocked_', tab.blocked);
     this.setAttribute('draggable', tab.pinned);
-    this.toggleAttribute('crashed', tab.crashed);
+    this.toggleAttribute('crashed_', tab.crashed);
 
     if (!this.tab_ || this.tab_.title !== tab.title) {
       this.titleTextEl_.textContent = tab.title;

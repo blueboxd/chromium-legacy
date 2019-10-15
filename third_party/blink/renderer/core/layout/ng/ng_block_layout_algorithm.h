@@ -411,6 +411,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   LogicalSize child_percentage_size_;
   LogicalSize replaced_child_percentage_size_;
 
+  // Intrinsic block size based on child layout and containment.
   LayoutUnit intrinsic_block_size_;
 
   // The line box index at which we ran out of space. This where we'll actually

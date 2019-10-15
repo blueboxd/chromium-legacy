@@ -255,33 +255,23 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, CaptureTabAudio) {
 }
 
 IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
-  ASSERT_EQ(TabAlertState::NONE,
-            chrome::GetHighestPriorityTabAlertStateForContents(
-                browser()->tab_strip_model()->GetActiveWebContents()));
+  content::WebContents* const contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_THAT(chrome::GetTabAlertStatesForContents(contents),
+              ::testing::IsEmpty());
 
-  // A TabStripModelObserver that quits the MessageLoop whenever the UI's model
-  // is sent an event that changes the indicator status.
+  // A TabStripModelObserver that quits the MessageLoop whenever the
+  // UI's model is sent an event that might change the indicator status.
   class IndicatorChangeObserver : public TabStripModelObserver {
    public:
-    explicit IndicatorChangeObserver(Browser* browser)
-        : browser_(browser),
-          last_alert_state_(chrome::GetHighestPriorityTabAlertStateForContents(
-              browser->tab_strip_model()->GetActiveWebContents())) {
+    explicit IndicatorChangeObserver(Browser* browser) : browser_(browser) {
       browser_->tab_strip_model()->AddObserver(this);
     }
-
-    TabAlertState last_alert_state() const { return last_alert_state_; }
 
     void TabChangedAt(content::WebContents* contents,
                       int index,
                       TabChangeType change_type) override {
-      const TabAlertState alert_state =
-          chrome::GetHighestPriorityTabAlertStateForContents(contents);
-      if (alert_state != last_alert_state_) {
-        last_alert_state_ = alert_state;
-        if (on_tab_changed_)
-          std::move(on_tab_changed_).Run();
-      }
+      std::move(on_tab_changed_).Run();
     }
 
     void WaitForTabChange() {
@@ -292,20 +282,22 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
 
    private:
     Browser* const browser_;
-    TabAlertState last_alert_state_;
     base::OnceClosure on_tab_changed_;
   };
 
   IndicatorChangeObserver observer(browser());
-  ASSERT_EQ(TabAlertState::NONE, observer.last_alert_state());
+  ASSERT_THAT(chrome::GetTabAlertStatesForContents(contents),
+              ::testing::IsEmpty());
   StartTabMirroring();
 
   // Run the browser until the indicator turns on.
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  while (observer.last_alert_state() != TabAlertState::TAB_CAPTURING) {
+  while (!base::Contains(chrome::GetTabAlertStatesForContents(contents),
+                         TabAlertState::TAB_CAPTURING)) {
     if (base::TimeTicks::Now() - start_time >
         TestTimeouts::action_max_timeout()) {
-      EXPECT_EQ(TabAlertState::TAB_CAPTURING, observer.last_alert_state());
+      EXPECT_THAT(chrome::GetTabAlertStatesForContents(contents),
+                  ::testing::Contains(TabAlertState::TAB_CAPTURING));
       return;
     }
     observer.WaitForTabChange();

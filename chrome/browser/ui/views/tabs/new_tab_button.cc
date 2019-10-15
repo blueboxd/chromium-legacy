@@ -28,7 +28,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/view_class_properties.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -66,6 +66,21 @@ constexpr char NewTabButton::kClassName[];
 // static
 const gfx::Size NewTabButton::kButtonSize{28, 28};
 
+class NewTabButton::HighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return static_cast<const NewTabButton*>(view)->GetBorderPath(
+        view->GetContentsBounds().origin(), 1.0f, false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
+};
+
 NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
     : views::ImageButton(listener), tab_strip_(tab_strip) {
   set_animate_on_state_change(true);
@@ -82,6 +97,8 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
   set_ink_drop_visible_opacity(0.14f);
 
   SetInstallFocusRingOnFocus(true);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<NewTabButton::HighlightPathGenerator>());
 }
 
 NewTabButton::~NewTabButton() {
@@ -143,9 +160,6 @@ void NewTabButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
 void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   ImageButton::OnBoundsChanged(previous_bounds);
   ink_drop_container_->SetBoundsRect(GetLocalBounds());
-  SetProperty(
-      views::kHighlightPathKey,
-      new SkPath(GetBorderPath(GetContentsBounds().origin(), 1.0f, false)));
 }
 
 #if defined(OS_WIN)

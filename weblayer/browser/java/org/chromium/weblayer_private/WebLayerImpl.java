@@ -52,8 +52,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public void initAndLoadAsync(
-            IObjectWrapper webLayerContextWrapper, IObjectWrapper loadedCallbackWrapper) {
+    public void initAndLoadAsync(IObjectWrapper webLayerContextWrapper,
+            IObjectWrapper loadedCallbackWrapper, int resourcesPackageId) {
+        // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
+        // other expensive startup tasks.
+        R.onResourcesLoaded(resourcesPackageId);
+
         Context context = ObjectWrapper.unwrap(webLayerContextWrapper, Context.class);
         ContextUtils.initApplicationContext(context);
         ResourceBundle.setNoAvailableLocalePaks();

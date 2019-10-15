@@ -69,9 +69,9 @@ BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
     : BackgroundSyncNetworkObserver(network_changed_callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
-  observer_ = Observer::Create(
-      base::Bind(&BackgroundSyncNetworkObserverAndroid::OnConnectionChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+  observer_ = Observer::Create(base::BindRepeating(
+      &BackgroundSyncNetworkObserverAndroid::OnConnectionChanged,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 BackgroundSyncNetworkObserverAndroid::~BackgroundSyncNetworkObserverAndroid() {

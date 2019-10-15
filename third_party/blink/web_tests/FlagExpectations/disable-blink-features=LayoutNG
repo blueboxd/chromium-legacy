@@ -367,7 +367,6 @@ Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-the
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip.html [ Failure ]
 
 # display-locking
-crbug.com/1007506 wpt_internal/display-lock/rendersubtree/sizing/large-content-size-in-overflow-auto.html [ Failure ]
 crbug.com/1007506 wpt_internal/display-lock/rendersubtree/sizing/overflow-auto-with-overflow.html [ Failure ]
 
 # 10/02/2019 Mark tests as failing. Mostly shapes, slight image differences

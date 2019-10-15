@@ -42,7 +42,6 @@
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
-#include "content/renderer/page_properties.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_screen_metrics_emulator_delegate.h"
@@ -169,7 +168,6 @@ class CONTENT_EXPORT RenderWidget
  public:
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
-               PageProperties* page_properties,
                blink::mojom::DisplayMode display_mode,
                bool is_undead,
                bool hidden,
@@ -194,7 +192,6 @@ class CONTENT_EXPORT RenderWidget
   using CreateRenderWidgetFunction = std::unique_ptr<RenderWidget> (*)(
       int32_t,
       CompositorDependencies*,
-      PageProperties*,
       blink::mojom::DisplayMode display_mode,
       bool is_undead,
       bool never_visible,
@@ -210,7 +207,6 @@ class CONTENT_EXPORT RenderWidget
   static std::unique_ptr<RenderWidget> CreateForFrame(
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
-      PageProperties* page_properties,
       blink::mojom::DisplayMode display_mode,
       bool is_undead,
       bool never_visible);
@@ -223,7 +219,6 @@ class CONTENT_EXPORT RenderWidget
   static RenderWidget* CreateForPopup(
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
-      PageProperties* page_properties,
       blink::mojom::DisplayMode display_mode,
       bool hidden,
       bool never_visible,
@@ -926,11 +921,8 @@ class CONTENT_EXPORT RenderWidget
   // a RenderViewImpl.
   RenderWidgetDelegate* delegate_ = nullptr;
 
-  // Contains properties that are global to a whole page. This is populated in
-  // all RenderWidgets regardless of whether they are main frame or child
-  // frame widgets.
-  PageProperties* const page_properties_;
-
+  // Wraps the LayerTreeHost, providing clients for it with the ability to
+  // outlive RenderWidget during shutdown and keep the client pointers valid.
   std::unique_ptr<LayerTreeView> layer_tree_view_;
   // This is valid while |layer_tree_view_| is valid.
   cc::LayerTreeHost* layer_tree_host_ = nullptr;

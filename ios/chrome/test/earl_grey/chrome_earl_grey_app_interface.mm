@@ -147,6 +147,14 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::OpenNewIncognitoTab();
 }
 
++ (NSString*)currentTabTitle {
+  return chrome_test_util::GetCurrentTabTitle();
+}
+
++ (NSString*)nextTabTitle {
+  return chrome_test_util::GetNextTabTitle();
+}
+
 + (void)closeAllTabsInCurrentMode {
   chrome_test_util::CloseAllTabsInCurrentMode();
 }

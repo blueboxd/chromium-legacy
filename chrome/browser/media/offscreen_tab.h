@@ -108,9 +108,10 @@ class OffscreenTab : protected content::WebContentsDelegate,
       const std::string& frame_name,
       const GURL& target_url) final;
   bool EmbedsFullscreenWidget() final;
-  void EnterFullscreenModeForTab(content::WebContents* contents,
-                                 const GURL& origin,
-                                 const blink::FullScreenOptions& options) final;
+  void EnterFullscreenModeForTab(
+      content::WebContents* contents,
+      const GURL& origin,
+      const blink::mojom::FullscreenOptions& options) final;
   void ExitFullscreenModeForTab(content::WebContents* contents) final;
   bool IsFullscreenForTabOrPending(const content::WebContents* contents) final;
   blink::mojom::DisplayMode GetDisplayMode(

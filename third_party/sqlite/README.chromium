@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.29.0
+Version: 3.30.1
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -71,7 +71,7 @@ cd third_party/sqlite
 
 # Must match the version in //third_party/sqlite/sqlite-src-xxxxxxx.
 # This is SQLite's version number, and uses upstream's convention.
-export BASE=3290000
+export BASE=3300100
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Create a reference branch.
@@ -159,8 +159,8 @@ cd third_party/sqlite
 
 # The numbers below are SQLite version numbers, and use upstream's convention
 # for tagging release binaries and source zipballs.
-export OLD=3290000
-export NEW=3300000
+export OLD=3300100
+export NEW=3310000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Download and unpack the new SQLite release.

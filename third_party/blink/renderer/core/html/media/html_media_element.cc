@@ -1168,6 +1168,10 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
   // media element API.
   current_src_ = url;
 
+  // Default this to empty, so that we use |current_src_| unless the player
+  // provides one later.
+  current_src_after_redirects_ = KURL();
+
   if (audio_source_node_)
     audio_source_node_->OnCurrentSrcChanged(current_src_);
 
@@ -1790,6 +1794,13 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
       ready_state_ = kHaveCurrentData;
   }
 
+  // If we're transitioning to / past kHaveMetadata, then cache the final URL.
+  if (old_state < kHaveMetadata && new_state >= kHaveMetadata &&
+      web_media_player_) {
+    current_src_after_redirects_ =
+        KURL(web_media_player_->GetSrcAfterRedirects());
+  }
+
   if (new_state > ready_state_maximum_)
     ready_state_maximum_ = new_state;
 
@@ -1966,8 +1977,11 @@ bool HTMLMediaElement::SupportsSave() const {
     return false;
   }
 
+  // Get the URL that we'll use for downloading.
+  const KURL url = downloadURL();
+
   // URLs that lead to nowhere are ignored.
-  if (current_src_.IsNull() || current_src_.IsEmpty())
+  if (url.IsNull() || url.IsEmpty())
     return false;
 
   // If we have no source, we can't download.
@@ -1975,7 +1989,7 @@ bool HTMLMediaElement::SupportsSave() const {
     return false;
 
   // It is not useful to offer a save feature on local files.
-  if (current_src_.IsLocalFile())
+  if (url.IsLocalFile())
     return false;
 
   // MediaStream can't be downloaded.
@@ -1987,7 +2001,7 @@ bool HTMLMediaElement::SupportsSave() const {
     return false;
 
   // HLS stream shouldn't have a download button.
-  if (IsHLSURL(current_src_))
+  if (IsHLSURL(url))
     return false;
 
   // Infinite streams don't have a clear end at which to finish the download.

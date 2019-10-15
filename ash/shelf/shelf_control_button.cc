@@ -15,10 +15,38 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/view_class_properties.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+class ShelfControlButtonHighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  ShelfControlButtonHighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    const int border_radius = ShelfConfig::Get()->control_border_radius();
+    // Some control buttons have a slightly larger size to fill the shelf and
+    // maximize the click target, but we still want their "visual" size to be
+    // the same, so we find the center point and draw a square around that.
+    const gfx::Point center = view->GetLocalBounds().CenterPoint();
+    const int half_size = ShelfConfig::Get()->control_size() / 2;
+    const gfx::Rect visual_size(center.x() - half_size, center.y() - half_size,
+                                ShelfConfig::Get()->control_size(),
+                                ShelfConfig::Get()->control_size());
+    return SkPath().addRoundRect(gfx::RectToSkRect(visual_size), border_radius,
+                                 border_radius);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShelfControlButtonHighlightPathGenerator);
+};
+
+}  // namespace
 
 ShelfControlButton::ShelfControlButton(
     Shelf* shelf,
@@ -26,6 +54,8 @@ ShelfControlButton::ShelfControlButton(
     : ShelfButton(shelf, shelf_button_delegate) {
   set_has_ink_drop_action_on_click(true);
   SetInstallFocusRingOnFocus(true);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<ShelfControlButtonHighlightPathGenerator>());
   focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   SetFocusPainter(nullptr);
   SetPaintToLayer();
@@ -35,7 +65,7 @@ ShelfControlButton::ShelfControlButton(
 ShelfControlButton::~ShelfControlButton() = default;
 
 gfx::Point ShelfControlButton::GetCenterPoint() const {
-  return gfx::Point(width() / 2.f, height() / 2.f);
+  return GetLocalBounds().CenterPoint();
 }
 
 std::unique_ptr<views::InkDropRipple> ShelfControlButton::CreateInkDropRipple()
@@ -72,23 +102,6 @@ void ShelfControlButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void ShelfControlButton::PaintButtonContents(gfx::Canvas* canvas) {
   PaintBackground(canvas, GetContentsBounds());
-}
-
-void ShelfControlButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  const int border_radius = ShelfConfig::Get()->control_border_radius();
-  // Some control buttons have a slightly larger size to fill the shelf and
-  // maximize the click target, but we still want their "visual" size to be
-  // the same, so we find the center point and draw a square around that.
-  const gfx::Point center = GetCenterPoint();
-  const int half_size = ShelfConfig::Get()->control_size() / 2;
-  const gfx::Rect visual_size(center.x() - half_size, center.y() - half_size,
-                              ShelfConfig::Get()->control_size(),
-                              ShelfConfig::Get()->control_size());
-  auto path = std::make_unique<SkPath>();
-  path->addRoundRect(gfx::RectToSkRect(visual_size), border_radius,
-                     border_radius);
-  SetProperty(views::kHighlightPathKey, path.release());
-  ShelfButton::OnBoundsChanged(previous_bounds);
 }
 
 void ShelfControlButton::PaintBackground(gfx::Canvas* canvas,

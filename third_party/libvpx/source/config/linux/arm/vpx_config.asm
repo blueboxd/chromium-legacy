@@ -1,11 +1,11 @@
 @ This file was created from a .asm file
 @  using the ads2gas.pl script.
 	.syntax unified
-.equ ARCH_ARM ,  1
-.equ ARCH_MIPS ,  0
-.equ ARCH_X86 ,  0
-.equ ARCH_X86_64 ,  0
-.equ ARCH_PPC ,  0
+.equ VPX_ARCH_ARM ,  1
+.equ VPX_ARCH_MIPS ,  0
+.equ VPX_ARCH_X86 ,  0
+.equ VPX_ARCH_X86_64 ,  0
+.equ VPX_ARCH_PPC ,  0
 .equ HAVE_NEON ,  0
 .equ HAVE_NEON_ASM ,  0
 .equ HAVE_MIPS32 ,  0

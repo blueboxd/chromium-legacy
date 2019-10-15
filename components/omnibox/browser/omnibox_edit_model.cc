@@ -1071,11 +1071,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
 
   // Try to get ZeroSuggest suggestions if a page is loaded and the user has
   // not been typing in the omnibox.  The |user_input_in_progress_| check is
-  // used to detect the case where this function is called after right-clicking
-  // in the omnibox and selecting paste in Linux (in which case we actually get
-  // the OnSetFocus() call after the process of handling the paste has kicked
-  // off).
-  // TODO(hfung): Remove this when crbug/271590 is fixed.
+  // used to prevent on-focus suggestions from appearing if the user already
+  // has a navigation or search query in mind.
   if (client_->CurrentPageExists() && !user_input_in_progress_) {
     // Send the textfield contents exactly as-is, as otherwise the verbatim
     // match can be wrong. The full page URL is anyways in set_current_url().
@@ -1212,13 +1209,11 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
   // force it to open immediately.
 }
 
-void OmniboxEditModel::OnPopupDataChanged(
-    const base::string16& text,
-    GURL* destination_for_temporary_text_change,
-    const base::string16& keyword,
-    bool is_keyword_hint) {
-  if (!original_user_text_with_keyword_.empty() &&
-      !destination_for_temporary_text_change &&
+void OmniboxEditModel::OnPopupDataChanged(const base::string16& text,
+                                          bool is_temporary_text,
+                                          const base::string16& keyword,
+                                          bool is_keyword_hint) {
+  if (!original_user_text_with_keyword_.empty() && !is_temporary_text &&
       (keyword.empty() || is_keyword_hint)) {
     user_text_ = original_user_text_with_keyword_;
     original_user_text_with_keyword_.clear();
@@ -1249,7 +1244,7 @@ void OmniboxEditModel::OnPopupDataChanged(
   }
 
   // Handle changes to temporary text.
-  if (destination_for_temporary_text_change) {
+  if (is_temporary_text) {
     const bool save_original_selection = !has_temporary_text_;
     if (save_original_selection) {
       // Save the original selection and URL so it can be reverted later.
@@ -1456,7 +1451,8 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   // on.  Therefore, copy match.inline_autocompletion to a temp to preserve
   // its value across the entire call.
   const base::string16 inline_autocompletion(match.inline_autocompletion);
-  OnPopupDataChanged(inline_autocompletion, nullptr, keyword, is_keyword_hint);
+  OnPopupDataChanged(inline_autocompletion,
+                     /*is_temporary_text=*/false, keyword, is_keyword_hint);
 }
 
 // static

@@ -1,2 +1,5 @@
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests, with this expectations file.
+#
+# Expectations in this file must apply to wpt_internal/webgpu/cts.html, NOT
+# external/wpt/webgpu/cts.html, as the latter is not run.

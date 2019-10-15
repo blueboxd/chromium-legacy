@@ -40,10 +40,47 @@ Polymer({
       type: Number,
       value: -1,
     },
+
+    /**
+     * List of printers filtered through a search term.
+     * @type {!Array<!PrinterListEntry>}
+     * @private
+     */
+    filteredPrinters_: {
+      type: Array,
+      value: () => [],
+    },
   },
 
   listeners: {
     'add-automatic-printer': 'onAddAutomaticPrinter_',
+  },
+
+  observers: [
+    'onSearchOrPrintersChanged_(nearbyPrinters.*, searchTerm)'
+  ],
+
+  /**
+   * Redoes the search whenever |searchTerm| or |nearbyPrinters| changes.
+   * @private
+   */
+  onSearchOrPrintersChanged_: function() {
+    if (!this.nearbyPrinters) {
+      return;
+    }
+    // Filter printers through |searchTerm|. If |searchTerm| is empty,
+    // |filteredPrinters_| is just |nearbyPrinters|.
+    const updatedPrinters = this.searchTerm ?
+        this.nearbyPrinters.filter(
+            item => settings.printing.matchesSearchTerm(
+                item.printerInfo,this.searchTerm)) :
+        this.nearbyPrinters.slice();
+
+    updatedPrinters.sort(settings.printing.sortPrinters);
+
+    this.updateList(
+        'filteredPrinters_', printer => printer.printerInfo.printerId,
+        updatedPrinters);
   },
 
   /**
@@ -99,5 +136,13 @@ Polymer({
         'show-cups-printer-toast',
         {resultCode: PrinterSetupResult.PRINTER_UNREACHABLE,
          printerName: printer.printerName});
+  },
+
+  /**
+   * @return {boolean} Returns true if the no search message should be visible.
+   * @private
+   */
+  showNoSearchResultsMessage_: function() {
+    return !!this.searchTerm && !this.filteredPrinters_.length;
   }
 });

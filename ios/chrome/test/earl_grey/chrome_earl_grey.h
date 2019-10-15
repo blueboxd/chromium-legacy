@@ -240,6 +240,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // exception if operation not succeeded.
 - (void)resetTabUsageRecorder;
 
+// Returns the tab title of the current tab.
+- (NSString*)currentTabTitle;
+
+// Returns the tab title of the next tab. Assumes that next tab exists.
+- (NSString*)nextTabTitle;
+
 #pragma mark - SignIn Utilities (EG2)
 
 // Signs the user out, clears the known accounts entirely and checks whether the

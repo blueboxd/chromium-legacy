@@ -442,6 +442,11 @@
           'shards': 2, # https://crbug.com/955853
         },
       },
+      'Linux Tests': {
+        'swarming': {
+          'idempotent': False, # https://crbug.com/1013093
+        },
+      },
     },
   },
   'content_shell_crash_test': {

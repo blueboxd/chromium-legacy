@@ -94,17 +94,24 @@ void AssistantCollectUserDataDelegate::OnShippingAddressChanged(
 void AssistantCollectUserDataDelegate::OnCreditCardChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& jcard) {
-  if (!jcard) {
-    ui_controller_->OnCreditCardChanged(nullptr);
-    return;
+    const base::android::JavaParamRef<jobject>& jcard,
+    const base::android::JavaParamRef<jobject>& jbilling_profile) {
+  std::unique_ptr<autofill::CreditCard> card = nullptr;
+  if (jcard) {
+    card = std::make_unique<autofill::CreditCard>();
+    autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
+        jcard, env, card.get());
   }
 
-  auto card = std::make_unique<autofill::CreditCard>();
-  autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
-      jcard, env, card.get());
+  std::unique_ptr<autofill::AutofillProfile> billing_profile = nullptr;
+  if (jbilling_profile) {
+    billing_profile = std::make_unique<autofill::AutofillProfile>();
+    autofill::PersonalDataManagerAndroid::PopulateNativeProfileFromJava(
+        jbilling_profile, env, billing_profile.get());
+  }
 
-  ui_controller_->OnCreditCardChanged(std::move(card));
+  ui_controller_->OnCreditCardChanged(std::move(card),
+                                      std::move(billing_profile));
 }
 
 void AssistantCollectUserDataDelegate::OnTermsAndConditionsChanged(

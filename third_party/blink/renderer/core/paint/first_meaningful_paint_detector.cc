@@ -48,8 +48,8 @@ Document* FirstMeaningfulPaintDetector::GetDocument() {
 // First Meaningful Paint.
 void FirstMeaningfulPaintDetector::MarkNextPaintAsMeaningfulIfNeeded(
     const LayoutObjectCounter& counter,
-    int contents_height_before_layout,
-    int contents_height_after_layout,
+    double contents_height_before_layout,
+    double contents_height_after_layout,
     int visible_height) {
   if (network_quiet_reached_)
     return;
@@ -60,10 +60,10 @@ void FirstMeaningfulPaintDetector::MarkNextPaintAsMeaningfulIfNeeded(
   if (visible_height == 0)
     return;
 
-  double ratio_before = std::max(
-      1.0, static_cast<double>(contents_height_before_layout) / visible_height);
-  double ratio_after = std::max(
-      1.0, static_cast<double>(contents_height_after_layout) / visible_height);
+  double ratio_before =
+      std::max(1.0, contents_height_before_layout / visible_height);
+  double ratio_after =
+      std::max(1.0, contents_height_after_layout / visible_height);
   double significance = delta / ((ratio_before + ratio_after) / 2);
 
   // If the page has many blank characters, the significance value is

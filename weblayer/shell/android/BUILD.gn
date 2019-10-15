@@ -129,6 +129,23 @@ if (public_android_sdk) {
       "//chrome/android:trichrome_library_apk",
     ]
   }
+
+  generate_wrapper("run_weblayer_shell_webview") {
+    testonly = true
+    wrapper_script = "$root_out_dir/bin/run_weblayer_shell_webview"
+    executable = "//weblayer/tools/run_weblayer_shell.py"
+    executable_args = [
+      "--shell-apk-path",
+      "@WrappedPath(apks/WebLayerShellWebView.apk)",
+      "--support-apk-path",
+      "@WrappedPath(apks/SystemWebView.apk)",
+    ]
+
+    deps = [
+      ":weblayer_shell_webview_apk",
+      "//android_webview:system_webview_apk",
+    ]
+  }
 }
 
 demo_apk_manifest = "$target_gen_dir/demo_apk_manifest/AndroidManifest.xml"
@@ -230,6 +247,7 @@ android_apk("weblayer_support_apk") {
   min_sdk_version = 21
   target_sdk_version = 28
   android_manifest_dep = ":weblayer_support_manifest"
+  shared_resources = true
 
   native_lib_version_rule = "//build/util:chrome_version_json"
   _native_lib_file =

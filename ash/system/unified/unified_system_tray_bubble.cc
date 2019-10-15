@@ -165,6 +165,15 @@ void UnifiedSystemTrayBubble::CloseNow() {
   bubble_widget_ = nullptr;
 }
 
+void UnifiedSystemTrayBubble::EnsureCollapsed() {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+  controller_->EnsureCollapsed();
+}
+
 void UnifiedSystemTrayBubble::EnsureExpanded() {
   if (!bubble_widget_)
     return;
@@ -172,6 +181,14 @@ void UnifiedSystemTrayBubble::EnsureExpanded() {
   DCHECK(unified_view_);
   DCHECK(controller_);
   controller_->EnsureExpanded();
+}
+
+void UnifiedSystemTrayBubble::CollapseMessageCenter() {
+  tray_->CollapseMessageCenter();
+}
+
+void UnifiedSystemTrayBubble::ExpandMessageCenter() {
+  tray_->ExpandMessageCenter();
 }
 
 void UnifiedSystemTrayBubble::ShowAudioDetailedView() {

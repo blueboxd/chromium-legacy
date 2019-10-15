@@ -5323,14 +5323,20 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_TOUCH" desc="A label instructing the user to physically touch the activation button on their security key (an authentication hardware device).">
     To manage your fingerprints, insert and touch your security key.
   </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_CHOOSE_NAME" desc="A label instructing the user to provide a descriptive name for a fingerprint enrolled to a security key.">
+    Choose a name for this fingerprint
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_NAME_LABEL" desc="A label for a text input field containing a descriptive name for a fingerprint enrolled to a security key.">
+    Name
+  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_PIN_PROMPT" desc="A label instructing the user to enter the PIN (short, often numeric codes that are often used with, for example, ATM cards) for their security key (an authentication hardware device).">
     To manage your fingerprints, enter the PIN for your security key. If you don’t know the PIN, you’ll need to reset the security key.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS" desc="A label informing the user that there are no fingerprints stored on their security key (authentication hardware device).">
     Your security key has no fingerprints stored.
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_LABEL" desc="A label informing the user that they may add, remove, or rename fingerprints on their security key (authentication hardware device).">
-    You may add, remove, or rename fingerprints here.
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_LABEL" desc="A label describing a list of fingerprints enrolled with a security key (authentication hardware device).">
+    Fingerprints on this security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL" desc="A label instructing the user to repeatedly touch the fingerprint sensor on their security key (authentication hardware device) to take samples for a new fingerprint.">
     Keep touching your security key to save your fingerprint.

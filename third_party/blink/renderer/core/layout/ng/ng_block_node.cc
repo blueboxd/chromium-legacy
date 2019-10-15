@@ -839,7 +839,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
   if (LIKELY(block && is_last_fragment)) {
-    LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
+    LayoutUnit intrinsic_block_size =
+        layout_result.UnconstrainedIntrinsicBlockSize();
     if (UNLIKELY(previous_break_token))
       intrinsic_block_size += previous_break_token->ConsumedBlockSize();
 
@@ -920,8 +921,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
   for (const auto& child : physical_fragment.Children()) {
     if (child->GetLayoutObject() != box_) {
       DCHECK(child->GetLayoutObject()->IsColumnSpanAll());
-      // TODO(mstensho): Write back the spanner offset to the associated
-      // LayoutMultiColumnSpannerPlaceholder (if we bother)
+      CopyChildFragmentPosition(*child, child.offset);
       continue;
     }
     // Each anonymous child of a multicol container constitutes one column.

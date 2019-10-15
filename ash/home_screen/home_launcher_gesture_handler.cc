@@ -11,6 +11,7 @@
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/home_screen/swipe_home_to_overview_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -794,6 +795,11 @@ bool HomeLauncherGestureHandler::SetUpWindows(
     Mode mode,
     aura::Window* window,
     base::Optional<gfx::Point> location_in_screen) {
+  if (mode == Mode::kSwipeHomeToOverview) {
+    active_window_.reset();
+    return Shell::Get()->home_screen_controller()->IsHomeScreenVisible();
+  }
+
   SplitViewController* split_view_controller = SplitViewController::Get();
   overview_active_on_gesture_start_ =
       Shell::Get()->overview_controller()->InOverviewSession();
@@ -966,6 +972,9 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
     window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
         GetActiveWindow(), hidden_windows_);
+  } else if (mode_ == Mode::kSwipeHomeToOverview) {
+    swipe_home_to_overview_controller_ =
+        std::make_unique<SwipeHomeToOverviewController>();
   } else {
     NotifyHomeLauncherTargetPositionChanged(
         mode_ == Mode::kSlideUpToShow /*showing*/, display_.id());
@@ -983,6 +992,8 @@ void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location,
                                                  float scroll_y) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
     window_drag_controller_->Drag(location, scroll_x, scroll_y);
+  } else if (mode_ == Mode::kSwipeHomeToOverview) {
+    swipe_home_to_overview_controller_->Drag(location, scroll_x, scroll_y);
   } else {
     HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
     DCHECK(home_screen_delegate);
@@ -1000,6 +1011,9 @@ bool HomeLauncherGestureHandler::OnDragEnded(const gfx::Point& location,
     last_event_location_ = base::make_optional(location);
 
     window_drag_controller_->EndDrag(location, velocity_y);
+    RemoveObserversAndStopTracking();
+  } else if (mode_ == Mode::kSwipeHomeToOverview) {
+    swipe_home_to_overview_controller_->EndDrag(location, velocity_y);
     RemoveObserversAndStopTracking();
   } else {
     // In clamshell mode, AppListView::SetIsInDrag is called explicitly so it
@@ -1033,6 +1047,9 @@ bool HomeLauncherGestureHandler::OnDragEnded(const gfx::Point& location,
 void HomeLauncherGestureHandler::OnDragCancelled() {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
     window_drag_controller_->CancelDrag();
+    RemoveObserversAndStopTracking();
+  } else if (mode_ == Mode::kSwipeHomeToOverview) {
+    swipe_home_to_overview_controller_->CancelDrag();
     RemoveObserversAndStopTracking();
   } else {
     HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();

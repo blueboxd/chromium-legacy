@@ -166,8 +166,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
-  int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;

@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "chrome/android/chrome_jni_headers/ContextMenuHelper_jni.h"
 #include "chrome/android/chrome_jni_headers/ContextMenuParams_jni.h"
-#include "chrome/browser/android/download/download_controller_base.h"
+#include "chrome/browser/download/android/download_controller_base.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"

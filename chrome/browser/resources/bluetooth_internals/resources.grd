@@ -93,6 +93,23 @@
                file="object_fieldset.js"
                type="BINDATA"
                compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_PAGE_MANAGER_HTML"
+               file="page_manager.html"
+               type="BINDATA"
+               compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_PAGE_MANAGER_JS"
+               file="page_manager.js"
+               type="BINDATA"
+               compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_PAGE_HTML"
+               file="page.html"
+               type="BINDATA"
+               compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_PAGE_JS"
+               file="page.js"
+               type="BINDATA"
+               compress="gzip" />
+
       <include name="IDR_BLUETOOTH_INTERNALS_SERVICE_LIST_JS"
                file="service_list.js"
                type="BINDATA"

@@ -140,6 +140,13 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return intrinsic_block_size_;
   }
 
+  LayoutUnit UnconstrainedIntrinsicBlockSize() const {
+    return HasRareData() && rare_data_->unconstrained_intrinsic_block_size_ !=
+                                kIndefiniteSize
+               ? rare_data_->unconstrained_intrinsic_block_size_
+               : intrinsic_block_size_;
+  }
+
   LayoutUnit MinimalSpaceShortage() const {
     if (!HasRareData())
       return LayoutUnit::Max();
@@ -340,6 +347,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     };
     NGExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;
+    LayoutUnit unconstrained_intrinsic_block_size_ = kIndefiniteSize;
 #if DCHECK_IS_ON()
     bool has_tallest_unbreakable_block_size = false;
 #endif

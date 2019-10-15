@@ -5,6 +5,7 @@
 #include "content/common/fetch/fetch_api_request_proto.h"
 
 #include "content/common/fetch/fetch_api_request.pb.h"
+#include "content/public/common/referrer.h"
 
 namespace content {
 
@@ -54,10 +55,10 @@ blink::mojom::FetchAPIRequestPtr DeserializeFetchRequestFromString(
   request_ptr->method = request_proto.method();
   request_ptr->headers = {request_proto.headers().begin(),
                           request_proto.headers().end()};
-  request_ptr->referrer =
-      blink::mojom::Referrer::New(GURL(request_proto.referrer().url()),
-                                  static_cast<network::mojom::ReferrerPolicy>(
-                                      request_proto.referrer().policy()));
+  request_ptr->referrer = blink::mojom::Referrer::New(
+      GURL(request_proto.referrer().url()),
+
+      Referrer::ConvertToPolicy(request_proto.referrer().policy()));
   request_ptr->is_reload = request_proto.is_reload();
   request_ptr->credentials_mode = static_cast<network::mojom::CredentialsMode>(
       request_proto.credentials_mode());

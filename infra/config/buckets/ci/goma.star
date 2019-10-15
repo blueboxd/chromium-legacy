@@ -24,7 +24,6 @@ def fyi_goma_canary_builder(*, name, **kwargs):
 
 fyi_goma_canary_builder(
     name = 'Linux Builder Goma Canary',
-    goma_backend = None,
     # keep to use trusty for this until chrome drops support of development
     # on trusty.
     os = os.LINUX_TRUSTY,
@@ -84,17 +83,14 @@ fyi_goma_canary_builder(
 
 fyi_goma_canary_builder(
     name = 'chromeos-amd64-generic-rel-goma-canary',
-    goma_backend = None,
 )
 
 fyi_goma_canary_builder(
     name = 'linux-archive-rel-goma-canary',
-    goma_backend = None,
 )
 
 fyi_goma_canary_builder(
     name = 'linux-archive-rel-goma-canary-localoutputcache',
-    goma_backend = None,
 )
 
 fyi_goma_canary_builder(
@@ -198,7 +194,6 @@ def fyi_goma_latest_client_builder(*, name, os=os.LINUX_DEFAULT, **kwargs):
 
 fyi_goma_latest_client_builder(
     name = 'Linux Builder Goma Latest Client',
-    goma_backend = None,
 )
 
 fyi_goma_latest_client_builder(
@@ -231,13 +226,11 @@ fyi_goma_latest_client_builder(
 
 fyi_goma_latest_client_builder(
     name = 'Win cl.exe Goma Latest Client LocalOutputCache',
-    goma_backend = None,
     os = os.WINDOWS_DEFAULT,
 )
 
 fyi_goma_latest_client_builder(
     name = 'Win7 Builder (dbg) Goma Latest Client',
-    goma_backend = None,
     os = os.WINDOWS_7,
 )
 
@@ -253,12 +246,10 @@ fyi_goma_latest_client_builder(
 
 fyi_goma_latest_client_builder(
     name = 'android-archive-dbg-goma-latest',
-    goma_backend = None,
 )
 
 fyi_goma_latest_client_builder(
     name = 'chromeos-amd64-generic-rel-goma-latest',
-    goma_backend = None,
 )
 
 fyi_goma_latest_client_builder(
@@ -276,12 +267,10 @@ fyi_goma_latest_client_builder(
 
 fyi_goma_latest_client_builder(
     name = 'linux-archive-rel-goma-latest',
-    goma_backend = None,
 )
 
 fyi_goma_latest_client_builder(
     name = 'linux-archive-rel-goma-latest-localoutputcache',
-    goma_backend = None,
 )
 
 fyi_goma_latest_client_builder(

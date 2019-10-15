@@ -98,7 +98,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
   }
 
   is_target_visibility_show_ = true;
-  NotifyTargetVisibilityChanged(GetTargetVisibility(), display_id);
+  OnVisibilityWillChange(GetTargetVisibility(), display_id);
   RequestPresentationTime(display_id, event_time_stamp);
 
   if (!view_) {
@@ -110,7 +110,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
   }
   delegate_->ShowForDisplay(display_id);
 
-  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
+  OnVisibilityChanged(GetTargetVisibility(), display_id);
 }
 
 void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
@@ -154,7 +154,7 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
 
   delegate_->OnClosing();
 
-  NotifyTargetVisibilityChanged(GetTargetVisibility(), GetDisplayId());
+  OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
   view_->SetState(ash::AppListViewState::kClosed);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
@@ -351,14 +351,14 @@ int64_t AppListPresenterImpl::GetDisplayId() {
       .id();
 }
 
-void AppListPresenterImpl::NotifyVisibilityChanged(bool visible,
-                                                   int64_t display_id) {
+void AppListPresenterImpl::OnVisibilityChanged(bool visible,
+                                               int64_t display_id) {
   delegate_->OnVisibilityChanged(visible, display_id);
 }
 
-void AppListPresenterImpl::NotifyTargetVisibilityChanged(bool visible,
-                                                         int64_t display_id) {
-  delegate_->OnTargetVisibilityChanged(visible, display_id);
+void AppListPresenterImpl::OnVisibilityWillChange(bool visible,
+                                                  int64_t display_id) {
+  delegate_->OnVisibilityWillChange(visible, display_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -383,8 +383,8 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
         else
           HandleCloseOpenSearchBox();
 
-        NotifyTargetVisibilityChanged(is_shown, GetDisplayId());
-        NotifyVisibilityChanged(is_shown, GetDisplayId());
+        OnVisibilityWillChange(is_shown, GetDisplayId());
+        OnVisibilityChanged(is_shown, GetDisplayId());
       }
     }
 
@@ -405,7 +405,7 @@ void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
   StopObservingImplicitAnimations();
 
   // This class observes the closing animation only.
-  NotifyVisibilityChanged(GetTargetVisibility(), GetDisplayId());
+  OnVisibilityChanged(GetTargetVisibility(), GetDisplayId());
 
   if (is_target_visibility_show_) {
     view_->GetWidget()->Activate();
@@ -433,8 +433,8 @@ void AppListPresenterImpl::OnWidgetDestroyed(views::Widget* widget) {
 void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
   DCHECK_EQ(view_->GetWidget(), widget);
-  NotifyTargetVisibilityChanged(visible, GetDisplayId());
-  NotifyVisibilityChanged(visible, GetDisplayId());
+  OnVisibilityWillChange(visible, GetDisplayId());
+  OnVisibilityChanged(visible, GetDisplayId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

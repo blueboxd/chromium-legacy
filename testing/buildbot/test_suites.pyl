@@ -3877,7 +3877,7 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer',
+          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --use-cmd-decoder=validating',
         ],
         'precommit_args': [
           # Gerrit issue ID
@@ -4015,7 +4015,7 @@
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--force_high_performance_gpu',
+          '--extra-browser-args=--force_high_performance_gpu --use-cmd-decoder=validating',
         ],
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
@@ -4088,7 +4088,7 @@
         ],
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--force_high_performance_gpu',
+          '--extra-browser-args=--force_high_performance_gpu --use-cmd-decoder=validating',
         ],
         'swarming': {
           'shards': 2,
@@ -4121,7 +4121,7 @@
           '--driver-logging',
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
-          '--isolated-script-test-filter=external/wpt/webgpu/*',
+          '--isolated-script-test-filter=wpt_internal/webgpu/*',
         ],
         'linux_args': [ '--no-xvfb' ],
         'merge': {
@@ -4144,7 +4144,7 @@
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
           '-t', 'Release_x64',
-          '--isolated-script-test-filter=external/wpt/webgpu/*',
+          '--isolated-script-test-filter=wpt_internal/webgpu/*',
         ],
         'merge': {
           'args': [
@@ -4586,14 +4586,12 @@
         'test': 'content_unittests',
       },
       'x11_content_unittests': {
-        'experiment_percentage': 100,
         'args': [
           '--ozone-platform=x11',
         ],
         'test': 'content_unittests',
       },
       'x11_views_unittests': {
-        'experiment_percentage': 100,
         'args': [
           '--ozone-platform=x11',
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter',

@@ -14,9 +14,9 @@ class WriteBarrierPerfTest : public TestSupportingGC {};
 
 namespace {
 
-class SimpleObject : public GarbageCollected<SimpleObject> {
+class PerfDummyObject : public GarbageCollected<PerfDummyObject> {
  public:
-  SimpleObject() = default;
+  PerfDummyObject() = default;
   virtual void Trace(Visitor*) {}
 };
 
@@ -31,15 +31,15 @@ base::TimeDelta TimedRun(base::RepeatingCallback<void()> callback) {
 TEST_F(WriteBarrierPerfTest, MemberWritePerformance) {
   // Setup.
   constexpr wtf_size_t kNumElements = 100000;
-  Persistent<HeapVector<Member<SimpleObject>>> holder(
-      MakeGarbageCollected<HeapVector<Member<SimpleObject>>>());
+  Persistent<HeapVector<Member<PerfDummyObject>>> holder(
+      MakeGarbageCollected<HeapVector<Member<PerfDummyObject>>>());
   for (wtf_size_t i = 0; i < kNumElements; ++i) {
-    holder->push_back(MakeGarbageCollected<SimpleObject>());
+    holder->push_back(MakeGarbageCollected<PerfDummyObject>());
   }
   PreciselyCollectGarbage();
   // Benchmark.
   base::RepeatingCallback<void()> benchmark = base::BindRepeating(
-      [](const Persistent<HeapVector<Member<SimpleObject>>>& holder) {
+      [](const Persistent<HeapVector<Member<PerfDummyObject>>>& holder) {
         for (wtf_size_t i = 0; i < kNumElements / 2; ++i) {
           (*holder)[i].Swap((*holder)[kNumElements / 2 + i]);
         }

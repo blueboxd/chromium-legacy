@@ -745,6 +745,9 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   intrinsic_block_size_ = std::max(intrinsic_block_size_,
                                    CalculateMinimumBlockSize(end_margin_strut));
 
+  // Save the unconstrained intrinsic size on the builder before clamping it.
+  container_builder_.SetUnconstrainedIntrinsicBlockSize(intrinsic_block_size_);
+
   // TODO(layout-dev): Is CalculateMinimumBlockSize common to other algorithms,
   // and should move into ClampIntrinsicBlockSize?
   intrinsic_block_size_ = ClampIntrinsicBlockSize(

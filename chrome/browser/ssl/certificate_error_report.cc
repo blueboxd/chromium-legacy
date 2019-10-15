@@ -126,6 +126,25 @@ void AddMacTrustFlagsToReport(
 
 #undef COPY_TRUST_FLAGS
 }
+
+void AddMacPlatformDebugInfoToReport(
+    const network::mojom::MacPlatformVerifierDebugInfoPtr&
+        mac_platform_debug_info,
+    chrome_browser_ssl::TrialVerificationInfo* trial_report) {
+  if (!mac_platform_debug_info)
+    return;
+  chrome_browser_ssl::MacPlatformDebugInfo* report_info =
+      trial_report->mutable_mac_platform_debug_info();
+  report_info->set_trust_result(mac_platform_debug_info->trust_result);
+  report_info->set_result_code(mac_platform_debug_info->result_code);
+  for (const auto& cert_info : mac_platform_debug_info->status_chain) {
+    chrome_browser_ssl::MacCertEvidenceInfo* report_cert_info =
+        report_info->add_status_chain();
+    report_cert_info->set_status_bits(cert_info->status_bits);
+    for (auto code : cert_info->status_codes)
+      report_cert_info->add_status_codes(code);
+  }
+}
 #endif  // defined(OS_MACOSX)
 #endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 
@@ -189,6 +208,8 @@ CertificateErrorReport::CertificateErrorReport(
       enable_sha1_local_anchors, disable_symantec_enforcement,
       trial_report->mutable_verify_flags());
 #if defined(OS_MACOSX)
+  AddMacPlatformDebugInfoToReport(debug_info->mac_platform_debug_info,
+                                  trial_report);
   AddMacTrustFlagsToReport(
       debug_info->mac_combined_trust_debug_info,
       trial_report->mutable_mac_combined_trust_debug_info());

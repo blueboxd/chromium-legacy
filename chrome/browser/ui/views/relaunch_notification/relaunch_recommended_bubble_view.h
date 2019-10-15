@@ -15,7 +15,6 @@ class Browser;
 
 namespace views {
 class Button;
-class Label;
 class Widget;
 }  // namespace views
 
@@ -59,9 +58,6 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
 
   // A callback run if the user accepts the prompt to relaunch the browser.
   base::RepeatingClosure on_accept_;
-
-  // The label containing the body text of the bubble.
-  views::Label* body_label_;
 
   // Timer that schedules title refreshes.
   RelaunchRecommendedTimer relaunch_recommended_timer_;

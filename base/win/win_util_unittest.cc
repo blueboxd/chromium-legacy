@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_co_mem.h"
-#include "base/win/win_client_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -46,14 +45,6 @@ TEST(BaseWinUtilTest, TestGetUserSidString) {
   std::wstring user_sid;
   EXPECT_TRUE(GetUserSidString(&user_sid));
   EXPECT_TRUE(!user_sid.empty());
-}
-
-TEST(BaseWinUtilTest, TestGetNonClientMetrics) {
-  NONCLIENTMETRICS_XP metrics = {0};
-  GetNonClientMetrics(&metrics);
-  EXPECT_GT(metrics.cbSize, 0u);
-  EXPECT_GT(metrics.iScrollWidth, 0);
-  EXPECT_GT(metrics.iScrollHeight, 0);
 }
 
 TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {

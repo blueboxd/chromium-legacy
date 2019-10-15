@@ -649,6 +649,7 @@ source_set("unit_tests") {
     "nigori/cryptographer_impl_unittest.cc",
     "nigori/nigori_key_bag_unittest.cc",
     "nigori/nigori_model_type_processor_unittest.cc",
+    "nigori/nigori_state_unittest.cc",
     "nigori/nigori_storage_impl_unittest.cc",
     "nigori/nigori_sync_bridge_impl_unittest.cc",
     "nigori/nigori_unittest.cc",

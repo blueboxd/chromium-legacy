@@ -50,20 +50,61 @@ RequestResult AccessibilityPrivateHooksDelegate::HandleRequest(
                                   *parse_result.arguments);
 }
 
-// Called to translate a language code into human-readable string in the
-// language of the provided language code. Language codes can have optional
-// country code e.g. 'en' and 'en-us' both yield an output of 'English'.
-// As another example, the code 'fr' would produce 'francais' as output.
+// Called to translate |language_code_to_translate| into human-readable string
+// in the language specified by |target_language_code|. For example, if
+// language_code_to_translate = 'en' and target_language_code = 'fr', then this
+// function returns 'anglais'.
+// If language_code_to_translate = 'fr' and target_language_code = 'en', then
+// this function returns 'french'.
 RequestResult AccessibilityPrivateHooksDelegate::HandleGetDisplayLanguage(
     ScriptContext* script_context,
     const std::vector<v8::Local<v8::Value>>& parsed_arguments) {
   DCHECK(script_context->extension());
-  DCHECK_EQ(1u, parsed_arguments.size());
+  DCHECK_EQ(2u, parsed_arguments.size());
   DCHECK(parsed_arguments[0]->IsString());
-  icu::Locale locale = icu::Locale(
-      gin::V8ToString(script_context->isolate(), parsed_arguments[0]).c_str());
+  DCHECK(parsed_arguments[1]->IsString());
+
+  std::string language_code_to_translate =
+      gin::V8ToString(script_context->isolate(), parsed_arguments[0]);
+  std::string target_language_code =
+      gin::V8ToString(script_context->isolate(), parsed_arguments[1]);
+  // The locale whose language code we want to translate.
+  icu::Locale locale_to_translate =
+      icu::Locale(language_code_to_translate.c_str());
+  // The locale that |display_language| should be in.
+  icu::Locale target_locale = icu::Locale(target_language_code.c_str());
+
+  // Validate locales.
+  // Get list of available locales. Please see the ICU User Guide for more
+  // details: http://userguide.icu-project.org/locale.
+  bool valid_arg1 = false;
+  bool valid_arg2 = false;
+  int32_t num_locales = 0;
+  const icu::Locale* available_locales =
+      icu::Locale::getAvailableLocales(num_locales);
+  for (int32_t i = 0; i < num_locales; ++i) {
+    // Check both the language and country for each locale.
+    const char* current_language = available_locales[i].getLanguage();
+    const char* current_country = available_locales[i].getCountry();
+    if (strcmp(locale_to_translate.getLanguage(), current_language) == 0 &&
+        strcmp(locale_to_translate.getCountry(), current_country) == 0) {
+      valid_arg1 = true;
+    }
+    if (strcmp(target_locale.getLanguage(), current_language) == 0 &&
+        strcmp(target_locale.getCountry(), current_country) == 0) {
+      valid_arg2 = true;
+    }
+  }
+
+  // If either of the language codes is invalid, we should return empty string.
+  if (!(valid_arg1 && valid_arg2)) {
+    RequestResult empty_result(RequestResult::HANDLED);
+    empty_result.return_value = gin::StringToV8(script_context->isolate(), "");
+    return empty_result;
+  }
+
   icu::UnicodeString display_language;
-  locale.getDisplayLanguage(locale, display_language);
+  locale_to_translate.getDisplayLanguage(target_locale, display_language);
   std::string language_result =
       base::UTF16ToUTF8(base::i18n::UnicodeStringToString16(display_language));
   // Instead of returning "und", which is what the ICU Locale class returns for

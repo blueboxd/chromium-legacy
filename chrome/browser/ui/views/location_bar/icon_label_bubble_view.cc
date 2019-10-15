@@ -31,8 +31,8 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 using MD = ui::MaterialDesignController;
@@ -120,6 +120,23 @@ void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
 }
 
 //////////////////////////////////////////////////////////////////
+// HighlightPathGenerator class
+
+class IconLabelBubbleView::HighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return static_cast<const IconLabelBubbleView*>(view)->GetHighlightPath();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
+};
+
+//////////////////////////////////////////////////////////////////
 // IconLabelBubbleView class
 
 IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
@@ -135,6 +152,9 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
       GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
   set_ink_drop_highlight_opacity(
       GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
+
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<HighlightPathGenerator>());
 
   UpdateBorder();
 
@@ -264,7 +284,10 @@ void IconLabelBubbleView::Layout() {
   separator_view_->SetBounds(separator_x, separator_bounds.y(), separator_width,
                              separator_height);
 
-  UpdateHighlightPath();
+  if (focus_ring()) {
+    focus_ring()->Layout();
+    focus_ring()->SchedulePaint();
+  }
 }
 
 bool IconLabelBubbleView::OnMousePressed(const ui::MouseEvent& event) {
@@ -522,7 +545,7 @@ void IconLabelBubbleView::HideAnimation() {
   GetInkDrop()->SetShowHighlightOnFocus(false);
 }
 
-void IconLabelBubbleView::UpdateHighlightPath() {
+SkPath IconLabelBubbleView::GetHighlightPath() const {
   gfx::Rect highlight_bounds = GetLocalBounds();
   if (ShouldShowSeparator())
     highlight_bounds.Inset(0, 0, GetEndPaddingWithSeparator(), 0);
@@ -531,13 +554,7 @@ void IconLabelBubbleView::UpdateHighlightPath() {
   const float corner_radius = highlight_bounds.height() / 2.f;
   const SkRect rect = RectToSkRect(highlight_bounds);
 
-  SkPath path;
-  path.addRoundRect(rect, corner_radius, corner_radius);
-  SetProperty(views::kHighlightPathKey, path);
-  if (focus_ring()) {
-    focus_ring()->Layout();
-    focus_ring()->SchedulePaint();
-  }
+  return SkPath().addRoundRect(rect, corner_radius, corner_radius);
 }
 
 void IconLabelBubbleView::UpdateBorder() {

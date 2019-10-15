@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_controller_base.h"
+#include "chrome/browser/download/android/download_controller_base.h"
 #else
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"

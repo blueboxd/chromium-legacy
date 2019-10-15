@@ -47,11 +47,7 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/246968
     "race:webrtc::VideoCodingModuleImpl::RegisterPacketRequestCallback\n"
 
-    // http://crbug.com/257396
-    "race:base::trace_event::"
-
     // http://crbug.com/258479
-    "race:SamplingStateScope\n"
     "race:g_trace_state\n"
 
     // http://crbug.com/268924

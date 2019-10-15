@@ -17,6 +17,7 @@ enum SchedulerClientType {
   TEST_3 = -3;
   UNKNOWN = 0;
   WEBUI = 1;
+  CHROME_UPDATE = 2;
 }
 
 // Contains details about supression and recovery after suppression expired.

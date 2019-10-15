@@ -287,7 +287,7 @@ std::vector<Notification*> UnifiedMessageListView::GetNotificationsAboveY(
     int y_offset) const {
   std::vector<Notification*> notifications;
   for (views::View* view : children()) {
-    if (view->bounds().bottom() < y_offset) {
+    if (view->bounds().bottom() <= y_offset) {
       Notification* notification =
           MessageCenter::Get()->FindVisibleNotificationById(
               AsMVC(view)->GetNotificationId());

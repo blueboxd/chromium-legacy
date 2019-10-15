@@ -197,10 +197,12 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   event.id = event_data->source_id;
 
   event_bundle.updates.emplace_back();
-  if (event_data->event_type == AXEventType::WINDOW_CONTENT_CHANGED) {
-    current_tree_serializer_->InvalidateSubtree(
-        GetFromId(event_data->source_id));
-  }
+
+  // Force the tree, starting at the target of the event, to update, so
+  // unignored fields get updated.
+  event_bundle.updates[0].node_id_to_clear = event_data->source_id;
+  current_tree_serializer_->InvalidateSubtree(GetFromId(event_data->source_id));
+
   current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
                                              &event_bundle.updates.back());
 
@@ -335,16 +337,6 @@ void AXTreeSourceArc::SerializeNode(ArcAccessibilityInfoData* info_data,
 
   int32_t id = info_data->GetId();
   out_data->id = id;
-  // If the node is the root, or if the node's parent is the root window,
-  // set a role of generic container.
-  if (info_data->IsNode() && id == root_id_) {
-    out_data->role = ax::mojom::Role::kRootWebArea;
-  } else if (info_data->IsNode() && parent_map_.at(id) == root_id_) {
-    out_data->role = ax::mojom::Role::kGenericContainer;
-    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
-  } else {
-    info_data->PopulateAXRole(out_data);
-  }
   info_data->Serialize(out_data);
 }
 
@@ -394,6 +386,23 @@ const gfx::Rect AXTreeSourceArc::GetBounds(ArcAccessibilityInfoData* info_data,
 
 void AXTreeSourceArc::InvalidateTree() {
   current_tree_serializer_->Reset();
+}
+
+bool AXTreeSourceArc::IsRootOfNodeTree(int32_t id) const {
+  const auto& node_it = tree_map_.find(id);
+  if (node_it == tree_map_.end())
+    return false;
+
+  if (!node_it->second->IsNode())
+    return false;
+
+  const auto& parent_it = parent_map_.find(id);
+  if (parent_it == parent_map_.end())
+    return true;
+
+  const auto& parent_tree_it = tree_map_.find(parent_it->second);
+  CHECK(parent_tree_it != tree_map_.end());
+  return !parent_tree_it->second->IsNode();
 }
 
 gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(

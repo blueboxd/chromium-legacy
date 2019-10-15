@@ -19,7 +19,7 @@
 namespace cc {
 
 struct CC_ANIMATION_EXPORT AnimationEvent {
-  enum Type { STARTED, FINISHED, ABORTED, TAKEOVER };
+  enum Type { STARTED, FINISHED, ABORTED, TAKEOVER, TIME_UPDATED };
 
   AnimationEvent(Type type,
                  ElementId element_id,
@@ -27,17 +27,28 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
                  int target_property,
                  base::TimeTicks monotonic_time);
 
+  // Constructs AnimationEvent of TIME_UPDATED type.
+  AnimationEvent(WorkletAnimationId worklet_animation_id,
+                 base::Optional<base::TimeDelta> local_time);
+
   AnimationEvent(const AnimationEvent& other);
   AnimationEvent& operator=(const AnimationEvent& other);
 
   ~AnimationEvent();
 
   Type type;
+  // Either element_id or worklet_animation_id are set. worklet_animation_id is
+  // set for TIME_UPDATED event types, element_id is set for other events.
+  // TODO(http://crbug.com/1013727): Make all animation events use animation id
+  // to do targeting;
   ElementId element_id;
+  WorkletAnimationId worklet_animation_id;
   int group_id;
   int target_property;
   base::TimeTicks monotonic_time;
   bool is_impl_only;
+  // TODO(http://crbug.com/1013715): Remove unused members (opacity, transform,
+  // filters).
   float opacity;
   gfx::Transform transform;
   FilterOperations filters;
@@ -45,6 +56,9 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
   // For continuing a scroll offset animation on the main thread.
   base::TimeTicks animation_start_time;
   std::unique_ptr<AnimationCurve> curve;
+
+  // Set for TIME_UPDATED events.
+  base::Optional<base::TimeDelta> local_time;
 };
 
 class CC_ANIMATION_EXPORT AnimationEvents : public MutatorEvents {

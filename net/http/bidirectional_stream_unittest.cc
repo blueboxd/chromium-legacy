@@ -433,7 +433,8 @@ class BidirectionalStreamTest : public TestWithTaskEnvironment {
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
                        PRIVACY_MODE_DISABLED,
-                       SpdySessionKey::IsProxySession::kFalse, socket_tag);
+                       SpdySessionKey::IsProxySession::kFalse, socket_tag,
+                       NetworkIsolationKey(), false /* disable_secure_dns */);
     session_ = CreateSpdySession(http_session_.get(), key, net_log_.bound());
   }
 
@@ -627,7 +628,8 @@ TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
   http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   SpdySessionKey key(host_port_pair_, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED,
-                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                     NetworkIsolationKey(), false /* disable_secure_dns */);
   std::unique_ptr<BidirectionalStreamRequestInfo> request_info(
       new BidirectionalStreamRequestInfo);
   request_info->method = "GET";

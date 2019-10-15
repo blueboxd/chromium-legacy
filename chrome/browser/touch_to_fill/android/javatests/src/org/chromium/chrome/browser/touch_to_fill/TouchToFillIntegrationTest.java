@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -14,7 +16,7 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
-import android.widget.ListView;
+import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,6 +38,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Integration tests for the Touch To Fill component check that the calls to the Touch To Fill API
@@ -77,14 +80,15 @@ public class TouchToFillIntegrationTest {
     @DisabledTest(message = "crbug.com/1012221")
     public void testClickingSuggestionsTriggersCallback() {
         runOnUiThreadBlocking(() -> {
-            mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
+            mTouchToFill.showCredentials(EXAMPLE_URL, true, Collections.singletonList(ANA));
         });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
 
-        pollUiThread(() -> getCredentials().getChildAt(1) != null);
-        TouchCommon.singleClickView(getCredentials().getChildAt(1));
+        pollUiThread(() -> getCredentials().getChildAt(0) != null);
+        TouchCommon.singleClickView(getCredentials().getChildAt(0));
 
-        waitForEvent(mMockBridge).onCredentialSelected(BOB);
+        waitForEvent(mMockBridge).onCredentialSelected(ANA);
+        verify(mMockBridge).fetchFavicon(eq(ANA.getOriginUrl()), anyInt(), any());
         verify(mMockBridge, never()).onDismissed();
     }
 
@@ -102,8 +106,8 @@ public class TouchToFillIntegrationTest {
         verify(mMockBridge, never()).onCredentialSelected(any());
     }
 
-    private ListView getCredentials() {
-        return mActivityTestRule.getActivity().findViewById(R.id.credential_list);
+    private RecyclerView getCredentials() {
+        return mActivityTestRule.getActivity().findViewById(R.id.sheet_item_list);
     }
 
     public static <T> T waitForEvent(T mock) {

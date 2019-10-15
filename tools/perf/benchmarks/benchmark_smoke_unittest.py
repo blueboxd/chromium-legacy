@@ -13,6 +13,8 @@ import os
 import sys
 import unittest
 
+from chrome_telemetry_build import chromium_config
+
 from core import path_util
 
 from telemetry import benchmark as benchmark_module
@@ -82,12 +84,17 @@ def SmokeTestGenerator(benchmark, num_pages=1):
       # Set the benchmark's default arguments.
       options = options_for_unittests.GetRunOptions(
           output_dir=temp_dir,
-          benchmark_cls=SinglePageBenchmark)
+          benchmark_cls=SinglePageBenchmark,
+          environment=chromium_config.GetDefaultChromiumConfig())
       options.pageset_repeat = 1  # For smoke testing only run the page once.
 
       single_page_benchmark = SinglePageBenchmark()
-      with open(path_util.GetExpectationsPath()) as fp:
-        single_page_benchmark.AugmentExpectationsWithFile(fp.read())
+      # TODO(crbug.com/985103): Remove this code once
+      # AugmentExpectationsWithFile is deleted and replaced with functionality
+      # in story_filter.py.
+      if hasattr(single_page_benchmark, 'AugmentExpectationsWithFile'):
+        with open(path_util.GetExpectationsPath()) as fp:
+          single_page_benchmark.AugmentExpectationsWithFile(fp.read())
 
       return_code = single_page_benchmark.Run(options)
 

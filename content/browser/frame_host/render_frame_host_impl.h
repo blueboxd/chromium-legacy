@@ -136,7 +136,6 @@ class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 struct FramePolicy;
 struct TransferableMessage;
-struct FullScreenOptions;
 struct WebScrollIntoViewParams;
 
 namespace mojom {
@@ -203,6 +202,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
       public blink::mojom::DocumentInterfaceBroker,
+      public blink::mojom::LocalFrameHost,
       public CSPContext,
       public ui::AXActionHandler {
  public:
@@ -1192,6 +1192,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
+  // blink::mojom::LocalFrameHost
+  void EnterFullscreen(blink::mojom::FullscreenOptionsPtr options) override;
+  void ExitFullscreen() override;
+  void FullscreenStateChanged(bool is_fullscreen) override;
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1326,12 +1331,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(
       SitePerProcessBrowserTest,
       IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerful);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
 
   class DroppedInterfaceRequestLogger;
+
+  // Update the RenderProcessHost priority when a navigation occurs.
+  void UpdateRenderProcessHostFramePriorities();
 
   // IPC Message handlers.
   void OnDetach();
@@ -1387,8 +1395,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ax::mojom::Event event_to_fire);
   void OnAccessibilitySnapshotResponse(int callback_id,
                                        const AXContentTreeUpdate& snapshot);
-  void OnEnterFullscreen(const blink::FullScreenOptions& options);
-  void OnExitFullscreen();
   void OnSuddenTerminationDisablerChanged(
       bool present,
       blink::WebSuddenTerminationDisablerType disabler_type);
@@ -1486,7 +1492,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
-  void FullscreenStateChanged(bool is_fullscreen) override;
   void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void DocumentOnLoadCompleted() override;
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
@@ -1973,6 +1978,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Track this frame's last committed URL.
   GURL last_committed_url_;
 
+  // Track the frame priority of the last committed document, which is nullopt
+  // prior to the first commit.
+  base::Optional<RenderProcessHostImpl::FramePriority>
+      last_committed_document_priority_;
+
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;
 
@@ -2207,6 +2217,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::Remote<mojom::Frame> frame_;
   mojo::AssociatedRemote<mojom::FrameBindingsControl> frame_bindings_control_;
   mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
+  mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>
+      local_frame_host_receiver_{this};
 
   // If this is true then this object was created in response to a renderer
   // initiated request. Init() will be called, and until then navigation

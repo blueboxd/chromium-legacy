@@ -21,7 +21,6 @@ import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
-import org.chromium.weblayer.ListenableFuture;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 
@@ -49,8 +48,7 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 });
 
         try {
-            ListenableFuture<WebLayer> future = WebLayer.create(getApplication());
-            future.addCallback((WebLayer webLayer) -> {
+            WebLayer.create(getApplication()).addCallback((WebLayer webLayer) -> {
                 mWebLayer = webLayer;
                 createShell();
             });
@@ -80,13 +78,13 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         BrowserFragment fragment = WebLayer.createBrowserFragment(null);
-        mBrowserFragmentController = fragment.getController();
-        mProfile = mBrowserFragmentController.getProfile();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(viewId, fragment);
-        transaction.commit();
+        transaction.commitNow();
 
+        mBrowserFragmentController = fragment.getController();
+        mProfile = mBrowserFragmentController.getProfile();
         mBrowserFragmentController.setTopView(topContentsContainer);
 
         mBrowserController = mBrowserFragmentController.getBrowserController();

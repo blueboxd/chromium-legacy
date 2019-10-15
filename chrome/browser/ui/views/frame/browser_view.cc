@@ -1911,7 +1911,11 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
   }
 
   // Alert tab states.
-  switch (tabstrip_->GetTabAlertState(index)) {
+  base::Optional<TabAlertState> alert = tabstrip_->GetTabAlertState(index);
+  if (!alert.has_value())
+    return title;
+
+  switch (alert.value()) {
     case TabAlertState::AUDIO_PLAYING:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT,
                                         title);
@@ -1941,8 +1945,6 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
           IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT, title);
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_VR_PRESENTING, title);
-    case TabAlertState::NONE:
-      return title;
   }
 
   NOTREACHED();

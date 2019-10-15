@@ -217,7 +217,9 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
                                  proxy_,
                                  PRIVACY_MODE_DISABLED,
                                  SpdySessionKey::IsProxySession::kFalse,
-                                 SocketTag()),
+                                 SocketTag(),
+                                 NetworkIsolationKey(),
+                                 false /* disable_secure_dns */),
       ssl_(SYNCHRONOUS, OK) {
   session_deps_.net_log = net_log_.bound().net_log();
 }

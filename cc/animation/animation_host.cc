@@ -483,6 +483,32 @@ std::unique_ptr<MutatorEvents> AnimationHost::CreateEvents() {
   return std::make_unique<AnimationEvents>();
 }
 
+void DispatchAnimationEventToElementAnimations(ElementAnimations* animations,
+                                               const AnimationEvent& event) {
+  switch (event.type) {
+    case AnimationEvent::STARTED:
+      animations->NotifyAnimationStarted(event);
+      break;
+
+    case AnimationEvent::FINISHED:
+      animations->NotifyAnimationFinished(event);
+      break;
+
+    case AnimationEvent::ABORTED:
+      animations->NotifyAnimationAborted(event);
+      break;
+
+    case AnimationEvent::TAKEOVER:
+      animations->NotifyAnimationTakeover(event);
+      break;
+
+    case AnimationEvent::TIME_UPDATED:
+      // Worklet animations are looked up in ticking animations.
+      NOTREACHED();
+      break;
+  }
+}
+
 void AnimationHost::SetAnimationEvents(
     std::unique_ptr<MutatorEvents> mutator_events) {
   auto events =
@@ -490,31 +516,26 @@ void AnimationHost::SetAnimationEvents(
 
   for (size_t event_index = 0; event_index < events->events_.size();
        ++event_index) {
-    ElementId element_id = events->events_[event_index].element_id;
+    AnimationEvent& event = events->events_[event_index];
 
-    // Use the map of all ElementAnimations, not just ticking animations, since
-    // non-ticking animations may still receive events for impl-only animations.
-    const ElementToAnimationsMap& all_element_animations =
-        element_to_animations_map_;
-    auto iter = all_element_animations.find(element_id);
-    if (iter != all_element_animations.end()) {
-      switch (events->events_[event_index].type) {
-        case AnimationEvent::STARTED:
-          (*iter).second->NotifyAnimationStarted(events->events_[event_index]);
-          break;
-
-        case AnimationEvent::FINISHED:
-          (*iter).second->NotifyAnimationFinished(events->events_[event_index]);
-          break;
-
-        case AnimationEvent::ABORTED:
-          (*iter).second->NotifyAnimationAborted(events->events_[event_index]);
-          break;
-
-        case AnimationEvent::TAKEOVER:
-          (*iter).second->NotifyAnimationTakeover(events->events_[event_index]);
-          break;
-      }
+    // TODO(http://crbug.com/1013727): Make all animation events use animation
+    // id to do targeting;
+    if (event.worklet_animation_id) {
+      DCHECK(event.type == AnimationEvent::TIME_UPDATED);
+      // Look up worklet animation in ticking animations.
+      WorkletAnimation* animation =
+          FindWorkletAnimation(event.worklet_animation_id);
+      if (animation)
+        animation->NotifyLocalTimeUpdated(event);
+    } else {
+      // Use the map of all ElementAnimations, not just ticking animations,
+      // since non-ticking animations may still receive events for impl-only
+      // animations.
+      const ElementToAnimationsMap& all_element_animations =
+          element_to_animations_map_;
+      auto iter = all_element_animations.find(event.element_id);
+      if (iter != all_element_animations.end())
+        DispatchAnimationEventToElementAnimations((*iter).second.get(), event);
     }
   }
 }
@@ -730,6 +751,20 @@ void AnimationHost::SetLayerTreeMutator(
   mutator_->SetClient(this);
 }
 
+WorkletAnimation* AnimationHost::FindWorkletAnimation(WorkletAnimationId id) {
+  // TODO(majidvp): Use a map to make lookup O(1)
+  auto animation = std::find_if(
+      ticking_animations_.begin(), ticking_animations_.end(), [id](auto& it) {
+        return it->IsWorkletAnimation() &&
+               ToWorkletAnimation(it.get())->worklet_animation_id() == id;
+      });
+
+  if (animation == ticking_animations_.end())
+    return nullptr;
+
+  return ToWorkletAnimation(animation->get());
+}
+
 void AnimationHost::SetMutationUpdate(
     std::unique_ptr<MutatorOutputState> output_state) {
   if (!output_state)
@@ -739,17 +774,9 @@ void AnimationHost::SetMutationUpdate(
   for (auto& animation_state : output_state->animations) {
     WorkletAnimationId id = animation_state.worklet_animation_id;
 
-    // TODO(majidvp): Use a map to make lookup O(1)
-    auto to_update = std::find_if(
-        ticking_animations_.begin(), ticking_animations_.end(), [id](auto& it) {
-          return it->IsWorkletAnimation() &&
-                 ToWorkletAnimation(it.get())->worklet_animation_id() == id;
-        });
-
-    if (to_update == ticking_animations_.end())
-      continue;
-
-    ToWorkletAnimation(to_update->get())->SetOutputState(animation_state);
+    WorkletAnimation* to_update = FindWorkletAnimation(id);
+    if (to_update)
+      to_update->SetOutputState(animation_state);
   }
 }
 

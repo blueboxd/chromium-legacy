@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/wm/overview/rounded_rect_view.h"
-#include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
@@ -35,7 +34,7 @@ class ASH_EXPORT SplitViewDividerHandlerView : public RoundedRectView {
   // If the spawning animation is running, stop it and show the white handler.
   // Update bounds. Do the enlarge/shrink animation when starting/ending
   // dragging.
-  void Refresh();
+  void Refresh(bool is_resizing);
 
  private:
   class SelectionAnimation;

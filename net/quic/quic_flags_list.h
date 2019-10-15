@@ -76,7 +76,7 @@ QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
 // If true, enable QUIC v99.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, true)
 
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
@@ -174,7 +174,7 @@ QUIC_FLAG(
     false)
 
 // If true, enable QUIC version 49.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_49, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_49, true)
 
 // If true, GFE will not request private keys when fetching QUIC ServerConfigs
 // from Leto.
@@ -203,7 +203,7 @@ QUIC_FLAG(bool,
 // versions.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_version_negotiation_grease,
-          false)
+          true)
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
@@ -238,9 +238,6 @@ QUIC_FLAG(bool,
 // If true, will negotiate the ACK delay time.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
 
-// When true, QuicDispatcher will always use QuicFramer::ParsePublicHeader
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, true)
-
 // If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
 // length-prefixed connection IDs.
 QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
@@ -249,7 +246,7 @@ QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
 // the PROX version.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_parse_prox_source_connection_id,
-          false)
+          true)
 
 // If true and H2PR connection option is received, write_blocked_streams_ uses
 // HTTP2 (tree-style) priority write scheduler.
@@ -262,7 +259,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames3,
-    false)
+    true)
 
 // If true, static streams should never be closed before QuicSession
 // destruction.
@@ -287,12 +284,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_sent_packet_manager_cleanup,
           true)
 
-// If true, QUIC will track max ack height in BandwidthSampler.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_track_ack_height_in_bandwidth_sampler2,
-    true)
-
 // If true, QuicSession::ShouldKeepConnectionAlive() will not consider locally
 // closed streams whose highest byte offset is not received yet.
 QUIC_FLAG(bool,
@@ -304,12 +295,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_stream_data_after_reset,
           false)
-
-// When true, QuicDispatcher::MaybeDispatchPacket will use
-// packet_info.use_length_prefix instead of an incorrect local computation.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_length_prefix_from_packet_info,
-          true)
 
 // If true, enable IETF style probe timeout.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
@@ -376,7 +361,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_grant_enough_credits, false)
 // If true, combine QuicPacketGenerator and QuicPacketCreator.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_combine_generator_and_creator,
-          false)
+          true)
 
 // If true, QuicFramer does not create an encrypter/decrypter for the
 // ENCRYPTION_INITIAL level.
@@ -388,7 +373,7 @@ QUIC_FLAG(
 // If true, server drops client initial packets in datagrams < 1200 bytes.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_donot_process_small_initial_packets,
-          false)
+          true)
 
 // If true, treat queued QUIC packets as sent.
 QUIC_FLAG(bool,

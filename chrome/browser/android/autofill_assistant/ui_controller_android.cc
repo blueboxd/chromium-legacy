@@ -764,8 +764,9 @@ void UiControllerAndroid::OnContactInfoChanged(
 }
 
 void UiControllerAndroid::OnCreditCardChanged(
-    std::unique_ptr<autofill::CreditCard> card) {
-  ui_delegate_->SetCreditCard(std::move(card));
+    std::unique_ptr<autofill::CreditCard> card,
+    std::unique_ptr<autofill::AutofillProfile> billing_profile) {
+  ui_delegate_->SetCreditCard(std::move(card), std::move(billing_profile));
 }
 
 void UiControllerAndroid::OnTermsAndConditionsChanged(

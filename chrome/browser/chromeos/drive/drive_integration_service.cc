@@ -24,7 +24,6 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/debug_info_collector.h"
 #include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -61,7 +60,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
@@ -1185,12 +1183,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
           BrowserContext::GetDownloadManager(
               profile_->GetOffTheRecordProfile()));
     }
-    profile_notification_registrar_ =
-        std::make_unique<content::NotificationRegistrar>();
-    profile_notification_registrar_->Add(
-        this,
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::NotificationService::AllSources());
+    observed_profiles_.Add(profile_);
   }
 
   // Register for Google Drive invalidation notifications.
@@ -1233,17 +1226,11 @@ bool DriveIntegrationService::DownloadDirectoryPreferenceIsInDrive() {
          GetMountPointPath().IsParent(downloads_path);
 }
 
-void DriveIntegrationService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
-  Profile* created_profile = content::Source<Profile>(source).ptr();
-  if (created_profile->IsOffTheRecord() &&
-      created_profile->IsSameProfile(profile_)) {
-    download_handler_->ObserveIncognitoDownloadManager(
-        BrowserContext::GetDownloadManager(created_profile));
-  }
+void DriveIntegrationService::OnOffTheRecordProfileCreated(
+    Profile* off_the_record) {
+  DCHECK_EQ(profile_, off_the_record->GetOriginalProfile());
+  download_handler_->ObserveIncognitoDownloadManager(
+      BrowserContext::GetDownloadManager(off_the_record));
 }
 
 void DriveIntegrationService::MigratePinnedFiles() {

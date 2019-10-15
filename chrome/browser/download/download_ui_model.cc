@@ -293,6 +293,11 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
       return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
                                         elided_filename);
     }
+    case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
+    case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

@@ -410,7 +410,7 @@ class AppWindow : public content::WebContentsDelegate,
   void EnterFullscreenModeForTab(
       content::WebContents* source,
       const GURL& origin,
-      const blink::FullScreenOptions& options) override;
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* source) override;
   bool IsFullscreenForTabOrPending(const content::WebContents* source) override;
   blink::mojom::DisplayMode GetDisplayMode(

@@ -64,7 +64,8 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
             AssistantCollectUserDataNativeDelegateJni.get().onCreditCardChanged(
                     mNativeAssistantCollectUserDataDelegate,
                     AssistantCollectUserDataNativeDelegate.this,
-                    paymentInstrument != null ? paymentInstrument.getCard() : null);
+                    paymentInstrument != null ? paymentInstrument.getCard() : null,
+                    paymentInstrument != null ? paymentInstrument.getBillingProfile() : null);
         }
     }
 
@@ -142,7 +143,8 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
                 @Nullable PersonalDataManager.AutofillProfile address);
         void onCreditCardChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller,
-                @Nullable PersonalDataManager.CreditCard card);
+                @Nullable PersonalDataManager.CreditCard card,
+                @Nullable PersonalDataManager.AutofillProfile billingProfile);
         void onTermsAndConditionsChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, int state);
         void onTermsAndConditionsLinkClicked(long nativeAssistantCollectUserDataDelegate,

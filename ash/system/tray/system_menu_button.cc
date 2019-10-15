@@ -13,7 +13,6 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -35,6 +34,8 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
+  TrayPopupUtils::InstallHighlightPathGenerator(
+      this, TrayPopupInkDropStyle::HOST_CENTERED);
 }
 
 SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
@@ -62,14 +63,6 @@ SystemMenuButton::~SystemMenuButton() = default;
 
 void SystemMenuButton::SetInkDropColor(SkColor color) {
   ink_drop_color_ = color;
-}
-
-void SystemMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetProperty(views::kHighlightPathKey,
-              TrayPopupUtils::CreateHighlightPath(
-                  TrayPopupInkDropStyle::HOST_CENTERED, this)
-                  .release());
-  ImageButton::OnBoundsChanged(previous_bounds);
 }
 
 std::unique_ptr<views::InkDrop> SystemMenuButton::CreateInkDrop() {

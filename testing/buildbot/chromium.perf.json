@@ -1210,7 +1210,7 @@
           "hard_timeout": 43200,
           "ignore_task_failure": false,
           "io_timeout": 21600,
-          "shards": 16
+          "shards": 10
         },
         "trigger_script": {
           "args": [

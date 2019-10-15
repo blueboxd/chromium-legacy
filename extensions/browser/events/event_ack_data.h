@@ -35,6 +35,7 @@ class EventAckData {
                               int render_process_id,
                               int64_t version_id,
                               int event_id,
+                              bool worker_stopped,
                               base::OnceClosure failure_callback);
 
  private:
@@ -52,6 +53,7 @@ class EventAckData {
       int render_process_id,
       int64_t version_id,
       int event_id,
+      bool worker_stopped,
       scoped_refptr<CoreThreadEventInfo> unacked_events,
       base::OnceClosure failure_callback);
 

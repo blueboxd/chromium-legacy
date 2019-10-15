@@ -26,7 +26,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -336,10 +335,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   }
   void ClearMediaFeatureOverrides();
 
-  WebScopedVirtualTimePauser& HistoryNavigationVirtualTimePauser() {
-    return history_navigation_virtual_time_pauser_;
-  }
-
  private:
   friend class ScopedPagePauser;
 
@@ -449,8 +444,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   bool inside_portal_ = false;
 
   WebTextAutosizerPageInfo web_text_autosizer_page_info_;
-
-  WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };

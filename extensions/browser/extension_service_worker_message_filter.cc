@@ -11,6 +11,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/events/event_ack_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/extension_messages.h"
 
@@ -110,14 +111,20 @@ void ExtensionServiceWorkerMessageFilter::OnDecrementServiceWorkerActivity(
 }
 
 void ExtensionServiceWorkerMessageFilter::OnEventAckWorker(
+    const ExtensionId& extension_id,
     int64_t service_worker_version_id,
+    int worker_thread_id,
     int event_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const bool worker_stopped =
+      !ProcessManager::Get(browser_context_)
+           ->HasServiceWorker({extension_id, render_process_id_,
+                               service_worker_version_id, worker_thread_id});
   EventRouter::Get(browser_context_)
       ->event_ack_data()
       ->DecrementInflightEvent(
           service_worker_context_, render_process_id_,
-          service_worker_version_id, event_id,
+          service_worker_version_id, event_id, worker_stopped,
           base::BindOnce(&ExtensionServiceWorkerMessageFilter::
                              DidFailDecrementInflightEvent,
                          this));

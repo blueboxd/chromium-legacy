@@ -96,6 +96,19 @@ views::Label* CreateMessageBodyLabel(base::string16 text) {
   return message_body_label;
 }
 
+base::string16 GetOkButtonLabel(
+    safe_browsing::ReusedPasswordAccountType password_type) {
+  switch (password_type.account_type()) {
+    case safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE:
+      return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON);
+    case safe_browsing::ReusedPasswordAccountType::SAVED_PASSWORD:
+      return l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON);
+    default:
+      return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
+  }
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -124,6 +137,12 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
       service_(service),
       url_(web_contents->GetLastCommittedURL()),
       password_type_(password_type) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   GetOkButtonLabel(password_type_));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON));
+
   // |service| maybe NULL in tests.
   if (service_)
     service_->AddObserver(this);
@@ -239,30 +258,6 @@ bool PasswordReuseModalWarningDialog::Close() {
   if (done_callback_)
     std::move(done_callback_).Run(WarningAction::CLOSE);
   return true;
-}
-
-base::string16 PasswordReuseModalWarningDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      switch (password_type_.account_type()) {
-        case ReusedPasswordAccountType::NON_GAIA_ENTERPRISE:
-          return l10n_util::GetStringUTF16(
-              IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON);
-        case ReusedPasswordAccountType::SAVED_PASSWORD:
-          return l10n_util::GetStringUTF16(
-              IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON);
-        default:
-          return l10n_util::GetStringUTF16(
-              IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
-      }
-    case ui::DIALOG_BUTTON_CANCEL:
-      return l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON);
-    default:
-      NOTREACHED();
-  }
-  return base::string16();
 }
 
 void PasswordReuseModalWarningDialog::OnGaiaPasswordChanged() {

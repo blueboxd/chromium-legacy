@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
-#include "build/build_config.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
@@ -709,16 +708,7 @@ error::Error GLES2DecoderPassthroughImpl::DoColorMask(GLboolean red,
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoCompileShader(GLuint shader) {
-#if defined(OS_MACOSX)
-  // On mac we need this extension to support IOSurface backbuffers, but we
-  // don't want it exposed to user shaders. Temporarily disable it during
-  // shader compilation.
-  api()->glDisableExtensionANGLEFn("GL_ANGLE_texture_rectangle");
-#endif
   api()->glCompileShaderFn(GetShaderServiceID(shader, resources_));
-#if defined(OS_MACOSX)
-  api()->glRequestExtensionANGLEFn("GL_ANGLE_texture_rectangle");
-#endif
   return error::kNoError;
 }
 

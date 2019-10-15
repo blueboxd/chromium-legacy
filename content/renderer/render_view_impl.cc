@@ -458,8 +458,8 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
     : routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
+      compositor_deps_(compositor_deps),
       webkit_preferences_(params.web_preferences),
-      page_properties_(compositor_deps),
       session_storage_namespace_id_(params.session_storage_namespace_id) {
   DCHECK(!session_storage_namespace_id_.empty())
       << "Session storage namespace must be populated.";
@@ -510,7 +510,7 @@ void RenderViewImpl::Initialize(
     // RenderWidget for a remote main frame.
     undead_render_widget_ = RenderWidget::CreateForFrame(
         params->main_frame_widget_routing_id, compositor_deps,
-        page_properties(), params->visual_properties.display_mode,
+        params->visual_properties.display_mode,
         /*is_undead=*/true, params->never_visible);
     undead_render_widget_->set_delegate(this);
     // We intentionally pass in a null webwidget since it is not needed
@@ -1437,8 +1437,7 @@ WebView* RenderViewImpl::CreateView(
                      base::Unretained(creator_frame), opened_by_user_gesture);
 
   RenderViewImpl* view = RenderViewImpl::Create(
-      page_properties_.GetCompositorDependencies(), std::move(view_params),
-      std::move(show_callback),
+      compositor_deps_, std::move(view_params), std::move(show_callback),
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   return view->webview();
@@ -1468,7 +1467,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, opener_render_widget->compositor_deps(),
-      page_properties(), blink::mojom::DisplayMode::kUndefined,
+      blink::mojom::DisplayMode::kUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_receiver));
 
@@ -1688,6 +1687,21 @@ void RenderViewImpl::DidUpdateMainFrameLayout() {
 
   // The main frame may have changed size.
   needs_preferred_size_update_ = true;
+}
+
+void RenderViewImpl::NavigateBackForwardSoon(int offset,
+                                             bool has_user_gesture) {
+  history_navigation_virtual_time_pauser_ =
+      RenderThreadImpl::current()
+          ->GetWebMainThreadScheduler()
+          ->CreateWebScopedVirtualTimePauser(
+              "NavigateBackForwardSoon",
+              blink::WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
+  history_navigation_virtual_time_pauser_.PauseVirtualTime();
+}
+
+void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
+  history_navigation_virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void RenderViewImpl::UpdateBrowserControlsState(

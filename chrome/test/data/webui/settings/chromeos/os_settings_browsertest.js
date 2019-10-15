@@ -896,7 +896,7 @@ TEST_F('OSSettingsPluginVmPageTest', 'AllJsTests', () => {
 var OSSettingsPrinterEntryTest = class extends OSSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return super.browsePreload + 'printing_page/cups_printers_entry_list.html';
+    return super.browsePreload + 'printing_page/cups_printers_entry.html';
   }
 
   /** @override */

@@ -558,6 +558,13 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the RenderProcessHost uses its frames' priorities for
+// determining if it should be backgrounded. When all frames associated with a
+// RenderProcessHost are low priority, that process may be backgrounded even if
+// those frames are visible.
+const base::Feature kUseFramePriorityInRenderProcessHost{
+    "UseFramePriorityInRenderProcessHost", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows developers transfer user activation state to any target window in the
 // frame tree.
 const base::Feature kUserActivationPostMessageTransfer{

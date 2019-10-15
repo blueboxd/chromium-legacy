@@ -14,6 +14,7 @@
 #include "net/der/parse_values.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "net/cert/cert_verify_proc_mac.h"
 #include "net/cert/internal/trust_store_mac.h"
 #endif
 
@@ -72,6 +73,25 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
   network::mojom::CertVerifierDebugInfoPtr debug_info =
       network::mojom::CertVerifierDebugInfo::New();
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+  auto* mac_platform_debug_info =
+      net::CertVerifyProcMac::ResultDebugData::Get(&primary_result);
+  if (mac_platform_debug_info) {
+    debug_info->mac_platform_debug_info =
+        network::mojom::MacPlatformVerifierDebugInfo::New();
+    debug_info->mac_platform_debug_info->trust_result =
+        mac_platform_debug_info->trust_result();
+    debug_info->mac_platform_debug_info->result_code =
+        mac_platform_debug_info->result_code();
+    for (const auto& cert_info : mac_platform_debug_info->status_chain()) {
+      network::mojom::MacCertEvidenceInfoPtr info =
+          network::mojom::MacCertEvidenceInfo::New();
+      info->status_bits = cert_info.status_bits;
+      info->status_codes = cert_info.status_codes;
+      debug_info->mac_platform_debug_info->status_chain.push_back(
+          std::move(info));
+    }
+  }
+
   auto* mac_trust_debug_info =
       net::TrustStoreMac::ResultDebugData::Get(&trial_result);
   if (mac_trust_debug_info) {

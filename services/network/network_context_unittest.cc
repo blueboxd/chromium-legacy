@@ -3625,12 +3625,14 @@ TEST_F(NetworkContextTest, PreconnectNetworkIsolationKey) {
 
   net::ClientSocketPool::GroupId group_id1(
       test_server.host_port_pair(), net::ClientSocketPool::SocketType::kHttp,
-      net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey1);
+      net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey1,
+      false /* disable_secure_dns */);
   EXPECT_EQ(
       1, GetSocketCountForGroup(network_context.get(), group_id1.ToString()));
   net::ClientSocketPool::GroupId group_id2(
       test_server.host_port_pair(), net::ClientSocketPool::SocketType::kHttp,
-      net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey2);
+      net::PrivacyMode::PRIVACY_MODE_ENABLED, kKey2,
+      false /* disable_secure_dns */);
   EXPECT_EQ(
       2, GetSocketCountForGroup(network_context.get(), group_id2.ToString()));
 }

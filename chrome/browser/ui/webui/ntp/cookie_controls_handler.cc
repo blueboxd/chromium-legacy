@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -57,6 +59,9 @@ void CookieControlsHandler::HandleCookieControlsToggleChanged(
       static_cast<int>(
           checked ? content_settings::CookieControlsMode::kIncognitoOnly
                   : content_settings::CookieControlsMode::kOff));
+  base::RecordAction(
+      checked ? base::UserMetricsAction("CookieControls.NTP.Enabled")
+              : base::UserMetricsAction("CookieControls.NTP.Disabled"));
 }
 
 void CookieControlsHandler::HandleObserveCookieControlsSettingsChanges(

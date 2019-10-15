@@ -24,6 +24,13 @@ namespace syncer {
 
 class CryptographerImpl;
 
+// Creates a cryptographer that can decrypt all |keystore_keys| and uses the
+// last one as default encryption key. May return null in case of error.
+// TODO(crbug.com/922900): consider maintaining cached version of this
+// cryptographer in NigoriState to avoid repeated creations.
+std::unique_ptr<CryptographerImpl> CreateCryptographerFromKeystoreKeys(
+    const std::vector<std::string>& keystore_keys);
+
 struct NigoriState {
   static constexpr sync_pb::NigoriSpecifics::PassphraseType
       kInitialPassphraseType = sync_pb::NigoriSpecifics::UNKNOWN;
@@ -31,7 +38,7 @@ struct NigoriState {
   static constexpr bool kInitialEncryptEverything = false;
 
   // Deserialization from proto.
-  static NigoriState CreateFromProto(const sync_pb::NigoriModel& proto);
+  static NigoriState CreateFromLocalProto(const sync_pb::NigoriModel& proto);
 
   NigoriState();
   NigoriState(NigoriState&& other);
@@ -39,8 +46,11 @@ struct NigoriState {
 
   NigoriState& operator=(NigoriState&& other);
 
-  // Serialization to proto.
-  sync_pb::NigoriModel ToProto() const;
+  // Serialization to proto as persisted on local disk.
+  sync_pb::NigoriModel ToLocalProto() const;
+
+  // Serialization to proto as sent to the sync server.
+  sync_pb::NigoriSpecifics ToSpecificsProto() const;
 
   std::unique_ptr<CryptographerImpl> cryptographer;
 

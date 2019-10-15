@@ -169,12 +169,14 @@ TEST(ClientSocketPool, PartitionConnectionsByNetworkIsolationKeyDisabled) {
     ClientSocketPool::GroupId group_id1(
         HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_DISABLED,
-        NetworkIsolationKey(kOriginFoo, kOriginFoo));
+        NetworkIsolationKey(kOriginFoo, kOriginFoo),
+        false /* disable_secure_dns */);
 
     ClientSocketPool::GroupId group_id2(
         HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_DISABLED,
-        NetworkIsolationKey(kOriginBar, kOriginBar));
+        NetworkIsolationKey(kOriginBar, kOriginBar),
+        false /* disable_secure_dns */);
 
     EXPECT_FALSE(group_id1.network_isolation_key().IsFullyPopulated());
     EXPECT_FALSE(group_id2.network_isolation_key().IsFullyPopulated());

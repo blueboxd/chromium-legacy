@@ -979,20 +979,20 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckIfTabIsUsedInBackground(
   // Do not freeze tabs that are casting/mirroring/playing audio.
   IsMediaTabImpl(decision_details);
 
-  if (GetStaticProactiveTabFreezeAndDiscardParams()
-          .should_protect_tabs_sharing_browsing_instance) {
-    if (web_contents()->GetSiteInstance()->GetRelatedActiveContentsCount() >
-        1U) {
-      decision_details->AddReason(
-          DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE);
-    }
-  }
-
-  // Consult the local database to see if this tab could try to communicate with
-  // the user while in background (don't check for the visibility here as
-  // there's already a check for that above). Only do this for proactive
-  // interventions.
   if (intervention_type == InterventionType::kProactive) {
+    if (GetStaticProactiveTabFreezeAndDiscardParams()
+            .should_protect_tabs_sharing_browsing_instance) {
+      if (web_contents()->GetSiteInstance()->GetRelatedActiveContentsCount() >
+          1U) {
+        decision_details->AddReason(
+            DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE);
+      }
+    }
+
+    // Consult the local database to see if this tab could try to communicate
+    // with the user while in background (don't check for the visibility here as
+    // there's already a check for that above). Only do this for proactive
+    // interventions.
     CheckIfTabCanCommunicateWithUserWhileInBackground(web_contents(),
                                                       decision_details);
   }

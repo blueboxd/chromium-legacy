@@ -49,7 +49,6 @@ class PasswordReuseModalWarningDialog
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // ChromePasswordProtectionService::Observer:
   void OnGaiaPasswordChanged() override;
@@ -64,7 +63,7 @@ class PasswordReuseModalWarningDialog
   OnWarningDone done_callback_;
   ChromePasswordProtectionService* service_;
   const GURL url_;
-  ReusedPasswordAccountType password_type_;
+  const ReusedPasswordAccountType password_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseModalWarningDialog);
 };

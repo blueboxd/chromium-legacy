@@ -116,7 +116,9 @@ class UiControllerAndroid : public ControllerObserver {
   void OnShippingAddressChanged(
       std::unique_ptr<autofill::AutofillProfile> address);
   void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile);
-  void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
+  void OnCreditCardChanged(
+      std::unique_ptr<autofill::CreditCard> card,
+      std::unique_ptr<autofill::AutofillProfile> billing_profile);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
   void OnLoginChoiceChanged(std::string identifier);
   void OnTermsAndConditionsLinkClicked(int link);

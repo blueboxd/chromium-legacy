@@ -15,7 +15,6 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/painter.h"
-#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -30,6 +29,7 @@ ActionableView::ActionableView(TrayPopupInkDropStyle ink_drop_style)
   set_has_ink_drop_action_on_click(false);
   set_notify_enter_exit_on_child(true);
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  TrayPopupUtils::InstallHighlightPathGenerator(this, ink_drop_style_);
 }
 
 ActionableView::~ActionableView() {
@@ -59,13 +59,6 @@ bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
 void ActionableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetName(GetAccessibleName());
-}
-
-void ActionableView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetProperty(
-      views::kHighlightPathKey,
-      TrayPopupUtils::CreateHighlightPath(ink_drop_style_, this).release());
-  Button::OnBoundsChanged(previous_bounds);
 }
 
 std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {

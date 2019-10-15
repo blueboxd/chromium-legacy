@@ -109,13 +109,11 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   class NET_EXPORT GroupId {
    public:
     GroupId();
-    // TODO(mmenke): Remove default |network_isolation_key| value (only used by
-    // tests).
     GroupId(const HostPortPair& destination,
             SocketType socket_type,
             PrivacyMode privacy_mode,
-            NetworkIsolationKey network_isolation_key = NetworkIsolationKey(),
-            bool disable_secure_dns = false);
+            NetworkIsolationKey network_isolation_key,
+            bool disable_secure_dns);
     GroupId(const GroupId& group_id);
 
     ~GroupId();

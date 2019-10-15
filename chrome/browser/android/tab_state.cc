@@ -9,6 +9,8 @@
 
 #include <limits>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -30,6 +32,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
@@ -133,7 +136,6 @@ void UpgradeNavigationFromV0ToV2(
       LOG(ERROR) << "Failed to read SerializedNavigationEntry from pickle "
                  << "(index=" << i << ", url=" << virtual_url_spec;
     }
-
   }
 
   for (int i = 0; i < entry_count; ++i) {
@@ -534,7 +536,7 @@ WebContentsState::CreateSingleNavigationStateAsByteBuffer(
   if (referrer_url) {
     referrer = content::Referrer(
         GURL(base::android::ConvertJavaStringToUTF8(env, referrer_url)),
-        static_cast<network::mojom::ReferrerPolicy>(referrer_policy));
+        content::Referrer::ConvertToPolicy(referrer_policy));
   }
   // TODO(nasko,tedchoc): https://crbug.com/980641: Don't use String to store
   // initiator origin, as it is a lossy format.

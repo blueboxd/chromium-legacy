@@ -69,6 +69,7 @@ cast_source_set("graphics") {
     ]
 
     deps += [
+      "//chromecast:chromecast_buildflags",
       "//components/viz/common",
       "//ui/base/ime/init",
       "//ui/events:gesture_detection",

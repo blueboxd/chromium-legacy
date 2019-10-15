@@ -114,6 +114,11 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // about install verification.
   virtual bool ShouldEnableInstallVerification();
 
+  // Returns the path of the directory from which to serve resources when they
+  // are prefixed with "_test_resources/".
+  // The default is chrome/test/data/extensions/.
+  virtual base::FilePath GetTestResourcesParentDir();
+
   static const Extension* GetExtensionByPath(const ExtensionSet& extensions,
                                              const base::FilePath& path);
 

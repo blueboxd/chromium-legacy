@@ -77,9 +77,6 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool IsExemptFromBudgetBasedThrottling() const override;
   bool OptedOutFromAggressiveThrottlingForTest() const override;
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const WTF::String& name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration) override;
 
   // Virtual for testing.
   virtual void ReportIntervention(const String& message);

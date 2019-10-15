@@ -9,9 +9,10 @@ cycle time manageable. Other system health benchmarks should be using the same
 stories as memory ones, only with fewer actions (no memory dumping).
 """
 
+import collections
 import unittest
 
-from collections import defaultdict
+from chrome_telemetry_build import chromium_config
 
 from core import path_util
 from core import perf_benchmark
@@ -250,8 +251,12 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
         self.skipTest('Test is explicitly disabled')
 
       single_page_benchmark = SinglePageBenchmark()
-      with open(path_util.GetExpectationsPath()) as fp:
-        single_page_benchmark.AugmentExpectationsWithFile(fp.read())
+      # TODO(crbug.com/985103): Remove this code once
+      # AugmentExpectationsWithFile is deleted and replaced with functionality
+      # in story_filter.py.
+      if hasattr(single_page_benchmark, 'AugmentExpectationsWithFile'):
+        with open(path_util.GetExpectationsPath()) as fp:
+          single_page_benchmark.AugmentExpectationsWithFile(fp.read())
 
       return_code = single_page_benchmark.Run(options)
 
@@ -275,7 +280,8 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
 
 def GenerateBenchmarkOptions(output_dir, benchmark_cls):
   options = options_for_unittests.GetRunOptions(
-      output_dir=output_dir, benchmark_cls=benchmark_cls)
+      output_dir=output_dir, benchmark_cls=benchmark_cls,
+      environment=chromium_config.GetDefaultChromiumConfig())
   options.pageset_repeat = 1  # For smoke testing only run each page once.
 
   # Enable browser logging in the smoke test only. Hopefully, this will detect
@@ -350,7 +356,7 @@ def find_multi_version_stories(stories, disabled):
     A dict mapping from a prefix string to a list of stories each of which
     has the name with that prefix and has multiple versions enabled.
   """
-  prefixes = defaultdict(list)
+  prefixes = collections.defaultdict(list)
   for name in stories:
     if name in disabled:
       continue

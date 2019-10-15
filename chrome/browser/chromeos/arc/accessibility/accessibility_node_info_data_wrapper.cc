@@ -88,7 +88,8 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
 
   if (!GetProperty(AXBooleanProperty::IMPORTANCE) &&
       !HasProperty(AXStringProperty::TEXT) &&
-      !HasProperty(AXStringProperty::CONTENT_DESCRIPTION)) {
+      !HasProperty(AXStringProperty::CONTENT_DESCRIPTION) &&
+      !tree_source_->IsRootOfNodeTree(GetId())) {
     out_data->role = ax::mojom::Role::kIgnored;
     return;
   }
@@ -271,6 +272,8 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXState(
 
 void AccessibilityNodeInfoDataWrapper::Serialize(
     ui::AXNodeData* out_data) const {
+  PopulateAXRole(out_data);
+
   // String properties.
   int labelled_by = -1;
 
@@ -381,10 +384,12 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (GetProperty(AXBooleanProperty::SELECTED)) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   }
-
   if (GetProperty(AXBooleanProperty::SUPPORTS_TEXT_LOCATION)) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSupportsTextLocation,
                                true);
+  }
+  if (tree_source_->IsRootOfNodeTree(GetId())) {
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, true);
   }
 
   // Range info.

@@ -7079,6 +7079,24 @@
             ]
         }
     ],
+    "WebRTC-KeepAbsSendTimeExtension": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "WebRTC-LocalIPPermissionCheck": [
         {
             "platforms": [

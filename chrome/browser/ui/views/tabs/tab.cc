@@ -72,6 +72,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view.h"
@@ -113,6 +114,22 @@ int Center(int size, int item_size) {
     ++extra_space;
   return extra_space / 2;
 }
+
+class TabStyleHighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  explicit TabStyleHighlightPathGenerator(TabStyle* tab_style)
+      : tab_style_(tab_style) {}
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return tab_style_->GetPath(TabStyle::PathType::kHighlight, 1.0);
+  }
+
+ private:
+  TabStyle* const tab_style_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabStyleHighlightPathGenerator);
+};
 
 }  // namespace
 
@@ -206,6 +223,8 @@ Tab::Tab(TabController* controller)
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   focus_ring_ = views::FocusRing::Install(this);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<TabStyleHighlightPathGenerator>(tab_style_.get()));
 }
 
 Tab::~Tab() {
@@ -398,12 +417,6 @@ void Tab::Layout() {
 
 const char* Tab::GetClassName() const {
   return kViewClassName;
-}
-
-void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Update focus ring path.
-  const SkPath path = tab_style_->GetPath(TabStyle::PathType::kHighlight, 1.0);
-  SetProperty(views::kHighlightPathKey, path);
 }
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
@@ -731,7 +744,6 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
     case TabAlertState::SERIAL_CONNECTED:
-    case TabAlertState::NONE:
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       return foreground_color_;
     default:
@@ -826,14 +838,14 @@ void Tab::SetTabNeedsAttention(bool attention) {
 
 // static
 base::string16 Tab::GetTooltipText(const base::string16& title,
-                                   TabAlertState alert_state) {
-  if (alert_state == TabAlertState::NONE)
+                                   base::Optional<TabAlertState> alert_state) {
+  if (!alert_state)
     return title;
 
   base::string16 result = title;
   if (!result.empty())
     result.append(1, '\n');
-  result.append(chrome::GetTabAlertStateText(alert_state));
+  result.append(chrome::GetTabAlertStateText(alert_state.value()));
   return result;
 }
 
@@ -876,7 +888,8 @@ void Tab::UpdateIconVisibility() {
   const bool has_favicon = data().show_icon;
   const bool has_alert_icon =
       (alert_indicator_ ? alert_indicator_->showing_alert_state()
-                        : data().alert_state) != TabAlertState::NONE;
+                        : data().alert_state)
+          .has_value();
 
   if (data().pinned) {
     // When the tab is pinned, we can show one of the two icons; the alert icon

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/testing/fake_local_frame_host.h"
 #include "third_party/blink/renderer/core/testing/wait_for_event.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -19,19 +21,13 @@
 
 namespace blink {
 
-class VideoAutoFullscreenFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
+// Override a FakeLocalFrameHost so that we can enter and exit the fullscreen
+// on the appropriate request calls.
+class VideoAutoFullscreenFrameHost : public FakeLocalFrameHost {
  public:
-  WebMediaPlayer* CreateMediaPlayer(const WebMediaPlayerSource&,
-                                    WebMediaPlayerClient*,
-                                    blink::MediaInspectorContext*,
-                                    WebMediaPlayerEncryptedMediaClient*,
-                                    WebContentDecryptionModule*,
-                                    const WebString& sink_id) final {
-    return new EmptyWebMediaPlayer();
-  }
+  VideoAutoFullscreenFrameHost() = default;
 
-  void EnterFullscreen(const blink::FullScreenOptions&) final {
+  void EnterFullscreen(mojom::blink::FullscreenOptionsPtr options) override {
     Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(
@@ -39,7 +35,7 @@ class VideoAutoFullscreenFrameClient
             WTF::Unretained(web_widget_)));
   }
 
-  void ExitFullscreen() final {
+  void ExitFullscreen() override {
     Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(
@@ -53,12 +49,27 @@ class VideoAutoFullscreenFrameClient
   WebWidget* web_widget_;
 };
 
+class VideoAutoFullscreenFrameClient
+    : public frame_test_helpers::TestWebFrameClient {
+ public:
+  WebMediaPlayer* CreateMediaPlayer(const WebMediaPlayerSource&,
+                                    WebMediaPlayerClient*,
+                                    blink::MediaInspectorContext*,
+                                    WebMediaPlayerEncryptedMediaClient*,
+                                    WebContentDecryptionModule*,
+                                    const WebString& sink_id) final {
+    return new EmptyWebMediaPlayer();
+  }
+};
+
 class VideoAutoFullscreen : public testing::Test,
                             private ScopedVideoAutoFullscreenForTest {
  public:
   VideoAutoFullscreen() : ScopedVideoAutoFullscreenForTest(true) {}
   void SetUp() override {
     web_view_helper_.Initialize(&web_frame_client_);
+    frame_host_.Init(
+        web_frame_client_.GetRemoteNavigationAssociatedInterfaces());
     GetWebView()->GetSettings()->SetAutoplayPolicy(
         WebSettings::AutoplayPolicy::kUserGestureRequired);
 
@@ -68,7 +79,7 @@ class VideoAutoFullscreen : public testing::Test,
 
     video_ = ToHTMLVideoElement(*GetDocument()->QuerySelector("video"));
 
-    web_frame_client_.set_frame_widget(GetWebView()->MainFrameWidget());
+    frame_host_.set_frame_widget(GetWebView()->MainFrameWidget());
   }
 
   WebViewImpl* GetWebView() { return web_view_helper_.GetWebView(); }
@@ -83,6 +94,7 @@ class VideoAutoFullscreen : public testing::Test,
 
  private:
   Persistent<HTMLVideoElement> video_;
+  VideoAutoFullscreenFrameHost frame_host_;
   VideoAutoFullscreenFrameClient web_frame_client_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };

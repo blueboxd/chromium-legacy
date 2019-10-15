@@ -16,7 +16,7 @@
       Updating Google Chrome (<ph name="PROGRESS_PERCENT">$1<ex>90%</ex></ph>)
     </message>
     <message name="IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Google Chrome">
-      Nearly up to date! Relaunch Google Chrome to finish updating.
+      Nearly up to date! Relaunch Google Chrome to finish updating. Incognito windows won't reopen.
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Google Chrome)">
       Google Chrome is up to date

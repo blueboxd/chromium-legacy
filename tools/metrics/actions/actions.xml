@@ -4897,6 +4897,52 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="CookieControls.Bubble.NotWorking">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>
+    &quot;Site not working&quot; button was clicked in the cookie controls UI.
+  </description>
+</action>
+
+<action name="CookieControls.Bubble.Opened">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>The cookie controls UI was opened.</description>
+</action>
+
+<action name="CookieControls.Bubble.TurnOff">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>
+    Cookie blocking was disabled for a site through the cookie controls UI.
+  </description>
+</action>
+
+<action name="CookieControls.Bubble.TurnOn">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>
+    Cookie blocking was enabled for a site through the cookie controls UI.
+  </description>
+</action>
+
+<action name="CookieControls.NTP.Disabled">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>
+    Third-party cookie blocking was disabled on the incognito NTP.
+  </description>
+</action>
+
+<action name="CookieControls.NTP.Enabled">
+  <owner>dullweber@chromium.org</owner>
+  <owner>huanzhong@chromium.org</owner>
+  <description>
+    Third-party cookie blocking was enabled on the incognito NTP.
+  </description>
+</action>
+
 <action name="Copy">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -21073,6 +21119,14 @@ should be able to be added at any place in this file.
     User removed all notifications using the bottom Clear All button in the
     system menu. This button, which no longer exists, was located on the bottom
     of the notification list.
+  </description>
+</action>
+
+<action name="StatusArea_Notifications_SeeAllNotifications">
+  <owner>amehfooz@chromium.org</owner>
+  <description>
+    User expanded the message center by clicking on the see all notifications
+    button in the system menu.
   </description>
 </action>
 

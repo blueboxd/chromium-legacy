@@ -134,6 +134,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   }
 
  private:
+  class HighlightPathGenerator;
   class TrayWidgetObserver;
 
   // ui::ImplicitAnimationObserver:

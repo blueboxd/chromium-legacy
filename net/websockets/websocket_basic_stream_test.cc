@@ -143,9 +143,10 @@ class WebSocketBasicStreamSocketTest : public TestWithTaskEnvironment {
 
     auto transport_socket = std::make_unique<ClientSocketHandle>();
     scoped_refptr<ClientSocketPool::SocketParams> null_params;
-    ClientSocketPool::GroupId group_id(HostPortPair("a", 80),
-                                       ClientSocketPool::SocketType::kHttp,
-                                       PrivacyMode::PRIVACY_MODE_DISABLED);
+    ClientSocketPool::GroupId group_id(
+        HostPortPair("a", 80), ClientSocketPool::SocketType::kHttp,
+        PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+        false /* disable_secure_dns */);
     transport_socket->Init(
         group_id, null_params, base::nullopt /* proxy_annotation_tag */, MEDIUM,
         SocketTag(), ClientSocketPool::RespectLimits::ENABLED,

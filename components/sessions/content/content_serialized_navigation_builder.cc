@@ -130,9 +130,9 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
     // PageState set above + drop the SetReferrer call below.  This will
     // slightly change the legacy behavior, but will make PageState and
     // Referrer consistent.
-    content::Referrer referrer(navigation->referrer_url(),
-                               static_cast<network::mojom::ReferrerPolicy>(
-                                   navigation->referrer_policy()));
+    content::Referrer referrer(
+        navigation->referrer_url(),
+        content::Referrer::ConvertToPolicy(navigation->referrer_policy()));
     entry->SetReferrer(referrer);
   } else {
     // Note that PageState covers some of the values inside |navigation| (e.g.

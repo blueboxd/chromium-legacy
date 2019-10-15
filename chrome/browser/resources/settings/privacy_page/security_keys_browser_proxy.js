@@ -38,15 +38,19 @@ let Credential;
 
 /**
  * EnrollmentStatus represents the current status of an enrollment suboperation,
- * where 'remaining' indicates the number of samples left, 'status' indicates
- * the last enrollment status, and 'code' indicates the CtapDeviceResponseCode.
+ * where 'remaining' is the number of samples left, 'status' is the last
+ * enrollment status, 'code' indicates the final CtapDeviceResponseCode of the
+ * operation, and 'enrollment' contains the new Enrollment.
+ *
  * For each enrollment sample, 'status' is set - when the enrollment operation
- * reaches an end state, 'code' is set. |OK| indicates successful enrollment.
- * |ERR_KEEPALIVE_CANCEL| indicates user-initated cancellation.
+ * reaches an end state, 'code' and, if successful, 'enrollment' are set. |OK|
+ * indicates successful enrollment. A code of |ERR_KEEPALIVE_CANCEL| indicates
+ * user-initated cancellation.
  *
  * @typedef {{status: ?number,
  *            code: ?Ctap2Status,
- *            remaining: number}}
+ *            remaining: number,
+ *            enrollment: ?Enrollment}}
  * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
  */
 let EnrollmentStatus;
@@ -218,6 +222,15 @@ cr.define('settings', function() {
      */
     deleteEnrollment(id) {}
 
+    /**
+     * Renames the enrollment with the given ID.
+     *
+     * @param {string} id
+     * @param {string} name
+     * @return {!Promise<!Array<!Enrollment>>} The updated list of enrollments.
+     */
+    renameEnrollment(id, name) {}
+
     /** Cancels all outstanding operations. */
     close() {}
   }
@@ -316,6 +329,11 @@ cr.define('settings', function() {
     /** @override */
     deleteEnrollment(id) {
       return cr.sendWithPromise('securityKeyBioEnrollDelete', id);
+    }
+
+    /** @override */
+    renameEnrollment(id, name) {
+      return cr.sendWithPromise('securityKeyBioEnrollRename', id, name);
     }
 
     /** @override */

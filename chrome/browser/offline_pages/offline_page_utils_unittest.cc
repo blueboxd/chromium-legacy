@@ -47,7 +47,7 @@
 #if defined(OS_ANDROID)
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/browser/android/download/mock_download_controller.h"
+#include "chrome/browser/download/android/mock_download_controller.h"
 #include "components/gcm_driver/instance_id/instance_id_android.h"
 #include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
 #endif

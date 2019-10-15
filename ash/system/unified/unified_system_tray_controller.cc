@@ -166,10 +166,20 @@ void UnifiedSystemTrayController::ToggleExpanded() {
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.ToggleExpanded",
                             TOGGLE_EXPANDED_TYPE_BY_BUTTON,
                             TOGGLE_EXPANDED_TYPE_COUNT);
-  if (IsExpanded())
+  if (IsExpanded()) {
     animation_->Hide();
-  else
+    // Expand message center when quick settings is collapsed.
+    if (bubble_)
+      bubble_->ExpandMessageCenter();
+  } else {
+    // Collapse the message center if screen height is limited.
+    if (bubble_ && bubble_->CalculateMaxHeight() -
+                           unified_view_->GetExpandedSystemTrayHeight() <=
+                       kMessageCenterCollapseThreshold) {
+      bubble_->CollapseMessageCenter();
+    }
     animation_->Show();
+  }
 }
 
 void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
@@ -310,6 +320,12 @@ void UnifiedSystemTrayController::CloseBubble() {
 
 bool UnifiedSystemTrayController::FocusOut(bool reverse) {
   return bubble_->FocusOut(reverse);
+}
+
+void UnifiedSystemTrayController::EnsureCollapsed() {
+  if (IsExpanded()) {
+    animation_->Hide();
+  }
 }
 
 void UnifiedSystemTrayController::EnsureExpanded() {

@@ -184,6 +184,7 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
     kEnumerating,
     kEnrolling,
     kDeleting,
+    kRenaming,
   };
 
   void RegisterMessages() override;
@@ -203,10 +204,18 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
 
   void HandleStartEnrolling(const base::ListValue* args);
   void OnEnrollingResponse(device::BioEnrollmentSampleStatus, uint8_t);
-  void OnEnrollmentFinished(device::CtapDeviceResponseCode);
+  void OnEnrollmentFinished(device::CtapDeviceResponseCode,
+                            std::vector<uint8_t> template_id);
+  void OnHavePostEnrollmentEnumeration(
+      std::vector<uint8_t> enrolled_template_id,
+      device::CtapDeviceResponseCode code,
+      base::Optional<std::map<std::vector<uint8_t>, std::string>> enrollments);
 
   void HandleDelete(const base::ListValue* args);
   void OnDelete(device::CtapDeviceResponseCode);
+
+  void HandleRename(const base::ListValue* args);
+  void OnRename(device::CtapDeviceResponseCode);
 
   void HandleCancel(const base::ListValue* args);
 

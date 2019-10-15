@@ -43,6 +43,14 @@ void HandleClose(base::Closure close_callback, const base::ListValue* args) {
   close_callback.Run();
 }
 
+base::DictionaryValue EncodeEnrollment(const std::vector<uint8_t>& id,
+                                       const std::string& name) {
+  base::DictionaryValue value;
+  value.SetStringKey("name", name);
+  value.SetStringKey("id", base::HexEncode(id.data(), id.size()));
+  return value;
+}
+
 }  // namespace
 
 namespace settings {
@@ -389,6 +397,7 @@ void SecurityKeysCredentialHandler::HandleDelete(const base::ListValue* args) {
       base::BindOnce(&SecurityKeysCredentialHandler::OnCredentialsDeleted,
                      weak_factory_.GetWeakPtr()));
 }
+
 void SecurityKeysCredentialHandler::OnCredentialManagementReady() {
   DCHECK(state_ == State::kStart || state_ == State::kPIN);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -543,6 +552,10 @@ void SecurityKeysBioEnrollmentHandler::RegisterMessages() {
       base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleDelete,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollRename",
+      base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleRename,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "securityKeyBioEnrollCancel",
       base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleCancel,
                           base::Unretained(this)));
@@ -684,7 +697,7 @@ void SecurityKeysBioEnrollmentHandler::OnHaveEnumeration(
       elem.SetStringKey("name", std::move(enrollment.second));
       elem.SetStringKey("id", base::HexEncode(enrollment.first.data(),
                                               enrollment.first.size()));
-      list.emplace_back(std::move(elem));
+      list.emplace_back(EncodeEnrollment(enrollment.first, enrollment.second));
     }
   }
 
@@ -719,13 +732,46 @@ void SecurityKeysBioEnrollmentHandler::OnEnrollingResponse(
 }
 
 void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
-    device::CtapDeviceResponseCode code) {
+    device::CtapDeviceResponseCode code,
+    std::vector<uint8_t> template_id) {
+  DCHECK_EQ(state_, State::kEnrolling);
+  DCHECK(!callback_id_.empty());
+  if (code == device::CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel) {
+    base::DictionaryValue d;
+    d.SetIntKey("code", static_cast<int>(code));
+    d.SetIntKey("remaining", 0);
+    ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
+                              std::move(d));
+    return;
+  }
+  if (code != device::CtapDeviceResponseCode::kSuccess) {
+    OnError(device::BioEnrollmentStatus::kAuthenticatorResponseInvalid);
+    return;
+  }
+  bio_->EnumerateTemplates(base::BindOnce(
+      &SecurityKeysBioEnrollmentHandler::OnHavePostEnrollmentEnumeration,
+      weak_factory_.GetWeakPtr(), std::move(template_id)));
+}
+
+void SecurityKeysBioEnrollmentHandler::OnHavePostEnrollmentEnumeration(
+    std::vector<uint8_t> enrolled_template_id,
+    device::CtapDeviceResponseCode code,
+    base::Optional<std::map<std::vector<uint8_t>, std::string>> enrollments) {
   DCHECK_EQ(state_, State::kEnrolling);
   DCHECK(!callback_id_.empty());
   state_ = State::kReady;
+  if (code != device::CtapDeviceResponseCode::kSuccess || !enrollments ||
+      !base::Contains(*enrollments, enrolled_template_id)) {
+    OnError(device::BioEnrollmentStatus::kAuthenticatorResponseInvalid);
+    return;
+  }
+
   base::DictionaryValue d;
   d.SetIntKey("code", static_cast<int>(code));
   d.SetIntKey("remaining", 0);
+  d.SetKey("enrollment",
+           EncodeEnrollment(enrolled_template_id,
+                            (*enrollments)[enrolled_template_id]));
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)), std::move(d));
 }
 
@@ -747,9 +793,37 @@ void SecurityKeysBioEnrollmentHandler::HandleDelete(
 }
 
 void SecurityKeysBioEnrollmentHandler::OnDelete(
-    device::CtapDeviceResponseCode c) {
+    device::CtapDeviceResponseCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, State::kDeleting);
+  DCHECK(!callback_id_.empty());
+  state_ = State::kEnumerating;
+  bio_->EnumerateTemplates(
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnHaveEnumeration,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SecurityKeysBioEnrollmentHandler::HandleRename(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(args->GetSize(), 3u);
+  state_ = State::kRenaming;
+  callback_id_ = args->GetList()[0].GetString();
+  std::vector<uint8_t> template_id;
+  if (!base::HexStringToBytes(args->GetList()[1].GetString(), &template_id)) {
+    NOTREACHED();
+    return;
+  }
+  bio_->RenameTemplate(
+      std::move(template_id), args->GetList()[2].GetString(),
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnRename,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SecurityKeysBioEnrollmentHandler::OnRename(
+    device::CtapDeviceResponseCode code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(state_, State::kRenaming);
   DCHECK(!callback_id_.empty());
   state_ = State::kEnumerating;
   bio_->EnumerateTemplates(

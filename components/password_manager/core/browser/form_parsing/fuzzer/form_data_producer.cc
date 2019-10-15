@@ -115,6 +115,12 @@ autofill::FormData GenerateWithDataAccessor(
   result.main_frame_origin = url::Origin::Create(
       GURL(accessor->ConsumeString(main_frame_origin_length)));
 
+  if (predictions) {
+    predictions->driver_id = static_cast<int>(accessor->ConsumeNumber(32));
+    predictions->form_signature =
+        static_cast<uint64_t>(accessor->ConsumeNumber(64));
+  }
+
   // And finally do the same for all the fields.
   for (size_t i = 0; i < number_of_fields; ++i) {
     result.fields[i].form_control_type =
@@ -135,7 +141,7 @@ autofill::FormData GenerateWithDataAccessor(
       PasswordFieldPrediction field_prediction;
       if (MaybeGenerateFieldPrediction(accessor, &field_prediction)) {
         field_prediction.renderer_id = result.fields[i].unique_renderer_id;
-        predictions->push_back(field_prediction);
+        predictions->fields.push_back(field_prediction);
       }
     }
 
@@ -162,7 +168,7 @@ autofill::FormData GenerateWithDataAccessor(
         // Check both positive and negavites numbers for renderer ids.
         field_prediction.renderer_id =
             static_cast<uint32_t>(accessor->ConsumeNumber(6) - 32);
-        predictions->push_back(field_prediction);
+        predictions->fields.push_back(field_prediction);
       }
     }
   }

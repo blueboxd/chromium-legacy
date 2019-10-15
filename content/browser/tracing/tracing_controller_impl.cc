@@ -39,7 +39,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/tracing/public/cpp/perfetto/java_heap_profiler/java_heap_profiler.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
@@ -68,6 +67,7 @@
 #include <sys/time.h>
 #include "base/debug/elf_reader.h"
 #include "content/browser/android/tracing_controller_android.h"
+#include "services/tracing/public/cpp/perfetto/java_heap_profiler/java_heap_profiler_android.h"
 
 // Symbol with virtual address of the start of ELF header of the current binary.
 extern char __ehdr_start;
@@ -212,8 +212,10 @@ void TracingControllerImpl::AddAgents() {
         base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
                             base::Unretained(delegate_.get())));
   }
+#if defined(OS_ANDROID)
   tracing::PerfettoTracedProcess::Get()->AddDataSource(
       tracing::JavaHeapProfiler::GetInstance());
+#endif
 }
 
 void TracingControllerImpl::ConnectToServiceIfNeeded() {

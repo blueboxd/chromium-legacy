@@ -65,8 +65,7 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
             policy::DeviceStatusCollector::TpmStatusFetcher(),
             policy::DeviceStatusCollector::EMMCLifetimeFetcher(),
             policy::DeviceStatusCollector::StatefulPartitionInfoFetcher(),
-            policy::DeviceStatusCollector::CrosHealthdDataFetcher(),
-            true /* is_enterprise_device */) {}
+            policy::DeviceStatusCollector::CrosHealthdDataFetcher()) {}
 
   MOCK_METHOD1(GetStatusAsync, void(const policy::StatusCollectorCallback&));
 

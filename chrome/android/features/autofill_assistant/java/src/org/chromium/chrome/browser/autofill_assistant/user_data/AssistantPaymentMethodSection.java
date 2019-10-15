@@ -174,12 +174,8 @@ public class AssistantPaymentMethodSection
             return true;
         }
 
-        // TODO: Inject the PersonalDataManager instance.
-        PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
-        String billingAddressId = method.getCard().getBillingAddressId();
-        PersonalDataManager.AutofillProfile profile =
-                personalDataManager.getProfile(billingAddressId);
-        if (profile == null || TextUtils.isEmpty(profile.getPostalCode())) {
+        if (method.getBillingProfile() == null
+                || TextUtils.isEmpty(method.getBillingProfile().getPostalCode())) {
             return false;
         }
 

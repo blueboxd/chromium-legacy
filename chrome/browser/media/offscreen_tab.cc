@@ -300,7 +300,7 @@ bool OffscreenTab::EmbedsFullscreenWidget() {
 void OffscreenTab::EnterFullscreenModeForTab(
     WebContents* contents,
     const GURL& origin,
-    const blink::FullScreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
 
   if (in_fullscreen_mode())

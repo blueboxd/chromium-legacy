@@ -102,6 +102,9 @@ const base::Feature kSwipingFromLeftEdgeToGoBack{
 const base::Feature kDragFromShelfToHomeOrOverview{
     "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kHomerviewGesture{"HomerviewGesture",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
          base::FeatureList::IsEnabled(kHideArcMediaNotifications);
@@ -189,6 +192,10 @@ bool IsDragFromShelfToHomeOrOverviewEnabled() {
 
 bool IsReduceDisplayNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kReduceDisplayNotifications);
+}
+
+bool IsHomerviewGestureEnabled() {
+  return base::FeatureList::IsEnabled(kHomerviewGesture);
 }
 
 }  // namespace features

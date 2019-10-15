@@ -3742,6 +3742,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="The description of the announceRichTextDescription key. Displayed in the ChromeVox menu." name="IDS_CHROMEVOX_ANNOUNCE_RICH_TEXT_DESCRIPTION">
         Announce formatting for current item
       </message>
+      <message desc="Announced when there is no available voice for a language." name="IDS_CHROMEVOX_VOICE_UNAVAILABLE_FOR_LANGUAGE">
+        No voice available for language: <ph name="language">$1<ex>English</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

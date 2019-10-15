@@ -182,13 +182,19 @@ Color LayoutThemeDefault::PlatformInactiveSelectionForegroundColor(
 IntSize LayoutThemeDefault::SliderTickSize() const {
   if (UseMockTheme())
     return IntSize(1, 3);
-  return IntSize(1, 6);
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    return IntSize(1, 4);
+  else
+    return IntSize(1, 6);
 }
 
 int LayoutThemeDefault::SliderTickOffsetFromTrackCenter() const {
   if (UseMockTheme())
     return 11;
-  return -16;
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    return 7;
+  else
+    return -16;
 }
 
 void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {

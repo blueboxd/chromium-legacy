@@ -52,6 +52,8 @@ proto::SchedulerClientType ToSchedulerClientType(SchedulerClientType type) {
       return proto::SchedulerClientType::UNKNOWN;
     case SchedulerClientType::kWebUI:
       return proto::SchedulerClientType::WEBUI;
+    case SchedulerClientType::kChromeUpdate:
+      return proto::SchedulerClientType::CHROME_UPDATE;
   }
   NOTREACHED();
 }
@@ -70,6 +72,8 @@ SchedulerClientType FromSchedulerClientType(
       return SchedulerClientType::kUnknown;
     case proto::SchedulerClientType::WEBUI:
       return SchedulerClientType::kWebUI;
+    case proto::SchedulerClientType::CHROME_UPDATE:
+      return SchedulerClientType::kChromeUpdate;
   }
   NOTREACHED();
 }

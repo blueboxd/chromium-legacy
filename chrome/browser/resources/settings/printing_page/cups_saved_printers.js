@@ -40,11 +40,23 @@ Polymer({
       type: Number,
       value: -1,
     },
+
+    /**
+     * List of printers filtered through a search term.
+     * @type {!Array<!PrinterListEntry>}
+     * @private
+     */
+    filteredPrinters_: {
+      type: Array,
+      value: () => [],
+    },
   },
 
   listeners: {
     'open-action-menu': 'onOpenActionMenu_',
   },
+
+  observers: ['onSearchOrPrintersChanged_(savedPrinters.*, searchTerm)'],
 
   /** @private {settings.CupsPrintersBrowserProxy} */
   browserProxy_: null,
@@ -52,6 +64,29 @@ Polymer({
   /** @override */
   created: function() {
     this.browserProxy_ = settings.CupsPrintersBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * Redoes the search whenever |searchTerm| or |savedPrinters| changes.
+   * @private
+   */
+  onSearchOrPrintersChanged_: function() {
+    if (!this.savedPrinters) {
+      return;
+    }
+    // Filter printers through |searchTerm|. If |searchTerm| is empty,
+    // |filteredPrinters_| is just |savedPrinters|.
+    const updatedPrinters = this.searchTerm ?
+        this.savedPrinters.filter(
+            item => settings.printing.matchesSearchTerm(
+                item.printerInfo, this.searchTerm)) :
+        this.savedPrinters.slice();
+
+    updatedPrinters.sort(settings.printing.sortPrinters);
+
+    this.updateList(
+        'filteredPrinters_', printer => printer.printerInfo.printerId,
+        updatedPrinters);
   },
 
   /**
@@ -90,5 +125,13 @@ Polymer({
   closeActionMenu_: function() {
     this.$$('cr-action-menu').close();
   },
+
+  /**
+   * @return {boolean} Returns true if the no search message should be visible.
+   * @private
+   */
+  showNoSearchResultsMessage_: function() {
+    return !!this.searchTerm && !this.filteredPrinters_.length;
+  }
 
 });

@@ -856,8 +856,11 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_UPDATE_RECOMMENDED_DIALOG_TITLE" desc="The window title for the Update Recommended dialog.">
           Relaunch Chrome
         </message>
-        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog.">
-          A new update for Chrome is available and will be applied as soon as you relaunch.
+        <message name="IDS_UPDATE_RECOMMENDED" desc="The main text of the Update Recommended dialog with a count of open incognito windows.">
+          {COUNT, plural,
+           =0 {A new update for Chrome is available and will be applied as soon as you relaunch.}
+           =1 {A new update for Chrome is available and will be applied as soon as you relaunch. Your Incognito window won't reopen.}
+          other {A new update for Chrome is available and will be applied as soon as you relaunch. Your # Incognito windows won't reopen.}}
         </message>
         <message name="IDS_RELAUNCH_AND_UPDATE" desc="The button in the Update Recommended dialog which updates and relaunches Chrome.">
           Relaunch
@@ -1031,8 +1034,11 @@ Google Chrome is unable to recover your settings.
               =1 {A Chrome update is available}
               other {A Chrome update has been available for # days}}
           </message>
-          <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users that a browser relaunch is recommended for an update.">
-            Your administrator asks that you relaunch Chrome to apply this update
+          <message name="IDS_RELAUNCH_RECOMMENDED_BODY" desc="The body text of a dialog that tells users that a browser relaunch is recommended for an update with Incognito counter.">
+            {COUNT, plural,
+              =0 {Your administrator asks that you relaunch Chrome to apply this update}
+              =1 {Your administrator asks that you relaunch Chrome to apply this update. Your Incognito window won't reopen.}
+              other {Your administrator asks that you relaunch Chrome to apply this update. Your # Incognito windows won't reopen.}}
           </message>
           <message name="IDS_RELAUNCH_REQUIRED_TITLE_DAYS" desc="The title of a dialog that tells users the browser must be relaunched within two or more days.">
             {0, plural,
@@ -1055,8 +1061,11 @@ Google Chrome is unable to recover your settings.
               =1 {Chrome will relaunch in 1 second}
               other {Chrome will relaunch in # seconds}}
           </message>
-          <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the browser must be relaunched.">
-            Your administrator requires that you relaunch Chrome to apply an update
+          <message name="IDS_RELAUNCH_REQUIRED_BODY" desc="The body text of a dialog that tells users the browser must be relaunched with Incognito counter">
+            {COUNT, plural,
+              =0 {Your administrator requires that you relaunch Chrome to apply an update}
+              =1 {Your administrator requires that you relaunch Chrome to apply an update. Your Incognito window won't reopen.}
+              other {Your administrator requires that you relaunch Chrome to apply an update. Your # Incognito windows won't reopen.}}
           </message>
         </if>
       </if>

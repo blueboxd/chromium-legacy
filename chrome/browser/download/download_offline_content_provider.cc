@@ -23,9 +23,9 @@
 #include "ui/display/screen.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_manager_bridge.h"
-#include "chrome/browser/android/download/download_manager_service.h"
-#include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/download/android/download_manager_bridge.h"
+#include "chrome/browser/download/android/download_manager_service.h"
+#include "chrome/browser/download/android/download_utils.h"
 #endif
 
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;

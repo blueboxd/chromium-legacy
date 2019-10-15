@@ -396,10 +396,6 @@ void ProfileImpl::RegisterProfilePrefs(
                                 safe_search_util::YOUTUBE_RESTRICT_OFF);
   registry->RegisterStringPref(prefs::kAllowedDomainsForApps, std::string());
 
-#if defined(OS_ANDROID)
-  // The following prefs don't need to be sync'd to mobile. This file isn't
-  // compiled on iOS so we only need to exclude them syncing from the Android
-  // build.
   registry->RegisterIntegerPref(prefs::kProfileAvatarIndex, -1);
   // Whether a profile is using an avatar without having explicitely chosen it
   // (i.e. was assigned by default by legacy profile creation).
@@ -408,25 +404,6 @@ void ProfileImpl::RegisterProfilePrefs(
   // Whether a profile is using a default avatar name (eg. Pickles or Person 1).
   registry->RegisterBooleanPref(prefs::kProfileUsingDefaultName, true);
   registry->RegisterStringPref(prefs::kProfileName, std::string());
-#else
-  registry->RegisterIntegerPref(
-      prefs::kProfileAvatarIndex, -1,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // Whether a profile is using an avatar without having explicitely chosen it
-  // (i.e. was assigned by default by legacy profile creation).
-  registry->RegisterBooleanPref(
-      prefs::kProfileUsingDefaultAvatar, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kProfileUsingGAIAAvatar, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // Whether a profile is using a default avatar name (eg. Pickles or Person 1).
-  registry->RegisterBooleanPref(
-      prefs::kProfileUsingDefaultName, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kProfileName, std::string(),
-                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#endif
 
   registry->RegisterStringPref(prefs::kSupervisedUserId, std::string());
 #if defined(OS_ANDROID)

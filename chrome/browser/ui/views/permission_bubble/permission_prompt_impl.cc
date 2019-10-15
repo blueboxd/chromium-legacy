@@ -84,8 +84,6 @@ class PermissionsBubbleDialogDelegateView
   bool Accept() override;
   bool Close() override;
   void AddedToWidget() override;
-  int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void SizeToContents() override;
 
   // Repositions the bubble so it's displayed in the correct location based on
@@ -108,6 +106,11 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
   // measure against crbug.com/619429, permission prompts should not be accepted
   // as the default action.
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
+
   DCHECK(!requests.empty());
 
   set_close_on_deactivate(false);
@@ -180,21 +183,6 @@ void PermissionsBubbleDialogDelegateView::OnWidgetDestroying(
     owner_->Closing();
     owner_ = nullptr;
   }
-}
-
-int PermissionsBubbleDialogDelegateView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 PermissionsBubbleDialogDelegateView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_CANCEL)
-    return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
-
-  // The text differs based on whether OK is the only visible button.
-  return l10n_util::GetStringUTF16(GetDialogButtons() == ui::DIALOG_BUTTON_OK
-                                       ? IDS_OK
-                                       : IDS_PERMISSION_ALLOW);
 }
 
 bool PermissionsBubbleDialogDelegateView::Cancel() {

@@ -286,6 +286,17 @@ class SignedExchangePrefetchBrowserTest
       // Shutdown the server.
       EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
+      // The HTTP Cache does not currently support cross-origin prefetching if
+      // the split cache is enabled, so skip the rest of the tests.
+      // TODO(crbug.com/939317): Remove this early return when cross-origin
+      // prefetching with split cache works.
+      if (base::FeatureList::IsEnabled(
+              net::features::kSplitCacheByNetworkIsolationKey) &&
+          !url::Origin::Create(sxg_url).IsSameOriginWith(
+              url::Origin::Create(inner_url))) {
+        return;
+      }
+
       // Need to setup MockSignedExchangeHandlerFactory because the SXG is
       // loaded from HTTPCache.
       MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(

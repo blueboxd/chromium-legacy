@@ -4,7 +4,9 @@
 
 #include "android_webview/browser/state_serializer.h"
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/pickle.h"
 #include "base/time/time.h"
@@ -14,6 +16,7 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_state.h"
+#include "content/public/common/referrer.h"
 
 // Reasons for not re-using TabNavigation under chrome/ as of 20121116:
 // * Android WebView has different requirements for fields to store since
@@ -226,8 +229,7 @@ bool RestoreNavigationEntryFromPickle(uint32_t state_version,
       return false;
 
     deserialized_referrer.url = GURL(referrer_url);
-    deserialized_referrer.policy =
-        static_cast<network::mojom::ReferrerPolicy>(policy);
+    deserialized_referrer.policy = content::Referrer::ConvertToPolicy(policy);
   }
 
   {

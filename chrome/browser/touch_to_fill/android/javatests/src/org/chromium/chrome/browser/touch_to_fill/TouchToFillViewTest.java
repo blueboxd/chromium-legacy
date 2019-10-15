@@ -8,22 +8,25 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import static org.chromium.chrome.browser.touch_to_fill.CredentialProperties.CREDENTIAL;
-import static org.chromium.chrome.browser.touch_to_fill.CredentialProperties.DEFAULT_ITEM_TYPE;
-import static org.chromium.chrome.browser.touch_to_fill.CredentialProperties.FAVICON;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
 
+import static java.util.Arrays.asList;
+
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.junit.Before;
@@ -33,6 +36,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -47,14 +51,24 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.Collections;
+
 /**
  * View tests for the Touch To Fill component ensure that model changes are reflected in the sheet.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class TouchToFillViewTest {
+    private static final Credential ANA = new Credential("Ana", "S3cr3t", "Ana", "", false);
+    private static final Credential NO_ONE =
+            new Credential("", "***", "No Username", "m.example.xyz", true);
+    private static final Credential BOB =
+            new Credential("Bob", "***", "Bob", "mobile.example.xyz", true);
+
     @Mock
     private TouchToFillProperties.ViewEventListener mMockListener;
+    @Mock
+    private Callback<Credential> mCredentialCallback;
 
     private PropertyModel mModel;
     private TouchToFillView mTouchToFillView;
@@ -62,12 +76,9 @@ public class TouchToFillViewTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    public TouchToFillViewTest() {
-        MockitoAnnotations.initMocks(this);
-    }
-
     @Before
     public void setUp() throws InterruptedException {
+        MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
         mModel = TouchToFillProperties.createDefaultModel(mMockListener);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -118,31 +129,28 @@ public class TouchToFillViewTest {
     public void testCredentialsChangedByModel() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTouchToFillView.setVisible(true);
-            MVCListAdapter.ModelList credentialList = mModel.get(CREDENTIAL_LIST);
-            credentialList.add(buildCredentialItem("Ana", "S3cr3t", "Ana", "", false));
-            credentialList.add(
-                    buildCredentialItem("", "***", "No Username", "http://m.example.xyz/", true));
-            credentialList.add(
-                    buildCredentialItem("Bob", "***", "Bob", "http://mobile.example.xyz", true));
+            mModel.get(SHEET_ITEMS)
+                    .addAll(asList(buildCredentialItem(ANA), buildCredentialItem(NO_ONE),
+                            buildCredentialItem(BOB)));
         });
 
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
         assertThat(getCredentials().getChildCount(), is(3));
         assertThat(getCredentialOriginAt(0).getVisibility(), is(View.GONE));
-        assertThat(getCredentialNameAt(0).getText(), is("Ana"));
-        assertThat(getCredentialPasswordAt(0).getText(), is("S3cr3t"));
+        assertThat(getCredentialNameAt(0).getText(), is(ANA.getFormattedUsername()));
+        assertThat(getCredentialPasswordAt(0).getText(), is(ANA.getPassword()));
         assertThat(getCredentialPasswordAt(0).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
         assertThat(getCredentialOriginAt(1).getVisibility(), is(View.VISIBLE));
         assertThat(getCredentialOriginAt(1).getText(), is("m.example.xyz"));
-        assertThat(getCredentialNameAt(1).getText(), is("No Username"));
-        assertThat(getCredentialPasswordAt(1).getText(), is("***"));
+        assertThat(getCredentialNameAt(1).getText(), is(NO_ONE.getFormattedUsername()));
+        assertThat(getCredentialPasswordAt(1).getText(), is(NO_ONE.getPassword()));
         assertThat(getCredentialPasswordAt(1).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
         assertThat(getCredentialOriginAt(2).getVisibility(), is(View.VISIBLE));
         assertThat(getCredentialOriginAt(2).getText(), is("mobile.example.xyz"));
-        assertThat(getCredentialNameAt(2).getText(), is("Bob"));
-        assertThat(getCredentialPasswordAt(2).getText(), is("***"));
+        assertThat(getCredentialNameAt(2).getText(), is(BOB.getFormattedUsername()));
+        assertThat(getCredentialPasswordAt(2).getText(), is(BOB.getPassword()));
         assertThat(getCredentialPasswordAt(2).getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
     }
@@ -151,19 +159,16 @@ public class TouchToFillViewTest {
     @MediumTest
     public void testCredentialsAreClickable() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.get(CREDENTIAL_LIST)
-                    .add(buildCredentialItem("Carl", "G3h3!m", "Carl", "", false));
-            mModel.get(CREDENTIAL_LIST)
-                    .add(buildCredentialItem("Bob", "***", "Bob", "m.example.xyz", true));
+            mModel.get(SHEET_ITEMS).addAll(Collections.singletonList(buildCredentialItem(ANA)));
             mModel.set(VISIBLE, true);
         });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
 
-        assertNotNull(getCredentials().getChildAt(1));
+        assertNotNull(getCredentials().getChildAt(0));
 
-        TouchCommon.singleClickView(getCredentials().getChildAt(1));
+        TouchCommon.singleClickView(getCredentials().getChildAt(0));
 
-        waitForEvent().onSelectItemAt(1);
+        waitForEvent(mCredentialCallback).onResult(eq(ANA));
     }
 
     @Test
@@ -189,8 +194,8 @@ public class TouchToFillViewTest {
         return getActivity().getBottomSheet().getSheetState();
     }
 
-    private ListView getCredentials() {
-        return mTouchToFillView.getContentView().findViewById(R.id.credential_list);
+    private RecyclerView getCredentials() {
+        return mTouchToFillView.getContentView().findViewById(R.id.sheet_item_list);
     }
 
     private TextView getCredentialNameAt(int index) {
@@ -205,20 +210,17 @@ public class TouchToFillViewTest {
         return getCredentials().getChildAt(index).findViewById(R.id.credential_origin);
     }
 
-    TouchToFillProperties.ViewEventListener waitForEvent() {
-        return verify(mMockListener,
+    public static <T> T waitForEvent(T mock) {
+        return verify(mock,
                 timeout(ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
     }
 
-    private static MVCListAdapter.ListItem buildCredentialItem(String username, String password,
-            String formattedUsername, String originUrl, boolean isPublicSuffixMatch) {
-        PropertyModel propertyModel =
-                new PropertyModel.Builder(FAVICON, CREDENTIAL)
-                        .with(FAVICON, null)
-                        .with(CREDENTIAL,
-                                new Credential(username, password, formattedUsername, originUrl,
-                                        isPublicSuffixMatch))
-                        .build();
-        return new MVCListAdapter.ListItem(DEFAULT_ITEM_TYPE, propertyModel);
+    private MVCListAdapter.ListItem buildCredentialItem(Credential credential) {
+        return new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.CREDENTIAL,
+                new PropertyModel.Builder(TouchToFillProperties.CredentialProperties.ALL_KEYS)
+                        .with(CREDENTIAL, credential)
+                        .with(ON_CLICK_LISTENER, mCredentialCallback)
+                        .with(FORMATTED_ORIGIN, credential.getOriginUrl())
+                        .build());
     }
 }

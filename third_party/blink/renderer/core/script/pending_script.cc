@@ -141,18 +141,22 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   }
 
   if (OriginalContextDocument() != context_document) {
-    // Do not execute scripts if they are moved between documents.
+    // Do not execute scripts if they are moved between context documents.
     Dispose();
     return;
   }
 
-  if (OriginalContextDocument() == context_document &&
-      original_element_document_ != &element_->GetDocument()) {
-    // Count how many scripts are moved between element Documents under the same
-    // context Document, to investigate the feasibility of stopping execution of
-    // such scripts. https://crbug.com/721914
+  if (original_element_document_ != &element_->GetDocument()) {
+    // Do not execute scripts if they are moved between element documents (under
+    // the same context Document).
+
+    // We continue counting for a while to confirm that such cases are really
+    // rare on stable channel. https://crbug.com/721914
     UseCounter::Count(context_document,
                       WebFeature::kEvaluateScriptMovedBetweenElementDocuments);
+
+    Dispose();
+    return;
   }
 
   Script* script = GetSource(document_url);

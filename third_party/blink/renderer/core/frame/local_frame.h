@@ -33,12 +33,13 @@
 
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
@@ -402,6 +403,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
       const;
 
+  // Returns the frame host ptr.
+  mojom::blink::LocalFrameHost& GetLocalFrameHostRemote();
+
   // Overlays a color on top of this LocalFrameView if it is associated with
   // the main frame. Should not have multiple consumers.
   void SetMainFrameColorOverlay(SkColor color);
@@ -583,6 +587,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   mojom::FrameLifecycleState lifecycle_state_;
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
+
+  mojo::AssociatedRemote<mojom::blink::LocalFrameHost> local_frame_host_remote_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

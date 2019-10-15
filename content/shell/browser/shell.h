@@ -153,7 +153,7 @@ class Shell : public WebContentsDelegate,
   void EnterFullscreenModeForTab(
       WebContents* web_contents,
       const GURL& origin,
-      const blink::FullScreenOptions& options) override;
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(const WebContents* web_contents) override;
   blink::mojom::DisplayMode GetDisplayMode(

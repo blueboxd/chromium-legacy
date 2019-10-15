@@ -17,6 +17,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -109,6 +110,28 @@ const char kEndpointGen[] = "1.0";
 
 const char kOAUTHCodeCookie[] = "oauth_code";
 const char kGAPSCookie[] = "GAPS";
+
+// Must be kept consistent with ChromeOSSamlApiUsed in enums.xml
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused
+enum class ChromeOSSamlApiUsed {
+  kNotSamlLogin = 0,
+  kSamlApiUsed = 1,
+  kSamlApiNotUsed = 2,
+  kMaxValue = kSamlApiNotUsed,
+};
+
+void RecordAPILogin(bool is_third_party_idp, bool is_api_used) {
+  ChromeOSSamlApiUsed login_type;
+  if (!is_third_party_idp) {
+    login_type = ChromeOSSamlApiUsed::kNotSamlLogin;
+  } else if (is_api_used) {
+    login_type = ChromeOSSamlApiUsed::kSamlApiUsed;
+  } else {
+    login_type = ChromeOSSamlApiUsed::kSamlApiNotUsed;
+  }
+  base::UmaHistogramEnumeration("ChromeOS.SAML.APILogin", login_type);
+}
 
 policy::DeviceMode GetDeviceMode() {
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -936,15 +959,17 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
                   SamlPasswordAttributes());
 }
 
-void GaiaScreenHandler::HandleUsingSAMLAPI() {
-  SetSAMLPrincipalsAPIUsed(true);
+void GaiaScreenHandler::HandleUsingSAMLAPI(bool is_third_party_idp) {
+  SetSAMLPrincipalsAPIUsed(is_third_party_idp, /*is_api_used=*/true);
 }
 
 void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {
-  SetSAMLPrincipalsAPIUsed(false);
+  // We are handling scraped passwords here so this is SAML flow without
+  // Chrome Credentials Passing API
+  SetSAMLPrincipalsAPIUsed(/*is_third_party_idp=*/true, /*is_api_used=*/false);
   // Use a histogram that has 11 buckets, one for each of the values in [0, 9]
   // and an overflow bucket at the end.
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SAML.Scraping.PasswordCount",
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SAML.Scraping.PasswordCountAll",
                             std::min(password_count, 10), 11);
   if (password_count == 0)
     HandleScrapedPasswordVerificationFailed();
@@ -1203,9 +1228,12 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
   // if they are cleared here.
 }
 
-void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool api_used) {
-  using_saml_api_ = api_used;
-  UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.APIUsed", api_used);
+void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool is_third_party_idp,
+                                                 bool is_api_used) {
+  using_saml_api_ = is_api_used;
+  // This correctly records the standard GAIA login and SAML flow
+  // with Chrome Credentials Passing API used/not used
+  RecordAPILogin(is_third_party_idp, is_api_used);
 }
 
 void GaiaScreenHandler::ShowGaiaAsync(const AccountId& account_id) {

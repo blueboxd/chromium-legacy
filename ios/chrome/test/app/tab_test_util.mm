@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
@@ -107,6 +108,14 @@ web::WebState* GetWebStateAtIndexInCurrentMode(int index) {
   if (!web_state_list || !web_state_list->ContainsIndex(index))
     return nullptr;
   return web_state_list->GetWebStateAt(index);
+}
+
+NSString* GetCurrentTabTitle() {
+  return tab_util::GetTabTitle(GetCurrentWebState());
+}
+
+NSString* GetNextTabTitle() {
+  return tab_util::GetTabTitle(GetNextWebState());
 }
 
 void CloseCurrentTab() {

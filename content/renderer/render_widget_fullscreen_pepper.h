@@ -37,7 +37,6 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       int32_t routing_id,
       RenderWidget::ShowCallback show_callback,
       CompositorDependencies* compositor_deps,
-      PageProperties* page_properties,
       const ScreenInfo& screen_info,
       PepperPluginInstanceImpl* plugin,
       const blink::WebURL& local_main_frame_url,
@@ -63,7 +62,6 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   RenderWidgetFullscreenPepper(
       int32_t routing_id,
       CompositorDependencies* compositor_deps,
-      PageProperties* page_properties,
       PepperPluginInstanceImpl* plugin,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
   ~RenderWidgetFullscreenPepper() override;

@@ -30,6 +30,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/toggle_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -106,6 +107,58 @@ void ConfigureDefaultSizeAndFlex(TriView* tri_view,
       container,
       gfx::Size(SizeRangeLayout::kAbsoluteMaxSize, kTrayPopupItemMaxHeight));
 }
+
+gfx::Insets GetInkDropInsets(TrayPopupInkDropStyle ink_drop_style) {
+  if (ink_drop_style == TrayPopupInkDropStyle::HOST_CENTERED ||
+      ink_drop_style == TrayPopupInkDropStyle::INSET_BOUNDS) {
+    return gfx::Insets(kTrayPopupInkDropInset);
+  }
+  return gfx::Insets();
+}
+
+gfx::Rect GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
+                           const views::View* host) {
+  gfx::Rect bounds = host->GetLocalBounds();
+  bounds.Inset(GetInkDropInsets(ink_drop_style));
+  return bounds;
+}
+
+class HighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator(TrayPopupInkDropStyle ink_drop_style)
+      : ink_drop_style_(ink_drop_style) {}
+
+  // HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    SkPath path;
+
+    const gfx::Rect mask_bounds =
+        GetInkDropBounds(TrayPopupInkDropStyle::HOST_CENTERED, view);
+    switch (ink_drop_style_) {
+      case TrayPopupInkDropStyle::HOST_CENTERED: {
+        gfx::Point center_point = mask_bounds.CenterPoint();
+        const int radius =
+            std::min(mask_bounds.width(), mask_bounds.height()) / 2;
+        path.addCircle(center_point.x(), center_point.y(), radius);
+        break;
+      }
+      case TrayPopupInkDropStyle::INSET_BOUNDS:
+        path.addRoundRect(RectToSkRect(mask_bounds),
+                          kTrayPopupInkDropCornerRadius,
+                          kTrayPopupInkDropCornerRadius);
+        break;
+      case TrayPopupInkDropStyle::FILL_BOUNDS:
+        path.addRect(RectToSkRect(mask_bounds));
+        break;
+    }
+    return path;
+  }
+
+ private:
+  const TrayPopupInkDropStyle ink_drop_style_;
+
+  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
+};
 
 }  // namespace
 
@@ -251,9 +304,8 @@ std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes(background_color);
   return std::make_unique<views::FloodFillInkDropRipple>(
-      host->size(), TrayPopupUtils::GetInkDropInsets(ink_drop_style),
-      center_point, ripple_attributes.base_color,
-      ripple_attributes.inkdrop_opacity);
+      host->size(), GetInkDropInsets(ink_drop_style), center_point,
+      ripple_attributes.base_color, ripple_attributes.inkdrop_opacity);
 }
 
 std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
@@ -262,8 +314,7 @@ std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
     SkColor background_color) {
   const AshColorProvider::RippleAttributes ripple_attributes =
       AshColorProvider::Get()->GetRippleAttributes(background_color);
-  const gfx::Rect bounds =
-      TrayPopupUtils::GetInkDropBounds(ink_drop_style, host);
+  const gfx::Rect bounds = GetInkDropBounds(ink_drop_style, host);
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(bounds.size(), 0,
                                   gfx::PointF(bounds.CenterPoint()),
@@ -272,49 +323,11 @@ std::unique_ptr<views::InkDropHighlight> TrayPopupUtils::CreateInkDropHighlight(
   return highlight;
 }
 
-std::unique_ptr<SkPath> TrayPopupUtils::CreateHighlightPath(
-    TrayPopupInkDropStyle ink_drop_style,
-    const views::View* host) {
-  auto path = std::make_unique<SkPath>();
-
-  const gfx::Rect mask_bounds =
-      GetInkDropBounds(TrayPopupInkDropStyle::HOST_CENTERED, host);
-  switch (ink_drop_style) {
-    case TrayPopupInkDropStyle::HOST_CENTERED: {
-      gfx::Point center_point = mask_bounds.CenterPoint();
-      const int radius =
-          std::min(mask_bounds.width(), mask_bounds.height()) / 2;
-      path->addCircle(center_point.x(), center_point.y(), radius);
-      break;
-    }
-    case TrayPopupInkDropStyle::INSET_BOUNDS:
-      path->addRoundRect(RectToSkRect(mask_bounds),
-                         kTrayPopupInkDropCornerRadius,
-                         kTrayPopupInkDropCornerRadius);
-      break;
-    case TrayPopupInkDropStyle::FILL_BOUNDS:
-      path->addRect(RectToSkRect(mask_bounds));
-      break;
-  }
-  return path;
-}
-
-gfx::Insets TrayPopupUtils::GetInkDropInsets(
+void TrayPopupUtils::InstallHighlightPathGenerator(
+    views::View* host,
     TrayPopupInkDropStyle ink_drop_style) {
-  gfx::Insets insets;
-  if (ink_drop_style == TrayPopupInkDropStyle::HOST_CENTERED ||
-      ink_drop_style == TrayPopupInkDropStyle::INSET_BOUNDS) {
-    insets.Set(kTrayPopupInkDropInset, kTrayPopupInkDropInset,
-               kTrayPopupInkDropInset, kTrayPopupInkDropInset);
-  }
-  return insets;
-}
-
-gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
-                                           const views::View* host) {
-  gfx::Rect bounds = host->GetLocalBounds();
-  bounds.Inset(GetInkDropInsets(ink_drop_style));
-  return bounds;
+  views::HighlightPathGenerator::Install(
+      host, std::make_unique<HighlightPathGenerator>(ink_drop_style));
 }
 
 views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {

@@ -546,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookie) {
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(
           current_browser()->profile(), url, false);
-  net::CookieOptions options;
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       url, options, base::BindOnce(GetCookieCallback, loop.QuitClosure()));
@@ -563,10 +563,12 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchCookieCrossDomain) {
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromURL(cross_domain_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
+  // While the request is cross-site, it's permitted to set (implicitly) lax
+  // cookies on a cross-site navigation.
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(
           current_browser()->profile(), cross_domain_url, false);
-  net::CookieOptions options;
+  net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   base::RunLoop loop;
   storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       cross_domain_url, options,

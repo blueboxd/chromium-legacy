@@ -1513,7 +1513,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // RenderFrame.
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
-      render_view->page_properties(), params->visual_properties.display_mode,
+      params->visual_properties.display_mode,
       /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->never_visible);
 
@@ -1722,7 +1722,7 @@ void RenderFrameImpl::CreateFrame(
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
-        render_view->page_properties(), blink::mojom::DisplayMode::kUndefined,
+        blink::mojom::DisplayMode::kUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
@@ -2170,7 +2170,6 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
       GetLocalRootRenderWidget()->compositor_deps(),
-      render_view()->page_properties(),
       GetLocalRootRenderWidget()->GetOriginalScreenInfo(), plugin,
       std::move(main_frame_url), std::move(widget_channel_receiver));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
@@ -5175,6 +5174,7 @@ void RenderFrameImpl::DidBlockNavigation(
 
 void RenderFrameImpl::NavigateBackForwardSoon(int offset,
                                               bool has_user_gesture) {
+  render_view()->NavigateBackForwardSoon(offset, has_user_gesture);
   Send(new FrameHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,
                                           has_user_gesture));
 }
@@ -5689,18 +5689,6 @@ void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
     render_accessibility_->HandleAccessibilityFindInPageTermination();
 }
 
-void RenderFrameImpl::EnterFullscreen(const blink::FullScreenOptions& options) {
-  Send(new FrameHostMsg_EnterFullscreen(routing_id_, options));
-}
-
-void RenderFrameImpl::ExitFullscreen() {
-  Send(new FrameHostMsg_ExitFullscreen(routing_id_));
-}
-
-void RenderFrameImpl::FullscreenStateChanged(bool is_fullscreen) {
-  GetFrameHost()->FullscreenStateChanged(is_fullscreen);
-}
-
 void RenderFrameImpl::SuddenTerminationDisablerChanged(
     bool present,
     blink::WebSuddenTerminationDisablerType disabler_type) {
@@ -6008,6 +5996,9 @@ bool RenderFrameImpl::UpdateNavigationHistory(
     render_view_->history_list_offset_ =
         navigation_state->commit_params().pending_history_list_offset;
   }
+
+  if (commit_type == blink::WebHistoryCommitType::kWebBackForwardCommit)
+    render_view_->DidCommitProvisionalHistoryLoad();
 
   return is_new_navigation;
 }

@@ -148,12 +148,13 @@ chrome.accessibilityPrivate.FocusType = {
 chrome.accessibilityPrivate.FocusRingInfo;
 
 /**
- * Called to translate language code into human-readable string in the language
- * of the provided language code.
- * @param {string} languageCode
+ * Called to translate languageCodeToTranslate into human-readable string in the
+ * language specified by targetLanguageCode
+ * @param {string} languageCodeToTranslate
+ * @param {string} targetLanguageCode
  * @return {string} The human-readable language string in the provided language.
  */
-chrome.accessibilityPrivate.getDisplayLanguage = function(languageCode) {};
+chrome.accessibilityPrivate.getDisplayLanguage = function(languageCodeToTranslate, targetLanguageCode) {};
 
 /**
  * Called to request battery status from Chrome OS system.
@@ -204,13 +205,6 @@ chrome.accessibilityPrivate.setKeyboardListener = function(enabled, capture) {};
  * @param {boolean} enabled True to darken screen; false to undarken screen.
  */
 chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
-
-/**
- * Change the keyboard keys captured by Switch Access.
- * @param {!Array<number>} key_codes The key codes for the keys that will be
- *     captured.
- */
-chrome.accessibilityPrivate.setSwitchAccessKeys = function(key_codes) {};
 
 /**
  * Shows or hides the Switch Access menu. If shown, it is at the indicated
@@ -283,11 +277,12 @@ chrome.accessibilityPrivate.toggleDictation = function() {};
 chrome.accessibilityPrivate.setVirtualKeyboardVisible = function(isVisible) {};
 
 /**
- * Opens a settings subpage, specified by the portion of the page's URL after
- * "chrome://settings/"
+ * Opens a specified settings subpage. To open a page with url
+ * chrome://settings/manageAccessibility/tts, pass in the substring
+ * 'manageAccessibility/tts'.
  * @param {string} subpage
  */
-chrome.accessibilityPrivate.openSettingsSubpage = function (subpage) {}
+chrome.accessibilityPrivate.openSettingsSubpage = function(subpage) {};
 
 /**
  * Fired whenever ChromeVox should output introduction.

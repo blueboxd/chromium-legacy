@@ -834,9 +834,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                            const blink::WebNode& end_node,
                                            int end_offset) override;
   void HandleAccessibilityFindInPageTermination() override;
-  void EnterFullscreen(const blink::FullScreenOptions& options) override;
-  void ExitFullscreen() override;
-  void FullscreenStateChanged(bool is_fullscreen) override;
   void SuddenTerminationDisablerChanged(
       bool present,
       blink::WebSuddenTerminationDisablerType disabler_type) override;

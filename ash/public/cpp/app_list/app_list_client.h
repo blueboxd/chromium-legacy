@@ -77,7 +77,7 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Invoked when the app list is closed.
   virtual void ViewClosing() = 0;
   // Notifies target visibility changes of the app list.
-  virtual void OnAppListTargetVisibilityChanged(bool visible) = 0;
+  virtual void OnAppListVisibilityWillChange(bool visible) = 0;
   // Notifies visibility changes of the app list.
   virtual void OnAppListVisibilityChanged(bool visible) = 0;
 

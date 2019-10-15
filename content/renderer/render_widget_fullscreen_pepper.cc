@@ -275,7 +275,6 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32_t routing_id,
     RenderWidget::ShowCallback show_callback,
     CompositorDependencies* compositor_deps,
-    PageProperties* page_properties,
     const ScreenInfo& screen_info,
     PepperPluginInstanceImpl* plugin,
     const blink::WebURL& local_main_frame_url,
@@ -283,8 +282,7 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
   DCHECK_NE(MSG_ROUTING_NONE, routing_id);
   DCHECK(show_callback);
   RenderWidgetFullscreenPepper* widget = new RenderWidgetFullscreenPepper(
-      routing_id, compositor_deps, page_properties, plugin,
-      std::move(widget_receiver));
+      routing_id, compositor_deps, plugin, std::move(widget_receiver));
   widget->InitForPepperFullscreen(
       std::move(show_callback), new PepperWidget(widget, local_main_frame_url),
       screen_info);
@@ -294,12 +292,10 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
-    PageProperties* page_properties,
     PepperPluginInstanceImpl* plugin,
     mojo::PendingReceiver<mojom::Widget> widget_receiver)
     : RenderWidget(routing_id,
                    compositor_deps,
-                   page_properties,
                    /*display_mode=*/blink::mojom::DisplayMode::kUndefined,
                    /*is_undead=*/false,
                    /*hidden=*/false,

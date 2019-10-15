@@ -30,6 +30,14 @@
 
 namespace policy {
 
+namespace {
+// UMA histogram name to count how often validation results with strategy
+// SCHEMA_ALLOW_UNKNOWN differ from strategy SCHEMA_ALLOW_INVALID.
+// See crbug.com/969706
+const char* const kSchemaMismatchedValueIgnored =
+    "Enterprise.SchemaMismatchedValueIgnored";
+}  // namespace
+
 // ConfigurationPolicyHandler implementation -----------------------------------
 
 ConfigurationPolicyHandler::ConfigurationPolicyHandler() {}
@@ -376,6 +384,13 @@ bool SchemaValidatingPolicyHandler::CheckPolicySettings(
   std::string error;
   bool result = schema_.Validate(*value, strategy_, &error_path, &error);
 
+  if (strategy_ == SCHEMA_ALLOW_INVALID) {
+    bool allow_unknown_result =
+        schema_.Validate(*value, SCHEMA_ALLOW_UNKNOWN, &error_path, &error);
+    base::UmaHistogramBoolean(kSchemaMismatchedValueIgnored,
+                              result != allow_unknown_result);
+  }
+
   if (errors && !error.empty()) {
     if (error_path.empty())
       error_path = "(ROOT)";
@@ -398,6 +413,13 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   std::string error;
   bool result =
       schema_.Normalize(output->get(), strategy_, &error_path, &error, nullptr);
+
+  if (strategy_ == SCHEMA_ALLOW_INVALID) {
+    bool allow_unknown_result =
+        schema_.Validate(*value, SCHEMA_ALLOW_UNKNOWN, &error_path, &error);
+    base::UmaHistogramBoolean(kSchemaMismatchedValueIgnored,
+                              result != allow_unknown_result);
+  }
 
   if (errors && !error.empty()) {
     if (error_path.empty())

@@ -53,7 +53,6 @@
 #include "base/win/scoped_hstring.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/shlwapi.h"
-#include "base/win/win_client_metrics.h"
 #include "base/win/windows_version.h"
 
 namespace base {
@@ -360,17 +359,6 @@ bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
 }
 
 static bool g_crash_on_process_detach = false;
-
-void GetNonClientMetrics(NONCLIENTMETRICS_XP* metrics) {
-  DCHECK(metrics);
-  metrics->cbSize = sizeof(*metrics);
-  const bool success = !!SystemParametersInfo(
-      SPI_GETNONCLIENTMETRICS,
-      metrics->cbSize,
-      reinterpret_cast<NONCLIENTMETRICS*>(metrics),
-      0);
-  DCHECK(success);
-}
 
 bool GetUserSidString(std::wstring* user_sid) {
   // Get the current token.

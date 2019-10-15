@@ -48,7 +48,10 @@ class ExtensionServiceWorkerMessageFilter
                                         const std::string& request_uuid);
   void OnDecrementServiceWorkerActivity(int64_t service_worker_version_id,
                                         const std::string& request_uuid);
-  void OnEventAckWorker(int64_t service_worker_version_id, int event_id);
+  void OnEventAckWorker(const ExtensionId& extension_id,
+                        int64_t service_worker_version_id,
+                        int thread_id,
+                        int event_id);
   void OnDidInitializeServiceWorkerContext(const ExtensionId& extension_id,
                                            int64_t service_worker_version_id,
                                            int thread_id);

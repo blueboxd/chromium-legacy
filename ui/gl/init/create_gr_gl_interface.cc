@@ -660,6 +660,10 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // GL_EXT_window_rectangles
   functions->fWindowRectangles = gl->glWindowRectanglesEXTFn;
 
+  // EXT_window_rectangles
+  functions->fStartTiling = gl->glStartTilingQCOMFn;
+  functions->fEndTiling = gl->glEndTilingQCOMFn;
+
   // EGL_KHR_image / EGL_KHR_image_base
   // functions->fCreateImage = nullptr;
   // functions->fDestroyImage = nullptr;

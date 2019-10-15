@@ -40,17 +40,16 @@ void TextSuggestionHostAndroid::Create(JNIEnv* env, WebContents* web_contents) {
   text_suggestion_host->Initialize();
 }
 
-TextSuggestionHostAndroid::TextSuggestionHostAndroid(
-    JNIEnv* env,
-    WebContents* web_contents)
+TextSuggestionHostAndroid::TextSuggestionHostAndroid(JNIEnv* env,
+                                                     WebContents* web_contents)
     : RenderWidgetHostConnector(web_contents),
       WebContentsObserver(web_contents),
       rwhva_(nullptr),
-      suggestion_menu_timeout_(
-          base::Bind(&TextSuggestionHostAndroid::OnSuggestionMenuTimeout,
-                     base::Unretained(this))) {
-  registry_.AddInterface(base::Bind(&TextSuggestionHostMojoImplAndroid::Create,
-                                    base::Unretained(this)));
+      suggestion_menu_timeout_(base::BindRepeating(
+          &TextSuggestionHostAndroid::OnSuggestionMenuTimeout,
+          base::Unretained(this))) {
+  registry_.AddInterface(base::BindRepeating(
+      &TextSuggestionHostMojoImplAndroid::Create, base::Unretained(this)));
 }
 
 TextSuggestionHostAndroid::~TextSuggestionHostAndroid() {

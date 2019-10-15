@@ -484,10 +484,6 @@ interface FrameHost {
   // navigation.
   FrameSizeChanged(gfx.mojom.Size size);
 
-  // Notifies the browser that the current frame has either become or is no
-  // longer fullscreen.
-  FullscreenStateChanged(bool is_fullscreen);
-
   // Notifies the browser that the current frame has changed its visibility
   // status.
   VisibilityChanged(blink.mojom.FrameVisibility visibility);

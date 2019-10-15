@@ -105,6 +105,10 @@ class ASH_EXPORT UnifiedSystemTrayController
   // relinquish focus.
   bool FocusOut(bool reverse);
 
+  // Ensure the main view is collapsed. Called from the slider bubble
+  // controller.
+  void EnsureCollapsed();
+
   // Ensure the main view is expanded. Called from the slider bubble controller.
   void EnsureExpanded();
 
@@ -128,6 +132,7 @@ class ASH_EXPORT UnifiedSystemTrayController
 
  private:
   friend class UnifiedSystemTrayControllerTest;
+  friend class UnifiedMessageCenterBubbleTest;
 
   // How the expanded state is toggled. The enum is used to back an UMA
   // histogram and should be treated as append-only.

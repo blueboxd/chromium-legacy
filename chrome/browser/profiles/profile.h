@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -64,6 +65,7 @@ class PrefRegistrySyncable;
 }
 
 class OffTheRecordProfileIOData;
+class ProfileObserver;
 
 // Instead of adding more members to Profile, consider creating a
 // KeyedService. See
@@ -141,6 +143,9 @@ class Profile : public content::BrowserContext {
 
   // Returns the profile corresponding to the given WebUI.
   static Profile* FromWebUI(content::WebUI* web_ui);
+
+  void AddObserver(ProfileObserver* observer);
+  void RemoveObserver(ProfileObserver* observer);
 
   // content::BrowserContext implementation ------------------------------------
 
@@ -449,6 +454,8 @@ class Profile : public content::BrowserContext {
                                              bool incognito_pref_store);
 
  private:
+  void NotifyOffTheRecordProfileCreated(Profile* off_the_record);
+
   bool restored_last_session_;
 
   // Used to prevent the notification that this Profile is destroyed from
@@ -465,6 +472,8 @@ class Profile : public content::BrowserContext {
 
   // A non-browsing profile not associated to a user. Sample use: User-Manager.
   bool is_system_profile_;
+
+  base::ObserverList<ProfileObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(Profile);
 };

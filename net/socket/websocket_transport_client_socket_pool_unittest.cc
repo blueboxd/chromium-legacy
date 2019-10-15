@@ -65,7 +65,9 @@ class WebSocketTransportClientSocketPoolTest : public TestWithTaskEnvironment {
   WebSocketTransportClientSocketPoolTest()
       : group_id_(HostPortPair("www.google.com", 80),
                   ClientSocketPool::SocketType::kHttp,
-                  PrivacyMode::PRIVACY_MODE_DISABLED),
+                  PrivacyMode::PRIVACY_MODE_DISABLED,
+                  NetworkIsolationKey(),
+                  false /* disable_secure_dns */),
         params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
@@ -185,9 +187,10 @@ TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
   ClientSocketHandle handle;
   EXPECT_EQ(
       ERR_IO_PENDING,
-      handle.Init(ClientSocketPool::GroupId(host_port_pair,
-                                            ClientSocketPool::SocketType::kHttp,
-                                            PRIVACY_MODE_DISABLED),
+      handle.Init(ClientSocketPool::GroupId(
+                      host_port_pair, ClientSocketPool::SocketType::kHttp,
+                      PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                      false /* disable_secure_dns */),
                   ClientSocketPool::SocketParams::CreateForHttpForTesting(),
                   base::nullopt /* proxy_annotation_tag */, kDefaultPriority,
                   SocketTag(), ClientSocketPool::RespectLimits::ENABLED,

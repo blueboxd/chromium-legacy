@@ -98,6 +98,9 @@ constexpr gfx::Insets kUnifiedSliderRowPadding(0, 12, 8, 16);
 constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 
+constexpr int kMessageCenterCollapseThreshold = 175;
+constexpr int kStackedNotificationBarHeight = 32;
+constexpr int kStackedNotificationBarCollapsedHeight = 40;
 constexpr int kUnifiedSliderViewSpacing = 12;
 constexpr int kUnifiedMenuPadding = 8;
 constexpr int kUnifiedMessageCenterBubbleSpacing = 8;
@@ -114,7 +117,6 @@ constexpr int kUnifiedNotificationMinimumHeight = 40;
 constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
 constexpr gfx::Insets kUnifiedNotificationHiddenPadding(6, 16);
 constexpr gfx::Insets kUnifiedCircularButtonFocusPadding(4);
-constexpr int kStackingNotificationCounterHeight = 32;
 constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
 
 // Size of an icon drawn inside top shortcut buttons.

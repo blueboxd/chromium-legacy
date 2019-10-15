@@ -28,16 +28,13 @@ class NET_EXPORT_PRIVATE SpdySessionKey {
   };
   SpdySessionKey();
 
-  // TODO(mmenke): Remove default |network_isolation_key| value (only used by
-  // tests).
-  SpdySessionKey(
-      const HostPortPair& host_port_pair,
-      const ProxyServer& proxy_server,
-      PrivacyMode privacy_mode,
-      IsProxySession is_proxy_session,
-      const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey(),
-      bool disable_secure_dns = false);
+  SpdySessionKey(const HostPortPair& host_port_pair,
+                 const ProxyServer& proxy_server,
+                 PrivacyMode privacy_mode,
+                 IsProxySession is_proxy_session,
+                 const SocketTag& socket_tag,
+                 const NetworkIsolationKey& network_isolation_key,
+                 bool disable_secure_dns);
 
   SpdySessionKey(const SpdySessionKey& other);
 

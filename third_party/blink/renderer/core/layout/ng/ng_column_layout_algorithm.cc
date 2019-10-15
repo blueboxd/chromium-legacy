@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -212,6 +213,8 @@ base::Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
 }
 
 void NGColumnLayoutAlgorithm::LayoutChildren() {
+  NGMarginStrut margin_strut;
+
   // First extract incoming child break tokens.
   scoped_refptr<const NGBlockBreakToken> spanner_break_token;
   scoped_refptr<const NGBlockBreakToken> next_column_token;
@@ -257,7 +260,7 @@ void NGColumnLayoutAlgorithm::LayoutChildren() {
     // resume now.
     spanner_break_token =
         LayoutSpanner(To<NGBlockNode>(spanner_break_token->InputNode()),
-                      spanner_break_token.get());
+                      spanner_break_token.get(), &margin_strut);
 
     if (spanner_break_token) {
       // We broke at the spanner again!
@@ -277,7 +280,7 @@ void NGColumnLayoutAlgorithm::LayoutChildren() {
   // child is a spanner.
   do {
     scoped_refptr<const NGLayoutResult> result =
-        LayoutRow(next_column_token.get());
+        LayoutRow(next_column_token.get(), &margin_strut);
     next_column_token =
         To<NGBlockBreakToken>(result->PhysicalFragment().BreakToken());
 
@@ -289,7 +292,7 @@ void NGColumnLayoutAlgorithm::LayoutChildren() {
       break;
 
     // We found a spanner. Lay it out, and then resume column layout.
-    spanner_break_token = LayoutSpanner(spanner_node, nullptr);
+    spanner_break_token = LayoutSpanner(spanner_node, nullptr, &margin_strut);
 
     if (spanner_break_token) {
       // We broke before or inside the spanner. This may happen if we're nested
@@ -312,12 +315,14 @@ void NGColumnLayoutAlgorithm::LayoutChildren() {
     // context. In that case we must make sure to skip the contents when
     // resuming.
     container_builder_.SetHasSeenAllChildren();
+
+    intrinsic_block_size_ += margin_strut.Sum();
   }
 }
 
 scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
-    const NGBlockBreakToken* next_column_token) {
-  LayoutUnit column_block_offset = intrinsic_block_size_;
+    const NGBlockBreakToken* next_column_token,
+    NGMarginStrut* margin_strut) {
   LogicalSize column_size(column_inline_size_, content_box_size_.block_size);
 
   // If block-size is non-auto, subtract the space for content we've consumed in
@@ -346,6 +351,10 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
     column_size.block_size =
         CalculateBalancedColumnBlockSize(column_size, next_column_token);
   }
+
+  // Column rows have no representation in the DOM and have no margins, but
+  // there may be a trailing margin from a preceding spanner.
+  LayoutUnit column_block_offset = intrinsic_block_size_ + margin_strut->Sum();
 
   bool needs_more_fragments_in_outer = false;
   if (is_constrained_by_outer_fragmentation_context_) {
@@ -502,20 +511,31 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
     break;
   } while (true);
 
+  bool keep_margin = false;
+
   // If there was no content inside to process, we don't want the resulting
   // empty column fragment.
   if (new_columns.size() == 1u) {
     const NGPhysicalBoxFragment& column =
         *To<NGPhysicalBoxFragment>(new_columns[0].fragment.get());
-    // TODO(mstensho): Keeping the empty fragment, just so that out-of-flow
-    // descendants get propagated correctly isn't right. Find some other way of
-    // propagating them.
-    if (column.Children().size() == 0 &&
-        !column.HasOutOfFlowPositionedDescendants())
-      return result;
+
+    if (column.Children().size() == 0) {
+      // No content. Keep the trailing margin from any previous column spanner.
+      keep_margin = true;
+
+      // TODO(mstensho): It's wrong to keep the empty fragment, just so that
+      // out-of-flow descendants get propagated correctly. Find some other way
+      // of propagating them.
+      if (!column.HasOutOfFlowPositionedDescendants())
+        return result;
+    }
   }
 
-  intrinsic_block_size_ += column_size.block_size;
+  intrinsic_block_size_ = column_block_offset + column_size.block_size;
+
+  // We added a row. Reset the trailing margin from any previous column spanner.
+  if (!keep_margin)
+    *margin_strut = NGMarginStrut();
 
   // Commit all column fragments to the fragment builder.
   for (auto column : new_columns) {
@@ -528,12 +548,21 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
 
 scoped_refptr<const NGBlockBreakToken> NGColumnLayoutAlgorithm::LayoutSpanner(
     NGBlockNode spanner_node,
-    const NGBlockBreakToken* break_token) {
-  // TODO(mstensho): Margins (including margin collapsing), inline alignment,
-  // and outer fragmentainer breaks between spanners and rows (the spanner may
-  // be unbreakable inside, and we may be in a nested fragmentation context and
-  // out of space).
-  LayoutUnit block_offset = intrinsic_block_size_;
+    const NGBlockBreakToken* break_token,
+    NGMarginStrut* margin_strut) {
+  const ComputedStyle& spanner_style = spanner_node.Style();
+  NGBoxStrut margins = ComputeMarginsFor(
+      spanner_style, content_box_size_.inline_size,
+      ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
+
+  // Collapse the block-start margin of this spanner with the block-end margin
+  // of an immediately preceding spanner, if any.
+  margin_strut->Append(margins.block_start, /* is_quirky */ false);
+
+  // TODO(mstensho): outer fragmentainer breaks between spanners and rows (the
+  // spanner may be unbreakable inside, and we may be in a nested fragmentation
+  // context and out of space).
+  LayoutUnit block_offset = intrinsic_block_size_ + margin_strut->Sum();
   auto spanner_space = CreateConstraintSpaceForSpanner(block_offset);
   // TODO(mstensho): Passing a break-before token shouldn't be a problem, but it
   // would cause problems for the NGPaintFragment code. Just pass nullptr. Won't
@@ -541,9 +570,19 @@ scoped_refptr<const NGBlockBreakToken> NGColumnLayoutAlgorithm::LayoutSpanner(
   if (break_token && break_token->IsBreakBefore())
     break_token = nullptr;
   auto result = spanner_node.Layout(spanner_space, break_token);
-  LogicalOffset offset(border_scrollbar_padding_.inline_start,
-                       intrinsic_block_size_);
+  NGFragment fragment(ConstraintSpace().GetWritingMode(),
+                      result->PhysicalFragment());
+
+  ResolveInlineMargins(spanner_style, Style(), content_box_size_.inline_size,
+                       fragment.InlineSize(), &margins);
+
+  LogicalOffset offset(
+      border_scrollbar_padding_.inline_start + margins.inline_start,
+      block_offset);
   container_builder_.AddResult(*result, offset);
+
+  *margin_strut = NGMarginStrut();
+  margin_strut->Append(margins.block_end, /* is_quirky */ false);
 
   // TODO(mstensho): The correct thing would be to weigh any break inside
   // against the appeal of breaking before the spanner, like we do in
@@ -554,7 +593,6 @@ scoped_refptr<const NGBlockBreakToken> NGColumnLayoutAlgorithm::LayoutSpanner(
   if (ConstraintSpace().HasBlockFragmentation())
     container_builder_.SetBreakAppeal(kBreakAppealPerfect);
 
-  NGFragment fragment(Style().GetWritingMode(), result->PhysicalFragment());
   intrinsic_block_size_ = offset.block_offset + fragment.BlockSize();
 
   return To<NGBlockBreakToken>(result->PhysicalFragment().BreakToken());

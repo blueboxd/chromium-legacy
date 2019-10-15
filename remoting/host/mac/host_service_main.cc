@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -110,12 +111,16 @@ class HostService {
   void PrintPid();
 
  private:
+  int RunHostFromOldScript();
+
+  base::FilePath old_host_helper_file_;
   base::FilePath enabled_file_;
   base::FilePath config_file_;
   base::FilePath host_exe_file_;
 };
 
 HostService::HostService() {
+  old_host_helper_file_ = base::FilePath(kOldHostHelperScriptPath);
   enabled_file_ = base::FilePath(kHostEnabledPath);
   config_file_ = base::FilePath(kHostConfigFilePath);
 
@@ -127,6 +132,14 @@ HostService::HostService() {
 HostService::~HostService() = default;
 
 int HostService::RunHost() {
+  // Mojave users updating from an older host likely have already granted a11y
+  // permission to the old script. In this case we always delegate RunHost to
+  // the old script so that they don't need to grant permission to a new app.
+  if (base::mac::IsOS10_14() && base::PathExists(old_host_helper_file_)) {
+    HOST_LOG << "RunHost will be delegated to the old host script.";
+    return RunHostFromOldScript();
+  }
+
   // Run the config-upgrade tool, but only if running as root, as normal users
   // don't have permission to write the config file.
   if (geteuid() == 0) {
@@ -286,6 +299,24 @@ void HostService::PrintPid() {
   // so we need to flush it immediately.
   printf("%d\n", base::Process::Current().Pid());
   fflush(stdout);
+}
+
+int HostService::RunHostFromOldScript() {
+  base::CommandLine cmdline(old_host_helper_file_);
+  cmdline.AppendSwitch(kSwitchHostRunFromLaunchd);
+  base::LaunchOptions options;
+  options.disclaim_responsibility = true;
+  base::Process process = base::LaunchProcess(cmdline, options);
+  if (!process.IsValid()) {
+    LOG(ERROR) << "Failed to launch the old host script for unknown reason.";
+    return 1;
+  }
+
+  g_host_pid = process.Pid();
+  int exit_code;
+  process.WaitForExit(&exit_code);
+  g_host_pid = 0;
+  return exit_code;
 }
 
 }  // namespace

@@ -148,6 +148,7 @@ class TestSecurityKeysBioEnrollProxy extends TestSecurityKeysBrowserProxy {
       'startEnrolling',
       'cancelEnrollment',
       'deleteEnrollment',
+      'renameEnrollment',
       'close',
     ]);
   }
@@ -180,6 +181,11 @@ class TestSecurityKeysBioEnrollProxy extends TestSecurityKeysBrowserProxy {
   /** @override */
   deleteEnrollment(id) {
     return this.handleMethod('deleteEnrollment', id);
+  }
+
+  /** @override */
+  renameEnrollment(id, name) {
+    return this.handleMethod('renameEnrollment', [id, name]);
   }
 
   /** @override */
@@ -674,7 +680,8 @@ suite('SecurityKeysCredentialManagement', function() {
 });
 
 suite('SecurityKeysBioEnrollment', function() {
-  const allDivs = ['initial', 'pinPrompt', 'enrollments', 'enroll', 'error'];
+  const allDivs =
+      ['initial', 'pinPrompt', 'enrollments', 'enroll', 'chooseName', 'error'];
   let dialog = null;
 
   setup(function() {
@@ -737,7 +744,7 @@ suite('SecurityKeysBioEnrollment', function() {
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
     dialog.$.pin.value = '0000';
-    dialog.$.okButton.click();
+    dialog.$.confirmButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
     assertEquals(pin, '0000');
 
@@ -801,7 +808,7 @@ suite('SecurityKeysBioEnrollment', function() {
     await uiReady;
     assertShown(allDivs, dialog, 'pinPrompt');
     dialog.$.pin.value = '0000';
-    dialog.$.okButton.click();
+    dialog.$.confirmButton.click();
     const pin = await browserProxy.whenCalled('providePIN');
     assertEquals(pin, '0000');
 
@@ -831,17 +838,50 @@ suite('SecurityKeysBioEnrollment', function() {
     await uiReady;
     assertFalse(dialog.$.arc.isComplete());
     assertFalse(dialog.$.cancelButton.hidden);
-    assert(dialog.$.okButton.hidden);
+    assert(dialog.$.confirmButton.hidden);
 
     uiReady =
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    const enrollmentId = 'someId';
+    const enrollmentName = 'New Fingerprint';
     enrollingResolver.resolve({
       code: 0,
       remaining: 0,
+      enrollment: {
+        id: enrollmentId,
+        name: enrollmentName,
+      },
     });
     await uiReady;
     assert(dialog.$.arc.isComplete());
     assert(dialog.$.cancelButton.hidden);
-    assertFalse(dialog.$.okButton.hidden);
+    assertFalse(dialog.$.confirmButton.hidden);
+
+    // Proceeding brings up rename dialog page.
+    uiReady =
+        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    dialog.$.confirmButton.click();
+    await uiReady;
+
+    assertShown(allDivs, dialog, 'chooseName');
+    assertEquals(dialog.$.enrollmentName.value, enrollmentName);
+    const newEnrollmentName = 'Even Newer Fingerprint';
+    dialog.$.enrollmentName.value = newEnrollmentName;
+    assertFalse(dialog.$.confirmButton.hidden);
+    assertFalse(dialog.$.confirmButton.disabled);
+
+    // Proceeding renames the enrollment and returns to the enrollment overview.
+    uiReady =
+        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    const renameEnrollmentResolver = new PromiseResolver();
+    browserProxy.setResponseFor(
+        'renameEnrollment', renameEnrollmentResolver.promise);
+    dialog.$.confirmButton.click();
+
+    const renameArgs = await browserProxy.whenCalled('renameEnrollment');
+    assertDeepEquals(renameArgs, [enrollmentId, newEnrollmentName]);
+    renameEnrollmentResolver.resolve([]);
+    await uiReady;
+    assertShown(allDivs, dialog, 'enrollments');
   });
 });

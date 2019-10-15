@@ -259,8 +259,6 @@ TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
                                  "Morrison", "marion@me.xyz", "Fox",
                                  "123 Zoo St.", "unit 5", "Hollywood", "CA",
                                  "91601", "US", "16505678910");
-  ON_CALL(mock_personal_data_manager_, GetProfileByGUID(billing_profile.guid()))
-      .WillByDefault(Return(&billing_profile));
 
   autofill::CreditCard credit_card(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetCreditCardInfo(&credit_card, "Marion Mitchell",
@@ -273,6 +271,8 @@ TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
               std::unique_ptr<UserData> user_data) {
             user_data->card =
                 std::make_unique<autofill::CreditCard>(credit_card);
+            user_data->billing_address =
+                std::make_unique<autofill::AutofillProfile>(billing_profile);
             user_data->succeed = true;
             std::move(collect_user_data_options->confirm_callback)
                 .Run(std::move(user_data));
@@ -358,39 +358,32 @@ TEST_F(CollectUserDataActionTest, ContactDetailsCanHandleUtf8) {
 TEST_F(CollectUserDataActionTest, UserDataComplete_Contact) {
   UserData user_data;
   CollectUserDataOptions options;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.contact_profile = std::make_unique<autofill::AutofillProfile>(
       base::GenerateGUID(), kFakeUrl);
   options.request_payer_email = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.contact_profile->SetRawInfo(
       autofill::ServerFieldType::EMAIL_ADDRESS,
       base::UTF8ToUTF16("joedoe@example.com"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   options.request_payer_name = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_FULL,
                                         base::UTF8ToUTF16("Joe Doe"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   options.request_payer_phone = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.contact_profile->SetRawInfo(
       autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
       base::UTF8ToUTF16("+1 23 456 789 01"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
@@ -398,8 +391,7 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
   CollectUserDataOptions options;
 
   options.request_payment_method = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   // Valid credit card, but no billing address.
   user_data.card =
@@ -407,15 +399,7 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
   autofill::test::SetCreditCardInfo(user_data.card.get(), "Marion Mitchell",
                                     "4111 1111 1111 1111", "01", "2020",
                                     /* billing_address_id = */ "");
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
-
-  // Valid credit card, but invalid billing address.
-  user_data.card->set_billing_address_id("invalid");
-  ON_CALL(mock_personal_data_manager_, GetProfileByGUID("invalid"))
-      .WillByDefault(Return(nullptr));
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   // Incomplete billing address.
   user_data.billing_address = std::make_unique<autofill::AutofillProfile>(
@@ -424,70 +408,56 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
                                  "Mitchell", "Morrison", "marion@me.xyz", "Fox",
                                  "123 Zoo St.", "unit 5", "Hollywood", "CA",
                                  /* zipcode = */ "", "US", "16505678910");
-  ON_CALL(mock_personal_data_manager_,
-          GetProfileByGUID(user_data.billing_address->guid()))
-      .WillByDefault(Return(user_data.billing_address.get()));
   user_data.card->set_billing_address_id(user_data.billing_address->guid());
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.billing_address->SetRawInfo(autofill::ADDRESS_HOME_ZIP,
                                         base::UTF8ToUTF16("91601"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   // Zip code is optional in Argentinian address.
   user_data.billing_address->SetRawInfo(autofill::ADDRESS_HOME_ZIP,
                                         base::UTF8ToUTF16(""));
   user_data.billing_address->SetRawInfo(autofill::ADDRESS_HOME_COUNTRY,
                                         base::UTF8ToUTF16("AR"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   options.require_billing_postal_code = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.billing_address->SetRawInfo(autofill::ADDRESS_HOME_ZIP,
                                         base::UTF8ToUTF16("B1675"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_Terms) {
   UserData user_data;
   CollectUserDataOptions options;
   options.accept_terms_and_conditions_text.assign("Accept T&C");
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.terms_and_conditions = REQUIRES_REVIEW;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.terms_and_conditions = ACCEPTED;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_Login) {
   UserData user_data;
   CollectUserDataOptions options;
   options.request_login_choice = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.login_choice_identifier.assign("1");
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_ShippingAddress) {
   UserData user_data;
   CollectUserDataOptions options;
   options.request_shipping = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   // Incomplete address.
   user_data.shipping_address = std::make_unique<autofill::AutofillProfile>(
@@ -496,32 +466,27 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_ShippingAddress) {
                                  "Mitchell", "Morrison", "marion@me.xyz", "Fox",
                                  "123 Zoo St.", "unit 5", "Hollywood", "CA",
                                  /* zipcode = */ "", "US", "16505678910");
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.shipping_address->SetRawInfo(autofill::ADDRESS_HOME_ZIP,
                                          base::UTF8ToUTF16("91601"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_DateTimeRange) {
   UserData user_data;
   CollectUserDataOptions options;
   options.request_date_time_range = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   SetDateTimeProto(&user_data.date_time_range_start, 2019, 12, 31, 10, 30, 0);
   SetDateTimeProto(&user_data.date_time_range_end, 2019, 1, 28, 16, 0, 0);
 
   // Start date not before end date.
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
   user_data.date_time_range_end.mutable_date()->set_year(2020);
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
-      &mock_personal_data_manager_, user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
 TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {

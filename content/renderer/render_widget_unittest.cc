@@ -169,11 +169,9 @@ class MockWebWidget : public blink::WebWidget {
 class InteractiveRenderWidget : public RenderWidget {
  public:
   InteractiveRenderWidget(CompositorDependencies* compositor_deps,
-                          PageProperties* page_properties,
                           const ScreenInfo& screen_info)
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
-                     page_properties,
                      blink::mojom::DisplayMode::kUndefined,
                      /*is_undead=*/false,
                      /*is_hidden=*/false,
@@ -255,11 +253,9 @@ int InteractiveRenderWidget::next_routing_id_ = 0;
 
 class RenderWidgetUnittest : public testing::Test {
  public:
-  RenderWidgetUnittest() : page_properties_(&compositor_deps_) {}
-
   void SetUp() override {
-    widget_ = std::make_unique<InteractiveRenderWidget>(
-        &compositor_deps_, &page_properties_, ScreenInfo());
+    widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_,
+                                                        ScreenInfo());
   }
 
   void TearDown() override {
@@ -282,7 +278,6 @@ class RenderWidgetUnittest : public testing::Test {
   MockRenderProcess render_process_;
   MockRenderThread render_thread_;
   FakeCompositorDependencies compositor_deps_;
-  PageProperties page_properties_;
   std::unique_ptr<InteractiveRenderWidget> widget_;
   base::HistogramTester histogram_tester_;
 };

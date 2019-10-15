@@ -296,6 +296,13 @@ void ExtensionFunctionDispatcher::Dispatch(
     if (!rph)
       return;
 
+    WorkerId worker_id{params.extension_id, render_process_id,
+                       params.service_worker_version_id,
+                       params.worker_thread_id};
+    // Ignore if the worker has already stopped.
+    if (!ProcessManager::Get(browser_context_)->HasServiceWorker(worker_id))
+      return;
+
     WorkerResponseCallbackMapKey key(render_process_id,
                                      params.service_worker_version_id);
     UIThreadWorkerResponseCallbackWrapperMap::const_iterator iter =

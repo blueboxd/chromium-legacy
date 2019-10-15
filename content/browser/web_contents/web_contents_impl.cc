@@ -154,6 +154,7 @@
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/security/security_style.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -2531,7 +2532,7 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
 
 void WebContentsImpl::EnterFullscreenMode(
     const GURL& origin,
-    const blink::FullScreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   // This method is being called to enter renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
@@ -3140,7 +3141,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
       delegate_->EnterFullscreenModeForTab(this, GURL(),
-                                           blink::FullScreenOptions());
+                                           blink::mojom::FullscreenOptions());
     } else {
       widget_host_view->InitAsFullscreen(view);
     }
@@ -7236,6 +7237,13 @@ RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
   if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
     return web_contents->GetMainFrame();
   return nullptr;
+}
+
+bool WebContentsImpl::IsFrameLowPriority(
+    const RenderFrameHost* render_frame_host) {
+  if (!delegate_)
+    return false;
+  return delegate_->IsFrameLowPriority(this, render_frame_host);
 }
 
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {

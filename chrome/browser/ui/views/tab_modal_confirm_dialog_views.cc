@@ -36,6 +36,11 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents)
     : delegate_(std::move(delegate)) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   delegate_->GetAcceptButtonTitle());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   delegate_->GetCancelButtonTitle());
+
   base::Optional<int> default_button = delegate_->GetDefaultDialogButton();
   if (bool(default_button))
     DialogDelegate::set_default_button(*default_button);
@@ -87,15 +92,6 @@ int TabModalConfirmDialogViews::GetDialogButtons() const {
 
 base::string16 TabModalConfirmDialogViews::GetWindowTitle() const {
   return delegate_->GetTitle();
-}
-
-base::string16 TabModalConfirmDialogViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return delegate_->GetAcceptButtonTitle();
-  if (button == ui::DIALOG_BUTTON_CANCEL)
-    return delegate_->GetCancelButtonTitle();
-  return base::string16();
 }
 
 bool TabModalConfirmDialogViews::Cancel() {

@@ -249,7 +249,9 @@ class BidirectionalStreamSpdyImplTest : public testing::TestWithParam<bool>,
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED,
              SpdySessionKey::IsProxySession::kFalse,
-             SocketTag()),
+             SocketTag(),
+             NetworkIsolationKey(),
+             false /* disable_secure_dns */),
         ssl_data_(SSLSocketDataProvider(ASYNC, OK)) {
     ssl_data_.next_proto = kProtoHTTP2;
     ssl_data_.ssl_info.cert =

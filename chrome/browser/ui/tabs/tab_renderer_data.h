@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_RENDERER_DATA_H_
 #define CHROME_BROWSER_UI_TABS_TAB_RENDERER_DATA_H_
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -47,7 +48,7 @@ struct TabRendererData {
   bool show_icon = true;
   bool pinned = false;
   bool blocked = false;
-  TabAlertState alert_state = TabAlertState::NONE;
+  base::Optional<TabAlertState> alert_state;
   bool should_hide_throbber = false;
 };
 

@@ -582,6 +582,13 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldDecryptPendingKeysInKeystoreMode) {
 
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(
                                NotNull(), /*has_pending_keys=*/true));
+  EXPECT_CALL(
+      *observer(),
+      OnPassphraseRequired(
+          /*reason=*/REASON_DECRYPTION,
+          /*key_derivation_params=*/KeyDerivationParams::CreateForPbkdf2(),
+          /*pending_keys=*/
+          EncryptedDataEq(entity_data.specifics.nigori().encryption_keybag())));
   EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
   const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
@@ -589,7 +596,94 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldDecryptPendingKeysInKeystoreMode) {
 
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(
                                NotNull(), /*has_pending_keys=*/false));
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_TRUE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
+}
+
+// This test emulates late arrival of keystore keys in backward-compatible
+// keystore mode, so neither |keystore_decryptor_token| or |encryption_keybag|
+// could be decrypted at the moment NigoriSpecifics arrived. Since default key
+// is derived from legacy implicit passphrase, pending keys should be decrypted
+// once passphrase passed to SetDecryptionPassphrase(). SetKeystoreKeys()
+// intentionally not called in this test, to not allow decryption with
+// |keystore_decryptor_token|.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldDecryptPendingKeysWithPassphraseInKeystoreMode) {
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams("keystore_key");
+  const KeyParams kPassphraseKeyParams = Pbkdf2KeyParams("passphrase");
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kKeystoreKeyParams, kPassphraseKeyParams},
+      /*keystore_decryptor_params=*/kPassphraseKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
+                               NotNull(), /*has_pending_keys=*/false));
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  bridge()->SetDecryptionPassphrase(kPassphraseKeyParams.password);
+
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
+  EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kPassphraseKeyParams));
+}
+
+// Tests that unsuccessful attempt of |pending_keys| decryption ends up in
+// additional OnPassphraseRequired() call. This is allowed because of possible
+// change of |pending_keys| in keystore mode or due to transition from keystore
+// to custom passphrase.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldNotifyWhenDecryptionWithPassphraseFailed) {
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams("keystore_key");
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kKeystoreKeyParams},
+      /*keystore_decryptor_params=*/kKeystoreKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+
+  sync_pb::EncryptedData expected_pending_keys =
+      entity_data.specifics.nigori().encryption_keybag();
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  EXPECT_CALL(
+      *observer(),
+      OnPassphraseRequired(
+          /*reason=*/REASON_DECRYPTION,
+          /*key_derivation_params=*/KeyDerivationParams::CreateForPbkdf2(),
+          /*pending_keys=*/
+          EncryptedDataEq(expected_pending_keys)));
+  bridge()->SetDecryptionPassphrase("wrong_passphrase");
+}
+
+// Tests that attempt to SetEncryptionPassphrase() has no effect (at least
+// that bridge's Nigori is still keystore one) if it was called, while bridge
+// has pending keys in keystore mode.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldNotSetEncryptionPassphraseWithPendingKeys) {
+  const std::string kRawKeystoreKey = "raw_keystore_key";
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kKeystoreKeyParams},
+      /*keystore_decryptor_params=*/kKeystoreKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+  bridge()->SetEncryptionPassphrase("passphrase");
+  bridge()->SetKeystoreKeys({kRawKeystoreKey});
+
+  // TODO(crbug.com/922900): revisit expectations once conflict resolution is
+  // implemented. They might be not properly working with deferred state
+  // change.
+  EXPECT_THAT(bridge()->GetData(), HasKeystoreNigori());
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
 }
@@ -660,17 +754,19 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldTransitToCustomPassphrase) {
   EXPECT_TRUE(bridge()->HasPendingKeysForTesting());
 }
 
-// Tests that we don't try to overwrite default passphrase type and report
-// ModelError unless we received default Nigori node (which is determined by
-// the size of encryption_keybag). It's a requirement because receiving default
-// passphrase type might mean that some newer client switched to the new
-// passphrase type.
+// Tests that bridge doesn't try to overwrite unknown passphrase type and
+// report ModelError unless it received default Nigori node (which is
+// determined by the size of encryption_keybag). It's a requirement because
+// receiving unknown passphrase type might mean that some newer client switched
+// to the new passphrase type.
 TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnUnknownPassprase) {
   EntityData entity_data;
   *entity_data.specifics.mutable_nigori() =
       sync_pb::NigoriSpecifics::default_instance();
   entity_data.specifics.mutable_nigori()->mutable_encryption_keybag()->set_blob(
       "data");
+  entity_data.specifics.mutable_nigori()->set_passphrase_type(
+      sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE + 1);
   ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
 
   EXPECT_CALL(*processor(), Put(_)).Times(0);

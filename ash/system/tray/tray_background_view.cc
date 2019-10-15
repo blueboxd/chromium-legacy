@@ -42,6 +42,7 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/view_class_properties.h"
@@ -118,6 +119,26 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
+class TrayBackgroundView::HighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator() = default;
+
+  // HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    const int border_radius = ShelfConfig::Get()->control_border_radius();
+    SkPath path;
+    path.addRoundRect(
+        gfx::RectToSkRect(static_cast<const TrayBackgroundView*>(view)
+                              ->GetBackgroundBounds()),
+        border_radius, border_radius);
+    return path;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
+};
+
 TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
     // Note the ink drop style is ignored.
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
@@ -138,6 +159,8 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
   SetFocusPainter(nullptr);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<HighlightPathGenerator>());
 
   AddChildView(tray_container_);
 
@@ -414,16 +437,9 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
 }
 
 void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  const int border_radius = ShelfConfig::Get()->control_border_radius();
-  auto path = std::make_unique<SkPath>();
-  path->addRoundRect(gfx::RectToSkRect(GetBackgroundBounds()), border_radius,
-                     border_radius);
-  SetProperty(views::kHighlightPathKey, path.release());
-
   UpdateBackground();
 
-  // Bypass ActionableView::OnBoundsChanged which sets its own highlight path.
-  Button::OnBoundsChanged(previous_bounds);
+  ActionableView::OnBoundsChanged(previous_bounds);
 }
 
 bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {

@@ -63,6 +63,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/url_constants.h"
 
@@ -348,7 +349,7 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
   void EnterFullscreenModeForTab(
       WebContents* web_contents,
       const GURL& origin,
-      const blink::FullScreenOptions& options) override {
+      const blink::mojom::FullscreenOptions& options) override {
     fullscreened_contents_ = web_contents;
   }
 
@@ -1407,8 +1408,7 @@ TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
   // Toggle fullscreen mode on (as if initiated via IPC from renderer).
   EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
-  orig_rfh->OnMessageReceived(FrameHostMsg_EnterFullscreen(
-      orig_rfh->GetRoutingID(), blink::FullScreenOptions()));
+  orig_rfh->EnterFullscreen(blink::mojom::FullscreenOptions::New());
   EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
@@ -1446,8 +1446,7 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
 
   for (int i = 0; i < 2; ++i) {
     // Toggle fullscreen mode on (as if initiated via IPC from renderer).
-    orig_rfh->OnMessageReceived(FrameHostMsg_EnterFullscreen(
-        orig_rfh->GetRoutingID(), blink::FullScreenOptions()));
+    orig_rfh->EnterFullscreen(blink::mojom::FullscreenOptions::New());
     EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
     EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
@@ -1478,8 +1477,7 @@ TEST_F(WebContentsImplTest, CrashExitsFullscreen) {
   // Toggle fullscreen mode on (as if initiated via IPC from renderer).
   EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
-  main_test_rfh()->OnMessageReceived(FrameHostMsg_EnterFullscreen(
-      main_test_rfh()->GetRoutingID(), blink::FullScreenOptions()));
+  main_test_rfh()->EnterFullscreen(blink::mojom::FullscreenOptions::New());
   EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
   EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 

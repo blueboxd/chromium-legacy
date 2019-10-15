@@ -38,6 +38,11 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
       bubble_view_->AddChildView(std::make_unique<UnifiedMessageCenterView>(
           nullptr /* parent */, tray->model(), this));
 
+  // Check if the message center bubble should be collapsed when it is initially
+  // opened.
+  if (CalculateAvailableHeight() < kMessageCenterCollapseThreshold)
+    message_center_view_->SetCollapsed(false /*animate*/);
+
   message_center_view_->AddObserver(this);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
@@ -68,10 +73,24 @@ UnifiedMessageCenterBubble::~UnifiedMessageCenterBubble() {
   }
 }
 
+int UnifiedMessageCenterBubble::CalculateAvailableHeight() {
+  return tray_->bubble()->CalculateMaxHeight() -
+         tray_->bubble()->GetCurrentTrayHeight() -
+         kUnifiedMessageCenterBubbleSpacing;
+}
+
+void UnifiedMessageCenterBubble::CollapseMessageCenter() {
+  message_center_view_->SetCollapsed(true /*animate*/);
+}
+
+void UnifiedMessageCenterBubble::ExpandMessageCenter() {
+  message_center_view_->SetExpanded();
+  UpdatePosition();
+  tray_->EnsureQuickSettingsCollapsed();
+}
+
 void UnifiedMessageCenterBubble::UpdatePosition() {
-  int available_height = tray_->bubble()->CalculateMaxHeight() -
-                         tray_->bubble()->GetCurrentTrayHeight() -
-                         kUnifiedMessageCenterBubbleSpacing;
+  int available_height = CalculateAvailableHeight();
 
   message_center_view_->SetMaxHeight(available_height);
   message_center_view_->SetAvailableHeight(available_height);

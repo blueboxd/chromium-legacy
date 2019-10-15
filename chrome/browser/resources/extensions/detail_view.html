@@ -178,7 +178,9 @@
                   data.type,
                   '$i18nPolymer{appIcon}',
                   '$i18nPolymer{extensionIcon}')]]">
-          <span id="name" class="cr-title-text">[[data.name]]</span>
+          <span id="name" class="cr-title-text" role="heading" aria-level="1">
+            [[data.name]]
+          </span>
         </div>
         <div class="section continuation control-line" id="enable-section">
           <span class$="[[computeEnabledStyle_(data.state)]]">
@@ -258,17 +260,23 @@
           </div>
         </div>
         <div class="section continuation block">
-          <div class="section-title">$i18n{itemDescriptionLabel}</div>
+          <div class="section-title" role="heading" aria-level="2">
+            $i18n{itemDescriptionLabel}
+          </div>
           <div class="section-content" id="description">
             [[getDescription_(data.description, '$i18nPolymer{noDescription}')]]
           </div>
         </div>
         <div class="section block">
-          <div class="section-title">$i18n{itemVersion}</div>
+          <div class="section-title" role="heading" aria-level="2">
+            $i18n{itemVersion}
+          </div>
           <div class="section-content">[[data.version]]</div>
         </div>
         <div class="section block">
-          <div class="section-title">$i18n{itemSize}</div>
+          <div class="section-title" role="heading" aria-level="2">
+            $i18n{itemSize}
+          </div>
           <div class="section-content" id="size">
             <span>[[size_]]</span>
             <paper-spinner-lite active="[[!size_]]" hidden="[[size_]]">
@@ -276,12 +284,16 @@
           </div>
         </div>
         <div class="section block" id="id-section" hidden$="[[!inDevMode]]">
-          <div class="section-title">$i18n{itemIdHeading}</div>
+          <div class="section-title" role="heading" aria-level="2">
+            $i18n{itemIdHeading}
+          </div>
           <div class="section-content">[[data.id]]</div>
         </div>
         <template is="dom-if" if="[[inDevMode]]">
           <div class="section block" id="inspectable-views">
-            <div class="section-title">$i18n{itemInspectViews}</div>
+            <div class="section-title" role="heading" aria-level="2">
+              $i18n{itemInspectViews}
+            </div>
             <div class="section-content">
               <ul id="inspect-views">
                 <li hidden="[[data.views.length]]">
@@ -300,7 +312,9 @@
           </div>
         </template>
         <div class="section block">
-          <div class="section-title">$i18n{itemPermissions}</div>
+          <div class="section-title" role="heading" aria-level="2">
+            $i18n{itemPermissions}
+          </div>
           <div class="section-content">
             <span id="no-permissions" hidden$="[[hasPermissions_(data.*)]]">
               $i18n{itemPermissionsEmpty}
@@ -322,7 +336,9 @@
           </div>
         </div>
         <div class="section block">
-          <div class="section-title">$i18n{itemSiteAccess}</div>
+          <div class="section-title" role="heading" aria-level="2">
+            $i18n{itemSiteAccess}
+          </div>
           <div class="section-content">
             <span id="no-site-access"
                 hidden$="[[showSiteAccessContent_(data.*)]]">
@@ -349,7 +365,9 @@
         <template is="dom-if"
             if="[[hasDependentExtensions_(data.dependentExtensions.splices)]]">
           <div class="section block">
-            <div class="section-title">$i18n{itemDependencies}</div>
+            <div class="section-title" role="heading" aria-level="2">
+              $i18n{itemDependencies}
+            </div>
             <div class="section-content">
               <ul id="dependent-extensions-list">
                 <template is="dom-repeat" items="[[data.dependentExtensions]]">
@@ -405,7 +423,9 @@
             id="viewInStore" label="$i18n{viewInStore}"
             on-click="onViewInStoreTap_" external></cr-link-row>
         <div class="section block">
-          <div class="section-title">$i18n{itemSource}</div>
+          <div class="section-title" role="heading" aria-level="2">
+            $i18n{itemSource}
+          </div>
           <div id="source" class="section-content">
             [[computeSourceString_(data.*)]]
           </div>

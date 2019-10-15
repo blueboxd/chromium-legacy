@@ -48,6 +48,7 @@ chrome_ios_eg2_test("ios_chrome_ui_eg2tests_module") {
     "//ios/chrome/browser/ui/page_info:eg2_tests",
     "//ios/chrome/browser/ui/sad_tab:eg2_tests",
     "//ios/chrome/browser/ui/settings/autofill:eg2_tests",
+    "//ios/chrome/browser/ui/tabs:eg2_tests",
     "//ios/chrome/browser/ui/toolbar:eg2_tests",
   ]
 }

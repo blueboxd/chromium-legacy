@@ -11,8 +11,14 @@ class Profile;
 
 class ProfileManagerObserver : public base::CheckedObserver {
  public:
-  // Called when a profile is added to the manager. The profile is fully created
-  // and registered with the ProfileManager.
+  // Called when a Profile is added to the manager, the profile is fully created
+  // and registered with the ProfileManager. This is only called for normal
+  // (on-the-record) profiles as the ProfileManager doesn't own the OTR profile.
+  // For OTR profile creation, see
+  // ProfileObserver::OnOffTheRecordProfileCreated(). Unlike
+  // ProfileInfoCacheObserver::OnProfileAdded(), which is only called when a new
+  // user is first created, this is called once on every run of Chrome, provided
+  // that the Profile is in use.
   virtual void OnProfileAdded(Profile* profile) {}
 
   // Called when the user deletes a profile and all associated data should be

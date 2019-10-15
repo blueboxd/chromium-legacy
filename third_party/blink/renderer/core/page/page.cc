@@ -743,6 +743,22 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         GetSpatialNavigationController().OnSpatialNavigationSettingChanged();
       }
       break;
+    case SettingsDelegate::kUniversalAccessChange: {
+      if (!GetSettings().GetAllowUniversalAccessFromFileURLs())
+        break;
+      for (Frame* frame = MainFrame(); frame;
+           frame = frame->Tree().TraverseNext()) {
+        // If we got granted universal access from file urls we need to grant
+        // any outstanding security origin cross agent cluster access since
+        // newly allocated agent clusters will be the universal agent.
+        if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+          local_frame->GetDocument()
+              ->GetMutableSecurityOrigin()
+              ->GrantCrossAgentClusterAccess();
+        }
+      }
+      break;
+    }
   }
 }
 
@@ -902,10 +918,6 @@ void Page::SetPageScheduler(std::unique_ptr<PageScheduler> page_scheduler) {
   page_scheduler_ = std::move(page_scheduler);
   // The scheduler should be set before the main frame.
   DCHECK(!main_frame_);
-  history_navigation_virtual_time_pauser_ =
-      page_scheduler_->CreateWebScopedVirtualTimePauser(
-          "HistoryNavigation",
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
 }
 
 bool Page::IsOrdinary() const {

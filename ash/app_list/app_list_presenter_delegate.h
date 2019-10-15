@@ -57,7 +57,7 @@ class APP_LIST_EXPORT AppListPresenterDelegate {
   virtual void OnVisibilityChanged(bool visible, int64_t display_id) = 0;
 
   // Called when the app list target visibility changes.
-  virtual void OnTargetVisibilityChanged(bool visible, int64_t display_id) = 0;
+  virtual void OnVisibilityWillChange(bool visible, int64_t display_id) = 0;
 
   // Whether the AppList is visible.
   virtual bool IsVisible() = 0;

@@ -3218,7 +3218,13 @@ TEST_F(SSLClientSocketTest, SessionResumption_RSA) {
 }
 
 // Tests that ALPN works with session resumption.
-TEST_F(SSLClientSocketTest, SessionResumptionAlpn) {
+// Failed on Android, see https://crbug.com/1014556.
+#if defined(OS_ANDROID)
+#define MAYBE_SessionResumptionAlpn DISABLED_SessionResumptionAlpn
+#else
+#define MAYBE_SessionResumptionAlpn SessionResumptionAlpn
+#endif
+TEST_F(SSLClientSocketTest, MAYBE_SessionResumptionAlpn) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.alpn_protocols.push_back("h2");
   ssl_options.alpn_protocols.push_back("http/1.1");

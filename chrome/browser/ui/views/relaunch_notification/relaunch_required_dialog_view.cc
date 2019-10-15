@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
@@ -108,7 +109,6 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
     base::Time deadline,
     base::RepeatingClosure on_accept)
     : on_accept_(on_accept),
-      body_label_(nullptr),
       relaunch_required_timer_(
           deadline,
           base::BindRepeating(&RelaunchRequiredDialogView::UpdateWindowTitle,
@@ -125,11 +125,12 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
 
-  body_label_ =
-      new views::Label(l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_BODY),
-                       views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
-  body_label_->SetMultiLine(true);
-  body_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetPluralStringFUTF16(IDS_RELAUNCH_REQUIRED_BODY,
+                                       BrowserList::GetIncognitoBrowserCount()),
+      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Align the body label with the left edge of the dialog's title.
   // TODO(bsep): Remove this when fixing https://crbug.com/810970.
@@ -137,10 +138,10 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
                              ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
                              .left() +
                      kTitleIconSize;
-  body_label_->SetBorder(views::CreateEmptyBorder(
+  label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, title_offset - margins().left(), 0, 0)));
 
-  AddChildView(body_label_);
+  AddChildView(std::move(label));
 
   base::RecordAction(base::UserMetricsAction("RelaunchRequiredShown"));
 }

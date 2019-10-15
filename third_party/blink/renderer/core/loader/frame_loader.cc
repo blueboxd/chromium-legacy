@@ -1109,10 +1109,6 @@ void FrameLoader::CommitDocumentLoader(
         DocumentLoader::LoadTypeToCommitType(document_loader_->LoadType()),
         document_loader_->GetGlobalObjectReusePolicy());
   }
-  if (document_loader_->LoadType() == WebFrameLoadType::kBackForward) {
-    if (Page* page = frame_->GetPage())
-      page->HistoryNavigationVirtualTimePauser().UnpauseVirtualTime();
-  }
 
   // Load the document if needed.
   document_loader_->StartLoadingResponse();

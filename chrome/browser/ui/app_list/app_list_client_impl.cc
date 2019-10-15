@@ -218,7 +218,7 @@ void AppListClientImpl::GetContextMenuModel(
               std::move(callback)));
 }
 
-void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {
+void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
   app_list_target_visibility_ = visible;
 }
 

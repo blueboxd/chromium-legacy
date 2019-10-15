@@ -5,6 +5,7 @@
 #include "cc/animation/worklet_animation.h"
 
 #include <utility>
+#include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_timeline.h"
@@ -50,6 +51,7 @@ WorkletAnimation::WorkletAnimation(
       options_(std::move(options)),
       effect_timings_(std::move(effect_timings)),
       local_time_(base::nullopt),
+      last_synced_local_time_(base::nullopt),
       start_time_(base::nullopt),
       last_current_time_(base::nullopt),
       has_pending_tree_lock_(false),
@@ -107,6 +109,19 @@ void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
   keyframe_effect()->Tick(monotonic_time);
 }
 
+void WorkletAnimation::UpdateState(bool start_ready_animations,
+                                   AnimationEvents* events) {
+  Animation::UpdateState(start_ready_animations, events);
+  if (last_synced_local_time_ != local_time_) {
+    AnimationEvent event(worklet_animation_id_, local_time_);
+    // TODO(http://crbug.com/1013654): Instead of pushing multiple events per
+    // single main frame, push just the recent one to be handled by next main
+    // frame.
+    events->events_.push_back(event);
+    last_synced_local_time_ = local_time_;
+  }
+}
+
 void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
                                         base::TimeTicks monotonic_time,
                                         const ScrollTree& scroll_tree,
@@ -131,6 +146,9 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
 
   DCHECK(is_timeline_active || state_ == State::REMOVED);
 
+  // TODO(https://crbug.com/1011138): Initialize current_time to null if the
+  // timeline is inactive. It might be inactive here when state is
+  // State::REMOVED.
   base::Optional<base::TimeDelta> current_time =
       CurrentTime(monotonic_time, scroll_tree, is_active_tree);
 
@@ -141,6 +159,8 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
   if (!is_timeline_active)
     current_time = last_current_time_;
 
+  // TODO(https://crbug.com/1011138): Do not early exit if state is
+  // State::REMOVED. The animation must be removed in this case.
   if (!current_time)
     return;
   last_current_time_ = current_time;
@@ -179,6 +199,11 @@ void WorkletAnimation::SetOutputState(
   // keyframe effect at the moment. https://crbug.com/767043.
   DCHECK_EQ(state.local_times.size(), 1u);
   local_time_ = state.local_times[0];
+}
+
+void WorkletAnimation::NotifyLocalTimeUpdated(const AnimationEvent& event) {
+  if (animation_delegate_)
+    animation_delegate_->NotifyLocalTimeUpdated(event.local_time);
 }
 
 void WorkletAnimation::SetPlaybackRate(double playback_rate) {

@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
@@ -104,11 +105,13 @@ bool RelaunchRecommendedBubbleView::ShouldShowWindowIcon() const {
 
 void RelaunchRecommendedBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  body_label_ =
-      new views::Label(l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_BODY),
-                       views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
-  body_label_->SetMultiLine(true);
-  body_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetPluralStringFUTF16(IDS_RELAUNCH_RECOMMENDED_BODY,
+                                       BrowserList::GetIncognitoBrowserCount()),
+      views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
+
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // Align the body label with the left edge of the bubble's title.
   // TODO(bsep): Remove this when fixing https://crbug.com/810970.
@@ -117,10 +120,10 @@ void RelaunchRecommendedBubbleView::Init() {
                              ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
                              .left() +
                      kTitleIconSize;
-  body_label_->SetBorder(views::CreateEmptyBorder(
+  label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, title_offset - margins().left(), 0, 0)));
 
-  AddChildView(body_label_);
+  AddChildView(std::move(label));
 
   base::RecordAction(base::UserMetricsAction("RelaunchRecommendedShown"));
 }
@@ -149,7 +152,6 @@ RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
     base::RepeatingClosure on_accept)
     : LocationBarBubbleDelegateView(anchor_button, nullptr),
       on_accept_(std::move(on_accept)),
-      body_label_(nullptr),
       relaunch_recommended_timer_(
           detection_time,
           base::BindRepeating(&RelaunchRecommendedBubbleView::UpdateWindowTitle,

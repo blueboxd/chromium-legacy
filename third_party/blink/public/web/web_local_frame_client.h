@@ -119,7 +119,6 @@ class WebURLResponse;
 struct FramePolicy;
 struct WebConsoleMessage;
 struct WebContextMenuData;
-struct FullScreenOptions;
 struct WebPluginParams;
 struct WebPopupMenuInfo;
 struct WebRect;
@@ -208,9 +207,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // navigation-associated interfaces from the browser. See also
   // LocalFrame::GetRemoteNavigationAssociatedInterfaces().
   virtual AssociatedInterfaceProvider*
-  GetRemoteNavigationAssociatedInterfaces() {
-    return nullptr;
-  }
+  GetRemoteNavigationAssociatedInterfaces();
 
   // General notifications -----------------------------------------------
 
@@ -771,18 +768,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Provides accessibility information about the termination of a find
   // in page operation.
   virtual void HandleAccessibilityFindInPageTermination() {}
-
-  // Fullscreen ----------------------------------------------------------
-
-  // Called to enter/exit fullscreen mode.
-  // After calling enterFullscreen or exitFullscreen,
-  // WebWidget::didEnterFullscreen or WebWidget::didExitFullscreen
-  // respectively will be called once the fullscreen mode has changed.
-  virtual void EnterFullscreen(const blink::FullScreenOptions& options) {}
-  virtual void ExitFullscreen() {}
-
-  // Called when this frame changes fullscreen state.
-  virtual void FullscreenStateChanged(bool is_fullscreen) {}
 
   // Sudden termination --------------------------------------------------
 

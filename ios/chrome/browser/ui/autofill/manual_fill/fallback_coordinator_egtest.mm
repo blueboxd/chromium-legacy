@@ -446,11 +446,6 @@ void DockKeyboard() {
 // Tests that the manual fallback view concedes preference to the system picker
 // for selection elements.
 - (void)testPickerDismissesManualFallback {
-  if (@available(iOS 13, *)) {
-    // TODO(crbug.com/1007455): Enable this test.
-    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
-  }
-
   // Add the profile to be used.
   AddAutofillProfile(_personalDataManager);
 
@@ -703,8 +698,7 @@ void DockKeyboard() {
 // Tests the mediator stops observing objects when the incognito BVC is
 // destroyed. Waiting for dealloc was causing a race condition with the
 // autorelease pool, and some times a DCHECK will be hit.
-// TODO(crbug.com/1007421): This test is flaky on all configurations.
-- (void)FLAKY_testOpeningIncognitoTabsDoNotLeak {
+- (void)testOpeningIncognitoTabsDoNotLeak {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   std::string webViewText("Profile form");
   AddAutofillProfile(_personalDataManager);

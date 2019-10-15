@@ -1227,6 +1227,44 @@ TEST_F(URLRequestTest, NetworkDelegateProxyError) {
   EXPECT_EQ(1, network_delegate.completed_requests());
 }
 
+TEST_F(URLRequestTest, SkipSecureDnsDisabledByDefault) {
+  MockHostResolver host_resolver;
+  TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_host_resolver(&host_resolver);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://example.com"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->Start();
+  d.RunUntilComplete();
+
+  EXPECT_FALSE(host_resolver.last_secure_dns_mode_override().has_value());
+}
+
+TEST_F(URLRequestTest, SkipSecureDnsEnabled) {
+  MockHostResolver host_resolver;
+  TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_host_resolver(&host_resolver);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> req(
+      context.CreateRequest(GURL("http://example.com"), DEFAULT_PRIORITY, &d,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  req->SetDisableSecureDns(true);
+  req->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
+            host_resolver.last_secure_dns_mode_override().value());
+}
+
 // Make sure that NetworkDelegate::NotifyCompleted is called if
 // content is empty.
 TEST_F(URLRequestTest, RequestCompletionForEmptyResponse) {

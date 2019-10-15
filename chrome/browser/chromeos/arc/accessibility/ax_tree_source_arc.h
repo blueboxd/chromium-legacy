@@ -85,6 +85,10 @@ class AXTreeSourceArc : public ui::AXTreeSource<ArcAccessibilityInfoData*,
   // Invalidates the tree serializer.
   void InvalidateTree();
 
+  // Returns true if the node id is the root of the node tree (which can have a
+  // parent window).
+  bool IsRootOfNodeTree(int32_t id) const;
+
   bool is_notification() { return is_notification_; }
 
   bool is_input_method_window() { return is_input_method_window_; }

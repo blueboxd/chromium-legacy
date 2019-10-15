@@ -28,6 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -504,6 +505,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
 
 // Tests the sign-in flow when the credentials passing API is used.
 IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
+  base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
@@ -530,10 +532,13 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
   EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
                                      kFirstSAMLUserGaiaId)));
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 1, 1);
 }
 
 // Tests the single password scraped flow.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
+  base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
@@ -563,6 +568,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
                                      kFirstSAMLUserGaiaId)));
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
+                                      1, 1);
 }
 
 // Tests password scraping from a dynamically created password field.
@@ -594,6 +603,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
 
 // Tests the multiple password scraped flow.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
+  base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
 
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
@@ -616,10 +626,15 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
                                      kFirstSAMLUserGaiaId)));
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
+                                      2, 1);
 }
 
 // Tests the no password scraped flow.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
+  base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_no_passwords.html");
 
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
@@ -643,6 +658,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
       AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
                                      kFirstSAMLUserGaiaId)));
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 2, 1);
+  histogram_tester.ExpectUniqueSample("ChromeOS.SAML.Scraping.PasswordCountAll",
+                                      0, 1);
 }
 
 // Types |bob@corp.example.com| into the GAIA login form but then authenticates

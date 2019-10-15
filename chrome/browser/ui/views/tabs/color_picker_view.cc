@@ -17,8 +17,29 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/view_class_properties.h"
+
+namespace {
+
+class ColorPickerHighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  ColorPickerHighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    // Our highlight path should be slightly larger than the circle we paint.
+    gfx::RectF bounds(view->GetContentsBounds());
+    bounds.Inset(gfx::Insets(-2.0f));
+    const gfx::PointF center = bounds.CenterPoint();
+    return SkPath().addCircle(center.x(), center.y(), bounds.width() / 2.0f);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ColorPickerHighlightPathGenerator);
+};
+
+}  // namespace
 
 // Represents one of the colors the user can pick from. Displayed as a solid
 // circle of the given color.
@@ -38,6 +59,8 @@ class ColorPickerElementView : public views::Button,
     SetAccessibleName(color_name);
     SetFocusForPlatform();
     SetInstallFocusRingOnFocus(true);
+    views::HighlightPathGenerator::Install(
+        this, std::make_unique<ColorPickerHighlightPathGenerator>());
 
     SetBorder(
         views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
@@ -88,19 +111,6 @@ class ColorPickerElementView : public views::Button,
   }
 
   int GetHeightForWidth(int width) const override { return width; }
-
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    if (size() == previous_bounds.size())
-      return;
-
-    // Our highlight path should be slightly larger than the circle we paint.
-    gfx::RectF bounds(GetContentsBounds());
-    bounds.Inset(gfx::Insets(-2.0f));
-    const gfx::PointF center = bounds.CenterPoint();
-    SkPath path;
-    path.addCircle(center.x(), center.y(), bounds.width() / 2.0f);
-    SetProperty(views::kHighlightPathKey, std::move(path));
-  }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
     // Paint a colored circle surrounded by a bit of empty space.

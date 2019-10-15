@@ -45,6 +45,8 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
                                  const blink::WebMediaPlayerSource& source,
                                  CorsMode cors_mode));
   MOCK_CONST_METHOD0(DidLazyLoad, bool());
+
+  MOCK_METHOD0(GetSrcAfterRedirects, GURL());
 };
 
 class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
@@ -517,6 +519,34 @@ TEST_P(HTMLMediaElementTest, GcMarkingNoAllocHasActivity) {
   ThreadState::NoAllocationScope no_allocation_scope(thread_state);
   EXPECT_FALSE(thread_state->IsAllocationAllowed());
   Media()->HasPendingActivity();
+}
+
+TEST_P(HTMLMediaElementTest, CapturesRedirectedSrc) {
+  // Verify that the element captures the redirected URL.
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+  test::RunPendingTasks();
+
+  // Should start at the original.
+  EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
+
+  GURL redirected_url("https://redirected.com");
+  EXPECT_CALL(*MockMediaPlayer(), GetSrcAfterRedirects())
+      .WillRepeatedly(Return(redirected_url));
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+
+  EXPECT_EQ(Media()->downloadURL(), redirected_url);
+}
+
+TEST_P(HTMLMediaElementTest, EmptyRedirectedSrcUsesOriginal) {
+  // If the player returns an empty URL for the redirected src, then the element
+  // should continue using currentSrc().
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+  test::RunPendingTasks();
+  EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+  EXPECT_EQ(Media()->downloadURL(), Media()->currentSrc());
 }
 
 }  // namespace blink

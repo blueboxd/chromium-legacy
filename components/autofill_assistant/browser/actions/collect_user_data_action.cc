@@ -83,14 +83,6 @@ bool IsCompleteAddress(const autofill::AutofillProfile* profile,
   return true;
 }
 
-bool IsCompleteBillingAddress(
-    const autofill::AutofillProfile* profile,
-    const CollectUserDataOptions& collect_user_data_options) {
-  return !collect_user_data_options.request_payment_method ||
-         IsCompleteAddress(
-             profile, collect_user_data_options.require_billing_postal_code);
-}
-
 bool IsCompleteShippingAddress(
     const autofill::AutofillProfile* profile,
     const CollectUserDataOptions& collect_user_data_options) {
@@ -99,14 +91,20 @@ bool IsCompleteShippingAddress(
 }
 
 bool IsCompleteCreditCard(
-    autofill::PersonalDataManager* personal_data_manager,
     const autofill::CreditCard* credit_card,
+    const autofill::AutofillProfile* billing_profile,
     const CollectUserDataOptions& collect_user_data_options) {
   if (!collect_user_data_options.request_payment_method) {
     return true;
   }
 
-  if (!credit_card) {
+  if (!credit_card || !billing_profile) {
+    return false;
+  }
+
+  if (!IsCompleteAddress(
+          billing_profile,
+          collect_user_data_options.require_billing_postal_code)) {
     return false;
   }
 
@@ -119,12 +117,6 @@ bool IsCompleteCreditCard(
 
   if (!credit_card->HasValidExpirationDate() ||
       credit_card->billing_address_id().empty()) {
-    return false;
-  }
-
-  auto* address_profile = personal_data_manager->GetProfileByGUID(
-      credit_card->billing_address_id());
-  if (!IsCompleteBillingAddress(address_profile, collect_user_data_options)) {
     return false;
   }
 
@@ -711,8 +703,14 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
         credit_cards.begin(), credit_cards.end(),
         [&collect_user_data_options,
          personal_data_manager](const auto* credit_card) {
-          return IsCompleteCreditCard(personal_data_manager, credit_card,
-                                      collect_user_data_options);
+          // TODO(b/142630213): Figure out how to retrieve billing profile if
+          // user has turned off addresses in Chrome settings.
+          return IsCompleteCreditCard(
+              credit_card,
+              credit_card != nullptr
+                  ? personal_data_manager->GetProfileByGUID(credit_card->guid())
+                  : nullptr,
+              collect_user_data_options);
         });
     if (completeCardIter == credit_cards.end()) {
       return false;
@@ -726,14 +724,12 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
 
 // static
 bool CollectUserDataAction::IsUserDataComplete(
-    autofill::PersonalDataManager* personal_data_manager,
     const UserData& user_data,
     const CollectUserDataOptions& options) {
   return IsCompleteContact(user_data.contact_profile.get(), options) &&
-         IsCompleteBillingAddress(user_data.billing_address.get(), options) &&
          IsCompleteShippingAddress(user_data.shipping_address.get(), options) &&
-         IsCompleteCreditCard(personal_data_manager, user_data.card.get(),
-                              options) &&
+         IsCompleteCreditCard(user_data.card.get(),
+                              user_data.billing_address.get(), options) &&
          IsValidLoginChoice(user_data.login_choice_identifier, options) &&
          IsValidTermsChoice(user_data.terms_and_conditions, options) &&
          IsValidDateTimeRange(user_data.date_time_range_start,

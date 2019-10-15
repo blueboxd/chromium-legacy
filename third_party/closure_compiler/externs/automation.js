@@ -1719,6 +1719,19 @@ chrome.automation.AutomationNode.prototype.matches = function(params) {};
  */
 chrome.automation.AutomationNode.prototype.getNextTextMatch = function(searchStr, backward) {};
 
+/**
+ * Returns the detected languages for the provided string attribute as an array
+ * of LanguageSpan objects. There are several guarantees about the format of the
+ * LanguageSpan array: 1. Is either empty or contains LanguageSpans that cover
+ * all indices in the associated string attribute value. 2. Is sorted by
+ * increasing startIndex (those with smaller startIndex appear first). 3.
+ * LanguageSpans are non-overlapping and contain exactly one language.
+ * @param {string} attribute
+ * @return {!Array<!chrome.automation.LanguageSpan>}
+ * @see https://developer.chrome.com/extensions/automation#method-languageAnnotationForStringAttribute
+ */
+chrome.automation.AutomationNode.prototype.languageAnnotationForStringAttribute = function(attribute) {};
+
 
 /**
  * Get the automation tree for the tab with the given tabId, or the current tab
@@ -1784,16 +1797,3 @@ chrome.automation.removeTreeChangeObserver = function(observer) {};
  * @see https://developer.chrome.com/extensions/automation#method-setDocumentSelection
  */
 chrome.automation.setDocumentSelection = function(params) {};
-
-/**
- * Returns the detected languages for the provided string attribute as an array
- * of LanguageSpan objects. There are several guarantees about the format of the
- * LanguageSpan array: 1. Is either empty or contains LanguageSpans that cover
- * all indices in the associated string attribute value. 2. Is sorted by
- * increasing startIndex (those with smaller startIndex appear first). 3.
- * LanguageSpans are non-overlapping and contain exactly one language.
- * @param {string} attribute
- * @return {!Array<!chrome.automation.LanguageSpan>}
- * @see https://developer.chrome.com/extensions/automation#method-languageAnnotationForStringAttribute
- */
-chrome.automation.languageAnnotationForStringAttribute = function(attribute) {};

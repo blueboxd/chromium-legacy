@@ -28,6 +28,15 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   explicit UnifiedMessageCenterBubble(UnifiedSystemTray* tray);
   ~UnifiedMessageCenterBubble() override;
 
+  // Calculate the height usable for the bubble.
+  int CalculateAvailableHeight();
+
+  // Collapse the bubble to only have the notification bar visible.
+  void CollapseMessageCenter();
+
+  // Expand the bubble to show all notifications.
+  void ExpandMessageCenter();
+
   // Move the message center bubble to keep it on top of the quick settings
   // widget whenever the quick settings widget is resized.
   void UpdatePosition();

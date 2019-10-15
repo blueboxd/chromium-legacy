@@ -7,6 +7,7 @@ import("//chrome/android/modules/buildflags.gni")
 import("//chrome/browser/vr/features.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
@@ -799,4 +800,15 @@ if (!is_android) {
       "$root_out_dir/run_xr_browser_tests.py",
     ]
   }
+}
+
+fuzzer_test("vr_omnibox_formatting_fuzzer") {
+  sources = [
+    "elements/omnibox_formatting_fuzzer.cc",
+  ]
+  deps = [
+    ":vr_common",
+    ":vr_ui",
+    "//ui/gfx:test_support",
+  ]
 }

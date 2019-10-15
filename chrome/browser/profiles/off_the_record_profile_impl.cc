@@ -639,6 +639,7 @@ Profile* Profile::CreateOffTheRecordProfile() {
   if (!profile)
     profile = new OffTheRecordProfileImpl(this);
   profile->Init();
+  NotifyOffTheRecordProfileCreated(profile);
   return profile;
 }
 

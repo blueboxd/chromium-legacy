@@ -17,27 +17,22 @@ namespace net {
 // tag.
 class QUIC_EXPORT_PRIVATE QuicSessionKey {
  public:
-  // TODO(mmenke): Remove default NetworkIsolationKey() values, which are only
-  // used in tests.
   QuicSessionKey();
-  QuicSessionKey(
-      const HostPortPair& host_port_pair,
-      PrivacyMode privacy_mode,
-      const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey(),
-      bool disable_secure_dns = false);
-  QuicSessionKey(
-      const std::string& host,
-      uint16_t port,
-      PrivacyMode privacy_mode,
-      const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey(),
-      bool disable_secure_dns = false);
-  QuicSessionKey(
-      const quic::QuicServerId& server_id,
-      const SocketTag& socket_tag,
-      const NetworkIsolationKey& network_isolation_key = NetworkIsolationKey(),
-      bool disable_secure_dns = false);
+  QuicSessionKey(const HostPortPair& host_port_pair,
+                 PrivacyMode privacy_mode,
+                 const SocketTag& socket_tag,
+                 const NetworkIsolationKey& network_isolation_key,
+                 bool disable_secure_dns);
+  QuicSessionKey(const std::string& host,
+                 uint16_t port,
+                 PrivacyMode privacy_mode,
+                 const SocketTag& socket_tag,
+                 const NetworkIsolationKey& network_isolation_key,
+                 bool disable_secure_dns);
+  QuicSessionKey(const quic::QuicServerId& server_id,
+                 const SocketTag& socket_tag,
+                 const NetworkIsolationKey& network_isolation_key,
+                 bool disable_secure_dns);
   QuicSessionKey(const QuicSessionKey& other);
   ~QuicSessionKey() = default;
 

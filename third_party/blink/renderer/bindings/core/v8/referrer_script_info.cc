@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 
+#include "mojo/public/cpp/bindings/enum_utils.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "v8/include/v8.h"
 
@@ -58,9 +59,12 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
   v8::Local<v8::Primitive> referrer_policy_value =
       host_defined_options->Get(isolate, kReferrerPolicy);
   SECURITY_CHECK(referrer_policy_value->IsUint32());
+  int32_t referrer_policy_int32 = base::saturated_cast<int32_t>(
+      referrer_policy_value->IntegerValue(context).ToChecked());
   network::mojom::ReferrerPolicy referrer_policy =
-      static_cast<network::mojom::ReferrerPolicy>(
-          referrer_policy_value->IntegerValue(context).ToChecked());
+      mojo::ConvertIntToMojoEnum<network::mojom::ReferrerPolicy>(
+          referrer_policy_int32)
+          .value_or(network::mojom::ReferrerPolicy::kDefault);
 
   return ReferrerScriptInfo(base_url, credentials_mode, nonce, parser_state,
                             referrer_policy);

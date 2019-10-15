@@ -573,8 +573,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #if defined(OS_ANDROID)
   void GetNFC(mojo::PendingReceiver<device::mojom::NFC> receiver) override;
 #endif
-  void EnterFullscreenMode(const GURL& origin,
-                           const blink::FullScreenOptions& options) override;
+  void EnterFullscreenMode(
+      const GURL& origin,
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   void FullscreenStateChanged(RenderFrameHost* rfh,
                               bool is_fullscreen) override;
@@ -638,6 +639,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       FrameTreeNode* frame_tree_node) override;
   void OnThemeColorChanged(RenderFrameHostImpl* source,
                            const base::Optional<SkColor>& theme_color) override;
+  bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

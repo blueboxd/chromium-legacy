@@ -213,10 +213,10 @@ FormData GetFormDataAndExpectation(const FormParsingTestCase& test_case,
                                field_description.role);
     }
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
-      predictions->push_back(field_description.prediction);
-      predictions->back().renderer_id = renderer_id;
+      predictions->fields.push_back(field_description.prediction);
+      predictions->fields.back().renderer_id = renderer_id;
 #if defined(OS_IOS)
-      predictions->back().unique_id = field.unique_id;
+      predictions->fields.back().unique_id = field.unique_id;
 #endif
     }
     if (field_description.predicted_username >= 0) {

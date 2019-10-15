@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -50,6 +54,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body_android.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -383,7 +388,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     if (j_referrer_url) {
       load_params.referrer = content::Referrer(
           GURL(base::android::ConvertJavaStringToUTF8(env, j_referrer_url)),
-          static_cast<network::mojom::ReferrerPolicy>(referrer_policy));
+          content::Referrer::ConvertToPolicy(referrer_policy));
     }
     if (j_initiator_origin) {
       load_params.initiator_origin = url::Origin::Create(GURL(

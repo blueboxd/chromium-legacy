@@ -195,8 +195,6 @@ class MockFrameHost : public mojom::FrameHost {
 
   void FrameSizeChanged(const gfx::Size& frame_size) override {}
 
-  void FullscreenStateChanged(bool is_fullscreen) override {}
-
   void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override {
   }
 

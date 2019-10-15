@@ -87,6 +87,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -180,6 +181,7 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/user_manager/user_manager.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -1385,6 +1387,15 @@ bool Browser::ShouldShowStaleContentOnEviction(content::WebContents* source) {
 #endif  // defined(OS_CHROMEOS)
 }
 
+bool Browser::IsFrameLowPriority(
+    const content::WebContents* web_contents,
+    const content::RenderFrameHost* render_frame_host) {
+  const auto* client =
+      ChromeSubresourceFilterClient::FromWebContents(web_contents);
+  return client &&
+         client->GetThrottleManager()->IsFrameTaggedAsAd(render_frame_host);
+}
+
 bool Browser::IsMouseLocked() const {
   return exclusive_access_manager_->mouse_lock_controller()->IsMouseLocked();
 }
@@ -1715,7 +1726,7 @@ bool Browser::EmbedsFullscreenWidget() {
 void Browser::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin,
-    const blink::FullScreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   exclusive_access_manager_->fullscreen_controller()->EnterFullscreenModeForTab(
       web_contents, origin);
 }

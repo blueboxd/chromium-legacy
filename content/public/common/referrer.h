@@ -54,6 +54,11 @@ struct CONTENT_EXPORT Referrer {
       net::URLRequest::ReferrerPolicy net_policy);
 
   static net::URLRequest::ReferrerPolicy GetDefaultReferrerPolicy();
+
+  // Validates |policy| to make sure it represents one of the valid
+  // net::mojom::ReferrerPolicy enum values and returns it.  The relatively safe
+  // |kNever| value is returned if |policy| is not a valid value.
+  static network::mojom::ReferrerPolicy ConvertToPolicy(int32_t policy);
 };
 
 }  // namespace content

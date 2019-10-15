@@ -4,9 +4,11 @@
 
 #include "chromecast/graphics/cast_window_manager_aura.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_features.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_touch_activity_observer.h"
 #include "chromecast/graphics/cast_touch_event_gate.h"
@@ -254,6 +256,14 @@ void CastWindowManagerAura::Setup() {
     side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
         system_gesture_dispatcher_.get(), root_window);
   }
+
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+  if (base::FeatureList::IsEnabled(kReduceHeadlessFrameRate)) {
+    ui::Compositor* compositor = window_tree_host_->compositor();
+    compositor->SetDisplayVSyncParameters(
+        base::TimeTicks(), base::TimeDelta::FromMilliseconds(250));
+  }
+#endif
 }
 
 void CastWindowManagerAura::OnWindowOrderChanged(

@@ -375,7 +375,7 @@ BUILDERS = {
     'tests': [
       {
         'isolate': 'performance_test_suite',
-        'num_shards': 16,
+        'num_shards': 10,
         'extra_args': [
             '--run-ref-build',
             '--test-shard-map-filename=android-nexus5x-perf_map.json',

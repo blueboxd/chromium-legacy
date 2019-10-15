@@ -36,6 +36,7 @@
 
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -146,6 +147,9 @@ template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
 void LocalFrame::Init() {
   CoreInitializer::GetInstance().InitLocalFrame(*this);
+
+  GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+      local_frame_host_remote_.BindNewEndpointAndPassReceiver());
 
   loader_.Init();
 }
@@ -1794,6 +1798,10 @@ void LocalFrame::DidChangeVisibleToHitTesting() {
        child = child->Tree().NextSibling()) {
     child->UpdateVisibleToHitTesting();
   }
+}
+
+mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() {
+  return *local_frame_host_remote_.get();
 }
 
 }  // namespace blink

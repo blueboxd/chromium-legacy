@@ -348,8 +348,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
 
     // There is no divider bar in clamshell splitview mode.
     if (split_view_type_ == SplitViewType::kTabletType) {
-      split_view_divider_ =
-          std::make_unique<SplitViewDivider>(this, root_window_);
+      split_view_divider_ = std::make_unique<SplitViewDivider>(this);
       // The divider spawn animation adds a finishing touch to the |window|
       // animation that generally accommodates snapping by dragging, but if
       // |window| is currently minimized then it will undergo the unminimizing
@@ -1146,8 +1145,7 @@ void SplitViewController::OnTabletModeStarted() {
   // the three fixed positions.
   if (InSplitViewMode()) {
     divider_position_ = GetClosestFixedDividerPosition();
-    split_view_divider_ =
-        std::make_unique<SplitViewDivider>(this, root_window_);
+    split_view_divider_ = std::make_unique<SplitViewDivider>(this);
     UpdateSnappedWindowsAndDividerBounds();
     NotifyDividerPositionChanged();
   }

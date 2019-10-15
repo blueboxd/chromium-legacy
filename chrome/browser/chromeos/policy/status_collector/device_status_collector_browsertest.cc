@@ -155,8 +155,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       const policy::DeviceStatusCollector::StatefulPartitionInfoFetcher&
           stateful_partition_info_fetcher,
       const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
-          cros_healthd_data_fetcher,
-      bool is_enterprise_device)
+          cros_healthd_data_fetcher)
       : policy::DeviceStatusCollector(pref_service,
                                       provider,
                                       volume_info_fetcher,
@@ -166,8 +165,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       tpm_status_fetcher,
                                       emmc_lifetime_fetcher,
                                       stateful_partition_info_fetcher,
-                                      cros_healthd_data_fetcher,
-                                      is_enterprise_device) {
+                                      cros_healthd_data_fetcher) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + kHour);
@@ -588,7 +586,7 @@ class DeviceStatusCollectorTest : public testing::Test {
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
         cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
         emmc_lifetime_fetcher, stateful_partition_info_fetcher,
-        cros_healthd_data_fetcher, true /* is_enterprise_device */);
+        cros_healthd_data_fetcher);
   }
 
   void GetStatus() {

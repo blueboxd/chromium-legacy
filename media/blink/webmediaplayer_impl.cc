@@ -3637,4 +3637,8 @@ void WebMediaPlayerImpl::OnSimpleWatchTimerTick() {
   RecordSimpleWatchTimeUMA(reported_renderer_type_);
 }
 
+GURL WebMediaPlayerImpl::GetSrcAfterRedirects() {
+  return mb_data_source_ ? mb_data_source_->GetUrlAfterRedirects() : GURL();
+}
+
 }  // namespace media

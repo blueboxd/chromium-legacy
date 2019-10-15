@@ -90,9 +90,10 @@ class MockClientSocketHandleFactory {
     socket_factory_maker_.SetExpectations(expect_written, return_to_read);
     auto socket_handle = std::make_unique<ClientSocketHandle>();
     socket_handle->Init(
-        ClientSocketPool::GroupId(HostPortPair("a", 80),
-                                  ClientSocketPool::SocketType::kHttp,
-                                  PrivacyMode::PRIVACY_MODE_DISABLED),
+        ClientSocketPool::GroupId(
+            HostPortPair("a", 80), ClientSocketPool::SocketType::kHttp,
+            PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+            false /* disable_secure_dns */),
         scoped_refptr<ClientSocketPool::SocketParams>(),
         base::nullopt /* proxy_annotation_tag */, MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
@@ -255,10 +256,10 @@ class WebSocketHandshakeStreamCreateHelperTest
 
         std::unique_ptr<HttpNetworkSession> http_network_session =
             SpdySessionDependencies::SpdyCreateSession(&session_deps);
-        const SpdySessionKey key(HostPortPair::FromURL(url),
-                                 ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                                 SpdySessionKey::IsProxySession::kFalse,
-                                 SocketTag());
+        const SpdySessionKey key(
+            HostPortPair::FromURL(url), ProxyServer::Direct(),
+            PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
+            SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */);
         base::WeakPtr<SpdySession> spdy_session =
             CreateSpdySession(http_network_session.get(), key, net_log);
         std::unique_ptr<WebSocketHandshakeStreamBase> handshake =

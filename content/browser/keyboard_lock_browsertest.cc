@@ -24,7 +24,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/blink/public/common/fullscreen/fullscreen_options.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -149,7 +149,7 @@ class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
   void EnterFullscreenModeForTab(
       WebContents* web_contents,
       const GURL& origin,
-      const blink::FullScreenOptions& options) override;
+      const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(const WebContents* web_contents) override;
   void RequestKeyboardLock(WebContents* web_contents,
@@ -166,7 +166,7 @@ class FakeKeyboardLockWebContentsDelegate : public WebContentsDelegate {
 void FakeKeyboardLockWebContentsDelegate::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin,
-    const blink::FullScreenOptions& options) {
+    const blink::mojom::FullscreenOptions& options) {
   is_fullscreen_ = true;
   if (keyboard_lock_requested_)
     web_contents->GotResponseToKeyboardLockRequest(/*allowed=*/true);
@@ -348,7 +348,7 @@ void KeyboardLockBrowserTest::CancelKeyboardLock(
 
 void KeyboardLockBrowserTest::EnterFullscreen(const base::Location& from_here,
                                               const GURL& gurl) {
-  web_contents()->EnterFullscreenMode(gurl, blink::FullScreenOptions());
+  web_contents()->EnterFullscreenMode(gurl, blink::mojom::FullscreenOptions());
 
   ASSERT_TRUE(web_contents()->IsFullscreenForCurrentTab())
       << "Location: " << from_here.ToString();

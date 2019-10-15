@@ -44,14 +44,14 @@
         android:layout_gravity="center_horizontal"
         android:textAppearance="@style/TextAppearance.BlackHint1" />
 
-    <ListView
-        android:id="@+id/credential_list"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/sheet_item_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="16dp"
+        android:minHeight="200dp"
+        android:layout_marginTop="24dp"
         android:clipToPadding="false"
         android:paddingBottom="16dp"
         android:divider="@null"
-        android:dividerHeight="8dp"
         tools:listitem="@layout/touch_to_fill_credential_item"/>
 </LinearLayout>

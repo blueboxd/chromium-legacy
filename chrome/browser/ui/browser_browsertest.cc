@@ -115,6 +115,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
@@ -2817,8 +2818,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsDropFullscreen) {
       static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(browser());
 
   // Simulate the tab requesting fullscreen.
-  browser_as_wc_delegate->EnterFullscreenModeForTab(tab, GURL(),
-                                                    blink::FullScreenOptions());
+  browser_as_wc_delegate->EnterFullscreenModeForTab(
+      tab, GURL(), blink::mojom::FullscreenOptions());
   EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
 
   // The tab gets a modal dialog.
@@ -2844,8 +2845,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsAllowedInFullscreenWithinTabMode) {
 
   // Simulate a screen-captured tab requesting fullscreen.
   tab->IncrementCapturerCount(gfx::Size(1280, 720));
-  browser_as_wc_delegate->EnterFullscreenModeForTab(tab, GURL(),
-                                                    blink::FullScreenOptions());
+  browser_as_wc_delegate->EnterFullscreenModeForTab(
+      tab, GURL(), blink::mojom::FullscreenOptions());
   EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
 
   // The tab gets a modal dialog.

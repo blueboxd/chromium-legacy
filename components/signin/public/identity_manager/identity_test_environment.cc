@@ -278,6 +278,15 @@ AccountInfo IdentityTestEnvironment::MakeAccountAvailable(
   return signin::MakeAccountAvailable(identity_manager(), email);
 }
 
+AccountInfo IdentityTestEnvironment::MakeAccountAvailableWithCookies(
+    const std::string& email,
+    const std::string& gaia_id) {
+  return signin::MakeAccountAvailableWithCookies(
+      identity_manager(),
+      dependencies_owner_->signin_client()->GetTestURLLoaderFactory(), email,
+      gaia_id);
+}
+
 void IdentityTestEnvironment::SetRefreshTokenForAccount(
     const CoreAccountId& account_id) {
   return signin::SetRefreshTokenForAccount(identity_manager(), account_id);

@@ -23,6 +23,10 @@ extern const char kHostConfigFilePath[];
 // installed host components.
 extern const char kHostHelperScriptPath[];
 
+// Path to the old host helper script, which is still used after user updates
+// their host on macOS 10.14.*.
+extern const char kOldHostHelperScriptPath[];
+
 // Path to the service binary (.app).
 extern const char kHostBinaryPath[];
 

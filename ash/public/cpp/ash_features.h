@@ -135,6 +135,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
 // launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
 
+// Enables swiping from shelf on home screen to enter overview.
+ASH_PUBLIC_EXPORT extern const base::Feature kHomerviewGesture;
+
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
@@ -176,6 +179,8 @@ ASH_PUBLIC_EXPORT bool IsSwipingFromLeftEdgeToGoBackEnabled();
 ASH_PUBLIC_EXPORT bool IsDragFromShelfToHomeOrOverviewEnabled();
 
 ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsHomerviewGestureEnabled();
 
 }  // namespace features
 }  // namespace ash

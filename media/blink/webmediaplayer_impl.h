@@ -284,6 +284,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool IsOpaque() const override;
   int GetDelegateId() override;
   base::Optional<viz::SurfaceId> GetSurfaceId() override;
+  GURL GetSrcAfterRedirects() override;
 
   base::WeakPtr<blink::WebMediaPlayer> AsWeakPtr() override;
 

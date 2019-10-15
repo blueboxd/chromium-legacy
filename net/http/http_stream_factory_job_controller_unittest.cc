@@ -2659,10 +2659,11 @@ TEST_F(HttpStreamFactoryJobControllerTest, SpdySessionInterruptsPreconnect) {
   // Sanity check - make sure the SpdySession was created.
   base::WeakPtr<SpdySession> spdy_session =
       session_->spdy_session_pool()->FindAvailableSession(
-          SpdySessionKey(HostPortPair::FromURL(request_info.url),
-                         ProxyServer::Direct(), request_info.privacy_mode,
-                         SpdySessionKey::IsProxySession::kFalse,
-                         request_info.socket_tag),
+          SpdySessionKey(
+              HostPortPair::FromURL(request_info.url), ProxyServer::Direct(),
+              request_info.privacy_mode, SpdySessionKey::IsProxySession::kFalse,
+              request_info.socket_tag, request_info.network_isolation_key,
+              request_info.disable_secure_dns),
           false /* enable_ip_based_pooling */, false /* is_websocket */,
           NetLogWithSource());
   EXPECT_TRUE(spdy_session);
@@ -2805,18 +2806,18 @@ TEST_F(JobControllerLimitMultipleH2Requests,
   TransportClientSocketPool* socket_pool =
       reinterpret_cast<TransportClientSocketPool*>(session_->GetSocketPool(
           HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct()));
-  ClientSocketPool::GroupId group_id0(HostPortPair::FromURL(request_info.url),
-                                      ClientSocketPool::SocketType::kSsl,
-                                      request_info.privacy_mode,
-                                      NetworkIsolationKey());
-  ClientSocketPool::GroupId group_id1(HostPortPair::FromURL(request_info.url),
-                                      ClientSocketPool::SocketType::kSsl,
-                                      request_info.privacy_mode,
-                                      kNetworkIsolationKey1);
-  ClientSocketPool::GroupId group_id2(HostPortPair::FromURL(request_info.url),
-                                      ClientSocketPool::SocketType::kSsl,
-                                      request_info.privacy_mode,
-                                      kNetworkIsolationKey2);
+  ClientSocketPool::GroupId group_id0(
+      HostPortPair::FromURL(request_info.url),
+      ClientSocketPool::SocketType::kSsl, request_info.privacy_mode,
+      NetworkIsolationKey(), false /* disable_secure_dns */);
+  ClientSocketPool::GroupId group_id1(
+      HostPortPair::FromURL(request_info.url),
+      ClientSocketPool::SocketType::kSsl, request_info.privacy_mode,
+      kNetworkIsolationKey1, false /* disable_secure_dns */);
+  ClientSocketPool::GroupId group_id2(
+      HostPortPair::FromURL(request_info.url),
+      ClientSocketPool::SocketType::kSsl, request_info.privacy_mode,
+      kNetworkIsolationKey2, false /* disable_secure_dns */);
   EXPECT_EQ(static_cast<uint32_t>(kNumRequests),
             socket_pool->NumConnectJobsInGroupForTesting(group_id0));
   EXPECT_EQ(1u, socket_pool->NumConnectJobsInGroupForTesting(group_id1));

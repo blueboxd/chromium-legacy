@@ -1436,6 +1436,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       priority_(!blink::kLaunchingProcessIsBackgrounded,
                 false /* has_media_stream */,
                 false /* has_foreground_service_worker */,
+                false /* all_low_priority_frames */,
                 frame_depth_,
                 false /* intersects_viewport */,
                 true /* boost_for_pending_views */
@@ -1713,6 +1714,10 @@ bool RenderProcessHostImpl::Init() {
 void RenderProcessHostImpl::EnableSendQueue() {
   if (!channel_)
     InitializeChannelProxy();
+}
+
+bool RenderProcessHostImpl::HasOnlyLowPriorityFrames() {
+  return (low_priority_frames_ > 0) && (total_frames_ == low_priority_frames_);
 }
 
 void RenderProcessHostImpl::InitializeChannelProxy() {
@@ -2635,6 +2640,25 @@ void RenderProcessHostImpl::UpdateClientPriority(PriorityClient* client) {
   DCHECK(client);
   DCHECK_EQ(1u, priority_clients_.count(client));
   UpdateProcessPriorityInputs();
+}
+
+void RenderProcessHostImpl::UpdateFrameWithPriority(
+    base::Optional<FramePriority> previous_priority,
+    base::Optional<FramePriority> new_priority) {
+  if (!base::FeatureList::IsEnabled(
+          features::kUseFramePriorityInRenderProcessHost)) {
+    return;
+  }
+
+  const bool previous_all_low_priority_frames = HasOnlyLowPriorityFrames();
+  total_frames_ =
+      total_frames_ - (previous_priority ? 1 : 0) + (new_priority ? 1 : 0);
+  low_priority_frames_ =
+      low_priority_frames_ -
+      (previous_priority && previous_priority == FramePriority::kLow ? 1 : 0) +
+      (new_priority && new_priority == FramePriority::kLow ? 1 : 0);
+  if (previous_all_low_priority_frames != HasOnlyLowPriorityFrames())
+    UpdateProcessPriority();
 }
 
 int RenderProcessHostImpl::VisibleClientCount() {
@@ -4379,7 +4403,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
       visible_clients_ > 0 || base::CommandLine::ForCurrentProcess()->HasSwitch(
                                   switches::kDisableRendererBackgrounding),
       media_stream_count_ > 0, foreground_service_worker_count_ > 0,
-      frame_depth_, intersects_viewport_,
+      HasOnlyLowPriorityFrames(), frame_depth_, intersects_viewport_,
       !!pending_views_ /* boost_for_pending_views */
 #if defined(OS_ANDROID)
       ,
@@ -4387,11 +4411,11 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
 #endif
   );
 
+  if (priority_ == priority)
+    return;
   const bool background_state_changed =
       priority_.is_background() != priority.is_background();
   const bool visibility_state_changed = priority_.visible != priority.visible;
-  if (priority_ == priority)
-    return;
 
   TRACE_EVENT2("renderer_host", "RenderProcessHostImpl::UpdateProcessPriority",
                "should_background", priority.is_background(),
@@ -4436,14 +4460,14 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
 }
 
 void RenderProcessHostImpl::SendProcessStateToRenderer() {
-  mojom::RenderProcessState process_state;
-  if (priority_.is_background())
-    process_state = mojom::RenderProcessState::kBackgrounded;
-  else if (priority_.visible)
-    process_state = mojom::RenderProcessState::kVisible;
-  else
-    process_state = mojom::RenderProcessState::kHidden;
-  GetRendererInterface()->SetProcessState(process_state);
+  mojom::RenderProcessBackgroundState background_state =
+      priority_.is_background()
+          ? mojom::RenderProcessBackgroundState::kBackgrounded
+          : mojom::RenderProcessBackgroundState::kForegrounded;
+  mojom::RenderProcessVisibleState visible_state =
+      priority_.visible ? mojom::RenderProcessVisibleState::kVisible
+                        : mojom::RenderProcessVisibleState::kHidden;
+  GetRendererInterface()->SetProcessState(background_state, visible_state);
 }
 
 void RenderProcessHostImpl::OnProcessLaunched() {

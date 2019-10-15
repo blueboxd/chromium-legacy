@@ -513,7 +513,7 @@ int TabHoverCardBubbleView::GetDialogButtons() const {
 }
 
 std::unique_ptr<views::View> TabHoverCardBubbleView::CreateFootnoteView() {
-  if (alert_state_ == TabAlertState::NONE)
+  if (!alert_state_.has_value())
     return nullptr;
 
   auto alert_state_label = std::make_unique<views::Label>(
@@ -521,7 +521,7 @@ std::unique_ptr<views::View> TabHoverCardBubbleView::CreateFootnoteView() {
   alert_state_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   alert_state_label->SetMultiLine(true);
   alert_state_label->SetVisible(true);
-  alert_state_label->SetText(chrome::GetTabAlertStateText(alert_state_));
+  alert_state_label->SetText(chrome::GetTabAlertStateText(*alert_state_));
   return alert_state_label;
 }
 
@@ -564,7 +564,7 @@ void TabHoverCardBubbleView::FadeInToShow() {
 
 void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   base::string16 title;
-  TabAlertState old_alert_state = alert_state_;
+  base::Optional<TabAlertState> old_alert_state = alert_state_;
   GURL domain_url;
   // Use committed URL to determine if no page has yet loaded, since the title
   // can be blank for some web pages.
@@ -573,7 +573,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
     title = tab->data().IsCrashed()
                 ? l10n_util::GetStringUTF16(IDS_HOVER_CARD_CRASHED_TITLE)
                 : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-    alert_state_ = TabAlertState::NONE;
+    alert_state_ = base::nullopt;
   } else {
     domain_url = tab->data().last_committed_url;
     title = tab->data().title;

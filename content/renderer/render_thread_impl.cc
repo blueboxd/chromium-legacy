@@ -1632,26 +1632,27 @@ void RenderThreadImpl::SetSchedulerKeepActive(bool keep_active) {
 }
 
 void RenderThreadImpl::SetProcessState(
-    mojom::RenderProcessState process_state) {
-  DCHECK(process_state_ != process_state);
+    mojom::RenderProcessBackgroundState background_state,
+    mojom::RenderProcessVisibleState visible_state) {
+  DCHECK(background_state_ != background_state ||
+         visible_state_ != visible_state);
 
-  if (process_state_ == mojom::RenderProcessState::kBackgrounded ||
-      (!process_state_.has_value() &&
-       process_state != mojom::RenderProcessState::kBackgrounded)) {
-    OnRendererForegrounded();
+  if (background_state != background_state_) {
+    if (background_state == mojom::RenderProcessBackgroundState::kForegrounded)
+      OnRendererForegrounded();
+    else
+      OnRendererBackgrounded();
   }
 
-  if (process_state == mojom::RenderProcessState::kVisible) {
-    OnRendererVisible();
-  } else if (process_state_ == mojom::RenderProcessState::kVisible ||
-             !process_state_.has_value()) {
-    OnRendererHidden();
+  if (visible_state != visible_state_) {
+    if (visible_state == mojom::RenderProcessVisibleState::kVisible)
+      OnRendererVisible();
+    else
+      OnRendererHidden();
   }
 
-  if (process_state == mojom::RenderProcessState::kBackgrounded)
-    OnRendererBackgrounded();
-
-  process_state_ = process_state;
+  background_state_ = background_state;
+  visible_state_ = visible_state;
 }
 
 void RenderThreadImpl::SetIsLockedToSite() {
@@ -2306,8 +2307,7 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider(
 }
 
 bool RenderThreadImpl::RendererIsHidden() const {
-  return process_state_ == mojom::RenderProcessState::kHidden ||
-         process_state_ == mojom::RenderProcessState::kBackgrounded;
+  return visible_state_ == mojom::RenderProcessVisibleState::kHidden;
 }
 
 void RenderThreadImpl::OnRendererHidden() {
@@ -2327,7 +2327,8 @@ void RenderThreadImpl::OnRendererVisible() {
 }
 
 bool RenderThreadImpl::RendererIsBackgrounded() const {
-  return process_state_ == mojom::RenderProcessState::kBackgrounded;
+  return background_state_ ==
+         mojom::RenderProcessBackgroundState::kBackgrounded;
 }
 
 void RenderThreadImpl::OnRendererBackgrounded() {

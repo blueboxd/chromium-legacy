@@ -631,7 +631,8 @@ WebSize WebLocalFrameImpl::DocumentSize() const {
   if (!GetFrameView() || !GetFrameView()->GetLayoutView())
     return WebSize();
 
-  return GetFrameView()->GetLayoutView()->DocumentRect().Size();
+  return PixelSnappedIntRect(GetFrameView()->GetLayoutView()->DocumentRect())
+      .Size();
 }
 
 bool WebLocalFrameImpl::HasVisibleContent() const {

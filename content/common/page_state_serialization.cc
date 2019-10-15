@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/common/page_state.mojom.h"
 #include "content/common/unique_name_helper.h"
+#include "content/public/common/referrer.h"
 #include "ipc/ipc_message_utils.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -465,7 +467,7 @@ void ReadResourceRequestBody(
         std::string blob_uuid = ReadStdString(obj);
         AppendBlobToRequestBody(request_body, blob_uuid);
       } else {
-        ReadGURL(obj); // Skip the obsolete blob url value.
+        ReadGURL(obj);  // Skip the obsolete blob url value.
       }
     }
   }
@@ -545,14 +547,13 @@ void ReadFrameState(
   state->item_sequence_number = ReadInteger64(obj);
   state->document_sequence_number = ReadInteger64(obj);
   if (obj->version >= 21 && obj->version < 23)
-    ReadInteger64(obj); // Skip obsolete frame sequence number.
+    ReadInteger64(obj);  // Skip obsolete frame sequence number.
 
   if (obj->version >= 17 && obj->version < 19)
-    ReadInteger64(obj); // Skip obsolete target frame id number.
+    ReadInteger64(obj);  // Skip obsolete target frame id number.
 
   if (obj->version >= 18) {
-    state->referrer_policy =
-        static_cast<network::mojom::ReferrerPolicy>(ReadInteger(obj));
+    state->referrer_policy = Referrer::ConvertToPolicy(ReadInteger(obj));
   }
 
   if (obj->version >= 20 && state->did_save_scroll_or_scale_state) {

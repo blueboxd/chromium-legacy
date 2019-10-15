@@ -511,7 +511,7 @@ def _ComputePythonDependencies():
   src/. The paths will be relative to the current directory.
   """
   _ForceLazyModulesToLoad()
-  module_paths = (m.__file__ for m in sys.modules.itervalues()
+  module_paths = (m.__file__ for m in sys.modules.values()
                   if m is not None and hasattr(m, '__file__'))
   abs_module_paths = map(os.path.abspath, module_paths)
 

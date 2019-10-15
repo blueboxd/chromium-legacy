@@ -2649,6 +2649,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
+          "idempotent": false,
           "shards": 6
         },
         "test": "content_browsertests"
@@ -5762,7 +5763,6 @@
         "args": [
           "--ozone-platform=x11"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5828,7 +5828,6 @@
           "--ozone-platform=x11",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.x11_views_unittests.filter"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

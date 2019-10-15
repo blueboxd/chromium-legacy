@@ -151,10 +151,14 @@
         "name": "getDisplayLanguage",
         "type": "function",
         "nocompile": true,
-        "description": "Called to translate language code into human-readable string in the language of the provided language code.",
+        "description": "Called to translate languageCodeToTranslate into human-readable string in the language specified by targetLanguageCode",
         "parameters": [
           {
-            "name": "languageCode",
+            "name": "languageCodeToTranslate",
+            "type": "string"
+          },
+          {
+            "name": "targetLanguageCode",
             "type": "string"
           }
         ],

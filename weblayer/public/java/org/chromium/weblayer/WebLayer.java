@@ -10,7 +10,6 @@ import android.content.ContextWrapper;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -48,26 +47,9 @@ public final class WebLayer {
      * Loads the WebLayer implementation and returns the IWebLayer. This does *not* trigger the
      * implementation to start.
      */
-    private static IWebLayer connectToWebLayerImplementation(Context application)
+    private static IWebLayer connectToWebLayerImplementation(Context remoteContext)
             throws UnsupportedVersionException {
         try {
-            // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
-            // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
-            // WebViewFactory, so we have to fake it.
-            PackageInfo implPackageInfo = application.getPackageManager().getPackageInfo(
-                    getImplPackageName(application), PackageManager.GET_META_DATA);
-            Field packageInfo = WebViewFactory.class.getDeclaredField("sPackageInfo");
-            packageInfo.setAccessible(true);
-            packageInfo.set(null, implPackageInfo);
-
-            // TODO(torne): Figure out how to load assets for production.
-            // Load assets using the WebViewDelegate.
-            Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
-            delegate.addWebViewAssetPath(application);
-
-            Context remoteContext = createRemoteContext(application);
             Class webLayerClass = remoteContext.getClassLoader().loadClass(
                     "org.chromium.weblayer_private.WebLayerImpl");
 
@@ -87,6 +69,35 @@ public final class WebLayer {
     }
 
     /**
+     * Loads assets for WebLayer and returns the package ID to use when calling
+     * R.onResourcesLoaded().
+     */
+    private static int loadAssets(Context appContext, Context remoteContext) {
+        WebViewDelegate delegate;
+        PackageInfo implPackageInfo;
+        try {
+            // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
+            // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
+            // WebViewFactory, so we have to fake it.
+            implPackageInfo = appContext.getPackageManager().getPackageInfo(
+                    getImplPackageName(appContext), PackageManager.GET_META_DATA);
+            Field packageInfo = WebViewFactory.class.getDeclaredField("sPackageInfo");
+            packageInfo.setAccessible(true);
+            packageInfo.set(null, implPackageInfo);
+
+            // TODO(torne): Figure out how to load assets for production.
+            // Load assets using the WebViewDelegate.
+            Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            delegate = (WebViewDelegate) constructor.newInstance();
+        } catch (Exception e) {
+            throw new AndroidRuntimeException(e);
+        }
+        delegate.addWebViewAssetPath(appContext);
+        return delegate.getPackageId(appContext.getResources(), implPackageInfo.packageName);
+    }
+
+    /**
      * Asynchronously creates and initializes WebLayer. Calling this more than once returns the same
      * object.
      *
@@ -97,9 +108,10 @@ public final class WebLayer {
     public static ListenableFuture<WebLayer> create(Context appContext)
             throws UnsupportedVersionException {
         if (sFuture == null) {
-            IWebLayer iWebLayer = connectToWebLayerImplementation(
-                    appContext.getApplicationContext());
-            sFuture = new WebLayerLoadFuture(iWebLayer, appContext);
+            Context remoteContext = createRemoteContext(appContext.getApplicationContext());
+            IWebLayer iWebLayer = connectToWebLayerImplementation(remoteContext);
+            int resourcesPackageId = loadAssets(appContext, remoteContext);
+            sFuture = new WebLayerLoadFuture(iWebLayer, remoteContext, resourcesPackageId);
         }
         return sFuture;
     }
@@ -110,7 +122,7 @@ public final class WebLayer {
     private static final class WebLayerLoadFuture extends ListenableFuture<WebLayer> {
         private final IWebLayer mIWebLayer;
 
-        WebLayerLoadFuture(IWebLayer iWebLayer, Context application) {
+        WebLayerLoadFuture(IWebLayer iWebLayer, Context remoteContext, int resourcesPackageId) {
             mIWebLayer = iWebLayer;
             ValueCallback<Boolean> loadCallback = new ValueCallback<Boolean>() {
                 @Override
@@ -121,8 +133,8 @@ public final class WebLayer {
                 }
             };
             try {
-                iWebLayer.initAndLoadAsync(ObjectWrapper.wrap(createRemoteContext(application)),
-                        ObjectWrapper.wrap(loadCallback));
+                iWebLayer.initAndLoadAsync(ObjectWrapper.wrap(remoteContext),
+                        ObjectWrapper.wrap(loadCallback), resourcesPackageId);
             } catch (RemoteException e) {
                 throw new APICallException(e);
             }
@@ -217,11 +229,6 @@ public final class WebLayer {
             public Context getApplicationContext() {
                 if (getBaseContext().getApplicationContext() == getBaseContext()) return this;
                 return wrapContext(getBaseContext().getApplicationContext(), remoteContext);
-            }
-
-            @Override
-            public Resources getResources() {
-                return remoteContext.getResources();
             }
 
             @Override

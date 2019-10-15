@@ -241,8 +241,16 @@ BackForwardCacheImpl::BackForwardCacheImpl()
 BackForwardCacheImpl::~BackForwardCacheImpl() = default;
 
 base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
-  if (base::FeatureList::IsEnabled(kBackForwardCacheNoTimeEviction))
+  // We use the following order of priority if multiple values exist:
+  // - The programmatical value set in params. Used in specific tests.
+  // - Infinite if kBackForwardCacheNoTimeEviction is enabled.
+  // - Default value otherwise, kDefaultTimeToLiveInBackForwardCacheInSeconds.
+  if (base::FeatureList::IsEnabled(kBackForwardCacheNoTimeEviction) &&
+      GetFieldTrialParamValueByFeature(features::kBackForwardCache,
+                                       "TimeToLiveInBackForwardCacheInSeconds")
+          .empty()) {
     return base::TimeDelta::Max();
+  }
 
   return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
       features::kBackForwardCache, "TimeToLiveInBackForwardCacheInSeconds",

@@ -103,6 +103,7 @@
     {
       name: "allowUniversalAccessFromFileURLs",
       initial: true,
+      invalidate: "UniversalAccess",
     },
     {
       name: "allowFileAccessFromFileURLs",

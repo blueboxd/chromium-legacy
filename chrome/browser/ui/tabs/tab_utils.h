@@ -18,10 +18,8 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-// Alert state for a tab.  In reality, more than one of these may apply.  See
-// comments for GetTabAlertStateForContents() below.
+// Alert states for a tab. Any number of these (or none) may apply at once.
 enum class TabAlertState {
-  NONE,
   MEDIA_RECORDING,      // Audio/Video being recorded, consumed by tab.
   TAB_CAPTURING,        // Tab contents being captured.
   AUDIO_PLAYING,        // Audible audio is playing from the tab.
@@ -62,14 +60,6 @@ namespace chrome {
 // TabAlertState::NONE will never be present in the list; an empty list
 // is returned instead.
 std::vector<TabAlertState> GetTabAlertStatesForContents(
-    content::WebContents* contents);
-
-// Returns the highest priority tab alert from
-// GetTabAlertStatesForContents, or TabAlertState::NONE.
-//
-// TODO(collinbaker): migrate callers away from this. It rarely makes
-// sense to only consider one of the alerts.
-TabAlertState GetHighestPriorityTabAlertStateForContents(
     content::WebContents* contents);
 
 // Returns a localized string describing the |alert_state|.

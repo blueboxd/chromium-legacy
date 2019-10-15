@@ -199,6 +199,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -1017,6 +1018,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   ClearAllWebUI();
 
   SetLastCommittedSiteUrl(GURL());
+  if (last_committed_document_priority_) {
+    GetProcess()->UpdateFrameWithPriority(last_committed_document_priority_,
+                                          base::nullopt);
+  }
 
   if (overlay_routing_token_)
     g_token_frame_map.Get().erase(*overlay_routing_token_);
@@ -1595,8 +1600,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_EnterFullscreen, OnEnterFullscreen)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ExitFullscreen, OnExitFullscreen)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SuddenTerminationDisablerChanged,
                         OnSuddenTerminationDisablerChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
@@ -2381,6 +2384,18 @@ void RenderFrameHostImpl::ResetChildren() {
 
 void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
   last_committed_url_ = url;
+}
+
+void RenderFrameHostImpl::UpdateRenderProcessHostFramePriorities() {
+  const auto new_committed_document_priority =
+      (delegate_ && delegate_->IsFrameLowPriority(this))
+          ? RenderProcessHostImpl::FramePriority::kLow
+          : RenderProcessHostImpl::FramePriority::kNormal;
+  if (last_committed_document_priority_ != new_committed_document_priority) {
+    GetProcess()->UpdateFrameWithPriority(last_committed_document_priority_,
+                                          new_committed_document_priority);
+    last_committed_document_priority_ = new_committed_document_priority;
+  }
 }
 
 void RenderFrameHostImpl::OnDetach() {
@@ -3787,8 +3802,8 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
 
 // TODO(alexmos): When the allowFullscreen flag is known in the browser
 // process, use it to double-check that fullscreen can be entered here.
-void RenderFrameHostImpl::OnEnterFullscreen(
-    const blink::FullScreenOptions& options) {
+void RenderFrameHostImpl::EnterFullscreen(
+    blink::mojom::FullscreenOptionsPtr options) {
   // Entering fullscreen from a cross-process subframe also affects all
   // renderers for ancestor frames, which will need to apply fullscreen CSS to
   // appropriate ancestor <iframe> elements, fire fullscreenchange events, etc.
@@ -3817,7 +3832,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
   }
 
   // TODO(alexmos): See if this can use the last committed origin instead.
-  delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin(), options);
+  delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin(), *options);
   delegate_->FullscreenStateChanged(this, true /* is_fullscreen */);
 
   // The previous call might change the fullscreen state. We need to make sure
@@ -3833,7 +3848,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
 
 // TODO(alexmos): When the allowFullscreen flag is known in the browser
 // process, use it to double-check that fullscreen can be entered here.
-void RenderFrameHostImpl::OnExitFullscreen() {
+void RenderFrameHostImpl::ExitFullscreen() {
   delegate_->ExitFullscreenMode(/* will_cause_resize */ true);
 
   // The previous call might change the fullscreen state. We need to make sure
@@ -5701,6 +5716,15 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       },
       base::Unretained(this)));
 
+  associated_registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<blink::mojom::LocalFrameHost>
+             receiver) {
+        impl->local_frame_host_receiver_.Bind(std::move(receiver));
+        impl->local_frame_host_receiver_.SetFilter(
+            std::make_unique<ActiveURLMessageFilter>(impl));
+      },
+      base::Unretained(this)));
   RegisterMojoInterfaces();
   mojo::PendingRemote<mojom::FrameFactory> frame_factory;
   BindInterface(GetProcess(), &frame_factory);
@@ -5734,6 +5758,9 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   // removed.
   geolocation_service_.reset();
   sensor_provider_proxy_.reset();
+
+  local_frame_host_receiver_.reset();
+  associated_registry_.reset();
 }
 
 bool RenderFrameHostImpl::IsFocused() {
@@ -7116,6 +7143,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
 
   last_http_status_code_ = validated_params->http_status_code;
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
+  if (!is_same_document_navigation)
+    UpdateRenderProcessHostFramePriorities();
 
   // Set the state whether this navigation is to an MHTML document, since there
   // are certain security checks that we cannot apply to subframes in MHTML

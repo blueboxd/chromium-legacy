@@ -334,6 +334,15 @@ int BrowserList::GetIncognitoSessionsActiveForProfile(Profile* profile) {
 }
 
 // static
+size_t BrowserList::GetIncognitoBrowserCount() {
+  BrowserList* list = BrowserList::GetInstance();
+  return std::count_if(list->begin(), list->end(), [](Browser* browser) {
+    return browser->profile()->IsIncognitoProfile() &&
+           !browser->is_type_devtools();
+  });
+}
+
+// static
 bool BrowserList::IsIncognitoSessionInUse(Profile* profile) {
   BrowserList* list = BrowserList::GetInstance();
   return std::any_of(list->begin(), list->end(), [profile](Browser* browser) {

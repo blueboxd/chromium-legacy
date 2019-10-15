@@ -81,14 +81,6 @@ std::vector<TabAlertState> GetTabAlertStatesForContents(
   return states;
 }
 
-TabAlertState GetHighestPriorityTabAlertStateForContents(
-    content::WebContents* contents) {
-  auto states = GetTabAlertStatesForContents(contents);
-  if (states.empty())
-    return TabAlertState::NONE;
-  return states[0];
-}
-
 base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
   switch (alert_state) {
     case TabAlertState::AUDIO_PLAYING:
@@ -120,45 +112,48 @@ base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       return l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_VR_PRESENTING);
-    case TabAlertState::NONE:
-      return base::string16();
   }
   NOTREACHED();
   return base::string16();
 }
 
 bool CanToggleAudioMute(content::WebContents* contents) {
-  switch (chrome::GetHighestPriorityTabAlertStateForContents(contents)) {
-    case TabAlertState::NONE:
-    case TabAlertState::AUDIO_PLAYING:
-    case TabAlertState::AUDIO_MUTING:
-    case TabAlertState::PIP_PLAYING:
-    case TabAlertState::VR_PRESENTING_IN_HEADSET:
-      return true;
-    case TabAlertState::MEDIA_RECORDING:
-    case TabAlertState::TAB_CAPTURING:
-    case TabAlertState::BLUETOOTH_CONNECTED:
-    case TabAlertState::USB_CONNECTED:
-    case TabAlertState::SERIAL_CONNECTED:
-    case TabAlertState::DESKTOP_CAPTURING:
-      // The new Audio Service implements muting separately from the tab audio
-      // capture infrastructure; so the mute state can be toggled independently
-      // at all times.
-      //
-      // TODO(crbug.com/672469): Remove this method once the Audio Service is
-      // launched.
-      return base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams);
+  // Check if any state would prevent muting.
+  for (TabAlertState state : chrome::GetTabAlertStatesForContents(contents)) {
+    switch (state) {
+        // Any of these states *may* block muting a tab.
+      case TabAlertState::MEDIA_RECORDING:
+      case TabAlertState::TAB_CAPTURING:
+      case TabAlertState::BLUETOOTH_CONNECTED:
+      case TabAlertState::USB_CONNECTED:
+      case TabAlertState::SERIAL_CONNECTED:
+      case TabAlertState::DESKTOP_CAPTURING:
+        // The new Audio Service implements muting separately from the tab audio
+        // capture infrastructure; so the mute state can be toggled
+        // independently at all times.
+        //
+        // TODO(crbug.com/672469): Remove this method once the Audio Service is
+        // launched.
+        if (!base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams))
+          return false;
+        break;
+        // These states don't affect muteability.
+      case TabAlertState::AUDIO_PLAYING:
+      case TabAlertState::AUDIO_MUTING:
+      case TabAlertState::PIP_PLAYING:
+      case TabAlertState::VR_PRESENTING_IN_HEADSET:
+        break;
+    }
   }
-  NOTREACHED();
-  return false;
+  return true;
 }
 
 TabMutedReason GetTabAudioMutedReason(content::WebContents* contents) {
   LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
   LastMuteMetadata* const metadata =
       LastMuteMetadata::FromWebContents(contents);
-  if (GetHighestPriorityTabAlertStateForContents(contents) ==
-          TabAlertState::TAB_CAPTURING &&
+  if (base::Contains(GetTabAlertStatesForContents(contents),
+                     TabAlertState::TAB_CAPTURING) &&
       !base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
     // The legacy tab audio capture implementation in libcontent forces muting
     // off because it requires using the same infrastructure.

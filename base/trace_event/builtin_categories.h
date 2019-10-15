@@ -15,6 +15,9 @@
 // your code and you get a static assert, this is the right place to register
 // the name. If the name is going to be used only for testing, please add it to
 // |kIgnoredCategoriesForTesting| instead.
+//
+// Prefer to use '_' to separate word of category name, like content_capture.
+//
 // Parameter |X| must be a *macro* that takes a single |name| string argument,
 // denoting a category name.
 #define INTERNAL_TRACE_LIST_BUILTIN_CATEGORIES(X)                        \
@@ -52,7 +55,7 @@
   X("cma")                                                               \
   X("compositor")                                                        \
   X("content")                                                           \
-  X("content-capture")                                                   \
+  X("content_capture")                                                   \
   X("devtools")                                                          \
   X("devtools.timeline")                                                 \
   X("devtools.timeline.async")                                           \

@@ -14,7 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_utils.h"
+#include "chrome/browser/download/android/download_utils.h"
 #endif
 
 using DownloadItem = download::DownloadItem;

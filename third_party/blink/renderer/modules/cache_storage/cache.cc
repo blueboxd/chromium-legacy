@@ -700,19 +700,26 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
                   break;
               }
             } else {
-              TRACE_EVENT_WITH_FLOW1(
-                  "CacheStorage", "Cache::MatchImpl::Callback",
-                  TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN,
-                  "response", CacheStorageTracedValue(result->get_response()));
               UMA_HISTOGRAM_LONG_TIMES(
                   "ServiceWorkerCache.Cache.Renderer.Match.Hit", elapsed);
               ScriptState::Scope scope(resolver->GetScriptState());
               if (result->is_eager_response()) {
+                TRACE_EVENT_WITH_FLOW1(
+                    "CacheStorage", "Cache::MatchImpl::Callback",
+                    TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN,
+                    "eager_response",
+                    CacheStorageTracedValue(
+                        result->get_eager_response()->response));
                 resolver->Resolve(
                     CreateEagerResponse(resolver->GetScriptState(),
                                         std::move(result->get_eager_response()),
                                         self->blob_client_list_));
               } else {
+                TRACE_EVENT_WITH_FLOW1(
+                    "CacheStorage", "Cache::MatchImpl::Callback",
+                    TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN,
+                    "response",
+                    CacheStorageTracedValue(result->get_response()));
                 resolver->Resolve(Response::Create(resolver->GetScriptState(),
                                                    *result->get_response()));
               }

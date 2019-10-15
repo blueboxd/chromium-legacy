@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
 
+#include <utility>
+
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -115,8 +117,6 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       icon = &kVrHeadsetIcon;
       break;
-    case TabAlertState::NONE:
-      return gfx::Image();
   }
   DCHECK(icon);
   return gfx::Image(gfx::CreateVectorIcon(*icon, image_width, button_color));
@@ -127,7 +127,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
 // indicator to alert the user that recording, tab capture, or audio playback
 // has started/stopped.
 std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
-    TabAlertState alert_state) {
+    base::Optional<TabAlertState> alert_state) {
   if (alert_state == TabAlertState::MEDIA_RECORDING ||
       alert_state == TabAlertState::TAB_CAPTURING ||
       alert_state == TabAlertState::DESKTOP_CAPTURING) {
@@ -137,7 +137,7 @@ std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
   // Note: While it seems silly to use a one-part MultiAnimation, it's the only
   // gfx::Animation implementation that lets us control the frame interval.
   gfx::MultiAnimation::Parts parts;
-  const bool is_for_fade_in = (alert_state != TabAlertState::NONE);
+  const bool is_for_fade_in = (alert_state.has_value());
   parts.push_back(gfx::MultiAnimation::Part(
       is_for_fade_in ? kIndicatorFadeInDuration : kIndicatorFadeOutDuration,
       gfx::Tween::EASE_IN));
@@ -178,10 +178,7 @@ class AlertIndicator::FadeAnimationDelegate
 };
 
 AlertIndicator::AlertIndicator(Tab* parent_tab)
-    : views::ImageView(),
-      parent_tab_(parent_tab),
-      alert_state_(TabAlertState::NONE),
-      showing_alert_state_(TabAlertState::NONE) {
+    : views::ImageView(), parent_tab_(parent_tab) {
   DCHECK(parent_tab_);
 }
 
@@ -191,7 +188,7 @@ void AlertIndicator::OnPaint(gfx::Canvas* canvas) {
   double opaqueness = 1.0;
   if (fade_animation_) {
     opaqueness = fade_animation_->GetCurrentValue();
-    if (alert_state_ == TabAlertState::NONE)
+    if (!alert_state_)
       opaqueness = 1.0 - opaqueness;  // Fading out, not in.
   }
   if (opaqueness < 1.0)
@@ -201,14 +198,16 @@ void AlertIndicator::OnPaint(gfx::Canvas* canvas) {
     canvas->Restore();
 }
 
-void AlertIndicator::TransitionToAlertState(TabAlertState next_state) {
+void AlertIndicator::TransitionToAlertState(
+    base::Optional<TabAlertState> next_state) {
   if (next_state == alert_state_)
     return;
 
-  TabAlertState previous_alert_showing_state = showing_alert_state_;
+  base::Optional<TabAlertState> previous_alert_showing_state =
+      showing_alert_state_;
 
-  if (next_state != TabAlertState::NONE)
-    ResetImage(next_state);
+  if (next_state)
+    ResetImage(next_state.value());
 
   if ((alert_state_ == TabAlertState::AUDIO_PLAYING &&
        next_state == TabAlertState::AUDIO_MUTING) ||
@@ -218,7 +217,7 @@ void AlertIndicator::TransitionToAlertState(TabAlertState next_state) {
     showing_alert_state_ = next_state;
     fade_animation_.reset();
   } else {
-    if (next_state == TabAlertState::NONE)
+    if (!next_state)
       showing_alert_state_ = alert_state_;  // Fading-out indicator.
     else
       showing_alert_state_ = next_state;  // Fading-in to next indicator.
@@ -238,7 +237,7 @@ void AlertIndicator::TransitionToAlertState(TabAlertState next_state) {
 void AlertIndicator::OnParentTabButtonColorChanged() {
   if (alert_state_ == TabAlertState::AUDIO_PLAYING ||
       alert_state_ == TabAlertState::AUDIO_MUTING)
-    ResetImage(alert_state_);
+    ResetImage(alert_state_.value());
 }
 
 views::View* AlertIndicator::GetTooltipHandlerForPoint(

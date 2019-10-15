@@ -260,7 +260,6 @@ crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.htm
 crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Pass Failure ]
 
 # Display locking failures
-crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
@@ -352,6 +351,7 @@ crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests.
 Bug(intentional) external/wpt/webgpu/ [ Skip ]
+Bug(intentional) wpt_internal/webgpu/ [ Skip ]
 
 # ====== Paint team owned tests to here ======
 
@@ -1036,7 +1036,6 @@ crbug.com/714962 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/714962 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-large-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-zero-height-001.xht [ Failure ]
-crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/nested-with-padding-and-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-after-forced-break.html [ Failure ]
@@ -1075,9 +1074,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-relpos-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-with-child-layer-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/abspos-becomes-spanner.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/abspos-multicol-with-spanner-becomes-spanner.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/block-becomes-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/change-second-row-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/change-spanner-display.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/change-spanner-parent-display.html [ Failure ]
@@ -1089,25 +1085,18 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-blo
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-after-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-after-spanner-before-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-before-content.html [ Failure ]
-crbug.com/874506 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-between-out-of-flow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-into-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-into-stf-unconstrained-width.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-after.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-after-then-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before-after.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before-after-in-content.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before-following-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/insert-spanner-pseudo-before.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/relpos-becomes-static-has-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-before-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-and-insert-block-between-spanners.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-between-spanners.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-column-content-next-to-abspos-between-spanners.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-spanner-in-content.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-after-content-becomes-regular-block.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-ancestor-becomes-spanner.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-becomes-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-before-content-becomes-regular-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/spanner-in-content-becomes-regular-block.html [ Failure ]
@@ -1211,7 +1200,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/scrolling-overflow
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/shadow-breaking.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/single-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/abspos-containing-block-outside-spanner.html [ Crash Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/adjacent-spanners-with-margin.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/fast/multicol/span/after-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/after-row-with-uneven-height-nested-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/as-inner-multicol.html [ Failure ]
@@ -1221,12 +1209,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/balance-after
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/balance-after-spanner-some-extra-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/balance-before-and-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/balance-before-spanner-extra-height.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/block-with-top-border-and-margin-around-spanner-exact-fit.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/block-with-top-border-and-margin-around-spanner-extra-space.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/change-multicol-writing-mode.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/change-spanner-margins.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/empty-block-between-spanners-with-margins.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/empty-spanner-between-spanners-with-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/fill-after-spanner-exact-fit.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/fill-after-spanner-extra-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/float.html [ Failure ]
@@ -1236,28 +1219,19 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/in-nested-mul
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/inside-block-with-fixed-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/invalid-spanner-in-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/invalid-spanner-in-transform.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/margin-on-multicol.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/multicol-with-padding.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/nested-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/offset-properties-empty-content.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/offset-properties.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/outer-column-break-after-inner-spanner-2.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/outer-column-break-after-inner-spanner-and-float.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/outer-column-break-after-inner-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/overflow-on-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/overflow-on-viewport.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/percent-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/preferred-widths-with-column-content.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-after.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-after-then-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-before-after.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-before-after-in-content.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-before-following-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/pseudo-before.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/relpos-in-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/relpos-spanner-with-abspos-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/remaining-space-in-last-column.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/simple-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/span-between-text.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/spanner-first.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/spanner-img.html [ Failure ]
@@ -1271,7 +1245,6 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/two-rows-then
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/underflow-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/vertical-lr.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/vertical-rl.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/with-border.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/static-child-becomes-fixedpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/svg-change-column-crash.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/table-cell-content-change.html [ Failure ]
@@ -2501,9 +2474,6 @@ crbug.com/808834 [ Win ] external/wpt/css/css-pseudo/first-letter-001.html [ Fai
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Crash Pass Timeout ]
 
-# Sheriff 2019-03-08
-crbug.com/940050 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout ]
-
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
@@ -2682,7 +2652,7 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Retina ] external/wpt/preload/preload-with-type.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/rendering/non-replaced-elements/form-controls/select-sizing-001.html [ Failure ]
@@ -5708,7 +5678,6 @@ crbug.com/1008257 external/wpt/service-workers/service-worker/worker-interceptio
 crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-09-30
-crbug.com/1009016 [ Win10 ] http/tests/devtools/portals/portals-elements-nesting-after-adoption.js [ Pass Failure ]
 crbug.com/1003715 [ Win10 ] http/tests/notifications/serviceworker-notification-properties.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-10-01
@@ -5747,3 +5716,6 @@ crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
 crbug.com/990900 external/wpt/cookie-store/idlharness.tentative.https.any.serviceworker.html [ Pass Timeout ]
 crbug.com/990900 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.html [ Pass Timeout ]
+
+# Sheriff 2019-10-15
+crbug.com/1014327 [ Mac ] external/wpt/preload/onerror-event.html [ Pass Timeout ]

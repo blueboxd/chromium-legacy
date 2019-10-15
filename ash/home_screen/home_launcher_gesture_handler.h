@@ -25,6 +25,7 @@
 namespace ash {
 
 class HomeLauncherGestureHandlerObserver;
+class SwipeHomeToOverviewController;
 class DragWindowFromShelfController;
 
 // HomeLauncherGestureHandler makes modifications to a window's transform and
@@ -51,6 +52,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
     kDragWindowToHomeOrOverview,
     // Sliding down the MRU window to hide launcher.
     kSlideDownToHide,
+    // Sliding up from the shelf in home launcher screen to the overview screen.
+    kSwipeHomeToOverview,
   };
 
   HomeLauncherGestureHandler();
@@ -216,6 +219,11 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // The window drag controller that will be used in kDragWindowToHomeOrOverview
   // mode. Will not be created in other modes.
   std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
+
+  // The gesture controller that switches from home screen to overview when it
+  // detects a swipe from the shelf area.
+  std::unique_ptr<SwipeHomeToOverviewController>
+      swipe_home_to_overview_controller_;
 
   base::ObserverList<HomeLauncherGestureHandlerObserver> observers_;
 

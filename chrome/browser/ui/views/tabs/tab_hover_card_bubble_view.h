@@ -110,7 +110,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
-  TabAlertState alert_state_ = TabAlertState::NONE;
+  base::Optional<TabAlertState> alert_state_;
   views::Label* domain_label_ = nullptr;
   views::ImageView* preview_image_ = nullptr;
 

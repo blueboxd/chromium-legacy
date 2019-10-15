@@ -43,7 +43,7 @@
 #include "net/base/mime_util.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_controller_base.h"
+#include "chrome/browser/download/android/download_controller_base.h"
 #endif  // defined(OS_ANDROID)
 
 namespace offline_pages {

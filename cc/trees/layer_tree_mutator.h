@@ -51,10 +51,18 @@ struct CC_EXPORT WorkletAnimationId {
   // animation_id is only guaranteed to be unique per animation worklet.
   int animation_id;
 
+  // Initialize with invalid id.
+  WorkletAnimationId() : worklet_id(0), animation_id(0) {}
+  WorkletAnimationId(int worklet_id, int animation_id)
+      : worklet_id(worklet_id), animation_id(animation_id) {}
+
   inline bool operator==(const WorkletAnimationId& rhs) const {
     return (this->worklet_id == rhs.worklet_id) &&
            (this->animation_id == rhs.animation_id);
   }
+  // Returns true if the WorkletAnimationId has been initialized with a valid
+  // id.
+  explicit operator bool() const { return !!worklet_id || !!animation_id; }
 };
 
 struct CC_EXPORT AnimationWorkletInput {
@@ -87,7 +95,6 @@ struct CC_EXPORT AnimationWorkletInput {
   std::vector<AddAndUpdateState> added_and_updated_animations;
   std::vector<UpdateState> updated_animations;
   std::vector<WorkletAnimationId> removed_animations;
-  std::vector<WorkletAnimationId> peeked_animations;
 
   AnimationWorkletInput();
   AnimationWorkletInput(const AnimationWorkletInput&) = delete;
@@ -113,12 +120,6 @@ class CC_EXPORT MutatorInputState {
   void Add(AnimationWorkletInput::AddAndUpdateState&& state);
   void Update(AnimationWorkletInput::UpdateState&& state);
   void Remove(WorkletAnimationId worklet_animation_id);
-  // |Update| asks for the animation to *animate* given a current time and
-  // return the output value while |Peek| only asks for the last output value
-  // (if one available) without requiring animate or providing a current time.
-  // In particular, composited animations are updated from compositor and peeked
-  // from main thread.
-  void Peek(WorkletAnimationId worklet_animation_id);
 
   // Returns input for animation worklet with the given |scope_id| and nullptr
   // if there is no input.

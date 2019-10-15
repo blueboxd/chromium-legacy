@@ -23,9 +23,9 @@
 #include "ui/views/controls/highlight_path_generator.h"
 
 bool OmniboxTabSwitchButton::calculated_widths_ = false;
-size_t OmniboxTabSwitchButton::icon_only_width_;
-size_t OmniboxTabSwitchButton::short_text_width_;
-size_t OmniboxTabSwitchButton::full_text_width_;
+int OmniboxTabSwitchButton::icon_only_width_;
+int OmniboxTabSwitchButton::short_text_width_;
+int OmniboxTabSwitchButton::full_text_width_;
 
 OmniboxTabSwitchButton::OmniboxTabSwitchButton(
     OmniboxPopupContentsView* popup_contents_view,
@@ -75,8 +75,8 @@ OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   gfx::Size size = MdTextButton::CalculatePreferredSize();
   size.set_height(kButtonHeight);
-  int current_width = animation_->CurrentValueBetween(
-      static_cast<int>(start_width_), static_cast<int>(goal_width_));
+  int current_width =
+      animation_->CurrentValueBetween(start_width_, goal_width_);
   size.set_width(current_width);
   return size;
 }
@@ -123,8 +123,8 @@ void OmniboxTabSwitchButton::UpdateBackground() {
   SetBgColorOverride(GetBackgroundColor());
 }
 
-void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
-  size_t preferred_width = CalculateGoalWidth(parent_width, &goal_text_);
+void OmniboxTabSwitchButton::ProvideWidthHint(int parent_width) {
+  int preferred_width = CalculateGoalWidth(parent_width, &goal_text_);
   if (!initialized_) {
     initialized_ = true;
     goal_width_ = start_width_ = preferred_width;
@@ -181,8 +181,8 @@ void OmniboxTabSwitchButton::SetPressed() {
       SK_ColorBLACK, 0.8f));
 }
 
-size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,
-                                                  base::string16* goal_text) {
+int OmniboxTabSwitchButton::CalculateGoalWidth(int parent_width,
+                                               base::string16* goal_text) {
   if (full_text_width_ * 5 <= parent_width) {
     *goal_text = hint_;
     return full_text_width_;

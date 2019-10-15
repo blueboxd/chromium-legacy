@@ -9,7 +9,6 @@ where slices.name = "ConsoleMessage::Error"
   and slices.category = "blink.console"
   and args.flat_key = "debug.source"
 UNION ALL
--- Can't find a trace with v8 console errors so this path is untested.
 SELECT "JS" AS source
 FROM slices
 WHERE slices.category = 'v8.console' AND (
@@ -21,12 +20,12 @@ WHERE slices.category = 'v8.console' AND (
 CREATE VIEW console_error_metric AS
 SELECT
   (SELECT COUNT(*) FROM console_error_events) as all_errors,
-  (SELECT COUNT(*) FROM console_error_events where source = "JS") as js,
-  (SELECT COUNT(*) FROM console_error_events where source = "Network") as network;
+  (SELECT COUNT(*) FROM console_error_events where source = "JS") as js_errors,
+  (SELECT COUNT(*) FROM console_error_events where source = "Network") as network_errors;
 
 CREATE VIEW console_error_metric_output AS
 SELECT ConsoleErrorMetric(
-  'all', all_errors,
-  'js', js,
-  'network', network)
+  'all_errors', all_errors,
+  'js_errors', js_errors,
+  'network_errors', network_errors)
 FROM console_error_metric

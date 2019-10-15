@@ -152,7 +152,9 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<autofill::AutofillProfile> address) override;
   void SetContactInfo(
       std::unique_ptr<autofill::AutofillProfile> profile) override;
-  void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
+  void SetCreditCard(
+      std::unique_ptr<autofill::CreditCard> card,
+      std::unique_ptr<autofill::AutofillProfile> billing_profile) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
   void SetLoginOption(std::string identifier) override;

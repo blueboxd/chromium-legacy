@@ -41,6 +41,7 @@ component("bindings_base") {
     "deprecated_interface_types_forward.h",
     "disconnect_reason.h",
     "enum_traits.h",
+    "enum_utils.h",
     "equals_traits.h",
     "features.cc",
     "features.h",

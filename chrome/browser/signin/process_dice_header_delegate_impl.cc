@@ -63,7 +63,8 @@ bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
   return true;
 }
 
-void ProcessDiceHeaderDelegateImpl::EnableSync(const std::string& account_id) {
+void ProcessDiceHeaderDelegateImpl::EnableSync(
+    const CoreAccountId& account_id) {
   if (!ShouldEnableSync()) {
     // No special treatment is needed if the user is not enabling sync.
     return;

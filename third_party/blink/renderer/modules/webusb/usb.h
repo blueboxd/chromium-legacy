@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/usb_manager.mojom-blink.h"
+#include "services/device/public/mojom/usb_manager.mojom-blink-forward.h"
 #include "services/device/public/mojom/usb_manager_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"

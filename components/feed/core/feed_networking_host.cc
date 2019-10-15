@@ -255,7 +255,7 @@ void NetworkFetch::OnSimpleLoaderComplete(
 
     if (status_code == net::HTTP_UNAUTHORIZED) {
       identity::ScopeSet scopes{kAuthenticationScope};
-      std::string account_id = identity_manager_->GetPrimaryAccountId();
+      CoreAccountId account_id = identity_manager_->GetPrimaryAccountId();
       identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,
                                                     access_token_);
     }

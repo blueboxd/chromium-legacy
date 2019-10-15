@@ -1706,12 +1706,12 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   builder.set_ssl_config_service(std::move(ssl_config_service));
 
   if (!params_->initial_proxy_config &&
-      !params_->proxy_config_client_request.is_pending()) {
+      !params_->proxy_config_client_receiver.is_valid()) {
     params_->initial_proxy_config =
         net::ProxyConfigWithAnnotation::CreateDirect();
   }
   builder.set_proxy_config_service(std::make_unique<ProxyConfigServiceMojo>(
-      std::move(params_->proxy_config_client_request),
+      std::move(params_->proxy_config_client_receiver),
       std::move(params_->initial_proxy_config),
       std::move(params_->proxy_config_poller_client)));
   builder.set_pac_quick_check_enabled(params_->pac_quick_check_enabled);

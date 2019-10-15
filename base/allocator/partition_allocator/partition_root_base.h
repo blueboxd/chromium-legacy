@@ -107,8 +107,8 @@ ALWAYS_INLINE void* PartitionRootBase::AllocFromBucket(PartitionBucket* bucket,
     // the size metadata.
     DCHECK(page->get_raw_size() == 0);
     internal::PartitionFreelistEntry* new_head =
-        internal::PartitionFreelistEntry::Transform(
-            static_cast<internal::PartitionFreelistEntry*>(ret)->next);
+        internal::EncodedPartitionFreelistEntry::Decode(
+            page->freelist_head->next);
     page->freelist_head = new_head;
     page->num_allocated_slots++;
   } else {

@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"

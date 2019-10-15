@@ -501,10 +501,6 @@ void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {
   RuntimeEnabledFeatures::SetPresentationEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableResourceLoadScheduler(bool enable) {
-  RuntimeEnabledFeatures::SetResourceLoadSchedulerEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableRestrictAutomaticLazyFrameLoadingToDataSaver(
     bool enable) {
   RuntimeEnabledFeatures::

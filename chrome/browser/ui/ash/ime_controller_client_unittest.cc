@@ -171,7 +171,7 @@ class ImeControllerClientTest : public testing::Test {
 TEST_F(ImeControllerClientTest, Construction) {
   std::unique_ptr<ImeControllerClient> client =
       std::make_unique<ImeControllerClient>(&input_method_manager_);
-  client->InitForTesting(ime_controller_.CreateInterfacePtr());
+  client->InitForTesting(ime_controller_.CreateRemote());
   EXPECT_EQ(1, input_method_manager_.add_observer_count_);
   EXPECT_EQ(1, input_method_manager_.add_menu_observer_count_);
 
@@ -182,7 +182,7 @@ TEST_F(ImeControllerClientTest, Construction) {
 
 TEST_F(ImeControllerClientTest, SetImesManagedByPolicy) {
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
 
   client.SetImesManagedByPolicy(true);
   client.FlushMojoForTesting();
@@ -191,7 +191,7 @@ TEST_F(ImeControllerClientTest, SetImesManagedByPolicy) {
 
 TEST_F(ImeControllerClientTest, CapsLock) {
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
 
   client.OnCapsLockChanged(true);
   client.FlushMojoForTesting();
@@ -204,7 +204,7 @@ TEST_F(ImeControllerClientTest, CapsLock) {
 
 TEST_F(ImeControllerClientTest, LayoutName) {
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
 
   client.OnLayoutChanging("us(dvorak)");
   client.FlushMojoForTesting();
@@ -217,7 +217,7 @@ TEST_F(ImeControllerClientTest, LayoutName) {
 
 TEST_F(ImeControllerClientTest, ExtraInputEnabledStateChange) {
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
 
   client.OnExtraInputEnabledStateChange(true, true, false, false);
   client.FlushMojoForTesting();
@@ -243,7 +243,7 @@ TEST_F(ImeControllerClientTest, ExtraInputEnabledStateChange) {
 
 TEST_F(ImeControllerClientTest, ShowImeMenuOnShelf) {
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
 
   client.ImeMenuActivationChanged(true);
   client.FlushMojoForTesting();
@@ -258,7 +258,7 @@ TEST_F(ImeControllerClientTest, InputMethodChanged) {
   ui::IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
 
   // Simulate a switch to IME 2.
   input_method_manager_.state_->current_ime_id_ = "id2";
@@ -289,7 +289,7 @@ TEST_F(ImeControllerClientTest, InputMethodChanged) {
 
 TEST_F(ImeControllerClientTest, NoActiveState) {
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
 
   input_method_manager_.state_ = nullptr;
   client.InputMethodChanged(&input_method_manager_, nullptr /* profile */,
@@ -302,7 +302,7 @@ TEST_F(ImeControllerClientTest, NoActiveState) {
 
 TEST_F(ImeControllerClientTest, MenuItemChanged) {
   ImeControllerClient client(&input_method_manager_);
-  client.InitForTesting(ime_controller_.CreateInterfacePtr());
+  client.InitForTesting(ime_controller_.CreateRemote());
   const bool is_selection_item = true;
   InputMethodMenuItem item1("key1", "label1", is_selection_item,
                             true /* checked */);

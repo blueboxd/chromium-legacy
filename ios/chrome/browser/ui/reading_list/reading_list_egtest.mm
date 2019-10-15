@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -272,6 +273,28 @@ void AssertHeaderNotVisible(std::string header) {
 // Opens the reading list menu using command line.
 void OpenReadingList() {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() showReadingList];
+}
+
+// Adds 20 read and 20 unread entries to the model, opens the reading list menu
+// and enter edit mode.
+void AddLotOfEntriesAndEnterEdit() {
+  ReadingListModel* model = GetReadingListModel();
+  for (NSInteger index = 0; index < 10; index++) {
+    GURL url_to_be_added =
+        GURL(kReadURL + std::string("/") + base::NumberToString(index));
+    model->AddEntry(url_to_be_added, std::string(kReadTitle),
+                    reading_list::ADDED_VIA_CURRENT_APP);
+    model->SetReadStatus(url_to_be_added, true);
+  }
+  for (NSInteger index = 0; index < 10; index++) {
+    GURL url_to_be_added =
+        GURL(kUnreadURL + std::string("/") + base::NumberToString(index));
+    model->AddEntry(url_to_be_added, std::string(kReadTitle),
+                    reading_list::ADDED_VIA_CURRENT_APP);
+  }
+  OpenReadingList();
+
+  TapToolbarButtonWithID(kReadingListToolbarEditButtonID);
 }
 
 // Adds a read and an unread entry to the model, opens the reading list menu and
@@ -870,6 +893,21 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   XCTAssertEqual(kNumberUnreadEntries + kNumberReadEntries,
                  GetReadingListModel()->unread_size());
   XCTAssertEqual((size_t)0, ModelReadSize(GetReadingListModel()));
+}
+
+// Marks all read entries as unread, when there is a lot of entries. This is to
+// prevent crbug.com/1013708 from regressing.
+- (void)testMarkAllUnreadLotOfEntry {
+  AddLotOfEntriesAndEnterEdit();
+
+  AssertToolbarMarkButtonText(IDS_IOS_READING_LIST_MARK_ALL_BUTTON);
+  TapToolbarButtonWithID(kReadingListToolbarMarkButtonID);
+
+  // Tap the action sheet.
+  TapContextMenuButtonWithA11yLabelID(
+      IDS_IOS_READING_LIST_MARK_ALL_UNREAD_ACTION);
+
+  AssertHeaderNotVisible(kReadHeader);
 }
 
 // Selects an unread entry and mark it as read.

@@ -507,14 +507,6 @@ class BasePage {
   virtual void PoisonUnmarkedObjects() = 0;
 #endif
 
-  class HeapSnapshotInfo {
-    STACK_ALLOCATED();
-
-   public:
-    size_t free_count = 0;
-    size_t free_size = 0;
-  };
-
   virtual void CollectStatistics(
       ThreadState::Statistics::ArenaStatistics* arena_stats) = 0;
 

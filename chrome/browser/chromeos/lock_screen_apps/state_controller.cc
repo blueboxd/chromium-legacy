@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -37,6 +38,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -87,13 +89,13 @@ StateController::~StateController() {
   g_state_controller_instance = nullptr;
 }
 
-void StateController::SetTrayActionPtrForTesting(
-    ash::mojom::TrayActionPtr tray_action_ptr) {
-  tray_action_ptr_ = std::move(tray_action_ptr);
+void StateController::SetTrayActionForTesting(
+    mojo::PendingRemote<ash::mojom::TrayAction> tray_action) {
+  tray_action_.Bind(std::move(tray_action));
 }
 
 void StateController::FlushTrayActionForTesting() {
-  tray_action_ptr_.FlushForTesting();
+  tray_action_.FlushForTesting();
 }
 
 void StateController::SetReadyCallbackForTesting(
@@ -126,13 +128,13 @@ void StateController::Initialize() {
 
   // The tray action ptr might be set previously if the client was being created
   // for testing.
-  if (!tray_action_ptr_) {
-    content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                                 &tray_action_ptr_);
+  if (!tray_action_) {
+    content::GetSystemConnector()->Connect(
+        ash::mojom::kServiceName, tray_action_.BindNewPipeAndPassReceiver());
   }
-  ash::mojom::TrayActionClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  tray_action_ptr_->SetClient(std::move(client), lock_screen_note_state_);
+  mojo::PendingRemote<ash::mojom::TrayActionClient> client;
+  receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
+  tray_action_->SetClient(std::move(client), lock_screen_note_state_);
 }
 
 void StateController::SetPrimaryProfile(Profile* profile) {
@@ -167,7 +169,7 @@ void StateController::Shutdown() {
   focus_cycler_delegate_ = nullptr;
   power_manager_client_observer_.RemoveAll();
   input_devices_observer_.RemoveAll();
-  binding_.Close();
+  receiver_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -506,7 +508,7 @@ void StateController::NotifyLockScreenNoteStateChanged() {
   for (auto& observer : observers_)
     observer.OnLockScreenNoteStateChanged(lock_screen_note_state_);
 
-  tray_action_ptr_->UpdateLockScreenNoteState(lock_screen_note_state_);
+  tray_action_->UpdateLockScreenNoteState(lock_screen_note_state_);
 }
 
 }  // namespace lock_screen_apps

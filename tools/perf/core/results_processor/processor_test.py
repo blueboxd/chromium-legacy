@@ -10,6 +10,7 @@ with their expected contents.
 """
 
 import csv
+import datetime
 import json
 import os
 import shutil
@@ -25,6 +26,7 @@ from core.results_processor import processor
 from core.results_processor import testing
 
 from tracing.value.diagnostics import generic_set
+from tracing.value.diagnostics import date_range
 from tracing.value import histogram
 from tracing.value import histogram_set
 from tracing_build import render_histograms_viewer
@@ -308,6 +310,73 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     hist = out_histograms.GetHistogramNamed('foo')
     self.assertIsNotNone(hist)
     self.assertIn('traceUrls', hist.diagnostics)
+
+  def testHistogramsOutputMeasurements(self):
+    measure_file = os.path.join(self.output_dir,
+                                processor.MEASUREMENTS_NAME)
+    with open(measure_file, 'w') as f:
+      json.dump({'measurements': {
+          'a': {'unit': 'ms', 'samples': [4, 6], 'description': 'desc_a'},
+          'b': {'unit': 'ms', 'samples': [5], 'description': 'desc_b'},
+      }}, f)
+
+    start_ts = 1500000000
+    start_iso = datetime.datetime.utcfromtimestamp(start_ts).isoformat() + 'Z'
+
+    self.SerializeIntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                output_artifacts={
+                    processor.MEASUREMENTS_NAME: testing.Artifact(measure_file)
+                },
+                tags=['story_tag:test']
+            ),
+        ],
+        start_time=start_iso,
+    )
+
+    processor.main([
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+    ])
+
+    with open(os.path.join(
+        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+    self.assertEqual(len(out_histograms), 2)
+
+    hist = out_histograms.GetHistogramNamed('a')
+    self.assertEqual(hist.name, 'a')
+    self.assertEqual(hist.unit, 'ms_smallerIsBetter')
+    self.assertEqual(hist.sample_values, [4, 6])
+    self.assertEqual(hist.description, 'desc_a')
+    self.assertEqual(hist.diagnostics['benchmarks'],
+                     generic_set.GenericSet(['benchmark']))
+    self.assertEqual(hist.diagnostics['stories'],
+                     generic_set.GenericSet(['story']))
+    self.assertEqual(hist.diagnostics['storyTags'],
+                     generic_set.GenericSet(['test']))
+    self.assertEqual(hist.diagnostics['benchmarkStart'],
+                     date_range.DateRange(start_ts * 1e3))
+
+    hist = out_histograms.GetHistogramNamed('b')
+    self.assertEqual(hist.name, 'b')
+    self.assertEqual(hist.unit, 'ms_smallerIsBetter')
+    self.assertEqual(hist.sample_values, [5])
+    self.assertEqual(hist.description, 'desc_b')
+    self.assertEqual(hist.diagnostics['benchmarks'],
+                     generic_set.GenericSet(['benchmark']))
+    self.assertEqual(hist.diagnostics['stories'],
+                     generic_set.GenericSet(['story']))
+    self.assertEqual(hist.diagnostics['storyTags'],
+                     generic_set.GenericSet(['test']))
+    self.assertEqual(hist.diagnostics['benchmarkStart'],
+                     date_range.DateRange(start_ts * 1e3))
 
   def testHtmlOutput(self):
     hist_file = os.path.join(self.output_dir,

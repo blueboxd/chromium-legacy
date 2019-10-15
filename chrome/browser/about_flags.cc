@@ -2989,11 +2989,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kDisableKeepaliveFetch)},
 
-    {"enable-resource-load-scheduler",
-     flag_descriptions::kResourceLoadSchedulerName,
-     flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kResourceLoadScheduler)},
-
     {"prefetch-privacy-changes", flag_descriptions::kPrefetchPrivacyChangesName,
      flag_descriptions::kPrefetchPrivacyChangesDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kPrefetchPrivacyChanges)},
@@ -4263,6 +4258,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSplitSettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSplitSettings)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"privacy-settings-redesign",
+     flag_descriptions::kPrivacySettingsRedesignName,
+     flag_descriptions::kPrivacySettingsRedesignDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(features::kPrivacySettingsRedesign)},
 
 #if defined(OS_CHROMEOS)
     {"gesture-properties-dbus-service",

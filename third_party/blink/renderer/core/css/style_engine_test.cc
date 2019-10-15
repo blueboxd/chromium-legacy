@@ -1664,7 +1664,8 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
                 GetCSSPropertyColor()));
 }
 
-TEST_F(StyleEngineTest, MediaQueriesColorSchemeOverride) {
+// Flaky. https://crbug.com/1014380
+TEST_F(StyleEngineTest, DISABLED_MediaQueriesColorSchemeOverride) {
   ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
 
   EXPECT_EQ(PreferredColorScheme::kNoPreference,
@@ -1699,7 +1700,8 @@ TEST_F(StyleEngineTest, MediaQueriesColorSchemeOverride) {
                 GetCSSPropertyColor()));
 }
 
-TEST_F(StyleEngineTest, MediaQueriesReducedMotionOverride) {
+// Flaky. https://crbug.com/1014380
+TEST_F(StyleEngineTest, DISABLED_MediaQueriesReducedMotionOverride) {
   EXPECT_FALSE(GetDocument().GetSettings()->GetPrefersReducedMotion());
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
@@ -1731,7 +1733,8 @@ TEST_F(StyleEngineTest, MediaQueriesReducedMotionOverride) {
                 GetCSSPropertyColor()));
 }
 
-TEST_F(StyleEngineTest, MediaQueriesChangeNavigationControls) {
+// Flaky. https://crbug.com/1014380
+TEST_F(StyleEngineTest, DISABLED_MediaQueriesChangeNavigationControls) {
   ScopedMediaQueryNavigationControlsForTest scoped_feature(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>

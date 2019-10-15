@@ -21,8 +21,8 @@ ObjectIdSet FakeInvalidator::GetRegisteredIds(
   return registrar_.GetRegisteredIds(handler);
 }
 
-const std::string& FakeInvalidator::GetCredentialsEmail() const {
-  return email_;
+const CoreAccountId& FakeInvalidator::GetCredentialsAccountId() const {
+  return account_id_;
 }
 
 const std::string& FakeInvalidator::GetCredentialsToken() const {
@@ -60,9 +60,9 @@ InvalidatorState FakeInvalidator::GetInvalidatorState() const {
   return registrar_.GetInvalidatorState();
 }
 
-void FakeInvalidator::UpdateCredentials(
-    const std::string& email, const std::string& token) {
-  email_ = email;
+void FakeInvalidator::UpdateCredentials(const CoreAccountId& account_id,
+                                        const std::string& token) {
+  account_id_ = account_id;
   token_ = token;
 }
 

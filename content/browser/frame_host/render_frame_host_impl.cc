@@ -322,6 +322,39 @@ class ScopedCommitStateResetter {
   bool disabled_;
 };
 
+class ActiveURLMessageFilter : public mojo::MessageFilter {
+ public:
+  explicit ActiveURLMessageFilter(RenderFrameHostImpl* render_frame_host)
+      : render_frame_host_(render_frame_host) {}
+
+  ~ActiveURLMessageFilter() override {
+    if (debug_url_set_) {
+      GetContentClient()->SetActiveURL(GURL(), "");
+    }
+  }
+
+  // mojo::MessageFilter overrides.
+  bool WillDispatch(mojo::Message* message) override {
+    debug_url_set_ = true;
+    auto* frame_tree_node = render_frame_host_->frame_tree_node();
+    GetContentClient()->SetActiveURL(frame_tree_node->current_url(),
+                                     frame_tree_node->frame_tree()
+                                         ->root()
+                                         ->current_origin()
+                                         .GetDebugString());
+    return true;
+  }
+
+  void DidDispatchOrReject(mojo::Message* message, bool accepted) override {
+    GetContentClient()->SetActiveURL(GURL(), "");
+    debug_url_set_ = false;
+  }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  bool debug_url_set_ = false;
+};
+
 void GrantFileAccess(int child_id,
                      const std::vector<base::FilePath>& file_paths) {
   ChildProcessSecurityPolicyImpl* policy =
@@ -901,11 +934,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   SetUpMojoIfNeeded();
 
-  swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
+  swapout_event_monitor_timeout_.reset(new TimeoutMonitor(base::BindRepeating(
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
-  beforeunload_timeout_.reset(
-      new TimeoutMonitor(base::Bind(&RenderFrameHostImpl::BeforeUnloadTimeout,
-                                    weak_ptr_factory_.GetWeakPtr())));
+  beforeunload_timeout_.reset(new TimeoutMonitor(
+      base::BindRepeating(&RenderFrameHostImpl::BeforeUnloadTimeout,
+                          weak_ptr_factory_.GetWeakPtr())));
 
   if (widget_routing_id != MSG_ROUTING_NONE) {
     mojo::PendingRemote<mojom::Widget> widget;
@@ -1512,8 +1545,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   // Crash reports triggered by IPC messages for this frame should be associated
   // with its URL.
-  // TODO(lukasza): Also call SetActiveURL for mojo messages dispatched to
-  // either the FrameHost interface or to interfaces bound by this frame.
   ScopedActiveURL scoped_active_url(this);
 
   if (delegate_->OnMessageReceived(this, msg))
@@ -4110,6 +4141,8 @@ void RenderFrameHostImpl::BindInterfaceProviderRequest(
       FilterRendererExposedInterfaces(mojom::kNavigation_FrameSpec,
                                       GetProcess()->GetID(),
                                       std::move(interface_provider_request)));
+  document_scoped_interface_provider_binding_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(this));
 }
 
 void RenderFrameHostImpl::BindDocumentInterfaceBrokerReceiver(
@@ -4120,15 +4153,20 @@ void RenderFrameHostImpl::BindDocumentInterfaceBrokerReceiver(
   DCHECK(!document_interface_broker_content_receiver_.is_bound());
   DCHECK(content_receiver.is_valid());
   document_interface_broker_content_receiver_.Bind(std::move(content_receiver));
+  document_interface_broker_content_receiver_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(this));
   DCHECK(!document_interface_broker_blink_receiver_.is_bound());
   DCHECK(blink_receiver.is_valid());
   document_interface_broker_blink_receiver_.Bind(std::move(blink_receiver));
+  document_interface_broker_blink_receiver_.SetFilter(
+      std::make_unique<ActiveURLMessageFilter>(this));
 }
 
 void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
   DCHECK(receiver.is_valid());
   broker_receiver_.Bind(std::move(receiver));
+  broker_receiver_.SetFilter(std::make_unique<ActiveURLMessageFilter>(this));
 }
 
 void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
@@ -4513,14 +4551,14 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       // |interface_registry_| is declared after |geolocation_service_|, so it
       // will be destroyed prior to |geolocation_service_|.
       registry_->AddInterface(
-          base::Bind(&GeolocationServiceImpl::Bind,
-                     base::Unretained(geolocation_service_.get())));
+          base::BindRepeating(&GeolocationServiceImpl::Bind,
+                              base::Unretained(geolocation_service_.get())));
     }
   }
 
-  registry_->AddInterface<media::mojom::InterfaceFactory>(
-      base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
-                 base::Unretained(this)));
+  registry_->AddInterface<media::mojom::InterfaceFactory>(base::BindRepeating(
+      &RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
+      base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebSocketConnector, base::Unretained(this)));
@@ -4541,8 +4579,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                           base::Unretained(this)));
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
-  registry_->AddInterface(base::Bind(&RemoterFactoryImpl::Bind,
-                                     GetProcess()->GetID(), GetRoutingID()));
+  registry_->AddInterface(base::BindRepeating(
+      &RemoterFactoryImpl::Bind, GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
@@ -4591,8 +4629,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           weak_ptr_factory_.GetWeakPtr())));
 
   if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
-    registry_->AddInterface(
-        base::Bind(&InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
+    registry_->AddInterface(base::BindRepeating(
+        &InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
   }
 
   // TODO(crbug.com/775792): Move to RendererInterfaceBinders.
@@ -5650,6 +5688,8 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       [](RenderFrameHostImpl* impl,
          mojo::PendingAssociatedReceiver<mojom::FrameHost> receiver) {
         impl->frame_host_associated_receiver_.Bind(std::move(receiver));
+        impl->frame_host_associated_receiver_.SetFilter(
+            std::make_unique<ActiveURLMessageFilter>(impl));
       };
   associated_registry_->AddInterface(
       base::BindRepeating(bind_frame_host_receiver, base::Unretained(this)));
@@ -6063,15 +6103,6 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
     GrantFileAccessFromResourceRequestBody(*common_params.post_data);
 }
 
-std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
-  std::set<int> result;
-  if (navigation_request_)
-    result.insert(navigation_request_->nav_entry_id());
-  for (auto const& requests : navigation_requests_)
-    result.insert(requests.second->nav_entry_id());
-  return result;
-}
-
 mojo::AssociatedRemote<mojom::NavigationClient>
 RenderFrameHostImpl::GetNavigationClientFromInterfaceProvider() {
   mojo::AssociatedRemote<mojom::NavigationClient> navigation_client_remote;
@@ -6399,8 +6430,9 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
   DCHECK(!media_interface_proxy_);
   media_interface_proxy_.reset(new MediaInterfaceProxy(
       this, std::move(request),
-      base::Bind(&RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
-                 base::Unretained(this))));
+      base::BindOnce(
+          &RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
+          base::Unretained(this))));
 }
 
 void RenderFrameHostImpl::CreateWebSocketConnector(
@@ -6732,7 +6764,8 @@ class RenderFrameHostImpl::JavaInterfaceProvider
     : public service_manager::mojom::InterfaceProvider {
  public:
   using BindCallback =
-      base::Callback<void(const std::string&, mojo::ScopedMessagePipeHandle)>;
+      base::RepeatingCallback<void(const std::string&,
+                                   mojo::ScopedMessagePipeHandle)>;
 
   JavaInterfaceProvider(
       const BindCallback& bind_callback,
@@ -6761,8 +6794,9 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
   if (!render_frame_host_android) {
     service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
     java_interface_registry_ = std::make_unique<JavaInterfaceProvider>(
-        base::Bind(&RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
+            weak_ptr_factory_.GetWeakPtr()),
         mojo::MakeRequest(&interface_provider_ptr));
     render_frame_host_android =
         new RenderFrameHostAndroid(this, std::move(interface_provider_ptr));
@@ -6790,7 +6824,7 @@ void RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame(
 #endif
 
 void RenderFrameHostImpl::ForEachImmediateLocalRoot(
-    const base::Callback<void(RenderFrameHostImpl*)>& callback) {
+    const base::RepeatingCallback<void(RenderFrameHostImpl*)>& callback) {
   if (!frame_tree_node_->child_count())
     return;
 
@@ -6810,7 +6844,7 @@ void RenderFrameHostImpl::ForEachImmediateLocalRoot(
 }
 
 void RenderFrameHostImpl::SetVisibilityForChildViews(bool visible) {
-  ForEachImmediateLocalRoot(base::Bind(
+  ForEachImmediateLocalRoot(base::BindRepeating(
       [](bool is_visible, RenderFrameHostImpl* frame_host) {
         if (auto* view = frame_host->GetView())
           return is_visible ? view->Show() : view->Hide();
@@ -7861,6 +7895,10 @@ BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   if (!navigation_entry)
     return nullptr;
   return navigation_entry->back_forward_cache_metrics();
+}
+
+bool RenderFrameHostImpl::HasPendingCommitNavigationForTesting() {
+  return navigation_request_ || !navigation_requests_.empty();
 }
 
 }  // namespace content

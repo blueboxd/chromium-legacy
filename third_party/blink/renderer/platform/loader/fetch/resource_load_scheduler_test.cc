@@ -89,7 +89,6 @@ class ResourceLoadSchedulerTest : public testing::Test {
 
   using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
   void SetUp() override {
-    DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     properties->SetShouldBlockLoadingSubResource(true);
     auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();

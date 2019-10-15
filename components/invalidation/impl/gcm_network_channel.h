@@ -67,7 +67,7 @@ class INVALIDATION_EXPORT GCMNetworkChannel
       invalidation::MessageCallback* incoming_receiver) override;
 
   // SyncNetworkChannel implementation.
-  void UpdateCredentials(const std::string& email,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& token) override;
   int GetInvalidationClientType() override;
   void RequestDetailedStatus(

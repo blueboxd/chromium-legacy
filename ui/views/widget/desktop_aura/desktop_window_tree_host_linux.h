@@ -35,6 +35,23 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostLinux() override;
 
+  // A way of converting a |widget| into the content_window()
+  // of the associated DesktopNativeWidgetAura.
+  static aura::Window* GetContentWindowForWidget(gfx::AcceleratedWidget widget);
+
+  // A way of converting a |widget| into this object.
+  static DesktopWindowTreeHostLinux* GetHostForWidget(
+      gfx::AcceleratedWidget widget);
+
+  // Get all open top-level windows. This includes windows that may not be
+  // visible. This list is sorted in their stacking order, i.e. the first window
+  // is the topmost window.
+  static std::vector<aura::Window*> GetAllOpenWindows();
+
+  // Runs the |func| callback for each content-window, and deallocates the
+  // internal list of open windows.
+  static void CleanUpWindowList(void (*func)(aura::Window* window));
+
   // This must be called before the window is created, because the visual cannot
   // be changed after. Useful for X11. Not in use for Wayland.
   void SetPendingXVisualId(int x_visual_id);
@@ -64,6 +81,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // PlatformWindowDelegateBase:
   void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
+  void OnActivationChanged(bool active) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
@@ -94,6 +113,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   const ui::PlatformWindowLinux* GetPlatformWindowLinux() const;
   ui::PlatformWindowLinux* GetPlatformWindowLinux();
 
+  // See comment for variable open_windows_.
+  static std::list<gfx::AcceleratedWidget>& open_windows();
+
   // A handler for events intended for non client area.
   // A posthandler for events intended for non client area. Handles events if no
   // other consumer handled them.
@@ -109,6 +131,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 
   uint32_t modal_dialog_counter_ = 0;
+
+  // A list of all (top-level) windows that have been created but not yet
+  // destroyed.
+  static std::list<gfx::AcceleratedWidget>* open_windows_;
 
   // The display and the native X window hosting the root window.
   base::WeakPtrFactory<DesktopWindowTreeHostLinux> weak_factory_{this};

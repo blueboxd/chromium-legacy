@@ -35,7 +35,9 @@ PrintJobHistoryServiceImpl::~PrintJobHistoryServiceImpl() {
 
 void PrintJobHistoryServiceImpl::GetPrintJobs(
     PrintJobDatabase::GetPrintJobsCallback callback) {
-  print_job_database_->GetPrintJobs(std::move(callback));
+  print_job_history_cleaner_.CleanUp(
+      base::BindOnce(&PrintJobHistoryServiceImpl::OnPrintJobsCleanedUp,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void PrintJobHistoryServiceImpl::OnPrintJobDone(
@@ -66,7 +68,7 @@ void PrintJobHistoryServiceImpl::SavePrintJob(base::WeakPtr<CupsPrintJob> job) {
 
 void PrintJobHistoryServiceImpl::OnPrintJobDatabaseInitialized(bool success) {
   if (success)
-    print_job_history_cleaner_.Start();
+    print_job_history_cleaner_.CleanUp(base::DoNothing());
 }
 
 void PrintJobHistoryServiceImpl::OnPrintJobSaved(
@@ -76,6 +78,11 @@ void PrintJobHistoryServiceImpl::OnPrintJobSaved(
   for (auto& observer : observers_) {
     observer.OnPrintJobFinished(print_job_info);
   }
+}
+
+void PrintJobHistoryServiceImpl::OnPrintJobsCleanedUp(
+    PrintJobDatabase::GetPrintJobsCallback callback) {
+  print_job_database_->GetPrintJobs(std::move(callback));
 }
 
 }  // namespace chromeos

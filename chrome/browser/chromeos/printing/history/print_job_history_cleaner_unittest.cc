@@ -47,11 +47,8 @@ class PrintJobHistoryCleanerTest : public ::testing::Test {
     print_job_history_cleaner_ = std::make_unique<PrintJobHistoryCleaner>(
         print_job_database_.get(), &test_prefs_);
 
-    auto timer = std::make_unique<base::RepeatingTimer>(
-        task_environment_.GetMockTickClock());
-    timer->SetTaskRunner(task_environment_.GetMainThreadTaskRunner());
-    print_job_history_cleaner_->OverrideTimeForTesting(
-        task_environment_.GetMockClock(), std::move(timer));
+    print_job_history_cleaner_->SetClockForTesting(
+        task_environment_.GetMockClock());
 
     PrintJobHistoryService::RegisterProfilePrefs(test_prefs_.registry());
   }
@@ -117,18 +114,50 @@ TEST_F(PrintJobHistoryCleanerTest, CleanExpiredPrintJobs) {
   SavePrintJob(print_job_info2);
 
   task_environment_.FastForwardBy(base::TimeDelta::FromHours(12));
-  print_job_history_cleaner_->Start();
-  task_environment_.RunUntilIdle();
+  base::RunLoop run_loop1;
+  print_job_history_cleaner_->CleanUp(run_loop1.QuitClosure());
+  run_loop1.Run();
 
   std::vector<PrintJobInfo> entries = GetPrintJobs();
-  // Start() call should clear the first entry which is expected to expire.
+  // CleanUp() call should clear the first entry which is expected to expire.
   EXPECT_EQ(1u, entries.size());
   EXPECT_EQ(kId2, entries[0].id());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
-  task_environment_.RunUntilIdle();
+  base::RunLoop run_loop2;
+  print_job_history_cleaner_->CleanUp(run_loop2.QuitClosure());
+  run_loop2.Run();
   entries = GetPrintJobs();
   // The second entry is expected to be removed after cleaner ran again.
+  EXPECT_TRUE(entries.empty());
+}
+
+TEST_F(PrintJobHistoryCleanerTest, CleanExpiredPrintJobsAfterPrefChanged) {
+  // Set expiration period to 1 day.
+  test_prefs_.SetInteger(prefs::kPrintJobHistoryExpirationPeriod, 3);
+  print_job_database_->Initialize(base::DoNothing());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(300));
+  PrintJobInfo print_job_info =
+      ConstructPrintJobInfo(kId1, task_environment_.GetMockClock()->Now());
+  SavePrintJob(print_job_info);
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(36));
+  base::RunLoop run_loop1;
+  print_job_history_cleaner_->CleanUp(run_loop1.QuitClosure());
+  run_loop1.Run();
+
+  std::vector<PrintJobInfo> entries = GetPrintJobs();
+  // CleanUp() shouldn't clear anything.
+  EXPECT_EQ(1u, entries.size());
+  EXPECT_EQ(kId1, entries[0].id());
+
+  test_prefs_.SetInteger(prefs::kPrintJobHistoryExpirationPeriod, 1);
+  base::RunLoop run_loop2;
+  print_job_history_cleaner_->CleanUp(run_loop2.QuitClosure());
+  run_loop2.Run();
+  entries = GetPrintJobs();
+  // The entry is expected to be removed after pref has changed.
   EXPECT_TRUE(entries.empty());
 }
 
@@ -144,12 +173,13 @@ TEST_F(PrintJobHistoryCleanerTest, StorePrintJobHistoryIndefinite) {
 
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(300));
 
-  print_job_history_cleaner_->Start();
-  task_environment_.RunUntilIdle();
+  base::RunLoop run_loop;
+  print_job_history_cleaner_->CleanUp(run_loop.QuitClosure());
+  run_loop.Run();
 
   std::vector<PrintJobInfo> entries = GetPrintJobs();
-  // Start() call shouldn't clear anything as according to pref we store history
-  // indefinitely.
+  // CleanUp() call shouldn't clear anything as according to pref we store
+  // history indefinitely.
   EXPECT_EQ(1u, entries.size());
   EXPECT_EQ(kId1, entries[0].id());
 }

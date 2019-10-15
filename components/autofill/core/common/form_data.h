@@ -78,6 +78,10 @@ struct FormData {
   GURL url;
   // The action target of the form.
   GURL action;
+  // If the form in the DOM has an empty action attribute, the |action| field in
+  // the FormData is set to the frame URL of the embedding document. This field
+  // indicates whether the action attribute is empty in the form in the DOM.
+  bool is_action_empty = false;
   // The URL of main frame containing this form.
   url::Origin main_frame_origin;
   // True if this form is a form tag.

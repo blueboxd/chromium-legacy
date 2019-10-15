@@ -15,7 +15,7 @@ namespace syncer {
 namespace {
 
 const char kLocalDeviceGuid[] = "foo";
-const char kLocalDeviceSessionName[] = "bar";
+const char kLocalDeviceClientName[] = "bar";
 
 const char kSharingFCMToken[] = "test_fcm_token";
 const char kSharingP256dh[] = "test_p256_dh";
@@ -58,7 +58,7 @@ class LocalDeviceInfoProviderImplTest : public testing::Test {
   void InitializeProvider() { InitializeProvider(kLocalDeviceGuid); }
 
   void InitializeProvider(const std::string& guid) {
-    provider_->Initialize(guid, kLocalDeviceSessionName,
+    provider_->Initialize(guid, kLocalDeviceClientName,
                           base::SysInfo::HardwareInfo());
   }
 
@@ -74,7 +74,7 @@ TEST_F(LocalDeviceInfoProviderImplTest, GetLocalDeviceInfo) {
   const DeviceInfo* local_device_info = provider_->GetLocalDeviceInfo();
   ASSERT_NE(nullptr, local_device_info);
   EXPECT_EQ(std::string(kLocalDeviceGuid), local_device_info->guid());
-  EXPECT_EQ(kLocalDeviceSessionName, local_device_info->client_name());
+  EXPECT_EQ(kLocalDeviceClientName, local_device_info->client_name());
   EXPECT_EQ(MakeUserAgentForSync(provider_->GetChannel()),
             local_device_info->sync_user_agent());
 

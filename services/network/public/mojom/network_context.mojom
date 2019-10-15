@@ -274,7 +274,7 @@ struct NetworkContextParams {
   //
   // If both are null, the NetworkContext will not use a proxy.
   ProxyConfigWithAnnotation? initial_proxy_config;
-  ProxyConfigClient&? proxy_config_client_request;
+  pending_receiver<ProxyConfigClient>? proxy_config_client_receiver;
 
   // If |custom_proxy_config_client_receiver| is set, this context will listen
   // for updates to the custom proxy config, and use it if applicable for

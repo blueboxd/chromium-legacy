@@ -12,13 +12,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
 class GURL;
-enum class WebappInstallSource;
 struct InstallableData;
 struct WebApplicationInfo;
 
@@ -31,8 +31,6 @@ class WebContents;
 }
 
 namespace web_app {
-
-class WebAppIconDownloader;
 
 // Class used by WebAppInstallTask to retrieve the necessary information to
 // install an app. Should only be called from the UI thread.
@@ -68,7 +66,7 @@ class WebAppDataRetriever : content::WebContentsObserver {
   virtual void GetIcons(content::WebContents* web_contents,
                         const std::vector<GURL>& icon_urls,
                         bool skip_page_favicons,
-                        WebappInstallSource install_source,
+                        WebAppIconDownloader::Histogram histogram,
                         GetIconsCallback callback);
 
   // WebContentsObserver:

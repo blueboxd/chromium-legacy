@@ -65,7 +65,7 @@ void RecentDriveSource::GetRecentFiles(Params params) {
   query_params->sort_direction =
       drivefs::mojom::QueryParameters::SortDirection::kDescending;
   integration_service->GetDriveFsInterface()->StartSearchQuery(
-      mojo::MakeRequest(&search_query_), std::move(query_params));
+      search_query_.BindNewPipeAndPassReceiver(), std::move(query_params));
   search_query_->GetNextPage(base::BindOnce(
       &RecentDriveSource::GotSearchResults, weak_ptr_factory_.GetWeakPtr()));
 }

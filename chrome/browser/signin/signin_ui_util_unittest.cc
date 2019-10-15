@@ -104,7 +104,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     signin_metrics::PromoAction signin_promo_action =
         signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
     signin_metrics::Reason signin_reason = signin_metrics::Reason::REASON_MAX;
-    std::string account_id;
+    CoreAccountId account_id;
     DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode =
         DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT;
   };
@@ -115,7 +115,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
       signin_metrics::AccessPoint signin_access_point,
       signin_metrics::PromoAction signin_promo_action,
       signin_metrics::Reason signin_reason,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
     create_dice_turn_sync_on_helper_called_ = true;
     create_dice_turn_sync_on_helper_params_.profile = profile;

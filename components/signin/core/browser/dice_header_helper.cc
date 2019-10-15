@@ -194,7 +194,7 @@ bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
 }
 
 std::string DiceHeaderHelper::BuildRequestHeader(
-    const std::string& sync_account_id,
+    const std::string& sync_gaia_id,
     const std::string& device_id) {
   std::vector<std::string> parts;
   parts.push_back(base::StringPrintf("version=%s", kDiceProtocolVersion));
@@ -202,8 +202,8 @@ std::string DiceHeaderHelper::BuildRequestHeader(
                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   if (!device_id.empty())
     parts.push_back("device_id=" + device_id);
-  if (!sync_account_id.empty())
-    parts.push_back("sync_account_id=" + sync_account_id);
+  if (!sync_gaia_id.empty())
+    parts.push_back("sync_account_id=" + sync_gaia_id);
 
   // Restrict Signin to Sync account only when fixing auth errors.
   std::string signin_mode = kRequestSigninAll;

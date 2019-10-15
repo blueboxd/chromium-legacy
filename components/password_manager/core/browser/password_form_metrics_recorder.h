@@ -312,8 +312,7 @@ class PasswordFormMetricsRecorder
   // matches. Also inspects |manager_action_| to correctly detect if the
   // user chose a credential.
   void CalculateUserAction(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       const autofill::PasswordForm& submitted_form);
 
   // Allow tests to explicitly set a value for |user_action_|.

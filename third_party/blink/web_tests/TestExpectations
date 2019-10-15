@@ -215,8 +215,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/yuv-decode-eligible/color-prof
 crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Pass Timeout Failure ]
 crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer-filter.html [ Pass Timeout Failure ]
 
-crbug.com/1013736 external/wpt/svg/animations/slider-switch.html [ Pass Failure ]
-
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]

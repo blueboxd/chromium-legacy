@@ -128,8 +128,12 @@ VaapiImageDecodeAcceleratorWorker::Create() {
   VaapiImageDecoderVector decoders;
 
   auto jpeg_decoder = std::make_unique<VaapiJpegDecoder>();
-  if (jpeg_decoder->Initialize(uma_cb))
+  // TODO(crbug.com/974438): we can't advertise accelerated image decoding in
+  // AMD until we support VAAPI surfaces with multiple buffer objects.
+  if (VaapiWrapper::GetImplementationType() != VAImplementation::kMesaGallium &&
+      jpeg_decoder->Initialize(uma_cb)) {
     decoders.push_back(std::move(jpeg_decoder));
+  }
 
   auto webp_decoder = std::make_unique<VaapiWebPDecoder>();
   if (webp_decoder->Initialize(uma_cb))

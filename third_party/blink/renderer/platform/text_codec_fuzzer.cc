@@ -9,8 +9,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
-using namespace blink;
-
 // TODO(jsbell): This fuzzes code in wtf/ but has dependencies on platform/,
 // so it must live in the latter directory. Once wtf/ moves into platform/wtf
 // this should move there as well.
@@ -27,7 +25,7 @@ class TextCodecFuzzHarness {};
 
 // Fuzzer for WTF::TextCodec.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  static BlinkFuzzerTestSupport test_support = BlinkFuzzerTestSupport();
+  static blink::BlinkFuzzerTestSupport test_support;
   // The fuzzer picks 3 bytes off the end of the data to initialize metadata, so
   // abort if the input is smaller than that.
   if (size < 3)

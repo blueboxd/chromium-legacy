@@ -48,6 +48,9 @@ void SetRuntimeFeatureDefaultsForPlatform(
     const base::CommandLine& command_line) {
   // Please consider setting up feature defaults for different platforms
   // in runtime_enabled_features.json5 instead of here
+  // TODO(rodneyding): Move the more common cases here
+  // to baseFeature/switch functions below and move more complex
+  // ones to special case functions.
 #if defined(USE_AURA)
   WebRuntimeFeatures::EnableCompositedSelectionUpdate(true);
 #endif
@@ -258,9 +261,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
       base::FeatureList::IsEnabled(
           features::kAllowContentInitiatedDataUrlNavigations));
 
-  WebRuntimeFeatures::EnableResourceLoadScheduler(
-      base::FeatureList::IsEnabled(features::kResourceLoadScheduler));
-
   if (base::FeatureList::IsEnabled(features::kBuiltInModuleAll))
     WebRuntimeFeatures::EnableBuiltInModuleAll(true);
 
@@ -441,83 +441,75 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
       base::FeatureList::IsEnabled(features::kDocumentPolicy));
 }
 
+// Helper class that describes the desired enable/disable action
+// for a runtime feature when a command line switch exists.
+struct SwitchToFeatureMap {
+  // The enabler function defined in web_runtime_features.cc.
+  void (*feature_enabler)(bool);
+  // The switch to check for on command line.
+  const char* switch_name;
+  // This is the desired state for the runtime feature if the
+  // switch exists on command line.
+  bool target_enabled_state;
+};
+
 // Sets blink runtime features controlled by command line switches.
 void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kDisableDatabases))
-    WebRuntimeFeatures::EnableDatabase(false);
-
-  if (command_line.HasSwitch(switches::kDisableNotifications)) {
-    WebRuntimeFeatures::EnableNotifications(false);
-
-    // Chrome's Push Messaging implementation relies on Web Notifications.
-    WebRuntimeFeatures::EnablePushMessaging(false);
+  // To add a new switch-controlled runtime feature, add a new
+  // SwitchToFeatureMap entry to the initializer list below.
+  // Note: command line switches are now discouraged, please consider
+  // using base::Feature instead.
+  // https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/configuration.md#switches
+  using wrf = WebRuntimeFeatures;
+  const SwitchToFeatureMap switchToFeatureMapping[] = {
+      // Stable Features
+      {wrf::EnablePermissionsAPI, switches::kDisablePermissionsAPI, false},
+      {wrf::EnablePresentationAPI, switches::kDisablePresentationAPI, false},
+      {wrf::EnableRemotePlaybackAPI, switches::kDisableRemotePlaybackAPI,
+       false},
+      {wrf::EnableTimerThrottlingForBackgroundTabs,
+       switches::kDisableBackgroundTimerThrottling, false},
+      // End of Stable Features
+      {wrf::EnableDatabase, switches::kDisableDatabases, false},
+      {wrf::EnableNotifications, switches::kDisableNotifications, false},
+      // Chrome's Push Messaging implementation relies on Web Notifications.
+      {wrf::EnablePushMessaging, switches::kDisableNotifications, false},
+      {wrf::EnableSharedWorker, switches::kDisableSharedWorkers, false},
+      {wrf::EnableScriptedSpeechRecognition, switches::kDisableSpeechAPI,
+       false},
+      {wrf::EnableScriptedSpeechSynthesis, switches::kDisableSpeechAPI, false},
+      {wrf::EnableScriptedSpeechSynthesis, switches::kDisableSpeechSynthesisAPI,
+       false},
+      {wrf::EnableFileSystem, switches::kDisableFileSystem, false},
+      {wrf::EnableWebGLDraftExtensions, switches::kEnableWebGLDraftExtensions,
+       true},
+      {wrf::EnableAutomationControlled, switches::kEnableAutomation, true},
+      {wrf::EnableAutomationControlled, switches::kHeadless, true},
+      {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPipe, true},
+      {wrf::EnableAutomationControlled, switches::kRemoteDebuggingPort, true},
+      {wrf::ForceOverlayFullscreenVideo, switches::kForceOverlayFullscreenVideo,
+       true},
+      {wrf::EnablePreciseMemoryInfo, switches::kEnablePreciseMemoryInfo, true},
+      {wrf::EnablePrintBrowser, switches::kEnablePrintBrowser, true},
+      {wrf::EnableNetInfoDownlinkMax,
+       switches::kEnableNetworkInformationDownlinkMax, true},
+      {wrf::EnablePermissionsAPI, switches::kDisablePermissionsAPI, false},
+      {wrf::EnableWebGPU, switches::kEnableUnsafeWebGPU, true},
+      {wrf::EnableWebVR, switches::kEnableWebVR, true},
+      {wrf::EnablePresentationAPI, switches::kDisablePresentationAPI, false},
+      {wrf::EnableRemotePlaybackAPI, switches::kDisableRemotePlaybackAPI,
+       false},
+      {wrf::EnableTimerThrottlingForBackgroundTabs,
+       switches::kDisableBackgroundTimerThrottling, false},
+      {wrf::EnableAccessibilityObjectModel,
+       switches::kEnableAccessibilityObjectModel, true},
+      {wrf::EnableAllowSyncXHRInPageDismissal,
+       switches::kAllowSyncXHRInPageDismissal, true},
+  };
+  for (const auto& mapping : switchToFeatureMapping) {
+    if (command_line.HasSwitch(mapping.switch_name))
+      mapping.feature_enabler(mapping.target_enabled_state);
   }
-
-  if (command_line.HasSwitch(switches::kDisableSharedWorkers))
-    WebRuntimeFeatures::EnableSharedWorker(false);
-
-  if (command_line.HasSwitch(switches::kDisableSpeechAPI)) {
-    WebRuntimeFeatures::EnableScriptedSpeechRecognition(false);
-    WebRuntimeFeatures::EnableScriptedSpeechSynthesis(false);
-  }
-
-  if (command_line.HasSwitch(switches::kDisableSpeechSynthesisAPI)) {
-    WebRuntimeFeatures::EnableScriptedSpeechSynthesis(false);
-  }
-
-  if (command_line.HasSwitch(switches::kDisableFileSystem))
-    WebRuntimeFeatures::EnableFileSystem(false);
-
-  if (command_line.HasSwitch(switches::kEnableWebGLDraftExtensions))
-    WebRuntimeFeatures::EnableWebGLDraftExtensions(true);
-
-  if (command_line.HasSwitch(switches::kEnableAutomation) ||
-      command_line.HasSwitch(switches::kHeadless) ||
-      command_line.HasSwitch(switches::kRemoteDebuggingPipe) ||
-      command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
-    WebRuntimeFeatures::EnableAutomationControlled(true);
-  }
-
-  if (command_line.HasSwitch(switches::kForceOverlayFullscreenVideo))
-    WebRuntimeFeatures::ForceOverlayFullscreenVideo(true);
-
-  if (command_line.HasSwitch(switches::kEnablePreciseMemoryInfo))
-    WebRuntimeFeatures::EnablePreciseMemoryInfo(true);
-
-  if (command_line.HasSwitch(switches::kEnablePrintBrowser))
-    WebRuntimeFeatures::EnablePrintBrowser(true);
-
-  if (command_line.HasSwitch(switches::kEnableNetworkInformationDownlinkMax))
-    WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
-
-  if (command_line.HasSwitch(switches::kDisablePermissionsAPI))
-    WebRuntimeFeatures::EnablePermissionsAPI(false);
-
-  if (command_line.HasSwitch(switches::kDisableV8IdleTasks))
-    WebRuntimeFeatures::EnableV8IdleTasks(false);
-  else
-    WebRuntimeFeatures::EnableV8IdleTasks(true);
-
-  if (command_line.HasSwitch(switches::kEnableUnsafeWebGPU))
-    WebRuntimeFeatures::EnableWebGPU(true);
-
-  if (command_line.HasSwitch(switches::kEnableWebVR))
-    WebRuntimeFeatures::EnableWebVR(true);
-
-  if (command_line.HasSwitch(switches::kDisablePresentationAPI))
-    WebRuntimeFeatures::EnablePresentationAPI(false);
-
-  if (command_line.HasSwitch(switches::kDisableRemotePlaybackAPI))
-    WebRuntimeFeatures::EnableRemotePlaybackAPI(false);
-
-  if (command_line.HasSwitch(switches::kDisableBackgroundTimerThrottling))
-    WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(false);
-
-  if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
-    WebRuntimeFeatures::EnableAccessibilityObjectModel(true);
-
-  if (command_line.HasSwitch(switches::kAllowSyncXHRInPageDismissal))
-    WebRuntimeFeatures::EnableAllowSyncXHRInPageDismissal(true);
 }
 
 // Sets blink runtime features controlled by FieldTrial parameter values.
@@ -595,6 +587,11 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
     WebRuntimeFeatures::EnableFeatureFromString("FileHandling", true);
   }
 
+  if (command_line.HasSwitch(switches::kDisableV8IdleTasks))
+    WebRuntimeFeatures::EnableV8IdleTasks(false);
+  else
+    WebRuntimeFeatures::EnableV8IdleTasks(true);
+
   // This is a hack to get the tests passing as they require
   // these blink features to be enabled while they are disabled
   // by base::Feature controls earlier in code.
@@ -629,6 +626,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
           switches::kDisableOriginTrialControlledBlinkFeatures)) {
     WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
   }
+
+  // TODO(rodneyding): add doc explaining ways to add new runtime features
+  // controls in the following functions.
 
   SetRuntimeFeaturesFromChromiumFeatures();
 

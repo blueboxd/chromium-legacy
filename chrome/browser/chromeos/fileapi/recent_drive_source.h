@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/drive/file_errors.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
 
@@ -55,7 +56,7 @@ class RecentDriveSource : public RecentSource {
 
   std::vector<RecentFile> files_;
 
-  drivefs::mojom::SearchQueryPtr search_query_;
+  mojo::Remote<drivefs::mojom::SearchQuery> search_query_;
 
   base::WeakPtrFactory<RecentDriveSource> weak_ptr_factory_{this};
 

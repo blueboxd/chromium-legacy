@@ -115,6 +115,12 @@ void FindBestMatches(
     std::vector<const autofill::PasswordForm*>* best_matches,
     const autofill::PasswordForm** preferred_match);
 
+// Returns a form with the given |username_value| from |forms|, or nullptr if
+// none exists. If multiple matches exist, returns the first one.
+const autofill::PasswordForm* FindFormByUsername(
+    const std::vector<const autofill::PasswordForm*>& forms,
+    const base::string16& username_value);
+
 // If the user submits a form, they may have used existing credentials, new
 // credentials, or modified existing credentials that should be updated.
 // The function returns a form from |credentials| that is the best candidate to

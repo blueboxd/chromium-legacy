@@ -84,7 +84,8 @@ interface TrayAction {
   // Sets the client to be used to handle action requests.
   // |lock_screen_note_state|: The current lock screen note action state
   //     associated with the client.
-  SetClient(TrayActionClient client, TrayActionState lock_screen_note_state);
+  SetClient(pending_remote<TrayActionClient> client,
+            TrayActionState lock_screen_note_state);
 
   // Updates action state for the lock screen note action. If called with no
   // client set, the state change will not take effect until a client is set.

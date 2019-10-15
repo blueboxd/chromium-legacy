@@ -45,6 +45,8 @@ class PrintJobHistoryServiceImpl
   void OnPrintJobSaved(const printing::proto::PrintJobInfo& print_job_info,
                        bool success);
 
+  void OnPrintJobsCleanedUp(PrintJobDatabase::GetPrintJobsCallback callback);
+
   std::unique_ptr<PrintJobDatabase> print_job_database_;
   CupsPrintJobManager* print_job_manager_;
   PrintJobHistoryCleaner print_job_history_cleaner_;

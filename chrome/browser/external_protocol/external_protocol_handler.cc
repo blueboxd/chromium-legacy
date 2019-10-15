@@ -172,8 +172,8 @@ void OnDefaultProtocolClientWorkerFinished(
                           web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back
     // into LaunchUrlWithoutSecurityCheck if the user selects a system handler.
-    ClickToCallUiController::ShowDialog(web_contents, escaped_url,
-                                        chrome_is_default_handler);
+    ClickToCallUiController::ShowDialog(web_contents, initiating_origin,
+                                        escaped_url, chrome_is_default_handler);
     return;
   }
 #endif

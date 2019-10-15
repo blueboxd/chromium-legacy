@@ -109,13 +109,14 @@ class FakeDnsConfigChangeManager
 
   // mojom::DnsConfigChangeManager implementation:
   void RequestNotifications(
-      network::mojom::DnsConfigChangeManagerClientPtr client) override;
+      mojo::PendingRemote<network::mojom::DnsConfigChangeManagerClient> client)
+      override;
 
   void SimulateDnsConfigChange();
 
  private:
   mojo::Binding<network::mojom::DnsConfigChangeManager> binding_;
-  network::mojom::DnsConfigChangeManagerClientPtr client_;
+  mojo::Remote<network::mojom::DnsConfigChangeManagerClient> client_;
 };
 
 }  // namespace chrome_browser_net

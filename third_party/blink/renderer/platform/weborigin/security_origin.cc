@@ -63,11 +63,12 @@ const String& EnsureNonNull(const String& string) {
 
 }  // namespace
 
-static URLSecurityOriginMap* g_url_origin_map = nullptr;
+static URLSecurityOriginMap* g_blob_url_null_origin_map = nullptr;
 
-static SecurityOrigin* GetOriginFromMap(const KURL& url) {
-  if (g_url_origin_map)
-    return g_url_origin_map->GetOrigin(url);
+static SecurityOrigin* GetNullOriginFromBlobURL(const KURL& blob_url) {
+  DCHECK(blob_url.ProtocolIs("blob"));
+  if (g_blob_url_null_origin_map)
+    return g_blob_url_null_origin_map->GetOrigin(blob_url);
   return nullptr;
 }
 
@@ -93,8 +94,10 @@ KURL SecurityOrigin::ExtractInnerURL(const KURL& url) {
   return KURL(url.GetPath());
 }
 
-void SecurityOrigin::SetMap(URLSecurityOriginMap* map) {
-  g_url_origin_map = map;
+void SecurityOrigin::SetBlobURLNullOriginMap(
+    URLSecurityOriginMap* blob_url_null_origin_map) {
+  DCHECK(!g_blob_url_null_origin_map);
+  g_blob_url_null_origin_map = blob_url_null_origin_map;
 }
 
 static bool ShouldTreatAsOpaqueOrigin(const KURL& url) {
@@ -202,8 +205,10 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other,
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateWithReferenceOrigin(
     const KURL& url,
     const SecurityOrigin* reference_origin) {
-  if (scoped_refptr<SecurityOrigin> origin = GetOriginFromMap(url))
-    return origin;
+  if (url.ProtocolIs("blob")) {
+    if (scoped_refptr<SecurityOrigin> origin = GetNullOriginFromBlobURL(url))
+      return origin;
+  }
 
   if (ShouldTreatAsOpaqueOrigin(url)) {
     if (!reference_origin)
@@ -318,16 +323,6 @@ bool SecurityOrigin::IsSecure(const KURL& url) {
   return false;
 }
 
-bool SecurityOrigin::SerializesAsNull() const {
-  if (IsOpaque())
-    return true;
-
-  if (IsLocal() && block_local_access_from_local_origin_)
-    return true;
-
-  return false;
-}
-
 base::Optional<base::UnguessableToken>
 SecurityOrigin::GetNonceForSerialization() const {
   // The call to token() forces initialization of the |nonce_if_opaque_| if
@@ -421,11 +416,15 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
   if (universal_access_)
     return true;
 
-  if (GetOriginFromMap(url) == this)
-    return true;
-
-  if (IsOpaque())
+  if (SerializesAsNull()) {
+    // Allow the request if the URL is blob and it has the same "null" origin
+    // with |this|.
+    // TODO(nhiroki): Probably we should check the equality by
+    // SecurityOrigin::IsSameSchemeHostPort().
+    if (url.ProtocolIs("blob") && GetNullOriginFromBlobURL(url) == this)
+      return true;
     return false;
+  }
 
   scoped_refptr<const SecurityOrigin> target_origin =
       SecurityOrigin::Create(url);
@@ -705,6 +704,16 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::GetOriginForAgentCluster(
       this, ConstructSameThreadCopy::kConstructSameThreadCopyBit));
   result->agent_cluster_id_ = agent_cluster_id;
   return result;
+}
+
+bool SecurityOrigin::SerializesAsNull() const {
+  if (IsOpaque())
+    return true;
+
+  if (IsLocal() && block_local_access_from_local_origin_)
+    return true;
+
+  return false;
 }
 
 }  // namespace blink

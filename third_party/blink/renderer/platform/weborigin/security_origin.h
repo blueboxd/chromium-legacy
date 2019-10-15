@@ -95,7 +95,9 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   static scoped_refptr<SecurityOrigin> CreateFromUrlOrigin(const url::Origin&);
   url::Origin ToUrlOrigin() const;
 
-  static void SetMap(URLSecurityOriginMap*);
+  // Sets the map to look up a SecurityOrigin instance serialized to "null" from
+  // a blob URL.
+  static void SetBlobURLNullOriginMap(URLSecurityOriginMap*);
 
   // Some URL schemes use nested URLs for their security context. For example,
   // filesystem URLs look like the following:
@@ -334,6 +336,9 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
     return agent_cluster_id_;
   }
 
+  // Returns true if this security origin is serialized to "null".
+  bool SerializesAsNull() const;
+
  private:
   constexpr static const uint16_t kInvalidPort = 0;
 
@@ -364,8 +369,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // FIXME: Rename this function to something more semantic.
   bool PassesFileCheck(const SecurityOrigin*) const;
   void BuildRawString(StringBuilder&) const;
-
-  bool SerializesAsNull() const;
 
   // Get the nonce associated with this origin, if it is unique. This should be
   // used only when trying to send an Origin across an IPC pipe.

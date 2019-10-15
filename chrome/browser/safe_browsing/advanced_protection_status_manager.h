@@ -96,7 +96,7 @@ class AdvancedProtectionStatusManager
 
   void OnAdvancedProtectionDisabled();
 
-  void OnAccessTokenFetchComplete(std::string account_id,
+  void OnAccessTokenFetchComplete(CoreAccountId account_id,
                                   GoogleServiceAuthError error,
                                   signin::AccessTokenInfo token_info);
 
@@ -115,14 +115,15 @@ class AdvancedProtectionStatusManager
   bool IsUnconsentedPrimaryAccount(const CoreAccountInfo& account_info);
 
   // Decodes |id_token| to get advanced protection status.
-  void OnGetIDToken(const std::string& account_id, const std::string& id_token);
+  void OnGetIDToken(const CoreAccountId& account_id,
+                    const std::string& id_token);
 
   // Only called in tests.
   void SetMinimumRefreshDelay(const base::TimeDelta& delay);
 
   // Gets the account ID of the unconsented primary account of |profile_|.
   // Returns an empty string if user is not signed in.
-  std::string GetUnconsentedPrimaryAccountId() const;
+  CoreAccountId GetUnconsentedPrimaryAccountId() const;
 
   // Only called in tests to set a customized minimum delay.
   AdvancedProtectionStatusManager(PrefService* pref_service,

@@ -89,9 +89,6 @@ uint32_t GetFieldTrialUint32Param(const char* trial_name,
 
 size_t GetOutstandingThrottledLimit(
     const DetachableResourceFetcherProperties& properties) {
-  if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
-    return ResourceLoadScheduler::kOutstandingUnlimited;
-
   static const size_t main_frame_limit = GetFieldTrialUint32Param(
       kResourceLoadThrottlingTrial, kOutstandingLimitForBackgroundMainFrameName,
       kOutstandingLimitForBackgroundMainFrameDefault);
@@ -106,10 +103,6 @@ int TakeWholeKilobytes(int64_t& bytes) {
   int kilobytes = base::saturated_cast<int>(bytes / 1024);
   bytes %= 1024;
   return kilobytes;
-}
-
-bool IsResourceLoadThrottlingEnabled() {
-  return RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled();
 }
 
 }  // namespace
@@ -377,9 +370,7 @@ bool ResourceLoadScheduler::IsClientDelayable(const ClientIdWithPriority& info,
       return throttleable;
     case scheduler::SchedulingLifecycleState::kHidden:
     case scheduler::SchedulingLifecycleState::kThrottled:
-      if (IsResourceLoadThrottlingEnabled())
-        return option == ThrottleOption::kThrottleable;
-      return throttleable;
+      return option == ThrottleOption::kThrottleable;
     case scheduler::SchedulingLifecycleState::kStopped:
       return stoppable;
   }

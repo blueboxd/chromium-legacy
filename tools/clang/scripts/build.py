@@ -28,7 +28,6 @@ from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
                     DownloadAndUnpack, EnsureDirExists, GetWinSDKDir,
                     ReadStampFile, RmTree, WriteStampFile)
 
-
 # Path constants. (All of these should be absolute paths.)
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
@@ -100,31 +99,31 @@ def CheckoutLLVM(commit, dir):
   modifications in dir will be lost."""
 
   print('Checking out LLVM monorepo %s into %s' % (commit, dir))
-  git_dir = os.path.join(dir, '.git')
-  fetch_cmd = ['git', '--git-dir', git_dir, 'fetch']
-  checkout_cmd = ['git', 'checkout', commit]
+
+  # Try updating the current repo if it exists and has no local diff.
+  if os.path.isdir(dir):
+    os.chdir(dir)
+    # git diff-index --quiet returns success when there is no diff.
+    if (RunCommand(['git', 'diff-index', '--quiet', 'HEAD'], fail_hard=False)
+        and RunCommand(['git', 'fetch'], fail_hard=False)
+        and RunCommand(['git', 'checkout', commit], fail_hard=False)):
+      return
+
+    # If we can't use the current repo, delete it.
+    os.chdir(CHROMIUM_DIR)  # Can't remove dir if we're in it.
+    print('Removing %s.' % dir)
+    RmTree(dir)
 
   # Do a somewhat shallow clone to save on bandwidth for GitHub and for us.
-  # The depth was whosen to be deep enough to contain the version we're
+  # The depth was chosen to be deep enough to contain the version we're
   # building, and shallow enough to save significantly on bandwidth compared to
   # a full clone.
   clone_cmd = ['git', 'clone', '--depth', '10000',
                'https://github.com/llvm/llvm-project/', dir]
 
-  # Try updating the current repo.
-  if RunCommand(fetch_cmd, fail_hard=False):
-    os.chdir(dir)
-    if RunCommand(checkout_cmd, fail_hard=False):
-      return
-
-  # Otherwise, do a fresh clone.
-  if os.path.isdir(dir):
-    os.chdir(CHROMIUM_DIR)  # Can't remove dir if we're in it.
-    print('Removing %s.' % dir)
-    RmTree(dir)
   if RunCommand(clone_cmd, fail_hard=False):
     os.chdir(dir)
-    if RunCommand(checkout_cmd, fail_hard=False):
+    if RunCommand(['git', 'checkout', commit], fail_hard=False):
       return
 
   print('CheckoutLLVM failed.')

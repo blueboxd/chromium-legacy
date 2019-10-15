@@ -167,6 +167,8 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   }
 
   bool SimulateFrame(double time_ms) {
+    animation->CommitAllUpdatesForTesting();
+
     last_frame_time = time_ms;
     const auto* paint_artifact_compositor =
         GetDocument().GetFrame()->View()->GetPaintArtifactCompositor();

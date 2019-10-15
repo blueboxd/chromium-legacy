@@ -153,6 +153,7 @@ class CORE_EXPORT NGLineBreaker {
                                        unsigned start,
                                        unsigned end);
 
+  void HandleTrailingSpaces(const NGInlineItem&, NGLineInfo*);
   void HandleTrailingSpaces(const NGInlineItem&,
                             const ShapeResult&,
                             NGLineInfo*);
@@ -176,7 +177,9 @@ class CORE_EXPORT NGLineBreaker {
   void HandleOpenTag(const NGInlineItem&, NGLineInfo*);
   void HandleCloseTag(const NGInlineItem&, NGLineInfo*);
 
+  bool HandleOverflowIfNeeded(NGLineInfo*);
   void HandleOverflow(NGLineInfo*);
+  void RewindOverflow(unsigned new_end, NGLineInfo*);
   void Rewind(unsigned new_end, NGLineInfo*);
   void ResetRewindLoopDetector() {
 #if DCHECK_IS_ON()
@@ -200,6 +203,10 @@ class CORE_EXPORT NGLineBreaker {
   LayoutUnit AvailableWidthToFit() const {
     return AvailableWidth().AddEpsilon();
   }
+  LayoutUnit RemainingAvailableWidth() const {
+    return AvailableWidthToFit() - position_;
+  }
+  bool CanFitOnLine() const { return position_ <= AvailableWidthToFit(); }
   LayoutUnit ComputeAvailableWidth() const;
 
   // Represents the current offset of the input.

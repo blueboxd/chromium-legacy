@@ -202,8 +202,9 @@ void CameraHalDispatcherImpl::GetJpegDecodeAccelerator(
 }
 
 void CameraHalDispatcherImpl::GetJpegEncodeAccelerator(
-    chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) {
-  jea_factory_.Run(std::move(jea_request));
+    mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+        jea_receiver) {
+  jea_factory_.Run(std::move(jea_receiver));
 }
 
 void CameraHalDispatcherImpl::OnTraceLogEnabled() {

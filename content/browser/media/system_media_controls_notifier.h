@@ -11,8 +11,8 @@
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace system_media_controls {
@@ -90,7 +90,7 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
   service_manager::Connector* connector_;
 
   // Tracks current media session state/metadata.
-  media_session::mojom::MediaControllerPtr media_controller_ptr_;
+  mojo::Remote<media_session::mojom::MediaController> media_controller_;
   media_session::mojom::MediaSessionInfoPtr session_info_ptr_;
 
   // Used to receive updates to the active media controller.

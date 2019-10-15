@@ -73,7 +73,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
   // Return the security style of the given |web_contents|, populating
   // |security_style_explanations| to explain why the SecurityStyle was chosen.
-  blink::WebSecurityStyle GetSecurityStyle(
+  blink::SecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations)
       override {

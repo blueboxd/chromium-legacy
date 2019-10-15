@@ -25,6 +25,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/avatar_menu.h"

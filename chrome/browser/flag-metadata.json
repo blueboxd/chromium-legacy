@@ -1616,11 +1616,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-resource-load-scheduler",
-    "owners": [ "toyoshim" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-resource-loading-hints",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -2262,7 +2257,7 @@
   {
     "name": "hardware-media-key-handling",
     "owners": [ "steimel", "media-dev" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 84
   },
   {
     "name": "harfbuzz-pdf-subsetter",
@@ -2908,6 +2903,12 @@
     "expiry_milestone": 85
   },
   {
+    "name": "privacy-settings-redesign",
+    "owners": ["harrisonsean", "msramek",
+      "chrome-privacy-core@google.com"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "proactive-tab-freeze",
     "owners": [ "fdoray" ],
     "expiry_milestone": 80
@@ -3414,7 +3415,7 @@
   {
     "name": "use-winrt-midi-api",
     "owners": [ "toyoshim" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 83
   },
   {
     "name": "user-activation-v2",

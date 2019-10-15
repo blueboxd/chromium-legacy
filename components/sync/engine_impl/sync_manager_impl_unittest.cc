@@ -923,7 +923,7 @@ class SyncEncryptionHandlerObserverMock
                void(PassphraseType,
                     base::Time));  // NOLINT
   MOCK_METHOD1(OnLocalSetPassphraseEncryption,
-               void(const SyncEncryptionHandler::NigoriState&));  // NOLINT
+               void(const sync_pb::NigoriSpecifics&));
 };
 
 }  // namespace

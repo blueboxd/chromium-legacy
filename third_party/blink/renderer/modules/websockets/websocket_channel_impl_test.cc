@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/core/dom/document.h"

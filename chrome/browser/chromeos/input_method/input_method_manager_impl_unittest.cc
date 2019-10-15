@@ -1465,7 +1465,7 @@ TEST_F(InputMethodManagerImplTest, SetLoginDefaultWithAllowedKeyboardLayouts) {
 TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
   TestImeController ime_controller;  // Mojo interface to ash.
   ImeControllerClient ime_controller_client(manager_.get());
-  ime_controller_client.InitForTesting(ime_controller.CreateInterfacePtr());
+  ime_controller_client.InitForTesting(ime_controller.CreateRemote());
 
   // Setup 3 IMEs.
   InitComponentExtension();

@@ -34,7 +34,7 @@ interface CameraHalDispatcher {
 
   // Get JpegEncodeAccelerator from dispatcher.
   [MinVersion=2] GetJpegEncodeAccelerator@3(
-    chromeos_camera.mojom.JpegEncodeAccelerator& jea_request);
+    pending_receiver<chromeos_camera.mojom.JpegEncodeAccelerator> jea_receiver);
 };
 
 // The CrOS camera HAL v3 Mojo server.

@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"

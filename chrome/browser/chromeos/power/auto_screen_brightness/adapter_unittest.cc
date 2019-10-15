@@ -302,7 +302,6 @@ class AdapterTest : public testing::Test {
       {"brightening_log_lux_threshold", "0.00001"},
       {"darkening_log_lux_threshold", "0.00001"},
       {"stabilization_threshold", "100000000"},
-      {"model_curve", "2"},
       {"user_adjustment_effect", "0"},
   };
 
@@ -655,10 +654,21 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingExistsContinue) {
   EXPECT_EQ(test_observer_.num_changes(), 0);
   CheckAvgLog({2, 4, 6, 8}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 
-  // Another ALS reading is in and triggers brightness change.
+  // Another ALS reading is in but brightness isn't changed because there's no
+  // new curve.
   ForwardTimeAndReportAls({5});
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  CheckAvgLog({2, 4, 6, 8}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Another model comes in.
+  fake_modeller_.ReportModelTrained(*personal_curve_);
+  EXPECT_EQ(test_observer_.num_changes(), 0);
+  CheckAvgLog({2, 4, 6, 8}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // Another ALS reading is in and brightness is changed this time.
+  ForwardTimeAndReportAls({15});
   EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckAvgLog({4, 6, 8, 2, 5},
+  CheckAvgLog({6, 8, 2, 5, 15},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Another user manual adjustment comes in.
@@ -669,7 +679,7 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingExistsContinue) {
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
   histogram_tester_.ExpectUniqueSample(
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 3);
-  CheckAvgLog({6, 8, 2, 5}, adapter_->GetCurrentAvgLogAlsForTesting().value());
+  CheckAvgLog({8, 2, 5, 15}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Same as |UserBrightnessChangeAlsReadingExists| except that the 1st user
@@ -729,13 +739,12 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingAbsentContinue) {
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
   EXPECT_FALSE(adapter_->GetCurrentAvgLogAlsForTesting());
 
-  // ALS readings come in, and will trigger a brightness change.
+  // ALS readings come in, and will not trigger a brightness change because
+  // there is no new model.
   ForwardTimeAndReportAls({100});
   EXPECT_EQ(test_observer_.num_changes(), 0);
   ForwardTimeAndReportAls({101, 102, 103, 104});
-  EXPECT_EQ(test_observer_.num_changes(), 1);
-  CheckAvgLog({100, 101, 102, 103, 104},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
+  EXPECT_EQ(test_observer_.num_changes(), 0);
 
   // Another user manual adjustment comes in.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -743,11 +752,9 @@ TEST_F(AdapterTest, UserBrightnessChangeAlsReadingAbsentContinue) {
   histogram_tester_.ExpectBucketCount(
       "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", true, 1);
   histogram_tester_.ExpectBucketCount(
-      "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 2);
+      "AutoScreenBrightness.MissingAlsWhenBrightnessChanged", false, 1);
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
-  CheckAvgLog({101, 102, 103, 104},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
 // Set |brightening_log_lux_threshold| to a very high value to effectively make
@@ -892,118 +899,10 @@ TEST_F(AdapterTest, AlsHorizon) {
   CheckAvgLog({2}, adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 
-TEST_F(AdapterTest, UsePersonalCurve) {
-  std::map<std::string, std::string> params = default_params_;
-  params["model_curve"] = "1";
-
-  // Init modeller with only a global curve.
+TEST_F(AdapterTest, UseLatestCurve) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       Model(global_curve_, base::nullopt, 0), GetTestModelConfig(), params);
-
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
-
-  // Sufficient ALS data has come in but no brightness change is triggered
-  // because there is no personal curve.
-  ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Personal curve is received, it does not lead to any immediate brightness
-  // change.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  fake_modeller_.ReportModelTrained(*personal_curve_);
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Another ALS comes in, which triggers a brightness change.
-  ReportAls(20);
-  EXPECT_EQ(test_observer_.num_changes(), 1);
-  EXPECT_EQ(test_observer_.GetCause(),
-            power_manager::BacklightBrightnessChange_Cause_MODEL);
-
-  CheckAvgLog({5, 6, 7, 8, 20},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-
-  // Brightness is changed according to the personal curve.
-  EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
-                   personal_curve_->Interpolate(
-                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
-}
-
-TEST_F(AdapterTest, UsePersonalCurveAfter3) {
-  std::map<std::string, std::string> params = default_params_;
-  params["model_curve"] = "1";
-  params["min_model_iteration_count"] = "3";
-
-  // Init modeller with only a global curve.
-  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       Model(global_curve_, base::nullopt, 0), GetTestModelConfig(), params);
-
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
-
-  // Sufficient ALS data has come in but no brightness change is triggered
-  // because there is no personal curve.
-  ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Personal curve is received, it does not lead to any immediate brightness
-  // change.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  fake_modeller_.ReportModelTrained(*personal_curve_);
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Another ALS comes in, which does not trigger a brightness change.
-  ReportAls(20);
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Another training is done.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  fake_modeller_.ReportModelTrained(*personal_curve_);
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Another ALS comes in, which does not trigger a brightness change.
-  ReportAls(30);
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Another training is done.
-  const base::Optional<MonotoneCubicSpline> personal_curve_2 =
-      MonotoneCubicSpline::CreateMonotoneCubicSpline({-4, 12, 20},
-                                                     {30, 60, 100});
-  DCHECK(personal_curve_2);
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  fake_modeller_.ReportModelTrained(*personal_curve_2);
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Another ALS comes in, which triggers a brightness change.
-  ReportAls(40);
-  EXPECT_EQ(test_observer_.num_changes(), 1);
-  EXPECT_EQ(test_observer_.GetCause(),
-            power_manager::BacklightBrightnessChange_Cause_MODEL);
-
-  CheckAvgLog({7, 8, 20, 30, 40},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-
-  // Brightness is changed according to the personal curve.
-  EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
-                   personal_curve_2->Interpolate(
-                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
-}
-
-TEST_F(AdapterTest, UseGlobalCurve) {
-  std::map<std::string, std::string> params = default_params_;
-  params["model_curve"] = "0";
-  // This param has no effect.
-  params["min_model_iteration_count"] = "3";
-
-  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       Model(global_curve_, personal_curve_, 0), GetTestModelConfig(), params);
+       Model(global_curve_, base::nullopt, 0), GetTestModelConfig(),
+       default_params_);
 
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
 
@@ -1025,9 +924,9 @@ TEST_F(AdapterTest, UseGlobalCurve) {
   EXPECT_EQ(test_observer_.GetCause(),
             power_manager::BacklightBrightnessChange_Cause_MODEL);
 
-  // Brightness is changed according to the global curve.
+  // Brightness is changed according to the new personal curve.
   EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
-                   global_curve_->Interpolate(
+                   personal_curve_->Interpolate(
                        adapter_->GetCurrentAvgLogAlsForTesting().value()));
 }
 
@@ -1084,45 +983,6 @@ TEST_F(AdapterTest, FeatureEnabledConfigDisabled) {
   EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
 }
 
-TEST_F(AdapterTest, FeatureEnabledConfigEnabled) {
-  // Both feature flag and model config are enabled.
-  std::map<std::string, std::string> params = default_params_;
-  params["model_curve"] = "1";
-
-  // Init modeller with only a global curve.
-  Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
-       Model(global_curve_, base::nullopt, 0), GetTestModelConfig(), params);
-
-  EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
-
-  // Sufficient ALS data has come in but no brightness change is triggered
-  // because there is no personal curve.
-  ForwardTimeAndReportAls({1, 2, 3, 4, 5, 6, 7, 8});
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Personal curve is received, it does not lead to any immediate brightness
-  // change.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  fake_modeller_.ReportModelTrained(*personal_curve_);
-  EXPECT_EQ(test_observer_.num_changes(), 0);
-  EXPECT_EQ(adapter_->GetCurrentAvgLogAlsForTesting(), base::nullopt);
-
-  // Another ALS comes in, which triggers a brightness change.
-  ReportAls(20);
-  EXPECT_EQ(test_observer_.num_changes(), 1);
-  EXPECT_EQ(test_observer_.GetCause(),
-            power_manager::BacklightBrightnessChange_Cause_MODEL);
-
-  CheckAvgLog({5, 6, 7, 8, 20},
-              adapter_->GetCurrentAvgLogAlsForTesting().value());
-
-  // Brightness is changed according to the personal curve.
-  EXPECT_DOUBLE_EQ(test_observer_.GetBrightnessPercent(),
-                   personal_curve_->Interpolate(
-                       adapter_->GetCurrentAvgLogAlsForTesting().value()));
-}
-
 TEST_F(AdapterTest, ValidParameters) {
   Init(AlsReader::AlsInitStatus::kSuccess, BrightnessMonitor::Status::kSuccess,
        Model(global_curve_, personal_curve_, 0), GetTestModelConfig(),
@@ -1166,6 +1026,7 @@ TEST_F(AdapterTest, UserAdjustmentEffectDisable) {
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_FALSE(adapter_->IsAppliedForTesting());
 
+  fake_modeller_.ReportModelTrained(*personal_curve_);
   ForwardTimeAndReportAls({6, 7, 8, 9, 10, 11});
   EXPECT_EQ(test_observer_.num_changes(), 1);
   CheckAvgLog({1, 2, 3, 4, 5},
@@ -1213,20 +1074,29 @@ TEST_F(AdapterTest, UserAdjustmentEffectPause) {
   CheckAvgLog({1, 2, 3, 4, 5},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
 
-  // // SuspendDone is received, which reenables adapter.
+  // SuspendDone is received, which re-enables adapter.
   ReportSuspendDone();
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
 
-  // Another ALS results in a brightness change.
+  // Another ALS comes in but brightness isn't changed because there's no new
+  // curve.
   ForwardTimeAndReportAls({109});
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({1, 2, 3, 4, 5},
+              adapter_->GetCurrentAvgLogAlsForTesting().value());
+
+  // A new model is received.
+  fake_modeller_.ReportModelTrained(*personal_curve_);
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  ForwardTimeAndReportAls({110});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckAvgLog({105, 106, 107, 108, 109},
+  CheckAvgLog({106, 107, 108, 109, 110},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // Another user brightness change.
   ReportUserBrightnessChangeRequest(40.0, 50.0);
-  CheckAvgLog({105, 106, 107, 108, 109},
+  CheckAvgLog({106, 107, 108, 109, 110},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_FALSE(adapter_->IsAppliedForTesting());
@@ -1234,7 +1104,7 @@ TEST_F(AdapterTest, UserAdjustmentEffectPause) {
   // New ALS data will not trigger brightness update.
   ForwardTimeAndReportAls({200});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckAvgLog({105, 106, 107, 108, 109},
+  CheckAvgLog({106, 107, 108, 109, 110},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   // SuspendDone is received, which reenables adapter.
@@ -1242,10 +1112,13 @@ TEST_F(AdapterTest, UserAdjustmentEffectPause) {
   EXPECT_EQ(adapter_->GetStatusForTesting(), Adapter::Status::kSuccess);
   EXPECT_TRUE(adapter_->IsAppliedForTesting());
 
+  // A new model is in.
+  fake_modeller_.ReportModelTrained(*personal_curve_);
+
   // Als readings come in but not sufficient time since user changed brightness.
   ForwardTimeAndReportAls({201, 202, 203});
   EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckAvgLog({105, 106, 107, 108, 109},
+  CheckAvgLog({106, 107, 108, 109, 110},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({204});
@@ -1288,8 +1161,8 @@ TEST_F(AdapterTest, UserAdjustmentEffectContinue) {
               adapter_->GetCurrentAvgLogAlsForTesting().value());
 
   ForwardTimeAndReportAls({104});
-  EXPECT_EQ(test_observer_.num_changes(), 2);
-  CheckAvgLog({100, 101, 102, 103, 104},
+  EXPECT_EQ(test_observer_.num_changes(), 1);
+  CheckAvgLog({2, 3, 4, 5, 10},
               adapter_->GetCurrentAvgLogAlsForTesting().value());
 }
 

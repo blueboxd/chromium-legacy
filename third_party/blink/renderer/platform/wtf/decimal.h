@@ -39,10 +39,6 @@
 
 namespace blink {
 
-namespace decimal_private {
-class SpecialValueHandler;
-}
-
 // This class represents decimal base floating point number.
 //
 // FIXME: Once all C++ compiler support decimal type, we should replace this
@@ -63,7 +59,6 @@ class WTF_EXPORT Decimal {
     DISALLOW_NEW();
     // For accessing FormatClass.
     friend class Decimal;
-    friend class decimal_private::SpecialValueHandler;
 
    public:
     EncodedData(Sign, int exponent, uint64_t coefficient);

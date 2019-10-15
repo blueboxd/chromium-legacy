@@ -136,7 +136,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
 
   void SetUpTrayActionClientAndLockSession(mojom::TrayActionState state) {
     Shell::Get()->tray_action()->SetClient(
-        tray_action_client_.CreateInterfacePtrAndBind(), state);
+        tray_action_client_.CreateRemoteAndBind(), state);
     GetSessionControllerClient()->SetSessionState(
         session_manager::SessionState::LOCKED);
   }

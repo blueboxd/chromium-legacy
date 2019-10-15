@@ -50,7 +50,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   // Starts downloading profile information if the necessary authorization token
   // is ready. If not, subscribes to token service and starts fetching if the
   // token is available. Should not be called more than once.
-  virtual void StartForAccount(const std::string& account_id);
+  virtual void StartForAccount(const CoreAccountId& account_id);
 
   // On successful download this returns the hosted domain of the user.
   virtual base::string16 GetProfileHostedDomain() const;
@@ -116,7 +116,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   SEQUENCE_CHECKER(sequence_checker_);
 
   ProfileDownloaderDelegate* delegate_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   std::string auth_token_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
   std::unique_ptr<signin::AccessTokenFetcher> oauth2_access_token_fetcher_;

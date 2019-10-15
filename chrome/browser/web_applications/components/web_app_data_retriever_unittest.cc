@@ -323,12 +323,11 @@ TEST_F(WebAppDataRetrieverTest, GetIcons_WebContentsDestroyed) {
 
   const std::vector<GURL> icon_urls;
   bool skip_page_favicons = true;
-  auto install_source = WebappInstallSource::MENU_BROWSER_TAB;
 
   base::RunLoop run_loop;
   WebAppDataRetriever retriever;
   retriever.GetIcons(web_contents(), icon_urls, skip_page_favicons,
-                     install_source,
+                     WebAppIconDownloader::Histogram::kForCreate,
                      base::BindLambdaForTesting([&](IconsMap icons_map) {
                        EXPECT_TRUE(icons_map.empty());
                        run_loop.Quit();

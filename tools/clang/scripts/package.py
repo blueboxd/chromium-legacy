@@ -178,15 +178,6 @@ def main():
     platform = 'Linux_x64'
 
   with open('buildlog.txt', 'w') as log:
-    if os.path.exists(LLVM_DIR):
-      Tee('Diff in llvm:\n', log)
-      cwd = os.getcwd()
-      os.chdir(LLVM_DIR)
-      TeeCmd(['git', 'status'], log, fail_hard=False)
-      TeeCmd(['git', 'diff'], log, fail_hard=False)
-      os.chdir(cwd)
-    else:
-      Tee('No previous llvm checkout.\n', log)
     Tee('Starting build\n', log)
 
     # Do a clobber build.

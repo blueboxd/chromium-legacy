@@ -145,14 +145,6 @@ bool FormContainsFieldWithName(const FormData& form,
   return false;
 }
 
-std::map<base::string16, const PasswordForm*> ByUsername(
-    const std::vector<const PasswordForm*> forms) {
-  std::map<base::string16, const PasswordForm*> by_username;
-  for (const auto* form : forms)
-    by_username[form->username_value] = form;
-  return by_username;
-}
-
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -324,8 +316,7 @@ void PasswordFormManager::Save() {
     SanitizePossibleUsernames(&pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
     votes_uploader_.SendVotesOnSave(observed_form_, *parsed_submitted_form_,
-                                    ByUsername(GetBestMatches()),
-                                    &pending_credentials_);
+                                    GetBestMatches(), &pending_credentials_);
     SavePendingToStore(false /*update*/);
   } else {
     ProcessUpdate();
@@ -904,7 +895,7 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   // Calculate the user's action based on existing matches and the submitted
   // form.
-  metrics_recorder_->CalculateUserAction(ByUsername(GetBestMatches()),
+  metrics_recorder_->CalculateUserAction(GetBestMatches(),
                                          *parsed_submitted_form_);
 
   // This function might be called multiple times so set variables that are
@@ -1055,9 +1046,8 @@ void PasswordFormManager::ProcessUpdate() {
   }
 
   if (pending_credentials_.times_used == 1) {
-    votes_uploader_.UploadFirstLoginVotes(ByUsername(GetBestMatches()),
-                                          pending_credentials_,
-                                          *parsed_submitted_form_);
+    votes_uploader_.UploadFirstLoginVotes(
+        GetBestMatches(), pending_credentials_, *parsed_submitted_form_);
   }
 }
 

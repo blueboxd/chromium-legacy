@@ -34,4 +34,11 @@
 
 @end
 
+@interface QRScannerViewController (TestingAdditions)
+
+// Simulates VoiceOver being enabled for this Scanner.
+- (void)overrideVoiceOverCheck:(BOOL)overrideVoiceOverCheck;
+
+@end
+
 #endif  // IOS_CHROME_BROWSER_UI_QR_SCANNER_QR_SCANNER_VIEW_CONTROLLER_H_

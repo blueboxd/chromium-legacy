@@ -2480,6 +2480,22 @@ bool ShellUtil::DeleteFileAssociations(const base::string16& prog_id) {
 }
 
 // static
+base::FilePath ShellUtil::GetApplicationPathForProgId(
+    const base::string16& prog_id) {
+  base::string16 prog_id_path(kRegClasses);
+  prog_id_path.push_back(base::FilePath::kSeparators[0]);
+  prog_id_path.append(prog_id);
+  prog_id_path.append(kRegShellOpen);
+  base::string16 command_line;
+  RegKey command_line_key(HKEY_CURRENT_USER, prog_id_path.c_str(),
+                          KEY_QUERY_VALUE);
+  if (command_line_key.ReadValue(L"", &command_line) == ERROR_SUCCESS)
+    return base::CommandLine::FromString(command_line).GetProgram();
+
+  return base::FilePath();
+}
+
+// static
 bool ShellUtil::AddRegistryEntries(
     HKEY root,
     const std::vector<std::unique_ptr<RegistryEntry>>& entries) {

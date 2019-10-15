@@ -18,7 +18,6 @@ from __future__ import print_function
 
 import argparse
 import codecs
-import cgi
 import json
 import os
 import shutil
@@ -26,6 +25,11 @@ import re
 import subprocess
 import sys
 import tempfile
+
+if sys.version_info.major == 2:
+  import cgi as html
+else:
+  import html
 
 # TODO(agrieve): Move build_utils.WriteDepFile into a non-android directory.
 _REPOSITORY_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -612,7 +616,7 @@ def GenerateCredits(
         dictionary of expansions."""
         for key, val in env.items():
             if escape:
-                val = cgi.escape(val)
+                val = html.escape(val)
             template = template.replace('{{%s}}' % key, val)
         return template
 
@@ -620,7 +624,7 @@ def GenerateCredits(
         env = {
             'name': metadata['Name'],
             'url': metadata['URL'],
-            'license': open(metadata['License File'], 'rb').read(),
+            'license': open(metadata['License File']).read(),
         }
         return {
             'name': metadata['Name'],

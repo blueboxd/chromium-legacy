@@ -134,6 +134,25 @@ $ gn gen out/Default
 This section contains some things you can change to speed up your builds,
 sorted so that the things that make the biggest difference are first.
 
+#### Use Goma
+
+Google developed the distributed compiler called
+[Goma](https://chromium.googlesource.com/infra/goma/client).
+Googlers and contributors who have
+[tryjob access](https://www.chromium.org/getting-involved/become-a-committer#TOC-Try-job-access)
+could use `Goma`.
+
+If you are not a Googler and would like to use `Goma`
+[sign up](https://docs.google.com/forms/d/1NKHcyqYqw3c4jftrLPwvyiPlolRm4Hf6ObrB83wHXy8/viewform).
+
+Once you've allowed to use `Goma` service and installed the client,
+[set the following GN args](https://www.chromium.org/developers/gn-build-configuration#TOC-Goma):
+
+```
+use_goma=true
+goma_dir=/path/to/goma-client
+```
+
 #### Jumbo/Unity builds
 
 Jumbo builds merge many translation units ("source files") and compile them
@@ -168,7 +187,7 @@ the GN arg `blink_symbol_level=0`.
 
 [Icecc](https://github.com/icecc/icecream) is the distributed compiler with a
 central scheduler to share build load. Currently, many external contributors use
-it. e.g. Intel, Opera, Samsung (Googlers use an internal system called Goma).
+it. e.g. Intel, Opera, Samsung (this is not useful if you're using Goma).
 
 In order to use `icecc`, set the following GN args:
 
@@ -188,7 +207,7 @@ See [related bug](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=808181).
 #### ccache
 
 You can use [ccache](https://ccache.samba.org) to speed up local builds (again,
-this is not useful if you're a Googler using Goma).
+this is not useful if you're using Goma).
 
 Increase your ccache hit rate by setting `CCACHE_BASEDIR` to a parent directory
 that the working directories all have in common (e.g.,

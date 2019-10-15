@@ -172,12 +172,21 @@ id<GREYMatcher> KeyboardWindow(UIView* layout) {
 
 // Returns YES if the keyboard is docked at the bottom. NO otherwise.
 BOOL IsKeyboardDockedForLayout(UIView* layout) {
-  CGRect keyboardFrameInWindow = [layout.window convertRect:layout.bounds
-                                                   fromView:layout];
   CGRect windowBounds = layout.window.bounds;
-  CGFloat maxY = CGRectGetMaxY(keyboardFrameInWindow);
+  UIView* viewToCompare = layout;
+  while (viewToCompare &&
+         viewToCompare.bounds.size.height < windowBounds.size.height) {
+    CGRect keyboardFrameInWindow =
+        [viewToCompare.window convertRect:viewToCompare.bounds
+                                 fromView:viewToCompare];
 
-  return [@(maxY) isEqualToNumber:@(windowBounds.size.height)];
+    CGFloat maxY = CGRectGetMaxY(keyboardFrameInWindow);
+    if ([@(maxY) isEqualToNumber:@(windowBounds.size.height)]) {
+      return YES;
+    }
+    viewToCompare = viewToCompare.superview;
+  }
+  return NO;
 }
 
 // Undocks and split the keyboard by swiping it up. Does nothing if already

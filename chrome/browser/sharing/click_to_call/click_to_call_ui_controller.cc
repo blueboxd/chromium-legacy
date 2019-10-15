@@ -32,13 +32,15 @@ ClickToCallUiController* ClickToCallUiController::GetOrCreateFromWebContents(
 }
 
 // static
-void ClickToCallUiController::ShowDialog(content::WebContents* web_contents,
-                                         const GURL& url,
-                                         bool hide_default_handler) {
+void ClickToCallUiController::ShowDialog(
+    content::WebContents* web_contents,
+    const base::Optional<url::Origin>& initiating_origin,
+    const GURL& url,
+    bool hide_default_handler) {
   auto* controller = GetOrCreateFromWebContents(web_contents);
   controller->phone_url_ = url;
   controller->hide_default_handler_ = hide_default_handler;
-  controller->UpdateAndShowDialog();
+  controller->UpdateAndShowDialog(initiating_origin);
 }
 
 ClickToCallUiController::ClickToCallUiController(
@@ -179,6 +181,8 @@ SharingDialogData ClickToCallUiController::CreateDialogData(
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES;
   data.help_link_text_id =
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK;
+  data.origin_text_id =
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN;
 
   return data;
 }

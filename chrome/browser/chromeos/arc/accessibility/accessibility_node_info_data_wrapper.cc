@@ -324,7 +324,10 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     // TODO (sarakato): Exposing all possible labels for a node, may result in
     // too much being spoken. For ARC ++, this may result in divergent behaviour
     // from Talkback.
-    out_data->SetName(base::JoinString(names, " "));
+    if (names.size() == 1)
+      out_data->SetName(names[0]);
+    else if (names.size() > 1)
+      out_data->SetName(base::JoinString(names, " "));
   } else if (GetProperty(AXBooleanProperty::CLICKABLE)) {
     // Compute the name by joining all nodes with names.
     std::vector<std::string> names;

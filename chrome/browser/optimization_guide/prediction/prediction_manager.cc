@@ -18,6 +18,7 @@
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 
 namespace optimization_guide {
 

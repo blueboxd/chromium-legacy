@@ -40,13 +40,13 @@
 
 namespace blink {
 
-namespace decimal_private {
+namespace {
 
-static int const kExponentMax = 1023;
-static int const kExponentMin = -1023;
-static int const kPrecision = 18;
+constexpr int kExponentMax = 1023;
+constexpr int kExponentMin = -1023;
+constexpr int kPrecision = 18;
 
-static const uint64_t kMaxCoefficient =
+constexpr uint64_t kMaxCoefficient =
     UINT64_C(0xDE0B6B3A763FFFF);  // 999999999999999999 == 18 9's
 
 // This class handles Decimal special values.
@@ -75,54 +75,38 @@ class SpecialValueHandler {
 
   const Decimal& lhs_;
   const Decimal& rhs_;
-  Result result_;
+  Result result_ = kResultIsUnknown;
 
   DISALLOW_COPY_AND_ASSIGN(SpecialValueHandler);
 };
 
 SpecialValueHandler::SpecialValueHandler(const Decimal& lhs, const Decimal& rhs)
-    : lhs_(lhs), rhs_(rhs), result_(kResultIsUnknown) {}
+    : lhs_(lhs), rhs_(rhs) {}
 
 SpecialValueHandler::HandleResult SpecialValueHandler::Handle() {
   if (lhs_.IsFinite() && rhs_.IsFinite())
     return kBothFinite;
 
-  const Decimal::EncodedData::FormatClass lhs_class =
-      lhs_.Value().GetFormatClass();
-  const Decimal::EncodedData::FormatClass rhs_class =
-      rhs_.Value().GetFormatClass();
-  if (lhs_class == Decimal::EncodedData::kClassNaN) {
+  if (lhs_.IsNaN()) {
     result_ = kResultIsLHS;
     return kEitherNaN;
   }
 
-  if (rhs_class == Decimal::EncodedData::kClassNaN) {
+  if (rhs_.IsNaN()) {
     result_ = kResultIsRHS;
     return kEitherNaN;
   }
 
-  if (lhs_class == Decimal::EncodedData::kClassInfinity)
-    return rhs_class == Decimal::EncodedData::kClassInfinity ? kBothInfinity
-                                                             : kLHSIsInfinity;
+  if (lhs_.IsInfinity())
+    return rhs_.IsInfinity() ? kBothInfinity : kLHSIsInfinity;
 
-  if (rhs_class == Decimal::EncodedData::kClassInfinity)
-    return kRHSIsInfinity;
-
-  NOTREACHED();
-  return kBothFinite;
+  DCHECK(rhs_.IsInfinity());
+  return kRHSIsInfinity;
 }
 
 Decimal SpecialValueHandler::Value() const {
-  switch (result_) {
-    case kResultIsLHS:
-      return lhs_;
-    case kResultIsRHS:
-      return rhs_;
-    case kResultIsUnknown:
-    default:
-      NOTREACHED();
-      return lhs_;
-  }
+  DCHECK(result_ == kResultIsLHS || result_ == kResultIsRHS);
+  return (result_ == kResultIsLHS) ? lhs_ : rhs_;
 }
 
 // This class is used for 128 bit unsigned integer arithmetic.
@@ -232,9 +216,7 @@ static uint64_t ScaleUp(uint64_t x, int n) {
   }
 }
 
-}  // namespace decimal_private
-
-using namespace decimal_private;
+}  // namespace
 
 Decimal::EncodedData::EncodedData(Sign sign, FormatClass format_class)
     : coefficient_(0), exponent_(0), format_class_(format_class), sign_(sign) {}

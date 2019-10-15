@@ -13,6 +13,20 @@ namespace chromeos {
 namespace power {
 namespace auto_screen_brightness {
 
+struct TrainingResult {
+  TrainingResult();
+  TrainingResult(const base::Optional<MonotoneCubicSpline>& new_curve,
+                 double error);
+  TrainingResult(const TrainingResult& result);
+  ~TrainingResult();
+  // |new_curve| will be nullopt if trainer's curve stays unchanged after
+  // training.
+  base::Optional<MonotoneCubicSpline> new_curve;
+  // Evaluation error of the latest curve (possibly updated) using the training
+  // data points.
+  double error;
+};
+
 // GaussianTrainer updates an existing brightness curve (a mapping from
 // ambient light to screen brightness) using training data points that represent
 // how user changes brightness following an ambient value change. The update
@@ -71,8 +85,7 @@ class GaussianTrainer : public Trainer {
                         const MonotoneCubicSpline& current_curve) override;
   MonotoneCubicSpline GetGlobalCurve() const override;
   MonotoneCubicSpline GetCurrentCurve() const override;
-  MonotoneCubicSpline Train(
-      const std::vector<TrainingDataPoint>& data) override;
+  TrainingResult Train(const std::vector<TrainingDataPoint>& data) override;
 
  private:
   // Returns whether initial personal curve (passed in by |SetInitialCurves|) is

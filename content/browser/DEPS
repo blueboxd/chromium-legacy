@@ -111,7 +111,6 @@ include_rules = [
   "+third_party/blink/public/platform/web_screen_info.h",
   "+third_party/blink/public/platform/web_scroll_into_view_params.h",
   "+third_party/blink/public/platform/web_scroll_types.h",
-  "+third_party/blink/public/platform/web_security_style.h",
   "+third_party/blink/public/platform/web_sudden_termination_disabler_type.h",
   "+third_party/blink/public/platform/web_text_autosizer_page_info.h",
   "+third_party/blink/public/platform/web_touch_event.h",

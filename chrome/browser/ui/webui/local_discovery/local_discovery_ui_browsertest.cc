@@ -43,6 +43,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/account_manager/account_manager.h"

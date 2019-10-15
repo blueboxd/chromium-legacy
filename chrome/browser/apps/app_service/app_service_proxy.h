@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
 
 #include <memory>
+#include <set>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
@@ -75,6 +78,12 @@ class AppServiceProxy : public KeyedService,
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
   void Uninstall(const std::string& app_id);
+  void OnUninstallDialogClosed(apps::mojom::AppType app_type,
+                               const std::string& app_id,
+                               bool uninstall,
+                               bool clear_site_data,
+                               bool report_abuse,
+                               UninstallDialog* uninstall_dialog);
   void OpenNativeSettings(const std::string& app_id);
 
   void FlushMojoCallsForTesting();
@@ -186,6 +195,10 @@ class AppServiceProxy : public KeyedService,
 #endif  // OS_CHROMEOS
 
   Profile* profile_;
+
+  using UninstallDialogs = std::set<std::unique_ptr<apps::UninstallDialog>,
+                                    base::UniquePtrComparator>;
+  UninstallDialogs uninstall_dialogs_;
 
   base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};
 

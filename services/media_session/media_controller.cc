@@ -32,7 +32,7 @@ class MediaController::ImageObserverHolder {
         observer_(std::move(observer)) {
     // Set a connection error handler so that we will remove observers that have
     // had an error / been closed.
-    observer_.set_connection_error_handler(base::BindOnce(
+    observer_.set_disconnect_handler(base::BindOnce(
         &MediaController::CleanupImageObservers, base::Unretained(owner_)));
 
     // Flush the observer with the latest state.
@@ -41,7 +41,7 @@ class MediaController::ImageObserverHolder {
 
   ~ImageObserverHolder() = default;
 
-  bool is_valid() const { return !observer_.encountered_error(); }
+  bool is_valid() const { return observer_.is_connected(); }
 
   mojom::MediaSessionImageType type() const { return type_; }
 
@@ -81,7 +81,7 @@ class MediaController::ImageObserverHolder {
 
   int const desired_size_px_;
 
-  mojom::MediaControllerImageObserverPtr observer_;
+  mojo::Remote<mojom::MediaControllerImageObserver> observer_;
 
   base::WeakPtrFactory<ImageObserverHolder> weak_ptr_factory_{this};
 

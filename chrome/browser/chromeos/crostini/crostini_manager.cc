@@ -21,6 +21,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"

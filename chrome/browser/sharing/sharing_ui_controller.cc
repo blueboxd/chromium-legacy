@@ -124,10 +124,12 @@ void SharingUiController::ClearLastDialog() {
   CloseDialog();
 }
 
-void SharingUiController::UpdateAndShowDialog() {
+void SharingUiController::UpdateAndShowDialog(
+    const base::Optional<url::Origin>& initiating_origin) {
   ClearLastDialog();
   DoUpdateApps(base::BindOnce(&SharingUiController::OnAppsReceived,
-                              weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
+                              weak_ptr_factory_.GetWeakPtr(), last_dialog_id_,
+                              initiating_origin));
 }
 
 std::vector<std::unique_ptr<syncer::DeviceInfo>>
@@ -230,8 +232,10 @@ void SharingUiController::OnMessageSentToDevice(
   UpdateIcon();
 }
 
-void SharingUiController::OnAppsReceived(int dialog_id,
-                                         std::vector<SharingApp> apps) {
+void SharingUiController::OnAppsReceived(
+    int dialog_id,
+    const base::Optional<url::Origin>& initiating_origin,
+    std::vector<SharingApp> apps) {
   if (dialog_id != last_dialog_id_)
     return;
 
@@ -241,6 +245,7 @@ void SharingUiController::OnAppsReceived(int dialog_id,
       CreateDialogData(GetSharingDialogType(!devices.empty(), !apps.empty()));
   dialog_data.devices = std::move(devices);
   dialog_data.apps = std::move(apps);
+  dialog_data.initiating_origin = initiating_origin;
 
   ShowNewDialog(std::move(dialog_data));
 }

@@ -35,8 +35,6 @@
 
 namespace blink {
 
-using namespace vector_math;
-
 void AudioChannel::ResizeSmaller(size_t new_length) {
   DCHECK_LE(new_length, length_);
   length_ = new_length;
@@ -46,7 +44,7 @@ void AudioChannel::Scale(float scale) {
   if (IsSilent())
     return;
 
-  Vsmul(Data(), 1, &scale, MutableData(), 1, length());
+  vector_math::Vsmul(Data(), 1, &scale, MutableData(), 1, length());
 }
 
 void AudioChannel::CopyFrom(const AudioChannel* source_channel) {
@@ -98,10 +96,12 @@ void AudioChannel::SumFrom(const AudioChannel* source_channel) {
   if (source_channel->IsSilent())
     return;
 
-  if (IsSilent())
+  if (IsSilent()) {
     CopyFrom(source_channel);
-  else
-    Vadd(Data(), 1, source_channel->Data(), 1, MutableData(), 1, length());
+  } else {
+    vector_math::Vadd(Data(), 1, source_channel->Data(), 1, MutableData(), 1,
+                      length());
+  }
 }
 
 float AudioChannel::MaxAbsValue() const {
@@ -110,7 +110,7 @@ float AudioChannel::MaxAbsValue() const {
 
   float max = 0;
 
-  Vmaxmgv(Data(), 1, &max, length());
+  vector_math::Vmaxmgv(Data(), 1, &max, length());
 
   return max;
 }

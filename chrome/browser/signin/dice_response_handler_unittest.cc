@@ -203,7 +203,7 @@ class TestProcessDiceHeaderDelegate : public ProcessDiceHeaderDelegate {
   ~TestProcessDiceHeaderDelegate() override = default;
 
   // Called after the refresh token was fetched and added in the token service.
-  void EnableSync(const std::string& account_id) override {
+  void EnableSync(const CoreAccountId& account_id) override {
     owner_->EnableSync(account_id);
   }
 

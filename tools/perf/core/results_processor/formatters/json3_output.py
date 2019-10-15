@@ -8,12 +8,12 @@ Format specification:
 https://chromium.googlesource.com/chromium/src/+/master/docs/testing/json_test_results_format.md
 """
 
-import calendar
 import collections
-import datetime
 import json
 import os
 import urllib
+
+from core.results_processor import util
 
 
 OUTPUT_FILENAME = 'test-results.json'
@@ -79,7 +79,7 @@ def Convert(in_results, base_dir):
 
   benchmark_run = in_results['benchmarkRun']
   results.update(
-      seconds_since_epoch=_TimestampToEpoch(benchmark_run['startTime']),
+      seconds_since_epoch=util.IsoTimestampToEpoch(benchmark_run['startTime']),
       interrupted=benchmark_run['interrupted'],
       num_failures_by_type=dict(status_counter),
       path_delimiter='/',
@@ -120,12 +120,6 @@ def _ArtifactPath(artifact, base_dir):
     # '/'-delimited on all platforms.
     path = os.path.relpath(artifact['filePath'], base_dir)
     return path.replace(os.sep, '/')
-
-
-def _TimestampToEpoch(timestamp):
-  """Convert UTC timestamp to seconds since epoch with microsecond precision."""
-  dt = datetime.datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%fZ')
-  return calendar.timegm(dt.timetuple()) + dt.microsecond / 1e6
 
 
 def _MergeDict(target, values):

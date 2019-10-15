@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import calendar
+import datetime
 import logging
 import multiprocessing
 from multiprocessing.dummy import Pool as ThreadPool
@@ -48,3 +50,12 @@ def ApplyInParallel(function, work_list):
     pool.join()
   finally:
     pool.terminate()
+
+
+def IsoTimestampToEpoch(timestamp):
+  """Convert ISO formatted time to seconds since epoch."""
+  try:
+    dt = datetime.datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%fZ')
+  except ValueError:
+    dt = datetime.datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')
+  return calendar.timegm(dt.timetuple()) + dt.microsecond / 1e6

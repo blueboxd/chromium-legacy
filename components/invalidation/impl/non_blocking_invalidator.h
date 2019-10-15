@@ -64,7 +64,7 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
                            const ObjectIdSet& ids) override;
   void UnregisterHandler(InvalidationHandler* handler) override;
   InvalidatorState GetInvalidatorState() const override;
-  void UpdateCredentials(const std::string& email,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& token) override;
   void RequestDetailedStatus(base::Callback<void(const base::DictionaryValue&)>
                                  callback) const override;

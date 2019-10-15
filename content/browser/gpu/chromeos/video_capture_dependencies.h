@@ -18,7 +18,8 @@ class CONTENT_EXPORT VideoCaptureDependencies {
       mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
           accelerator);
   static void CreateJpegEncodeAccelerator(
-      chromeos_camera::mojom::JpegEncodeAcceleratorRequest accelerator);
+      mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
+          accelerator);
 };
 
 }  // namespace content

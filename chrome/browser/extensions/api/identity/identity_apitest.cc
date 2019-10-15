@@ -485,7 +485,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
 
  protected:
   // Returns the account ID of the created account.
-  std::string SignIn(const std::string& email) {
+  CoreAccountId SignIn(const std::string& email) {
     auto account_info = identity_test_env()->MakePrimaryAccountAvailable(email);
     return account_info.account_id;
   }
@@ -606,7 +606,7 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoPrimaryAccount) {
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
                        PrimaryAccountHasNoRefreshToken) {
-  std::string primary_account_id = SignIn("primary@example.com");
+  CoreAccountId primary_account_id = SignIn("primary@example.com");
   identity_test_env()->RemoveRefreshTokenForAccount(primary_account_id);
   EXPECT_TRUE(ExpectGetAccounts({}));
 }
@@ -776,7 +776,7 @@ class GetAuthTokenFunctionTest
     return ext;
   }
 
-  std::string GetPrimaryAccountId() {
+  CoreAccountId GetPrimaryAccountId() {
     return identity_test_env()->identity_manager()->GetPrimaryAccountId();
   }
 
@@ -785,13 +785,14 @@ class GetAuthTokenFunctionTest
     SetCachedTokenForAccount(GetPrimaryAccountId(), token_data);
   }
 
-  void SetCachedTokenForAccount(const std::string account_id,
+  void SetCachedTokenForAccount(const CoreAccountId account_id,
                                 const IdentityTokenCacheValue& token_data) {
     ExtensionTokenKey key(extension_id_, account_id, oauth_scopes_);
     id_api()->SetCachedToken(key, token_data);
   }
 
-  const IdentityTokenCacheValue& GetCachedToken(const std::string& account_id) {
+  const IdentityTokenCacheValue& GetCachedToken(
+      const CoreAccountId& account_id) {
     ExtensionTokenKey key(
         extension_id_, account_id.empty() ? GetPrimaryAccountId() : account_id,
         oauth_scopes_);
@@ -933,7 +934,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->scope_ui_shown());
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_ADVICE,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1019,7 +1020,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoOptionsSuccess) {
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveSuccess) {
@@ -1036,7 +1037,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveSuccess) {
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveLoginCanceled) {
@@ -1310,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveApprovalSuccess) {
   EXPECT_TRUE(func->scope_ui_shown());
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
 }
 
 #if !defined(OS_MACOSX)
@@ -1634,7 +1635,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, LoginInvalidatesTokenCache) {
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
 }
 #endif
 
@@ -1716,7 +1717,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueToken) {
-  std::string primary_account_id = SignIn("primary@example.com");
+  CoreAccountId primary_account_id = SignIn("primary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
@@ -1739,12 +1740,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueToken) {
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
   EXPECT_EQ(primary_account_access_token, func->login_access_token());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueTokenFailure) {
-  std::string primary_account_id = SignIn("primary@example.com");
+  CoreAccountId primary_account_id = SignIn("primary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
@@ -1772,7 +1773,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueTokenFailure) {
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiDefaultUserManuallyIssueToken) {
-  std::string primary_account_id = SignIn("primary@example.com");
+  CoreAccountId primary_account_id = SignIn("primary@example.com");
   identity_test_env()->MakeAccountAvailable("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -1794,13 +1795,13 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
   EXPECT_EQ(primary_account_access_token, func->login_access_token());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiPrimaryUserManuallyIssueToken) {
-  std::string primary_account_id = SignIn("primary@example.com");
+  CoreAccountId primary_account_id = SignIn("primary@example.com");
   identity_test_env()->MakeAccountAvailable("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -1824,7 +1825,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            GetCachedToken(std::string()).status());
+            GetCachedToken(CoreAccountId()).status());
   EXPECT_EQ(primary_account_access_token, func->login_access_token());
 }
 
@@ -1834,8 +1835,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
     return;
 
-  std::string primary_account_id = SignIn("primary@example.com");
-  std::string secondary_account_id =
+  SignIn("primary@example.com");
+  CoreAccountId secondary_account_id =
       identity_test_env()
           ->MakeAccountAvailable("secondary@example.com")
           .account_id;
@@ -2141,14 +2142,15 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   }
 
   void SetCachedToken(const IdentityTokenCacheValue& token_data) {
-    ExtensionTokenKey key(kExtensionId, "test@example.com",
+    ExtensionTokenKey key(kExtensionId, CoreAccountId("test@example.com"),
                           std::set<std::string>());
     id_api()->SetCachedToken(key, token_data);
   }
 
   const IdentityTokenCacheValue& GetCachedToken() {
-    return id_api()->GetCachedToken(ExtensionTokenKey(
-        kExtensionId, "test@example.com", std::set<std::string>()));
+    return id_api()->GetCachedToken(
+        ExtensionTokenKey(kExtensionId, CoreAccountId("test@example.com"),
+                          std::set<std::string>()));
   }
 };
 
@@ -2450,7 +2452,7 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
   account_info.id = "gaia_id_for_primary_example.com";
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
 
-  std::string primary_account_id = SignIn("primary@example.com");
+  CoreAccountId primary_account_id = SignIn("primary@example.com");
 
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
 
@@ -2468,7 +2470,7 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
   account_info.id = "gaia_id_for_primary_example.com";
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
 
-  std::string primary_account_id = SignIn("primary@example.com");
+  CoreAccountId primary_account_id = SignIn("primary@example.com");
 
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
   identity_test_env()->RemoveRefreshTokenForAccount(primary_account_id);

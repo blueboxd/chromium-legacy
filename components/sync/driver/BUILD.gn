@@ -115,6 +115,9 @@ jumbo_static_library("driver") {
     "//components/signin/public/identity_manager",
     "//components/version_info",
     "//components/version_info:generate_version_info",
+
+    # TODO(crbug.com/1012226): Remove when VAPID migration is over.
+    "//crypto",
     "//services/network/public/cpp",
     "//ui/base",
   ]

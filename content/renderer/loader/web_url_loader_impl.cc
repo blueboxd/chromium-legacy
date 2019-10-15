@@ -64,12 +64,12 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_http_load_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
@@ -189,24 +189,24 @@ void SetSecurityStyleAndDetails(const GURL& url,
                                 WebURLResponse* response,
                                 bool report_security_info) {
   if (!report_security_info) {
-    response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
+    response->SetSecurityStyle(blink::SecurityStyle::kUnknown);
     return;
   }
   if (!url.SchemeIsCryptographic()) {
     // Some origins are considered secure even though they're not cryptographic,
     // so treat them as secure in the UI.
     if (IsOriginSecure(url))
-      response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
+      response->SetSecurityStyle(blink::SecurityStyle::kSecure);
     else
-      response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
+      response->SetSecurityStyle(blink::SecurityStyle::kInsecure);
     return;
   }
 
   // The resource loader does not provide a guarantee that requests always have
-  // security info (such as a certificate) attached. Use WebSecurityStyleUnknown
+  // security info (such as a certificate) attached. Use SecurityStyleUnknown
   // in this case where there isn't enough information to be useful.
   if (!head.ssl_info.has_value()) {
-    response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
+    response->SetSecurityStyle(blink::SecurityStyle::kUnknown);
     return;
   }
 
@@ -250,9 +250,9 @@ void SetSecurityStyleAndDetails(const GURL& url,
   }
 
   if (net::IsCertStatusError(head.cert_status)) {
-    response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
+    response->SetSecurityStyle(blink::SecurityStyle::kInsecure);
   } else {
-    response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
+    response->SetSecurityStyle(blink::SecurityStyle::kSecure);
   }
 
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
@@ -263,7 +263,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   if (!ssl_info.cert) {
     NOTREACHED();
-    response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
+    response->SetSecurityStyle(blink::SecurityStyle::kUnknown);
     return;
   }
 

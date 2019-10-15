@@ -396,11 +396,17 @@ void ArcApps::SetPermission(const std::string& app_id,
   }
 }
 
-void ArcApps::Uninstall(const std::string& app_id) {
+void ArcApps::PromptUninstall(const std::string& app_id) {
   if (!profile_) {
     return;
   }
   arc::ShowArcAppUninstallDialog(profile_, nullptr /* controller */, app_id);
+}
+
+void ArcApps::Uninstall(const std::string& app_id,
+                        bool clear_site_data,
+                        bool report_abuse) {
+  arc::UninstallArcApp(app_id, profile_);
 }
 
 void ArcApps::OpenNativeSettings(const std::string& app_id) {

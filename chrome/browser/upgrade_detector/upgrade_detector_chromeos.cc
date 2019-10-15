@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"

@@ -1768,6 +1768,7 @@ bool WebFormElementToFormData(
   form->unique_renderer_id = form_element.UniqueRendererFormId();
   form->url = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
+  form->is_action_empty = form_element.Action().IsNull();
   if (IsAutofillFieldMetadataEnabled()) {
     SCOPED_UMA_HISTOGRAM_TIMER(
         "PasswordManager.ButtonTitlePerformance.HasFormTag");

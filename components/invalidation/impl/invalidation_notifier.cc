@@ -63,8 +63,8 @@ InvalidatorState InvalidationNotifier::GetInvalidatorState() const {
   return registrar_.GetInvalidatorState();
 }
 
-void InvalidationNotifier::UpdateCredentials(
-    const std::string& email, const std::string& token) {
+void InvalidationNotifier::UpdateCredentials(const CoreAccountId& account_id,
+                                             const std::string& token) {
   if (state_ == STOPPED) {
     invalidation_listener_.Start(
         base::Bind(&invalidation::CreateInvalidationClient),
@@ -77,7 +77,7 @@ void InvalidationNotifier::UpdateCredentials(
         this);
     state_ = STARTED;
   }
-  invalidation_listener_.UpdateCredentials(email, token);
+  invalidation_listener_.UpdateCredentials(account_id, token);
 }
 
 void InvalidationNotifier::RequestDetailedStatus(

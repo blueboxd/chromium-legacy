@@ -13,7 +13,7 @@
 #define ZEXTERN __declspec(dllimport)
 #endif
 #elif defined(ZLIB_IMPLEMENTATION)
-#define ZEXPORT __attribute__((visibility("default")))
+#define ZEXTERN __attribute__((visibility("default")))
 #endif
 #endif
 

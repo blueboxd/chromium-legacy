@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"

@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_H_
 
 #include <memory>
-#include "media/midi/midi_service.mojom-blink.h"
+#include "media/midi/midi_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"

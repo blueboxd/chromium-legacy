@@ -452,10 +452,6 @@ const base::Feature kRequestUnbufferedDispatch{
 const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Loading Dispatcher v0 support with ResourceLoadScheduler (crbug.com/729954).
-const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 const base::Feature kRunVideoCaptureServiceInBrowserProcess{

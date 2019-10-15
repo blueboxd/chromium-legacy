@@ -45,7 +45,8 @@
 
 namespace blink {
 
-using namespace vector_math;
+using vector_math::Vadd;
+using vector_math::Vsma;
 
 const unsigned kMaxBusChannels = 32;
 
@@ -527,8 +528,8 @@ void AudioBus::CopyWithGainFrom(const AudioBus& source_bus, float gain) {
   } else {
     for (unsigned channel_index = 0; channel_index < number_of_channels;
          ++channel_index) {
-      Vsmul(sources[channel_index], 1, &gain, destinations[channel_index], 1,
-            frames_to_process);
+      vector_math::Vsmul(sources[channel_index], 1, &gain,
+                         destinations[channel_index], 1, frames_to_process);
     }
   }
 }
@@ -562,7 +563,8 @@ void AudioBus::CopyWithSampleAccurateGainValuesFrom(
     if (source_bus.NumberOfChannels() == NumberOfChannels())
       source = source_bus.Channel(channel_index)->Data();
     float* destination = Channel(channel_index)->MutableData();
-    Vmul(source, 1, gain_values, 1, destination, 1, number_of_gain_values);
+    vector_math::Vmul(source, 1, gain_values, 1, destination, 1,
+                      number_of_gain_values);
   }
 }
 

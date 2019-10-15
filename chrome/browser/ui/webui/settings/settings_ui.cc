@@ -83,6 +83,7 @@
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
@@ -255,6 +256,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "a11yEnhancements",
       base::FeatureList::IsEnabled(features::kWebUIA11yEnhancements));
+
+  html_source->AddBoolean(
+      "privacySettingsRedesignEnabled",
+      base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign));
 
   html_source->AddBoolean("unifiedConsentEnabled",
                           unified_consent::IsUnifiedConsentFeatureEnabled());

@@ -448,7 +448,7 @@ void InlineSigninHelper::CreateSyncStarter(const std::string& refresh_token) {
   }
 
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);
-  std::string account_id =
+  CoreAccountId account_id =
       identity_manager->GetAccountsMutator()->AddOrUpdateAccount(
           gaia_id_, email_, refresh_token,
           /*is_under_advanced_protection=*/false,

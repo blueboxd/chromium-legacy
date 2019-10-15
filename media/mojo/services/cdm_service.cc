@@ -103,7 +103,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
       std::move(destroy_cb_).Run();
   }
 
-  // Must be declared before the bindings below because the bound objects might
+  // Must be declared before the receivers below because the bound objects might
   // take a raw pointer of |cdm_service_context_| and assume it's always
   // available.
   MojoCdmServiceContext cdm_service_context_;

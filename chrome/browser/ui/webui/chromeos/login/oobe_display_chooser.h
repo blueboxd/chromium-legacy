@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
@@ -27,9 +29,10 @@ class OobeDisplayChooser : public ui::InputDeviceEventObserver {
   // Must be called on the BrowserThread::UI thread.
   void TryToPlaceUiOnTouchDisplay();
 
-  void set_cros_display_config_ptr_for_test(
-      ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr) {
-    cros_display_config_ptr_ = std::move(cros_display_config_ptr);
+  void set_cros_display_config_for_test(
+      mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
+          cros_display_config) {
+    cros_display_config_.Bind(std::move(cros_display_config));
   }
 
  private:
@@ -46,7 +49,7 @@ class OobeDisplayChooser : public ui::InputDeviceEventObserver {
 
   ScopedObserver<ui::DeviceDataManager, ui::InputDeviceEventObserver>
       scoped_observer_{this};
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
+  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
 
   base::WeakPtrFactory<OobeDisplayChooser> weak_ptr_factory_{this};
 

@@ -47,6 +47,7 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/clock_snapshot.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
 
@@ -100,6 +101,19 @@ void WriteMetadataProto(ChromeMetadataPacket* metadata_proto,
   }
 #endif  // defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
 }
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+// Linux, Android, and Fuchsia all use CLOCK_MONOTONIC. See crbug.com/166153
+// about efforts to unify base::TimeTicks across all platforms.
+constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
+    kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::MONOTONIC;
+#else
+// Mac and Windows TimeTicks advance when sleeping, so are closest to BOOTTIME
+// in behavior.
+// TODO(eseckler): Support specifying Mac/Win platform clocks in BuiltinClocks.
+constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
+    kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::BOOTTIME;
+#endif
 
 }  // namespace
 
@@ -175,6 +189,7 @@ void TraceEventMetadataSource::GenerateMetadataFromGenerator(
   }
   trace_packet->set_timestamp(
       TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
+  trace_packet->set_timestamp_clock_id(kTraceClockId);
   auto* chrome_metadata = trace_packet->set_chrome_metadata();
   generator.Run(chrome_metadata, privacy_filtering_enabled_);
 }
@@ -194,6 +209,7 @@ void TraceEventMetadataSource::GenerateJsonMetadataFromGenerator(
     }
     trace_packet->set_timestamp(
         TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
+    trace_packet->set_timestamp_clock_id(kTraceClockId);
     event_bundle = trace_packet->set_chrome_events();
   }
 
@@ -267,6 +283,7 @@ void TraceEventMetadataSource::GenerateMetadata(
 
   trace_packet->set_timestamp(
       TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
+  trace_packet->set_timestamp_clock_id(kTraceClockId);
   auto* chrome_metadata = trace_packet->set_chrome_metadata();
   for (auto& generator : *proto_generators) {
     generator.Run(chrome_metadata, privacy_filtering_enabled_);
@@ -276,8 +293,6 @@ void TraceEventMetadataSource::GenerateMetadata(
     return;
   }
 
-  trace_packet->set_timestamp(
-      TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
   ChromeEventBundle* event_bundle = trace_packet->set_chrome_events();
 
   for (auto& generator : *json_generators) {
@@ -955,6 +970,7 @@ void TraceEventDataSource::EmitProcessDescriptor() {
   trace_packet->set_incremental_state_cleared(true);
   trace_packet->set_timestamp(
       TRACE_TIME_TICKS_NOW().since_origin().InNanoseconds());
+  trace_packet->set_timestamp_clock_id(kTraceClockId);
   auto process_type = GetProcessType(TraceLog::GetInstance()->process_name());
   ProcessDescriptor* process_desc = trace_packet->set_process_descriptor();
   process_desc->set_pid(process_id_);

@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/chromeos/policy/display_resolution_handler.h"

@@ -17,12 +17,14 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori.h"
+#include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 
 using encryption_helper::GetServerNigori;
 using encryption_helper::SetNigoriInFakeServer;
+using testing::SizeIs;
 
 struct KeyParams {
   syncer::KeyDerivationParams derivation_params;
@@ -152,7 +154,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldDecryptWithKeystoreNigori) {
   const std::vector<std::string>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
-  ASSERT_EQ(keystore_keys.size(), size_t{1});
+  ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
   SetNigoriInFakeServer(GetFakeServer(),
                         BuildKeystoreNigoriSpecifics(
@@ -177,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
                        ShouldDecryptWithBackwardCompatibleKeystoreNigori) {
   const std::vector<std::string>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
-  ASSERT_EQ(keystore_keys.size(), size_t{1});
+  ASSERT_THAT(keystore_keys, SizeIs(1));
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
   const KeyParams kDefaultKeyParams = {
       syncer::KeyDerivationParams::CreateForPbkdf2(), "password"};
@@ -194,6 +196,36 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
       kDefaultKeyParams.derivation_params, GetFakeServer());
   ASSERT_TRUE(SetupSync());
   EXPECT_TRUE(WaitForPasswordForms({password_form}));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
+                       ShouldExposeExperimentalAuthenticationId) {
+  const std::vector<std::string>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(1));
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(keystore_keys.back());
+  SetNigoriInFakeServer(GetFakeServer(),
+                        BuildKeystoreNigoriSpecifics(
+                            /*keybag_keys_params=*/{kKeystoreKeyParams},
+                            /*keystore_decryptor_params=*/kKeystoreKeyParams,
+                            /*keystore_key_params=*/kKeystoreKeyParams));
+
+  ASSERT_TRUE(SetupSync());
+
+  // WARNING: Do *NOT* change these values since the authentication ID should be
+  // stable across different browser versions.
+
+  // Default birthday determined by LoopbackServer.
+  const std::string kDefaultBirthday = "0";
+  const std::string kSeparator("|");
+  std::string base64_encoded_keystore_key;
+  base::Base64Encode(keystore_keys.back(), &base64_encoded_keystore_key);
+  const std::string authentication_id_before_hashing =
+      std::string("gaia_id_for_user_gmail.com") + kSeparator +
+      kDefaultBirthday + kSeparator + base64_encoded_keystore_key;
+
+  EXPECT_EQ(GetSyncService(/*index=*/0)->GetExperimentalAuthenticationId(),
+            crypto::SHA256HashString(authentication_id_before_hashing));
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

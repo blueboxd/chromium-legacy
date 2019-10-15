@@ -31,11 +31,14 @@ using base::UserMetricsAction;
 
 @property(nonatomic, readwrite, weak) id<LoadQueryCommands> queryLoader;
 
+// Whether VoiceOver detection has been overridden.
+@property(nonatomic, assign) BOOL voiceOverCheckOverridden;
+
 @end
 
 @implementation QRScannerViewController
 
-#pragma mark Lifecycle
+#pragma mark - Lifecycle
 
 - (instancetype)
     initWithPresentationProvider:(id<ScannerPresenting>)presentationProvider
@@ -79,7 +82,7 @@ using base::UserMetricsAction;
 #pragma mark - QRScannerCameraControllerDelegate
 
 - (void)receiveQRScannerResult:(NSString*)result loadImmediately:(BOOL)load {
-  if (UIAccessibilityIsVoiceOverRunning()) {
+  if ([self isVoiceOverActive]) {
     // Post a notification announcing that a code was scanned. QR scanner will
     // be dismissed when the UIAccessibilityAnnouncementDidFinishNotification is
     // received.
@@ -114,6 +117,19 @@ using base::UserMetricsAction;
       return scanner::DialogForCameraState(scanner::CAMERA_PERMISSION_DENIED,
                                            nil);
   }
+}
+
+#pragma mark - Private
+
+// Returns whether voice over is active.
+- (BOOL)isVoiceOverActive {
+  return UIAccessibilityIsVoiceOverRunning() || self.voiceOverCheckOverridden;
+}
+
+#pragma mark - Testing Additions
+
+- (void)overrideVoiceOverCheck:(BOOL)overrideVoiceOverCheck {
+  self.voiceOverCheckOverridden = overrideVoiceOverCheck;
 }
 
 @end

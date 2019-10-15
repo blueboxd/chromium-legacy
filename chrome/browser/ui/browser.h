@@ -549,7 +549,7 @@ class Browser : public TabStripModelObserver,
   bool CanDragEnter(content::WebContents* source,
                     const content::DropData& data,
                     blink::WebDragOperationsMask operations_allowed) override;
-  blink::WebSecurityStyle GetSecurityStyle(
+  blink::SecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(

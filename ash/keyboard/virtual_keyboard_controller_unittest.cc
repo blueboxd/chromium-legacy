@@ -93,7 +93,7 @@ TEST_F(VirtualKeyboardControllerTest,
 
   // Set up a mock ImeControllerClient to test keyset changes.
   TestImeControllerClient client;
-  Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
+  Shell::Get()->ime_controller()->SetClient(client.CreateRemote());
 
   // Should show the keyboard without messing with accessibility prefs.
   GetVirtualKeyboardController()->ForceShowKeyboardWithKeyset(
@@ -129,7 +129,7 @@ TEST_F(VirtualKeyboardControllerTest,
        ForceToShowKeyboardWithKeysetWhenKeyboardIsDisabled) {
   // Set up a mock ImeControllerClient to test keyset changes.
   TestImeControllerClient client;
-  Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
+  Shell::Get()->ime_controller()->SetClient(client.CreateRemote());
 
   // Should show the keyboard by enabling it temporarily.
   EXPECT_FALSE(keyboard_ui_controller()->IsEnabled());
@@ -170,7 +170,7 @@ TEST_F(VirtualKeyboardControllerTest,
        ForceToShowKeyboardWithKeysetTemporaryHide) {
   // Set up a mock ImeControllerClient to test keyset changes.
   TestImeControllerClient client;
-  Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
+  Shell::Get()->ime_controller()->SetClient(client.CreateRemote());
 
   // Should show the keyboard by enabling it temporarily.
   GetVirtualKeyboardController()->ForceShowKeyboardWithKeyset(

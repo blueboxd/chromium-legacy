@@ -25,7 +25,7 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
   // added to the request to |url|.
   static std::string BuildRequestCookieIfPossible(
       const GURL& url,
-      const std::string& account_id,
+      const std::string& gaia_id,
       AccountConsistencyMethod account_consistency,
       const content_settings::CookieSettings* cookie_settings,
       int profile_mode_mask);
@@ -39,7 +39,7 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
   // empty string, in this case the header must not be added.
   std::string BuildRequestHeader(bool is_header_request,
                                  const GURL& url,
-                                 const std::string& account_id,
+                                 const std::string& gaia_id,
                                  int profile_mode_mask);
 
   // SigninHeaderHelper implementation:

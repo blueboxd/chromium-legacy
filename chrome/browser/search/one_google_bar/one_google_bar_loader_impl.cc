@@ -206,8 +206,8 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::SetRequestHeaders(
   std::string chrome_connected_header_value =
       chrome_connected_header_helper.BuildRequestHeader(
           /*is_header_request=*/true, api_url_,
-          // Account ID is only needed for (drive|docs).google.com.
-          /*account_id=*/std::string(), profile_mode);
+          // Gaia ID is only needed for (drive|docs).google.com.
+          /*gaia_id=*/std::string(), profile_mode);
   if (!chrome_connected_header_value.empty()) {
     request->headers.SetHeader(signin::kChromeConnectedHeader,
                                chrome_connected_header_value);

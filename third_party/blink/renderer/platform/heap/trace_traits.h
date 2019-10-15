@@ -580,19 +580,18 @@ struct TraceInCollectionTrait<kWeakHandling, KeyValuePair<Key, Value>, Traits> {
 
 // Nodes used by LinkedHashSet.  Again we need two versions to disambiguate the
 // template.
-template <typename Value, typename Allocator, typename Traits>
+template <typename Value, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling,
-                              LinkedHashSetNode<Value, Allocator>,
+                              LinkedHashSetNode<Value>,
                               Traits> {
-  static bool IsAlive(LinkedHashSetNode<Value, Allocator>& self) {
+  static bool IsAlive(LinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kNoWeakHandling, Value,
         typename Traits::ValueTraits>::IsAlive(self.value_);
   }
 
   template <typename VisitorDispatcher>
-  static bool Trace(VisitorDispatcher visitor,
-                    LinkedHashSetNode<Value, Allocator>& self) {
+  static bool Trace(VisitorDispatcher visitor, LinkedHashSetNode<Value>& self) {
     static_assert(IsTraceableInCollectionTrait<Traits>::value ||
                       Traits::kWeakHandlingFlag == WTF::kWeakHandling,
                   "T should not be traced");
@@ -602,19 +601,16 @@ struct TraceInCollectionTrait<kNoWeakHandling,
   }
 };
 
-template <typename Value, typename Allocator, typename Traits>
-struct TraceInCollectionTrait<kWeakHandling,
-                              LinkedHashSetNode<Value, Allocator>,
-                              Traits> {
-  static bool IsAlive(LinkedHashSetNode<Value, Allocator>& self) {
+template <typename Value, typename Traits>
+struct TraceInCollectionTrait<kWeakHandling, LinkedHashSetNode<Value>, Traits> {
+  static bool IsAlive(LinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kWeakHandling, Value,
         typename Traits::ValueTraits>::IsAlive(self.value_);
   }
 
   template <typename VisitorDispatcher>
-  static bool Trace(VisitorDispatcher visitor,
-                    LinkedHashSetNode<Value, Allocator>& self) {
+  static bool Trace(VisitorDispatcher visitor, LinkedHashSetNode<Value>& self) {
     return TraceInCollectionTrait<
         kWeakHandling, Value, typename Traits::ValueTraits>::Trace(visitor,
                                                                    self.value_);

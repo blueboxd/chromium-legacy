@@ -98,10 +98,12 @@ bool FormData::SameFormAs(const FormData& form) const {
 bool FormData::SimilarFormAs(const FormData& form) const {
   if (name != form.name || id_attribute != form.id_attribute ||
       name_attribute != form.name_attribute || url != form.url ||
-      action != form.action || is_form_tag != form.is_form_tag ||
+      action != form.action || is_action_empty != form.is_action_empty ||
+      is_form_tag != form.is_form_tag ||
       is_formless_checkout != form.is_formless_checkout ||
-      fields.size() != form.fields.size())
+      fields.size() != form.fields.size()) {
     return false;
+  }
   for (size_t i = 0; i < fields.size(); ++i) {
     if (!fields[i].SimilarFieldAs(form.fields[i]))
       return false;
@@ -124,7 +126,7 @@ bool FormData::DynamicallySameFormAs(const FormData& form) const {
 bool FormData::operator==(const FormData& form) const {
   return name == form.name && id_attribute == form.id_attribute &&
          name_attribute == form.name_attribute && url == form.url &&
-         action == form.action &&
+         action == form.action && is_action_empty == form.is_action_empty &&
          unique_renderer_id == form.unique_renderer_id &&
          submission_event == form.submission_event &&
          is_form_tag == form.is_form_tag &&
@@ -237,6 +239,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormData& form) {
   buffer << Tr{} << "Unique renderer Id:" << form.unique_renderer_id;
   buffer << Tr{} << "URL:" << form.url;
   buffer << Tr{} << "Action:" << form.action;
+  buffer << Tr{} << "Is action empty:" << form.is_action_empty;
   buffer << Tr{} << "Is <form> tag:" << form.is_form_tag;
   for (size_t i = 0; i < form.fields.size(); ++i) {
     buffer << Tag{"tr"};

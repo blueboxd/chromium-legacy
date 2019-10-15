@@ -164,7 +164,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   ui::AXTree tree_;
   content::RendererPpapiHost* host_;
   PP_Instance instance_;
-  double zoom_;
+  double zoom_device_scale_factor_ = 1.0;
   gfx::Vector2dF scroll_;
   gfx::Vector2dF offset_;
   uint32_t selection_start_page_index_ = 0;

@@ -268,8 +268,8 @@ class VideoCaptureDeviceTest
       CameraHalDispatcherImpl::GetInstance()->Start(
           base::DoNothing::Repeatedly<mojo::PendingReceiver<
               chromeos_camera::mojom::MjpegDecodeAccelerator>>(),
-          base::DoNothing::Repeatedly<
-              chromeos_camera::mojom::JpegEncodeAcceleratorRequest>());
+          base::DoNothing::Repeatedly<mojo::PendingReceiver<
+              chromeos_camera::mojom::JpegEncodeAccelerator>>());
     }
 #endif
     video_capture_device_factory_ =

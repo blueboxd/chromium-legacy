@@ -1313,7 +1313,7 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
   ImeController* controller = Shell::Get()->ime_controller();
 
   TestImeControllerClient client;
-  controller->SetClient(client.CreateInterfacePtr());
+  controller->SetClient(client.CreateRemote());
   EXPECT_EQ(0, client.set_caps_lock_count_);
 
   // 1. Press Alt, Press Search, Release Search, Release Alt.
@@ -2370,7 +2370,7 @@ TEST_F(AcceleratorControllerTest, ChangeIMEMode_SwitchesInputMethod) {
   ImeController* controller = Shell::Get()->ime_controller();
 
   TestImeControllerClient client;
-  controller->SetClient(client.CreateInterfacePtr());
+  controller->SetClient(client.CreateRemote());
 
   EXPECT_EQ(0, client.next_ime_count_);
 

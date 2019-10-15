@@ -94,7 +94,8 @@ class ClickToCallUiControllerTest : public testing::Test {
               std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
         }));
     ClickToCallUiController::ShowDialog(
-        web_contents_.get(), GURL(base::StrCat({"tel:", kPhoneNumber})), false);
+        web_contents_.get(), /*initiating_origin=*/base::nullopt,
+        GURL(base::StrCat({"tel:", kPhoneNumber})), false);
     controller_ = ClickToCallUiController::GetOrCreateFromWebContents(
         web_contents_.get());
   }

@@ -126,9 +126,9 @@ FakeDnsConfigChangeManager::FakeDnsConfigChangeManager(
 FakeDnsConfigChangeManager::~FakeDnsConfigChangeManager() = default;
 
 void FakeDnsConfigChangeManager::RequestNotifications(
-    network::mojom::DnsConfigChangeManagerClientPtr client) {
+    mojo::PendingRemote<network::mojom::DnsConfigChangeManagerClient> client) {
   ASSERT_FALSE(client_);
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 }
 
 void FakeDnsConfigChangeManager::SimulateDnsConfigChange() {

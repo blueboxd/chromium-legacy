@@ -391,7 +391,7 @@ void RemoteSuggestionsFetcherImpl::FetchFinished(
 
   if (fetch_result == FetchResult::HTTP_ERROR_UNAUTHORIZED) {
     identity::ScopeSet scopes{kContentSuggestionsApiScope};
-    std::string account_id = identity_manager_->GetPrimaryAccountId();
+    CoreAccountId account_id = identity_manager_->GetPrimaryAccountId();
     identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,
                                                   access_token);
   }

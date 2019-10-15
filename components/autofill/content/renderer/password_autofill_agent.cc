@@ -784,20 +784,33 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
   if (touch_to_fill_state_ != TouchToFillState::kShouldShow)
     return false;
 
-  const WebInputElement* element = ToWebInputElement(&control_element);
+  const WebInputElement* input_element = ToWebInputElement(&control_element);
   WebInputElement username_element;
   WebInputElement password_element;
   PasswordInfo* password_info = nullptr;
-  if (!element ||
-      !FindPasswordInfoForElement(*element, &username_element,
+  if (!input_element ||
+      !FindPasswordInfoForElement(*input_element, &username_element,
                                   &password_element, &password_info)) {
     return false;
   }
 
-  DCHECK(!password_element.IsNull());
-  if (!IsElementEditable(password_element))
+  // Don't trigger Touch To Fill when there is no password element or it is not
+  // editable.
+  if (password_element.IsNull() || !IsElementEditable(password_element))
     return false;
 
+  // Highlight the fields that are about to be filled by the user and remember
+  // the old autofill state of |username_element| and |password_element|.
+  if (IsUsernameAmendable(username_element,
+                          input_element->IsPasswordFieldForAutofill())) {
+    username_autofill_state_ = username_element.GetAutofillState();
+    username_element.SetAutofillState(WebAutofillState::kPreviewed);
+  }
+
+  password_autofill_state_ = password_element.GetAutofillState();
+  password_element.SetAutofillState(WebAutofillState::kPreviewed);
+
+  focused_input_element_ = *input_element;
   GetPasswordManagerDriver()->ShowTouchToFill();
   touch_to_fill_state_ = TouchToFillState::kIsShowing;
   return true;
@@ -1208,6 +1221,24 @@ void PasswordAutofillAgent::SetLoggingState(bool active) {
 
 void PasswordAutofillAgent::TouchToFillDismissed() {
   touch_to_fill_state_ = TouchToFillState::kWasShown;
+
+  // Clear the autofill state from the username and password element. Note that
+  // we don't make use of ClearPreview() here, since this is considering the
+  // elements' SuggestedValue(), which Touch To Fill does not set.
+  DCHECK(!focused_input_element_.IsNull());
+  WebInputElement username_element;
+  WebInputElement password_element;
+  PasswordInfo* password_info = nullptr;
+  if (!FindPasswordInfoForElement(focused_input_element_, &username_element,
+                                  &password_element, &password_info)) {
+    return;
+  }
+
+  if (!username_element.IsNull())
+    username_element.SetAutofillState(username_autofill_state_);
+
+  if (!password_element.IsNull())
+    password_element.SetAutofillState(password_autofill_state_);
 }
 
 void PasswordAutofillAgent::AnnotateFieldsWithParsingResult(

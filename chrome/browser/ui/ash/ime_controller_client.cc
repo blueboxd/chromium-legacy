@@ -31,7 +31,7 @@ ImeControllerClient* g_ime_controller_client_instance = nullptr;
 }  // namespace
 
 ImeControllerClient::ImeControllerClient(InputMethodManager* manager)
-    : input_method_manager_(manager), binding_(this) {
+    : input_method_manager_(manager) {
   DCHECK(input_method_manager_);
   input_method_manager_->AddObserver(this);
   input_method_manager_->AddImeMenuObserver(this);
@@ -59,14 +59,14 @@ ImeControllerClient::~ImeControllerClient() {
 
 void ImeControllerClient::Init() {
   // Connect to the controller in ash.
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &ime_controller_ptr_);
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName, ime_controller_.BindNewPipeAndPassReceiver());
   BindAndSetClient();
 }
 
 void ImeControllerClient::InitForTesting(
-    ash::mojom::ImeControllerPtr controller) {
-  ime_controller_ptr_ = std::move(controller);
+    mojo::PendingRemote<ash::mojom::ImeController> controller) {
+  ime_controller_.Bind(std::move(controller));
   BindAndSetClient();
 }
 
@@ -76,7 +76,7 @@ ImeControllerClient* ImeControllerClient::Get() {
 }
 
 void ImeControllerClient::SetImesManagedByPolicy(bool managed) {
-  ime_controller_ptr_->SetImesManagedByPolicy(managed);
+  ime_controller_->SetImesManagedByPolicy(managed);
 }
 
 // ash::mojom::ImeControllerClient:
@@ -159,7 +159,7 @@ void ImeControllerClient::ShowModeIndicator() {
 
   // Mojo call to Ash to show the mode indicator view with the given anchor
   // bounds and short name.
-  ime_controller_ptr_->ShowModeIndicator(anchor_bounds, short_name);
+  ime_controller_->ShowModeIndicator(anchor_bounds, short_name);
 }
 
 // chromeos::input_method::InputMethodManager::Observer:
@@ -173,7 +173,7 @@ void ImeControllerClient::InputMethodChanged(InputMethodManager* manager,
 
 // chromeos::input_method::InputMethodManager::ImeMenuObserver:
 void ImeControllerClient::ImeMenuActivationChanged(bool is_active) {
-  ime_controller_ptr_->ShowImeMenuOnShelf(is_active);
+  ime_controller_->ShowImeMenuOnShelf(is_active);
 }
 
 void ImeControllerClient::ImeMenuListChanged() {
@@ -192,28 +192,28 @@ void ImeControllerClient::InputMethodMenuItemChanged(
 
 // chromeos::input_method::ImeKeyboard::Observer:
 void ImeControllerClient::OnCapsLockChanged(bool enabled) {
-  ime_controller_ptr_->UpdateCapsLockState(enabled);
+  ime_controller_->UpdateCapsLockState(enabled);
 }
 
 void ImeControllerClient::OnLayoutChanging(const std::string& layout_name) {
-  ime_controller_ptr_->OnKeyboardLayoutNameChanged(layout_name);
+  ime_controller_->OnKeyboardLayoutNameChanged(layout_name);
 }
 
 void ImeControllerClient::FlushMojoForTesting() {
-  ime_controller_ptr_.FlushForTesting();
+  ime_controller_.FlushForTesting();
 }
 
 void ImeControllerClient::BindAndSetClient() {
-  ash::mojom::ImeControllerClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  ime_controller_ptr_->SetClient(std::move(client));
+  mojo::PendingRemote<ash::mojom::ImeControllerClient> client;
+  receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
+  ime_controller_->SetClient(std::move(client));
 
   // Now that the bridge is established, flush state from observed objects to
   // the ImeController, now that it will hear it.
   input_method_manager_->NotifyObserversImeExtraInputStateChange();
   if (const chromeos::input_method::ImeKeyboard* keyboard =
           input_method_manager_->GetImeKeyboard()) {
-    ime_controller_ptr_->OnKeyboardLayoutNameChanged(
+    ime_controller_->OnKeyboardLayoutNameChanged(
         keyboard->GetCurrentKeyboardLayoutName());
   }
 }
@@ -235,9 +235,9 @@ void ImeControllerClient::RefreshIme() {
       input_method_manager_->GetActiveIMEState().get();
   if (!state) {
     const std::string empty_ime_id;
-    ime_controller_ptr_->RefreshIme(empty_ime_id,
-                                    std::vector<ash::mojom::ImeInfoPtr>(),
-                                    std::vector<ash::mojom::ImeMenuItemPtr>());
+    ime_controller_->RefreshIme(empty_ime_id,
+                                std::vector<ash::mojom::ImeInfoPtr>(),
+                                std::vector<ash::mojom::ImeMenuItemPtr>());
     return;
   }
 
@@ -262,8 +262,8 @@ void ImeControllerClient::RefreshIme() {
     ash_item->checked = menu_item.is_selection_item_checked;
     ash_menu_items.push_back(std::move(ash_item));
   }
-  ime_controller_ptr_->RefreshIme(current_ime_id, std::move(available_imes),
-                                  std::move(ash_menu_items));
+  ime_controller_->RefreshIme(current_ime_id, std::move(available_imes),
+                              std::move(ash_menu_items));
 }
 
 void ImeControllerClient::OnExtraInputEnabledStateChange(
@@ -271,8 +271,8 @@ void ImeControllerClient::OnExtraInputEnabledStateChange(
     bool is_emoji_enabled,
     bool is_handwriting_enabled,
     bool is_voice_enabled) {
-  if (ime_controller_ptr_) {
-    ime_controller_ptr_->SetExtraInputOptionsEnabledState(
+  if (ime_controller_) {
+    ime_controller_->SetExtraInputOptionsEnabledState(
         is_extra_input_options_enabled, is_emoji_enabled,
         is_handwriting_enabled, is_voice_enabled);
   }

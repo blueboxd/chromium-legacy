@@ -41,6 +41,7 @@
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
+#include "crypto/sha2.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {
@@ -593,6 +594,8 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   crypto_.Reset();
   expect_sync_configuration_aborted_ = false;
   last_snapshot_ = SyncCycleSnapshot();
+  last_keystore_key_.clear();
+
   if (!IsLocalSyncEnabled()) {
     auth_manager_->ConnectionClosed();
   }
@@ -811,6 +814,7 @@ void ProfileSyncService::OnEngineInitialized(
     const std::string& cache_guid,
     const std::string& birthday,
     const std::string& bag_of_chips,
+    const std::string& last_keystore_key,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -842,6 +846,8 @@ void ProfileSyncService::OnEngineInitialized(
   sync_prefs_.SetCacheGuid(cache_guid);
   sync_prefs_.SetBirthday(birthday);
   sync_prefs_.SetBagOfChips(bag_of_chips);
+
+  last_keystore_key_ = last_keystore_key;
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -892,10 +898,12 @@ void ProfileSyncService::OnEngineInitialized(
 }
 
 void ProfileSyncService::OnSyncCycleCompleted(
-    const SyncCycleSnapshot& snapshot) {
+    const SyncCycleSnapshot& snapshot,
+    const std::string& last_keystore_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   last_snapshot_ = snapshot;
+  last_keystore_key_ = last_keystore_key;
 
   UpdateLastSyncedTime();
   if (!snapshot.poll_finish_time().is_null())
@@ -1109,6 +1117,26 @@ base::Time ProfileSyncService::GetAuthErrorTime() const {
 
 bool ProfileSyncService::RequiresClientUpgrade() const {
   return last_actionable_error_.action == UPGRADE_CLIENT;
+}
+
+std::string ProfileSyncService::GetExperimentalAuthenticationId() const {
+  // Dependent fields are first populated when the sync engine is initialized,
+  // when usually all except keystore keys are guaranteed to be available.
+  // Keystore keys are usually available initially too, but in rare cases they
+  // should arrive in later sync cycles.
+  if (last_keystore_key_.empty()) {
+    return std::string();
+  }
+
+  // A separator is not strictly needed but it's adopted here as good practice.
+  const std::string kSeparator("|");
+  const std::string gaia_id = GetAuthenticatedAccountInfo().gaia;
+  const std::string birthday = sync_prefs_.GetBirthday();
+  DCHECK(!gaia_id.empty());
+  DCHECK(!birthday.empty());
+
+  return crypto::SHA256HashString(gaia_id + kSeparator + birthday + kSeparator +
+                                  last_keystore_key_);
 }
 
 bool ProfileSyncService::CanConfigureDataTypes(

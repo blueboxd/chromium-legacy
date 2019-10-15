@@ -1313,7 +1313,7 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
     // seeing them in the dropdown.
     if (!prefs::IsUserOptedInWalletSyncTransport(
             pref_service_,
-            sync_service_->GetAuthenticatedAccountInfo().account_id)) {
+            sync_service_->GetAuthenticatedAccountInfo().account_id.id)) {
       return false;
     }
   }
@@ -1839,7 +1839,8 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
       features::kAutofillEnableAccountWalletStorage));
 
   bool is_opted_in = prefs::IsUserOptedInWalletSyncTransport(
-      pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);
+      pref_service_,
+      sync_service_->GetAuthenticatedAccountInfo().account_id.id);
 
   AutofillMetrics::LogWalletSyncTransportCardsOptIn(is_opted_in);
 
@@ -1851,7 +1852,7 @@ void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {
   DCHECK_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
             GetSyncSigninState());
   prefs::SetUserOptedInWalletSyncTransport(
-      pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id,
+      pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id.id,
       /*opted_in=*/true);
 }
 
@@ -1908,7 +1909,8 @@ void PersonalDataManager::OnUserAcceptedUpstreamOffer() {
   if (GetSyncSigninState() ==
       AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
     prefs::SetUserOptedInWalletSyncTransport(
-        pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id,
+        pref_service_,
+        sync_service_->GetAuthenticatedAccountInfo().account_id.id,
         /*opted_in=*/true);
   }
 }

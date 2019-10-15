@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/resource_type.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/url_pattern.h"

@@ -338,14 +338,11 @@ void BubbleFrameView::Layout() {
   bounds.Inset(title_margins_);
 
   int header_bottom = 0;
-  gfx::Size header_pref_size = GetHeaderSize();
-  if (!header_pref_size.IsEmpty()) {
-    int header_width = header_pref_size.width();
-    int header_offset = (contents_bounds.width() - header_width) / 2;
-    header_view_->SetBounds(contents_bounds.x() + header_offset,
-                            contents_bounds.y(), header_pref_size.width(),
-                            header_pref_size.height());
-    bounds.Inset(0, header_pref_size.height(), 0, 0);
+  int header_height = GetHeaderHeightForFrameWidth(contents_bounds.width());
+  if (header_height > 0) {
+    header_view_->SetBounds(contents_bounds.x(), contents_bounds.y(),
+                            contents_bounds.width(), header_height);
+    bounds.Inset(0, header_height, 0, 0);
     header_bottom = header_view_->bounds().bottom();
   }
 
@@ -712,7 +709,7 @@ bool BubbleFrameView::HasTitle() const {
 }
 
 gfx::Insets BubbleFrameView::GetTitleLabelInsetsFromFrame() const {
-  int header_height = GetHeaderSize().height();
+  int header_height = GetHeaderHeightForFrameWidth(GetContentsBounds().width());
   int insets_right = 0;
   if (GetWidget()->widget_delegate()->ShouldShowCloseButton()) {
     const int close_margin =
@@ -739,7 +736,7 @@ gfx::Insets BubbleFrameView::GetTitleLabelInsetsFromFrame() const {
 
 gfx::Insets BubbleFrameView::GetClientInsetsForFrameWidth(
     int frame_width) const {
-  int header_height = GetHeaderSize().height();
+  int header_height = GetHeaderHeightForFrameWidth(frame_width);
   int close_height = 0;
   if (!ExtendClientIntoTitle() &&
       GetWidget()->widget_delegate()->ShouldShowCloseButton()) {
@@ -764,10 +761,10 @@ gfx::Insets BubbleFrameView::GetClientInsetsForFrameWidth(
                      0);
 }
 
-gfx::Size BubbleFrameView::GetHeaderSize() const {
+int BubbleFrameView::GetHeaderHeightForFrameWidth(int frame_width) const {
   return header_view_ && header_view_->GetVisible()
-             ? header_view_->GetPreferredSize()
-             : gfx::Size();
+             ? header_view_->GetHeightForWidth(frame_width)
+             : 0;
 }
 
 }  // namespace views

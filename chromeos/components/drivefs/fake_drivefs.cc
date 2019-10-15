@@ -20,9 +20,12 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/components/drivefs/drivefs_util.h"
+#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace drivefs {
 namespace {
@@ -70,15 +73,16 @@ base::FilePath MaybeMountDriveFs(
 }  // namespace
 
 FakeDriveFsBootstrapListener::FakeDriveFsBootstrapListener(
-    drivefs::mojom::DriveFsBootstrapPtrInfo bootstrap)
+    mojo::PendingRemote<drivefs::mojom::DriveFsBootstrap> bootstrap)
     : bootstrap_(std::move(bootstrap)) {}
 
 FakeDriveFsBootstrapListener::~FakeDriveFsBootstrapListener() = default;
 
 void FakeDriveFsBootstrapListener::SendInvitationOverPipe(base::ScopedFD) {}
 
-mojom::DriveFsBootstrapPtr FakeDriveFsBootstrapListener::bootstrap() {
-  return mojo::MakeProxy(std::move(bootstrap_));
+mojo::PendingRemote<mojom::DriveFsBootstrap>
+FakeDriveFsBootstrapListener::bootstrap() {
+  return std::move(bootstrap_);
 }
 
 struct FakeDriveFs::FileMetadata {
@@ -227,7 +231,7 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
 };
 
 FakeDriveFs::FakeDriveFs(const base::FilePath& mount_path)
-    : mount_path_(mount_path), binding_(this), bootstrap_binding_(this) {
+    : mount_path_(mount_path) {
   CHECK(mount_path.IsAbsolute());
   CHECK(!mount_path.ReferencesParent());
 }
@@ -248,13 +252,13 @@ void FakeDriveFs::RegisterMountingForAccountId(
 
 std::unique_ptr<drivefs::DriveFsBootstrapListener>
 FakeDriveFs::CreateMojoListener() {
-  drivefs::mojom::DriveFsBootstrapPtrInfo bootstrap;
-  if (bootstrap_binding_.is_bound())
-    bootstrap_binding_.Unbind();
-  bootstrap_binding_.Bind(mojo::MakeRequest(&bootstrap));
-  pending_delegate_request_ = mojo::MakeRequest(&delegate_);
+  delegate_.reset();
+  pending_delegate_receiver_ = delegate_.BindNewPipeAndPassReceiver();
   delegate_->OnMounted();
-  return std::make_unique<FakeDriveFsBootstrapListener>(std::move(bootstrap));
+
+  bootstrap_receiver_.reset();
+  return std::make_unique<FakeDriveFsBootstrapListener>(
+      bootstrap_receiver_.BindNewPipeAndPassRemote());
 }
 
 void FakeDriveFs::SetMetadata(const base::FilePath& path,
@@ -278,18 +282,17 @@ void FakeDriveFs::SetMetadata(const base::FilePath& path,
   }
 }
 
-void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,
-                       drivefs::mojom::DriveFsRequest drive_fs_request,
-                       drivefs::mojom::DriveFsDelegatePtr delegate) {
+void FakeDriveFs::Init(
+    drivefs::mojom::DriveFsConfigurationPtr config,
+    mojo::PendingReceiver<drivefs::mojom::DriveFs> receiver,
+    mojo::PendingRemote<drivefs::mojom::DriveFsDelegate> delegate) {
   {
     base::ScopedAllowBlockingForTesting allow_io;
     CHECK(base::CreateDirectory(mount_path_.Append(".Trash")));
   }
-  mojo::FuseInterface(std::move(pending_delegate_request_),
-                      delegate.PassInterface());
-  if (binding_.is_bound())
-    binding_.Unbind();
-  binding_.Bind(std::move(drive_fs_request));
+  mojo::FusePipes(std::move(pending_delegate_receiver_), std::move(delegate));
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
 }
 
 void FakeDriveFs::GetMetadata(const base::FilePath& path,
@@ -401,11 +404,11 @@ void FakeDriveFs::CopyFile(const base::FilePath& source,
 }
 
 void FakeDriveFs::StartSearchQuery(
-    drivefs::mojom::SearchQueryRequest query,
+    mojo::PendingReceiver<drivefs::mojom::SearchQuery> receiver,
     drivefs::mojom::QueryParametersPtr query_params) {
   auto search_query = std::make_unique<SearchQuery>(weak_factory_.GetWeakPtr(),
                                                     std::move(query_params));
-  mojo::MakeStrongBinding(std::move(search_query), std::move(query));
+  mojo::MakeSelfOwnedReceiver(std::move(search_query), std::move(receiver));
 }
 
 void FakeDriveFs::FetchAllChangeLogs() {}

@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"

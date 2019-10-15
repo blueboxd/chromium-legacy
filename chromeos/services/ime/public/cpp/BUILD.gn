@@ -4,6 +4,8 @@
 
 import("//build/buildflag_header.gni")
 import("//chromeos/services/ime/public/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
@@ -105,4 +107,24 @@ source_set("rulebased_unit_tests") {
   sources = [
     "rulebased/rulebased_unittest.cc",
   ]
+}
+
+if (use_libfuzzer) {
+  fuzzable_proto_library("rulebased_fuzzer_proto") {
+    sources = [
+      "rulebased/rulebased_fuzzer.proto",
+    ]
+  }
+
+  fuzzer_test("rulebased_fuzzer") {
+    sources = [
+      "rulebased/rulebased_fuzzer.cc",
+    ]
+    seed_corpus = "rulebased/test_data"
+    deps = [
+      ":rulebased",
+      ":rulebased_fuzzer_proto",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
 }

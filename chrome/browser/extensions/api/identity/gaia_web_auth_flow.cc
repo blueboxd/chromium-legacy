@@ -30,13 +30,9 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
     : delegate_(delegate),
       profile_(profile),
       account_id_(token_key->account_id) {
-  TRACE_EVENT_ASYNC_BEGIN2("identity",
-                           "GaiaWebAuthFlow",
-                           this,
-                           "extension_id",
-                           token_key->extension_id,
-                           "account_id",
-                           token_key->account_id);
+  TRACE_EVENT_ASYNC_BEGIN2("identity", "GaiaWebAuthFlow", this, "extension_id",
+                           token_key->extension_id, "account_id",
+                           token_key->account_id.id);
 
   const char kOAuth2RedirectPathFormat[] = "/%s";
   const char kOAuth2AuthorizeFormat[] =

@@ -1883,7 +1883,7 @@ TEST_F(LockContentsViewUnitTest,
        ToggleNoteActionVisibilityOnAuthEnabledChanged) {
   auto* tray_action = Shell::Get()->tray_action();
   TestTrayActionClient action_client;
-  tray_action->SetClient(action_client.CreateInterfacePtrAndBind(),
+  tray_action->SetClient(action_client.CreateRemoteAndBind(),
                          mojom::TrayActionState::kAvailable);
   auto* contents = new LockContentsView(
       Shell::Get()->tray_action()->GetLockScreenNoteState(),

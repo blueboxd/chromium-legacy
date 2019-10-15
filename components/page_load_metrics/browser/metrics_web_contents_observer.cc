@@ -776,6 +776,10 @@ bool MetricsWebContentsObserver::ShouldTrackNavigation(
       return false;
   }
 
+  // TODO(crbug.com/1014174): Ignore back-forward cached navigations for now.
+  if (navigation_handle->IsServedFromBackForwardCache())
+    return false;
+
   return true;
 }
 

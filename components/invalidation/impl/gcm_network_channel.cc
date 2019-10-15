@@ -434,7 +434,7 @@ void GCMNetworkChannel::RequestDetailedStatus(
   callback.Run(*diagnostic_info_.CollectDebugData());
 }
 
-void GCMNetworkChannel::UpdateCredentials(const std::string& email,
+void GCMNetworkChannel::UpdateCredentials(const CoreAccountId& account_id,
                                           const std::string& token) {
   // Do nothing. We get access token by requesting it for every message.
 }

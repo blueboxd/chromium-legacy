@@ -14,7 +14,10 @@
 #include "ash/public/mojom/ime_info.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display_observer.h"
 
 namespace ui {
@@ -68,7 +71,7 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
   }
 
   // Binds the mojo interface to this object.
-  void BindRequest(mojom::ImeControllerRequest request);
+  void BindReceiver(mojo::PendingReceiver<mojom::ImeController> receiver);
 
   // Returns true if switching to next/previous IME is allowed.
   bool CanSwitchIme() const;
@@ -91,7 +94,8 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
   void SwitchImeWithAccelerator(const ui::Accelerator& accelerator);
 
   // mojom::ImeController:
-  void SetClient(mojom::ImeControllerClientPtr client) override;
+  void SetClient(
+      mojo::PendingRemote<mojom::ImeControllerClient> client) override;
   void RefreshIme(const std::string& current_ime_id,
                   std::vector<mojom::ImeInfoPtr> available_imes,
                   std::vector<mojom::ImeMenuItemPtr> menu_items) override;
@@ -137,11 +141,11 @@ class ASH_EXPORT ImeController : public mojom::ImeController,
   std::vector<std::string> GetCandidateImesForAccelerator(
       const ui::Accelerator& accelerator) const;
 
-  // Bindings for users of the mojo interface.
-  mojo::BindingSet<mojom::ImeController> bindings_;
+  // Receivers for users of the mojo interface.
+  mojo::ReceiverSet<mojom::ImeController> receivers_;
 
   // Client interface back to IME code in chrome.
-  mojom::ImeControllerClientPtr client_;
+  mojo::Remote<mojom::ImeControllerClient> client_;
 
   // Copy of the current IME so we can return it by reference.
   mojom::ImeInfo current_ime_;

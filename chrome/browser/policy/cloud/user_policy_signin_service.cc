@@ -64,7 +64,7 @@ void UserPolicySigninService::PrepareForUserCloudPolicyManagerShutdown() {
 
 void UserPolicySigninService::RegisterForPolicyWithAccountId(
     const std::string& username,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const PolicyRegistrationCallback& callback) {
   DCHECK(!account_id.empty());
 

@@ -163,6 +163,9 @@ class CONTENT_EXPORT NavigationHandle {
   // handlers.
   virtual bool IsExternalProtocol() = 0;
 
+  // Whether the navigation is restoring a page from back-forward cache.
+  virtual bool IsServedFromBackForwardCache() = 0;
+
   // Navigation control flow --------------------------------------------------
 
   // The net error code if an error happened prior to commit. Otherwise it will

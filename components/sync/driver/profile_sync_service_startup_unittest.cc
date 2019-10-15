@@ -636,6 +636,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceFirstTime) {
                                       WeakHandle<DataTypeDebugInfoListener>(),
                                       "test-guid", "test-birthday",
                                       "test-bag-of-chips",
+                                      /*last_keystore_key=*/std::string(),
                                       /*success=*/true);
   ASSERT_TRUE(sync_service()->IsEngineInitialized());
   EXPECT_EQ(SyncService::TransportState::PENDING_DESIRED_CONFIGURATION,
@@ -717,6 +718,7 @@ TEST_F(ProfileSyncServiceStartupTest, FullStartupSequenceNthTime) {
                                       WeakHandle<DataTypeDebugInfoListener>(),
                                       "test-guid", "test-birthday",
                                       "test-bag-of-chips",
+                                      /*last_keystore_key=*/std::string(),
                                       /*success=*/true);
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURING));

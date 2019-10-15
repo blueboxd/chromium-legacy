@@ -41,6 +41,7 @@
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/origin_policy.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 

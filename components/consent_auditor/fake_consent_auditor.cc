@@ -32,7 +32,7 @@ FakeConsentAuditor::FakeConsentAuditor() {}
 FakeConsentAuditor::~FakeConsentAuditor() {}
 
 void FakeConsentAuditor::RecordSyncConsent(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const sync_pb::UserConsentTypes::SyncConsent& consent) {
   // TODO(markusheintz): Change the Fake to store the proto instead of calling
   // RecordGaiaConsent.
@@ -44,13 +44,13 @@ void FakeConsentAuditor::RecordSyncConsent(
 }
 
 void FakeConsentAuditor::RecordAssistantActivityControlConsent(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent) {
   NOTIMPLEMENTED();
 }
 
 void FakeConsentAuditor::RecordGaiaConsent(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     consent_auditor::Feature feature,
     const std::vector<int>& description_grd_ids,
     int confirmation_grd_id,

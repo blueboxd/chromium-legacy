@@ -789,10 +789,6 @@ cr.define('cr.ui.login', function() {
 
       if (this.showingViewsLogin) {
         chrome.send('updateOobeDialogSize', [width, height]);
-        $('scroll-container').classList.toggle('disable-scroll', true);
-        $('inner-container').classList.toggle('disable-scroll', true);
-        $('inner-container').style.top =
-            cr.ui.toCssPx($('scroll-container').scrollTop);
       }
     },
 

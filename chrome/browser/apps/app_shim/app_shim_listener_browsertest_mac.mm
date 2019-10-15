@@ -18,6 +18,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_listener_test_api_mac.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"

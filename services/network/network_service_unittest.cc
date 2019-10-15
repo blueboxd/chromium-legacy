@@ -726,7 +726,7 @@ class NetworkServiceTestWithService : public testing::Test {
     test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
     service_ = NetworkService::CreateForTesting();
-    service_->Bind(mojo::MakeRequest(&network_service_));
+    service_->Bind(network_service_.BindNewPipeAndPassReceiver());
   }
 
   void CreateNetworkContext() {
@@ -778,7 +778,7 @@ class NetworkServiceTestWithService : public testing::Test {
 
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<TestURLLoaderClient> client_;
-  mojom::NetworkServicePtr network_service_;
+  mojo::Remote<mojom::NetworkService> network_service_;
   mojo::Remote<mojom::NetworkContext> network_context_;
   mojom::URLLoaderPtr loader_;
 
@@ -1395,7 +1395,7 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
         service_(NetworkService::CreateForTesting()) {
-    service_->Bind(mojo::MakeRequest(&network_service_));
+    service_->Bind(network_service_.BindNewPipeAndPassReceiver());
   }
 
   ~NetworkServiceNetworkChangeTest() override {}
@@ -1405,7 +1405,7 @@ class NetworkServiceNetworkChangeTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  mojom::NetworkServicePtr network_service_;
+  mojo::Remote<mojom::NetworkService> network_service_;
   std::unique_ptr<NetworkService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkChangeTest);

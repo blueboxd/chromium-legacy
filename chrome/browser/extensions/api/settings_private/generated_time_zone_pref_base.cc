@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"

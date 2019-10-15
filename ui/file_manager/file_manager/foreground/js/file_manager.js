@@ -625,9 +625,7 @@ class FileManager extends cr.EventTarget {
     this.ui_.decorateFilesMenuItems();
     this.ui_.selectionMenuButton.hidden = false;
 
-    console.warn('Files app sync started');
     await Promise.all([fileListPromise, currentDirectoryPromise]);
-    console.warn('Files app sync finished');
   }
 
   /**
@@ -776,7 +774,6 @@ class FileManager extends cr.EventTarget {
   initGeneral_() {
     // Initialize the application state.
     // TODO(mtomasz): Unify window.appState with location.search format.
-    console.warn('Files app starting up');
     if (window.appState) {
       const params = {};
 
@@ -1402,8 +1399,6 @@ class FileManager extends cr.EventTarget {
     const promise = (async () => {
       if (directoryEntry) {
         const entryDescription = util.entryDebugString(directoryEntry);
-        console.warn(
-            `Files app start up: Changing to directory: ${entryDescription}`);
         await new Promise(resolve => {
           this.directoryModel_.changeDirectoryEntry(
               assert(directoryEntry), resolve);
@@ -1411,8 +1406,6 @@ class FileManager extends cr.EventTarget {
         if (opt_selectionEntry) {
           this.directoryModel_.selectEntry(opt_selectionEntry);
         }
-        console.warn(
-            `Files app start up: Changed to directory: ${entryDescription}`);
       } else {
         console.warn('No entry for finishSetupCurrentDirectory_');
       }

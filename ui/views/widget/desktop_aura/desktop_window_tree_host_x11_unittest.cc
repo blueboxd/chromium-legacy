@@ -454,7 +454,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
   ASSERT_NE(parent_widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget(),
             child_widget.GetNativeWindow()->GetHost()->GetAcceleratedWidget());
   Widget::CloseAllSecondaryWidgets();
-  EXPECT_TRUE(DesktopWindowTreeHostX11::GetAllOpenWindows().empty());
+  EXPECT_TRUE(DesktopWindowTreeHostLinux::GetAllOpenWindows().empty());
 }
 
 // A Widget that allows setting the min/max size for the widget.

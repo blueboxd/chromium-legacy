@@ -12,6 +12,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -204,7 +205,7 @@ class SigninHeaderHelper {
 // added to the request to |url|.
 std::string BuildMirrorRequestCookieIfPossible(
     const GURL& url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask);
@@ -215,7 +216,7 @@ std::string BuildMirrorRequestCookieIfPossible(
 void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask);
@@ -227,7 +228,7 @@ void AppendOrRemoveMirrorRequestHeader(
 bool AppendOrRemoveDiceRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     bool sync_enabled,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,

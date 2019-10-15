@@ -12,14 +12,13 @@
 
 namespace ash {
 
-TestImeControllerClient::TestImeControllerClient() : binding_(this) {}
+TestImeControllerClient::TestImeControllerClient() = default;
 
 TestImeControllerClient::~TestImeControllerClient() = default;
 
-mojom::ImeControllerClientPtr TestImeControllerClient::CreateInterfacePtr() {
-  mojom::ImeControllerClientPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<mojom::ImeControllerClient>
+TestImeControllerClient::CreateRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 void TestImeControllerClient::SwitchToNextIme() {

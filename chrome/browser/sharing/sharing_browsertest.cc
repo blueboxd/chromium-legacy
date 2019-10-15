@@ -79,15 +79,19 @@ void SharingBrowserTest::SetUpDevices(
     std::unique_ptr<syncer::DeviceInfo> fake_device =
         std::make_unique<syncer::DeviceInfo>(
             device->guid(),
-            base::StrCat(
-                {"testing_device_", base::NumberToString(device_id++)}),
+            base::StrCat({"testing_device_", base::NumberToString(device_id)}),
             device->chrome_version(), device->sync_user_agent(),
             device->device_type(), device->signin_scoped_device_id(),
-            device->hardware_info(), device->last_updated_timestamp(),
+            base::SysInfo::HardwareInfo{
+                "Google",
+                base::StrCat({"model", base::NumberToString(device_id)}),
+                "serial_number"},
+            device->last_updated_timestamp(),
             device->send_tab_to_self_receiving_enabled(),
             device->sharing_info());
     fake_device_info_tracker_.Add(fake_device.get());
     device_infos_.push_back(std::move(fake_device));
+    device_id++;
   }
 }
 

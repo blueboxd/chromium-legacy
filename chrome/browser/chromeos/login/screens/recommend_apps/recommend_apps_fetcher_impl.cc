@@ -275,7 +275,8 @@ RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
       url_loader_factory_(url_loader_factory),
       arc_features_getter_(
           base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)) {
-  connector_->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
+  connector_->Connect(ash::mojom::kServiceName,
+                      cros_display_config_.BindNewPipeAndPassReceiver());
 }
 
 RecommendAppsFetcherImpl::~RecommendAppsFetcherImpl() = default;

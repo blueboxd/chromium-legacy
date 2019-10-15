@@ -14,9 +14,9 @@
 
 #header-container {
   padding-bottom: 0;
-  padding-inline-end: var(--oobe-dialog-content-padding);
-  padding-inline-start: var(--oobe-dialog-content-padding);
-  padding-top: var(--oobe-dialog-content-padding);
+  padding-inline-end: var(--oobe-dialog-content-padding, 64px);
+  padding-inline-start: var(--oobe-dialog-content-padding, 64px);
+  padding-top: var(--oobe-dialog-content-padding, 64px);
 }
 
 #header-container[android] {
@@ -60,7 +60,7 @@
 
 #footer-container {
   overflow-y: auto;
-  padding: 0 var(--oobe-dialog-content-padding);
+  padding: 0 var(--oobe-dialog-content-padding, 64px);
 }
 
 #footer-container[noFooterPadding] {
@@ -68,11 +68,11 @@
 }
 
 #oobe-bottom {
-  height: calc(var(--oobe-dialog-footer-height)
-               - 2 * var(--oobe-dialog-footer-padding));
+  height: calc(var(--oobe-dialog-footer-height, 96px)
+               - 2 * var(--oobe-dialog-footer-padding, 32px));
   /* Width: real padding - button margin */
-  padding: var(--oobe-dialog-footer-padding)
-           calc(var(--oobe-dialog-footer-padding) - 4px);
+  padding: var(--oobe-dialog-footer-padding, 32px)
+           calc(var(--oobe-dialog-footer-padding, 32px) - 4px);
   z-index: 1;
 }
 

@@ -188,7 +188,7 @@ class TestSyncNetworkChannel : public SyncNetworkChannel {
 
   void SendMessage(const std::string& message) override {}
 
-  void UpdateCredentials(const std::string& email,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& token) override {}
 
   int GetInvalidationClientType() override { return 0; }

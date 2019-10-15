@@ -40,6 +40,7 @@ class MockSyncService : public SyncService {
   MOCK_CONST_METHOD0(GetAuthError, GoogleServiceAuthError());
   MOCK_CONST_METHOD0(GetAuthErrorTime, base::Time());
   MOCK_CONST_METHOD0(RequiresClientUpgrade, bool());
+  MOCK_CONST_METHOD0(GetExperimentalAuthenticationId, std::string());
 
   MOCK_METHOD0(GetSetupInProgressHandle,
                std::unique_ptr<SyncSetupInProgressHandle>());

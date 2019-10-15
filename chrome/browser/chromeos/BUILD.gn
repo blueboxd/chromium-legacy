@@ -8,6 +8,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/ozone/ozone.gni")
 
@@ -39,6 +40,7 @@ source_set("chromeos") {
     "//components/policy/proto",
     "//components/signin/core/browser",
     "//content/app/resources",
+    "//mojo/public/cpp/bindings",
     "//ui/accessibility/mojom",
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
@@ -3023,6 +3025,7 @@ source_set("unit_tests") {
     "//device/bluetooth",
     "//google_apis:test_support",
     "//google_apis/drive:test_support",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system:system",
     "//services/data_decoder/public/cpp:test_support",
     "//services/device/public/cpp:test_support",
@@ -3168,4 +3171,30 @@ fuzzer_test("zeroconf_printer_detector_fuzzer") {
     "//chrome/browser",
     "//chrome/browser/chromeos",
   ]
+}
+
+if (use_libfuzzer) {
+  fuzzer_test("policy_fuzzer") {
+    sources = [
+      "policy/fuzzer/policy_fuzzer.cc",
+    ]
+
+    deps = [
+      ":policy_fuzzer_proto",
+      "//chrome/browser",
+      "//chrome/browser/chromeos",
+      "//third_party/libprotobuf-mutator",
+    ]
+  }
+
+  fuzzable_proto_library("policy_fuzzer_proto") {
+    sources = [
+      "policy/fuzzer/policy_fuzzer.proto",
+    ]
+
+    import_dirs = [ "//components/policy/proto" ]
+
+    link_deps =
+        [ "//components/policy/proto:chrome_device_policy_full_runtime_proto" ]
+  }
 }

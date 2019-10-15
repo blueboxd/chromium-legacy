@@ -13,10 +13,13 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
+#endif
+
 #if defined(USE_X11)
 #include "ui/gfx/x/x11.h"        // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
 namespace views {
@@ -69,8 +72,8 @@ BOOL CALLBACK FindAllWindowsCallback(HWND hwnd, LPARAM param) {
 
 std::vector<aura::Window*> GetAllTopLevelWindows() {
   std::vector<aura::Window*> roots;
-#if defined(USE_X11)
-  roots = DesktopWindowTreeHostX11::GetAllOpenWindows();
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  roots = DesktopWindowTreeHostLinux::GetAllOpenWindows();
 #elif defined(OS_WIN)
   {
     FindAllWindowsData data = {&roots};

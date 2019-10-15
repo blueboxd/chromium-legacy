@@ -14,6 +14,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"

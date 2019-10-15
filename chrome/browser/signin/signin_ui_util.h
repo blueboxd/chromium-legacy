@@ -89,7 +89,7 @@ void EnableSyncFromPromo(
              signin_metrics::AccessPoint signin_access_point,
              signin_metrics::PromoAction signin_promo_action,
              signin_metrics::Reason signin_reason,
-             const std::string& account_id,
+             const CoreAccountId& account_id,
              DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
         create_dice_turn_sync_on_helper_callback);
 }  // namespace internal

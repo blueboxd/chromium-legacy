@@ -17,12 +17,13 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/buildflags.h"
 #include "media/media_buildflags.h"
 
 class BackgroundModeManager;
+class BrowserProcessPlatformPart;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class GpuModeManager;

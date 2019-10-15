@@ -202,6 +202,8 @@ void DeviceInfoSyncBridge::OnSyncStarting(
   device_info_prefs_->GarbageCollectExpiredCacheGuids();
   // Add the cache guid to the local prefs.
   device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
+  // SyncMode determines the client name in GetLocalClientName().
+  sync_mode_ = request.sync_mode;
 }
 
 std::unique_ptr<MetadataChangeList>
@@ -216,9 +218,8 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   DCHECK(all_data_.empty());
   DCHECK(!local_cache_guid_.empty());
 
-  local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_personalizable_device_name_,
-                                          local_hardware_info_);
+  local_device_info_provider_->Initialize(
+      local_cache_guid_, GetLocalClientName(), local_hardware_info_);
 
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& change : entity_data) {
@@ -397,6 +398,22 @@ bool DeviceInfoSyncBridge::DeleteSpecifics(const std::string& guid,
   }
 }
 
+std::string DeviceInfoSyncBridge::GetLocalClientName() const {
+  // |sync_mode_| may not be ready when this function is called.
+  if (!sync_mode_) {
+    auto device_it = all_data_.find(local_cache_guid_);
+    if (device_it != all_data_.end()) {
+      return device_it->second->client_name();
+    }
+  }
+
+  if (sync_mode_ == SyncMode::kFull) {
+    return local_personalizable_device_name_;
+  }
+
+  return local_hardware_info_.model;
+}
+
 void DeviceInfoSyncBridge::OnStoreCreated(
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<ModelTypeStore> store) {
@@ -498,9 +515,8 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
   // If sync already enabled (usual case without data corruption), we can
   // initialize the provider immediately.
   local_cache_guid_ = local_cache_guid_in_metadata;
-  local_device_info_provider_->Initialize(local_cache_guid_,
-                                          local_personalizable_device_name_,
-                                          local_hardware_info_);
+  local_device_info_provider_->Initialize(
+      local_cache_guid_, GetLocalClientName(), local_hardware_info_);
 
   // This probably isn't strictly needed, but in case the cache_guid has changed
   // we save the new one to prefs.

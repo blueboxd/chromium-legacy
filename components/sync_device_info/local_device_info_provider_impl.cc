@@ -52,7 +52,7 @@ LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
 
 void LocalDeviceInfoProviderImpl::Initialize(
     const std::string& cache_guid,
-    const std::string& session_name,
+    const std::string& client_name,
     const base::SysInfo::HardwareInfo& hardware_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!cache_guid.empty());
@@ -60,7 +60,7 @@ void LocalDeviceInfoProviderImpl::Initialize(
   // The local device doesn't have a last updated timestamps. It will be set in
   // the specifics when it will be synced up.
   local_device_info_ = std::make_unique<DeviceInfo>(
-      cache_guid, session_name, version_, MakeUserAgentForSync(channel_),
+      cache_guid, client_name, version_, MakeUserAgentForSync(channel_),
       GetLocalDeviceType(), sync_client_->GetSigninScopedDeviceId(),
       hardware_info,
       /*last_updated_timestamp=*/base::Time(),

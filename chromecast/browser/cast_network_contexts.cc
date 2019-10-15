@@ -24,6 +24,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -244,10 +245,10 @@ void CastNetworkContexts::AddProxyToNetworkContextParams(
     proxy_config_service_->AddObserver(this);
   }
 
-  network::mojom::ProxyConfigClientPtr proxy_config_client;
-  network_context_params->proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
-  proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
+  mojo::PendingRemote<network::mojom::ProxyConfigClient> proxy_config_client;
+  network_context_params->proxy_config_client_receiver =
+      proxy_config_client.InitWithNewPipeAndPassReceiver();
+  proxy_config_client_set_.Add(std::move(proxy_config_client));
 
   poller_binding_set_.AddBinding(
       this,
@@ -264,22 +265,20 @@ void CastNetworkContexts::OnProxyConfigChanged(
     const net::ProxyConfigWithAnnotation& config,
     net::ProxyConfigService::ConfigAvailability availability) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  proxy_config_client_set_.ForAllPtrs(
-      [config,
-       availability](network::mojom::ProxyConfigClient* proxy_config_client) {
-        switch (availability) {
-          case net::ProxyConfigService::CONFIG_VALID:
-            proxy_config_client->OnProxyConfigUpdated(config);
-            break;
-          case net::ProxyConfigService::CONFIG_UNSET:
-            proxy_config_client->OnProxyConfigUpdated(
-                net::ProxyConfigWithAnnotation::CreateDirect());
-            break;
-          case net::ProxyConfigService::CONFIG_PENDING:
-            NOTREACHED();
-            break;
-        }
-      });
+  for (const auto& proxy_config_client : proxy_config_client_set_) {
+    switch (availability) {
+      case net::ProxyConfigService::CONFIG_VALID:
+        proxy_config_client->OnProxyConfigUpdated(config);
+        break;
+      case net::ProxyConfigService::CONFIG_UNSET:
+        proxy_config_client->OnProxyConfigUpdated(
+            net::ProxyConfigWithAnnotation::CreateDirect());
+        break;
+      case net::ProxyConfigService::CONFIG_PENDING:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 void CastNetworkContexts::OnLazyProxyConfigPoll() {

@@ -274,7 +274,8 @@ void LogErrorResult(ash::mojom::DisplayConfigResult result) {
 DisplayInfoProviderChromeOS::DisplayInfoProviderChromeOS(
     service_manager::Connector* connector) {
   CHECK(connector);
-  connector->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
+  connector->Connect(ash::mojom::kServiceName,
+                     cros_display_config_.BindNewPipeAndPassReceiver());
 }
 
 DisplayInfoProviderChromeOS::~DisplayInfoProviderChromeOS() = default;

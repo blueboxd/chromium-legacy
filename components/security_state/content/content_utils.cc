@@ -36,26 +36,26 @@ namespace security_state {
 namespace {
 
 // Note: This is a lossy operation. Not all of the policies that can be
-// expressed by a SecurityLevel can be expressed by a blink::WebSecurityStyle.
-blink::WebSecurityStyle SecurityLevelToSecurityStyle(
+// expressed by a SecurityLevel can be expressed by a blink::SecurityStyle.
+blink::SecurityStyle SecurityLevelToSecurityStyle(
     security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
     case security_state::WARNING:
-      return blink::kWebSecurityStyleNeutral;
+      return blink::SecurityStyle::kNeutral;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::EV_SECURE:
     case security_state::SECURE:
-      return blink::kWebSecurityStyleSecure;
+      return blink::SecurityStyle::kSecure;
     case security_state::DANGEROUS:
-      return blink::kWebSecurityStyleInsecure;
+      return blink::SecurityStyle::kInsecure;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
-      return blink::kWebSecurityStyleNeutral;
+      return blink::SecurityStyle::kNeutral;
   }
 
   NOTREACHED();
-  return blink::kWebSecurityStyleUnknown;
+  return blink::SecurityStyle::kUnknown;
 }
 
 void ExplainHTTPSecurity(
@@ -408,11 +408,11 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   return state;
 }
 
-blink::WebSecurityStyle GetSecurityStyle(
+blink::SecurityStyle GetSecurityStyle(
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations) {
-  const blink::WebSecurityStyle security_style =
+  const blink::SecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_level);
 
   if (visible_security_state.malicious_content_status !=

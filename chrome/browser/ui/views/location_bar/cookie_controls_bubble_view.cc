@@ -61,7 +61,8 @@ void CookieControlsBubbleView::OnStatusChanged(
     OnBlockedCookiesCountChanged(blocked_cookies);
     return;
   }
-  intermediate_step_ = IntermediateStep::kNone;
+  if (new_status != CookieControlsController::Status::kEnabled)
+    intermediate_step_ = IntermediateStep::kNone;
   status_ = new_status;
   blocked_cookies_ = blocked_cookies;
   UpdateUi();
@@ -268,9 +269,8 @@ bool CookieControlsBubbleView::Accept() {
   } else {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);
     DCHECK_EQ(intermediate_step_, IntermediateStep::kNone);
-    controller_->OnCookieBlockingEnabledForSite(true);
     intermediate_step_ = IntermediateStep::kBlockingIsOn;
-    UpdateUi();
+    controller_->OnCookieBlockingEnabledForSite(true);
   }
   return false;
 }

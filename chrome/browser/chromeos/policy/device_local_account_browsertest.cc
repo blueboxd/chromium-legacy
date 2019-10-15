@@ -41,6 +41,7 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"

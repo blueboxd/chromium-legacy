@@ -8,11 +8,14 @@
 #include <vector>
 
 #include "ash/display/display_configuration_controller.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
@@ -29,17 +32,17 @@ namespace {
 
 class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
  public:
-  TestCrosDisplayConfig() : binding_(this) {}
+  TestCrosDisplayConfig() = default;
 
-  ash::mojom::CrosDisplayConfigControllerPtr CreateInterfacePtrAndBind() {
-    ash::mojom::CrosDisplayConfigControllerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
+  CreateRemoteAndBind() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   // ash::mojom::CrosDisplayConfigController:
-  void AddObserver(ash::mojom::CrosDisplayConfigObserverAssociatedPtrInfo
-                       observer) override {}
+  void AddObserver(
+      mojo::PendingAssociatedRemote<ash::mojom::CrosDisplayConfigObserver>
+          observer) override {}
   void GetDisplayLayoutInfo(GetDisplayLayoutInfoCallback callback) override {}
   void SetDisplayLayoutInfo(ash::mojom::DisplayLayoutInfoPtr info,
                             SetDisplayLayoutInfoCallback callback) override {}
@@ -69,7 +72,7 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController {
                         TouchCalibrationCallback callback) override {}
 
  private:
-  mojo::Binding<ash::mojom::CrosDisplayConfigController> binding_;
+  mojo::Receiver<ash::mojom::CrosDisplayConfigController> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCrosDisplayConfig);
 };
@@ -88,8 +91,8 @@ class OobeDisplayChooserTest : public ChromeAshTestBase {
 
     cros_display_config_ = std::make_unique<TestCrosDisplayConfig>();
     display_chooser_ = std::make_unique<OobeDisplayChooser>();
-    display_chooser_->set_cros_display_config_ptr_for_test(
-        cros_display_config_->CreateInterfacePtrAndBind());
+    display_chooser_->set_cros_display_config_for_test(
+        cros_display_config_->CreateRemoteAndBind());
 
     ui::DeviceDataManagerTestApi().OnDeviceListsComplete();
   }

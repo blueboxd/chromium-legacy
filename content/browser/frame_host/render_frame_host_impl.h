@@ -931,10 +931,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for unload handler processing.
   void SetSubframeUnloadTimeoutForTesting(const base::TimeDelta& timeout);
 
-  // Returns the list of NavigationEntry ids corresponding to NavigationRequests
-  // waiting to commit in this RenderFrameHost.
-  std::set<int> GetNavigationEntryIdsPendingCommit();
-
   service_manager::BinderRegistry& BinderRegistryForTesting() {
     return *registry_;
   }
@@ -1189,6 +1185,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   BackForwardCacheMetrics* GetBackForwardCacheMetrics();
 
   const std::string& GetEncoding() const { return canonical_encoding_; }
+
+  // Return true if this contains at least one NavigationRequest waiting to
+  // commit in this RenderFrameHost.
+  bool HasPendingCommitNavigationForTesting();
 
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 

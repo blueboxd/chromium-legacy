@@ -15,7 +15,6 @@ class PrefService;
 
 namespace base {
 class Clock;
-class RepeatingTimer;
 }  // namespace base
 
 namespace chromeos {
@@ -32,19 +31,23 @@ class PrintJobHistoryCleaner {
                          PrefService* pref_service);
   ~PrintJobHistoryCleaner();
 
-  void Start();
-  void CleanUp();
+  // Removes expired print jobs from the database.
+  // The expiration period is controlled by
+  // |prefs::kPrintJobHistoryExpirationPeriod| pref.
+  // |callback| is called after all expired print jobs are removed from the
+  // database.
+  void CleanUp(base::OnceClosure callback);
 
-  // Overrides elements responsible for time progression to allow testing.
-  void OverrideTimeForTesting(const base::Clock* clock,
-                              std::unique_ptr<base::RepeatingTimer> timer);
+  void SetClockForTesting(const base::Clock* clock);
 
  private:
-  void OnPrefServiceInitialized(bool success);
+  void OnPrefServiceInitialized(base::OnceClosure callback, bool success);
   void OnPrintJobsRetrieved(
+      base::OnceClosure callback,
       bool success,
       std::unique_ptr<std::vector<printing::proto::PrintJobInfo>>
           print_job_infos);
+  void OnPrintJobsDeleted(base::OnceClosure callback, bool success);
 
   // This object is owned by PrintJobHistoryService and outlives
   // PrintJobHistoryCleaner.
@@ -55,8 +58,10 @@ class PrintJobHistoryCleaner {
   // Points to the base::DefaultClock by default.
   const base::Clock* clock_;
 
-  // Timer used to update |print_job_database_|.
-  std::unique_ptr<base::RepeatingTimer> timer_;
+  // Stores the completion time of the oldest print job in the database or the
+  // time of last cleanup.
+  // This is used to determine whether we need to run real cleanup or not.
+  base::Time oldest_print_job_completion_time_;
 
   base::WeakPtrFactory<PrintJobHistoryCleaner> weak_ptr_factory_{this};
 

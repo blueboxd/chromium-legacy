@@ -37,8 +37,8 @@
 #include "base/time/time.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_response_info.h"
+#include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
@@ -217,7 +217,7 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void SetCTPolicyCompliance(net::ct::CTPolicyCompliance);
   BLINK_PLATFORM_EXPORT void SetIsLegacyTLSVersion(bool);
 
-  BLINK_PLATFORM_EXPORT void SetSecurityStyle(WebSecurityStyle);
+  BLINK_PLATFORM_EXPORT void SetSecurityStyle(SecurityStyle);
 
   BLINK_PLATFORM_EXPORT void SetSecurityDetails(const WebSecurityDetails&);
   BLINK_PLATFORM_EXPORT base::Optional<WebSecurityDetails>

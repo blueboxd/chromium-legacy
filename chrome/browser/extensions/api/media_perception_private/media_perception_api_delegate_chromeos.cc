@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"

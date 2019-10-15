@@ -208,68 +208,64 @@ class DirectoryItem extends cr.ui.TreeItem {
   }
 
   /**
-   * Returns true if this item is inside any part of My Drive.
+   * Returns true if this.entry is inside any part of Drive 'My Drive'.
    * @type {!boolean}
    */
   get insideMyDrive() {
-    if (!this.entry) {
-      return false;
+    let rootType;
+
+    if (this.entry) {
+      const root = this.parentTree_.volumeManager.getLocationInfo(this.entry);
+      rootType = root ? root.rootType : null;
     }
 
-    const locationInfo =
-        this.parentTree_.volumeManager.getLocationInfo(this.entry);
-    return locationInfo &&
-        locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE;
+    return rootType && (rootType === VolumeManagerCommon.RootType.DRIVE);
   }
 
   /**
-   * Returns true if this item is inside any part of Computers.
+   * Returns true if this.entry is inside any part of Drive 'Computers'.
    * @type {!boolean}
    */
   get insideComputers() {
-    if (!this.entry) {
-      return false;
+    let rootType;
+
+    if (this.entry) {
+      const root = this.parentTree_.volumeManager.getLocationInfo(this.entry);
+      rootType = root ? root.rootType : null;
     }
 
-    const locationInfo =
-        this.parentTree_.volumeManager.getLocationInfo(this.entry);
-    return locationInfo &&
-        (locationInfo.rootType ===
-             VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
-         locationInfo.rootType === VolumeManagerCommon.RootType.COMPUTER);
+    return rootType &&
+        (rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+         rootType === VolumeManagerCommon.RootType.COMPUTER);
   }
 
   /**
-   * Returns true if this item is inside any part of Drive, including Team
-   * Drive.
+   * Returns true if this.entry is inside any part of Drive.
    * @type {!boolean}
    */
   get insideDrive() {
-    if (!this.entry) {
-      return false;
+    let rootType;
+
+    if (this.entry) {
+      const root = this.parentTree_.volumeManager.getLocationInfo(this.entry);
+      rootType = root ? root.rootType : null;
     }
 
-    const locationInfo =
-        this.parentTree_.volumeManager.getLocationInfo(this.entry);
-    return locationInfo &&
-        (locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE ||
-         locationInfo.rootType ===
-             VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT ||
-         locationInfo.rootType === VolumeManagerCommon.RootType.SHARED_DRIVE ||
-         locationInfo.rootType ===
-             VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
-         locationInfo.rootType === VolumeManagerCommon.RootType.COMPUTER ||
-         locationInfo.rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
-         locationInfo.rootType ===
-             VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
-         locationInfo.rootType ===
-             VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+    return rootType &&
+        (rootType === VolumeManagerCommon.RootType.DRIVE ||
+         rootType === VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT ||
+         rootType === VolumeManagerCommon.RootType.SHARED_DRIVE ||
+         rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+         rootType === VolumeManagerCommon.RootType.COMPUTER ||
+         rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
+         rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
+         rootType === VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
   }
 
   /**
-   * If the this directory supports 'shared' feature, as in displays shared
-   * icon. It's only supported inside 'My Drive', even Shared Drive doesn't
-   * support it.
+   * Returns true if this.entry supports the 'shared' feature, as in, displays
+   * a shared icon. It's only supported inside 'My Drive' or 'Computers', even
+   * Shared Drive does not support it.
    * @type {!boolean}
    */
   get supportDriveSpecificIcons() {

@@ -27,10 +27,10 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/fullscreen/fullscreen_options.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -569,8 +569,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Can be overridden by a delegate to return the security style of the
   // given |web_contents|, populating |security_style_explanations| to
   // explain why the SecurityStyle was downgraded. Returns
-  // WebSecurityStyleUnknown if not overriden.
-  virtual blink::WebSecurityStyle GetSecurityStyle(
+  // SecurityStyleUnknown if not overriden.
+  virtual blink::SecurityStyle GetSecurityStyle(
       WebContents* web_contents,
       SecurityStyleExplanations* security_style_explanations);
 

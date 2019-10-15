@@ -71,8 +71,13 @@ final class BindService {
 
         try {
             return bindServiceByReflection(context, intent, connection, flags, handler);
-        } catch (ReflectiveOperationException e) {
-            return bindServiceByCall(context, intent, connection, flags);
+        } catch (ReflectiveOperationException reflectionException) {
+            try {
+                return bindServiceByCall(context, intent, connection, flags);
+            } catch (RuntimeException runtimeException) {
+                // Include the reflectionException in crash reports.
+                throw new RuntimeException(runtimeException.getMessage(), reflectionException);
+            }
         }
     }
 

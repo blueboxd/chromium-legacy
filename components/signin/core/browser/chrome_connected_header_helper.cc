@@ -58,7 +58,7 @@ ChromeConnectedHeaderHelper::ChromeConnectedHeaderHelper(
 // static
 std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
     const GURL& url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
@@ -66,7 +66,7 @@ std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
   if (!chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings))
     return "";
   return chrome_connected_helper.BuildRequestHeader(
-      false /* is_header_request */, url, account_id, profile_mode_mask);
+      false /* is_header_request */, url, gaia_id, profile_mode_mask);
 }
 
 // static
@@ -167,7 +167,7 @@ bool ChromeConnectedHeaderHelper::IsUrlEligibleForRequestHeader(
 std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
     bool is_header_request,
     const GURL& url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     int profile_mode_mask) {
 #if defined(OS_ANDROID)
   bool is_mice_enabled = base::FeatureList::IsEnabled(kMiceFeature);
@@ -183,16 +183,16 @@ std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
 // filtered upstream and we want to enforce account consistency in Public
 // Sessions and Active Directory logins.
 #if !defined(OS_CHROMEOS)
-  if (account_id.empty() && !is_mice_enabled)
+  if (gaia_id.empty() && !is_mice_enabled)
     return std::string();
 #endif  // !defined(OS_CHROMEOS)
 
   std::vector<std::string> parts;
-  if (!account_id.empty() &&
+  if (!gaia_id.empty() &&
       IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
     // Only set the Gaia ID on domains that actually require it.
     parts.push_back(
-        base::StringPrintf("%s=%s", kGaiaIdAttrName, account_id.c_str()));
+        base::StringPrintf("%s=%s", kGaiaIdAttrName, gaia_id.c_str()));
   }
   parts.push_back(
       base::StringPrintf("%s=%s", kProfileModeAttrName,

@@ -63,7 +63,9 @@ void HeaderModificationDelegateImpl::ProcessRequest(
       request_adapter, redirect_url, profile_->IsOffTheRecord(),
       prefs->GetInteger(prefs::kIncognitoModeAvailability),
       AccountConsistencyModeManager::GetMethodForProfile(profile_),
-      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId(),
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->GetPrimaryAccountInfo()
+          .gaia,
 #if defined(OS_CHROMEOS)
       prefs->GetBoolean(prefs::kAccountConsistencyMirrorRequired),
 #endif

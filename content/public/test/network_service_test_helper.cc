@@ -19,7 +19,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_host_resolver.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
@@ -230,8 +230,9 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run();
   }
 
-  void BindRequest(network::mojom::NetworkServiceTestRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindReceiver(
+      mojo::PendingReceiver<network::mojom::NetworkServiceTest> receiver) {
+    receivers_.Add(this, std::move(receiver));
     if (!registered_as_destruction_observer_) {
       base::MessageLoopCurrentForIO::Get()->AddDestructionObserver(this);
       registered_as_destruction_observer_ = true;
@@ -241,7 +242,7 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   // base::MessageLoopCurrent::DestructionObserver:
   void WillDestroyCurrentMessageLoop() override {
     // Needs to be called on the IO thread.
-    bindings_.CloseAllBindings();
+    receivers_.Clear();
   }
 
  private:
@@ -251,7 +252,7 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   }
 
   bool registered_as_destruction_observer_ = false;
-  mojo::BindingSet<network::mojom::NetworkServiceTest> bindings_;
+  mojo::ReceiverSet<network::mojom::NetworkServiceTest> receivers_;
   TestHostResolver test_host_resolver_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
   std::unique_ptr<net::ScopedTransportSecurityStateSource>
@@ -272,7 +273,7 @@ NetworkServiceTestHelper::~NetworkServiceTestHelper() = default;
 void NetworkServiceTestHelper::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   registry->AddInterface(
-      base::Bind(&NetworkServiceTestHelper::BindNetworkServiceTestRequest,
+      base::Bind(&NetworkServiceTestHelper::BindNetworkServiceTestReceiver,
                  base::Unretained(this)));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -298,9 +299,9 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
   }
 }
 
-void NetworkServiceTestHelper::BindNetworkServiceTestRequest(
-    network::mojom::NetworkServiceTestRequest request) {
-  network_service_test_impl_->BindRequest(std::move(request));
+void NetworkServiceTestHelper::BindNetworkServiceTestReceiver(
+    mojo::PendingReceiver<network::mojom::NetworkServiceTest> receiver) {
+  network_service_test_impl_->BindReceiver(std::move(receiver));
 }
 
 }  // namespace content

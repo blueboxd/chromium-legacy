@@ -2153,6 +2153,9 @@ Output.prototype = {
             hintProperties);
     }
 
+    if (node.placeholder)
+      this.append_(buff, node.placeholder);
+
     if (AutomationPredicate.checkable(node))
       this.format_(
           node, '@hint_checkable', buff, ruleStr, undefined, hintProperties);

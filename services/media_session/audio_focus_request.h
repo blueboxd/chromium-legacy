@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
@@ -94,7 +95,7 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
 
   std::unique_ptr<MediaController> controller_;
 
-  mojom::MediaSessionPtr session_;
+  mojo::Remote<mojom::MediaSession> session_;
   mojom::MediaSessionInfoPtr session_info_;
   mojom::AudioFocusType audio_focus_type_;
 

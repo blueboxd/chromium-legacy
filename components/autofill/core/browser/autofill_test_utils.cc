@@ -120,6 +120,7 @@ void CreateTestAddressFormData(FormData* form,
                      mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form->url = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
+  form->is_action_empty = true;
   form->main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
   types->clear();

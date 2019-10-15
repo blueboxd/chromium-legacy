@@ -12,6 +12,7 @@
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
@@ -211,9 +212,25 @@ void AppServiceProxy::SetPermission(const std::string& app_id,
 void AppServiceProxy::Uninstall(const std::string& app_id) {
   if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
-      app_service_->Uninstall(update.AppType(), update.AppId());
+      app_service_->PromptUninstall(update.AppType(), update.AppId());
     });
   }
+}
+
+void AppServiceProxy::OnUninstallDialogClosed(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
+    bool uninstall,
+    bool clear_site_data,
+    bool report_abuse,
+    UninstallDialog* uninstall_dialog) {
+  if (uninstall)
+    app_service_->Uninstall(app_type, app_id, clear_site_data, report_abuse);
+
+  DCHECK(uninstall_dialog);
+  auto it = uninstall_dialogs_.find(uninstall_dialog);
+  DCHECK(it != uninstall_dialogs_.end());
+  uninstall_dialogs_.erase(it);
 }
 
 void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
@@ -289,6 +306,8 @@ void AppServiceProxy::AddAppIconSource(Profile* profile) {
 }
 
 void AppServiceProxy::Shutdown() {
+  uninstall_dialogs_.clear();
+
 #if defined(OS_CHROMEOS)
   if (app_service_.is_connected()) {
     extension_apps_->Shutdown();

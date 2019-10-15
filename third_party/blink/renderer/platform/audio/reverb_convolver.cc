@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace vector_math;
-
 const int kInputBufferSize = 8 * 16384;
 
 // We only process the leading portion of the impulse response in the real-time

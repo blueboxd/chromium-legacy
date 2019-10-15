@@ -208,13 +208,9 @@ bool IsObjectInTextRun(const std::vector<T>& objects,
 
 }  // namespace
 
-PdfAccessibilityTree::PdfAccessibilityTree(
-    content::RendererPpapiHost* host,
-    PP_Instance instance)
-    : host_(host),
-      instance_(instance),
-      zoom_(1.0) {
-}
+PdfAccessibilityTree::PdfAccessibilityTree(content::RendererPpapiHost* host,
+                                           PP_Instance instance)
+    : host_(host), instance_(instance) {}
 
 PdfAccessibilityTree::~PdfAccessibilityTree() {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
@@ -265,12 +261,12 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
 
 void PdfAccessibilityTree::SetAccessibilityViewportInfo(
     const PP_PrivateAccessibilityViewportInfo& viewport_info) {
-  zoom_ = viewport_info.zoom;
-  CHECK_GT(zoom_, 0);
+  zoom_device_scale_factor_ = viewport_info.zoom_device_scale_factor;
+  CHECK_GT(zoom_device_scale_factor_, 0);
   scroll_ = ToVector2dF(viewport_info.scroll);
-  scroll_.Scale(1.0 / zoom_);
+  scroll_.Scale(1.0 / zoom_device_scale_factor_);
   offset_ = ToVector2dF(viewport_info.offset);
-  offset_.Scale(1.0 / zoom_);
+  offset_.Scale(1.0 / zoom_device_scale_factor_);
 
   selection_start_page_index_ = viewport_info.selection_start_page_index;
   selection_start_char_index_ = viewport_info.selection_start_char_index;
@@ -830,7 +826,7 @@ content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
 
 gfx::Transform* PdfAccessibilityTree::MakeTransformFromViewInfo() {
   gfx::Transform* transform = new gfx::Transform();
-  float scale_factor = zoom_ / GetDeviceScaleFactor();
+  float scale_factor = zoom_device_scale_factor_ / GetDeviceScaleFactor();
   transform->Scale(scale_factor, scale_factor);
   transform->Translate(offset_);
   transform->Translate(-scroll_);

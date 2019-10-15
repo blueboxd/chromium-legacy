@@ -153,6 +153,7 @@ struct FormData {
   array<ButtonTitleInfo> button_titles;
   url.mojom.Url url;
   url.mojom.Url action;
+  bool is_action_empty;
   url.mojom.Origin main_frame_origin;
   bool is_form_tag;
   bool is_formless_checkout;

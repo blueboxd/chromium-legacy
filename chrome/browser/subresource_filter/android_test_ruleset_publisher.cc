@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/subresource_filter/jni_headers/TestRulesetPublisher_jni.h"

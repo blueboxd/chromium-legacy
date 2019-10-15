@@ -32,6 +32,9 @@ class PrintJobHistoryServiceImplTest : public ::testing::Test {
   PrintJobHistoryServiceImplTest() {}
 
   void SetUp() override {
+    test_prefs_.SetInitializationCompleted();
+    PrintJobHistoryService::RegisterProfilePrefs(test_prefs_.registry());
+
     std::unique_ptr<PrintJobDatabase> print_job_database =
         std::make_unique<TestPrintJobDatabase>();
     print_job_manager_ = std::make_unique<TestCupsPrintJobManager>(&profile_);

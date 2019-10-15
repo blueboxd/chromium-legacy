@@ -12,11 +12,12 @@
 }
 
 .oobe-popup {
-  width: 640px;
+  max-width: 640px;
 }
 
 #webview-container {
-  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
 }
 
 #webview-container.overlay-loading > webview,
@@ -33,8 +34,6 @@
 #overlay-webview-loading {
   display: block;
   height: 300px;
-  margin: 16px;
-  width: 608px;
 }
 
 #overlay-close-button {

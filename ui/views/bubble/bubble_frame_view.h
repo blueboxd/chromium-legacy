@@ -146,7 +146,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
                                    const gfx::Size& client_size,
                                    bool adjust_to_fit_available_bounds);
 
-  Button* GetCloseButtonForTest() { return close_; }
+  Button* GetCloseButtonForTesting() { return close_; }
+
+  View* GetHeaderViewForTesting() const { return header_view_; }
 
   // Resets the time when view has been shown. Tests may need to call this
   // method if they use events that could be otherwise treated as unintended.
@@ -213,9 +215,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // The client_view insets (from the frame view) for the given |frame_width|.
   gfx::Insets GetClientInsetsForFrameWidth(int frame_width) const;
 
-  // Gets the size of the |header_view_| or an empty size if there is no header
-  // view or if it is not visible.
-  gfx::Size GetHeaderSize() const;
+  // Gets the height of the |header_view_| given a |frame_width|. Returns zero
+  // if there is no header view or if it is not visible.
+  int GetHeaderHeightForFrameWidth(int frame_width) const;
 
   // The bubble border.
   BubbleBorder* bubble_border_ = nullptr;

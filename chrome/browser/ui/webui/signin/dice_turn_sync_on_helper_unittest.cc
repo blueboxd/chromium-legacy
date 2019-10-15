@@ -139,7 +139,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
 
   void set_dm_token(const std::string& dm_token) { dm_token_ = dm_token; }
   void set_client_id(const std::string& client_id) { client_id_ = client_id; }
-  void set_account(const std::string& account_id, const std::string& email) {
+  void set_account(const CoreAccountId& account_id, const std::string& email) {
     account_id_ = account_id;
     email_ = email;
   }
@@ -147,7 +147,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   // policy::UserPolicySigninService:
   void RegisterForPolicyWithAccountId(
       const std::string& username,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const PolicyRegistrationCallback& callback) override {
     EXPECT_EQ(email_, username);
     EXPECT_EQ(account_id_, account_id);
@@ -167,7 +167,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
  private:
   std::string dm_token_;
   std::string client_id_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   std::string email_;
 };
 
@@ -236,7 +236,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   signin::IdentityManager* identity_manager() {
     return identity_test_env()->identity_manager();
   }
-  const std::string& account_id() { return account_id_; }
+  const CoreAccountId& account_id() { return account_id_; }
   FakeUserPolicySigninService* user_policy_signin_service() {
     return user_policy_signin_service_;
   }
@@ -271,7 +271,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
     user_policy_signin_service_->set_account(account_id_, kEnterpriseEmail);
   }
 
-  void UseInvalidAccount() { account_id_ = "invalid_account"; }
+  void UseInvalidAccount() { account_id_ = CoreAccountId("invalid_account"); }
 
   void SetExpectationsForSyncStartupCompleted() {
     syncer::MockSyncService* mock_sync_service = GetMockSyncService();
@@ -407,7 +407,7 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;

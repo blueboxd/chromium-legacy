@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chromeos/base/file_flusher.h"
 #include "chrome/browser/chromeos/login/helper.h"

@@ -17,7 +17,7 @@
     { "scenario_dir":"capture_update_pass", "site_name":"rakuten" },
     { "scenario_dir":"capture_update_pass", "site_name":"readtheory" },
     { "scenario_dir":"capture_update_pass", "site_name":"roblox" },
-    { "scenario_dir":"capture_update_pass", "site_name":"southwest" },
+    { "scenario_dir":"capture_update_pass", "site_name":"southwest", "disabled":true, "bug_number":1014333 },
     { "scenario_dir":"capture_update_pass", "site_name":"steam" },
     { "scenario_dir":"capture_update_pass", "site_name":"the_sims_resource" },
     { "scenario_dir":"capture_update_pass", "site_name":"united" },

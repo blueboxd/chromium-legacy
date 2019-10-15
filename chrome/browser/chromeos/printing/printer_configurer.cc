@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/profiles/profile.h"

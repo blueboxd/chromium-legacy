@@ -251,6 +251,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
   GlobalFrameRoutingId GetPreviousRenderFrameHostId() override;
+  bool IsServedFromBackForwardCache() override;
 
   // Called on the UI thread by the Navigator to start the navigation.
   // The NavigationRequest can be deleted while BeginNavigation() is called.
@@ -463,11 +464,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   void set_response_headers_for_testing(
       scoped_refptr<net::HttpResponseHeaders> response_headers) {
     response_headers_for_testing_ = response_headers;
-  }
-
-  // Whether this navigation was served from the back-forward cache.
-  bool is_served_from_back_forward_cache() {
-    return rfh_restored_from_back_forward_cache_ != nullptr;
   }
 
   RenderFrameHostImpl* rfh_restored_from_back_forward_cache() {

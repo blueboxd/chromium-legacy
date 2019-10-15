@@ -414,7 +414,7 @@ void TabWebContentsDelegateAndroid::AddNewContents(
     new_contents.release();
 }
 
-blink::WebSecurityStyle TabWebContentsDelegateAndroid::GetSecurityStyle(
+blink::SecurityStyle TabWebContentsDelegateAndroid::GetSecurityStyle(
     WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
   SecurityStateTabHelper* helper =

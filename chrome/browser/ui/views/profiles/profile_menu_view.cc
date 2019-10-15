@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -132,6 +133,15 @@ gfx::ImageSkia GetGoogleIconForUserMenu(int icon_size) {
   return gfx::CanvasImageSource::CreatePadded(grey_google_icon, kIconPadding);
 }
 #endif
+
+// Returns the number of browsers associated with |profile|.
+// Note: For regular profiles this includes incognito sessions.
+int CountBrowsersFor(Profile* profile) {
+  int browser_count = chrome::GetBrowserCount(profile);
+  if (!profile->IsOffTheRecord() && profile->HasOffTheRecordProfile())
+    browser_count += chrome::GetBrowserCount(profile->GetOffTheRecordProfile());
+  return browser_count;
+}
 
 }  // namespace
 
@@ -545,9 +555,10 @@ void ProfileMenuView::BuildSyncInfo() {
 }
 
 void ProfileMenuView::BuildFeatureButtons() {
+  Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser()->profile());
-  const bool is_guest = browser()->profile()->IsGuestSession();
+      IdentityManagerFactory::GetForProfile(profile);
+  const bool is_guest = profile->IsGuestSession();
   const bool has_unconsented_account =
       !is_guest && identity_manager->HasUnconsentedPrimaryAccount();
   const bool has_primary_account =
@@ -570,7 +581,8 @@ void ProfileMenuView::BuildFeatureButtons() {
 
   AddFeatureButton(
       ImageForMenu(kCloseAllIcon),
-      l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
+      l10n_util::GetPluralStringFUTF16(IDS_PROFILES_CLOSE_X_WINDOWS_BUTTON,
+                                       CountBrowsersFor(profile)),
       base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
                           base::Unretained(this)));
 

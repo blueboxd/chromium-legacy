@@ -179,7 +179,7 @@ TEST_F(ImeControllerTest, SwitchIme) {
   EXPECT_EQ(0, client.switch_ime_count_);
 
   // After setting the client the requests are forwarded.
-  controller->SetClient(client.CreateInterfacePtr());
+  controller->SetClient(client.CreateRemote());
   controller->SwitchToNextIme();
   controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.next_ime_count_);
@@ -204,7 +204,7 @@ TEST_F(ImeControllerTest, SwitchIme) {
 TEST_F(ImeControllerTest, SwitchImeWithAccelerator) {
   ImeController* controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
-  controller->SetClient(client.CreateInterfacePtr());
+  controller->SetClient(client.CreateRemote());
 
   const ui::Accelerator convert(ui::VKEY_CONVERT, ui::EF_NONE);
   const ui::Accelerator non_convert(ui::VKEY_NONCONVERT, ui::EF_NONE);
@@ -271,7 +271,7 @@ TEST_F(ImeControllerTest, SetCapsLock) {
   controller->SetCapsLockEnabled(true);
   EXPECT_EQ(0, client.set_caps_lock_count_);
 
-  controller->SetClient(client.CreateInterfacePtr());
+  controller->SetClient(client.CreateRemote());
 
   controller->SetCapsLockEnabled(true);
   controller->FlushMojoForTesting();
@@ -359,7 +359,7 @@ TEST_F(ImeControllerTest, MirroringChanged) {
   // The controller is already an observer of the display_manager
   ImeController* controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
-  controller->SetClient(client.CreateInterfacePtr());
+  controller->SetClient(client.CreateRemote());
 
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display_manager->SetMultiDisplayMode(display::DisplayManager::MIRRORING);

@@ -17,6 +17,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/sync/base/sync_mode.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
@@ -96,6 +97,11 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   bool DeleteSpecifics(const std::string& tag,
                        ModelTypeStore::WriteBatch* batch);
 
+  // Returns the device name based on |sync_mode_|. For transport only mode,
+  // the device model name is returned. For full sync mode,
+  // |local_personalizable_device_name_| is returned.
+  std::string GetLocalClientName() const;
+
   // Notify all registered observers.
   void NotifyObservers();
 
@@ -145,6 +151,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   std::string local_personalizable_device_name_;
   ClientIdToSpecifics all_data_;
   base::SysInfo::HardwareInfo local_hardware_info_;
+  base::Optional<SyncMode> sync_mode_;
 
   // Registered observers, not owned.
   base::ObserverList<Observer, true>::Unchecked observers_;

@@ -35,6 +35,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/battery/battery_metrics.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"

@@ -50,10 +50,10 @@ ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
 }
 
 void ProfileDownloader::Start() {
-  StartForAccount(std::string());
+  StartForAccount(CoreAccountId());
 }
 
-void ProfileDownloader::StartForAccount(const std::string& account_id) {
+void ProfileDownloader::StartForAccount(const CoreAccountId& account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "Starting profile downloader...";
 
@@ -65,10 +65,8 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
     return;
   }
 
-  // TODO(triploblastic@): Remove explicit conversion once ProfileDownloader
-  // has been fixed to use CoreAccountId.
   account_id_ = account_id.empty()
-                    ? identity_manager_->GetUnconsentedPrimaryAccountId().id
+                    ? identity_manager_->GetUnconsentedPrimaryAccountId()
                     : account_id;
   StartFetchingOAuth2AccessToken();
 }

@@ -40,20 +40,6 @@ class Adapter : public AlsReader::Observer,
                 public ModelConfigLoader::Observer,
                 public PowerManagerClient::Observer {
  public:
-  // Type of curve to use.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class ModelCurve {
-    // Always use the global curve.
-    kGlobal = 0,
-    // Always use the personal curve, and make no brightness adjustment until a
-    // personal curve is trained.
-    kPersonal = 1,
-    // Use the personal curve if available, else use the global curve.
-    kLatest = 2,
-    kMaxValue = kLatest
-  };
-
   // How user manual brightness change will affect Adapter.
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -86,8 +72,6 @@ class Adapter : public AlsReader::Observer,
     double darkening_log_lux_threshold = 0.6;
     double stabilization_threshold = 0.15;
 
-    ModelCurve model_curve = ModelCurve::kLatest;
-
     // Average ambient value is calculated over the past
     // |auto_brightness_als_horizon|. This is only used for brightness update,
     // which can be different from the horizon used in model training.
@@ -98,10 +82,6 @@ class Adapter : public AlsReader::Observer,
         UserAdjustmentEffect::kPauseAuto;
 
     std::string metrics_key;
-
-    // If |model_curve| is |kPersonal| then we only use a personal curve if the
-    // the model has been trained at least |min_model_iteration_count|.
-    int min_model_iteration_count = 1;
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -152,7 +132,8 @@ class Adapter : public AlsReader::Observer,
     // number of iterations.
     kWaitingForTrainedPersonalCurve = 9,
     kWaitingForReopenAls = 10,
-    kMaxValue = kWaitingForReopenAls
+    kNoNewModel = 11,
+    kMaxValue = kNoNewModel
   };
 
   struct AdapterDecision {
@@ -378,6 +359,13 @@ class Adapter : public AlsReader::Observer,
   base::Optional<double> darkening_threshold_;
 
   Model model_;
+
+  // An indicator to tell Adapter whether a curve is available to use.
+  // It is set to false when a user changes brightness manually and the adapter
+  // isn't already disabled by a previous user adjustment.
+  // It is set to true when modeller is first initialized or when it exports a
+  // new curve.
+  bool new_model_arrived_ = false;
 
   // |average_log_ambient_lux_| is only recorded when screen brightness is
   // changed by either model or user. New thresholds will be calculated from it.

@@ -4,6 +4,8 @@
 
 #include "ash/ime/ime_controller.h"
 
+#include <utility>
+
 #include "ash/ime/ime_mode_indicator_view.h"
 #include "ash/ime/ime_switch_type.h"
 #include "ash/ime/mode_indicator_observer.h"
@@ -47,12 +49,14 @@ void ImeController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ImeController::BindRequest(mojom::ImeControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ImeController::BindReceiver(
+    mojo::PendingReceiver<mojom::ImeController> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
-void ImeController::SetClient(mojom::ImeControllerClientPtr client) {
-  client_ = std::move(client);
+void ImeController::SetClient(
+    mojo::PendingRemote<mojom::ImeControllerClient> client) {
+  client_.Bind(std::move(client));
 
   // Initializes some observers for client.
   if (CastConfigController::Get())

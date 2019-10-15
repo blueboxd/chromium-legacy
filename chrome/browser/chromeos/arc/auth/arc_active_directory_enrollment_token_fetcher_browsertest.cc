@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"

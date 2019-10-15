@@ -108,9 +108,9 @@ TEST_F(GaussianTrainerTest, OutlierBoundScale) {
 
   // |data_too_low| and |data_too_high| are both ignored. Hence there is no
   // change in the personal curve.
-  const MonotoneCubicSpline trained_curve1 =
+  const TrainingResult result1 =
       gaussian_trainer_->Train({data_too_low, data_too_high});
-  EXPECT_EQ(trained_curve1, personal_curve_);
+  EXPECT_FALSE(result1.new_curve);
 
   // Next increase |brightness_bound_scale|, so that the two training data
   // points are no longer outliers. A new curve will be trained.
@@ -119,8 +119,10 @@ TEST_F(GaussianTrainerTest, OutlierBoundScale) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve2 =
+  const TrainingResult result2 =
       gaussian_trainer_->Train({data_too_low, data_too_high});
+  EXPECT_TRUE(result2.new_curve);
+  const MonotoneCubicSpline trained_curve2 = *result2.new_curve;
   EXPECT_FALSE(trained_curve2 == personal_curve_);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
 
@@ -153,9 +155,9 @@ TEST_F(GaussianTrainerTest, OutlierBoundOffset) {
 
   // |data_too_low| and |data_too_high| are both ignored. Hence there is no
   // change in the personal curve.
-  const MonotoneCubicSpline trained_curve1 =
+  const TrainingResult result1 =
       gaussian_trainer_->Train({data_too_low, data_too_high});
-  EXPECT_EQ(trained_curve1, personal_curve_);
+  EXPECT_FALSE(result1.new_curve);
 
   // Next increase |brightness_bound_offset|, so that the two training data
   // points are no longer outliers. A new curve will be trained.
@@ -164,8 +166,10 @@ TEST_F(GaussianTrainerTest, OutlierBoundOffset) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve2 =
+  const TrainingResult result2 =
       gaussian_trainer_->Train({data_too_low, data_too_high});
+  EXPECT_TRUE(result2.new_curve);
+  const MonotoneCubicSpline trained_curve2 = *result2.new_curve;
   EXPECT_FALSE(trained_curve2 == personal_curve_);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
 
@@ -190,7 +194,8 @@ TEST_F(GaussianTrainerTest, BrightnessStepSize) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve1 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve1 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux1 = trained_curve1.GetControlPointsX();
   const std::vector<double> new_brightness1 =
       trained_curve1.GetControlPointsY();
@@ -202,7 +207,8 @@ TEST_F(GaussianTrainerTest, BrightnessStepSize) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve2 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve2 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
   const std::vector<double> new_brightness2 =
       trained_curve2.GetControlPointsY();
@@ -247,7 +253,8 @@ TEST_F(GaussianTrainerTest, ModelBrightnessStepSize) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve1 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve1 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux1 = trained_curve1.GetControlPointsX();
   const std::vector<double> new_brightness1 =
       trained_curve1.GetControlPointsY();
@@ -259,7 +266,8 @@ TEST_F(GaussianTrainerTest, ModelBrightnessStepSize) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve2 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve2 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
   const std::vector<double> new_brightness2 =
       trained_curve2.GetControlPointsY();
@@ -300,7 +308,8 @@ TEST_F(GaussianTrainerTest, Sigma) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve1 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve1 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux1 = trained_curve1.GetControlPointsX();
   const std::vector<double> new_brightness1 =
       trained_curve1.GetControlPointsY();
@@ -312,7 +321,8 @@ TEST_F(GaussianTrainerTest, Sigma) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve2 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve2 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
   const std::vector<double> new_brightness2 =
       trained_curve2.GetControlPointsY();
@@ -353,7 +363,8 @@ TEST_F(GaussianTrainerTest, MinGrad) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve1 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve1 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux1 = trained_curve1.GetControlPointsX();
   const std::vector<double> new_brightness1 =
       trained_curve1.GetControlPointsY();
@@ -365,7 +376,8 @@ TEST_F(GaussianTrainerTest, MinGrad) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve2 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve2 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
   const std::vector<double> new_brightness2 =
       trained_curve2.GetControlPointsY();
@@ -409,7 +421,8 @@ TEST_F(GaussianTrainerTest, HighLuxThreshold) {
   ResetModelWithParams(params);
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, global_curve_));
-  const MonotoneCubicSpline trained_curve1 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve1 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux1 = trained_curve1.GetControlPointsX();
   const std::vector<double> new_brightness1 =
       trained_curve1.GetControlPointsY();
@@ -420,7 +433,8 @@ TEST_F(GaussianTrainerTest, HighLuxThreshold) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, global_curve_));
 
-  const MonotoneCubicSpline trained_curve2 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve2 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
   const std::vector<double> new_brightness2 =
       trained_curve2.GetControlPointsY();
@@ -463,7 +477,8 @@ TEST_F(GaussianTrainerTest, MinGradHighLux) {
   ResetModelWithParams(params);
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, global_curve_));
-  const MonotoneCubicSpline trained_curve1 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve1 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux1 = trained_curve1.GetControlPointsX();
   const std::vector<double> new_brightness1 =
       trained_curve1.GetControlPointsY();
@@ -474,7 +489,8 @@ TEST_F(GaussianTrainerTest, MinGradHighLux) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, global_curve_));
 
-  const MonotoneCubicSpline trained_curve2 = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve2 =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const std::vector<double> new_log_lux2 = trained_curve2.GetControlPointsX();
   const std::vector<double> new_brightness2 =
       trained_curve2.GetControlPointsY();
@@ -512,10 +528,11 @@ TEST_F(GaussianTrainerTest, ConsistentModelPredictionNoCurveUpdate) {
 
   // User increased brightness and target is lower than model prediction. Hence
   // no change to the curve.
-  EXPECT_EQ(gaussian_trainer_->Train(
-                {{ref_personal_brightness_ - 20, ref_personal_brightness_ - 10,
-                  ref_log_lux_, tick_clock_.NowTicks()}}),
-            personal_curve_);
+  EXPECT_FALSE(gaussian_trainer_
+                   ->Train({{ref_personal_brightness_ - 20,
+                             ref_personal_brightness_ - 10, ref_log_lux_,
+                             tick_clock_.NowTicks()}})
+                   .new_curve);
 
   ResetModelWithParams(default_params_);
   EXPECT_TRUE(
@@ -523,10 +540,11 @@ TEST_F(GaussianTrainerTest, ConsistentModelPredictionNoCurveUpdate) {
 
   // User decreased brightness and target is higher than model prediction. Hence
   // no change to the curve.
-  EXPECT_EQ(gaussian_trainer_->Train(
-                {{ref_personal_brightness_ + 20, ref_personal_brightness_ + 10,
-                  ref_log_lux_, tick_clock_.NowTicks()}}),
-            personal_curve_);
+  EXPECT_FALSE(gaussian_trainer_
+                   ->Train({{ref_personal_brightness_ + 20,
+                             ref_personal_brightness_ + 10, ref_log_lux_,
+                             tick_clock_.NowTicks()}})
+                   .new_curve);
 }
 
 // Tests numerical results of a trained curve so that we could detect any
@@ -554,7 +572,8 @@ TEST_F(GaussianTrainerTest, TrainedCurveValue) {
   EXPECT_TRUE(
       gaussian_trainer_->SetInitialCurves(global_curve_, personal_curve_));
 
-  const MonotoneCubicSpline trained_curve = gaussian_trainer_->Train({data});
+  const MonotoneCubicSpline trained_curve =
+      *(gaussian_trainer_->Train({data}).new_curve);
   const base::Optional<MonotoneCubicSpline> expected_curve =
       MonotoneCubicSpline::CreateMonotoneCubicSpline(
           log_lux_, {3.0,   8.0,   12.48, 18.72, 24.96, 31.2, 37.44,

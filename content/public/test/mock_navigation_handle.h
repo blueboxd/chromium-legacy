@@ -37,6 +37,7 @@ class MockNavigationHandle : public NavigationHandle {
   bool IsRendererInitiated() override { return true; }
   MOCK_METHOD0(GetFrameTreeNodeId, int());
   MOCK_METHOD0(GetPreviousRenderFrameHostId, GlobalFrameRoutingId());
+  bool IsServedFromBackForwardCache() override { return false; }
   RenderFrameHost* GetParentFrame() override {
     return render_frame_host_ ? render_frame_host_->GetParent() : nullptr;
   }

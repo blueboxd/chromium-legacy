@@ -356,7 +356,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
   AXNodeInfoData* child1 = event->node_data.back().get();
   child1->id = 1;
   SetProperty(child1, AXIntListProperty::CHILD_NODE_IDS,
-              std::vector<int>({2, 3}));
+              std::vector<int>({2, 3, 4}));
 
   // Second child.
   // This test requires two children.
@@ -369,6 +369,11 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
   event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* child3 = event->node_data.back().get();
   child3->id = 3;
+
+  // Fourth child.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child4 = event->node_data.back().get();
+  child4->id = 4;
 
   // Populate the tree source with the data.
   CallNotifyAccessibilityEvent(event.get());
@@ -406,6 +411,13 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationTextField) {
       data->GetStringAttribute(ax::mojom::StringAttribute::kValue, &prop));
   ASSERT_FALSE(data->GetStringAttribute(
       ax::mojom::StringAttribute::kDescription, &prop));
+
+  // Case for when only one property where name is computed from is set.
+  SetProperty(child4, AXStringProperty::TEXT, "Node text.");
+  CallSerializeNode(child4, &data);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &prop));
+  EXPECT_EQ("Node text.", prop);
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {

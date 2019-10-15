@@ -12,8 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
@@ -123,8 +123,7 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_impl_;
 
   mojo::BindingSet<network::mojom::ProxyConfigPollerClient> poller_binding_set_;
-  mojo::InterfacePtrSet<network::mojom::ProxyConfigClient>
-      proxy_config_client_set_;
+  mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
 
   DISALLOW_COPY_AND_ASSIGN(CastNetworkContexts);
 };

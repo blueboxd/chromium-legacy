@@ -73,6 +73,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
   KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  std::string GetLastKeystoreKey() const override;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
@@ -106,7 +107,8 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // Restore a saved nigori obtained from OnLocalSetPassphraseEncryption.
   //
   // Writes the nigori to the Directory and updates the Cryptographer.
-  void RestoreNigori(const SyncEncryptionHandler::NigoriState& nigori_state);
+  void RestoreNigoriForTesting(
+      const sync_pb::NigoriSpecifics& nigori_specifics);
 
   // Returns mutable DirectoryCryptographer, used only in tests to manipulate it
   // directly.

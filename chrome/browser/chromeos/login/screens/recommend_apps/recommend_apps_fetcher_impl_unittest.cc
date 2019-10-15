@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_impl.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/public/mojom/constants.mojom.h"
@@ -24,7 +25,9 @@
 #include "components/arc/arc_features_parser.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -80,7 +83,7 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController,
       ready_callback_ = run_loop.QuitClosure();
       run_loop.Run();
     }
-    binding_.FlushForTesting();
+    receiver_.FlushForTesting();
   }
 
   bool RunGetDisplayUnitInfoListCallback(
@@ -93,8 +96,9 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController,
   }
 
   // ash::mojom::CrosDisplayConfigController:
-  void AddObserver(ash::mojom::CrosDisplayConfigObserverAssociatedPtrInfo
-                       observer) override {}
+  void AddObserver(
+      mojo::PendingAssociatedRemote<ash::mojom::CrosDisplayConfigObserver>
+          observer) override {}
   void GetDisplayLayoutInfo(GetDisplayLayoutInfoCallback callback) override {}
   void SetDisplayLayoutInfo(ash::mojom::DisplayLayoutInfoPtr info,
                             SetDisplayLayoutInfoCallback callback) override {}
@@ -122,8 +126,9 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     DCHECK(interface_name == ash::mojom::CrosDisplayConfigController::Name_);
-    binding_.Bind(ash::mojom::CrosDisplayConfigControllerRequest(
-        std::move(interface_pipe)));
+    receiver_.Bind(
+        mojo::PendingReceiver<ash::mojom::CrosDisplayConfigController>(
+            std::move(interface_pipe)));
     ready_ = true;
     if (ready_callback_)
       std::move(ready_callback_).Run();
@@ -131,7 +136,7 @@ class TestCrosDisplayConfig : public ash::mojom::CrosDisplayConfigController,
 
  private:
   service_manager::ServiceBinding service_binding_;
-  mojo::Binding<ash::mojom::CrosDisplayConfigController> binding_{this};
+  mojo::Receiver<ash::mojom::CrosDisplayConfigController> receiver_{this};
 
   bool ready_ = false;
   base::OnceClosure ready_callback_;

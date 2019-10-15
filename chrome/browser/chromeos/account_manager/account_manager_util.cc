@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"

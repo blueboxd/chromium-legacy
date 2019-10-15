@@ -30,7 +30,7 @@ AudioFocusRequest::AudioFocusRequest(
   // Listen for mojo errors.
   receiver_.set_disconnect_handler(base::BindOnce(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));
-  session_.set_connection_error_handler(base::BindOnce(
+  session_.set_disconnect_handler(base::BindOnce(
       &AudioFocusRequest::OnConnectionError, base::Unretained(this)));
 }
 

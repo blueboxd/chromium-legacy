@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"

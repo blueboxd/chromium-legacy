@@ -29,7 +29,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // Callback starting Sync.
   using EnableSyncCallback =
       base::OnceCallback<void(content::WebContents*,
-                              const std::string& /* account_id */)>;
+                              const CoreAccountId& /* account_id */)>;
 
   // Callback showing a signin error UI.
   using ShowSigninErrorCallback =
@@ -50,7 +50,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   ~ProcessDiceHeaderDelegateImpl() override;
 
   // ProcessDiceHeaderDelegate:
-  void EnableSync(const std::string& account_id) override;
+  void EnableSync(const CoreAccountId& account_id) override;
   void HandleTokenExchangeFailure(const std::string& email,
                                   const GoogleServiceAuthError& error) override;
 

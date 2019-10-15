@@ -98,7 +98,7 @@ class TabWebContentsDelegateAndroid
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
-  blink::WebSecurityStyle GetSecurityStyle(
+  blink::SecurityStyle GetSecurityStyle(
       content::WebContents* web_contents,
       content::SecurityStyleExplanations* security_style_explanations) override;
   void OnDidBlockNavigation(content::WebContents* web_contents,

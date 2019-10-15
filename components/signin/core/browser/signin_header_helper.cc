@@ -88,12 +88,12 @@ void RequestAdapter::SetExtraHeaderByName(const std::string& name,
 
 std::string BuildMirrorRequestCookieIfPossible(
     const GURL& url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
   return ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
-      url, account_id, account_consistency, cookie_settings, profile_mode_mask);
+      url, gaia_id, account_consistency, cookie_settings, profile_mode_mask);
 }
 
 SigninHeaderHelper::SigninHeaderHelper() = default;
@@ -147,7 +147,7 @@ SigninHeaderHelper::ParseAccountConsistencyResponseHeader(
 void AppendOrRemoveMirrorRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
@@ -156,7 +156,7 @@ void AppendOrRemoveMirrorRequestHeader(
   std::string chrome_connected_header_value;
   if (chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
     chrome_connected_header_value = chrome_connected_helper.BuildRequestHeader(
-        true /* is_header_request */, url, account_id, profile_mode_mask);
+        true /* is_header_request */, url, gaia_id, profile_mode_mask);
   }
   chrome_connected_helper.AppendOrRemoveRequestHeader(
       request, redirect_url, kChromeConnectedHeader,
@@ -166,7 +166,7 @@ void AppendOrRemoveMirrorRequestHeader(
 bool AppendOrRemoveDiceRequestHeader(
     RequestAdapter* request,
     const GURL& redirect_url,
-    const std::string& account_id,
+    const std::string& gaia_id,
     bool sync_enabled,
     AccountConsistencyMethod account_consistency,
     const content_settings::CookieSettings* cookie_settings,
@@ -177,7 +177,7 @@ bool AppendOrRemoveDiceRequestHeader(
   std::string dice_header_value;
   if (dice_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
     dice_header_value = dice_helper.BuildRequestHeader(
-        sync_enabled ? account_id : std::string(), device_id);
+        sync_enabled ? gaia_id : std::string(), device_id);
   }
   return dice_helper.AppendOrRemoveRequestHeader(
       request, redirect_url, kDiceRequestHeader, dice_header_value);

@@ -17,6 +17,8 @@ include_rules = [
   "+components/sync/syncable",
   "+components/sync/test",
   "+components/sync_preferences",
+  # TODO(crbug.com/1012226): Remove when VAPID migration is over.
+  "+crypto",
   "+google/cacheinvalidation",
   "+net",
   "+policy",

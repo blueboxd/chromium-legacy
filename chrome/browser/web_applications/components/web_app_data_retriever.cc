@@ -15,8 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/web_application_info.h"
@@ -101,7 +99,7 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
 void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
                                    const std::vector<GURL>& icon_urls,
                                    bool skip_page_favicons,
-                                   WebappInstallSource install_source,
+                                   WebAppIconDownloader::Histogram histogram,
                                    GetIconsCallback callback) {
   Observe(web_contents);
 
@@ -109,14 +107,9 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
   CHECK(!get_icons_callback_);
   get_icons_callback_ = std::move(callback);
 
-  const char* https_status_code_class_histogram_name =
-      install_source == WebappInstallSource::SYNC
-          ? "WebApp.Icon.HttpStatusCodeClassOnSync"
-          : "WebApp.Icon.HttpStatusCodeClassOnCreate";
-
   // TODO(loyso): Refactor WebAppIconDownloader: crbug.com/907296.
   icon_downloader_ = std::make_unique<WebAppIconDownloader>(
-      web_contents, icon_urls, https_status_code_class_histogram_name,
+      web_contents, icon_urls, histogram,
       base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
                      weak_ptr_factory_.GetWeakPtr()));
 

@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
@@ -76,7 +77,7 @@ IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
       should_prompt_for_scopes_(false),
       should_prompt_for_signin_(false),
       token_key_(/*extension_id=*/std::string(),
-                 /*account_id=*/std::string(),
+                 /*account_id=*/CoreAccountId(),
                  /*scopes=*/std::set<std::string>()),
       scoped_identity_manager_observer_(this) {
 }
@@ -205,7 +206,8 @@ void IdentityGetAuthTokenFunction::FetchExtensionAccountInfo(
 
 void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
     const CoreAccountInfo* account_info) {
-  token_key_.account_id = account_info ? account_info->account_id : "";
+  token_key_.account_id =
+      account_info ? account_info->account_id : CoreAccountId();
 
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -675,7 +677,7 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
   if (access_token) {
     TRACE_EVENT_ASYNC_STEP_PAST1("identity", "IdentityGetAuthTokenFunction",
                                  this, "OnGetAccessTokenComplete", "account",
-                                 token_key_.account_id);
+                                 token_key_.account_id.id);
 
     StartGaiaRequest(access_token.value());
   } else {

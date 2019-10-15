@@ -56,8 +56,12 @@ class AppServiceImpl : public apps::mojom::AppService {
   void SetPermission(apps::mojom::AppType app_type,
                      const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
+  void PromptUninstall(apps::mojom::AppType app_type,
+                       const std::string& app_id) override;
   void Uninstall(apps::mojom::AppType app_type,
-                 const std::string& app_id) override;
+                 const std::string& app_id,
+                 bool clear_site_data,
+                 bool report_abuse) override;
   void OpenNativeSettings(apps::mojom::AppType app_type,
                           const std::string& app_id) override;
 

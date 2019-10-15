@@ -23,7 +23,8 @@ html {
 
 html[virtual-keyboard=true],
 html[screen=gaia-signin] {
-  --shelf-area-height: 0;
+  /* has to be with px suffix to be used in calc */
+  --shelf-area-height: 0px;
 }
 
 body {
@@ -46,6 +47,13 @@ html {
   --oobe-dialog-footer-height: 96px;
   --oobe-dialog-footer-padding: 32px;
   --oobe-dialog-content-padding: 64px;
+  --oobe-dialog-min-height: 464px;
+  --oobe-dialog-side-margin: 48px;
+}
+
+html[screen=gaia-signin] {
+  /* has to be with px suffix to be used in calc */
+  --oobe-dialog-side-margin: 0px;
 }
 
 @media screen and (max-width: 864px) {

@@ -2167,9 +2167,9 @@ TEST_F(NetworkContextTest, ProxyConfig) {
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         initial_proxy_config_set.proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
-    mojom::ProxyConfigClientPtr config_client;
-    context_params->proxy_config_client_request =
-        mojo::MakeRequest(&config_client);
+    mojo::Remote<mojom::ProxyConfigClient> config_client;
+    context_params->proxy_config_client_receiver =
+        config_client.BindNewPipeAndPassReceiver();
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
 
@@ -2252,9 +2252,9 @@ TEST_F(NetworkContextTest, StaticProxyConfig) {
 TEST_F(NetworkContextTest, NoInitialProxyConfig) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->initial_proxy_config.reset();
-  mojom::ProxyConfigClientPtr config_client;
-  context_params->proxy_config_client_request =
-      mojo::MakeRequest(&config_client);
+  mojo::Remote<mojom::ProxyConfigClient> config_client;
+  context_params->proxy_config_client_receiver =
+      config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -2300,9 +2300,9 @@ TEST_F(NetworkContextTest, DestroyedWithoutProxyConfig) {
   // Create a NetworkContext without an initial proxy configuration.
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->initial_proxy_config.reset();
-  mojom::ProxyConfigClientPtr config_client;
-  context_params->proxy_config_client_request =
-      mojo::MakeRequest(&config_client);
+  mojo::Remote<mojom::ProxyConfigClient> config_client;
+  context_params->proxy_config_client_receiver =
+      config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -2326,9 +2326,9 @@ TEST_F(NetworkContextTest, CancelPendingProxyLookup) {
   // Create a NetworkContext without an initial proxy configuration.
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->initial_proxy_config.reset();
-  mojom::ProxyConfigClientPtr config_client;
-  context_params->proxy_config_client_request =
-      mojo::MakeRequest(&config_client);
+  mojo::Remote<mojom::ProxyConfigClient> config_client;
+  context_params->proxy_config_client_receiver =
+      config_client.BindNewPipeAndPassReceiver();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -4472,9 +4472,9 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
     mojom::NetworkContextParamsPtr context_params = CreateContextParams();
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         proxy_data.proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS);
-    mojom::ProxyConfigClientPtr config_client;
-    context_params->proxy_config_client_request =
-        mojo::MakeRequest(&config_client);
+    mojo::Remote<mojom::ProxyConfigClient> config_client;
+    context_params->proxy_config_client_receiver =
+        config_client.BindNewPipeAndPassReceiver();
     std::unique_ptr<NetworkContext> network_context =
         CreateContextWithParams(std::move(context_params));
 

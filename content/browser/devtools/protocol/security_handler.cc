@@ -32,15 +32,15 @@ using Explanations = protocol::Array<Security::SecurityStateExplanation>;
 namespace {
 
 std::string SecurityStyleToProtocolSecurityState(
-    blink::WebSecurityStyle security_style) {
+    blink::SecurityStyle security_style) {
   switch (security_style) {
-    case blink::kWebSecurityStyleUnknown:
+    case blink::SecurityStyle::kUnknown:
       return Security::SecurityStateEnum::Unknown;
-    case blink::kWebSecurityStyleNeutral:
+    case blink::SecurityStyle::kNeutral:
       return Security::SecurityStateEnum::Neutral;
-    case blink::kWebSecurityStyleInsecure:
+    case blink::SecurityStyle::kInsecure:
       return Security::SecurityStateEnum::Insecure;
-    case blink::kWebSecurityStyleSecure:
+    case blink::SecurityStyle::kSecure:
       return Security::SecurityStateEnum::Secure;
     default:
       NOTREACHED();
@@ -149,7 +149,7 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
     return;
 
   SecurityStyleExplanations security_style_explanations;
-  blink::WebSecurityStyle security_style =
+  blink::SecurityStyle security_style =
       web_contents()->GetDelegate()->GetSecurityStyle(
           web_contents(), &security_style_explanations);
 

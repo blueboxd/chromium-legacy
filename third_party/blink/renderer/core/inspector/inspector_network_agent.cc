@@ -540,16 +540,16 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
   String security_state = protocol::Security::SecurityStateEnum::Unknown;
   switch (response.GetSecurityStyle()) {
-    case kWebSecurityStyleUnknown:
+    case SecurityStyle::kUnknown:
       security_state = protocol::Security::SecurityStateEnum::Unknown;
       break;
-    case kWebSecurityStyleNeutral:
+    case SecurityStyle::kNeutral:
       security_state = protocol::Security::SecurityStateEnum::Neutral;
       break;
-    case kWebSecurityStyleInsecure:
+    case SecurityStyle::kInsecure:
       security_state = protocol::Security::SecurityStateEnum::Insecure;
       break;
-    case kWebSecurityStyleSecure:
+    case SecurityStyle::kSecure:
       security_state = protocol::Security::SecurityStateEnum::Secure;
       break;
   }

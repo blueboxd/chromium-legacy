@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/extensions/api/settings_private/generated_pref.h"
 #include "chrome/browser/extensions/api/settings_private/generated_time_zone_pref_base.h"

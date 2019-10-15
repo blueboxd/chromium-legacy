@@ -18,7 +18,7 @@ namespace gaia {
 struct ListedAccount {
   // The account's ID, as per Chrome, will be determined in the
   // CookieManagerService.
-  // TODO(triploblastic): Rename the id field to account_id.
+  // TODO(https://crbug.com/1010878): Rename the id field to account_id.
   CoreAccountId id;
   std::string email;
   std::string gaia_id;

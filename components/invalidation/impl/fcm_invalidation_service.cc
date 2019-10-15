@@ -204,7 +204,7 @@ void FCMInvalidationService::OnActiveAccountRefreshTokenUpdated() {
 
 void FCMInvalidationService::OnActiveAccountLogout() {
   diagnostic_info_.active_account_logged_out = base::Time::Now();
-  diagnostic_info_.active_account_id = std::string();
+  diagnostic_info_.active_account_id = CoreAccountId();
   if (IsStarted()) {
     StopInvalidator();
     if (!client_id_.empty())
@@ -370,7 +370,8 @@ base::DictionaryValue FCMInvalidationService::Diagnostics::CollectDebugData()
   status.SetBoolean(
       "InvalidationService.Ready-to-start-on-active-account-login",
       was_ready_to_start_on_login);
-  status.SetString("InvalidationService.Active-account-id", active_account_id);
+  status.SetString("InvalidationService.Active-account-id",
+                   active_account_id.id);
   return status;
 }
 

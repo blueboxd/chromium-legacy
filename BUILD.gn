@@ -932,7 +932,7 @@ group("gn_visibility") {
 
   if (!is_ios) {
     deps += [ "//v8:postmortem-metadata" ]
-    if (v8_use_snapshot && !v8_use_external_startup_data) {
+    if (!v8_use_external_startup_data) {
       deps += [ "//v8:v8_snapshot" ]
     }
   }

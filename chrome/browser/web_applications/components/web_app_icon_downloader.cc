@@ -20,14 +20,13 @@ namespace web_app {
 WebAppIconDownloader::WebAppIconDownloader(
     content::WebContents* web_contents,
     const std::vector<GURL>& extra_favicon_urls,
-    const char* https_status_code_class_histogram_name,
+    Histogram histogram,
     WebAppIconDownloaderCallback callback)
     : content::WebContentsObserver(web_contents),
       need_favicon_urls_(true),
       extra_favicon_urls_(extra_favicon_urls),
       callback_(std::move(callback)),
-      https_status_code_class_histogram_name_(
-          https_status_code_class_histogram_name) {}
+      histogram_(histogram) {}
 
 WebAppIconDownloader::~WebAppIconDownloader() {}
 
@@ -113,12 +112,19 @@ void WebAppIconDownloader::DidDownloadFavicon(
   if (in_progress_requests_.erase(id) == 0)
     return;
 
-  if (!https_status_code_class_histogram_name_.empty() &&
-      http_status_code != 0) {
+  if (http_status_code != 0) {
+    const char* histogram_name = nullptr;
+    switch (histogram_) {
+      case Histogram::kForCreate:
+        histogram_name = "WebApp.Icon.HttpStatusCodeClassOnCreate";
+        break;
+      case Histogram::kForSync:
+        histogram_name = "WebApp.Icon.HttpStatusCodeClassOnSync";
+        break;
+    }
     DCHECK_LE(100, http_status_code);
     DCHECK_GT(600, http_status_code);
-    base::UmaHistogramExactLinear(https_status_code_class_histogram_name_,
-                                  http_status_code / 100, 5);
+    base::UmaHistogramExactLinear(histogram_name, http_status_code / 100, 5);
   }
 
   icons_map_[image_url] = bitmaps;

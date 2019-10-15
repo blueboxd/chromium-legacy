@@ -112,7 +112,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
-  std::string GetAuthenticatedAccountId() const {
+  CoreAccountId GetAuthenticatedAccountId() const {
     auto* identity_manager =
         identity_test_env_profile_adaptor_->identity_test_env()
             ->identity_manager();

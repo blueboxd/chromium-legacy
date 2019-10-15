@@ -275,10 +275,10 @@ bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
   return false;
 }
 
-blink::WebSecurityStyle WebContentsDelegate::GetSecurityStyle(
+blink::SecurityStyle WebContentsDelegate::GetSecurityStyle(
     WebContents* web_contents,
     SecurityStyleExplanations* security_style_explanations) {
-  return blink::kWebSecurityStyleUnknown;
+  return blink::SecurityStyle::kUnknown;
 }
 
 bool WebContentsDelegate::ShouldAllowRunningInsecureContent(

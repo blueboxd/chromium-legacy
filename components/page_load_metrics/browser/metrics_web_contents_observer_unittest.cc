@@ -10,17 +10,20 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_content_browser_client.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/browser/test_metrics_web_contents_observer_embedder.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::NavigationSimulator;
@@ -1473,6 +1476,52 @@ TEST_F(MetricsWebContentsObserverTest, RecordFeatureUsageNoObserver) {
   web_features.push_back(blink::mojom::WebFeature::kFormAttribute);
   mojom::PageLoadFeatures features(web_features, {}, {});
   MetricsWebContentsObserver::RecordFeatureUsage(main_rfh(), features);
+}
+
+class MetricsWebContentsObserverBackForwardCacheTest
+    : public MetricsWebContentsObserverTest {
+ public:
+  MetricsWebContentsObserverBackForwardCacheTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        {});
+  }
+
+  ~MetricsWebContentsObserverBackForwardCacheTest() override {}
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(MetricsWebContentsObserverBackForwardCacheTest,
+       RecordFeatureUsageWithBackForwardCache) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_EQ(main_rfh()->GetLastCommittedURL().spec(), GURL(kDefaultTestUrl));
+
+  std::vector<blink::mojom::WebFeature> web_features1{
+      blink::mojom::WebFeature::kHTMLMarqueeElement};
+  mojom::PageLoadFeatures features1(web_features1, {}, {});
+  MetricsWebContentsObserver::RecordFeatureUsage(main_rfh(), features1);
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  content::NavigationSimulator::GoBack(web_contents());
+
+  std::vector<blink::mojom::WebFeature> web_features2{
+      blink::mojom::WebFeature::kFormAttribute};
+  mojom::PageLoadFeatures features2(web_features2, {}, {});
+  MetricsWebContentsObserver::RecordFeatureUsage(main_rfh(), features2);
+
+  std::vector<std::vector<blink::mojom::WebFeature>> features;
+  for (const auto& observation : observed_features()) {
+    features.push_back(observation.features);
+  }
+
+  // For now back-forward cached navigations are not tracked and the events
+  // after the history navigation are not tracked.
+  EXPECT_THAT(features, testing::ElementsAre(web_features1));
 }
 
 }  // namespace page_load_metrics

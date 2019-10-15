@@ -244,8 +244,9 @@ std::string DetermineInstallLocation() {
 ChromeInternalLogSource::ChromeInternalLogSource()
     : SystemLogsSource("ChromeInternal") {
 #if defined(OS_CHROMEOS)
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &cros_display_config_ptr_);
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName,
+      cros_display_config_.BindNewPipeAndPassReceiver());
 #endif
 }
 
@@ -297,7 +298,7 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
 
   // Chain asynchronous fetchers: PopulateMonitorInfoAsync, PopulateEntriesAsync
   PopulateMonitorInfoAsync(
-      cros_display_config_ptr_.get(), response.get(),
+      cros_display_config_.get(), response.get(),
       base::BindOnce(
           [](std::unique_ptr<SystemLogsResponse> response,
              SysLogsSourceCallback callback) {

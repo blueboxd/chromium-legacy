@@ -34,6 +34,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/test/browser_test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
@@ -791,9 +792,10 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisplayRotation) {
       display::Display::ROTATE_270, display::Display::ROTATE_0,
   };
 
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config;
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &cros_display_config);
+  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config;
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName,
+      cros_display_config.BindNewPipeAndPassReceiver());
   ash::mojom::CrosDisplayConfigControllerAsyncWaiter waiter_for(
       cros_display_config.get());
   std::vector<ash::mojom::DisplayUnitInfoPtr> info_list;

@@ -769,6 +769,12 @@ KeystoreKeysHandler* SyncEncryptionHandlerImpl::GetKeystoreKeysHandler() {
   return this;
 }
 
+std::string SyncEncryptionHandlerImpl::GetLastKeystoreKey() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  syncable::ReadTransaction trans(FROM_HERE, user_share_->directory.get());
+  return keystore_key_;
+}
+
 // Note: this is called from within a syncable transaction, so we need to post
 // tasks if we want to do any work that creates a new sync_api transaction.
 bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
@@ -933,8 +939,8 @@ base::Time SyncEncryptionHandlerImpl::custom_passphrase_time() const {
   return custom_passphrase_time_;
 }
 
-void SyncEncryptionHandlerImpl::RestoreNigori(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {
+void SyncEncryptionHandlerImpl::RestoreNigoriForTesting(
+    const sync_pb::NigoriSpecifics& nigori_specifics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   WriteTransaction trans(FROM_HERE, user_share_);
@@ -957,11 +963,11 @@ void SyncEncryptionHandlerImpl::RestoreNigori(
                                        syncable::GET_TYPE_ROOT, NIGORI);
   DCHECK(mutable_entry.good());
   sync_pb::EntitySpecifics specifics;
-  specifics.mutable_nigori()->CopyFrom(nigori_state.nigori_specifics);
+  *specifics.mutable_nigori() = nigori_specifics;
   mutable_entry.PutSpecifics(specifics);
 
   // Update our state based on the saved nigori node.
-  ApplyNigoriUpdate(nigori_state.nigori_specifics, trans.GetWrappedTrans());
+  ApplyNigoriUpdate(nigori_specifics, trans.GetWrappedTrans());
 }
 
 DirectoryCryptographer*
@@ -1424,14 +1430,13 @@ void SyncEncryptionHandlerImpl::NotifyObserversOfLocalCustomPassphrase(
   WriteNode nigori_node(trans);
   BaseNode::InitByLookupResult init_result = nigori_node.InitTypeRoot(NIGORI);
   DCHECK_EQ(init_result, BaseNode::INIT_OK);
-  NigoriState nigori_state;
-  nigori_state.nigori_specifics = nigori_node.GetNigoriSpecifics();
-  DCHECK(nigori_state.nigori_specifics.passphrase_type() ==
+  sync_pb::NigoriSpecifics nigori_specifics = nigori_node.GetNigoriSpecifics();
+  DCHECK(nigori_specifics.passphrase_type() ==
              sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE ||
-         nigori_state.nigori_specifics.passphrase_type() ==
+         nigori_specifics.passphrase_type() ==
              sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE);
   for (auto& observer : observers_) {
-    observer.OnLocalSetPassphraseEncryption(nigori_state);
+    observer.OnLocalSetPassphraseEncryption(nigori_specifics);
   }
 }
 

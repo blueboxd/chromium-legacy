@@ -44,8 +44,8 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkService();
 CONTENT_EXPORT net::NetworkChangeNotifier* GetNetworkChangeNotifier();
 #endif
 
-// Call |FlushForTesting()| on cached |NetworkServicePtr|. For testing only.
-// Must only be called on the UI thread.
+// Call |FlushForTesting()| on cached |mojo::Remote<NetworkService>|. For
+// testing only. Must only be called on the UI thread.
 CONTENT_EXPORT void FlushNetworkServiceInstanceForTesting();
 
 // Returns a NetworkConnectionTracker that can be used to subscribe for

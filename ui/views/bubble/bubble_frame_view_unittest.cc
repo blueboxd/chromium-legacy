@@ -166,7 +166,7 @@ TEST_F(BubbleFrameViewTest, GetBoundsForClientViewWithClose) {
   const gfx::Insets content_margins = frame.content_margins();
   const gfx::Insets insets = frame.GetBorderInsets();
   const int close_margin =
-      frame.GetCloseButtonForTest()->height() +
+      frame.GetCloseButtonForTesting()->height() +
       LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
   const gfx::Rect client_view_bounds = frame.GetBoundsForClientView();
   EXPECT_EQ(insets.left() + content_margins.left(), client_view_bounds.x());
@@ -877,7 +877,7 @@ TEST_F(BubbleFrameViewTest, LayoutWithHeaderAndCloseButton) {
   frame.widget_delegate()->SetShouldShowCloseButton(true);
 
   const int close_margin =
-      frame.GetCloseButtonForTest()->height() +
+      frame.GetCloseButtonForTesting()->height() +
       LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
   const gfx::Insets content_margins = frame.content_margins();
   const gfx::Insets insets = frame.GetBorderInsets();
@@ -1127,7 +1127,7 @@ TEST_F(BubbleFrameViewTest, LayoutEdgeCasesWithHeader) {
 
   BubbleFrameView* frame = delegate.GetBubbleFrameView();
   const int close_margin =
-      frame->GetCloseButtonForTest()->height() +
+      frame->GetCloseButtonForTesting()->height() +
       LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
 
   // Set a header view that is 1 dip smaller smaller than the close button.

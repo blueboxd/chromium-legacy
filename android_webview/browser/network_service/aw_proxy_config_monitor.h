@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
@@ -47,8 +47,7 @@ class AwProxyConfigMonitor : public net::ProxyConfigService::Observer {
   void FlushProxyConfig(base::OnceClosure callback);
 
   std::unique_ptr<net::ProxyConfigServiceAndroid> proxy_config_service_android_;
-  mojo::InterfacePtrSet<network::mojom::ProxyConfigClient>
-      proxy_config_client_set_;
+  mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
 };
 
 }  // namespace android_webview

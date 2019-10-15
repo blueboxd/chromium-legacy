@@ -1675,6 +1675,11 @@ const char kPrintPreviewRegisterPromosName[] =
 const char kPrintPreviewRegisterPromosDescription[] =
     "Enable registering unregistered cloud printers from print preview.";
 
+const char kPrivacySettingsRedesignName[] = "Privacy Settings Redesign";
+const char kPrivacySettingsRedesignDescription[] =
+    "Redesign of the privacy settings card to make it more prominent and "
+    "and easier to use.";
+
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
 const char kProminentDarkModeActiveTabTitleDescription[] =
@@ -1736,11 +1741,6 @@ const char kRequestTabletSiteDescription[] =
     "for tablet devices. When this option is selected the user agent string is "
     "changed to indicate a tablet device. Web content optimized for tablets is "
     "received there after for the current tab.";
-
-const char kResourceLoadSchedulerName[] = "Enable resource load throttling";
-const char kResourceLoadSchedulerDescription[] =
-    "Uses the resource load scheduler in blink to throttle resource load "
-    "requests.";
 
 const char kPrefetchPrivacyChangesName[] =
     "Prefetch request properties are updated to be privacy-preserving";

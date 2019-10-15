@@ -136,7 +136,7 @@ class LinkedHashSetNodeBase {
   LinkedHashSetNodeBase& operator=(const LinkedHashSetNodeBase& other) = delete;
 };
 
-template <typename ValueArg, typename Allocator>
+template <typename ValueArg>
 class LinkedHashSetNode : public LinkedHashSetNodeBase {
   DISALLOW_NEW();
 
@@ -171,7 +171,7 @@ class LinkedHashSet {
  private:
   typedef ValueArg Value;
   typedef TraitsArg Traits;
-  typedef LinkedHashSetNode<Value, Allocator> Node;
+  typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
   typedef LinkedHashSetTranslator<Value, HashFunctions, Allocator>
       NodeHashFunctions;
@@ -361,7 +361,7 @@ class LinkedHashSet {
 template <typename Value, typename HashFunctions, typename Allocator>
 struct LinkedHashSetTranslator {
   STATIC_ONLY(LinkedHashSetTranslator);
-  typedef LinkedHashSetNode<Value, Allocator> Node;
+  typedef LinkedHashSetNode<Value> Node;
   typedef LinkedHashSetNodeBase NodeBase;
   typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
   static unsigned GetHash(const Node& node) {
@@ -394,16 +394,16 @@ struct LinkedHashSetTranslator {
 template <typename Value, typename Allocator>
 struct LinkedHashSetExtractor {
   STATIC_ONLY(LinkedHashSetExtractor);
-  static const Value& Extract(const LinkedHashSetNode<Value, Allocator>& node) {
+  static const Value& Extract(const LinkedHashSetNode<Value>& node) {
     return node.value_;
   }
 };
 
 template <typename Value, typename ValueTraitsArg, typename Allocator>
 struct LinkedHashSetTraits
-    : public SimpleClassHashTraits<LinkedHashSetNode<Value, Allocator>> {
+    : public SimpleClassHashTraits<LinkedHashSetNode<Value>> {
   STATIC_ONLY(LinkedHashSetTraits);
-  using Node = LinkedHashSetNode<Value, Allocator>;
+  using Node = LinkedHashSetNode<Value>;
   using NodeBase = LinkedHashSetNodeBase;
   typedef ValueTraitsArg ValueTraits;
 
@@ -961,8 +961,7 @@ inline void LinkedHashSet<T, U, V, W>::erase(ValuePeekInType value) {
 }
 
 template <typename T, typename Allocator>
-inline void swap(LinkedHashSetNode<T, Allocator>& a,
-                 LinkedHashSetNode<T, Allocator>& b) {
+inline void swap(LinkedHashSetNode<T>& a, LinkedHashSetNode<T>& b) {
   typedef LinkedHashSetNodeBase Base;
   // The key and value cannot be swapped atomically, and it would be
   // wrong to have a GC when only one was swapped and the other still

@@ -11,12 +11,10 @@
 #include "components/sync/model/model_type_controller_delegate.h"
 
 namespace syncer {
-namespace {
 
-const char kTestCacheGuid[] = "test-guid";
-const char kTestBirthday[] = "1";
-
-}  // namespace
+constexpr char FakeSyncEngine::kTestCacheGuid[];
+constexpr char FakeSyncEngine::kTestBirthday[];
+constexpr char FakeSyncEngine::kTestKeystoreKey[];
 
 FakeSyncEngine::FakeSyncEngine() {}
 FakeSyncEngine::~FakeSyncEngine() {}
@@ -24,10 +22,10 @@ FakeSyncEngine::~FakeSyncEngine() {}
 void FakeSyncEngine::Initialize(InitParams params) {
   bool success = !fail_initial_download_;
   initialized_ = success;
-  params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
-                                   WeakHandle<DataTypeDebugInfoListener>(),
-                                   kTestCacheGuid, kTestBirthday,
-                                   /*bag_of_chips=*/"", success);
+  params.host->OnEngineInitialized(
+      ModelTypeSet(), WeakHandle<JsBackend>(),
+      WeakHandle<DataTypeDebugInfoListener>(), kTestCacheGuid, kTestBirthday,
+      /*bag_of_chips=*/"", kTestKeystoreKey, success);
 }
 
 bool FakeSyncEngine::IsInitialized() const {

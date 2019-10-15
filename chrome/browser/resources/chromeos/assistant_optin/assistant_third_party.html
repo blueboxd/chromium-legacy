@@ -31,10 +31,11 @@
     </oobe-dialog>
 
     <div id="third-party-overlay" class="popup-overlay" hidden>
-      <div id="overlay-container" class="oobe-popup not-resizable">
-        <div id="webview-container">
-          <webview id="overlay-webview"></webview>
-          <div id="overlay-webview-loading">
+      <div id="overlay-container" class="oobe-popup not-resizable layout
+          vertical">
+        <div id="webview-container" class="layout horizontal">
+          <webview id="overlay-webview" class="flex"></webview>
+          <div id="overlay-webview-loading" class="flex">
             <p i18n-content="assistantOobePopupOverlayLoading"></p>
           </div>
         </div>

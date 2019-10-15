@@ -170,6 +170,10 @@ bool TestSyncService::RequiresClientUpgrade() const {
          syncer::UPGRADE_CLIENT;
 }
 
+std::string TestSyncService::GetExperimentalAuthenticationId() const {
+  return std::string();
+}
+
 std::unique_ptr<SyncSetupInProgressHandle>
 TestSyncService::GetSetupInProgressHandle() {
   return nullptr;

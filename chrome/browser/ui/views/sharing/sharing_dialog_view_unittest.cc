@@ -20,6 +20,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/test/widget_test.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -210,4 +215,55 @@ TEST_F(SharingDialogViewTest, ThemeChangedEmptyList) {
 
   // Regression test for crbug.com/1001112
   dialog->OnThemeChanged();
+}
+
+TEST_F(SharingDialogViewTest, OriginViewShown) {
+  auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
+  dialog_data.origin_text_id =
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN;
+  dialog_data.initiating_origin =
+      url::Origin::Create(GURL("https://example.com"));
+
+  views::test::WidgetTest::WidgetAutoclosePtr bubble_widget(
+      views::BubbleDialogDelegateView::CreateBubble(
+          CreateDialogView(std::move(dialog_data)).release()));
+
+  auto* frame_view = static_cast<views::BubbleFrameView*>(
+      bubble_widget->non_client_view()->frame_view());
+
+  EXPECT_NE(nullptr, frame_view->GetHeaderViewForTesting());
+}
+
+TEST_F(SharingDialogViewTest, OriginViewHiddenIfNoOrigin) {
+  auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
+  dialog_data.origin_text_id =
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN;
+  // Do not set an origin.
+  dialog_data.initiating_origin = base::nullopt;
+
+  views::test::WidgetTest::WidgetAutoclosePtr bubble_widget(
+      views::BubbleDialogDelegateView::CreateBubble(
+          CreateDialogView(std::move(dialog_data)).release()));
+
+  auto* frame_view = static_cast<views::BubbleFrameView*>(
+      bubble_widget->non_client_view()->frame_view());
+
+  EXPECT_EQ(nullptr, frame_view->GetHeaderViewForTesting());
+}
+
+TEST_F(SharingDialogViewTest, OriginViewHiddenIfNoOriginText) {
+  auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
+  // Do not set an origin text.
+  dialog_data.origin_text_id = 0;
+  dialog_data.initiating_origin =
+      url::Origin::Create(GURL("https://example.com"));
+
+  views::test::WidgetTest::WidgetAutoclosePtr bubble_widget(
+      views::BubbleDialogDelegateView::CreateBubble(
+          CreateDialogView(std::move(dialog_data)).release()));
+
+  auto* frame_view = static_cast<views::BubbleFrameView*>(
+      bubble_widget->non_client_view()->frame_view());
+
+  EXPECT_EQ(nullptr, frame_view->GetHeaderViewForTesting());
 }

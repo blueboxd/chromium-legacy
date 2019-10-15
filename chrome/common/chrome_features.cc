@@ -596,6 +596,11 @@ const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
 const base::Feature kPrerenderFallbackToPreconnect{
     "PrerenderFallbackToPreconnect", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether to display redesign of the chrome privacy settings page
+// to the user.
+const base::Feature kPrivacySettingsRedesign{"PrivacySettingsRedesign",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Show Flash deprecation warning to users who have manually enabled Flash.
 // https://crbug.com/918428

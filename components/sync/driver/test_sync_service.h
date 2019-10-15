@@ -63,6 +63,7 @@ class TestSyncService : public SyncService {
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
+  std::string GetExperimentalAuthenticationId() const override;
 
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;

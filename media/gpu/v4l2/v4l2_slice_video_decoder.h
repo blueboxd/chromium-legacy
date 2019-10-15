@@ -27,18 +27,18 @@
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/media_gpu_export.h"
-#include "media/gpu/v4l2/v4l2_decode_surface_handler.h"
 #include "media/gpu/v4l2/v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_video_decoder_backend.h"
 #include "media/video/supported_video_decoder_config.h"
 
 namespace media {
 
 class AcceleratedVideoDecoder;
 class DmabufVideoFramePool;
-class V4L2DecodeSurface;
 
-class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
-                                               public V4L2DecodeSurfaceHandler {
+class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
+    : public VideoDecoder,
+      public V4L2VideoDecoderBackend::Client {
  public:
   using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
 
@@ -68,17 +68,18 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   void Reset(base::OnceClosure closure) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
 
-  // V4L2DecodeSurfaceHandler implementation.
-  scoped_refptr<V4L2DecodeSurface> CreateSurface() override;
-  bool SubmitSlice(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
-                   const uint8_t* data,
-                   size_t size) override;
-  void DecodeSurface(
-      const scoped_refptr<V4L2DecodeSurface>& dec_surface) override;
-  void SurfaceReady(const scoped_refptr<V4L2DecodeSurface>& dec_surface,
-                    int32_t bitstream_id,
-                    const gfx::Rect& visible_rect,
-                    const VideoColorSpace& /* color_space */) override;
+  // V4L2VideoDecoderBackend::Client implementation
+  void OnBackendError() override;
+  bool IsDecoding() const override;
+  void InitiateFlush() override;
+  void CompleteFlush() override;
+  bool ChangeResolution(gfx::Size pic_size,
+                        gfx::Rect visible_rect,
+                        size_t num_output_frames) override;
+  void RunDecodeCB(DecodeCB cb, DecodeStatus status) override;
+  void OutputFrame(scoped_refptr<VideoFrame> frame,
+                   const gfx::Rect& visible_rect,
+                   base::TimeDelta timestamp) override;
 
  private:
   friend class V4L2SliceVideoDecoderTest;
@@ -90,29 +91,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
       GetFramePoolCB get_pool_cb);
   ~V4L2SliceVideoDecoder() override;
   void Destroy() override;
-
-  // Request for decoding buffer. Every Decode() call generates 1 DecodeRequest.
-  struct DecodeRequest {
-    // The decode buffer passed from Decode().
-    scoped_refptr<DecoderBuffer> buffer;
-    // The callback function passed from Decode().
-    DecodeCB decode_cb;
-    // The identifier for the decoder buffer.
-    int32_t bitstream_id;
-
-    DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id);
-
-    // Allow move, but not copy
-    DecodeRequest(DecodeRequest&&);
-    DecodeRequest& operator=(DecodeRequest&&);
-
-    ~DecodeRequest();
-
-    DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
-  };
-
-  // Request for displaying the surface or calling the decode callback.
-  struct OutputRequest;
 
   enum class State {
     // Initial state. Transitions to |kDecoding| if Initialize() is successful,
@@ -126,18 +104,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
     kFlushing,
     // Error state. Cannot transition to other state anymore.
     kError,
-  };
-
-  // The reason the decoding is paused.
-  enum class PauseReason {
-    // Not stopped, decoding normally.
-    kNone,
-    // Cannot create a new V4L2 surface. Waiting for surfaces to be released.
-    kRanOutOfSurfaces,
-    // A VP9 superframe contains multiple subframes. Before decoding the next
-    // subframe, we need to wait for previous subframes decoded and update the
-    // context.
-    kWaitSubFrameDecoded,
   };
 
   class BitstreamIdGenerator {
@@ -185,30 +151,11 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   void DestroyTask();
   // Reset on decoder thread.
   void ResetTask(base::OnceClosure closure);
-  // Reset |avd_|, clear all pending requests, and call all pending decode
-  // callback with |status| argument.
-  void ClearPendingRequests(DecodeStatus status);
 
-  // Enqueue |request| to the pending decode request queue, and try to decode
-  // from the queue.
+  // Enqueue |buffer| to be decoded. |decode_cb| will be called once |buffer|
+  // is no longer used.
   void EnqueueDecodeTask(scoped_refptr<DecoderBuffer> buffer,
                          V4L2SliceVideoDecoder::DecodeCB decode_cb);
-  // Try to decode buffer from the pending decode request queue.
-  // This method stops decoding when:
-  // - Run out of surface
-  // - Flushing or changing resolution
-  // Invoke this method again when these situation ends.
-  void PumpDecodeTask();
-  // Try to output surface from |output_request_queue_|.
-  // This method stops outputting surface when the first surface is not dequeued
-  // from the V4L2 device. Invoke this method again when any surface is
-  // dequeued from the V4L2 device.
-  void PumpOutputSurfaces();
-  // Setup the format of V4L2 output buffer, and allocate new buffer set.
-  bool ChangeResolution();
-  // Callback which is called when V4L2 surface is destroyed.
-  void ReuseOutputBuffer(V4L2ReadableBufferRef buffer);
-
   // Start streaming V4L2 input and output queues. Attempt to start
   // |device_poll_thread_| before starting streaming.
   bool StartStreamV4L2Queue();
@@ -218,27 +165,18 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Try to dequeue input and output buffers from device.
   void ServiceDeviceTask(bool event);
 
-  // Convert the frame and call the output callback.
-  void RunOutputCB(scoped_refptr<VideoFrame> frame,
-                   const gfx::Rect& visible_rect,
-                   base::TimeDelta timestamp);
-  // Call the decode callback and count the number of pending callbacks.
-  void RunDecodeCB(DecodeCB cb, DecodeStatus status);
   // Change the state and check the state transition is valid.
   void SetState(State new_state);
 
-  // Check whether request api is supported or not.
-  bool CheckRequestAPISupport();
-  // Allocate necessary request buffers is request api is supported.
-  bool AllocateRequests();
+  // The V4L2 backend, i.e. the part of the decoder that sends
+  // decoding jobs to the kernel.
+  std::unique_ptr<V4L2VideoDecoderBackend> backend_;
 
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
   // VideoFrame manager used to allocate and recycle video frame.
   GetFramePoolCB get_pool_cb_;
   DmabufVideoFramePool* frame_pool_ = nullptr;
-  // Video decoder used to parse stream headers by software.
-  std::unique_ptr<AcceleratedVideoDecoder> avd_;
 
   // Client task runner. All public methods of VideoDecoder interface are
   // executed at this task runner.
@@ -249,8 +187,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   // State of the instance.
   State state_ = State::kUninitialized;
-  // Indicates why decoding is currently paused.
-  PauseReason pause_reason_ = PauseReason::kNone;
 
   // Parameters for generating output VideoFrame.
   base::Optional<VideoFrameLayout> frame_layout_;
@@ -259,40 +195,15 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   // Callbacks passed from Initialize().
   OutputCB output_cb_;
-  // Callbacks of EOS buffer passed from Decode().
-  DecodeCB flush_cb_;
 
   // V4L2 input and output queue.
   scoped_refptr<V4L2Queue> input_queue_;
   scoped_refptr<V4L2Queue> output_queue_;
 
-  // The time at which each buffer decode operation started. Not each decode
-  // operation leads to a frame being output and frames might be reordered, so
-  // we don't know when it's safe to drop a timestamp. This means we need to use
-  // a cache here, with a size large enough to account for frame reordering.
-  base::MRUCache<int32_t, base::TimeDelta> bitstream_id_to_timestamp_;
-
-  // Queue of pending decode request.
-  base::queue<DecodeRequest> decode_request_queue_;
-  // Surfaces enqueued to V4L2 device. Since we are stateless, they are
-  // guaranteed to be proceeded in FIFO order.
-  base::queue<scoped_refptr<V4L2DecodeSurface>> surfaces_at_device_;
-  // The decode request which is currently processed.
-  base::Optional<DecodeRequest> current_decode_request_;
-  // Queue of pending output request.
-  base::queue<OutputRequest> output_request_queue_;
+  BitstreamIdGenerator bitstream_id_generator_;
 
   // True if the decoder needs bitstream conversion before decoding.
   bool needs_bitstream_conversion_ = false;
-
-  BitstreamIdGenerator bitstream_id_generator_;
-
-  // Set to true by CreateInputBuffers() if the codec driver supports requests.
-  bool supports_requests_ = false;
-  // FIFO queue of requests, only used if supports_requests_ is true.
-  std::queue<base::ScopedFD> requests_;
-  // Stores the media file descriptor, only used if supports_requests_ is true.
-  base::ScopedFD media_fd_;
 
   SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(decoder_sequence_checker_);

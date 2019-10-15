@@ -7,7 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/wake_lock.mojom-blink.h"
+#include "services/device/public/mojom/wake_lock.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

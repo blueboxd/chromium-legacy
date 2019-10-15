@@ -21,6 +21,7 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -80,10 +81,9 @@ class MojoCdmTest : public ::testing::Test {
     // TODO(xhwang): Add pending init support.
     DCHECK_NE(PENDING, expected_result);
 
-    mojom::ContentDecryptionModulePtr remote_cdm;
-    auto cdm_request = mojo::MakeRequest(&remote_cdm);
+    mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm;
 
-    cdm_binding_.Bind(std::move(cdm_request));
+    cdm_binding_.Bind(remote_cdm.InitWithNewPipeAndPassReceiver());
 
     std::string key_system;
     if (expected_result == CONNECTION_ERROR_BEFORE) {

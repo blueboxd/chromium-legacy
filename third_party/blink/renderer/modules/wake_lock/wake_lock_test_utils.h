@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/device/public/mojom/wake_lock.mojom-blink.h"
+#include "services/device/public/mojom/wake_lock.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"

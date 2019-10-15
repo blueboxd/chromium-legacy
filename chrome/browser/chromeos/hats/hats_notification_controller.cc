@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/hats/hats_dialog.h"
 #include "chrome/browser/chromeos/hats/hats_finch_helper.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"

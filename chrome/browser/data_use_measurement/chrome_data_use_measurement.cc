@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"

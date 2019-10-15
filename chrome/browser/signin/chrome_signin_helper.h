@@ -89,7 +89,7 @@ void FixAccountConsistencyRequestHeader(
     bool is_off_the_record,
     int incognito_availibility,
     AccountConsistencyMethod account_consistency,
-    std::string primary_account_id,
+    std::string gaia_id,
 #if defined(OS_CHROMEOS)
     bool account_consistency_mirror_required,
 #endif

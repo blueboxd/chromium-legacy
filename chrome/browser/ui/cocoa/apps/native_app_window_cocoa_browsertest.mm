@@ -21,6 +21,7 @@
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"

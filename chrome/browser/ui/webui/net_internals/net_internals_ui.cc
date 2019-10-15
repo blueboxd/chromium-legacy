@@ -35,6 +35,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/log/net_log_util.h"
 #include "services/network/expect_ct_reporter.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"

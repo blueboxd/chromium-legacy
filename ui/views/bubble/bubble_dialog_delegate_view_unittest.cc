@@ -395,7 +395,7 @@ TEST_F(BubbleDialogDelegateViewTest, CustomTitle) {
   bubble_frame->ResetWindowControls();
   bubble_frame->Layout();
 
-  Button* close_button = bubble_frame->GetCloseButtonForTest();
+  Button* close_button = bubble_frame->GetCloseButtonForTesting();
   // Title moves over for the close button.
   EXPECT_EQ(close_button->x() - LayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CLOSE_BUTTON_MARGIN),

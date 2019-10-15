@@ -516,7 +516,7 @@ class LocalCardMigrationBrowserTest
             GetLocalCardMigrationOfferBubbleViews());
     CHECK(local_card_migration_bubble_views);
     return local_card_migration_bubble_views->GetBubbleFrameView()
-        ->GetCloseButtonForTest();
+        ->GetCloseButtonForTesting();
   }
 
   views::View* GetCardListView() {

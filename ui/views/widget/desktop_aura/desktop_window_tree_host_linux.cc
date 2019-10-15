@@ -19,7 +19,16 @@
 #include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
 #include "ui/views/widget/widget.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostLinux*)
+
 namespace views {
+
+std::list<gfx::AcceleratedWidget>* DesktopWindowTreeHostLinux::open_windows_ =
+    nullptr;
+
+DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostLinux*,
+                             kHostForRootWindow,
+                             nullptr)
 
 namespace {
 
@@ -63,7 +72,48 @@ DesktopWindowTreeHostLinux::DesktopWindowTreeHostLinux(
     : DesktopWindowTreeHostPlatform(native_widget_delegate,
                                     desktop_native_widget_aura) {}
 
-DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() = default;
+DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() {
+  window()->ClearProperty(kHostForRootWindow);
+}
+
+// static
+aura::Window* DesktopWindowTreeHostLinux::GetContentWindowForWidget(
+    gfx::AcceleratedWidget widget) {
+  auto* host = DesktopWindowTreeHostLinux::GetHostForWidget(widget);
+  return host ? host->GetContentWindow() : nullptr;
+}
+
+// static
+DesktopWindowTreeHostLinux* DesktopWindowTreeHostLinux::GetHostForWidget(
+    gfx::AcceleratedWidget widget) {
+  aura::WindowTreeHost* host =
+      aura::WindowTreeHost::GetForAcceleratedWidget(widget);
+  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
+}
+
+// static
+std::vector<aura::Window*> DesktopWindowTreeHostLinux::GetAllOpenWindows() {
+  std::vector<aura::Window*> windows(open_windows().size());
+  std::transform(open_windows().begin(), open_windows().end(), windows.begin(),
+                 GetContentWindowForWidget);
+  return windows;
+}
+
+// static
+void DesktopWindowTreeHostLinux::CleanUpWindowList(
+    void (*func)(aura::Window* window)) {
+  if (!open_windows_)
+    return;
+  while (!open_windows_->empty()) {
+    gfx::AcceleratedWidget widget = open_windows_->front();
+    func(GetContentWindowForWidget(widget));
+    if (!open_windows_->empty() && open_windows_->front() == widget)
+      open_windows_->erase(open_windows_->begin());
+  }
+
+  delete open_windows_;
+  open_windows_ = nullptr;
+}
 
 void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
   pending_x_visual_id_ = x_visual_id;
@@ -106,6 +156,8 @@ void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
+  window()->SetProperty(kHostForRootWindow, this);
+
   CreateNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
 }
@@ -229,8 +281,24 @@ void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
 }
 
 void DesktopWindowTreeHostLinux::OnClosed() {
+  open_windows().remove(GetAcceleratedWidget());
   DestroyNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnClosed();
+}
+
+void DesktopWindowTreeHostLinux::OnAcceleratedWidgetAvailable(
+    gfx::AcceleratedWidget widget) {
+  open_windows().push_front(widget);
+  DesktopWindowTreeHostPlatform::OnAcceleratedWidgetAvailable(widget);
+}
+
+void DesktopWindowTreeHostLinux::OnActivationChanged(bool active) {
+  if (active) {
+    auto widget = GetAcceleratedWidget();
+    open_windows().remove(widget);
+    open_windows().insert(open_windows().begin(), widget);
+  }
+  DesktopWindowTreeHostPlatform::OnActivationChanged(active);
 }
 
 void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
@@ -316,6 +384,12 @@ DesktopWindowTreeHostLinux::GetPlatformWindowLinux() const {
 
 ui::PlatformWindowLinux* DesktopWindowTreeHostLinux::GetPlatformWindowLinux() {
   return static_cast<ui::PlatformWindowLinux*>(platform_window());
+}
+
+std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostLinux::open_windows() {
+  if (!open_windows_)
+    open_windows_ = new std::list<gfx::AcceleratedWidget>();
+  return *open_windows_;
 }
 
 // As DWTHX11 subclasses DWTHPlatform through DWTHLinux now (during transition

@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -342,7 +343,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       nullptr;
   mojo::RemoteSet<mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
-  media_session::mojom::MediaControllerPtr media_controller_;
+  mojo::Remote<media_session::mojom::MediaController> media_controller_;
 
   // Owned by the parent |Service| which will destroy |this| before |context_|.
   ServiceContext* const context_;

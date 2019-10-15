@@ -139,6 +139,7 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "persistent_test.cc",
     "thread_state_scheduling_test.cc",
     "worklist_test.cc",
+    "write_barrier_perftest.cc",
   ]
 
   configs += [

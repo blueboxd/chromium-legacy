@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
@@ -24,6 +25,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "url/origin.h"
 
 class SharingDialog;
 class SharingService;
@@ -74,7 +76,8 @@ class SharingUiController {
   void ClearLastDialog();
 
   // Gets the current list of apps and devices and shows a new dialog.
-  void UpdateAndShowDialog();
+  void UpdateAndShowDialog(
+      const base::Optional<url::Origin>& initiating_origin);
 
   // Gets the current list of devices that support the required feature.
   std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDevices();
@@ -120,7 +123,9 @@ class SharingUiController {
   // |success| is false and updates the omnibox icon.
   void OnMessageSentToDevice(int dialog_id, SharingSendMessageResult result);
 
-  void OnAppsReceived(int dialog_id, std::vector<SharingApp> apps);
+  void OnAppsReceived(int dialog_id,
+                      const base::Optional<url::Origin>& initiating_origin,
+                      std::vector<SharingApp> apps);
 
   SharingDialog* dialog_ = nullptr;
   content::WebContents* web_contents_ = nullptr;

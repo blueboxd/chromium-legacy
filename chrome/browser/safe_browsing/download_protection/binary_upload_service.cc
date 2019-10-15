@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"

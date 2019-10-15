@@ -9,6 +9,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace android_webview {
 
@@ -53,10 +54,10 @@ void AwProxyConfigMonitor::AddProxyToNetworkContextParams(
     network_context_params->initial_proxy_config =
         net::ProxyConfigWithAnnotation(proxy_config, NO_TRAFFIC_ANNOTATION_YET);
   } else {
-    network::mojom::ProxyConfigClientPtr proxy_config_client;
-    network_context_params->proxy_config_client_request =
-        mojo::MakeRequest(&proxy_config_client);
-    proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
+    mojo::PendingRemote<network::mojom::ProxyConfigClient> proxy_config_client;
+    network_context_params->proxy_config_client_receiver =
+        proxy_config_client.InitWithNewPipeAndPassReceiver();
+    proxy_config_client_set_.Add(std::move(proxy_config_client));
 
     net::ProxyConfigWithAnnotation proxy_config;
     net::ProxyConfigService::ConfigAvailability availability =
@@ -69,22 +70,20 @@ void AwProxyConfigMonitor::AddProxyToNetworkContextParams(
 void AwProxyConfigMonitor::OnProxyConfigChanged(
     const net::ProxyConfigWithAnnotation& config,
     net::ProxyConfigService::ConfigAvailability availability) {
-  proxy_config_client_set_.ForAllPtrs(
-      [config,
-       availability](network::mojom::ProxyConfigClient* proxy_config_client) {
-        switch (availability) {
-          case net::ProxyConfigService::CONFIG_VALID:
-            proxy_config_client->OnProxyConfigUpdated(config);
-            break;
-          case net::ProxyConfigService::CONFIG_UNSET:
-            proxy_config_client->OnProxyConfigUpdated(
-                net::ProxyConfigWithAnnotation::CreateDirect());
-            break;
-          case net::ProxyConfigService::CONFIG_PENDING:
-            NOTREACHED();
-            break;
-        }
-      });
+  for (const auto& proxy_config_client : proxy_config_client_set_) {
+    switch (availability) {
+      case net::ProxyConfigService::CONFIG_VALID:
+        proxy_config_client->OnProxyConfigUpdated(config);
+        break;
+      case net::ProxyConfigService::CONFIG_UNSET:
+        proxy_config_client->OnProxyConfigUpdated(
+            net::ProxyConfigWithAnnotation::CreateDirect());
+        break;
+      case net::ProxyConfigService::CONFIG_PENDING:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 std::string AwProxyConfigMonitor::SetProxyOverride(
@@ -105,18 +104,11 @@ void AwProxyConfigMonitor::ClearProxyOverride(base::OnceClosure callback) {
 }
 
 void AwProxyConfigMonitor::FlushProxyConfig(base::OnceClosure callback) {
-  int count = 0;
-  proxy_config_client_set_.ForAllPtrs(
-      [&count](network::mojom::ProxyConfigClient* proxy_config_client) {
-        ++count;
-      });
-
+  int count = proxy_config_client_set_.size();
   base::RepeatingClosure closure =
       base::BarrierClosure(count, std::move(callback));
-  proxy_config_client_set_.ForAllPtrs(
-      [closure](network::mojom::ProxyConfigClient* proxy_config_client) {
-        proxy_config_client->FlushProxyConfig(closure);
-      });
+  for (auto& proxy_config_client : proxy_config_client_set_)
+    proxy_config_client->FlushProxyConfig(closure);
 }
 
 }  // namespace android_webview

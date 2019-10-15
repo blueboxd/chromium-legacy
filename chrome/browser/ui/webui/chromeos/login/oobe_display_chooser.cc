@@ -45,8 +45,8 @@ OobeDisplayChooser::OobeDisplayChooser() {
   // |connector| may be null in tests.
   auto* connector = content::GetSystemConnector();
   if (connector) {
-    connector->BindInterface(ash::mojom::kServiceName,
-                             &cros_display_config_ptr_);
+    connector->Connect(ash::mojom::kServiceName,
+                       cros_display_config_.BindNewPipeAndPassReceiver());
   }
 }
 
@@ -94,7 +94,7 @@ void OobeDisplayChooser::MoveToTouchDisplay() {
         device.target_display_id != display::kInvalidDisplayId) {
       auto config_properties = ash::mojom::DisplayConfigProperties::New();
       config_properties->set_primary = true;
-      cros_display_config_ptr_->SetDisplayProperties(
+      cros_display_config_->SetDisplayProperties(
           base::NumberToString(device.target_display_id),
           std::move(config_properties), ash::mojom::DisplayConfigSource::kUser,
           base::DoNothing());

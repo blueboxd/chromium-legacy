@@ -375,6 +375,9 @@ extern const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPrerenderFallbackToPreconnect;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPrivacySettingsRedesign;
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFlashDeprecationWarning;

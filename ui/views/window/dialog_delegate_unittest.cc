@@ -309,7 +309,7 @@ TEST_F(DialogTest, HitTest_CloseButton) {
   frame->ResetWindowControls();
 
   const gfx::Rect close_button_bounds =
-      frame->GetCloseButtonForTest()->bounds();
+      frame->GetCloseButtonForTesting()->bounds();
   EXPECT_EQ(HTCLOSE,
             frame->NonClientHitTest(gfx::Point(close_button_bounds.x() + 4,
                                                close_button_bounds.y() + 4)));

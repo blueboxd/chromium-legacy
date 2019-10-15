@@ -43,8 +43,10 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "content/public/browser/clear_site_data_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/switches.h"
 #include "url/url_constants.h"
 
@@ -403,7 +405,7 @@ void ExtensionApps::SetPermission(const std::string& app_id,
       permission_value);
 }
 
-void ExtensionApps::Uninstall(const std::string& app_id) {
+void ExtensionApps::PromptUninstall(const std::string& app_id) {
   if (!profile_) {
     return;
   }
@@ -412,6 +414,60 @@ void ExtensionApps::Uninstall(const std::string& app_id) {
   ExtensionUninstaller* uninstaller =
       new ExtensionUninstaller(profile_, app_id);
   uninstaller->Run();
+}
+
+void ExtensionApps::Uninstall(const std::string& app_id,
+                              bool clear_site_data,
+                              bool report_abuse) {
+  // TODO(crbug.com/1009248): We need to add the error code, which could be used
+  // by ExtensionFunction, ManagementUninstallFunctionBase on the callback
+  // OnExtensionUninstallDialogClosed
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id);
+  if (!extension) {
+    return;
+  }
+
+  base::string16 error;
+  extensions::ExtensionSystem::Get(profile_)
+      ->extension_service()
+      ->UninstallExtension(
+          app_id, extensions::UninstallReason::UNINSTALL_REASON_USER_INITIATED,
+          &error);
+
+  if (!clear_site_data) {
+    return;
+  }
+
+  if (extension->from_bookmark()) {
+    constexpr bool kClearCookies = true;
+    constexpr bool kClearStorage = true;
+    constexpr bool kClearCache = true;
+    constexpr bool kAvoidClosingConnections = false;
+    content::ClearSiteData(
+        base::BindRepeating(
+            [](content::BrowserContext* browser_context) {
+              return browser_context;
+            },
+            base::Unretained(profile_)),
+        url::Origin::Create(
+            extensions::AppLaunchInfo::GetFullLaunchURL(extension)),
+        kClearCookies, kClearStorage, kClearCache, kAvoidClosingConnections,
+        base::DoNothing());
+  } else {
+    // If the extension specifies a custom uninstall page via
+    // chrome.runtime.setUninstallURL, then at uninstallation its uninstall
+    // page opens. To ensure that the CWS Report Abuse page is the active
+    // tab at uninstallation, navigates to the url to report abuse.
+    constexpr char kReferrerId[] = "chrome-remove-extension-dialog";
+    NavigateParams params(
+        profile_,
+        extension_urls::GetWebstoreReportAbuseUrl(app_id, kReferrerId),
+        ui::PAGE_TRANSITION_LINK);
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    Navigate(&params);
+  }
 }
 
 void ExtensionApps::OpenNativeSettings(const std::string& app_id) {

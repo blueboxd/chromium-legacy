@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"

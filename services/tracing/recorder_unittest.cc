@@ -33,7 +33,9 @@ class RecorderTest : public testing::Test {
 
   void CreateRecorder(mojom::TraceDataType data_type,
                       const base::RepeatingClosure& callback) {
-    CreateRecorder(mojo::NullReceiver(), data_type, callback);
+    mojo::PendingRemote<mojom::Recorder> dead_end_remote;
+    CreateRecorder(dead_end_remote.InitWithNewPipeAndPassReceiver(), data_type,
+                   callback);
   }
 
   void AddChunk(const std::string& chunk) { recorder_->AddChunk(chunk); }

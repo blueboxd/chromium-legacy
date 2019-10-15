@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_demographics.h"
@@ -35,6 +36,7 @@
 #include "components/sync/engine/fake_sync_engine.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
+#include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/user_demographics.pb.h"
@@ -50,6 +52,8 @@ namespace {
 // Age of a user that is old enough to provide demographics when now time is
 // |kNowTimeInStringFormat|.
 constexpr int kOldEnoughForDemographicsUserBirthYear = 1983;
+
+constexpr char kTestUser[] = "test_user@gmail.com";
 
 // Now time in string format.
 constexpr char kNowTimeInStringFormat[] = "23 Mar 2019 16:00:00 UDT";
@@ -167,9 +171,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     ShutdownAndDeleteService();
   }
 
-  void SignIn() {
-    identity_test_env()->MakePrimaryAccountAvailable("test_user@gmail.com");
-  }
+  void SignIn() { identity_test_env()->MakePrimaryAccountAvailable(kTestUser); }
 
   void CreateService(ProfileSyncService::StartBehavior behavior) {
     DCHECK(!service_);
@@ -1461,6 +1463,24 @@ TEST_F(ProfileSyncServiceTest,
   EXPECT_TRUE(HasBirthYearDemographic(prefs()));
   EXPECT_TRUE(HasGenderDemographic(prefs()));
   EXPECT_TRUE(HasBirthYearOffset(prefs()));
+}
+
+TEST_F(ProfileSyncServiceTest, GetExperimentalAuthenticationId) {
+  SignIn();
+  CreateService(ProfileSyncService::AUTO_START);
+  InitializeForNthSync();
+  ASSERT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+
+  const std::string kSeparator("|");
+  const std::string kGaiaId = signin::GetTestGaiaIdForEmail(kTestUser);
+
+  const std::string authentication_id_before_hashing =
+      kGaiaId + kSeparator + FakeSyncEngine::kTestBirthday + kSeparator +
+      FakeSyncEngine::kTestKeystoreKey;
+
+  EXPECT_EQ(crypto::SHA256HashString(authentication_id_before_hashing),
+            service()->GetExperimentalAuthenticationId());
 }
 
 }  // namespace

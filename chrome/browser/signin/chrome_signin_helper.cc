@@ -255,7 +255,7 @@ void CreateDiceTurnOnSyncHelper(Profile* profile,
                                 signin_metrics::PromoAction promo_action,
                                 signin_metrics::Reason reason,
                                 content::WebContents* web_contents,
-                                const std::string& account_id) {
+                                const CoreAccountId& account_id) {
   DCHECK(profile);
   Browser* browser = web_contents
                          ? chrome::FindBrowserWithWebContents(web_contents)
@@ -443,7 +443,7 @@ void FixAccountConsistencyRequestHeader(
     bool is_off_the_record,
     int incognito_availibility,
     AccountConsistencyMethod account_consistency,
-    std::string primary_account_id,
+    std::string gaia_id,
 #if defined(OS_CHROMEOS)
     bool account_consistency_mirror_required,
 #endif
@@ -475,8 +475,8 @@ void FixAccountConsistencyRequestHeader(
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Dice header:
   bool dice_header_added = AppendOrRemoveDiceRequestHeader(
-      request, redirect_url, primary_account_id, is_sync_enabled,
-      account_consistency, cookie_settings, signin_scoped_device_id);
+      request, redirect_url, gaia_id, is_sync_enabled, account_consistency,
+      cookie_settings, signin_scoped_device_id);
 
   // Block the AccountReconcilor while the Dice requests are in flight. This
   // allows the DiceReponseHandler to process the response before the reconcilor
@@ -491,7 +491,7 @@ void FixAccountConsistencyRequestHeader(
 #endif
 
   // Mirror header:
-  AppendOrRemoveMirrorRequestHeader(request, redirect_url, primary_account_id,
+  AppendOrRemoveMirrorRequestHeader(request, redirect_url, gaia_id,
                                     account_consistency, cookie_settings,
                                     profile_mode_mask);
 }

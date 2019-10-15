@@ -207,7 +207,7 @@ void PrimaryAccountManager::SetPrimaryAccountInternal(
   primary_account_info_ = account_info;
 
   PrefService* prefs = client_->GetPrefs();
-  const std::string& account_id = primary_account_info_.account_id;
+  const std::string& account_id = primary_account_info_.account_id.id;
   if (account_id.empty()) {
     DCHECK(!consented_to_sync);
     prefs->ClearPref(prefs::kGoogleServicesAccountId);

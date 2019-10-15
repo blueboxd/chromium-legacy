@@ -766,6 +766,7 @@ jumbo_static_library("extensions") {
     "//components/safe_browsing/db:util",
     "//components/signin/core/browser",
     "//content/public/browser",
+    "//mojo/public/cpp/bindings",
   ]
   deps = [
     "//apps",

@@ -478,7 +478,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledWithSafetyStory",
+                    "params": {
+                        "story": "safety"
+                    },
                     "enable_features": [
                         "PasswordManagerOnboardingAndroid"
                     ]
@@ -1426,6 +1429,22 @@
                     },
                     "enable_features": [
                         "IPH_Bookmark"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BoostThreadPriorityOnLibraryLoadingAndBackgroundMode": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "BoostPriorityAndBackgroundThreadMode",
+                    "enable_features": [
+                        "BoostThreadPriorityOnLibraryLoading",
+                        "WindowsThreadModeBackground"
                     ]
                 }
             ]

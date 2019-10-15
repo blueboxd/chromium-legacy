@@ -41,7 +41,7 @@ void MojoCdm::Create(
     const std::string& key_system,
     const url::Origin& security_origin,
     const CdmConfig& cdm_config,
-    mojom::ContentDecryptionModulePtr remote_cdm,
+    mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
     mojom::InterfaceFactory* interface_factory,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -60,7 +60,7 @@ void MojoCdm::Create(
                           std::move(promise));
 }
 
-MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
+MojoCdm::MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
                  mojom::InterfaceFactory* interface_factory,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
@@ -116,7 +116,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If connection error has happened, fail immediately.
-  if (remote_cdm_.encountered_error()) {
+  if (!remote_cdm_.is_connected()) {
     LOG(ERROR) << "Remote CDM encountered error.";
     promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                     "Mojo CDM creation failed.");
@@ -127,7 +127,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   RecordConnectionError(false);
 
   // Otherwise, set an error handler to catch the connection error.
-  remote_cdm_.set_connection_error_with_reason_handler(
+  remote_cdm_.set_disconnect_with_reason_handler(
       base::Bind(&MojoCdm::OnConnectionError, base::Unretained(this)));
 
   pending_init_promise_ = std::move(promise);

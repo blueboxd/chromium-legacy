@@ -1313,7 +1313,7 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
 
   identity::ScopeSet payments_scopes;
   payments_scopes.insert(kPaymentsOAuth2Scope);
-  std::string account_id =
+  CoreAccountId account_id =
       account_info_getter_->GetAccountInfoForPaymentsServer().account_id;
   if (invalidate_old) {
     DCHECK(!access_token_.empty());

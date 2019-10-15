@@ -21,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
@@ -128,8 +129,8 @@ Preferences::Preferences(input_method::InputMethodManager* input_method_manager)
   // |connector| may be null in tests.
   service_manager::Connector* connector = content::GetSystemConnector();
   if (connector) {
-    connector->BindInterface(ash::mojom::kServiceName,
-                             &cros_display_config_ptr_);
+    connector->Connect(ash::mojom::kServiceName,
+                       cros_display_config_.BindNewPipeAndPassReceiver());
   }
 }
 
@@ -753,8 +754,8 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       pref_name == prefs::kUnifiedDesktopEnabledByDefault) {
     // "Unified Desktop" is a per-user policy setting which will not be applied
     // until a user logs in.
-    if (cros_display_config_ptr_) {  // May be null in tests.
-      cros_display_config_ptr_->SetUnifiedDesktopEnabled(
+    if (cros_display_config_) {  // May be null in tests.
+      cros_display_config_->SetUnifiedDesktopEnabled(
           unified_desktop_enabled_by_default_.GetValue());
     }
   }

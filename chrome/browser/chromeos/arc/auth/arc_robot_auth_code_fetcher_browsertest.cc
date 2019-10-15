@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"

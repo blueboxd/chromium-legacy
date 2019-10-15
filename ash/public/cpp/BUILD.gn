@@ -324,6 +324,7 @@ source_set("unit_tests") {
     ":cpp",
     "//base",
     "//base/test:test_support",
+    "//mojo/public/cpp/bindings",
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/compositor_extra",

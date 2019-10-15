@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_PORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_PORT_H_
 
-#include "media/midi/midi_service.mojom-blink.h"
+#include "media/midi/midi_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"

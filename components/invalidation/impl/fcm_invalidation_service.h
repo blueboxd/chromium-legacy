@@ -110,7 +110,7 @@ class FCMInvalidationService
     base::Time service_was_started;
     bool was_already_started_on_login = false;
     bool was_ready_to_start_on_login = false;
-    std::string active_account_id;
+    CoreAccountId active_account_id;
   };
 
   bool IsReadyToStart();

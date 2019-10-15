@@ -125,14 +125,12 @@ class TestBatchableDelegate : public BatchableDelegate {
 class DriveApiRequestsTest : public testing::Test {
  public:
   DriveApiRequestsTest() {
-    network::mojom::NetworkServicePtr network_service_ptr;
-    network::mojom::NetworkServiceRequest network_service_request =
-        mojo::MakeRequest(&network_service_ptr);
-    network_service_ =
-        network::NetworkService::Create(std::move(network_service_request));
+    mojo::Remote<network::mojom::NetworkService> network_service_remote;
+    network_service_ = network::NetworkService::Create(
+        network_service_remote.BindNewPipeAndPassReceiver());
     network::mojom::NetworkContextParamsPtr context_params =
         network::mojom::NetworkContextParams::New();
-    network_service_ptr->CreateNetworkContext(
+    network_service_remote->CreateNetworkContext(
         network_context_.BindNewPipeAndPassReceiver(),
         std::move(context_params));
 
@@ -141,8 +139,9 @@ class DriveApiRequestsTest : public testing::Test {
     network_service_client_ =
         std::make_unique<network::TestNetworkServiceClient>(
             network_service_client_remote.InitWithNewPipeAndPassReceiver());
-    network_service_ptr->SetClient(std::move(network_service_client_remote),
-                                   network::mojom::NetworkServiceParams::New());
+    network_service_remote->SetClient(
+        std::move(network_service_client_remote),
+        network::mojom::NetworkServiceParams::New());
 
     mojo::PendingRemote<network::mojom::NetworkContextClient>
         network_context_client_remote;

@@ -82,6 +82,7 @@
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/system_connector.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace arc {
@@ -119,9 +120,11 @@ ArcServiceLauncher::ArcServiceLauncher(
                      base::FilePath(kIsArcVm),
                      arc::IsArcVmEnabled() ? "1" : "0", 1));
 
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config;
-  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
-                                               &cros_display_config);
+  mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
+      cros_display_config;
+  content::GetSystemConnector()->Connect(
+      ash::mojom::kServiceName,
+      cros_display_config.InitWithNewPipeAndPassReceiver());
   default_scale_factor_retriever_.Start(std::move(cros_display_config));
 }
 

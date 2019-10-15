@@ -282,7 +282,7 @@ TEST_F(ImeMenuTrayTest, ShowingEmojiKeysetHidesBubble) {
   EXPECT_TRUE(IsBubbleShown());
 
   TestImeControllerClient client;
-  Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
+  Shell::Get()->ime_controller()->SetClient(client.CreateRemote());
   GetTray()->ShowKeyboardWithKeyset(
       chromeos::input_method::mojom::ImeKeyset::kEmoji);
 

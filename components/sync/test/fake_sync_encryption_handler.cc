@@ -150,6 +150,10 @@ KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
   return this;
 }
 
+std::string FakeSyncEncryptionHandler::GetLastKeystoreKey() const {
+  return std::string();
+}
+
 DirectoryCryptographer* FakeSyncEncryptionHandler::GetMutableCryptographer() {
   return &cryptographer_;
 }

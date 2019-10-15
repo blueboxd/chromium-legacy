@@ -208,7 +208,7 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
   // Set IME client. Otherwise the emoji panel is unable to show.
   ImeController* ime_controller = Shell::Get()->ime_controller();
   TestImeControllerClient client;
-  ime_controller->SetClient(client.CreateInterfacePtr());
+  ime_controller->SetClient(client.CreateRemote());
 
   // Show the app list view and right-click on the search box with mouse. So the
   // text field's context menu shows.

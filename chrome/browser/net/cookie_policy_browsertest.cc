@@ -143,20 +143,6 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CookiePolicyBrowserTest);
 };
 
-// CookiePolicyBrowserTest with a feature list that enables usage of
-// TopLevelOrigin for CookieSettings. This is only required until this
-// behavior can be enabled by default. https://crbug.com/988398
-class CookiePolicyTopLevelOriginBrowserTest : public CookiePolicyBrowserTest {
- public:
-  CookiePolicyTopLevelOriginBrowserTest() {
-    enable_cookie_controls_.InitAndEnableFeature(
-        content_settings::kImprovedCookieControls);
-  }
-
- private:
-  base::test::ScopedFeatureList enable_cookie_controls_;
-};
-
 // Visits a page that sets a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
   SetBlockThirdPartyCookies(false);
@@ -317,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   ExpectNestedFrameContent("None");
 }
 
-IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
+IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
                        ThirdPartyCookiesIFrameExceptions) {
   SetBlockThirdPartyCookies(true);
 
@@ -354,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   ExpectNestedFrameContent("thirdparty");
 }
 
-IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
+IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
                        ThirdPartyCookiesIFrameThirdPartyExceptions) {
   SetBlockThirdPartyCookies(true);
 
@@ -392,8 +378,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   ExpectNestedFrameContent("thirdparty");
 }
 
-IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
-                       ThirdPartyIFrameStorage) {
+IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, ThirdPartyIFrameStorage) {
   NavigateToPageWithFrame("a.com");
   NavigateFrameTo("b.com", "/browsing_data/site_data.html");
   ExpectStorageForFrame(GetFrame(), false);
@@ -434,8 +419,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   ExpectStorageForFrame(GetFrame(), true);
 }
 
-IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
-                       NestedThirdPartyIFrameStorage) {
+IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, NestedThirdPartyIFrameStorage) {
   NavigateToPageWithFrame("a.com");
   NavigateFrameTo("b.com", "/iframe.html");
   NavigateNestedFrameTo("c.com", "/browsing_data/site_data.html");
@@ -482,8 +466,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   ExpectStorageForFrame(GetNestedFrame(), true);
 }
 
-IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
-                       NestedFirstPartyIFrameStorage) {
+IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, NestedFirstPartyIFrameStorage) {
   NavigateToPageWithFrame("a.com");
   NavigateFrameTo("b.com", "/iframe.html");
   NavigateNestedFrameTo("a.com", "/browsing_data/site_data.html");

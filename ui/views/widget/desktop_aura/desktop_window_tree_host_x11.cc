@@ -66,17 +66,7 @@
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #endif
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*)
-
 namespace views {
-
-std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = nullptr;
-
-DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kViewsWindowForRootWindow, NULL)
-
-DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostX11*,
-                             kHostForRootWindow,
-                             NULL)
 
 namespace {
 
@@ -100,33 +90,10 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
                                  desktop_native_widget_aura) {}
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
-  window()->ClearProperty(kHostForRootWindow);
   wm::SetWindowMoveClient(window(), nullptr);
 
   // ~DWTHPlatform notifies the DestkopNativeWidgetAura about destruction and
   // also destroyes the dispatcher.
-}
-
-// static
-aura::Window* DesktopWindowTreeHostX11::GetContentWindowForXID(XID xid) {
-  aura::WindowTreeHost* host =
-      aura::WindowTreeHost::GetForAcceleratedWidget(xid);
-  return host ? host->window()->GetProperty(kViewsWindowForRootWindow) : NULL;
-}
-
-// static
-DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::GetHostForXID(XID xid) {
-  aura::WindowTreeHost* host =
-      aura::WindowTreeHost::GetForAcceleratedWidget(xid);
-  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
-}
-
-// static
-std::vector<aura::Window*> DesktopWindowTreeHostX11::GetAllOpenWindows() {
-  std::vector<aura::Window*> windows(open_windows().size());
-  std::transform(open_windows().begin(), open_windows().end(), windows.begin(),
-                 GetContentWindowForXID);
-  return windows;
 }
 
 void DesktopWindowTreeHostX11::AddObserver(
@@ -137,21 +104,6 @@ void DesktopWindowTreeHostX11::AddObserver(
 void DesktopWindowTreeHostX11::RemoveObserver(
     DesktopWindowTreeHostObserverX11* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-void DesktopWindowTreeHostX11::CleanUpWindowList(
-    void (*func)(aura::Window* window)) {
-  if (!open_windows_)
-    return;
-  while (!open_windows_->empty()) {
-    gfx::AcceleratedWidget widget = open_windows_->front();
-    func(GetContentWindowForXID(widget));
-    if (!open_windows_->empty() && open_windows_->front() == widget)
-      open_windows_->erase(open_windows_->begin());
-  }
-
-  delete open_windows_;
-  open_windows_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -171,9 +123,6 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
-  window()->SetProperty(kViewsWindowForRootWindow, GetContentWindow());
-  window()->SetProperty(kHostForRootWindow, this);
-
   // Ensure that the X11DesktopHandler exists so that it tracks create/destroy
   // notify events.
   X11DesktopHandler::get();
@@ -214,40 +163,7 @@ void DesktopWindowTreeHostX11::EndMoveLoop() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, private:
-
-std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostX11::open_windows() {
-  if (!open_windows_)
-    open_windows_ = new std::list<gfx::AcceleratedWidget>();
-  return *open_windows_;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11 implementation:
-
-void DesktopWindowTreeHostX11::OnClosed() {
-  open_windows().remove(GetAcceleratedWidget());
-  DesktopWindowTreeHostLinux::OnClosed();
-}
-
-void DesktopWindowTreeHostX11::OnAcceleratedWidgetAvailable(
-    gfx::AcceleratedWidget widget) {
-  open_windows().push_front(widget);
-  WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(widget);
-}
-
-void DesktopWindowTreeHostX11::OnAcceleratedWidgetDestroyed() {}
-
-void DesktopWindowTreeHostX11::OnActivationChanged(bool active) {
-  if (active) {
-    // TODO(thomasanderson): Remove this window shuffling and use XWindowCache
-    // instead.
-    auto widget = GetAcceleratedWidget();
-    open_windows().remove(widget);
-    open_windows().insert(open_windows().begin(), widget);
-  }
-  DesktopWindowTreeHostPlatform::OnActivationChanged(active);
-}
 
 void DesktopWindowTreeHostX11::OnXWindowMapped() {
   for (DesktopWindowTreeHostObserverX11& observer : observer_list_)

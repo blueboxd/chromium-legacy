@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"

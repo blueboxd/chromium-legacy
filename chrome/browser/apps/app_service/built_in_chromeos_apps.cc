@@ -174,7 +174,15 @@ void BuiltInChromeOsApps::SetPermission(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void BuiltInChromeOsApps::Uninstall(const std::string& app_id) {
+void BuiltInChromeOsApps::PromptUninstall(const std::string& app_id) {
+  constexpr bool kClearSiteData = false;
+  constexpr bool kReportAbuse = false;
+  Uninstall(app_id, kClearSiteData, kReportAbuse);
+}
+
+void BuiltInChromeOsApps::Uninstall(const std::string& app_id,
+                                    bool clear_site_data,
+                                    bool report_abuse) {
   LOG(ERROR) << "Uninstall failed, could not remove built-in app with id "
              << app_id;
 }

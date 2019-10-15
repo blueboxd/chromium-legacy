@@ -350,8 +350,8 @@ void FetchManager::Loader::DidReceiveResponse(
           return;
       }
     }
-  } else if (!SecurityOrigin::Create(response.CurrentRequestUrl())
-                  ->IsSameSchemeHostPort(fetch_request_data_->Origin().get())) {
+  } else if (!fetch_request_data_->Origin()->CanReadContent(
+                 response.CurrentRequestUrl())) {
     // Recompute the tainting if the request was redirected to a different
     // origin.
     switch (fetch_request_data_->Mode()) {
@@ -562,23 +562,16 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
     return;
   }
 
+  const KURL& url = fetch_request_data_->Url();
   // "- |request|'s url's origin is same origin with |request|'s origin,
   //    |request|'s tainted origin flag is unset, and the CORS flag is unset"
   // Note tainted origin flag is always unset here.
   // Note we don't support to call this method with |CORS flag|
   // "- |request|'s current URL's scheme is |data|"
   // "- |request|'s mode is |navigate| or |websocket|".
-  bool is_target_same_origin_as_initiator =
-      SecurityOrigin::Create(fetch_request_data_->Url())
-          ->IsSameSchemeHostPort(fetch_request_data_->Origin().get());
-  bool is_target_same_origin_as_isolated_world =
-      fetch_request_data_->IsolatedWorldOrigin() &&
-      SecurityOrigin::Create(fetch_request_data_->Url())
-          ->IsSameSchemeHostPort(
-              fetch_request_data_->IsolatedWorldOrigin().get());
-  if (is_target_same_origin_as_initiator ||
-      is_target_same_origin_as_isolated_world ||
-      fetch_request_data_->Url().ProtocolIsData() ||
+  if (fetch_request_data_->Origin()->CanReadContent(url) ||
+      (fetch_request_data_->IsolatedWorldOrigin() &&
+       fetch_request_data_->IsolatedWorldOrigin()->CanReadContent(url)) ||
       network::IsNavigationRequestMode(fetch_request_data_->Mode())) {
     // "The result of performing a scheme fetch using request."
     PerformSchemeFetch(exception_state);

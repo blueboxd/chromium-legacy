@@ -26,6 +26,9 @@
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/geometry/rect.h"
 
 using input_method::InputMethodEngineBase;
@@ -95,7 +98,9 @@ class TestObserver : public InputMethodEngineBase::Observer {
   void OnKeyEvent(
       const std::string& engine_id,
       const InputMethodEngineBase::KeyboardEvent& event,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) override {
+    std::move(callback).Run(/* handled */ true);
+  }
   void OnInputContextUpdate(
       const ui::IMEEngineHandlerInterface::InputContext& context) override {}
   void OnCandidateClicked(
@@ -360,11 +365,13 @@ TEST_F(InputMethodEngineTest, KeyEventHandledRecordsLatencyHistogram) {
   CreateEngine(true);
   base::HistogramTester histogram_tester;
 
-  const std::string request_id = engine_->AddPendingKeyEvent(
-      kTestExtensionId, base::BindOnce([](bool consumed) {}));
   histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 0);
 
-  engine_->KeyEventHandled(kTestExtensionId, request_id, /* handled */ true);
+  const ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0,
+                           ui::DomKey::FromCharacter('a'),
+                           ui::EventTimeForNow());
+  engine_->ProcessKeyEvent(event, base::DoNothing());
+
   histogram_tester.ExpectTotalCount("InputMethod.KeyEventLatency", 1);
 }
 

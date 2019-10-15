@@ -1212,7 +1212,7 @@ bool Browser::CanDragEnter(content::WebContents* source,
   return true;
 }
 
-blink::WebSecurityStyle Browser::GetSecurityStyle(
+blink::SecurityStyle Browser::GetSecurityStyle(
     WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
   SecurityStateTabHelper* helper =

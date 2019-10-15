@@ -114,7 +114,8 @@ class NonBlockingInvalidator::Core
       const NonBlockingInvalidator::InitializeOptions& initialize_options);
   void Teardown();
   void UpdateRegisteredIds(const ObjectIdSet& ids);
-  void UpdateCredentials(const std::string& email, const std::string& token);
+  void UpdateCredentials(const CoreAccountId& account_id,
+                         const std::string& token);
   void RequestDetailedStatus(
       base::Callback<void(const base::DictionaryValue&)> callback) const;
 
@@ -182,10 +183,11 @@ void NonBlockingInvalidator::Core::UpdateRegisteredIds(const ObjectIdSet& ids) {
   invalidation_notifier_->UpdateRegisteredIds(this, ids);
 }
 
-void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
-                                                     const std::string& token) {
+void NonBlockingInvalidator::Core::UpdateCredentials(
+    const CoreAccountId& account_id,
+    const std::string& token) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->UpdateCredentials(email, token);
+  invalidation_notifier_->UpdateCredentials(account_id, token);
 }
 
 void NonBlockingInvalidator::Core::RequestDetailedStatus(
@@ -282,13 +284,13 @@ InvalidatorState NonBlockingInvalidator::GetInvalidatorState() const {
   return registrar_.GetInvalidatorState();
 }
 
-void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
+void NonBlockingInvalidator::UpdateCredentials(const CoreAccountId& account_id,
                                                const std::string& token) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&NonBlockingInvalidator::Core::UpdateCredentials,
-                         core_, email, token))) {
+                         core_, account_id, token))) {
     NOTREACHED();
   }
 }

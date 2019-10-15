@@ -23,6 +23,7 @@
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "google/cacheinvalidation/include/system-resources.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "jingle/notifier/base/notifier_options.h"
 
 namespace network {
@@ -119,8 +120,8 @@ class INVALIDATION_EXPORT SyncNetworkChannel
 
   // Subclass should implement UpdateCredentials to pass new token to channel
   // library.
-  virtual void UpdateCredentials(const std::string& email,
-      const std::string& token) = 0;
+  virtual void UpdateCredentials(const CoreAccountId& account_id,
+                                 const std::string& token) = 0;
 
   // Return value from GetInvalidationClientType will be passed to
   // invalidation::CreateInvalidationClient. Subclass should return one of the

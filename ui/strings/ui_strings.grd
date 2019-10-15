@@ -974,6 +974,9 @@ need to be translated for each locale.-->
       <message name="IDS_BROWSER_SHARING_DIALOG_DEVICE_SUBTITLE_LAST_ACTIVE_DAYS" desc="The label to be shown below the name of a valid device indicating the last active time of device,">
         {DAYS, plural, =0 {Active today} =1 {Active 1 day ago} other {Active # days ago}}
       </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_INITIATING_ORIGIN" desc="The label for the initiating origin shown in Click to Call dialogs.">
+        Number initiated from <ph name="ORIGIN">$1<ex>https://google.com</ex></ph>
+      </message>
 
       <!-- Sharing content types -->
       <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT" desc="The label used to describe that the content type being shared is a text.">

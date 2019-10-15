@@ -11,6 +11,9 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
@@ -179,11 +182,9 @@ class NetworkConnectionTrackerTest : public testing::Test {
   ~NetworkConnectionTrackerTest() override {}
 
   void Initialize() {
-    network::mojom::NetworkServicePtr network_service_ptr;
-    network::mojom::NetworkServiceRequest network_service_request =
-        mojo::MakeRequest(&network_service_ptr);
-    network_service_ =
-        NetworkService::Create(std::move(network_service_request));
+    mojo::PendingRemote<network::mojom::NetworkService> network_service_remote;
+    network_service_ = NetworkService::Create(
+        network_service_remote.InitWithNewPipeAndPassReceiver());
     tracker_ = std::make_unique<NetworkConnectionTracker>(base::BindRepeating(
         &NetworkConnectionTrackerTest::BindReceiver, base::Unretained(this)));
     observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());
@@ -321,17 +322,16 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
 // parameter when the connection type is unavailable.
 TEST_F(NetworkConnectionTrackerTest, GetConnectionTypeUnavailable) {
   // Returns a dummy network service that has not been initialized.
-  network::mojom::NetworkServicePtr* network_service_ptr =
-      new network::mojom::NetworkServicePtr;
+  mojo::Remote<network::mojom::NetworkService>* network_service_remote =
+      new mojo::Remote<network::mojom::NetworkService>;
 
-  network::mojom::NetworkServiceRequest request =
-      mojo::MakeRequest(network_service_ptr);
+  ignore_result(network_service_remote->BindNewPipeAndPassReceiver());
   NetworkConnectionTracker::BindingCallback callback = base::BindRepeating(
       [](network::mojom::NetworkService* service,
          mojo::PendingReceiver<network::mojom::NetworkChangeManager> receiver) {
         return service->GetNetworkChangeManager(std::move(receiver));
       },
-      base::Unretained(network_service_ptr->get()));
+      base::Unretained(network_service_remote->get()));
 
   auto tracker = std::make_unique<NetworkConnectionTracker>(callback);
   auto type = network::mojom::ConnectionType::CONNECTION_3G;
@@ -339,7 +339,7 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionTypeUnavailable) {
 
   EXPECT_FALSE(sync);
   EXPECT_EQ(type, network::mojom::ConnectionType::CONNECTION_3G);
-  delete network_service_ptr;
+  delete network_service_remote;
 }
 
 // Tests GetConnectionType() on a different thread.

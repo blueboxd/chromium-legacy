@@ -34,6 +34,7 @@ using autofill::RandomizedEncoder;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
 using autofill::ValueElementPair;
+using password_manager_util::FindFormByUsername;
 
 using Logger = autofill::SavePasswordProgressLogger;
 using StringID = autofill::SavePasswordProgressLogger::StringID;
@@ -119,11 +120,12 @@ void LabelFields(const FieldTypeMap& field_types,
 // which doesn't have a username.
 bool IsAddingUsernameToExistingMatch(
     const PasswordForm& credentials,
-    const std::map<base::string16, const PasswordForm*>& matches) {
-  const auto match = matches.find(base::string16());
-  return !credentials.username_value.empty() && match != matches.end() &&
-         !match->second->is_public_suffix_match &&
-         match->second->password_value == credentials.password_value;
+    const std::vector<const PasswordForm*>& matches) {
+  if (credentials.username_value.empty())
+    return false;
+  const PasswordForm* match = FindFormByUsername(matches, base::string16());
+  return match && !match->is_public_suffix_match &&
+         match->password_value == credentials.password_value;
 }
 
 // Helper functions for character type classification. The built-in functions
@@ -180,7 +182,7 @@ VotesUploader::~VotesUploader() = default;
 void VotesUploader::SendVotesOnSave(
     const FormData& observed,
     const PasswordForm& submitted_form,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     PasswordForm* pending_credentials) {
   if (pending_credentials->times_used == 1 ||
       IsAddingUsernameToExistingMatch(*pending_credentials, best_matches)) {
@@ -366,7 +368,7 @@ bool VotesUploader::UploadPasswordVote(
 
 // TODO(crbug.com/840384): Share common code with UploadPasswordVote.
 void VotesUploader::UploadFirstLoginVotes(
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     const PasswordForm& pending_credentials,
     const PasswordForm& form_to_upload) {
   AutofillDownloadManager* download_manager =
@@ -485,19 +487,20 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
 
 void VotesUploader::SetKnownValueFlag(
     const PasswordForm& pending_credentials,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
+    const std::vector<const PasswordForm*>& best_matches,
     FormStructure* form) {
   const base::string16& known_username = pending_credentials.username_value;
   base::string16 known_password;
   if (password_overridden_) {
     // If we are updating a password, the known value should be the old
     // password, not the new one.
-    auto it = best_matches.find(known_username);
-    if (it == best_matches.end()) {
+    const PasswordForm* match =
+        FindFormByUsername(best_matches, known_username);
+    if (!match) {
       // Username was not found, do nothing.
       return;
     }
-    known_password = it->second->password_value;
+    known_password = match->password_value;
   } else {
     known_password = pending_credentials.password_value;
   }

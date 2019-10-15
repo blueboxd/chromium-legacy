@@ -231,7 +231,7 @@ struct DisplayConfigProperties {
 interface CrosDisplayConfigController {
   // Observers are notified when the display layout or any display properties
   // change.
-  AddObserver(associated CrosDisplayConfigObserver observer);
+  AddObserver(pending_associated_remote<CrosDisplayConfigObserver> observer);
 
   // Returns the display layout info, including the list of layouts.
   GetDisplayLayoutInfo() => (DisplayLayoutInfo info);

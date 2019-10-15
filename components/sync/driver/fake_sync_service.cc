@@ -94,6 +94,10 @@ bool FakeSyncService::RequiresClientUpgrade() const {
   return false;
 }
 
+std::string FakeSyncService::GetExperimentalAuthenticationId() const {
+  return std::string();
+}
+
 UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }

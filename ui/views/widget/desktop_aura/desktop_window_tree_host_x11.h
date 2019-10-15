@@ -44,24 +44,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostX11() override;
 
-  // A way of converting an X11 |xid| host window into the content_window()
-  // of the associated DesktopNativeWidgetAura.
-  static aura::Window* GetContentWindowForXID(XID xid);
-
-  // A way of converting an X11 |xid| host window into this object.
-  static DesktopWindowTreeHostX11* GetHostForXID(XID xid);
-
-  // Get all open top-level windows. This includes windows that may not be
-  // visible. This list is sorted in their stacking order, i.e. the first window
-  // is the topmost window.
-  static std::vector<aura::Window*> GetAllOpenWindows();
-
   void AddObserver(DesktopWindowTreeHostObserverX11* observer);
   void RemoveObserver(DesktopWindowTreeHostObserverX11* observer);
-
-  // Runs the |func| callback for each content-window, and deallocates the
-  // internal list of open windows.
-  static void CleanUpWindowList(void (*func)(aura::Window* window));
 
  protected:
   // Overridden from DesktopWindowTreeHost:
@@ -78,18 +62,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 
-  // See comment for variable open_windows_.
-  static std::list<XID>& open_windows();
-
   // PlatformWindowDelegate overrides:
   //
   // DWTHX11 temporarily overrides the PlatformWindowDelegate methods instead of
   // underlying DWTHPlatform and WTHPlatform. Eventually, these will be removed
   // from here as we progress in https://crbug.com/990756.
-  void OnClosed() override;
-  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
-  void OnAcceleratedWidgetDestroyed() override;
-  void OnActivationChanged(bool active) override;
   void OnXWindowMapped() override;
   void OnXWindowUnmapped() override;
 
@@ -110,10 +87,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked
       observer_list_;
-
-  // A list of all (top-level) windows that have been created but not yet
-  // destroyed.
-  static std::list<gfx::AcceleratedWidget>* open_windows_;
 
   // The display and the native X window hosting the root window.
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};

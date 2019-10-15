@@ -107,7 +107,8 @@ void AdvancedProtectionStatusManager::OnExtendedAccountInfoUpdated(
 void AdvancedProtectionStatusManager::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
   // If user signed out primary account, cancel refresh.
-  std::string unconsented_primary_account_id = GetUnconsentedPrimaryAccountId();
+  CoreAccountId unconsented_primary_account_id =
+      GetUnconsentedPrimaryAccountId();
   if (!unconsented_primary_account_id.empty() &&
       unconsented_primary_account_id == info.account_id) {
     is_under_advanced_protection_ = false;
@@ -138,7 +139,7 @@ void AdvancedProtectionStatusManager::OnAdvancedProtectionDisabled() {
 }
 
 void AdvancedProtectionStatusManager::OnAccessTokenFetchComplete(
-    std::string account_id,
+    CoreAccountId account_id,
     GoogleServiceAuthError error,
     signin::AccessTokenInfo token_info) {
   DCHECK(access_token_fetcher_);
@@ -169,7 +170,8 @@ void AdvancedProtectionStatusManager::OnAccessTokenFetchComplete(
 void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string unconsented_primary_account_id = GetUnconsentedPrimaryAccountId();
+  CoreAccountId unconsented_primary_account_id =
+      GetUnconsentedPrimaryAccountId();
   if (!identity_manager_ || unconsented_primary_account_id.empty())
     return;
 
@@ -230,11 +232,12 @@ bool AdvancedProtectionStatusManager::IsUnconsentedPrimaryAccount(
 }
 
 void AdvancedProtectionStatusManager::OnGetIDToken(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& id_token) {
   // Skips if the ID token is not for the primary account. Or user is no longer
   // signed in.
-  std::string unconsented_primary_account_id = GetUnconsentedPrimaryAccountId();
+  CoreAccountId unconsented_primary_account_id =
+      GetUnconsentedPrimaryAccountId();
   if (unconsented_primary_account_id.empty() ||
       account_id != unconsented_primary_account_id)
     return;
@@ -270,13 +273,10 @@ AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
   MaybeRefreshOnStartUp();
 }
 
-std::string AdvancedProtectionStatusManager::GetUnconsentedPrimaryAccountId()
+CoreAccountId AdvancedProtectionStatusManager::GetUnconsentedPrimaryAccountId()
     const {
-  // TODO(triploblastic@): Remove explicit conversion once
-  // AdvancedProtectionStatusManager has been fixed to use CoreAccountId.
-  return identity_manager_
-             ? identity_manager_->GetUnconsentedPrimaryAccountId().id
-             : std::string();
+  return identity_manager_ ? identity_manager_->GetUnconsentedPrimaryAccountId()
+                           : CoreAccountId();
 }
 
 }  // namespace safe_browsing

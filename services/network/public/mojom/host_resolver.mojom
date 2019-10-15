@@ -301,5 +301,5 @@ interface DnsConfigChangeManagerClient {
 // An interface that broadcasts DNS config change events.
 interface DnsConfigChangeManager {
   // Requests to receive notification when there is a DNS config change.
-  RequestNotifications(DnsConfigChangeManagerClient client_ptr);
+  RequestNotifications(pending_remote<DnsConfigChangeManagerClient> client);
 };

@@ -2441,6 +2441,8 @@ enum WebFeature {
   kNonOriginCleanImageBitmapSerialization = 3057,
   kOriginCleanImageBitmapTransfer = 3058,
   kNonOriginCleanImageBitmapTransfer = 3059,
+  kCompressionStreamConstructor = 3060,
+  kDecompressionStreamConstructor = 3061,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

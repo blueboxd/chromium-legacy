@@ -207,9 +207,9 @@ void HandleBadMessage(const std::string& error) {
 
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry,
-    mojom::NetworkServiceRequest request,
+    mojo::PendingReceiver<mojom::NetworkService> receiver,
     bool delay_initialization_until_set_client)
-    : net_log_(GetNetLog()), registry_(std::move(registry)), binding_(this) {
+    : net_log_(GetNetLog()), registry_(std::move(registry)) {
   DCHECK(!g_network_service);
   g_network_service = this;
 
@@ -220,8 +220,8 @@ NetworkService::NetworkService(
         base::BindRepeating(&HandleBadMessage));
   }
 
-  if (request.is_pending())
-    Bind(std::move(request));
+  if (receiver.is_valid())
+    Bind(std::move(receiver));
 
   if (!delay_initialization_until_set_client)
     Initialize(mojom::NetworkServiceParams::New());
@@ -319,8 +319,8 @@ void NetworkService::set_os_crypt_is_configured() {
 }
 
 std::unique_ptr<NetworkService> NetworkService::Create(
-    mojom::NetworkServiceRequest request) {
-  return std::make_unique<NetworkService>(nullptr, std::move(request));
+    mojo::PendingReceiver<mojom::NetworkService> receiver) {
+  return std::make_unique<NetworkService>(nullptr, std::move(receiver));
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
@@ -813,9 +813,10 @@ void NetworkService::AckUpdateLoadInfo() {
   MaybeStartUpdateLoadInfoTimer();
 }
 
-void NetworkService::Bind(mojom::NetworkServiceRequest request) {
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+void NetworkService::Bind(
+    mojo::PendingReceiver<mojom::NetworkService> receiver) {
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
 }
 
 // static

@@ -223,13 +223,11 @@ class PreflightControllerTest : public testing::Test {
  public:
   PreflightControllerTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
-    mojom::NetworkServicePtr network_service_ptr;
-    mojom::NetworkServiceRequest network_service_request =
-        mojo::MakeRequest(&network_service_ptr);
-    network_service_ =
-        NetworkService::Create(std::move(network_service_request));
+    mojo::Remote<mojom::NetworkService> network_service_remote;
+    network_service_ = NetworkService::Create(
+        network_service_remote.BindNewPipeAndPassReceiver());
 
-    network_service_ptr->CreateNetworkContext(
+    network_service_remote->CreateNetworkContext(
         network_context_remote_.BindNewPipeAndPassReceiver(),
         mojom::NetworkContextParams::New());
 

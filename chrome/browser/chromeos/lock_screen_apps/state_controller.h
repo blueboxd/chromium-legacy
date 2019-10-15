@@ -21,7 +21,9 @@
 #include "components/session_manager/core/session_manager_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/api/app_runtime.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/aura/window.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
@@ -78,7 +80,8 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // Sets the tray action that should be used by |StateController|.
   // Has to be called before |Initialize|.
-  void SetTrayActionPtrForTesting(ash::mojom::TrayActionPtr tray_action_ptr);
+  void SetTrayActionForTesting(
+      mojo::PendingRemote<ash::mojom::TrayAction> tray_action);
   void FlushTrayActionForTesting();
   // Sets the callback that will be run when the state controller is fully
   // initialized and ready for action.
@@ -210,8 +213,8 @@ class StateController : public ash::mojom::TrayActionClient,
 
   base::ObserverList<StateObserver>::Unchecked observers_;
 
-  mojo::Binding<ash::mojom::TrayActionClient> binding_{this};
-  ash::mojom::TrayActionPtr tray_action_ptr_;
+  mojo::Receiver<ash::mojom::TrayActionClient> receiver_{this};
+  mojo::Remote<ash::mojom::TrayAction> tray_action_;
 
   std::unique_ptr<LockScreenProfileCreator> lock_screen_profile_creator_;
 

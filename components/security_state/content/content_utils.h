@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "components/security_state/core/security_state.h"
-#include "third_party/blink/public/platform/web_security_style.h"
+#include "third_party/blink/public/common/security/security_style.h"
 
 namespace content {
 struct SecurityStyleExplanations;
@@ -25,7 +25,7 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
 // with the given |security_level| and |visible_security_state|. Populates
 // |security_style_explanations| to explain why the returned
 // SecurityStyle was chosen.
-blink::WebSecurityStyle GetSecurityStyle(
+blink::SecurityStyle GetSecurityStyle(
     security_state::SecurityLevel security_level,
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations);

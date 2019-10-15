@@ -55,6 +55,9 @@
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -266,19 +269,19 @@ class TestStateObserver : public lock_screen_apps::StateObserver {
 
 class TestTrayAction : public ash::mojom::TrayAction {
  public:
-  TestTrayAction() : binding_(this) {}
+  TestTrayAction() = default;
 
   ~TestTrayAction() override = default;
 
-  ash::mojom::TrayActionPtr CreateInterfacePtrAndBind() {
-    ash::mojom::TrayActionPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<ash::mojom::TrayAction> CreateRemoteAndBind() {
+    mojo::PendingRemote<ash::mojom::TrayAction> remote;
+    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
-  void SetClient(ash::mojom::TrayActionClientPtr client,
+  void SetClient(mojo::PendingRemote<ash::mojom::TrayActionClient> client,
                  TrayActionState state) override {
-    client_ = std::move(client);
+    client_.Bind(std::move(client));
     EXPECT_EQ(TrayActionState::kNotAvailable, state);
   }
 
@@ -298,8 +301,8 @@ class TestTrayAction : public ash::mojom::TrayAction {
   void ClearObservedStates() { observed_states_.clear(); }
 
  private:
-  mojo::Binding<ash::mojom::TrayAction> binding_;
-  ash::mojom::TrayActionClientPtr client_;
+  mojo::Receiver<ash::mojom::TrayAction> receiver_{this};
+  mojo::Remote<ash::mojom::TrayActionClient> client_;
 
   std::vector<TrayActionState> observed_states_;
 
@@ -414,8 +417,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
 
     state_controller_ = std::make_unique<lock_screen_apps::StateController>();
-    state_controller_->SetTrayActionPtrForTesting(
-        tray_action_.CreateInterfacePtrAndBind());
+    state_controller_->SetTrayActionForTesting(
+        tray_action_.CreateRemoteAndBind());
     state_controller_->SetTickClockForTesting(&tick_clock_);
     state_controller_->SetLockScreenLockScreenProfileCreatorForTesting(
         std::move(profile_creator));

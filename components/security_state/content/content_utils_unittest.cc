@@ -585,30 +585,30 @@ TEST(SecurityStateContentUtilsTest, MixedContentAndCertErrorExplanations) {
 }
 
 // Tests that a security level of WARNING produces
-// blink::WebSecurityStyleNeutral.
+// blink::kSecurityStyleNeutral.
 TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   security_state::VisibleSecurityState visible_security_state;
   visible_security_state.url = GURL("http://scheme-is-not-cryptographic.test");
   content::SecurityStyleExplanations explanations;
-  blink::WebSecurityStyle security_style = GetSecurityStyle(
+  blink::SecurityStyle security_style = GetSecurityStyle(
       security_state::WARNING, visible_security_state, &explanations);
-  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
+  EXPECT_EQ(blink::SecurityStyle::kNeutral, security_style);
   // Verify no explanation was shown.
   EXPECT_EQ(0u, explanations.neutral_explanations.size());
 }
 
 // Tests that a security level of DANGEROUS on an HTTP page with insecure form
-// edits produces blink::WebSecurityStyleInsecure and an explanation.
+// edits produces blink::SecurityStyleInsecure and an explanation.
 TEST(SecurityStateContentUtilsTest, HTTPDangerous) {
   security_state::VisibleSecurityState visible_security_state;
   visible_security_state.url = GURL("http://scheme-is-not-cryptographic.test");
   content::SecurityStyleExplanations explanations;
   visible_security_state.insecure_input_events.insecure_field_edited = true;
-  blink::WebSecurityStyle security_style = GetSecurityStyle(
+  blink::SecurityStyle security_style = GetSecurityStyle(
       security_state::DANGEROUS, visible_security_state, &explanations);
   // Verify that the security style was downgraded and an explanation shown
   // because a form was edited.
-  EXPECT_EQ(blink::kWebSecurityStyleInsecure, security_style);
+  EXPECT_EQ(blink::SecurityStyle::kInsecure, security_style);
   EXPECT_EQ(1u, explanations.insecure_explanations.size());
 }
 

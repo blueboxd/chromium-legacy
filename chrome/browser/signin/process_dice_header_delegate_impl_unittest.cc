@@ -54,7 +54,7 @@ class ProcessDiceHeaderDelegateImplTest
 
   // Callback for the ProcessDiceHeaderDelegateImpl.
   void StartSyncCallback(content::WebContents* contents,
-                         const std::string& account_id) {
+                         const CoreAccountId& account_id) {
     EXPECT_EQ(web_contents(), contents);
     EXPECT_EQ(account_id_, account_id);
     enable_sync_called_ = true;
@@ -74,7 +74,7 @@ class ProcessDiceHeaderDelegateImplTest
 
   bool enable_sync_called_;
   bool show_error_called_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   std::string email_;
   GoogleServiceAuthError auth_error_;
 };

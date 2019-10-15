@@ -50,10 +50,10 @@ class SigninHeaderHelperTest : public testing::Test {
   void TearDown() override { settings_map_->ShutdownOnUIThread(); }
 
   void CheckMirrorCookieRequest(const GURL& url,
-                                const std::string& account_id,
+                                const std::string& gaia_id,
                                 const std::string& expected_request) {
     EXPECT_EQ(BuildMirrorRequestCookieIfPossible(
-                  url, account_id, account_consistency_, cookie_settings_.get(),
+                  url, gaia_id, account_consistency_, cookie_settings_.get(),
                   PROFILE_MODE_DEFAULT),
               expected_request);
   }

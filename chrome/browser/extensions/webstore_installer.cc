@@ -66,10 +66,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#endif
-
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
@@ -575,14 +571,6 @@ void WebstoreInstaller::DownloadCrx(
 
   base::FilePath download_directory(g_download_directory_for_tests ?
       *g_download_directory_for_tests : download_path);
-
-#if defined(OS_CHROMEOS)
-  // Do not use drive for extension downloads.
-  if (drive::util::IsUnderDriveMountPoint(download_directory)) {
-    download_directory = DownloadPrefs::FromBrowserContext(
-        profile_)->GetDefaultDownloadDirectoryForProfile();
-  }
-#endif
 
   base::PostTaskAndReplyWithResult(
       GetExtensionFileTaskRunner().get(), FROM_HERE,

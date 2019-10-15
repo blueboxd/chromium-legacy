@@ -72,7 +72,8 @@ NGInlineCursor::NGInlineCursor(const NGInlineCursor& other)
       current_item_(other.current_item_),
       fragment_items_(other.fragment_items_),
       root_paint_fragment_(other.root_paint_fragment_),
-      current_paint_fragment_(other.current_paint_fragment_) {}
+      current_paint_fragment_(other.current_paint_fragment_),
+      layout_inline_(other.layout_inline_) {}
 
 bool NGInlineCursor::operator==(const NGInlineCursor& other) const {
   if (root_paint_fragment_) {
@@ -135,6 +136,12 @@ bool NGInlineCursor::IsHiddenForPaint() const {
     return current_item_->IsHiddenForPaint();
   NOTREACHED();
   return false;
+}
+
+bool NGInlineCursor::IsInclusiveDescendantOf(
+    const LayoutObject& layout_object) const {
+  return CurrentLayoutObject() &&
+         CurrentLayoutObject()->IsDescendantOf(&layout_object);
 }
 
 bool NGInlineCursor::IsLastLineInInlineBlock() const {
@@ -313,7 +320,7 @@ void NGInlineCursor::MakeNull() {
   NOTREACHED();
 }
 
-void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
+void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
   if (root_paint_fragment_) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
@@ -325,6 +332,19 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   item_iter_ = items_.begin();
   while (current_item_ && CurrentLayoutObject() != &layout_object)
     MoveToNextItem();
+}
+
+void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
+  InternalMoveTo(layout_object);
+  if (IsNotNull() || !layout_object.IsLayoutInline()) {
+    layout_inline_ = nullptr;
+    return;
+  }
+  // In case of |layout_object| is cullred inline.
+  layout_inline_ = ToLayoutInline(&layout_object);
+  MoveToFirst();
+  while (IsNotNull() && !IsInclusiveDescendantOf(layout_object))
+    MoveToNext();
 }
 
 void NGInlineCursor::MoveTo(const NGPaintFragment& paint_fragment) {
@@ -349,6 +369,18 @@ void NGInlineCursor::MoveToContainingLine() {
   NOTREACHED();
 }
 
+void NGInlineCursor::MoveToFirst() {
+  if (root_paint_fragment_) {
+    current_paint_fragment_ = root_paint_fragment_->FirstChild();
+    return;
+  }
+  if (IsItemCursor()) {
+    MoveToItem(items_.begin());
+    return;
+  }
+  NOTREACHED();
+}
+
 void NGInlineCursor::MoveToFirstChild() {
   DCHECK(CanHaveChildren());
   if (!TryToMoveToFirstChild())
@@ -363,8 +395,8 @@ void NGInlineCursor::MoveToLastChild() {
 
 void NGInlineCursor::MoveToLastLogicalLeaf() {
   DCHECK(IsLineBox());
-  // TODO(yosin): This isn't correct for mixed Bidi. Fix it. Besides, we should
-  // compute and store it during layout.
+  // TODO(yosin): This isn't correct for mixed Bidi. Fix it. Besides, we
+  // should compute and store it during layout.
   // TODO(yosin): We should check direction of each container instead of line
   // box. See also |NGPhysicalLineBoxFragment::LastLogicalLeaf()|.
   if (IsLtr(CurrentStyle().Direction())) {
@@ -383,6 +415,13 @@ void NGInlineCursor::MoveToNext() {
 }
 
 void NGInlineCursor::MoveToNextForSameLayoutObject() {
+  if (layout_inline_) {
+    // Move to next fragment in culled inline box undef |layout_inline_|.
+    do {
+      MoveToNext();
+    } while (IsNotNull() && !IsInclusiveDescendantOf(*layout_inline_));
+    return;
+  }
   if (current_paint_fragment_) {
     if (auto* paint_fragment =
             current_paint_fragment_->NextForSameLayoutObject())

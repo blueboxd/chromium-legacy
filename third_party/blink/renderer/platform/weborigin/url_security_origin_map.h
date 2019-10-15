@@ -45,6 +45,9 @@ class URLSecurityOriginMap {
  public:
   URLSecurityOriginMap() = default;
   virtual ~URLSecurityOriginMap() = default;
+
+  // Returns a SecurityOrigin instance that represents the origin of the given
+  // URL. May return nullptr.
   virtual SecurityOrigin* GetOrigin(const KURL&) = 0;
 
  private:

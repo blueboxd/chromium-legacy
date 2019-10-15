@@ -352,6 +352,11 @@ span<const Value> Value::GetList() const {
   return list_;
 }
 
+Value::ListStorage Value::TakeList() {
+  CHECK(is_list());
+  return std::exchange(list_, ListStorage());
+}
+
 void Value::Append(bool value) {
   CHECK(is_list());
   list_.emplace_back(value);
@@ -395,6 +400,24 @@ void Value::Append(StringPiece16 value) {
 void Value::Append(Value&& value) {
   CHECK(is_list());
   list_.emplace_back(std::move(value));
+}
+
+bool Value::EraseListIter(ListStorage::const_iterator iter) {
+  CHECK(is_list());
+  if (iter == list_.end())
+    return false;
+
+  list_.erase(iter);
+  return true;
+}
+
+bool Value::EraseListIter(CheckedContiguousConstIterator<Value> iter) {
+  const auto offset = iter - static_cast<const Value*>(this)->GetList().begin();
+  return EraseListIter(list_.begin() + offset);
+}
+
+size_t Value::EraseListValue(const Value& val) {
+  return EraseListValueIf([&val](const Value& other) { return val == other; });
 }
 
 Value* Value::FindKey(StringPiece key) {

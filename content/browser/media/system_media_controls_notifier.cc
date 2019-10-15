@@ -62,15 +62,15 @@ void SystemMediaControlsNotifier::Initialize() {
   connector_->BindInterface(media_session::mojom::kServiceName,
                             mojo::MakeRequest(&controller_manager_ptr));
   controller_manager_ptr->CreateActiveMediaController(
-      mojo::MakeRequest(&media_controller_ptr_));
+      media_controller_.BindNewPipeAndPassReceiver());
 
   // Observe the active media controller for changes to playback state and
   // supported actions.
-  media_controller_ptr_->AddObserver(
+  media_controller_->AddObserver(
       media_controller_observer_receiver_.BindNewPipeAndPassRemote());
 
   // Observe the active media controller for changes to provided artwork.
-  media_controller_ptr_->ObserveImages(
+  media_controller_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kArtwork, kMinImageSize,
       kDesiredImageSize,
       media_controller_image_observer_receiver_.BindNewPipeAndPassRemote());

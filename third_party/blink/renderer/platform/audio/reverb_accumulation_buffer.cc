@@ -32,8 +32,6 @@
 
 namespace blink {
 
-using namespace vector_math;
-
 ReverbAccumulationBuffer::ReverbAccumulationBuffer(size_t length)
     : buffer_(length), read_index_(0), read_time_frame_(0) {}
 
@@ -90,13 +88,14 @@ int ReverbAccumulationBuffer::Accumulate(float* source,
   DCHECK_LE(number_of_frames1 + write_index, buffer_length);
   DCHECK_LE(number_of_frames2, buffer_length);
 
-  Vadd(source, 1, destination + write_index, 1, destination + write_index, 1,
-       number_of_frames1);
+  vector_math::Vadd(source, 1, destination + write_index, 1,
+                    destination + write_index, 1, number_of_frames1);
 
   // Handle wrap-around if necessary
-  if (number_of_frames2 > 0)
-    Vadd(source + number_of_frames1, 1, destination, 1, destination, 1,
-         number_of_frames2);
+  if (number_of_frames2 > 0) {
+    vector_math::Vadd(source + number_of_frames1, 1, destination, 1,
+                      destination, 1, number_of_frames2);
+  }
 
   return write_index;
 }

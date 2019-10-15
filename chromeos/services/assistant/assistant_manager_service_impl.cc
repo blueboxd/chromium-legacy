@@ -171,7 +171,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
   client->RequestMediaControllerManager(
       media_controller_manager.BindNewPipeAndPassReceiver());
   media_controller_manager->CreateActiveMediaController(
-      mojo::MakeRequest(&media_controller_));
+      media_controller_.BindNewPipeAndPassReceiver());
 }
 
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {

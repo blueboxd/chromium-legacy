@@ -5,6 +5,7 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/test/enrollment_helper_mixin.h"

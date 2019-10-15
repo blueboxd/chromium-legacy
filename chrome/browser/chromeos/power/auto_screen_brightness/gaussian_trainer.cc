@@ -23,10 +23,6 @@ namespace auto_screen_brightness {
 
 namespace {
 
-// If the curve error is greater than |kErrorTol|, then error will be written
-// to logs.
-constexpr double kErrorTol = 5;
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 // Logs whether a new brightness exceeded the reasonable distance from the old
@@ -140,6 +136,8 @@ double BoundedBrightnessAdjustment(double brightness_old,
       is_user);
   UMA_HISTOGRAM_ENUMERATION(
       "AutoScreenBrightness.ModelTraining.BrightnessChange", change);
+  VLOG(1) << "ABTrainer bounded brightness change type: "
+          << static_cast<int>(change);
 
   return base::ClampToRange(brightness_new, lower_bound, upper_bound) -
          brightness_old;
@@ -179,6 +177,9 @@ double ModelPredictionAdjustment(double brightness_old,
   // If model's prediction is consistent with user's selection, then no
   // brightness change will be necessary.
   if (is_consistent) {
+    VLOG(1) << "ABTrainer model user brightness consistent (model,user): "
+            << FormatToPrint(model_brightness - target_brightness) << ","
+            << FormatToPrint(bounded_user_adjustment);
     return 0.0;
   }
 
@@ -201,13 +202,20 @@ void LogModelCurveError(double error, bool model_updated) {
       std::string("AutoScreenBrightness.ModelTraining.Inaccuracy.") +
       (model_updated ? "Update" : "NoUpdate");
   base::UmaHistogramPercentage(histogram_name, std::round(error));
-  if (error > kErrorTol) {
-    VLOG(1) << "Model error " << (model_updated ? "with " : "without ")
-            << "model updated: " << base::StringPrintf("%.4f", error) << "%";
-  }
+  VLOG(1) << "ABTrainer model error " << (model_updated ? "with " : "without ")
+          << "model updated: " << FormatToPrint(error);
 }
 
 }  // namespace
+
+TrainingResult::TrainingResult() = default;
+TrainingResult::TrainingResult(
+    const base::Optional<MonotoneCubicSpline>& new_curve,
+    double error)
+    : new_curve(new_curve), error(error) {}
+
+TrainingResult::TrainingResult(const TrainingResult& result) = default;
+TrainingResult::~TrainingResult() = default;
 
 GaussianTrainer::Params::Params() = default;
 
@@ -399,7 +407,7 @@ MonotoneCubicSpline GaussianTrainer::GetCurrentCurve() const {
   return *current_curve_;
 }
 
-MonotoneCubicSpline GaussianTrainer::Train(
+TrainingResult GaussianTrainer::Train(
     const std::vector<TrainingDataPoint>& data) {
   DCHECK(global_curve_);
   DCHECK(current_curve_);
@@ -412,7 +420,7 @@ MonotoneCubicSpline GaussianTrainer::Train(
   if (!need_to_update_curve_) {
     const double error = CalculateCurveError(data);
     LogModelCurveError(error, false /* model_updated */);
-    return *current_curve_;
+    return TrainingResult(base::nullopt, error);
   }
 
   current_curve_ = MonotoneCubicSpline::CreateMonotoneCubicSpline(
@@ -422,7 +430,7 @@ MonotoneCubicSpline GaussianTrainer::Train(
 
   const double error = CalculateCurveError(data);
   LogModelCurveError(error, true /* model_updated */);
-  return *current_curve_;
+  return TrainingResult(current_curve_, error);
 }
 
 bool GaussianTrainer::IsInitialPersonalCurveValid() const {
@@ -454,6 +462,9 @@ void GaussianTrainer::AdjustCurveWithSingleDataPoint(
                         is_brightness_outlier);
 
   if (is_brightness_outlier) {
+    VLOG(1) << "ABTrainer outlier (user,global): "
+            << FormatToPrint(data.brightness_old) << ","
+            << FormatToPrint(brightness_global);
     return;
   }
 
@@ -499,9 +510,11 @@ void GaussianTrainer::EnforceMonotonicity(size_t center_index) {
     const double max_value = brightness_[i] / min_ratios_[i - 1];
     brightness_[i - 1] =
         base::ClampToRange(brightness_[i - 1], min_value, max_value);
-    // TODO(jiameng): add UMA metrics.
-    if (brightness_[i - 1] > 100.0)
+    if (brightness_[i - 1] > 100.0) {
+      VLOG(1) << "ABTrainer exceeded max at " << (i - 1)
+              << " with value: " << FormatToPrint(brightness_[i - 1]);
       brightness_[i - 1] = 100.0;
+    }
   }
 
   // Updates control points to the right of |center_index| so that brightness
@@ -511,9 +524,11 @@ void GaussianTrainer::EnforceMonotonicity(size_t center_index) {
     const double max_value = brightness_[i] * max_ratios_[i];
     brightness_[i + 1] =
         base::ClampToRange(brightness_[i + 1], min_value, max_value);
-    // TODO(jiameng): add UMA metrics.
-    if (brightness_[i + 1] > 100.0)
+    if (brightness_[i + 1] > 100.0) {
+      VLOG(1) << "ABTrainer exceeded max at " << (i + 1)
+              << " with value: " << FormatToPrint(brightness_[i + 1]);
       brightness_[i + 1] = 100.0;
+    }
   }
 
 #ifndef NDEBUG

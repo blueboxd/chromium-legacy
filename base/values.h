@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/containers/checked_iterators.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
@@ -180,6 +181,11 @@ class BASE_EXPORT Value {
   ListStorage& GetList();
   span<const Value> GetList() const;
 
+  // Transfers ownership of the the underlying list to the caller. Subsequent
+  // calls to GetList() will return an empty list.
+  // Note: This CHECKs that type() is Type::LIST.
+  ListStorage TakeList();
+
   // Appends |value| to the end of the list.
   // Note: These CHECK that type() is Type::LIST.
   void Append(bool value);
@@ -191,6 +197,28 @@ class BASE_EXPORT Value {
   void Append(const char16* value);
   void Append(StringPiece16 value);
   void Append(Value&& value);
+
+  // Erases the Value pointed to by |iter|. Returns false if |iter| is out of
+  // bounds.
+  // Note: This CHECKs that type() is Type::LIST.
+  bool EraseListIter(ListStorage::const_iterator iter);
+  bool EraseListIter(CheckedContiguousConstIterator<Value> iter);
+
+  // Erases all Values that compare equal to |val|. Returns the number of
+  // deleted Values.
+  // Note: This CHECKs that type() is Type::LIST.
+  size_t EraseListValue(const Value& val);
+
+  // Erases all Values for which |pred| returns true. Returns the number of
+  // deleted Values.
+  // Note: This CHECKs that type() is Type::LIST.
+  template <typename Predicate>
+  size_t EraseListValueIf(Predicate pred) {
+    CHECK(is_list());
+    const size_t old_size = list_.size();
+    base::EraseIf(list_, pred);
+    return old_size - list_.size();
+  }
 
   // |FindKey| looks up |key| in the underlying dictionary. If found, it returns
   // a pointer to the element. Otherwise it returns nullptr.

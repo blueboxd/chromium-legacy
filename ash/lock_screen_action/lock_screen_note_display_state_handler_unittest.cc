@@ -98,7 +98,7 @@ class LockScreenNoteDisplayStateHandlerTest : public AshTestBase {
     InitializeTabletPowerButtonState();
 
     Shell::Get()->tray_action()->SetClient(
-        tray_action_client_.CreateInterfacePtrAndBind(),
+        tray_action_client_.CreateRemoteAndBind(),
         mojom::TrayActionState::kAvailable);
     Shell::Get()->tray_action()->FlushMojoForTesting();
     // Run the loop so the lock screen note display state handler picks up

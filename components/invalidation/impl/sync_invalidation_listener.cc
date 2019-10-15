@@ -94,9 +94,10 @@ void SyncInvalidationListener::Start(
 }
 
 void SyncInvalidationListener::UpdateCredentials(
-    const std::string& email, const std::string& token) {
+    const CoreAccountId& account_id,
+    const std::string& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_network_channel_->UpdateCredentials(email, token);
+  sync_network_channel_->UpdateCredentials(account_id, token);
 }
 
 void SyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {

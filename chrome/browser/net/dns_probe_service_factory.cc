@@ -22,7 +22,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/public/dns_protocol.h"
@@ -169,7 +169,7 @@ class DnsProbeServiceImpl
 
   NetworkContextGetter network_context_getter_;
   DnsConfigChangeManagerGetter dns_config_change_manager_getter_;
-  mojo::Binding<network::mojom::DnsConfigChangeManagerClient> binding_;
+  mojo::Receiver<network::mojom::DnsConfigChangeManagerClient> receiver_{this};
   // DnsProbeRunners for the system DNS configuration and a public DNS server.
   DnsProbeRunner system_runner_;
   DnsProbeRunner public_runner_;
@@ -195,7 +195,6 @@ DnsProbeServiceImpl::DnsProbeServiceImpl(
     : state_(STATE_NO_RESULT),
       network_context_getter_(network_context_getter),
       dns_config_change_manager_getter_(dns_config_change_manager_getter),
-      binding_(this),
       system_runner_(SystemOverrides(), network_context_getter),
       public_runner_(PublicOverrides(), network_context_getter),
       tick_clock_(tick_clock) {
@@ -315,13 +314,11 @@ bool DnsProbeServiceImpl::CachedResultIsExpired() const {
 
 void DnsProbeServiceImpl::SetupDnsConfigChangeNotifications() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  network::mojom::DnsConfigChangeManagerClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(base::BindRepeating(
+  dns_config_change_manager_getter_.Run()->RequestNotifications(
+      receiver_.BindNewPipeAndPassRemote());
+  receiver_.set_disconnect_handler(base::BindRepeating(
       &DnsProbeServiceImpl::OnDnsConfigChangeManagerConnectionError,
       base::Unretained(this)));
-  dns_config_change_manager_getter_.Run()->RequestNotifications(
-      std::move(client_ptr));
 }
 
 void DnsProbeServiceImpl::OnDnsConfigChangeManagerConnectionError() {
@@ -330,7 +327,7 @@ void DnsProbeServiceImpl::OnDnsConfigChangeManagerConnectionError() {
   // getting notifications.
   ClearCachedResult();
 
-  binding_.Close();
+  receiver_.reset();
 
   SetupDnsConfigChangeNotifications();
 }

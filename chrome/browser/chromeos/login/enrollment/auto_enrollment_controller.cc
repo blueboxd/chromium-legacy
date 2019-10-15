@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"

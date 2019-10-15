@@ -15,10 +15,13 @@
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
+#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "components/drive/file_errors.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/fake_download_item.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -97,7 +100,8 @@ class MockFileTasksObserver : public file_tasks::FileTasksObserver {
 
 class FileTasksNotifierForTest : public FileTasksNotifier {
  public:
-  FileTasksNotifierForTest(Profile* profile, drivefs::mojom::DriveFsPtr drivefs)
+  FileTasksNotifierForTest(Profile* profile,
+                           mojo::PendingRemote<drivefs::mojom::DriveFs> drivefs)
       : FileTasksNotifier(profile), drivefs_(std::move(drivefs)) {}
 
   drivefs::mojom::DriveFs* GetDriveFsInterface() override {
@@ -115,21 +119,19 @@ class FileTasksNotifierForTest : public FileTasksNotifier {
   void set_is_offline(bool is_offline) { is_offline_ = is_offline; }
 
  private:
-  const drivefs::mojom::DriveFsPtr drivefs_;
+  const mojo::Remote<drivefs::mojom::DriveFs> drivefs_;
   bool is_offline_ = false;
 };
 
 class FileTasksNotifierTest : public testing::Test {
  protected:
-  FileTasksNotifierTest() : drivefs_binding_(&fake_drivefs_) {}
+  FileTasksNotifierTest() = default;
 
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
 
-    drivefs::mojom::DriveFsPtr fake_drivefs_ptr;
-    drivefs_binding_.Bind(mojo::MakeRequest(&fake_drivefs_ptr));
     notifier_ = std::make_unique<FileTasksNotifierForTest>(
-        profile_.get(), std::move(fake_drivefs_ptr));
+        profile_.get(), drivefs_receiver_.BindNewPipeAndPassRemote());
     observer_ = std::make_unique<MockFileTasksObserver>(notifier_.get());
 
     auto* mount_points = storage::ExternalMountPoints::GetSystemInstance();
@@ -175,7 +177,7 @@ class FileTasksNotifierTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   FakeDriveFs fake_drivefs_;
-  mojo::Binding<drivefs::mojom::DriveFs> drivefs_binding_;
+  mojo::Receiver<drivefs::mojom::DriveFs> drivefs_receiver_{&fake_drivefs_};
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<FileTasksNotifierForTest> notifier_;
   std::unique_ptr<MockFileTasksObserver> observer_;

@@ -18,6 +18,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
+#include "third_party/blink/public/common/security/security_style.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -26,7 +27,6 @@
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
@@ -57,7 +57,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ReferrerPolicy,
                           network::mojom::ReferrerPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebHistoryScrollRestorationType,
                           blink::kWebHistoryScrollRestorationManual)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebSecurityStyle, blink::kWebSecurityStyleLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::SecurityStyle, blink::SecurityStyle::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PermissionStatus,
                           blink::mojom::PermissionStatus::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::TouchAction, cc::kTouchActionMax)

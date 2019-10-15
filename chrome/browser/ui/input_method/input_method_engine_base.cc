@@ -237,8 +237,19 @@ void InputMethodEngineBase::ProcessKeyEvent(const ui::KeyEvent& key_event,
     ext_event.extension_id = extension_id_;
 
   // Should not pass key event in password field.
-  if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD)
-    observer_->OnKeyEvent(active_component_id_, ext_event, std::move(callback));
+  if (current_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
+    // Bind the start time to the callback so that we can calculate the latency
+    // when the callback is called.
+    observer_->OnKeyEvent(
+        active_component_id_, ext_event,
+        base::BindOnce(
+            [](base::Time start, KeyEventDoneCallback callback, bool handled) {
+              std::move(callback).Run(handled);
+              UMA_HISTOGRAM_TIMES("InputMethod.KeyEventLatency",
+                                  base::Time::Now() - start);
+            },
+            base::Time::Now(), std::move(callback)));
+  }
 }
 
 void InputMethodEngineBase::SetSurroundingText(const std::string& text,
@@ -464,8 +475,6 @@ void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,
   }
 
   std::move(it->second.callback).Run(handled);
-  UMA_HISTOGRAM_TIMES("InputMethod.KeyEventLatency",
-                      base::Time::Now() - it->second.created_time);
   pending_key_events_.erase(it);
 }
 

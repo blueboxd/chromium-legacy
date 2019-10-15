@@ -139,7 +139,7 @@ DevToolsProtocolTest::WaitForNotification(const std::string& notification,
   return std::move(waiting_for_notification_params_);
 }
 
-blink::WebSecurityStyle DevToolsProtocolTest::GetSecurityStyle(
+blink::SecurityStyle DevToolsProtocolTest::GetSecurityStyle(
     content::WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
   security_style_explanations->secure_explanations.push_back(
@@ -147,7 +147,7 @@ blink::WebSecurityStyle DevToolsProtocolTest::GetSecurityStyle(
           "an explanation title", "an explanation summary",
           "an explanation description", cert_,
           blink::WebMixedContentContextType::kNotMixedContent));
-  return blink::kWebSecurityStyleNeutral;
+  return blink::SecurityStyle::kNeutral;
 }
 
 std::unique_ptr<base::DictionaryValue>

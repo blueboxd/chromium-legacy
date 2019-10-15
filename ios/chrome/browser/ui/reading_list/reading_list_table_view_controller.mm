@@ -667,6 +667,9 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
                     toSection:(SectionIdentifier)toSection {
   // Reconfigure cells, allowing the custom actions to be updated.
   for (NSIndexPath* indexPath in sortedIndexPaths) {
+    if (![self.tableView cellForRowAtIndexPath:indexPath])
+      continue;
+
     [[self.tableViewModel itemAtIndexPath:indexPath]
         configureCell:[self.tableView cellForRowAtIndexPath:indexPath]
            withStyler:self.styler];

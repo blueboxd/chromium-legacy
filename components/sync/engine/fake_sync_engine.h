@@ -24,6 +24,10 @@ namespace syncer {
 // behavior.
 class FakeSyncEngine : public SyncEngine {
  public:
+  static constexpr char kTestCacheGuid[] = "test-guid";
+  static constexpr char kTestBirthday[] = "1";
+  static constexpr char kTestKeystoreKey[] = "test-keystore-key";
+
   FakeSyncEngine();
   ~FakeSyncEngine() override;
 

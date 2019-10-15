@@ -54,7 +54,7 @@ class RegistrarInvalidator : public Invalidator {
     return registrar_.GetInvalidatorState();
   }
 
-  void UpdateCredentials(const std::string& email,
+  void UpdateCredentials(const CoreAccountId& account_id,
                          const std::string& token) override {
     // Do nothing.
   }

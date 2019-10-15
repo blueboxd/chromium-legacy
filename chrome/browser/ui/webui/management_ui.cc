@@ -25,6 +25,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/grit/chromium_strings.h"
 #include "ui/chromeos/devicetype_utils.h"

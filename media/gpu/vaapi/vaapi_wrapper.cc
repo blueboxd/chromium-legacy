@@ -13,6 +13,7 @@
 #include <va/va_version.h>
 
 #include <algorithm>
+#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -119,6 +120,21 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
   }
 }
 
+media::VAImplementation VendorStringToImplementationType(
+    const std::string& va_vendor_string) {
+  if (base::StartsWith(va_vendor_string, "Mesa Gallium driver",
+                       base::CompareCase::SENSITIVE)) {
+    return media::VAImplementation::kMesaGallium;
+  } else if (base::StartsWith(va_vendor_string, "Intel i965 driver",
+                              base::CompareCase::SENSITIVE)) {
+    return media::VAImplementation::kIntelI965;
+  } else if (base::StartsWith(va_vendor_string, "Intel iHD driver",
+                              base::CompareCase::SENSITIVE)) {
+    return media::VAImplementation::kIntelIHD;
+  }
+  return media::VAImplementation::kOther;
+}
+
 }  // namespace
 
 namespace media {
@@ -147,9 +163,6 @@ static const struct {
     //{VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
     //{VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
-
-constexpr const char* kMesaGalliumDriverPrefix = "Mesa Gallium driver";
-constexpr const char* kIntelI965DriverPrefix = "Intel i965 driver";
 
 // Converts the given |va_profile| to the corresponding string.
 // See: http://go/gh/intel/libva/blob/master/va/va.h#L359
@@ -237,8 +250,8 @@ bool IsBlackListedDriver(const std::string& va_vendor_string,
 
   // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
   // default.
-  if (base::StartsWith(va_vendor_string, kMesaGalliumDriverPrefix,
-                       base::CompareCase::SENSITIVE) &&
+  if (VendorStringToImplementationType(va_vendor_string) ==
+          VAImplementation::kMesaGallium &&
       va_vendor_string.find("AMD STONEY") != std::string::npos &&
       !base::FeatureList::IsEnabled(kVaapiH264AMDEncoder)) {
     constexpr VAProfile kH264Profiles[] = {VAProfileH264Baseline,
@@ -444,6 +457,7 @@ void VADisplayState::Deinitialize(VAStatus* status) {
     *status = vaTerminate(va_display_);
   va_initialized_ = false;
   va_display_ = nullptr;
+  va_vendor_string_ = "";
 }
 
 static VAEntrypoint GetVaEntryPoint(VaapiWrapper::CodecMode mode,
@@ -526,6 +540,10 @@ class VASupportedProfiles {
   };
   static const VASupportedProfiles& Get();
 
+  VAImplementation GetImplementationType() const {
+    return implementation_type_;
+  }
+
   const std::vector<ProfileInfo>& GetSupportedProfileInfosForCodecMode(
       VaapiWrapper::CodecMode mode) const;
 
@@ -571,6 +589,7 @@ class VASupportedProfiles {
                               ProfileInfo* profile_info) const
       EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
 
+  VAImplementation implementation_type_ = VAImplementation::kInvalid;
   std::vector<ProfileInfo> supported_profiles_[VaapiWrapper::kCodecModeMax];
 
   // Pointer to VADisplayState's members |va_lock_| and its |va_display_|.
@@ -622,6 +641,8 @@ VASupportedProfiles::VASupportedProfiles()
 
   {
     base::AutoLock auto_lock(*va_lock_);
+    implementation_type_ =
+        VendorStringToImplementationType(display_state->va_vendor_string());
     va_display_ = display_state->va_display();
   }
 
@@ -862,9 +883,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
 
   // Now work around some driver misreporting for JPEG decoding.
   if (va_profile == VAProfileJPEGBaseline && entrypoint == VAEntrypointVLD) {
-    if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
-                         kMesaGalliumDriverPrefix,
-                         base::CompareCase::SENSITIVE)) {
+    if (implementation_type_ == VAImplementation::kMesaGallium) {
       // TODO(andrescj): the VAAPI state tracker in mesa does not report
       // VA_RT_FORMAT_YUV422 as being supported for JPEG decoding. However, it
       // is happy to allocate YUYV surfaces
@@ -1021,9 +1040,9 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
   supported_formats_.resize(static_cast<size_t>(num_image_formats));
 
   // Now work around some driver misreporting.
-  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
-                       kMesaGalliumDriverPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  if (VendorStringToImplementationType(
+          VADisplayState::Get()->va_vendor_string()) ==
+      VAImplementation::kMesaGallium) {
     // TODO(andrescj): considering that the VAAPI state tracker in mesa can
     // convert from NV12 to IYUV when doing vaGetImage(), it's reasonable to
     // assume that IYUV/I420 is supported. However, it's not currently being
@@ -1048,8 +1067,8 @@ NativePixmapAndSizeInfo::NativePixmapAndSizeInfo() = default;
 NativePixmapAndSizeInfo::~NativePixmapAndSizeInfo() = default;
 
 // static
-const std::string& VaapiWrapper::GetVendorString() {
-  return VADisplayState::Get()->va_vendor_string();
+VAImplementation VaapiWrapper::GetImplementationType() {
+  return VASupportedProfiles::Get().GetImplementationType();
 }
 
 // static
@@ -1205,9 +1224,8 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
   // Work around some driver-specific conversion issues. If you add a workaround
   // here, please update the VaapiJpegDecoderTest.MinimalImageFormatSupport
   // test.
-  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
-                       kMesaGalliumDriverPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  DCHECK_NE(VAImplementation::kInvalid, GetImplementationType());
+  if (GetImplementationType() == VAImplementation::kMesaGallium) {
     // The VAAPI mesa state tracker only supports conversion from NV12 to YV12
     // and IYUV (synonym of I420).
     if (rt_format == VA_RT_FORMAT_YUV420) {
@@ -1225,9 +1243,7 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
       NOTREACHED();
       return false;
     }
-  } else if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
-                              kIntelI965DriverPrefix,
-                              base::CompareCase::SENSITIVE)) {
+  } else if (GetImplementationType() == VAImplementation::kIntelI965) {
     // Workaround deduced from observations in samus and nocturne: we found that
     //
     // - For a 4:2:2 image, the internal format is 422H.
@@ -1290,9 +1306,8 @@ bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
 
   // Workaround: for Mesa VAAPI driver, VPP only supports internal surface
   // format for 4:2:0 JPEG image.
-  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
-                       kMesaGalliumDriverPrefix,
-                       base::CompareCase::SENSITIVE) &&
+  DCHECK_NE(VAImplementation::kInvalid, GetImplementationType());
+  if (GetImplementationType() == VAImplementation::kMesaGallium &&
       rt_format != VA_RT_FORMAT_YUV420) {
     return false;
   }

@@ -23,6 +23,8 @@
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -53,7 +55,7 @@ class MojoCdm : public ContentDecryptionModule,
       const std::string& key_system,
       const url::Origin& security_origin,
       const CdmConfig& cdm_config,
-      mojom::ContentDecryptionModulePtr remote_cdm,
+      mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
       mojom::InterfaceFactory* interface_factory,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
@@ -89,7 +91,7 @@ class MojoCdm : public ContentDecryptionModule,
   int GetCdmId() const final;
 
  private:
-  MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
+  MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
           mojom::InterfaceFactory* interface_factory,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
@@ -138,7 +140,7 @@ class MojoCdm : public ContentDecryptionModule,
 
   THREAD_CHECKER(thread_checker_);
 
-  mojom::ContentDecryptionModulePtr remote_cdm_;
+  mojo::Remote<mojom::ContentDecryptionModule> remote_cdm_;
   mojom::InterfaceFactory* interface_factory_;
   mojo::AssociatedBinding<ContentDecryptionModuleClient> client_binding_;
 

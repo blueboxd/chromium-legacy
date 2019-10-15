@@ -11,12 +11,14 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_ui_controller.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class WebContents;
@@ -29,6 +31,7 @@ class ClickToCallUiController
   static ClickToCallUiController* GetOrCreateFromWebContents(
       content::WebContents* web_contents);
   static void ShowDialog(content::WebContents* web_contents,
+                         const base::Optional<url::Origin>& initiating_origin,
                          const GURL& url,
                          bool hide_default_handler);
 

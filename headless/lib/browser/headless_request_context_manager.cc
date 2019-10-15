@@ -113,8 +113,8 @@ class HeadlessProxyConfigMonitor
       ::network::mojom::NetworkContextParams* network_context_params) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(!proxy_config_client_);
-    network_context_params->proxy_config_client_request =
-        mojo::MakeRequest(&proxy_config_client_);
+    network_context_params->proxy_config_client_receiver =
+        proxy_config_client_.BindNewPipeAndPassReceiver();
     poller_binding_.Bind(
         mojo::MakeRequest(&network_context_params->proxy_config_poller_client));
     net::ProxyConfigWithAnnotation proxy_config;
@@ -151,7 +151,7 @@ class HeadlessProxyConfigMonitor
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   mojo::Binding<::network::mojom::ProxyConfigPollerClient> poller_binding_;
-  ::network::mojom::ProxyConfigClientPtr proxy_config_client_;
+  mojo::Remote<::network::mojom::ProxyConfigClient> proxy_config_client_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessProxyConfigMonitor);
 };

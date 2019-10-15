@@ -13,6 +13,8 @@
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer.h"
 #include "content/public/test/test_launcher.h"
+#include "crypto/sha2.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
 
@@ -36,6 +38,7 @@ using syncer::ModelTypeSet;
 using syncer::PassphraseType;
 using syncer::ProtoPassphraseInt32ToEnum;
 using syncer::SyncService;
+using testing::SizeIs;
 
 class DatatypeCommitCountingFakeServerObserver : public FakeServer::Observer {
  public:
@@ -260,6 +263,41 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
   EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
 
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("PBKDF2-encrypted bookmark"));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
+                       ShouldExposeExperimentalAuthenticationId) {
+  const std::vector<std::string>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(1));
+
+  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "hunter2"};
+  SetNigoriInFakeServer(GetFakeServer(),
+                        CreateCustomPassphraseNigori(key_params));
+  SetupSyncNoWaitingForCompletion();
+  ASSERT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/true));
+
+  // WARNING: Do *NOT* change these values since the authentication ID should be
+  // stable across different browser versions.
+
+  // Default birthday determined by LoopbackServer.
+  const std::string kDefaultBirthday = "0";
+  const std::string kSeparator("|");
+  std::string base64_encoded_keystore_key;
+  base::Base64Encode(keystore_keys.back(), &base64_encoded_keystore_key);
+  const std::string authentication_id_before_hashing =
+      std::string("gaia_id_for_user_gmail.com") + kSeparator +
+      kDefaultBirthday + kSeparator + base64_encoded_keystore_key;
+
+  EXPECT_EQ(GetSyncService()->GetExperimentalAuthenticationId(),
+            crypto::SHA256HashString(authentication_id_before_hashing));
+
+  // Entering the passphrase should not influence the authentication ID.
+  ASSERT_TRUE(
+      GetSyncService()->GetUserSettings()->SetDecryptionPassphrase("hunter2"));
+  ASSERT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
+  EXPECT_EQ(GetSyncService()->GetExperimentalAuthenticationId(),
+            crypto::SHA256HashString(authentication_id_before_hashing));
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

@@ -1718,6 +1718,8 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillUsername) {
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(username_element_));
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
+  EXPECT_EQ(WebAutofillState::kPreviewed, username_element_.GetAutofillState());
+  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   base::RunLoop().RunUntilIdle();
@@ -1729,6 +1731,7 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFillPassword) {
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
+  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   base::RunLoop().RunUntilIdle();
@@ -1745,19 +1748,23 @@ TEST_F(PasswordAutofillAgentTest, DontTryToShowTouchToFillReadonlyPassword) {
 TEST_F(PasswordAutofillAgentTest, TouchToFillDismissed) {
   SimulateOnFillPasswordForm(fill_data_);
 
+  auto previous_state = password_element_.GetAutofillState();
   // Touch to fill will be shown multiple times until TouchToFillDismissed()
   // gets called.
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
+  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   base::RunLoop().RunUntilIdle();
 
+  // Make sure that resetting Touch To Fill resets the Autofill state.
   password_autofill_agent_->TouchToFillDismissed();
   EXPECT_FALSE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
   EXPECT_FALSE(password_autofill_agent_->ShouldSuppressKeyboard());
+  EXPECT_EQ(previous_state, password_element_.GetAutofillState());
 
   // Reload the page and simulate fill.
   LoadHTML(kFormHTML);
@@ -1769,6 +1776,7 @@ TEST_F(PasswordAutofillAgentTest, TouchToFillDismissed) {
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
   EXPECT_TRUE(password_autofill_agent_->ShouldSuppressKeyboard());
+  EXPECT_EQ(WebAutofillState::kPreviewed, password_element_.GetAutofillState());
 
   EXPECT_CALL(fake_driver_, ShowTouchToFill);
   base::RunLoop().RunUntilIdle();

@@ -196,6 +196,10 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
 
   static const GURL& action(const autofill::FormData& r) { return r.action; }
 
+  static bool is_action_empty(const autofill::FormData& r) {
+    return r.is_action_empty;
+  }
+
   static const url::Origin& main_frame_origin(const autofill::FormData& r) {
     return r.main_frame_origin;
   }

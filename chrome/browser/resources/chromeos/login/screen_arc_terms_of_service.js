@@ -156,9 +156,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       metrics.querySelector('#learn-more-link-metrics').onclick = function() {
         self.showLearnMoreOverlay(leanMoreStatisticsText);
       };
-      // For device owner set up, this may come after the page is loaded.
-      // Recaculate the ToS webview height.
-      this.updateTermViewHight_();
     },
 
     /**
@@ -297,50 +294,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
-     * Buttons in Oobe wizard's button strip.
-     * @type {array} Array of Buttons.
-     */
-    get buttons() {
-      var buttons = [];
-
-      var skipButton = this.ownerDocument.createElement('button');
-      skipButton.id = 'arc-tos-skip-button';
-      skipButton.disabled = this.classList.contains('arc-tos-loading');
-      skipButton.classList.add('preserve-disabled-state');
-      skipButton.textContent =
-          loadTimeData.getString('arcTermsOfServiceSkipButton');
-      skipButton.addEventListener('click', this.onSkip.bind(this));
-      buttons.push(skipButton);
-
-      var retryButton = this.ownerDocument.createElement('button');
-      retryButton.id = 'arc-tos-retry-button';
-      retryButton.textContent =
-          loadTimeData.getString('arcTermsOfServiceRetryButton');
-      retryButton.addEventListener('click', this.reloadPlayStoreToS.bind(this));
-      buttons.push(retryButton);
-
-      var nextButton = this.ownerDocument.createElement('button');
-      nextButton.id = 'arc-tos-next-button';
-      nextButton.disabled = this.classList.contains('arc-tos-loading');
-      nextButton.classList.add('preserve-disabled-state');
-      nextButton.textContent =
-          loadTimeData.getString('arcTermsOfServiceNextButton');
-      nextButton.addEventListener('click', this.onNext.bind(this));
-      buttons.push(nextButton);
-
-      var acceptButton = this.ownerDocument.createElement('button');
-      acceptButton.id = 'arc-tos-accept-button';
-      acceptButton.disabled = this.classList.contains('arc-tos-loading');
-      acceptButton.classList.add('preserve-disabled-state');
-      acceptButton.textContent =
-          loadTimeData.getString('arcTermsOfServiceAcceptButton');
-      acceptButton.addEventListener('click', this.onAccept.bind(this));
-      buttons.push(acceptButton);
-
-      return buttons;
-    },
-
-    /**
      * Handles Next button click.
      */
     onNext: function() {
@@ -351,7 +304,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       if (!isDemoModeSetup) {
         this.getElement_('arc-review-settings').hidden = false;
       }
-      this.getElement_('arc-tos-container').style.overflowY = 'auto';
       this.getElement_('arc-tos-container').scrollTop =
           this.getElement_('arc-tos-container').scrollHeight;
       this.getElement_('arc-tos-next-button').hidden = true;
@@ -578,31 +530,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.getElement_('arc-pai-service').hidden = true;
       this.getElement_('arc-google-service-confirmation').hidden = true;
       this.getElement_('arc-review-settings').hidden = true;
-      this.getElement_('arc-tos-container').style.overflow = 'hidden';
       this.getElement_('arc-tos-accept-button').hidden = true;
       this.getElement_('arc-tos-next-button').hidden = false;
       this.getElement_('arc-tos-next-button').focus();
-
-      this.updateTermViewHight_();
-    },
-
-    /**
-     * Updates ToS webview height.
-     *
-     * @private
-     */
-    updateTermViewHight_() {
-      var termsView = this.getElement_('arc-tos-view');
-      var termsViewContainer = this.getElement_('arc-tos-view-container');
-      var setTermsHeight = function() {
-        // Reset terms-view height in order to stabilize style computation.
-        // For some reason, child webview affects final result.
-        termsView.style.height = '0px';
-        var style = window.getComputedStyle(termsViewContainer, null);
-        var height = style.getPropertyValue('height');
-        termsView.style.height = height;
-      };
-      setTimeout(setTermsHeight, 0);
     },
 
     /**
@@ -643,10 +573,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.setLearnMoreHandlers_();
 
       this.hideOverlay();
-      // ToS content may be loaded before the page is shown. In that case,
-      // height of ToS webview is not correctly calculated. Recalculate the
-      // height here.
-      this.updateTermViewHight_();
       this.focusButton_();
 
       $('arc-tos-root').onBeforeShow();
@@ -682,7 +608,6 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.getElement_('arc-pai-service').hidden = true;
       this.getElement_('arc-google-service-confirmation').hidden = true;
       this.getElement_('arc-review-settings').hidden = true;
-      this.getElement_('arc-tos-container').style.overflowY = 'auto';
       this.getElement_('arc-tos-container').scrollTop =
           this.getElement_('arc-tos-container').scrollHeight;
       this.getElement_('arc-tos-next-button').hidden = false;

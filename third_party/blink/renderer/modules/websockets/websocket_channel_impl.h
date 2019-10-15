@@ -42,7 +42,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
-#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/modules_export.h"

@@ -21,11 +21,15 @@ from core.results_processor import formatters
 from core.results_processor import util
 
 from tracing.trace_data import trace_data
+from tracing.value.diagnostics import date_range
 from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import reserved_infos
+from tracing.value import histogram
 from tracing.value import histogram_set
+from tracing.value import legacy_unit_info
 
 TELEMETRY_RESULTS = '_telemetry_results.jsonl'
+MEASUREMENTS_NAME = 'measurements.json'
 
 FORMATS_WITH_METRICS = ['csv', 'histograms', 'html']
 
@@ -92,10 +96,6 @@ def _LoadIntermediateResults(intermediate_file):
         results['benchmarkRun'].update(record['benchmarkRun'])
       if 'testResult' in record:
         test_result = record['testResult']
-        # TODO(crbug.com/1011813): This is for compatibility with old version
-        # of LUCI format. Remove it when Telemetry switches to a new version.
-        if 'artifacts' in test_result:
-          test_result['outputArtifacts'] = test_result.pop('artifacts')
         results['testResults'].append(test_result)
   return results
 
@@ -179,6 +179,7 @@ def UploadArtifacts(intermediate_results, upload_bucket, results_label):
 
 def _ComputeMetrics(intermediate_results, results_label):
   histogram_dicts = compute_metrics.ComputeTBMv2Metrics(intermediate_results)
+  histogram_dicts += ExtractMeasurements(intermediate_results)
   histogram_dicts = AddDiagnosticsToHistograms(
       histogram_dicts, intermediate_results, results_label)
   return histogram_dicts
@@ -201,6 +202,68 @@ def AddDiagnosticsToHistograms(histogram_dicts, intermediate_results,
     histograms.AddSharedDiagnosticToAllHistograms(
         reserved_infos.LABELS.name,
         generic_set.GenericSet([results_label]))
+
+  histograms.DeduplicateDiagnostics()
+  return histograms.AsDicts()
+
+
+def MeasurementToHistogram(name, measurement):
+  unit = measurement['unit']
+  samples = measurement['samples']
+  description = measurement.get('description')
+  if unit in legacy_unit_info.LEGACY_UNIT_INFO:
+    info = legacy_unit_info.LEGACY_UNIT_INFO[unit]
+    unit = info.name
+    samples = [s * info.conversion_factor for s in samples]
+  if unit not in histogram.UNIT_NAMES:
+    raise ValueError('Unknown unit: %s' % unit)
+  return histogram.Histogram.Create(name, unit, samples,
+                                    description=description)
+
+
+def _GlobalDiagnostics(benchmark_run):
+  """Extract diagnostics information about the whole benchmark run.
+
+  These diagnostics will be added to ad-hoc measurements recorded by
+  benchmarks.
+  """
+  timestamp_ms = util.IsoTimestampToEpoch(benchmark_run['startTime']) * 1e3
+  return {
+    reserved_infos.BENCHMARK_START.name: date_range.DateRange(timestamp_ms),
+  }
+
+
+def _StoryDiagnostics(test_result):
+  """Extract diagnostics information about the specific story.
+
+  These diagnostics will be added to ad-hoc measurements recorded by
+  benchmarks.
+  """
+  benchmark_name, story_name = test_result['testPath'].split('/', 1)
+  story_tags = [tag['value'] for tag in test_result.get('tags', [])
+                if tag['key'] == 'story_tag']
+  return {
+      reserved_infos.BENCHMARKS.name: generic_set.GenericSet([benchmark_name]),
+      reserved_infos.STORIES.name: generic_set.GenericSet([story_name]),
+      reserved_infos.STORY_TAGS.name: generic_set.GenericSet(story_tags),
+  }
+
+
+def ExtractMeasurements(intermediate_results):
+  """Add ad-hoc measurements to histogram dicts"""
+  histograms = histogram_set.HistogramSet()
+  global_diagnostics = _GlobalDiagnostics(intermediate_results['benchmarkRun'])
+
+  for result in intermediate_results['testResults']:
+    artifacts = result.get('outputArtifacts', {})
+    if MEASUREMENTS_NAME in artifacts:
+      with open(artifacts[MEASUREMENTS_NAME]['filePath']) as f:
+        measurements = json.load(f)['measurements']
+      diagnostics = global_diagnostics.copy()
+      diagnostics.update(_StoryDiagnostics(result))
+      for name, measurement in measurements.iteritems():
+        histograms.AddHistogram(MeasurementToHistogram(name, measurement),
+                                diagnostics=diagnostics)
 
   return histograms.AsDicts()
 

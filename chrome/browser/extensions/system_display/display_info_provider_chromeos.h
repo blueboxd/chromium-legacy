@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace service_manager {
 class Connector;
@@ -74,7 +75,7 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider,
                             ash::mojom::TouchCalibrationPtr calibration,
                             ErrorCallback callback);
 
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_;
+  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
   std::string touch_calibration_target_id_;
   base::WeakPtrFactory<DisplayInfoProviderChromeOS> weak_ptr_factory_{this};
 

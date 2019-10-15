@@ -4,7 +4,6 @@
 
 #include "ash/display/cros_display_config.h"
 
-#include "ash/display/cros_display_config.h"
 #include "ash/display/touch_calibrator_controller.h"
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
@@ -15,7 +14,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/touch_transform_controller_test_api.h"
@@ -203,10 +203,11 @@ class CrosDisplayConfigTest : public AshTestBase {
 
 TEST_F(CrosDisplayConfigTest, OnDisplayConfigChanged) {
   TestObserver observer;
-  mojom::CrosDisplayConfigObserverAssociatedPtr observer_ptr;
-  mojo::AssociatedBinding<mojom::CrosDisplayConfigObserver> binding(
-      &observer, mojo::MakeRequestAssociatedWithDedicatedPipe(&observer_ptr));
-  cros_display_config()->AddObserver(observer_ptr.PassInterface());
+  mojo::AssociatedRemote<mojom::CrosDisplayConfigObserver> observer_remote;
+  mojo::AssociatedReceiver<mojom::CrosDisplayConfigObserver> receiver(
+      &observer,
+      observer_remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
+  cros_display_config()->AddObserver(observer_remote.Unbind());
   base::RunLoop().RunUntilIdle();
 
   // Adding one display should trigger one notification.

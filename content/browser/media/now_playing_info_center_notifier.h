@@ -10,6 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace now_playing {
@@ -54,7 +55,7 @@ class CONTENT_EXPORT NowPlayingInfoCenterNotifier
       now_playing_info_center_delegate_;
 
   // Tracks current media session state/metadata.
-  media_session::mojom::MediaControllerPtr media_controller_ptr_;
+  mojo::Remote<media_session::mojom::MediaController> media_controller_;
   media_session::mojom::MediaSessionInfoPtr session_info_;
 
   // Used to receive updates to the active media controller.

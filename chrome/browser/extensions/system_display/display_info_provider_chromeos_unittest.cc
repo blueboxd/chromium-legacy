@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "ash/display/cros_display_config.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
@@ -23,6 +25,7 @@
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "extensions/common/api/system_display.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -73,7 +76,7 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
         service_manager::ServiceFilter::ByName(ash::mojom::kServiceName),
         ash::mojom::CrosDisplayConfigController::Name_,
         base::BindRepeating(&DisplayInfoProviderChromeosTest::
-                                AddCrosDisplayConfigControllerBinding,
+                                AddCrosDisplayConfigControllerReceiver,
                             base::Unretained(this)));
     // Provide the local connector to DisplayInfoProviderChromeOS.
     DisplayInfoProvider::InitializeForTesting(
@@ -85,10 +88,11 @@ class DisplayInfoProviderChromeosTest : public ChromeAshTestBase {
     EXPECT_FALSE(ash::TabletMode::Get()->InTabletMode());
   }
 
-  void AddCrosDisplayConfigControllerBinding(
+  void AddCrosDisplayConfigControllerReceiver(
       mojo::ScopedMessagePipeHandle handle) {
-    cros_display_config_->BindRequest(
-        ash::mojom::CrosDisplayConfigControllerRequest(std::move(handle)));
+    cros_display_config_->BindReceiver(
+        mojo::PendingReceiver<ash::mojom::CrosDisplayConfigController>(
+            std::move(handle)));
   }
 
   float GetDisplayZoom(int64_t display_id) {

@@ -122,6 +122,7 @@ source_set("headers") {
     "scheduler/web_scheduler_tracked_feature.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
+    "security/security_style.h",
     "service_worker/service_worker_status_code.h",
     "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_types.h",

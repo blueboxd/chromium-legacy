@@ -16,7 +16,6 @@
 
 #include <memory>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/files/file.h"
@@ -74,6 +73,14 @@ struct NativePixmapAndSizeInfo {
   scoped_refptr<gfx::NativePixmapDmaBuf> pixmap;
 };
 
+enum class VAImplementation {
+  kMesaGallium,
+  kIntelI965,
+  kIntelIHD,
+  kOther,
+  kInvalid,
+};
+
 // This class handles VA-API calls and ensures proper locking of VA-API calls
 // to libva, the userspace shim to the HW codec driver. libva is not
 // thread-safe, so we have to perform locking ourselves. This class is fully
@@ -108,8 +115,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
     bool yuv444 : 1;
   };
 
-  // Returns the VAAPI vendor string (obtained using vaQueryVendorString()).
-  static const std::string& GetVendorString();
+  // Returns the type of the underlying VA-API implementation.
+  static VAImplementation GetImplementationType();
 
   // Return an instance of VaapiWrapper initialized for |va_profile| and
   // |mode|. |report_error_to_uma_cb| will be called independently from

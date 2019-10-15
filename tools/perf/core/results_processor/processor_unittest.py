@@ -147,3 +147,29 @@ class ResultsProcessorUnitTests(unittest.TestCase):
       artifacts = result['outputArtifacts']
       self.assertEqual(len(artifacts), 1)
       self.assertEqual(artifacts.keys()[0], 'trace.html')
+
+  def testMeasurementToHistogram(self):
+    hist = processor.MeasurementToHistogram('a', {
+      'unit': 'sizeInBytes',
+      'samples': [1, 2, 3],
+      'description': 'desc',
+    })
+
+    self.assertEqual(hist.name, 'a')
+    self.assertEqual(hist.unit, 'sizeInBytes')
+    self.assertEqual(hist.sample_values, [1, 2, 3])
+    self.assertEqual(hist.description, 'desc')
+
+  def testMeasurementToHistogramLegacyUnits(self):
+    hist = processor.MeasurementToHistogram('a', {
+      'unit': 'seconds',
+      'samples': [1, 2, 3],
+    })
+
+    self.assertEqual(hist.name, 'a')
+    self.assertEqual(hist.unit, 'ms_smallerIsBetter')
+    self.assertEqual(hist.sample_values, [1000, 2000, 3000])
+
+  def testMeasurementToHistogramUnknownUnits(self):
+    with self.assertRaises(ValueError):
+      processor.MeasurementToHistogram('a', {'unit': 'yards', 'samples': [9]})

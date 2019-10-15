@@ -57,6 +57,7 @@ class CC_EXPORT CompositorFrameReportingController {
   virtual void WillActivate();
   virtual void DidActivate();
   virtual void DidSubmitCompositorFrame(uint32_t frame_token);
+  virtual void OnFinishImplFrame();
   virtual void DidPresentCompositorFrame(
       uint32_t frame_token,
       const viz::FrameTimingDetails& details);

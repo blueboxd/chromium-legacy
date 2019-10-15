@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
+
 namespace blink {
 
 namespace {

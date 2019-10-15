@@ -26,6 +26,7 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"

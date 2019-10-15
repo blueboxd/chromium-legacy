@@ -14,6 +14,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "components/user_manager/user_manager.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class PrefRegistrySimple;
@@ -158,7 +159,7 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
 
   std::unique_ptr<input_method::InputMethodSyncer> input_method_syncer_;
 
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
+  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

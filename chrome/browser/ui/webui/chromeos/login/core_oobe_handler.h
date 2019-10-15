@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/event_source.h"
 
 namespace base {
@@ -224,7 +225,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   DemoModeDetector demo_mode_detector_;
 
-  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
+  mojo::Remote<ash::mojom::CrosDisplayConfigController> cros_display_config_;
 
   base::WeakPtrFactory<CoreOobeHandler> weak_ptr_factory_{this};
 

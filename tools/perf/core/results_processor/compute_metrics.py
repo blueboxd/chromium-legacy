@@ -60,8 +60,9 @@ def ComputeTBMv2Metrics(intermediate_results):
   """Compute metrics on aggregated traces in parallel.
 
   For each test run that has an aggregate trace and some TBMv2 metrics listed
-  in its tags, compute the metrics and store the result as histogram dicts
-  in the corresponding test result.
+  in its tags, compute the metrics and return the list of all resulting
+  histograms. Note: the order of histograms in the results may be different
+  from the order of tests in intermediate_results.
   """
   histogram_dicts = []
   work_list = []

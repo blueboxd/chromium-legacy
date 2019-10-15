@@ -1964,7 +1964,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 }
 
 // This test makes sure that when a blocked frame commits with a different URL,
-// it doesn't lead to a leaked NavigationHandle.  This is a regression test for
+// it doesn't lead to a leaked NavigationHandle. This is a regression test for
 // https://crbug.com/872803.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        ErrorPagesShouldntLeakNavigationHandles) {
@@ -1975,32 +1975,31 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   GURL blocked_url(embedded_test_server()->GetURL(
       "blocked.com", "/frame-ancestors-none.html"));
   WebContents* web_contents = shell()->web_contents();
-  NavigationHandleObserver nav_handle_observer(web_contents, blocked_url);
+  NavigationHandleObserver navigation_observer(web_contents, blocked_url);
   EXPECT_TRUE(NavigateIframeToURL(web_contents, "child0", blocked_url));
 
   // Verify that the NavigationHandle / NavigationRequest didn't leak.
   RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetAllFrames()[1]);
-  EXPECT_EQ(0u, frame->GetNavigationEntryIdsPendingCommit().size());
+  EXPECT_FALSE(frame->HasPendingCommitNavigationForTesting());
 
   // TODO(lukasza, clamy): https://crbug.com/784904: Verify that
   // WebContentsObserver::DidFinishNavigation was called with the same
-  // NavigationHandle as WebContentsObserver::DidStartNavigation.  This requires
+  // NavigationHandle as WebContentsObserver::DidStartNavigation. This requires
   // properly matching the commit IPC to the NavigationHandle (ignoring that
   // their URLs do not match - matching instead using navigation id or mojo
   // interface identity).
-  //
-  // Subsequent checks don't make sense before WCO::DidFinishNavigation is
-  // called - this is why ASSERT_TRUE is used here.
-  //   ASSERT_TRUE(nav_handle_observer.has_committed());
-  //   EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
-  //       nav_handle_observer.net_error_code());
 
-  // TODO(lukasza): https://crbug.com/759184: Verify
-  // |nav_handle_observer.last_committed_url()| below - this should be possible
-  // once we handle frame-ancestors CSP in the browser process and commit it
-  // with the original URL.
-  //   EXPECT_EQ(blocked_url, nav_handle_observer.last_committed_url());
+  // TODO(https://crbug.com/759184): Verify CSP frame-ancestors in the browser
+  // process. Currently, this is done by the renderer process, which commits an
+  // empty document with success instead.
+  //  EXPECT_EQ(blocked_url, navigation_observer.last_committed_url());
+  //  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+  //            navigation_obsever.net_error_code());
+  EXPECT_TRUE(navigation_observer.has_committed());
+  EXPECT_FALSE(navigation_observer.is_error());
+  EXPECT_EQ(GURL("data:,"), navigation_observer.last_committed_url());
+  EXPECT_EQ(net::Error::OK, navigation_observer.net_error_code());
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -3055,9 +3054,10 @@ class RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked
   base::test::ScopedFeatureList feature_list_;
 };
 
+// TODO(https://crbug.com/1014325): Flaky on multiple bots.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostImplBrowserTestWithNonSecureExternalRequestsBlocked,
-    ComputeMainFrameIPAddressSpace) {
+    DISABLED_ComputeMainFrameIPAddressSpace) {
   // TODO(mkwst): `about:`, `file:`, `data:`, `blob:`, and `filesystem:` URLs
   // are all treated as `kUnknown` today. This is ~incorrect, but safe, as their
   // web-facing behavior will be equivalent to "public".

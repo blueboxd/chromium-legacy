@@ -651,6 +651,14 @@ class ShellUtil {
   // with this name will be deleted.
   static bool DeleteFileAssociations(const base::string16& prog_id);
 
+  // Retrieves the file path of the application registered as the
+  // shell->open->command for |prog_id|. This only queries the user's
+  // registered applications in HKCU. If |prog_id| is for an app that is
+  // unrelated to the user's browser, it will still return the application
+  // registered for |prog_id|.
+  static base::FilePath GetApplicationPathForProgId(
+      const base::string16& prog_id);
+
   // This method converts all the RegistryEntries from the given list to
   // Set/CreateRegWorkItems and runs them using WorkItemList.
   static bool AddRegistryEntries(

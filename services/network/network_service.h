@@ -22,8 +22,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/dns_config.h"
 #include "net/http/http_auth_preferences.h"
@@ -60,10 +61,10 @@ class NetworkUsageAccumulator;
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public mojom::NetworkService {
  public:
-  NetworkService(
-      std::unique_ptr<service_manager::BinderRegistry> registry,
-      mojom::NetworkServiceRequest request = nullptr,
-      bool delay_initialization_until_set_client = false);
+  NetworkService(std::unique_ptr<service_manager::BinderRegistry> registry,
+                 mojo::PendingReceiver<mojom::NetworkService> receiver =
+                     mojo::NullReceiver(),
+                 bool delay_initialization_until_set_client = false);
 
   ~NetworkService() override;
 
@@ -72,19 +73,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // encrypted storage can be used.
   void set_os_crypt_is_configured();
 
-  // Allows late binding if the mojo request wasn't specified in the
+  // Allows late binding if the mojo receiver wasn't specified in the
   // constructor.
-  void Bind(mojom::NetworkServiceRequest request);
+  void Bind(mojo::PendingReceiver<mojom::NetworkService> receiver);
 
   // Allows the browser process to synchronously initialize the NetworkService.
   // TODO(jam): remove this once the old path is gone.
   void Initialize(mojom::NetworkServiceParamsPtr params);
 
-  // Creates a NetworkService instance on the current thread, optionally using
-  // the passed-in NetLog. Does not take ownership of |net_log|. Must be
-  // destroyed before |net_log|.
+  // Creates a NetworkService instance on the current thread.
   static std::unique_ptr<NetworkService> Create(
-      mojom::NetworkServiceRequest request);
+      mojo::PendingReceiver<mojom::NetworkService> receiver);
 
   // Creates a testing instance of NetworkService not bound to an actual
   // Service pipe. This instance must be driven by direct calls onto the
@@ -259,7 +258,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
-  mojo::Binding<mojom::NetworkService> binding_;
+  mojo::Receiver<mojom::NetworkService> receiver_{this};
 
   std::unique_ptr<NetworkQualityEstimatorManager>
       network_quality_estimator_manager_;

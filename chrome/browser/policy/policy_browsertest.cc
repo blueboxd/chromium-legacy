@@ -48,6 +48,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"

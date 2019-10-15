@@ -60,18 +60,6 @@ bool IsBetterMatchUsingLastUsed(const PasswordForm* lhs,
          std::make_pair(!rhs->is_public_suffix_match, rhs->date_last_used);
 }
 
-// Returns a form with the given |username_value| from |credentials|, or nullptr
-// if none exists.
-const PasswordForm* FindByUsername(
-    const std::vector<const PasswordForm*>& credentials,
-    const base::string16& username_value) {
-  for (const auto* form : credentials) {
-    if (form->username_value == username_value)
-      return form;
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 // Update |credential| to reflect usage.
@@ -271,6 +259,16 @@ void FindBestMatches(
   *preferred_match = *non_federated_same_scheme->begin();
 }
 
+const PasswordForm* FindFormByUsername(
+    const std::vector<const PasswordForm*>& forms,
+    const base::string16& username_value) {
+  for (const PasswordForm* form : forms) {
+    if (form->username_value == username_value)
+      return form;
+  }
+  return nullptr;
+}
+
 const PasswordForm* GetMatchForUpdating(
     const PasswordForm& submitted_form,
     const std::vector<const PasswordForm*>& credentials) {
@@ -282,7 +280,7 @@ const PasswordForm* GetMatchForUpdating(
 
   // Try to return form with matching |username_value|.
   const PasswordForm* username_match =
-      FindByUsername(credentials, submitted_form.username_value);
+      FindFormByUsername(credentials, submitted_form.username_value);
   if (username_match) {
     if (!username_match->is_public_suffix_match)
       return username_match;

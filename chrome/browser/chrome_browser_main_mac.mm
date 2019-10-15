@@ -27,6 +27,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/upgrade_util_mac.h"

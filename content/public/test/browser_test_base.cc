@@ -529,7 +529,8 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   network_service_test->SimulateCrash();
   run_loop.Run();
 
-  // Make sure the cached NetworkServicePtr receives error notification.
+  // Make sure the cached mojo::Remote<NetworkService> receives error
+  // notification.
   FlushNetworkServiceInstanceForTesting();
 
   // Need to re-initialize the network process.

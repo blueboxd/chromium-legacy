@@ -4681,6 +4681,7 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="MissingPersonalCurve"/>
   <int value="9" label="WaitingForTrainedPersonalCurve"/>
   <int value="10" label="WaitingForReopenAls"/>
+  <int value="11" label="NoNewModel"/>
 </enum>
 
 <enum name="AutoScreenBrightnessParameterError">
@@ -11147,11 +11148,12 @@ Called by update_net_error_codes.py.-->
   <int value="15" label="CRAS_METRICS_DEVICE_HFP"/>
   <int value="16" label="CRAS_METRICS_DEVICE_HSP"/>
   <int value="17" label="CRAS_METRICS_DEVICE_BLUETOOTH"/>
-  <int value="18" label="CRAS_METRICS_DEVICE_NO_DEVICE"/>
-  <int value="19" label="CRAS_METRICS_DEVICE_NORMAL_FALLBACK"/>
-  <int value="20" label="CRAS_METRICS_DEVICE_ABNORMAL_FALLBACK"/>
-  <int value="21" label="CRAS_METRICS_DEVICE_SILENT_HOTWORD"/>
-  <int value="22" label="CRAS_METRICS_DEVICE_UNKNOWN"/>
+  <int value="18" label="CRAS_METRICS_DEVICE_BLUETOOTH_NB_MIC"/>
+  <int value="19" label="CRAS_METRICS_DEVICE_NO_DEVICE"/>
+  <int value="20" label="CRAS_METRICS_DEVICE_NORMAL_FALLBACK"/>
+  <int value="21" label="CRAS_METRICS_DEVICE_ABNORMAL_FALLBACK"/>
+  <int value="22" label="CRAS_METRICS_DEVICE_SILENT_HOTWORD"/>
+  <int value="23" label="CRAS_METRICS_DEVICE_UNKNOWN"/>
 </enum>
 
 <enum name="CrashExitCodes">
@@ -24962,6 +24964,8 @@ Called by update_net_error_codes.py.-->
   <int value="3057" label="NonOriginCleanImageBitmapSerialization"/>
   <int value="3058" label="OriginCleanImageBitmapTransfer"/>
   <int value="3059" label="NonOriginCleanImageBitmapTransfer"/>
+  <int value="3060" label="CompressionStreamConstructor"/>
+  <int value="3061" label="DecompressionStreamConstructor"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36713,6 +36717,7 @@ from previous Chrome versions.
   <int value="36422284"
       label="AutofillSaveCardDialogUnlabeledExpirationDate:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
+  <int value="38213894" label="PrivacySettingsRedesign:enabled"/>
   <int value="38904620" label="TabSwitcherLongpressMenu:enabled"/>
   <int value="42098736" label="TranslateAndroidManualTrigger:disabled"/>
   <int value="42844603" label="AndroidSurfaceControl:disabled"/>
@@ -37597,6 +37602,7 @@ from previous Chrome versions.
   <int value="1247293682" label="topchrome-md"/>
   <int value="1250071868" label="disable-timezone-tracking-option"/>
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
+  <int value="1254472299" label="PrivacySettingsRedesign:disabled"/>
   <int value="1257482622" label="PageAlmostIdle:enabled"/>
   <int value="1257533754" label="UseDownloadOfflineContentProvider:disabled"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>

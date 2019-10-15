@@ -12,6 +12,7 @@
 #include "ash/login/login_screen_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/tray_action/tray_action.h"
@@ -19,6 +20,7 @@
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace ash {
 namespace mojo_interface_factory {
@@ -27,20 +29,22 @@ namespace {
 base::LazyInstance<RegisterInterfacesCallback>::Leaky
     g_register_interfaces_callback = LAZY_INSTANCE_INITIALIZER;
 
-void BindCrosDisplayConfigControllerRequestOnMainThread(
-    mojom::CrosDisplayConfigControllerRequest request) {
+void BindCrosDisplayConfigControllerReceiverOnMainThread(
+    mojo::PendingReceiver<mojom::CrosDisplayConfigController> receiver) {
   if (Shell::HasInstance())
-    Shell::Get()->cros_display_config()->BindRequest(std::move(request));
+    Shell::Get()->cros_display_config()->BindReceiver(std::move(receiver));
 }
 
-void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
+void BindImeControllerReceiverOnMainThread(
+    mojo::PendingReceiver<mojom::ImeController> receiver) {
   if (Shell::HasInstance())
-    Shell::Get()->ime_controller()->BindRequest(std::move(request));
+    Shell::Get()->ime_controller()->BindReceiver(std::move(receiver));
 }
 
-void BindTrayActionRequestOnMainThread(mojom::TrayActionRequest request) {
+void BindTrayActionReceiverOnMainThread(
+    mojo::PendingReceiver<mojom::TrayAction> receiver) {
   if (Shell::HasInstance())
-    Shell::Get()->tray_action()->BindRequest(std::move(request));
+    Shell::Get()->tray_action()->BindReceiver(std::move(receiver));
 }
 
 }  // namespace
@@ -49,13 +53,13 @@ void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
   registry->AddInterface(
-      base::BindRepeating(&BindCrosDisplayConfigControllerRequestOnMainThread),
+      base::BindRepeating(&BindCrosDisplayConfigControllerReceiverOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
-      base::BindRepeating(&BindImeControllerRequestOnMainThread),
+      base::BindRepeating(&BindImeControllerReceiverOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(
-      base::BindRepeating(&BindTrayActionRequestOnMainThread),
+      base::BindRepeating(&BindTrayActionReceiverOnMainThread),
       main_thread_task_runner);
 
   // Inject additional optional interfaces.

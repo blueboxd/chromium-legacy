@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
@@ -103,8 +104,8 @@ CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
   // |connector| may be null in tests.
   auto* connector = content::GetSystemConnector();
   if (connector) {
-    connector->BindInterface(ash::mojom::kServiceName,
-                             &cros_display_config_ptr_);
+    connector->Connect(ash::mojom::kServiceName,
+                       cros_display_config_.BindNewPipeAndPassReceiver());
   }
   OobeConfiguration::Get()->AddAndFireObserver(this);
 }
@@ -593,7 +594,7 @@ void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  cros_display_config_ptr_->GetDisplayUnitInfoList(
+  cros_display_config_->GetDisplayUnitInfoList(
       false /* single_unified */,
       base::BindOnce(&CoreOobeHandler::GetPrimaryDisplayNameCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));

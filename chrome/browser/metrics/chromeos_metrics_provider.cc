@@ -22,6 +22,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"

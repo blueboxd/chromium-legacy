@@ -4,6 +4,8 @@
 
 #include "ash/display/cros_display_config.h"
 
+#include <utility>
+
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/overscan_calibrator.h"
@@ -17,6 +19,7 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
@@ -480,16 +483,15 @@ CrosDisplayConfig::CrosDisplayConfig()
 
 CrosDisplayConfig::~CrosDisplayConfig() {}
 
-void CrosDisplayConfig::BindRequest(
-    mojom::CrosDisplayConfigControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void CrosDisplayConfig::BindReceiver(
+    mojo::PendingReceiver<mojom::CrosDisplayConfigController> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void CrosDisplayConfig::AddObserver(
-    mojom::CrosDisplayConfigObserverAssociatedPtrInfo observer) {
-  mojom::CrosDisplayConfigObserverAssociatedPtr observer_ptr;
-  observer_ptr.Bind(std::move(observer));
-  observers_.AddPtr(std::move(observer_ptr));
+    mojo::PendingAssociatedRemote<mojom::CrosDisplayConfigObserver> observer) {
+  observers_.Add(mojo::AssociatedRemote<mojom::CrosDisplayConfigObserver>(
+      std::move(observer)));
 }
 
 void CrosDisplayConfig::GetDisplayLayoutInfo(
@@ -888,9 +890,8 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
 }
 
 void CrosDisplayConfig::NotifyObserversDisplayConfigChanged() {
-  observers_.ForAllPtrs([](mojom::CrosDisplayConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnDisplayConfigChanged();
-  });
 }
 
 OverscanCalibrator* CrosDisplayConfig::GetOverscanCalibrator(

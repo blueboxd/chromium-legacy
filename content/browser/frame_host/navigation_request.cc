@@ -1155,7 +1155,7 @@ void NavigationRequest::BeginNavigation() {
   if (!NeedsUrlLoader()) {
     // The types of pages that don't need a URL Loader should never get served
     // from the BackForwardCache.
-    DCHECK(!is_served_from_back_forward_cache());
+    DCHECK(!IsServedFromBackForwardCache());
 
     // There is no need to make a network request for this navigation, so commit
     // it immediately.
@@ -1641,7 +1641,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Select an appropriate renderer to commit the navigation.
-  if (is_served_from_back_forward_cache()) {
+  if (IsServedFromBackForwardCache()) {
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
@@ -2141,7 +2141,7 @@ void NavigationRequest::OnStartChecksComplete(
           OriginPolicyThrottle::ShouldRequestOriginPolicy(common_params_->url)),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
-      this, is_served_from_back_forward_cache(), std::move(interceptor));
+      this, IsServedFromBackForwardCache(), std::move(interceptor));
 
   DCHECK(!render_frame_host_);
 }
@@ -2367,7 +2367,7 @@ void NavigationRequest::CommitNavigation() {
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
 
-  if (is_served_from_back_forward_cache()) {
+  if (IsServedFromBackForwardCache()) {
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
@@ -3769,6 +3769,10 @@ const net::ProxyServer& NavigationRequest::GetProxyServer() {
 
 GlobalFrameRoutingId NavigationRequest::GetPreviousRenderFrameHostId() {
   return previous_render_frame_host_id_;
+}
+
+bool NavigationRequest::IsServedFromBackForwardCache() {
+  return rfh_restored_from_back_forward_cache_ != nullptr;
 }
 
 // static

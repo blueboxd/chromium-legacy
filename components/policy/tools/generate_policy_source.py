@@ -20,8 +20,12 @@ from optparse import OptionParser
 import re
 import sys
 import textwrap
-import types
 from xml.sax.saxutils import escape as xml_escape
+
+if sys.version_info.major == 2:
+  string_type = basestring
+else:
+  string_type = str
 
 CHROME_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome'
 CHROMIUM_POLICY_KEY = 'SOFTWARE\\\\Policies\\\\Chromium'
@@ -193,7 +197,7 @@ class PolicyAtomicGroup:
                            'in policy_templates.json)!')
       policies_already_in_group.add(policy)
       if not policy in available_policies:
-        raise RuntimeError('Invalid policy:' + policy + ' in atomic group ' +
+        raise RuntimeError('Invalid policy: ' + policy + ' in atomic group ' +
                            self.name + '.\n')
 
 
@@ -355,7 +359,7 @@ def main():
   risk_tags.ComputeMaxTags(policy_details)
   sorted_policy_details = sorted(policy_details, key=lambda policy: policy.name)
 
-  policy_details_set = map((lambda x: x.name), policy_details)
+  policy_details_set = list(map((lambda x: x.name), policy_details))
   policies_already_in_group = set()
   policy_atomic_groups = [
       PolicyAtomicGroup(group, policy_details_set, policies_already_in_group)
@@ -658,8 +662,8 @@ class SchemaNodesGenerator:
 
   def IsConsecutiveInterval(self, seq):
     sortedSeq = sorted(seq)
-    return all(sortedSeq[i] + 1 == sortedSeq[i + 1]
-               for i in xrange(len(sortedSeq) - 1))
+    return all(
+        sortedSeq[i] + 1 == sortedSeq[i + 1] for i in range(len(sortedSeq) - 1))
 
   def GetEnumIntegerType(self, schema, is_sensitive_value, name):
     assert all(type(x) == int for x in schema['enum'])
@@ -737,7 +741,7 @@ class SchemaNodesGenerator:
     if '$ref' in schema:
       if 'id' in schema:
         raise RuntimeError("Schemas with a $ref can't have an id")
-      if not isinstance(schema['$ref'], types.StringTypes):
+      if not isinstance(schema['$ref'], string_type):
         raise RuntimeError("$ref attribute must be a string")
       return schema['$ref']
 
@@ -921,7 +925,7 @@ class SchemaNodesGenerator:
     f.write('};\n\n')
 
   def GetByID(self, id_str):
-    if not isinstance(id_str, types.StringTypes):
+    if not isinstance(id_str, string_type):
       return id_str
     if id_str not in self.id_map:
       raise RuntimeError('Invalid $ref: ' + id_str)
@@ -941,12 +945,12 @@ class SchemaNodesGenerator:
     simple as looking up for corresponding ID in self.id_map, and replace the
     old index with the mapped index.
     """
-    self.schema_nodes = map(
-        partial(self.ResolveID, 1, SchemaNode), self.schema_nodes)
-    self.property_nodes = map(
-        partial(self.ResolveID, 1, PropertyNode), self.property_nodes)
-    self.properties_nodes = map(
-        partial(self.ResolveID, 3, PropertiesNode), self.properties_nodes)
+    self.schema_nodes = list(
+        map(partial(self.ResolveID, 1, SchemaNode), self.schema_nodes))
+    self.property_nodes = list(
+        map(partial(self.ResolveID, 1, PropertyNode), self.property_nodes))
+    self.properties_nodes = list(
+        map(partial(self.ResolveID, 3, PropertiesNode), self.properties_nodes))
 
   def FindSensitiveChildren(self):
     """Wrapper function, which calls FindSensitiveChildrenRecursive().

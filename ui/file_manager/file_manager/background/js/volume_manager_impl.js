@@ -125,14 +125,14 @@ class VolumeManagerImpl extends cr.EventTarget {
     chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
 
-    console.warn('Getting volumes');
+    console.debug('Getting volumes');
     const volumeMetadataList = await new Promise(
         resolve => chrome.fileManagerPrivate.getVolumeMetadataList(resolve));
     if (!volumeMetadataList) {
       console.error('Cannot get volumes');
       return;
     }
-    console.warn(`There are ${volumeMetadataList.length} volumes`);
+    console.debug(`There are ${volumeMetadataList.length} volumes`);
 
     // We must subscribe to the mount completed event in the callback of
     // getVolumeMetadataList (crbug.com/330061). But volumes reported by
@@ -142,12 +142,12 @@ class VolumeManagerImpl extends cr.EventTarget {
     try {
       // Create VolumeInfo for each volume.
       await Promise.all(volumeMetadataList.map(async (volumeMetadata) => {
-        console.warn(`Initializing volume '${volumeMetadata.volumeId}'`);
+        console.debug(`Initializing volume '${volumeMetadata.volumeId}'`);
         const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
-        console.warn(`Initialized volume '${volumeInfo.volumeId}'`);
+        console.debug(`Initialized volume '${volumeInfo.volumeId}'`);
       }));
 
-      console.warn(`Initialized all ${volumeMetadataList.length} volumes`);
+      console.debug(`Initialized all ${volumeMetadataList.length} volumes`);
     } finally {
       unlock();
     }
@@ -172,7 +172,7 @@ class VolumeManagerImpl extends cr.EventTarget {
             case 'success':
             case VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM:
             case VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM: {
-              console.warn(`Mounted '${sourcePath}' as '${volumeId}'`);
+              console.debug(`Mounted '${sourcePath}' as '${volumeId}'`);
               const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
               this.finishRequest_(requestKey, status, volumeInfo);
               return;
@@ -211,7 +211,7 @@ class VolumeManagerImpl extends cr.EventTarget {
                 this.dispatchEvent(new CustomEvent(
                     'externally-unmounted', {detail: volumeInfo}));
               } else {
-                console.warn(`Unmounted '${volumeId}'`);
+                console.debug(`Unmounted '${volumeId}'`);
               }
 
               this.volumeInfoList.remove(volumeId);
@@ -249,7 +249,7 @@ class VolumeManagerImpl extends cr.EventTarget {
     const path = await new Promise(resolve => {
       chrome.fileManagerPrivate.addMount(fileUrl, resolve);
     });
-    console.warn(`Mounting '${path}'`);
+    console.debug(`Mounting '${path}'`);
     const key = this.makeRequestKey_('mount', path);
     return this.startRequest_(key);
   }

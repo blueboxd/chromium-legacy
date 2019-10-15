@@ -28,6 +28,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"

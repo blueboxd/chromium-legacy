@@ -82,18 +82,33 @@ TEST_P(NGInlineCursorTest, ContainingLine) {
   cursor.MoveToContainingLine();
   EXPECT_EQ(line1, cursor);
 
-  const LayoutObject& target = *GetLayoutObjectByElementId("target");
+  const LayoutInline& target =
+      ToLayoutInline(*GetLayoutObjectByElementId("target"));
   cursor.MoveTo(target);
   cursor.MoveToContainingLine();
   EXPECT_EQ(line1, cursor);
 
-  cursor.MoveTo(*target.SlowFirstChild());
+  cursor.MoveTo(*target.FirstChild());
   cursor.MoveToContainingLine();
   EXPECT_EQ(line1, cursor);
 
   cursor.MoveTo(*block_flow.LastChild());
   cursor.MoveToContainingLine();
   EXPECT_EQ(line2, cursor);
+}
+
+TEST_P(NGInlineCursorTest, CulledInline) {
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root><a><b>abc</b><br><i>xyz</i></a></div>");
+  const LayoutInline& layout_inline =
+      ToLayoutInline(*cursor.GetLayoutBlockFlow()->FirstChild());
+  cursor.MoveTo(layout_inline);
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextForSameLayoutObject();
+  }
+  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, FirstChild) {

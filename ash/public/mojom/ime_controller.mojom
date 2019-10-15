@@ -12,7 +12,7 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // Interface for ash client (e.g. Chrome) to send input method info to ash.
 interface ImeController {
   // Sets the client interface.
-  SetClient(ImeControllerClient client);
+  SetClient(pending_remote<ImeControllerClient> client);
 
   // Updates the cached IME information and refreshes the IME menus.
   // |current_ime_id| is empty when there is no active IME yet.

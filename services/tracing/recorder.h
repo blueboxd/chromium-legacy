@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace tracing {
@@ -32,7 +32,7 @@ class Recorder : public mojom::Recorder {
   // |on_data_change_callback| is run whenever the recorder receives data from
   // the agent or when the connection is lost to notify the tracing service of
   // the data change.
-  Recorder(mojom::RecorderRequest request,
+  Recorder(mojo::PendingReceiver<mojom::Recorder> receiver,
            mojom::TraceDataType data_type,
            const base::RepeatingClosure& on_data_change_callback);
   ~Recorder() override;
@@ -59,7 +59,7 @@ class Recorder : public mojom::Recorder {
   bool is_recording_;
   mojom::TraceDataType data_type_;
   base::RepeatingClosure on_data_change_callback_;
-  mojo::Binding<mojom::Recorder> binding_;
+  mojo::Receiver<mojom::Recorder> receiver_;
 
   base::WeakPtrFactory<Recorder> weak_ptr_factory_{this};
 

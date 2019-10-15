@@ -32,6 +32,11 @@ namespace web_app {
 // icons) for a tab.
 class WebAppIconDownloader : public content::WebContentsObserver {
  public:
+  enum class Histogram {
+    kForCreate,
+    kForSync,
+  };
+
   using WebAppIconDownloaderCallback =
       base::OnceCallback<void(bool success, IconsMap icons_map)>;
 
@@ -41,7 +46,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // to use for logging http status code class results from fetch attempts.
   WebAppIconDownloader(content::WebContents* web_contents,
                        const std::vector<GURL>& extra_favicon_urls,
-                       const char* https_status_code_class_histogram_name,
+                       Histogram histogram,
                        WebAppIconDownloaderCallback callback);
   ~WebAppIconDownloader() override;
 
@@ -102,8 +107,8 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // Callback to run on favicon download completion.
   WebAppIconDownloaderCallback callback_;
 
-  // The histogram name to log individual fetch results under.
-  const std::string https_status_code_class_histogram_name_;
+  // Which histogram to log individual fetch results under.
+  Histogram histogram_;
 
   base::WeakPtrFactory<WebAppIconDownloader> weak_ptr_factory_{this};
 

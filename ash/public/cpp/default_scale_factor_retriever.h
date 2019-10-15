@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
 
@@ -27,7 +29,8 @@ class ASH_PUBLIC_EXPORT DefaultScaleFactorRetriever {
   ~DefaultScaleFactorRetriever();
 
   // Start the query process.
-  void Start(mojom::CrosDisplayConfigControllerPtr cros_display_config);
+  void Start(mojo::PendingRemote<mojom::CrosDisplayConfigController>
+                 cros_display_config);
 
   // Get the default scale factor. The scale factor will be passed
   // as an argument to the |callback|. The callback may be call synchronously
@@ -45,7 +48,7 @@ class ASH_PUBLIC_EXPORT DefaultScaleFactorRetriever {
   void OnDefaultScaleFactorRetrieved(float scale_factor);
 
   float default_scale_factor_ = -1.f;
-  mojom::CrosDisplayConfigControllerPtr cros_display_config_;
+  mojo::Remote<mojom::CrosDisplayConfigController> cros_display_config_;
   GetDefaultScaleFactorCallback callback_;
 
   // WeakPtrFactory to use callbacks.

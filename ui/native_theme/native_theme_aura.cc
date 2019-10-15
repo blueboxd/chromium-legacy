@@ -846,6 +846,12 @@ void NativeThemeAura::PaintProgressBar(
   canvas->drawRoundRect(track_rect, kSliderTrackBorderRadius,
                         kSliderTrackBorderRadius, flags);
 
+  // Clip the track to create rounded corners for the value bar.
+  SkRRect rounded_rect;
+  rounded_rect.setRectXY(track_rect, kSliderTrackBorderRadius,
+                         kSliderTrackBorderRadius);
+  canvas->clipRRect(rounded_rect, SkClipOp::kIntersect, true);
+
   // Paint the progress value bar.
   const SkScalar kMinimumProgressValueWidth = 2;
   SkScalar adjusted_width = progress_bar.value_rect_width;
@@ -857,8 +863,12 @@ void NativeThemeAura::PaintProgressBar(
   SkRect value_rect =
       AlignSliderTrack(original_value_rect, slider, false, track_height);
   flags.setColor(GetControlColor(kAccent, color_scheme));
-  canvas->drawRoundRect(value_rect, kSliderTrackBorderRadius,
-                        kSliderTrackBorderRadius, flags);
+  if (progress_bar.determinate) {
+    canvas->drawRect(value_rect, flags);
+  } else {
+    canvas->drawRoundRect(value_rect, kSliderTrackBorderRadius,
+                          kSliderTrackBorderRadius, flags);
+  }
 
   // Paint the border.
   flags.setStyle(cc::PaintFlags::kStroke_Style);

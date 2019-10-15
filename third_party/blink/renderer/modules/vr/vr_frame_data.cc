@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/vr/vr_frame_data.h"
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/vr/vr_eye_parameters.h"
 #include "third_party/blink/renderer/modules/vr/vr_pose.h"
 

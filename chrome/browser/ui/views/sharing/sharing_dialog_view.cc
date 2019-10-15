@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -17,16 +18,20 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "components/sync_device_info/device_info.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
@@ -91,6 +96,61 @@ std::unique_ptr<views::StyledLabel> CreateHelpText(
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
   return label;
+}
+
+std::unique_ptr<views::View> MaybeCreateOriginView(
+    const SharingDialogData& data) {
+  if (!data.initiating_origin || !data.origin_text_id)
+    return nullptr;
+
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringFUTF16(data.origin_text_id,
+                                 url_formatter::FormatOriginForSecurityDisplay(
+                                     *data.initiating_origin)),
+      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetElideBehavior(gfx::ELIDE_HEAD);
+  label->SetMultiLine(false);
+  label->SetFontList(label->font_list().DeriveWithSizeDelta(-2));
+
+  auto background_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_BubbleFooterBackground);
+  label->SetBackgroundColor(background_color);
+  label->SetBackground(
+      views::CreateRoundedRectBackground(background_color, /*radius=*/8));
+
+  gfx::Insets insets =
+      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::TEXT,
+                                                                 views::TEXT);
+  gfx::Insets border_insets(4, insets.width() / 4, 4, insets.width() / 4);
+  gfx::Insets container_insets(insets.top(),
+                               insets.left() - border_insets.left(), 0,
+                               insets.right() - border_insets.right());
+  label->SetBorder(views::CreateEmptyBorder(border_insets));
+
+  auto container = std::make_unique<views::View>();
+  container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, container_insets));
+  container->AddChildView(std::move(label));
+  return container;
+}
+
+std::unique_ptr<views::View> MaybeCreateImageView(int image_id) {
+  if (!image_id)
+    return nullptr;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::ImageSkia* image = rb.GetNativeImageNamed(image_id).ToImageSkia();
+  gfx::Size image_size(image->width(), image->height());
+  constexpr int kHeaderImageHeight = 100;
+  const int image_width = image->width() * kHeaderImageHeight / image->height();
+  image_size.SetToMin(gfx::Size(image_width, kHeaderImageHeight));
+
+  auto image_view = std::make_unique<NonAccessibleImageView>();
+  image_view->SetImageSize(image_size);
+  image_view->SetImage(*image);
+  return image_view;
 }
 
 }  // namespace
@@ -199,24 +259,23 @@ void SharingDialogView::MaybeShowHeaderImage() {
   int image_id = color_utils::IsDark(frame_view->GetBackgroundColor())
                      ? data_.header_image_dark
                      : data_.header_image_light;
-  if (!image_id) {
-    // Clear any previously set header image.
-    frame_view->SetHeaderView(nullptr);
-    return;
-  }
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* image = rb.GetNativeImageNamed(image_id).ToImageSkia();
-  gfx::Size image_size(image->width(), image->height());
-  constexpr int kHeaderImageHeight = 100;
-  const int image_width = image->width() * kHeaderImageHeight / image->height();
-  image_size.SetToMin(gfx::Size(image_width, kHeaderImageHeight));
+  std::unique_ptr<views::View> image_view = MaybeCreateImageView(image_id);
+  std::unique_ptr<views::View> origin_view = MaybeCreateOriginView(data_);
+  std::unique_ptr<views::View> header_view = std::make_unique<views::View>();
+  header_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
-  auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetImageSize(image_size);
-  image_view->SetImage(*image);
+  if (image_view)
+    header_view->AddChildView(std::move(image_view));
+  if (origin_view)
+    header_view->AddChildView(std::move(origin_view));
 
-  frame_view->SetHeaderView(std::move(image_view));
+  // Clear header if it has no content.
+  if (header_view->children().empty())
+    header_view = nullptr;
+
+  frame_view->SetHeaderView(std::move(header_view));
 }
 
 void SharingDialogView::AddedToWidget() {

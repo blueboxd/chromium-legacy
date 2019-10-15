@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <bitset>
 
 #include "base/hash/hash.h"
 #include "base/strings/string_util.h"

@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/ios_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
@@ -144,6 +145,32 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 }
 
 }  // namespace
+
+// Override a QRScannerViewController voice search check, simulating voice
+// search being enabled. This doesn't reset the previous value, don't use
+// nested.
+@interface ScopedQRScannerVoiceSearchOverride : NSObject
+@property(nonatomic, weak) QRScannerViewController* scanner;
+@end
+
+@implementation ScopedQRScannerVoiceSearchOverride
+
+- (instancetype)initWithQRScanner:(QRScannerViewController*)QRScanner {
+  self = [super init];
+  if (self) {
+    _scanner = QRScanner;
+    [_scanner overrideVoiceOverCheck:YES];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [_scanner overrideVoiceOverCheck:NO];
+}
+
+@end
+
+#pragma mark - Test Case
 
 @interface QRScannerViewControllerTestCase : ChromeTestCase {
   GURL _testURL;
@@ -786,6 +813,56 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
       performAction:grey_tap()];
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:[self currentViewController]];
+}
+
+// Test that the correct page is loaded if the scanner result is a URL which is
+// then manually edited when VoiceOver is enabled.
+- (void)testReceivingQRScannerURLResultWithVoiceOver {
+  id cameraControllerMock =
+      [self getCameraControllerMockWithAuthorizationStatus:
+                AVAuthorizationStatusAuthorized];
+  [self swizzleCameraController:cameraControllerMock];
+
+  // Open the QR scanner.
+  [self showQRScannerAndCheckLayoutWithCameraMock:cameraControllerMock];
+  [self callTorchAvailabilityChanged:YES];
+  [self assertQRScannerUIIsVisibleWithTorch:YES];
+
+  // Add override for the VoiceOver check.
+  QRScannerViewController* viewController =
+      base::mac::ObjCCast<QRScannerViewController>(
+          [[self currentViewController] presentedViewController]);
+  GREYAssertTrue(viewController, @"The QRScanner isn't presented.");
+  ScopedQRScannerVoiceSearchOverride* scopedOverride =
+      [[ScopedQRScannerVoiceSearchOverride alloc]
+          initWithQRScanner:viewController];
+
+  // Receive a scanned result from the camera.
+  [self addCameraControllerDismissalExpectations:cameraControllerMock];
+  [self callReceiveQRScannerResult:base::SysUTF8ToNSString(
+                                       _testURL.GetContent())];
+
+  // Fake the end of the VoiceOver announcement.
+  NSString* scannedAnnouncement = l10n_util::GetNSString(
+      IDS_IOS_SCANNER_SCANNED_ACCESSIBILITY_ANNOUNCEMENT);
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIAccessibilityAnnouncementDidFinishNotification
+                    object:nil
+                  userInfo:@{
+                    UIAccessibilityAnnouncementKeyStringValue :
+                        scannedAnnouncement
+                  }];
+
+  [self waitForModalOfClass:[QRScannerViewController class]
+       toDisappearFromAbove:[self currentViewController]];
+  [cameraControllerMock verify];
+
+  // Optionally edit the text in the omnibox before pressing return.
+  [self assertOmniboxIsVisibleWithText:_testURL.GetContent()];
+  TapKeyboardReturnKeyInOmniboxWithText(_testURL.GetContent());
+  [ChromeEarlGrey waitForWebStateContainingText:kTestURLResponse];
+
+  scopedOverride = nil;
 }
 
 // Test that the correct page is loaded if the scanner result is a URL.

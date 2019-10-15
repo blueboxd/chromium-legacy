@@ -13,8 +13,9 @@
 namespace blink {
 
 class ComputedStyle;
-class LayoutObject;
 class LayoutBlockFlow;
+class LayoutInline;
+class LayoutObject;
 class NGFragmentItem;
 class NGFragmentItems;
 class NGPaintFragment;
@@ -175,6 +176,10 @@ class CORE_EXPORT NGInlineCursor {
   // we'll call it "void cursor" instead of "null cursor".
   NGInlineCursor() = delete;
 
+  // True if current position is descendant or self of |layout_object|.
+  // Note: This function is used for moving cursor in culled inline boxes.
+  bool IsInclusiveDescendantOf(const LayoutObject& layout_object) const;
+
   // True if the current position is a last line in inline block. It is error
   // to call at end or the current position is not line.
   bool IsLastLineInInlineBlock() const;
@@ -182,6 +187,12 @@ class CORE_EXPORT NGInlineCursor {
   // Make the current position points nothing, e.g. cursor moves over start/end
   // fragment, cursor moves to first/last child to parent has no children.
   void MakeNull();
+
+  // Move the cursor position to the first fragment in tree.
+  void MoveToFirst();
+
+  // Same as |MoveTo()| but not support culled inline.
+  void InternalMoveTo(const LayoutObject& layout_object);
 
   void SetRoot(const NGFragmentItems& items);
   void SetRoot(ItemsSpan items);
@@ -205,6 +216,9 @@ class CORE_EXPORT NGInlineCursor {
 
   const NGPaintFragment* root_paint_fragment_ = nullptr;
   const NGPaintFragment* current_paint_fragment_ = nullptr;
+
+  // Used in |MoveToNextForSameLayoutObject()| to support culled inline.
+  const LayoutInline* layout_inline_ = nullptr;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGInlineCursor&);

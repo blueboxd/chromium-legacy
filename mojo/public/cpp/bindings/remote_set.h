@@ -121,6 +121,8 @@ class RemoteSetImpl {
   void Clear() { storage_.clear(); }
 
   bool empty() const { return storage_.empty(); }
+  size_t size() const { return storage_.size(); }
+
   Iterator begin() { return Iterator(storage_.begin()); }
   Iterator begin() const { return Iterator(storage_.begin()); }
   Iterator end() { return Iterator(storage_.end()); }

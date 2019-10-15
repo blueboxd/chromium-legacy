@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace vector_math;
-
 // Empirical gain calibration tested across many impulse responses to ensure
 // perceived volume is same as dry (unprocessed) signal
 const float kGainCalibration = -58;
@@ -61,7 +59,8 @@ static float CalculateNormalizationScale(AudioBus* response) {
 
   for (size_t i = 0; i < number_of_channels; ++i) {
     float channel_power = 0;
-    Vsvesq(response->Channel(i)->Data(), 1, &channel_power, length);
+    vector_math::Vsvesq(response->Channel(i)->Data(), 1, &channel_power,
+                        length);
     power += channel_power;
   }
 

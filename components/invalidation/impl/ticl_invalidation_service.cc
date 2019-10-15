@@ -386,12 +386,12 @@ void TiclInvalidationService::StartInvalidator() {
 }
 
 void TiclInvalidationService::UpdateInvalidatorCredentials() {
-  std::string email = identity_provider_->GetActiveAccountId();
+  CoreAccountId account_id = identity_provider_->GetActiveAccountId();
 
-  DCHECK(!email.empty()) << "Expected user to be signed in.";
+  DCHECK(!account_id.empty()) << "Expected user to be signed in.";
 
-  DVLOG(2) << "UpdateCredentials: " << email;
-  invalidator_->UpdateCredentials(email, access_token_);
+  DVLOG(2) << "UpdateCredentials: " << account_id;
+  invalidator_->UpdateCredentials(account_id, access_token_);
 }
 
 void TiclInvalidationService::StopInvalidator() {

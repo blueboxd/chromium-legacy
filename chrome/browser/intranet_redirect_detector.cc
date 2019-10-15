@@ -222,21 +222,19 @@ void IntranetRedirectDetector::OnSystemDnsConfigChanged() {
 }
 
 void IntranetRedirectDetector::SetupDnsConfigClient() {
-  DCHECK(!dns_config_client_binding_.is_bound());
-
-  network::mojom::DnsConfigChangeManagerClientPtr client_ptr;
-  dns_config_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-  dns_config_client_binding_.set_connection_error_handler(base::BindRepeating(
-      &IntranetRedirectDetector::OnDnsConfigClientConnectionError,
-      base::Unretained(this)));
+  DCHECK(!dns_config_client_receiver_.is_bound());
 
   network::mojom::DnsConfigChangeManagerPtr manager_ptr;
   content::GetNetworkService()->GetDnsConfigChangeManager(
       mojo::MakeRequest(&manager_ptr));
-  manager_ptr->RequestNotifications(std::move(client_ptr));
+  manager_ptr->RequestNotifications(
+      dns_config_client_receiver_.BindNewPipeAndPassRemote());
+  dns_config_client_receiver_.set_disconnect_handler(base::BindRepeating(
+      &IntranetRedirectDetector::OnDnsConfigClientConnectionError,
+      base::Unretained(this)));
 }
 
 void IntranetRedirectDetector::OnDnsConfigClientConnectionError() {
-  dns_config_client_binding_.Close();
+  dns_config_client_receiver_.reset();
   SetupDnsConfigClient();
 }

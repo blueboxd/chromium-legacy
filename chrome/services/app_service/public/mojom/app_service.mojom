@@ -53,9 +53,22 @@ interface AppService {
       string app_id,
       Permission permission);
 
-  Uninstall(
+  // Uninstall which invokes a specific dialog per app type. When the unified
+  // uninstall dialog is done, this interface will be removed.
+  PromptUninstall(
       AppType app_type,
       string app_id);
+
+  // Directly uninstalls |app_id| without prompting the user.
+  // |clear_site_data| is available for bookmark apps only. If true, any site
+  // data associated with the app will be removed..
+  // |report_abuse| is available for Chrome Apps only. If true, the app will be
+  // reported for abuse to the Web Store.
+  Uninstall(
+      AppType app_type,
+      string app_id,
+      bool clear_site_data,
+      bool report_abuse);
 
   OpenNativeSettings(
       AppType app_type,
@@ -93,8 +106,20 @@ interface Publisher {
       string app_id,
       Permission permission);
 
-  Uninstall(
+  // Uninstall which invokes a specific dialog per app type. When the unified
+  // uninstall dialog is done, this interface will be removed.
+  PromptUninstall(
       string app_id);
+
+  // Directly uninstalls |app_id| without prompting the user.
+  // |clear_site_data| is available for bookmark apps only. If true, any site
+  // data associated with the app will be removed..
+  // |report_abuse| is available for Chrome Apps only. If true, the app will be
+  // reported for abuse to the Web Store.
+  Uninstall(
+      string app_id,
+      bool clear_site_data,
+      bool report_abuse);
 
   OpenNativeSettings(
       string app_id);

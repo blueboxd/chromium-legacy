@@ -14,8 +14,8 @@ import "mojo/public/mojom/base/time.mojom";
 interface DriveFsBootstrap {
   // Initialize a DriveFS instance with its configuration and mojo connections
   // to the browser.
-  Init(DriveFsConfiguration config, DriveFs& drive_fs,
-       DriveFsDelegate delegate);
+  Init(DriveFsConfiguration config, pending_receiver<DriveFs> drive_fs,
+       pending_remote<DriveFsDelegate> delegate);
 };
 
 // Implemented by DriveFS, used from Chrome.
@@ -49,7 +49,8 @@ interface DriveFs {
       (FileError error);
 
   // Start a search query with given parameters.
-  StartSearchQuery(SearchQuery& query, QueryParameters query_params);
+  StartSearchQuery(pending_receiver<SearchQuery> query,
+                   QueryParameters query_params);
 
   // Fetches all changelogs, i.e. for My Drive and all Team Drives.
   FetchAllChangeLogs();

@@ -162,7 +162,12 @@ public final class ChildProcessLauncherHelperImpl {
                 public void onConnectionLost(ChildProcessConnection connection) {
                     assert LauncherThread.runningOnLauncherThread();
                     if (connection.getPid() == 0) return;
-                    sLauncherByPid.remove(connection.getPid());
+
+                    ChildProcessLauncherHelperImpl result =
+                            sLauncherByPid.remove(connection.getPid());
+                    // Child process might die before onConnectionEstablished.
+                    if (result == null) return;
+
                     if (mBindingManager != null) mBindingManager.removeConnection(connection);
                     if (mRanking != null) {
                         setReverseRankWhenConnectionLost(mRanking.getReverseRank(connection));

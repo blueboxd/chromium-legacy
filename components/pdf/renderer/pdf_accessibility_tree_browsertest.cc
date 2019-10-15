@@ -157,7 +157,7 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
         pak_file, ui::SCALE_FACTOR_NONE);
 
-    viewport_info_.zoom = 1.0;
+    viewport_info_.zoom_device_scale_factor = 1.0;
     viewport_info_.scroll = {0, 0};
     viewport_info_.offset = {0, 0};
     viewport_info_.selection_start_page_index = 0;

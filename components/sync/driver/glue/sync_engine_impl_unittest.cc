@@ -78,6 +78,7 @@ class TestSyncEngineHost : public SyncEngineHostStub {
                            const std::string&,
                            const std::string&,
                            const std::string&,
+                           const std::string&,
                            bool success) override {
     EXPECT_EQ(expect_success_, success);
     set_engine_types_.Run(initial_types);

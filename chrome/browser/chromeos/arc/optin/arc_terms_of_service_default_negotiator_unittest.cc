@@ -96,7 +96,7 @@ class ArcTermsOfServiceDefaultNegotiatorTest
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
-  std::string GetAuthenticatedAccountId() {
+  CoreAccountId GetAuthenticatedAccountId() {
     return IdentityManagerFactory::GetForProfile(profile())
         ->GetPrimaryAccountInfo()
         .account_id;

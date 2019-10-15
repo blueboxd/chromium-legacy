@@ -18,9 +18,9 @@ CONTENT_EXPORT void ForceCreateNetworkServiceDirectlyForTesting();
 // Resets the interface ptr to the network service.
 CONTENT_EXPORT void ResetNetworkServiceForTesting();
 
-// Registers |handler| to run (on UI thread) after NetworkServicePtr encounters
-// an error.  Note that there are no ordering guarantees wrt error handlers for
-// other interfaces (e.g. mojo::Remote<NetworkContext> and/or
+// Registers |handler| to run (on UI thread) after mojo::Remote<NetworkService>
+// encounters an error.  Note that there are no ordering guarantees wrt error
+// handlers for other interfaces (e.g. mojo::Remote<NetworkContext> and/or
 // URLLoaderFactoryPtr).
 //
 // Can only be called on the UI thread.  No-op if NetworkService is disabled.

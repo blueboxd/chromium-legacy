@@ -655,7 +655,7 @@ void RenderFrameHostManager::ClearWebUIInstances() {
 
 void RenderFrameHostManager::DidCreateNavigationRequest(
     NavigationRequest* request) {
-  if (request->is_served_from_back_forward_cache()) {
+  if (request->IsServedFromBackForwardCache()) {
     // Since the frame from the back-forward cache is being committed to the
     // SiteInstance we already have, it is treated as current.
     request->set_associated_site_instance_type(
@@ -704,26 +704,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // not be recreated if the URL didn't change. So instead of calling
     // CleanUpNavigation just discard the speculative RenderFrameHost if one
     // exists.
-    if (speculative_render_frame_host_) {
-      // If the speculative RenderFrameHost is trying to commit a navigation,
-      // inform the NavigationController that the load of the corresponding
-      // NavigationEntry stopped if needed. This is the case if the new
-      // navigation was started from BeginNavigation. If the navigation was
-      // started through the NavigationController, the NavigationController has
-      // already updated its state properly, and doesn't need to be notified.
-      // Note: We query all NavigationEntry IDs fom the RenderFrameHost, however
-      // at most one call to DiscardPendingEntryIfNeeded will succeed. Since we
-      // don't know which of the entries is the pending one, we have to try them
-      // all.
-      // TODO(clamy): Clean this up.
-      if (request->from_begin_navigation()) {
-        std::set<int> ids = speculative_render_frame_host_
-                                ->GetNavigationEntryIdsPendingCommit();
-        for (int id : ids)
-          frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(id);
-      }
+    if (speculative_render_frame_host_)
       DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
-    }
 
     // Short-term solution: avoid creating a WebUI for subframes because
     // non-PlzNavigate code path doesn't do it and some WebUI pages don't
@@ -748,25 +730,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     if (!speculative_render_frame_host_ ||
         speculative_render_frame_host_->GetSiteInstance() !=
             dest_site_instance.get()) {
-      // If there is a speculative RenderFrameHost trying to commit a
-      // navigation, inform the NavigationController that the load of the
-      // corresponding NavigationEntry stopped if needed. This is the case if
-      // the new navigation was started from BeginNavigation. If the navigation
-      // was started through the NavigationController, the NavigationController
-      // has already updated its state properly, and doesn't need to be
-      // notified.
-      // Note: We query all NavigationEntry IDs fom the RenderFrameHost, however
-      // at most one call to DiscardPendingEntryIfNeeded will succeed. Since we
-      // don't know which of the entries is the pending one, we have to try them
-      // all.
-      // TODO(clamy): Clean this up.
-      if (request->from_begin_navigation() && speculative_render_frame_host_) {
-        std::set<int> ids = speculative_render_frame_host_
-                                ->GetNavigationEntryIdsPendingCommit();
-        for (int id : ids)
-          frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(id);
-      }
-
       // If a previous speculative RenderFrameHost didn't exist or if its
       // SiteInstance differs from the one for the current URL, a new one needs
       // to be created.

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate.h"
 #include "chrome/browser/chromeos/extensions/users_private/users_private_delegate_factory.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"

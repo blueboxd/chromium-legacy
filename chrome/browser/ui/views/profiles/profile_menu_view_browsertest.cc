@@ -723,8 +723,8 @@ class ProfileMenuClickTest : public SyncTest,
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
   }
 
-  ProfileMenuView* profile_menu_view() {
-    return static_cast<ProfileMenuView*>(
+  ProfileMenuViewBase* profile_menu_view() {
+    return static_cast<ProfileMenuViewBase*>(
         ProfileMenuViewBase::GetBubbleForTesting());
   }
 
@@ -907,9 +907,8 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kExitProfileButton};
 
-// TODO(crbug.com/1012167, 1014343): This crashes on Linux CFI bot.
 PROFILE_MENU_CLICK_TEST(kActionableItems_IncognitoProfile,
-                        DISABLED_ProfileMenuClickTest_IncognitoProfile) {
+                        ProfileMenuClickTest_IncognitoProfile) {
   SetTargetBrowser(CreateIncognitoBrowser(browser()->profile()));
 
   RunTest();

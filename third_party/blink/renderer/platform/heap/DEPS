@@ -13,6 +13,7 @@ include_rules = [
     "+base/synchronization/lock.h",
     "+base/task_runner.h",
     "+base/template_util.h",
+    "+testing/perf/perf_test.h",
 
     "+third_party/blink/renderer/platform/bindings",
     "+third_party/blink/renderer/platform/instrumentation/histogram.h",

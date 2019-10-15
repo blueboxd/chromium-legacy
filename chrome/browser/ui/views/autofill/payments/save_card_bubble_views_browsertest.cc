@@ -713,8 +713,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
     SaveCardBubbleViews* save_card_bubble_views = GetSaveCardBubbleViews();
     DCHECK(save_card_bubble_views);
     ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
-    ClickOnDialogViewAndWait(
-        save_card_bubble_views->GetBubbleFrameView()->GetCloseButtonForTest());
+    ClickOnDialogViewAndWait(save_card_bubble_views->GetBubbleFrameView()
+                                 ->GetCloseButtonForTesting());
     DCHECK(!GetSaveCardBubbleViews());
   }
 

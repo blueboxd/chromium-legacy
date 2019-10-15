@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/vr/vr_stage_parameters.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 

@@ -995,7 +995,7 @@ void OutOfProcessInstance::SendAccessibilityViewportInfo() {
   viewport_info.scroll.y =
       -top_toolbar_height_in_viewport_coords_ * device_scale_;
   viewport_info.offset = available_area_.point();
-  viewport_info.zoom = zoom_ * device_scale_;
+  viewport_info.zoom_device_scale_factor = zoom_ * device_scale_;
 
   engine_->GetSelection(&viewport_info.selection_start_page_index,
                         &viewport_info.selection_start_char_index,

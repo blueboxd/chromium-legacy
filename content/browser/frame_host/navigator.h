@@ -191,14 +191,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) {}
 
-  // Called when a navigation has failed or the response is 204/205 to discard
-  // the pending entry in order to avoid url spoofs. |expected_pending_entry_id|
-  // is the ID of the pending NavigationEntry at the start of the navigation.
-  // With sufficiently bad interleaving of IPCs, this may no longer be the
-  // pending NavigationEntry, in which case the pending NavigationEntry will not
-  // be discarded.
-  virtual void DiscardPendingEntryIfNeeded(int expected_pending_entry_id) {}
-
  protected:
   friend class base::RefCounted<Navigator>;
   virtual ~Navigator() {}

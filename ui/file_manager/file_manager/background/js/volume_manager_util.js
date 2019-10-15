@@ -93,7 +93,7 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
       break;
   }
 
-  console.warn(`Getting file system '${volumeMetadata.volumeId}'`);
+  console.debug(`Getting file system '${volumeMetadata.volumeId}'`);
   return util
       .timeoutPromise(
           new Promise((resolve, reject) => {
@@ -139,7 +139,7 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
       .then(
           /** @param {!FileSystem} fileSystem */
           fileSystem => {
-            console.warn(`Got file system '${volumeMetadata.volumeId}'`);
+            console.debug(`Got file system '${volumeMetadata.volumeId}'`);
             if (volumeMetadata.volumeType ===
                 VolumeManagerCommon.VolumeType.DRIVE) {
               // After file system is mounted, we "read" drive grand root

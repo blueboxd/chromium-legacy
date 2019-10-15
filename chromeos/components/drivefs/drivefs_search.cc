@@ -4,7 +4,11 @@
 
 #include "chromeos/components/drivefs/drivefs_search.h"
 
+#include <utility>
+
 #include "base/bind.h"
+#include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
 namespace drivefs {
@@ -44,7 +48,7 @@ mojom::QueryParameters::QuerySource DriveFsSearch::PerformSearch(
     }
   }
 
-  drivefs::mojom::SearchQueryPtr search;
+  mojo::Remote<drivefs::mojom::SearchQuery> search;
   drivefs::mojom::QueryParameters::QuerySource source = query->query_source;
   if (network_connection_tracker_->IsOffline() &&
       source != drivefs::mojom::QueryParameters::QuerySource::kLocalOnly) {
@@ -53,7 +57,8 @@ mojom::QueryParameters::QuerySource DriveFsSearch::PerformSearch(
     OnSearchDriveFs(std::move(search), std::move(query), std::move(callback),
                     drive::FILE_ERROR_NO_CONNECTION, {});
   } else {
-    drivefs_->StartSearchQuery(mojo::MakeRequest(&search), query.Clone());
+    drivefs_->StartSearchQuery(search.BindNewPipeAndPassReceiver(),
+                               query.Clone());
     auto* raw_search = search.get();
     raw_search->GetNextPage(base::BindOnce(
         &DriveFsSearch::OnSearchDriveFs, weak_ptr_factory_.GetWeakPtr(),
@@ -63,7 +68,7 @@ mojom::QueryParameters::QuerySource DriveFsSearch::PerformSearch(
 }
 
 void DriveFsSearch::OnSearchDriveFs(
-    drivefs::mojom::SearchQueryPtr search,
+    mojo::Remote<drivefs::mojom::SearchQuery> search,
     drivefs::mojom::QueryParametersPtr query,
     mojom::SearchQuery::GetNextPageCallback callback,
     drive::FileError error,

@@ -43,7 +43,7 @@ class NoteActionLaunchButtonTest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     Shell::Get()->tray_action()->SetClient(
-        tray_action_client_.CreateInterfacePtrAndBind(),
+        tray_action_client_.CreateRemoteAndBind(),
         mojom::TrayActionState::kAvailable);
   }
 

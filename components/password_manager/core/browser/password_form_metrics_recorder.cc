@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
 using autofill::FieldPropertiesFlags;
@@ -295,8 +296,8 @@ void PasswordFormMetricsRecorder::SetManagerAction(
 }
 
 void PasswordFormMetricsRecorder::CalculateUserAction(
-    const std::map<base::string16, const autofill::PasswordForm*>& best_matches,
-    const autofill::PasswordForm& submitted_form) {
+    const std::vector<const PasswordForm*>& best_matches,
+    const PasswordForm& submitted_form) {
   const base::string16& submitted_password =
       !submitted_form.new_password_value.empty()
           ? submitted_form.new_password_value
@@ -306,8 +307,8 @@ void PasswordFormMetricsRecorder::CalculateUserAction(
     // In case the submitted form does not have a username field we do not
     // autofill. Thus the user either explicitly chose this credential from the
     // dropdown, or created a new password.
-    for (const auto& match : best_matches) {
-      if (match.second->password_value == submitted_password) {
+    for (const PasswordForm* match : best_matches) {
+      if (match->password_value == submitted_password) {
         user_action_ = UserAction::kChoose;
         return;
       }
@@ -320,14 +321,15 @@ void PasswordFormMetricsRecorder::CalculateUserAction(
   // In case the submitted form has a username value, check if there is an
   // existing match with the same username. If not, the user created a new
   // credential.
-  auto found = best_matches.find(submitted_form.username_value);
-  if (found == best_matches.end()) {
+  const PasswordForm* existing_match =
+      password_manager_util::FindFormByUsername(best_matches,
+                                                submitted_form.username_value);
+  if (!existing_match) {
     user_action_ = UserAction::kOverrideUsernameAndPassword;
     return;
   }
 
   // Otherwise check if the user changed the password.
-  const autofill::PasswordForm* existing_match = found->second;
   if (existing_match->password_value != submitted_password) {
     user_action_ = UserAction::kOverridePassword;
     return;

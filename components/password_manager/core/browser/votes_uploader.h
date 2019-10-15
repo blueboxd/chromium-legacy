@@ -42,8 +42,7 @@ class VotesUploader {
   void SendVotesOnSave(
       const autofill::FormData& observed,
       const autofill::PasswordForm& submitted_form,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       autofill::PasswordForm* pending_credentials);
 
   // Check to see if |pending| corresponds to an account creation form. If we
@@ -65,8 +64,7 @@ class VotesUploader {
   // Sends USERNAME and PASSWORD votes, when a credential is used to login for
   // the first time. |form_to_upload| is the submitted login form.
   void UploadFirstLoginVotes(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       const autofill::PasswordForm& pending_credentials,
       const autofill::PasswordForm& form_to_upload);
 
@@ -150,8 +148,7 @@ class VotesUploader {
   // contained a previously stored credential on submission.
   void SetKnownValueFlag(
       const autofill::PasswordForm& pending_credentials,
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
+      const std::vector<const autofill::PasswordForm*>& best_matches,
       autofill::FormStructure* form_to_upload);
 
   // Searches for |username| in |all_possible_usernames| of |match|. If the

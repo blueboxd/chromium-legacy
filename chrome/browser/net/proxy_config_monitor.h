@@ -12,7 +12,7 @@
 #include "build/buildflag.h"
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
@@ -86,8 +86,7 @@ class ProxyConfigMonitor : public net::ProxyConfigService::Observer,
 
   mojo::BindingSet<network::mojom::ProxyConfigPollerClient> poller_binding_set_;
 
-  mojo::InterfacePtrSet<network::mojom::ProxyConfigClient>
-      proxy_config_client_set_;
+  mojo::RemoteSet<network::mojom::ProxyConfigClient> proxy_config_client_set_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   mojo::BindingSet<network::mojom::ProxyErrorClient> error_binding_set_;

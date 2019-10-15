@@ -903,7 +903,7 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
 
 TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
   // Create file associations.
-  EXPECT_TRUE(ShellUtil::AddFileAssociations(
+  ASSERT_TRUE(ShellUtil::AddFileAssociations(
       kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
       base::FilePath(kTestIconPath), FileExtensions()));
 
@@ -938,6 +938,15 @@ TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
       key.Open(HKEY_CURRENT_USER, L"Software\\Classes\\.test2", KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
   EXPECT_EQ(L"SomeOtherApp", value);
+}
+
+TEST_F(ShellUtilRegistryTest, GetApplicationForProgId) {
+  // Create file associations.
+  ASSERT_TRUE(ShellUtil::AddFileAssociations(
+      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), FileExtensions()));
+  base::FilePath exe_path = ShellUtil::GetApplicationPathForProgId(kTestProgid);
+  EXPECT_EQ(exe_path, base::FilePath(kTestOpenCommand));
 }
 
 TEST(ShellUtilTest, BuildAppModelIdBasic) {

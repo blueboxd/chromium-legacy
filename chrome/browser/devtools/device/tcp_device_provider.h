@@ -10,6 +10,8 @@
 #include <set>
 
 #include "chrome/browser/devtools/device/android_device_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/host_port_pair.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 
@@ -41,11 +43,12 @@ class TCPDeviceProvider : public AndroidDeviceManager::DeviceProvider {
   ~TCPDeviceProvider() override;
 
   void InitializeHostResolver();
-  void InitializeHostResolverOnUI(network::mojom::HostResolverRequest request);
+  void InitializeHostResolverOnUI(
+      mojo::PendingReceiver<network::mojom::HostResolver> receiver);
 
   HostPortSet targets_;
   base::Closure release_callback_;
-  network::mojom::HostResolverPtr host_resolver_;
+  mojo::Remote<network::mojom::HostResolver> host_resolver_;
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVICE_TCP_DEVICE_PROVIDER_H_

@@ -1396,23 +1396,33 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
   session_->OnProofVerifyDetailsAvailable(details);
 
   EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag(), NetworkIsolationKey()));
+                                SocketTag(), NetworkIsolationKey(),
+                                false /* disable_secure_dns */));
   EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_ENABLED,
-                                 SocketTag(), NetworkIsolationKey()));
+                                 SocketTag(), NetworkIsolationKey(),
+                                 false /* disable_secure_dns */));
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
+                                 SocketTag(), NetworkIsolationKey(),
+                                 true /* disable_secure_dns */));
 #if defined(OS_ANDROID)
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
   EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag1,
-                                 NetworkIsolationKey()));
+                                 NetworkIsolationKey(),
+                                 false /* disable_secure_dns */));
   EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag2,
-                                 NetworkIsolationKey()));
+                                 NetworkIsolationKey(),
+                                 false /* disable_secure_dns */));
 #endif
   EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag(), NetworkIsolationKey()));
+                                SocketTag(), NetworkIsolationKey(),
+                                false /* disable_secure_dns */));
   EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
-                                SocketTag(), NetworkIsolationKey()));
+                                SocketTag(), NetworkIsolationKey(),
+                                false /* disable_secure_dns */));
   EXPECT_FALSE(session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED,
-                                 SocketTag(), NetworkIsolationKey()));
+                                 SocketTag(), NetworkIsolationKey(),
+                                 false /* disable_secure_dns */));
 
   const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test/"));
 
@@ -1423,15 +1433,17 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
         features::kPartitionConnectionsByNetworkIsolationKey);
     EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
                                   SocketTag(),
-                                  NetworkIsolationKey(kOriginFoo, kOriginFoo)));
+                                  NetworkIsolationKey(kOriginFoo, kOriginFoo),
+                                  false /* disable_secure_dns */));
   }
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         features::kPartitionConnectionsByNetworkIsolationKey);
-    EXPECT_FALSE(session_->CanPool(
-        "mail.example.com", PRIVACY_MODE_DISABLED, SocketTag(),
-        NetworkIsolationKey(kOriginFoo, kOriginFoo)));
+    EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
+                                   SocketTag(),
+                                   NetworkIsolationKey(kOriginFoo, kOriginFoo),
+                                   false /* disable_secure_dns */));
   }
 }
 
@@ -1446,9 +1458,9 @@ TEST_P(QuicChromiumClientSessionTest, CanPoolWithNetworkIsolationKey) {
   const NetworkIsolationKey kNetworkIsolationKey1(kOriginFoo, kOriginFoo);
   const NetworkIsolationKey kNetworkIsolationKey2(kOriginBar, kOriginBar);
 
-  session_key_ =
-      QuicSessionKey(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED,
-                     SocketTag(), kNetworkIsolationKey1);
+  session_key_ = QuicSessionKey(
+      kServerHostname, kServerPort, PRIVACY_MODE_DISABLED, SocketTag(),
+      kNetworkIsolationKey1, false /* disable_secure_dns */);
 
   MockQuicData quic_data(version_);
   if (VersionUsesHttp3(version_.transport_version))
@@ -1471,28 +1483,37 @@ TEST_P(QuicChromiumClientSessionTest, CanPoolWithNetworkIsolationKey) {
   session_->OnProofVerifyDetailsAvailable(details);
 
   EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag(), kNetworkIsolationKey1));
+                                SocketTag(), kNetworkIsolationKey1,
+                                false /* disable_secure_dns */));
   EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_ENABLED,
-                                 SocketTag(), kNetworkIsolationKey1));
+                                 SocketTag(), kNetworkIsolationKey1,
+                                 false /* disable_secure_dns */));
 #if defined(OS_ANDROID)
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
   EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag1,
-                                 kNetworkIsolationKey1));
+                                 kNetworkIsolationKey1,
+                                 false /* disable_secure_dns */));
   EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED, tag2,
-                                 kNetworkIsolationKey1));
+                                 kNetworkIsolationKey1,
+                                 false /* disable_secure_dns */));
 #endif
   EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag(), kNetworkIsolationKey1));
+                                SocketTag(), kNetworkIsolationKey1,
+                                false /* disable_secure_dns */));
   EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
-                                SocketTag(), kNetworkIsolationKey1));
+                                SocketTag(), kNetworkIsolationKey1,
+                                false /* disable_secure_dns */));
   EXPECT_FALSE(session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED,
-                                 SocketTag(), kNetworkIsolationKey1));
+                                 SocketTag(), kNetworkIsolationKey1,
+                                 false /* disable_secure_dns */));
 
   EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
-                                 SocketTag(), kNetworkIsolationKey2));
+                                 SocketTag(), kNetworkIsolationKey2,
+                                 false /* disable_secure_dns */));
   EXPECT_FALSE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
-                                 SocketTag(), NetworkIsolationKey()));
+                                 SocketTag(), NetworkIsolationKey(),
+                                 false /* disable_secure_dns */));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
@@ -1533,7 +1554,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), kNoPinsHost);
 
   EXPECT_FALSE(session_->CanPool(kPreloadedPKPHost, PRIVACY_MODE_DISABLED,
-                                 SocketTag(), NetworkIsolationKey()));
+                                 SocketTag(), NetworkIsolationKey(),
+                                 false /* disable_secure_dns */));
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
@@ -1565,7 +1587,8 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   QuicChromiumClientSessionPeer::SetHostname(session_.get(), "www.example.org");
 
   EXPECT_TRUE(session_->CanPool("mail.example.org", PRIVACY_MODE_DISABLED,
-                                SocketTag(), NetworkIsolationKey()));
+                                SocketTag(), NetworkIsolationKey(),
+                                false /* disable_secure_dns */));
 }
 
 TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {

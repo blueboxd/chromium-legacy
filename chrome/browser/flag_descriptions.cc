@@ -1523,6 +1523,13 @@ const char kOopRasterizationDescription[] =
     "Perform Ganesh raster in the GPU Process instead of the renderer.  "
     "Must also enable GPU rasterization";
 
+const char kEnableDeJellyName[] = "Experimental de-jelly effect";
+const char kEnableDeJellyDescription[] =
+    "Enables an experimental effect which attempts to mitigate "
+    "\"jelly-scrolling\". This is an experimental implementation with known "
+    "bugs, visual artifacts, and performance cost. This implementation may be "
+    "removed at any time.";
+
 const char kOverlayNewLayoutName[] = "Overlay new layout";
 const char kOverlayNewLayoutDescription[] =
     "Enables a new layout for the "
@@ -2586,6 +2593,9 @@ const char kOfflineIndicatorChoiceName[] = "Offline indicator choices";
 const char kOfflineIndicatorChoiceDescription[] =
     "Show an offline indicator while offline.";
 
+const char kOfflineHomeName[] = "Offline Home";
+const char kOfflineHomeDescription[] = "Show offline home UI when offline.";
+
 const char kOfflineIndicatorV2Name[] = "Offline indicator V2";
 const char kOfflineIndicatorV2Description[] =
     "Show a persistent offline indicator when offline.";
@@ -3124,6 +3134,11 @@ const char kAggregatedMlAppRankingName[] = "Rank suggested apps with ML.";
 const char kAggregatedMlAppRankingDescription[] =
     "Use the aggregated ML model to rank the suggested apps.";
 
+const char kAggregatedMlSearchRankingName[] = "Rank search results with ML.";
+const char kAggregatedMlSearchRankingDescription[] =
+    "Use the aggregated ML model to rank the non-app search results for "
+    "non-empty queries.";
+
 const char kAllowDisableMouseAccelerationName[] =
     "Allow disabling mouse acceleration";
 const char kAllowDisableMouseAccelerationDescription[] =
@@ -3478,12 +3493,6 @@ const char kFileManagerFeedbackPanelDescription[] =
     "Enable feedback panel in the Files app.";
 const char kFileManagerFeedbackPanelName[] = "Files App. feedback panel";
 
-const char kFileManagerFormatDialogName[] =
-    "Enable enhanced Files App format dialog.";
-const char kFileManagerFormatDialogDescription[] =
-    "Enable the enhanced external media format dialog in Files App, with "
-    "with support for labelling and also NTFS/exFAT filesystems.";
-
 const char kFileManagerPiexWasmName[] = "Enable FilesApp piex-wasm module";
 const char kFileManagerPiexWasmDescription[] =
     "Enable the FilesApp piex-wasm raw image extractor module.";
@@ -3687,7 +3696,9 @@ const char kVaapiWebPImageDecodeAccelerationDescription[] =
     "Enable or disable decode acceleration of WebP images using the VA-API.";
 
 const char kVirtualKeyboardName[] = "Virtual Keyboard";
-const char kVirtualKeyboardDescription[] = "Enable virtual keyboard support.";
+const char kVirtualKeyboardDescription[] =
+    "Always show virtual keyboard regardless of having a physical keyboard "
+    "present";
 
 const char kWakeOnPacketsName[] = "Wake On Packets";
 const char kWakeOnPacketsDescription[] =

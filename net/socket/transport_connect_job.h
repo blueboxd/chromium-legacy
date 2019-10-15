@@ -34,9 +34,11 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   // connection will be aborted with that value.
   TransportSocketParams(
       const HostPortPair& host_port_pair,
+      bool disable_secure_dns,
       const OnHostResolutionCallback& host_resolution_callback);
 
   const HostPortPair& destination() const { return destination_; }
+  bool disable_secure_dns() const { return disable_secure_dns_; }
   const OnHostResolutionCallback& host_resolution_callback() const {
     return host_resolution_callback_;
   }
@@ -46,6 +48,7 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   ~TransportSocketParams();
 
   const HostPortPair destination_;
+  const bool disable_secure_dns_;
   const OnHostResolutionCallback host_resolution_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportSocketParams);

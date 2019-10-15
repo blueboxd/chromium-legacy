@@ -2,8 +2,22 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import './strings.m.js';
+import './signin_shared_css.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SyncConfirmationBrowserProxy, SyncConfirmationBrowserProxyImpl} from './sync_confirmation_browser_proxy.js';
+
 Polymer({
   is: 'sync-confirmation-app',
+
+  _template: html`{__html_template__}`,
 
   behaviors: [
     WebUIListenerBehavior,
@@ -19,7 +33,7 @@ Polymer({
     },
   },
 
-  /** @private {?sync.confirmation.SyncConfirmationBrowserProxy} */
+  /** @private {?SyncConfirmationBrowserProxy} */
   syncConfirmationBrowserProxy_: null,
 
   /** @private {?function(Event)} */
@@ -28,7 +42,7 @@ Polymer({
   /** @override */
   attached: function() {
     this.syncConfirmationBrowserProxy_ =
-        sync.confirmation.SyncConfirmationBrowserProxyImpl.getInstance();
+        SyncConfirmationBrowserProxyImpl.getInstance();
     this.boundKeyDownHandler_ = this.onKeyDown_.bind(this);
     // This needs to be bound to document instead of "this" because the dialog
     // window opens initially, the focus level is only on document, so the key

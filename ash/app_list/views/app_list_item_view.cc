@@ -959,6 +959,11 @@ void AppListItemView::CreateDraggedViewHoverAnimation() {
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {
   bounds->Inset(0, 0, 0, GetAppListConfig().grid_icon_bottom_padding());
   bounds->ClampToCenteredSize(GetAppListConfig().grid_focus_size());
+  // Update the bounds to account for the focus ring width - by default, the
+  // focus ring is painted so the highlight bounds are centered within the
+  // focus ring stroke - this should be overridden so the outer stroke bounds
+  // match the grid focus size set in the app list config.
+  bounds->Inset(gfx::Insets(kFocusRingWidth / 2));
 }
 
 }  // namespace ash

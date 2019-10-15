@@ -3213,9 +3213,9 @@ TEST_P(MainThreadSchedulerImplTest, VirtualTimePauser) {
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
-  WebScopedVirtualTimePauser pauser =
-      scheduler_->CreateWebScopedVirtualTimePauser(
-          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
+  WebScopedVirtualTimePauser pauser(
+      scheduler_.get(),
+      WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant, "test");
 
   base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->Now();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
@@ -3234,9 +3234,9 @@ TEST_P(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
-  WebScopedVirtualTimePauser pauser =
-      scheduler_->CreateWebScopedVirtualTimePauser(
-          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+  WebScopedVirtualTimePauser pauser(
+      scheduler_.get(),
+      WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant, "test");
 
   base::TimeTicks before = scheduler_->GetVirtualTimeDomain()->Now();
   pauser.PauseVirtualTime();
@@ -3254,9 +3254,9 @@ TEST_P(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
-  WebScopedVirtualTimePauser pauser =
-      scheduler_->CreateWebScopedVirtualTimePauser(
-          "test", WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+  WebScopedVirtualTimePauser pauser(
+      scheduler_.get(),
+      WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant, "test");
 
   // Test will pass if the queue without virtual is the last one in the
   // iteration order. Create 100 of them and ensure that it is created in the

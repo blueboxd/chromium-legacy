@@ -77,6 +77,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableFuzzyAppSearch;
 // that optionally gets scaled down).
 ASH_PUBLIC_EXPORT extern const base::Feature kScalableAppList;
 
+// Enables using aggregated model in ranking non-app results for
+// non empty queries.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlSearchRanking;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
@@ -95,6 +99,7 @@ bool ASH_PUBLIC_EXPORT IsSearchBoxSelectionEnabled();
 bool ASH_PUBLIC_EXPORT IsAggregatedMlAppRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsScalableAppListEnabled();
 bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();
+bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

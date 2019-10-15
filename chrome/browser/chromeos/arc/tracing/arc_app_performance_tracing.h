@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -38,6 +39,12 @@ class ArcAppPerformanceTracing : public KeyedService,
                                  public aura::WindowObserver,
                                  public ArcAppListPrefs::Observer {
  public:
+  using ResultCallback = base::OnceCallback<void(bool success,
+                                                 double fps,
+                                                 double commit_deviation,
+                                                 double render_quality)>;
+  using CustomSessionReadyCallback = base::RepeatingCallback<void()>;
+
   ArcAppPerformanceTracing(content::BrowserContext* context,
                            ArcBridgeService* bridge);
   ~ArcAppPerformanceTracing() override;
@@ -46,13 +53,22 @@ class ArcAppPerformanceTracing : public KeyedService,
   // or nullptr if the browser |context| is not allowed to use ARC++.
   static ArcAppPerformanceTracing* GetForBrowserContext(
       content::BrowserContext* context);
+  static ArcAppPerformanceTracing* GetForBrowserContextForTesting(
+      content::BrowserContext* context);
 
   static void SetFocusAppForTesting(const std::string& package_name,
                                     const std::string& activity,
                                     const std::string& category);
+  void SetCustomSessionReadyCallbackForTesting(
+      CustomSessionReadyCallback callback);
 
   // KeyedService:
   void Shutdown() override;
+
+  // Starts custom tracing. Returns true if tracing was successfully started.
+  bool StartCustomTracing();
+  // Stops custom tracing and returns tracing results.
+  void StopCustomTracing(ResultCallback result_callback);
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,
@@ -75,11 +91,12 @@ class ArcAppPerformanceTracing : public KeyedService,
   // Marks that |category| is reported in the current user's session.
   void SetReported(const std::string& category);
 
-  // Sets different tracing |period| for testing.
-  void SetTracingPeriodForTesting(const base::TimeDelta& period);
-
   // Returns active tracing session or nullptr.
   ArcAppPerformanceTracingSession* session() { return session_.get(); }
+
+  // Returns currently active ARC window or null. It may or may not be currently
+  // profiled.
+  aura::Window* active_window() { return arc_active_window_; }
 
  private:
   // May be start tracing session if all conditions are met. Window creating is
@@ -119,9 +136,8 @@ class ArcAppPerformanceTracing : public KeyedService,
   // Keeps current active tracing session associated with |arc_active_window_|.
   std::unique_ptr<ArcAppPerformanceTracingSession> session_;
 
-  // Defines the period to capture tracing results. Can be overwritten for
-  // testing.
-  base::TimeDelta tracing_period_ = base::TimeDelta::FromSeconds(15);
+  // Callback to call when custom session is ready for testing.
+  CustomSessionReadyCallback custom_session_ready_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppPerformanceTracing);
 };

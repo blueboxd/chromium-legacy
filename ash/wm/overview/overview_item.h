@@ -118,6 +118,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   void OnSelectorItemDragStarted(OverviewItem* item);
   void OnSelectorItemDragEnded(bool snap);
 
+  // Shows/Hides window item during window dragging. Used when swiping up a
+  // window from shelf.
+  void SetVisibleDuringWindowDragging(bool visible);
+
   ScopedOverviewTransformWindow::GridWindowFillMode GetWindowDimensionsType()
       const;
 

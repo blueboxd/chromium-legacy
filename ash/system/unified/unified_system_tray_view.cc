@@ -565,20 +565,26 @@ void UnifiedSystemTrayView::OnWillChangeFocus(views::View* before,
 
 void UnifiedSystemTrayView::OnDidChangeFocus(views::View* before,
                                              views::View* now) {
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    views::View* first_view = GetFirstFocusableChild();
-    views::View* last_view = GetLastFocusableChild();
+  if (!features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
 
-    bool focused_out = false;
-    if (before == last_view && now == first_view)
-      focused_out = controller_->FocusOut(false);
-    else if (before == first_view && now == last_view)
-      focused_out = controller_->FocusOut(true);
+  if (feature_pods_container_->Contains(now)) {
+    feature_pods_container_->EnsurePageWithButton(
+        static_cast<FeaturePodButton*>(now));
+  }
 
-    if (focused_out) {
-      GetFocusManager()->ClearFocus();
-      GetFocusManager()->SetStoredFocusView(nullptr);
-    }
+  views::View* first_view = GetFirstFocusableChild();
+  views::View* last_view = GetLastFocusableChild();
+
+  bool focused_out = false;
+  if (before == last_view && now == first_view)
+    focused_out = controller_->FocusOut(false);
+  else if (before == first_view && now == last_view)
+    focused_out = controller_->FocusOut(true);
+
+  if (focused_out) {
+    GetFocusManager()->ClearFocus();
+    GetFocusManager()->SetStoredFocusView(nullptr);
   }
 }
 

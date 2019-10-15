@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -45,7 +45,7 @@ class ResolveHostClientImpl : public network::ResolveHostClientBase {
   void OnConnectionError();
 
  private:
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   ResolveHostCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResolveHostClientImpl);

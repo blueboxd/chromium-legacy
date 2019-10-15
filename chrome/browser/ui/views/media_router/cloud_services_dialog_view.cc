@@ -74,14 +74,6 @@ base::string16 CloudServicesDialogView::GetWindowTitle() const {
       IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE);
 }
 
-base::string16 CloudServicesDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK
-          ? IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_ENABLE
-          : IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_CANCEL);
-}
-
 int CloudServicesDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
@@ -110,6 +102,12 @@ CloudServicesDialogView::CloudServicesDialogView(views::View* anchor_view,
                                                  Browser* browser)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_ENABLE));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_CANCEL));
   set_close_on_deactivate(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }

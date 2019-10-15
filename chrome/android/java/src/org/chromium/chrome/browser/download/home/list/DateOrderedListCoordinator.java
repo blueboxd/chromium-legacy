@@ -118,7 +118,7 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
 
         mStorageCoordinator = new StorageCoordinator(context, mMediator.getFilterSource());
 
-        mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
+        mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource(), config);
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
         mFilterCoordinator.addObserver(filterObserver);
         mFilterCoordinator.addObserver(mEmptyCoordinator);

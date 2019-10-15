@@ -297,6 +297,22 @@ GURL GetTransformedURL(const RequestParams& params,
   return params.url->ReplaceComponents(replacements);
 }
 
+bool ShouldCollapseResourceType(flat_rule::ElementType type) {
+  // TODO(crbug.com/848842): Add support for other element types like
+  // OBJECT.
+  return type == flat_rule::ElementType_IMAGE ||
+         type == flat_rule::ElementType_SUBDOCUMENT;
+}
+
+// Upgrades the url's scheme to HTTPS.
+GURL GetUpgradedUrl(const GURL& url) {
+  DCHECK(url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kFtpScheme));
+
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(url::kHttpsScheme);
+  return url.ReplaceComponents(replacements);
+}
+
 }  // namespace
 
 RequestParams::RequestParams(const WebRequestInfo& info)
@@ -343,12 +359,87 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
 
   // Using WrapUnique instead of make_unique since this class has a private
   // constructor.
-  *matcher = base::WrapUnique(new RulesetMatcher(
-      std::move(ruleset_data), source.id(), source.priority()));
+  *matcher = base::WrapUnique(new RulesetMatcher(std::move(ruleset_data),
+                                                 source.id(), source.priority(),
+                                                 source.extension_id()));
   return kLoadSuccess;
 }
 
 RulesetMatcher::~RulesetMatcher() = default;
+
+base::Optional<RequestAction> RulesetMatcher::GetBlockOrCollapseAction(
+    const RequestParams& params) const {
+  const flat_rule::UrlRule* rule =
+      GetMatchingRule(params, flat::ActionIndex_block);
+  if (!rule)
+    return base::nullopt;
+
+  RequestAction action = ShouldCollapseResourceType(params.element_type)
+                             ? RequestAction(RequestAction::Type::COLLAPSE)
+                             : RequestAction(RequestAction::Type::BLOCK);
+
+  action.extension_id = extension_id_;
+  return action;
+}
+
+base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(
+    const RequestParams& params) const {
+  GURL redirect_rule_url;
+  const flat_rule::UrlRule* redirect_rule =
+      GetRedirectRule(params, &redirect_rule_url);
+
+  if (!redirect_rule)
+    return base::nullopt;
+
+  RequestAction redirect_action(RequestAction::Type::REDIRECT);
+  redirect_action.extension_id = extension_id_;
+  redirect_action.redirect_url = std::move(redirect_rule_url);
+
+  return redirect_action;
+}
+
+base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
+    const RequestParams& params) const {
+  const flat_rule::UrlRule* upgrade_rule = GetUpgradeRule(params);
+
+  if (!upgrade_rule)
+    return base::nullopt;
+
+  RequestAction upgrade_action(RequestAction::Type::REDIRECT);
+  upgrade_action.extension_id = extension_id_;
+  upgrade_action.redirect_url = GetUpgradedUrl(*params.url);
+
+  return upgrade_action;
+}
+
+base::Optional<RequestAction>
+RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
+    const RequestParams& params) const {
+  GURL redirect_rule_url;
+  const flat_rule::UrlRule* redirect_rule =
+      GetRedirectRule(params, &redirect_rule_url);
+  const flat_rule::UrlRule* upgrade_rule = GetUpgradeRule(params);
+
+  if (!redirect_rule && !upgrade_rule)
+    return base::nullopt;
+
+  GURL highest_priority_url;
+  if (!upgrade_rule) {
+    highest_priority_url = std::move(redirect_rule_url);
+  } else if (!redirect_rule) {
+    highest_priority_url = GetUpgradedUrl(*params.url);
+  } else {
+    highest_priority_url = upgrade_rule->priority() > redirect_rule->priority()
+                               ? GetUpgradedUrl(*params.url)
+                               : std::move(redirect_rule_url);
+  }
+
+  RequestAction action(RequestAction::Type::REDIRECT);
+  action.extension_id = extension_id_;
+  action.redirect_url = std::move(highest_priority_url);
+
+  return action;
+}
 
 uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
                                              uint8_t ignored_mask) const {
@@ -390,6 +481,19 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
   DCHECK(!(mask & ignored_mask));
   return mask;
 }
+
+RulesetMatcher::RulesetMatcher(std::string ruleset_data,
+                               size_t id,
+                               size_t priority,
+                               const ExtensionId& extension_id)
+    : ruleset_data_(std::move(ruleset_data)),
+      root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
+      matchers_(GetMatchers(root_)),
+      metadata_list_(root_->extension_metadata()),
+      id_(id),
+      priority_(priority),
+      extension_id_(extension_id),
+      is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(*root_)) {}
 
 const flat_rule::UrlRule* RulesetMatcher::GetRedirectRule(
     const RequestParams& params,
@@ -437,17 +541,6 @@ const flat_rule::UrlRule* RulesetMatcher::GetUpgradeRule(
                                FindRuleStrategy::kHighestPriority)
              : nullptr;
 }
-
-RulesetMatcher::RulesetMatcher(std::string ruleset_data,
-                               size_t id,
-                               size_t priority)
-    : ruleset_data_(std::move(ruleset_data)),
-      root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
-      matchers_(GetMatchers(root_)),
-      metadata_list_(root_->extension_metadata()),
-      id_(id),
-      priority_(priority),
-      is_extra_headers_matcher_(IsExtraHeadersMatcherInternal(*root_)) {}
 
 const flat_rule::UrlRule* RulesetMatcher::GetMatchingRule(
     const RequestParams& params,

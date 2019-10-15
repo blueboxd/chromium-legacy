@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -177,6 +178,43 @@ TEST_F(AwMetricsServiceClientTest, TestCannotForceEnableMetricsIfAppOptsOut) {
 
   ASSERT_FALSE(client->IsReportingEnabled());
   ASSERT_FALSE(client->IsRecordingActive());
+}
+
+// TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has
+// been persisted for one or two milestones.
+TEST_F(AwMetricsServiceClientTest, TestPreferPersistedInstallDate) {
+  base::HistogramTester histogram_tester;
+  auto prefs = CreateTestPrefs();
+  int64_t install_date = 12345;
+  prefs->SetInt64(metrics::prefs::kInstallDate, install_date);
+  auto client = CreateAndInitTestClient(prefs.get());
+  ASSERT_EQ(install_date, prefs->GetInt64(metrics::prefs::kInstallDate));
+
+  // Verify the histogram.
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.BackfillInstallDate",
+      BackfillInstallDate::kValidInstallDatePref, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.BackfillInstallDate", 1);
+}
+
+// TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has
+// been persisted for one or two milestones.
+TEST_F(AwMetricsServiceClientTest, TestGetInstallDateFromJavaIfMissing) {
+  base::HistogramTester histogram_tester;
+  auto prefs = CreateTestPrefs();
+  auto client = CreateAndInitTestClient(prefs.get());
+  // All we can safely assert is the install time is set, since checking the
+  // actual time is racy (ex. in the unlikely scenario if this test executes in
+  // the same millisecond as when the package was installed).
+  ASSERT_TRUE(prefs->HasPrefPath(metrics::prefs::kInstallDate));
+
+  // Verify the histogram.
+  histogram_tester.ExpectBucketCount(
+      "Android.WebView.Metrics.BackfillInstallDate",
+      BackfillInstallDate::kPersistedPackageManagerInstallDate, 1);
+  histogram_tester.ExpectTotalCount(
+      "Android.WebView.Metrics.BackfillInstallDate", 1);
 }
 
 }  // namespace android_webview

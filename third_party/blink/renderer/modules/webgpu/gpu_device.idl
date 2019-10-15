@@ -29,7 +29,7 @@
     GPUQueue getQueue();
 
     void pushErrorScope(GPUErrorFilter filter);
-    [CallWith=ScriptState, RaisesException] Promise<GPUError?> popErrorScope();
+    [CallWith=ScriptState] Promise<GPUError?> popErrorScope();
 
     attribute EventHandler onuncapturederror;
 };

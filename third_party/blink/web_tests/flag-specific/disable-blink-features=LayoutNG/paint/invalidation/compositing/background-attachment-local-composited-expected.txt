@@ -17,7 +17,6 @@
       "bounds": [400, 2000],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "scrollPosition": [0, 1600],
       "paintInvalidations": [
         {
           "object": "Scrolling background of LayoutBlockFlow DIV id='container'",

@@ -5,8 +5,6 @@
 import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("dom") {
-  split_count = 5
-
   sources = [
     "abort_controller.cc",
     "abort_controller.h",

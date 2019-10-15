@@ -54,6 +54,7 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenStickyKeysEnabled, key::kStickyKeysEnabled},
     {key::kDeviceLoginScreenKeyboardFocusHighlightEnabled,
      key::kKeyboardFocusHighlightEnabled},
+    {key::kDeviceLoginScreenScreenMagnifierType, key::kScreenMagnifierType},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

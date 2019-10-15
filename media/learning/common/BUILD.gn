@@ -24,8 +24,6 @@ component("common") {
   defines = [ "IS_LEARNING_COMMON_IMPL" ]
 
   sources = [
-    "experiment_helper.cc",
-    "experiment_helper.h",
     "feature_dictionary.cc",
     "feature_dictionary.h",
     "feature_library.cc",
@@ -52,7 +50,6 @@ component("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "experiment_helper_unittest.cc",
     "feature_dictionary_unittest.cc",
     "labelled_example_unittest.cc",
     "media_learning_tasks_unittest.cc",

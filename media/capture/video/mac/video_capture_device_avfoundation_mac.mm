@@ -344,7 +344,7 @@ void ExtractBaseAddressAndLength(char** base_address,
   frameHeight_ = height;
   frameRate_ = frameRate;
 
-  FourCharCode best_fourcc = kCVPixelFormatType_422YpCbCr8;
+  FourCharCode best_fourcc = kCMPixelFormat_422YpCbCr8_yuvs;
   const bool prefer_mjpeg =
       width > kMjpegWidthThreshold || height > kMjpegHeightThreshold;
   for (AVCaptureDeviceFormat* format in captureDevice_.formats) {

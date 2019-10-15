@@ -351,6 +351,7 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
 }
 
 bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
+                                               float scroll_x,
                                                float scroll_y) {
   if (IsAnimating())
     return false;
@@ -363,7 +364,7 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 
   DCHECK(display_.is_valid());
 
-  OnDragContinued(location, scroll_y);
+  OnDragContinued(location, scroll_x, scroll_y);
   return true;
 }
 
@@ -978,9 +979,10 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
 }
 
 void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location,
+                                                 float scroll_x,
                                                  float scroll_y) {
   if (mode_ == Mode::kDragWindowToHomeOrOverview) {
-    window_drag_controller_->Drag(location, scroll_y);
+    window_drag_controller_->Drag(location, scroll_x, scroll_y);
   } else {
     HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
     DCHECK(home_screen_delegate);

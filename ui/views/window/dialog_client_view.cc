@@ -318,10 +318,6 @@ int DialogClientView::GetExtraViewSpacing() const {
   if (!ShouldShow(extra_view_) || !(ok_button_ || cancel_button_))
     return 0;
 
-  int extra_view_padding = 0;
-  if (GetDialogDelegate()->GetExtraViewPadding(&extra_view_padding))
-    return extra_view_padding;
-
   return LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 }

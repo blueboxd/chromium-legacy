@@ -19,7 +19,7 @@ This layer should be composited.
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 6
+      "transform": 4
     }
   ],
   "transforms": [
@@ -39,21 +39,7 @@ This layer should be composited.
     },
     {
       "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [18, 394, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "renderingContext": 1
-    },
-    {
-      "id": 5,
-      "parent": 4,
+      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -64,8 +50,8 @@ This layer should be composited.
       "renderingContext": 1
     },
     {
-      "id": 6,
-      "parent": 5,
+      "id": 4,
+      "parent": 3,
       "transform": [
         [0.984807753012208, 0, -0.17364817766693, 0],
         [0, 1, 0, 0],

@@ -31,20 +31,20 @@
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 8
+      "transform": 7
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='container'",
       "position": [20, 10],
       "bounds": [60, 70],
-      "transform": 9
+      "transform": 8
     },
     {
       "name": "LayoutBlockFlow DIV class='box'",
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 12
+      "transform": 10
     }
   ],
   "transforms": [
@@ -97,11 +97,12 @@
     },
     {
       "id": 6,
+      "parent": 5,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [28, 220, 0, 1]
+        [22, 22, 0, 1]
       ]
     },
     {
@@ -111,40 +112,21 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [22, 22, 0, 1]
-      ]
-    },
-    {
-      "id": 8,
-      "parent": 7,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
         [0, 0, 1, 1]
       ]
     },
     {
+      "id": 8,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [220, 220, 0, 1]
+      ]
+    },
+    {
       "id": 9,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [220, 220, 0, 1]
-      ]
-    },
-    {
-      "id": 10,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [220, 220, 0, 1]
-      ]
-    },
-    {
-      "id": 11,
-      "parent": 10,
+      "parent": 8,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -153,8 +135,8 @@
       ]
     },
     {
-      "id": 12,
-      "parent": 11,
+      "id": 10,
+      "parent": 9,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

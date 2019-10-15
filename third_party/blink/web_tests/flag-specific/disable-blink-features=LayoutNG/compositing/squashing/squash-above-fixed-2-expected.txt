@@ -52,7 +52,6 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
       "bounds": [785, 4050],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 80],
       "transform": 1
     },
     {
@@ -74,7 +73,7 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
       "bounds": [200, 4000],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -89,16 +88,7 @@ CASE 2, scrolling y to 80, the "container" element should remain positioned with
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -80, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

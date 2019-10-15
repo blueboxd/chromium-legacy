@@ -69,6 +69,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnDuplicatePacket(quic::QuicPacketNumber packet_number) override;
   void OnProtocolVersionMismatch(quic::ParsedQuicVersion version) override;
   void OnPacketHeader(const quic::QuicPacketHeader& header) override;
+  void OnPathChallengeFrame(const quic::QuicPathChallengeFrame& frame) override;
+  void OnPathResponseFrame(const quic::QuicPathResponseFrame& frame) override;
   void OnCryptoFrame(const quic::QuicCryptoFrame& frame) override;
   void OnStopSendingFrame(const quic::QuicStopSendingFrame& frame) override;
   void OnStreamsBlockedFrame(

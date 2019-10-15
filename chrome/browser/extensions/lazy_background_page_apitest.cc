@@ -301,9 +301,10 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
   EXPECT_FALSE(IsBackgroundPageAlive(last_loaded_extension_id()));
 }
 
+// Flaky. https://crbug.com/1006634
 // Tests that the lazy background page stays alive until all network requests
 // are complete.
-IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_WaitForRequest) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LazyBackgroundObserver page_complete;

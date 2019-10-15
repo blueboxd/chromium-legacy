@@ -492,7 +492,8 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   // ProfileIOData::IsHandledProtocol().
   // TODO(mmenke): Find a better way of handling tracking supported schemes.
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  network_context_params->enable_ftp_url_support = true;
+  network_context_params->enable_ftp_url_support =
+      base::FeatureList::IsEnabled(features::kEnableFtp);
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());

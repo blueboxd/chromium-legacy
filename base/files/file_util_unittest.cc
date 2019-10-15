@@ -1015,7 +1015,7 @@ TEST_F(FileUtilTest, ChangeDirectoryPermissionsAndEnumerate) {
   EXPECT_EQ(1, c2.size());
 
   // Delete the file.
-  EXPECT_TRUE(DeleteFile(subdir_path, true));
+  EXPECT_TRUE(DeleteFileRecursively(subdir_path));
   EXPECT_FALSE(PathExists(subdir_path));
 }
 
@@ -1395,7 +1395,7 @@ TEST_F(FileUtilTest, DeleteNonExistent) {
 
   EXPECT_TRUE(DeleteFile(non_existent, false));
   ASSERT_FALSE(PathExists(non_existent));
-  EXPECT_TRUE(DeleteFile(non_existent, true));
+  EXPECT_TRUE(DeleteFileRecursively(non_existent));
   ASSERT_FALSE(PathExists(non_existent));
 }
 
@@ -1406,7 +1406,7 @@ TEST_F(FileUtilTest, DeleteNonExistentWithNonExistentParent) {
 
   EXPECT_TRUE(DeleteFile(non_existent, false));
   ASSERT_FALSE(PathExists(non_existent));
-  EXPECT_TRUE(DeleteFile(non_existent, true));
+  EXPECT_TRUE(DeleteFileRecursively(non_existent));
   ASSERT_FALSE(PathExists(non_existent));
 }
 
@@ -1426,7 +1426,7 @@ TEST_F(FileUtilTest, DeleteFile) {
   ASSERT_TRUE(PathExists(file_name));
 
   // Make sure it's deleted
-  EXPECT_TRUE(DeleteFile(file_name, true));
+  EXPECT_TRUE(DeleteFileRecursively(file_name));
   EXPECT_FALSE(PathExists(file_name));
 }
 
@@ -1482,7 +1482,7 @@ TEST_F(FileUtilTest, DeleteWildCard) {
   EXPECT_TRUE(PathExists(subdir_path));
 
   // Delete recursively and make sure all contents are deleted
-  EXPECT_TRUE(DeleteFile(directory_contents, true));
+  EXPECT_TRUE(DeleteFileRecursively(directory_contents));
   EXPECT_FALSE(PathExists(file_name));
   EXPECT_FALSE(PathExists(subdir_path));
 }
@@ -1504,7 +1504,7 @@ TEST_F(FileUtilTest, DeleteNonExistantWildCard) {
   EXPECT_TRUE(PathExists(subdir_path));
 
   // Delete recursively and check nothing got deleted
-  EXPECT_TRUE(DeleteFile(directory_contents, true));
+  EXPECT_TRUE(DeleteFileRecursively(directory_contents));
   EXPECT_TRUE(PathExists(subdir_path));
 }
 #endif
@@ -1560,11 +1560,11 @@ TEST_F(FileUtilTest, DeleteDirRecursive) {
   ASSERT_TRUE(PathExists(subdir_path2));
 
   // Delete recursively and check that the empty dir got deleted
-  EXPECT_TRUE(DeleteFile(subdir_path2, true));
+  EXPECT_TRUE(DeleteFileRecursively(subdir_path2));
   EXPECT_FALSE(PathExists(subdir_path2));
 
   // Delete recursively and check that everything got deleted
-  EXPECT_TRUE(DeleteFile(test_subdir, true));
+  EXPECT_TRUE(DeleteFileRecursively(test_subdir));
   EXPECT_FALSE(PathExists(file_name));
   EXPECT_FALSE(PathExists(subdir_path1));
   EXPECT_FALSE(PathExists(test_subdir));
@@ -1609,7 +1609,7 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
 
   // Delete recursively and check that at least the second file got deleted.
   // This ensures that un-deletable files don't impact those that can be.
-  DeleteFile(test_subdir, true);
+  DeleteFileRecursively(test_subdir);
   EXPECT_FALSE(PathExists(file_name2));
 
 #if defined(OS_LINUX)
@@ -2750,7 +2750,7 @@ TEST_F(FileUtilTest, CreateDirectoryTest) {
   EXPECT_TRUE(PathExists(test_path));
   EXPECT_FALSE(CreateDirectory(test_path));
 
-  EXPECT_TRUE(DeleteFile(test_root, true));
+  EXPECT_TRUE(DeleteFileRecursively(test_root));
   EXPECT_FALSE(PathExists(test_root));
   EXPECT_FALSE(PathExists(test_path));
 
@@ -2797,7 +2797,7 @@ TEST_F(FileUtilTest, DetectDirectoryTest) {
   EXPECT_FALSE(DirectoryExists(test_path));
   EXPECT_TRUE(DeleteFile(test_path, false));
 
-  EXPECT_TRUE(DeleteFile(test_root, true));
+  EXPECT_TRUE(DeleteFileRecursively(test_root));
 }
 
 TEST_F(FileUtilTest, FileEnumeratorTest) {
@@ -2954,13 +2954,13 @@ TEST_F(FileUtilTest, AppendToFile) {
 
   // Create a fresh, empty copy of this directory.
   if (PathExists(data_dir)) {
-    ASSERT_TRUE(DeleteFile(data_dir, true));
+    ASSERT_TRUE(DeleteFileRecursively(data_dir));
   }
   ASSERT_TRUE(CreateDirectory(data_dir));
 
   // Create a fresh, empty copy of this directory.
   if (PathExists(data_dir)) {
-    ASSERT_TRUE(DeleteFile(data_dir, true));
+    ASSERT_TRUE(DeleteFileRecursively(data_dir));
   }
   ASSERT_TRUE(CreateDirectory(data_dir));
   FilePath foobar(data_dir.Append(FILE_PATH_LITERAL("foobar.txt")));
@@ -3470,7 +3470,7 @@ TEST_F(FileUtilTest, TouchFile) {
 
   // Create a fresh, empty copy of this directory.
   if (PathExists(data_dir)) {
-    ASSERT_TRUE(DeleteFile(data_dir, true));
+    ASSERT_TRUE(DeleteFileRecursively(data_dir));
   }
   ASSERT_TRUE(CreateDirectory(data_dir));
 

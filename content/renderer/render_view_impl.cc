@@ -1690,21 +1690,6 @@ void RenderViewImpl::DidUpdateMainFrameLayout() {
   needs_preferred_size_update_ = true;
 }
 
-void RenderViewImpl::NavigateBackForwardSoon(int offset,
-                                             bool has_user_gesture) {
-  history_navigation_virtual_time_pauser_ =
-      RenderThreadImpl::current()
-          ->GetWebMainThreadScheduler()
-          ->CreateWebScopedVirtualTimePauser(
-              "NavigateBackForwardSoon",
-              blink::WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
-  history_navigation_virtual_time_pauser_.PauseVirtualTime();
-}
-
-void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
-  history_navigation_virtual_time_pauser_.UnpauseVirtualTime();
-}
-
 void RenderViewImpl::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,

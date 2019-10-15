@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -1767,8 +1768,8 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
 
   DOMMessageQueue message_queue;
 
-  bool should_wait_flag =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kWaitForDebuggerWebUI);
+  bool should_wait_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kWaitForDebuggerWebUI);
 
   if (should_wait_flag) {
     ExecuteScriptAsync(

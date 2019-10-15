@@ -31,7 +31,7 @@ class VideoAutoFullscreenFrameClient
     return new EmptyWebMediaPlayer();
   }
 
-  void EnterFullscreen(const blink::WebFullscreenOptions&) final {
+  void EnterFullscreen(const blink::FullScreenOptions&) final {
     Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(

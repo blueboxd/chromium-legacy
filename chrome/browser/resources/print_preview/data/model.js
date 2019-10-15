@@ -1259,14 +1259,12 @@ Polymer({
               print_preview.ScalingType.CUSTOM ?
           parseInt(this.getSettingValue('scaling'), 10) :
           100,
+      scalingType: this.getSettingValue(scalingSettingKey),
       pagesPerSheet: this.getSettingValue('pagesPerSheet'),
       dpiHorizontal: (dpi && 'horizontal_dpi' in dpi) ? dpi.horizontal_dpi : 0,
       dpiVertical: (dpi && 'vertical_dpi' in dpi) ? dpi.vertical_dpi : 0,
       dpiDefault: (dpi && 'is_default' in dpi) ? dpi.is_default : false,
       deviceName: destination.id,
-      // TODO(dhoss): Pass the enum in the ticket.
-      fitToPageEnabled: this.getSettingValue(scalingSettingKey) ===
-          print_preview.ScalingType.FIT_TO_PAGE,
       pageWidth: this.pageSize.width,
       pageHeight: this.pageSize.height,
       showSystemDialog: showSystemDialog,

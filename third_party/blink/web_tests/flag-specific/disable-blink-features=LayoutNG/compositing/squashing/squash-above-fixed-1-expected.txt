@@ -29,7 +29,7 @@ CASE 1, original layer tree:
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan')",
       "position": [0, 100],
       "bounds": [200, 300],
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -50,15 +50,6 @@ CASE 1, original layer tree:
         [0, 0, 1, 0],
         [0, 100, 0, 1]
       ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 100, 0, 1]
-      ]
     }
   ]
 }
@@ -71,7 +62,6 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 80],
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-f' class='overlapping lime'",
@@ -105,7 +95,7 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
           "reason": "full layer"
         }
       ],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
@@ -118,7 +108,7 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
           "reason": "full layer"
         }
       ],
-      "transform": 6
+      "transform": 3
     }
   ],
   "transforms": [
@@ -142,35 +132,7 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
     },
     {
       "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -80, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 200, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -80, 0, 1]
-      ]
-    },
-    {
-      "id": 6,
-      "parent": 5,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -189,7 +151,6 @@ CASE 3, scrolling y to 120, no repaints expected:
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 120],
       "transform": 1
     },
     {
@@ -204,13 +165,13 @@ CASE 3, scrolling y to 120, no repaints expected:
       "bounds": [200, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
       "position": [0, 100],
       "bounds": [200, 300],
-      "transform": 6
+      "transform": 3
     }
   ],
   "transforms": [
@@ -234,35 +195,7 @@ CASE 3, scrolling y to 120, no repaints expected:
     },
     {
       "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -120, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 200, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -120, 0, 1]
-      ]
-    },
-    {
-      "id": 6,
-      "parent": 5,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -281,7 +214,6 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 170],
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='paragraph-g' class='overlapping cyan'",
@@ -315,7 +247,7 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
           "reason": "full layer"
         }
       ],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan')",
@@ -328,7 +260,7 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
           "reason": "full layer"
         }
       ],
-      "transform": 6
+      "transform": 3
     }
   ],
   "transforms": [
@@ -352,35 +284,7 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
     },
     {
       "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -170, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 300, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -170, 0, 1]
-      ]
-    },
-    {
-      "id": 6,
-      "parent": 5,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

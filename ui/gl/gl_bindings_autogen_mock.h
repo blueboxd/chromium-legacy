@@ -485,6 +485,7 @@ static void GL_BINDING_CALL Mock_glDepthRange(GLclampd zNear, GLclampd zFar);
 static void GL_BINDING_CALL Mock_glDepthRangef(GLclampf zNear, GLclampf zFar);
 static void GL_BINDING_CALL Mock_glDetachShader(GLuint program, GLuint shader);
 static void GL_BINDING_CALL Mock_glDisable(GLenum cap);
+static void GL_BINDING_CALL Mock_glDisableExtensionANGLE(const char* name);
 static void GL_BINDING_CALL Mock_glDisableVertexAttribArray(GLuint index);
 static void GL_BINDING_CALL
 Mock_glDiscardFramebufferEXT(GLenum target,

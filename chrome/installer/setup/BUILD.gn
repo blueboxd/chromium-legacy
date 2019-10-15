@@ -10,8 +10,6 @@ import("//testing/test.gni")
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-
-  # Use ZUCCHINI since ZUCCHINI_ENABLED is too long a name for setup.rc.
   flags = [ "ZUCCHINI=$use_zucchini" ]
 }
 
@@ -25,13 +23,6 @@ if (is_win) {
       "uninstall.cc",
       "uninstall.h",
     ]
-
-    if (is_chrome_branded) {
-      # The resource compiler can only handle macro functions up to 31 chars
-      # which the buildflag system produces for this. Make a define so we can
-      # toggle off of the enable-basic-printing flag in the .rc file.
-      defines = [ "GOOGLE_CHROME_BRANDING_FOR_RC" ]
-    }
 
     configs -= [ "//build/config/win:console" ]
     configs += [ "//build/config/win:windowed" ]

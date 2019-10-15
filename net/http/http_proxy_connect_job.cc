@@ -664,6 +664,7 @@ int HttpProxyConnectJob::DoQuicProxyCreateSession() {
   return quic_stream_request_->Request(
       proxy_server, quic_version, ssl_params->privacy_mode(),
       kH2QuicTunnelPriority, socket_tag(), params_->network_isolation_key(),
+      ssl_params->GetDirectConnectionParams()->disable_secure_dns(),
       ssl_params->ssl_config().GetCertVerifyFlags(),
       GURL("https://" + proxy_server.ToString()), net_log(),
       &quic_net_error_details_,
@@ -821,7 +822,8 @@ SpdySessionKey HttpProxyConnectJob::CreateSpdySessionKey() const {
       params_->ssl_params()->GetDirectConnectionParams()->destination(),
       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
       SpdySessionKey::IsProxySession::kTrue, socket_tag(),
-      params_->network_isolation_key());
+      params_->network_isolation_key(),
+      params_->ssl_params()->GetDirectConnectionParams()->disable_secure_dns());
 }
 
 }  // namespace net

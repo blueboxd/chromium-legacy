@@ -69,7 +69,8 @@ class LoginApitest : public LoginScreenApitestBase {
   DISALLOW_COPY_AND_ASSIGN(LoginApitest);
 };
 
-IN_PROC_BROWSER_TEST_F(LoginApitest, LaunchManagedGuestSession) {
+// Flaky. https://crbug.com/1014239
+IN_PROC_BROWSER_TEST_F(LoginApitest, DISABLED_LaunchManagedGuestSession) {
   SetUpDeviceLocalAccountPolicy();
   SetUpExtensionAndRunTest(kLaunchManagedGuestSession);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());

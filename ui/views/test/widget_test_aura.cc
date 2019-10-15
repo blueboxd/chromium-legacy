@@ -175,5 +175,8 @@ Widget::Widgets WidgetTest::GetAllWidgets() {
   return all_widgets;
 }
 
+// static
+void WidgetTest::WaitForSystemAppActivation() {}
+
 }  // namespace test
 }  // namespace views

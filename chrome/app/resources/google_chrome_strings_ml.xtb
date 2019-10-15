@@ -49,8 +49,6 @@
 <translation id="2094919256425865063">എന്തായാലും Chrome-ൽ നിന്ന് പുറത്തുകടക്കണോ?</translation>
 <translation id="2120620239521071941">ഇത് ഈ ഉപകരണത്തിൽ നിന്ന് <ph name="ITEMS_COUNT" /> ഇനങ്ങൾ ഇല്ലാതാക്കും. പിന്നീട് നിങ്ങളുടെ വിവരങ്ങൾ വീണ്ടെടുക്കാൻ, <ph name="USER_EMAIL" /> എന്നയാളായി Chrome‌-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />നിലവിലെ ക്രമീകരണം<ph name="END_LINK" /> റിപ്പോർട്ട് ചെയ്‌തുകൊണ്ട് Chrome മികച്ചതാക്കാൻ സഹായിക്കുക</translation>
-<translation id="2128103434102193461">Chrome OS-ന്റെ വിശദാംശങ്ങൾക്ക് <ph name="LINK_BEGIN" />
-      Chrome OS-നെക്കുറിച്ച്<ph name="LINK_END" /> എന്ന പേജ് കാണുക</translation>
 <translation id="2151406531797534936">Chrome ഇപ്പോൾ റീസ്‌റ്റാർട്ട് ചെയ്യുക</translation>
 <translation id="2246246234298806438">ബിൽറ്റ്-ഇൻ PDF വ്യൂവർ കാണുന്നില്ലെങ്കിൽ Google Chrome-ന് പ്രിന്റ് പ്രിവ്യു കാണിക്കാൻ കഴിയില്ല.</translation>
 <translation id="2290014774651636340">Google API കീകൾ നഷ്‌ടമായി. Google Chrome-ന്‍റെ ചില പ്രവർത്തനങ്ങൾ പ്രവർത്തനരഹിതമാകും.</translation>
@@ -202,6 +200,7 @@
 <translation id="7486227612705979895">വിലാസ ബാറിൽ നിർദ്ദേശങ്ങൾ സൃഷ്‌ടിക്കാൻ, Chrome നിങ്ങളുടെ ഡ്രൈവ് ആക്‌സ‌സ് ചെയ്യും</translation>
 <translation id="7531671357096394523">Chrome-ൻ്റെ എല്ലാ പകർപ്പുകളും അവസാനിപ്പിക്കുക.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
+<translation id="7573289029918943991">നിങ്ങളുടെ ഉപകരണം അപ് ടു ഡേറ്റ് ആണോയെന്ന് കാണാൻ <ph name="LINK_BEGIN" />Chrome OS ക്രമീകരണത്തിലേക്ക്<ph name="LINK_END" /> പോവുക</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 ഇനി പിന്തുണയ്‌ക്കാത്തതിനാൽ ഈ കമ്പ്യൂട്ടറിന് ഇനി Google Chrome അപ്‌ഡേറ്റുകൾ സ്വീകരിക്കാനാവില്ല.</translation>
 <translation id="7592736734348559088">നിങ്ങളുടെ അക്കൗണ്ടിന്റെ സൈൻ ഇൻ വിശദാംശങ്ങൾ കാലഹരണപ്പെട്ടതിനാൽ Google Chrome-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല.</translation>
 <translation id="7626032353295482388">Chrome-ലേക്ക് സ്വാഗതം</translation>

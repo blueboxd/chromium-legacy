@@ -44,7 +44,6 @@
     margin-inline-end: 8px;
     margin-inline-start: 12px;
     max-width: var(--favicon-size);
-    overflow: hidden;
     position: relative;
     /* When transitioning to the default visible state, the margin and max-width
      * transitions should finish first, then the opacity should be set to 1.
@@ -162,6 +161,10 @@
 
   :host([blocked_]) #blocked {
     display: block;
+  }
+
+  :host([active][blocked_]) #blocked {
+    display: none;
   }
 
   #titleText {

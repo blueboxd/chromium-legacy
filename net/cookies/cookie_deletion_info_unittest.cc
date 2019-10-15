@@ -4,7 +4,10 @@
 
 #include "net/cookies/cookie_deletion_info.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "net/base/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -84,7 +87,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchSessionControl) {
                                     /*creation=*/base::Time::Now(),
                                     /*expiration=*/base::Time::Max(),
                                     /*last_access=*/base::Time::Now(),
-                                    /*secure=*/false,
+                                    /*secure=*/true,
                                     /*httponly=*/false,
                                     CookieSameSite::NO_RESTRICTION,
                                     CookiePriority::COOKIE_PRIORITY_DEFAULT);
@@ -94,7 +97,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchSessionControl) {
       /*creation=*/base::Time::Now(),
       /*expiration=*/base::Time(),
       /*last_access=*/base::Time::Now(),
-      /*secure=*/false,
+      /*secure=*/true,
       /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
       CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
@@ -119,7 +122,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchHost) {
                                 /*creation=*/base::Time::Now(),
                                 /*expiration=*/base::Time::Max(),
                                 /*last_access=*/base::Time::Now(),
-                                /*secure=*/false,
+                                /*secure=*/true,
                                 /*httponly=*/false,
                                 CookieSameSite::NO_RESTRICTION,
                                 CookiePriority::COOKIE_PRIORITY_DEFAULT);
@@ -129,7 +132,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchHost) {
                               /*creation=*/base::Time::Now(),
                               /*expiration=*/base::Time::Max(),
                               /*last_access=*/base::Time::Now(),
-                              /*secure=*/false,
+                              /*secure=*/true,
                               /*httponly=*/false,
                               CookieSameSite::NO_RESTRICTION,
                               CookiePriority::COOKIE_PRIORITY_DEFAULT);
@@ -160,7 +163,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchName) {
                           /*creation=*/base::Time::Now(),
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
+                          /*secure=*/true,
                           /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie2("cookie2-name", "cookie2-value",
@@ -168,7 +171,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchName) {
                           /*creation=*/base::Time::Now(),
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
+                          /*secure=*/true,
                           /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
@@ -184,7 +187,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchValue) {
                           /*creation=*/base::Time::Now(),
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
+                          /*secure=*/true,
                           /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
   CanonicalCookie cookie2("cookie2-name", "cookie2-value",
@@ -192,7 +195,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchValue) {
                           /*creation=*/base::Time::Now(),
                           /*expiration=*/base::Time::Max(),
                           /*last_access=*/base::Time::Now(),
-                          /*secure=*/false,
+                          /*secure=*/true,
                           /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                           CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
@@ -208,7 +211,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchUrl) {
                          /*creation=*/base::Time::Now(),
                          /*expiration=*/base::Time::Max(),
                          /*last_access=*/base::Time::Now(),
-                         /*secure=*/false,
+                         /*secure=*/true,
                          /*httponly=*/false, CookieSameSite::NO_RESTRICTION,
                          CookiePriority::COOKIE_PRIORITY_DEFAULT);
 
@@ -236,7 +239,7 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoDomainMatchesDomain) {
         /*creation=*/base::Time::FromDoubleT(kTestMinEpoch + 1),
         /*expiration=*/base::Time::Max(),
         /*last_access=*/base::Time::FromDoubleT(kTestMinEpoch + 1),
-        /*secure=*/false,
+        /*secure=*/true,
         /*httponly=*/false,
         /*same_site=*/CookieSameSite::NO_RESTRICTION,
         /*priority=*/CookiePriority::COOKIE_PRIORITY_DEFAULT);
@@ -316,6 +319,40 @@ TEST(CookieDeletionInfoTest, CookieDeletionInfoMatchesDomainList) {
   EXPECT_FALSE(delete_info.Matches(create_cookie("mid.com")));
   EXPECT_FALSE(delete_info.Matches(create_cookie("right.com")));
   EXPECT_FALSE(delete_info.Matches(create_cookie("outside.com")));
+}
+
+// Test that Matches() works regardless of the cookie access semantics (because
+// the IncludeForRequestURL call uses CookieOptions::MakeAllInclusive).
+TEST(CookieDeletionInfoTest, MatchesWithCookieAccessSemantics) {
+  // Cookie with unspecified SameSite.
+  auto cookie =
+      CanonicalCookie::Create(GURL("https://www.example.com"), "cookie=1",
+                              base::Time::Now(), base::nullopt);
+
+  {
+    // With SameSite features off.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
+
+    CookieDeletionInfo delete_info;
+    delete_info.url = GURL("https://www.example.com/path");
+    EXPECT_TRUE(delete_info.Matches(*cookie));  // defaults to UNKNOWN
+    EXPECT_TRUE(delete_info.Matches(*cookie, CookieAccessSemantics::UNKNOWN));
+    EXPECT_TRUE(delete_info.Matches(*cookie, CookieAccessSemantics::LEGACY));
+    EXPECT_TRUE(delete_info.Matches(*cookie, CookieAccessSemantics::NONLEGACY));
+  }
+  {
+    // With SameSite features on.
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
+
+    CookieDeletionInfo delete_info;
+    delete_info.url = GURL("https://www.example.com/path");
+    EXPECT_TRUE(delete_info.Matches(*cookie));  // defaults to UNKNOWN
+    EXPECT_TRUE(delete_info.Matches(*cookie, CookieAccessSemantics::UNKNOWN));
+    EXPECT_TRUE(delete_info.Matches(*cookie, CookieAccessSemantics::LEGACY));
+    EXPECT_TRUE(delete_info.Matches(*cookie, CookieAccessSemantics::NONLEGACY));
+  }
 }
 
 }  // namespace net

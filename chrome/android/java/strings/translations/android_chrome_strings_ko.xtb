@@ -69,12 +69,10 @@
 <translation id="1414981605391750300">Google에 연결하는 중입니다. 잠시만 기다려 주세요...</translation>
 <translation id="1416550906796893042">애플리케이션 버전</translation>
 <translation id="1430915738399379752">인쇄</translation>
-<translation id="1445680696957526815">Chrome의 구성요소가 서로 호환되지 않습니다. Chrome이 업그레이드 중일 수 있으니 몇 분 후에 다시 시도하세요. 문제가 계속되면 Chrome을 제거하고 다시 설치해 보세요.</translation>
 <translation id="1446450296470737166">MIDI 기기의 전체 제어 허용</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> 공유할 수 없음</translation>
 <translation id="145097072038377568">Android 설정에서 사용이 중지됨</translation>
 <translation id="1477626028522505441">서버 문제로 인해 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
-<translation id="1501480321619201731">그룹 삭제</translation>
 <translation id="1506061864768559482">검색엔진</translation>
 <translation id="1513352483775369820">북마크 및 방문 기록</translation>
 <translation id="1513858653616922153">비밀번호 삭제</translation>
@@ -230,7 +228,6 @@
 <translation id="2650751991977523696">파일을 다시 다운로드하시겠습니까?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{오디오 파일 #개}other{오디오 파일 #개}}</translation>
 <translation id="2653659639078652383">제출</translation>
-<translation id="2671423594960767771">그룹 공유</translation>
 <translation id="2677748264148917807">나가기</translation>
 <translation id="2704606927547763573">복사됨</translation>
 <translation id="2707726405694321444">페이지 새로고침</translation>
@@ -260,7 +257,6 @@
 <translation id="2893180576842394309">Google에서 내 방문 기록을 사용하여 Google 검색 및 다른 Google 서비스를 맞춤설정할 수 있습니다.</translation>
 <translation id="2898264748040935573">저장된 비밀번호 수정</translation>
 <translation id="2900528713135656174">일정 만들기</translation>
-<translation id="2902702728133930130">예기치 않은 오류로 인해 Chrome을 시작하지 못했습니다.</translation>
 <translation id="290376772003165898">페이지 언어가 <ph name="LANGUAGE" />가 아닌가요?</translation>
 <translation id="2904414404539560095">탭을 공유할 기기 목록이 전체 높이로 열렸습니다.</translation>
 <translation id="2910701580606108292">사이트에서 보호된 콘텐츠를 재생하도록 허용하기 전에 확인</translation>
@@ -479,7 +475,6 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}other{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}}</translation>
 <translation id="4696983787092045100">기기로 SMS 전송</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" />에서 오프라인으로 보기</translation>
-<translation id="4698413471314543145">Chrome 실행에 필요한 중요한 기능이 없습니다. Chrome 설치가 제대로 완료되지 않았거나 사용 중인 Android 버전과 호환되지 않습니다.</translation>
 <translation id="4699172675775169585">캐시된 이미지 또는 파일</translation>
 <translation id="4714588616299687897">데이터 최대 60% 절약</translation>
 <translation id="4719927025381752090">번역 옵션 제공</translation>

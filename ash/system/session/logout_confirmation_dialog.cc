@@ -37,6 +37,10 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
     LogoutConfirmationController* controller,
     base::TimeTicks logout_time)
     : controller_(controller), logout_time_(logout_time) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON));
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -79,13 +83,6 @@ bool LogoutConfirmationDialog::Accept() {
   UpdateLabel();
   controller_->OnLogoutConfirmed();
   return true;
-}
-
-base::string16 LogoutConfirmationDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON);
-  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 ui::ModalType LogoutConfirmationDialog::GetModalType() const {

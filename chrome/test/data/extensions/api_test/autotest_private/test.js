@@ -497,6 +497,10 @@ var defaultTests = [
           });
     });
   },
+  function arcAppTracingNoArcWindow() {
+    chrome.autotestPrivate.arcAppTracingStart(chrome.test.callbackFail(
+        'Failed to start custom tracing.'));
+  },
 ];
 
 var arcEnabledTests = [
@@ -624,11 +628,63 @@ var policyTests = [
   },
 ];
 
+var arcPerformanceTracingTests = [
+  function arcAppTracingNormal() {
+    chrome.autotestPrivate.arcAppTracingStart(async function() {
+      chrome.test.assertNoLastError();
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+      // We generate 15 frames in test.
+      await sleep(250);
+      chrome.autotestPrivate.arcAppTracingStopAndAnalyze(
+          function(tracing) {
+            chrome.test.assertNoLastError();
+            chrome.test.assertTrue(tracing.success);
+            // FPS is based on real time. Make sure it is positive.
+            chrome.test.assertTrue(tracing.fps > 0);
+            chrome.test.assertTrue(tracing.fps <= 60.0);
+            chrome.test.assertEq(216, Math.trunc(tracing.commitDeviation));
+            chrome.test.assertEq(48, Math.trunc(100.0 * tracing.renderQuality));
+            chrome.test.succeed();
+        });
+    });
+  },
+  function arcAppTracingStopWithoutStart() {
+    chrome.autotestPrivate.arcAppTracingStopAndAnalyze(
+        function(tracing) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertFalse(tracing.success);
+          chrome.test.assertEq(0, tracing.fps);
+          chrome.test.assertEq(0, tracing.commitDeviation);
+          chrome.test.assertEq(0, tracing.renderQuality);
+          chrome.test.succeed();
+        });
+  },
+  function arcAppTracingDoubleStop() {
+    chrome.autotestPrivate.arcAppTracingStart(function() {
+      chrome.test.assertNoLastError();
+      chrome.autotestPrivate.arcAppTracingStopAndAnalyze(
+          function(tracing) {
+            chrome.test.assertNoLastError();
+            chrome.test.assertTrue(tracing.success);
+            chrome.autotestPrivate.arcAppTracingStopAndAnalyze(
+                function(tracing) {
+                  chrome.test.assertNoLastError();
+                  chrome.test.assertFalse(tracing.success);
+                  chrome.test.succeed();
+              });
+        });
+    });
+  },
+];
+
 
 var test_suites = {
   'default': defaultTests,
   'arcEnabled': arcEnabledTests,
-  'enterprisePolicies': policyTests
+  'enterprisePolicies': policyTests,
+  'arcPerformanceTracing': arcPerformanceTracingTests
 };
 
 chrome.test.getConfig(function(config) {

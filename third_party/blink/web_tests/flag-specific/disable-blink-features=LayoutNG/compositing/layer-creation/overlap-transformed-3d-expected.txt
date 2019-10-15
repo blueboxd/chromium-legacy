@@ -58,7 +58,7 @@ After:
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top left')",
       "position": [-100, -100],
       "bounds": [300, 300],
-      "transform": 3
+      "transform": 1
     }
   ],
   "transforms": [
@@ -81,15 +81,6 @@ After:
         [0, 0, -1, 1]
       ],
       "origin": [50, 50]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [108, 108, 0, 1]
-      ]
     }
   ]
 }

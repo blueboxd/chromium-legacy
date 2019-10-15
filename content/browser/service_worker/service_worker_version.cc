@@ -1614,7 +1614,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-  provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
+  provider_host_ = ServiceWorkerProviderHost::CreateForServiceWorker(
       context(), base::WrapRefCounted(this), &provider_info);
 
   auto params = blink::mojom::EmbeddedWorkerStartParams::New();

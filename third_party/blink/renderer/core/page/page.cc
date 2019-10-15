@@ -902,6 +902,10 @@ void Page::SetPageScheduler(std::unique_ptr<PageScheduler> page_scheduler) {
   page_scheduler_ = std::move(page_scheduler);
   // The scheduler should be set before the main frame.
   DCHECK(!main_frame_);
+  history_navigation_virtual_time_pauser_ =
+      page_scheduler_->CreateWebScopedVirtualTimePauser(
+          "HistoryNavigation",
+          WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
 }
 
 bool Page::IsOrdinary() const {

@@ -279,7 +279,8 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
       if (!(alias_key.proxy_server() == key.proxy_server()) ||
           !(alias_key.privacy_mode() == key.privacy_mode()) ||
           !(alias_key.is_proxy_session() == key.is_proxy_session()) ||
-          !(alias_key.network_isolation_key() == key.network_isolation_key())) {
+          !(alias_key.network_isolation_key() == key.network_isolation_key()) ||
+          !(alias_key.disable_secure_dns() == key.disable_secure_dns())) {
         continue;
       }
 
@@ -308,7 +309,8 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
         SpdySessionKey new_key(old_key.host_port_pair(), old_key.proxy_server(),
                                old_key.privacy_mode(),
                                old_key.is_proxy_session(), key.socket_tag(),
-                               old_key.network_isolation_key());
+                               old_key.network_isolation_key(),
+                               old_key.disable_secure_dns());
 
         // If there is already a session with |new_key|, skip this one.
         // It will be found in |aliases_| in a future iteration.
@@ -344,10 +346,10 @@ OnHostResolutionCallbackResult SpdySessionPool::OnHostResolutionComplete(
           }
 
           UnmapKey(*it);
-          SpdySessionKey new_pool_alias_key =
-              SpdySessionKey(it->host_port_pair(), it->proxy_server(),
-                             it->privacy_mode(), it->is_proxy_session(),
-                             key.socket_tag(), it->network_isolation_key());
+          SpdySessionKey new_pool_alias_key = SpdySessionKey(
+              it->host_port_pair(), it->proxy_server(), it->privacy_mode(),
+              it->is_proxy_session(), key.socket_tag(),
+              it->network_isolation_key(), it->disable_secure_dns());
           MapKeyToAvailableSession(new_pool_alias_key, available_session);
           auto old_it = it;
           ++it;

@@ -2314,14 +2314,6 @@ void MainThreadSchedulerImpl::SetRendererProcessType(
   main_thread_only().process_type = type;
 }
 
-WebScopedVirtualTimePauser
-MainThreadSchedulerImpl::CreateWebScopedVirtualTimePauser(
-    const char* name,
-    WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
-  return WebScopedVirtualTimePauser(this, duration,
-                                    WebString(WTF::String(name)));
-}
-
 PendingUserInputInfo MainThreadSchedulerImpl::GetPendingUserInputInfo() const {
   base::AutoLock lock(any_thread_lock_);
   return any_thread().pending_input_monitor.Info();

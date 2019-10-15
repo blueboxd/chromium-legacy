@@ -27,11 +27,10 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
-      "position": [18, 10],
       "bounds": [210, 210],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 3
     }
   ],
   "transforms": [
@@ -52,6 +51,16 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [15, 15, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 10, 0, 1]
       ]
     }
   ]

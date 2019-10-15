@@ -4,6 +4,7 @@
 
 #include "net/http/http_auth_handler_negotiate.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -51,7 +52,11 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
                                      public WithTaskEnvironment {
  public:
   void SetUp() override {
+#if defined(OS_WIN)
+    auth_library_ = new MockAuthLibrary(const_cast<wchar_t*>(NEGOSSP_NAME));
+#else
     auth_library_ = new MockAuthLibrary();
+#endif
     resolver_.reset(new MockHostResolver());
     resolver_->rules_map()[HostResolverSource::ANY]->AddIPLiteralRule(
         "alias", "10.0.0.2", "canonical.example.com");
@@ -78,8 +83,8 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
     security_package_.reset(new SecPkgInfoW);
     memset(security_package_.get(), 0x0, sizeof(SecPkgInfoW));
     security_package_->cbMaxToken = 1337;
-    mock_library->ExpectQuerySecurityPackageInfo(
-        L"Negotiate", SEC_E_OK, security_package_.get());
+    mock_library->ExpectQuerySecurityPackageInfo(SEC_E_OK,
+                                                 security_package_.get());
 #else
     // Copied from an actual transaction!
     static const char kAuthResponse[] =
@@ -455,10 +460,11 @@ TEST_F(HttpAuthHandlerNegotiateTest, OverrideAuthSystem) {
         return std::make_unique<TestAuthSystem>();
       }));
   negotiate_factory->set_http_auth_preferences(http_auth_preferences());
-#if !defined(OS_ANDROID)
-  auto auth_library = std::make_unique<MockAuthLibrary>();
-  SetupMocks(auth_library.get());
-  negotiate_factory->set_library(std::move(auth_library));
+#if defined(OS_WIN)
+  negotiate_factory->set_library(
+      std::make_unique<MockAuthLibrary>(NEGOSSP_NAME));
+#elif !defined(OS_ANDROID)
+  negotiate_factory->set_library(std::make_unique<MockAuthLibrary>());
 #endif
 
   GURL gurl("http://www.example.com");

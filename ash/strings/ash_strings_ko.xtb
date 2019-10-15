@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">잠시 쉬어 가세요.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> 활성화</translation>
+<translation id="6878400149835617132">바로가기 사용 중지됨</translation>
 <translation id="6910714959251846841">업데이트하려면 기기에서 파워워시를 실행해야 합니다. 최신 <ph name="SYSTEM_APP_NAME" /> 업데이트에 관해 자세히 알아보세요.</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="6919251195245069855">스마트 카드를 인식할 수 없습니다. 다시 시도해 보세요.</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="7377169924702866686">Caps Lock이 켜져 있습니다.</translation>
 <translation id="7378594059915113390">미디어 컨트롤</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />초</translation>
 <translation id="7398254312354928459">네트워크 연결 전환됨</translation>
 <translation id="7405710164030118432">기기의 잠금을 해제하려면 Family Link 부모 액세스 코드를 입력하세요.</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>

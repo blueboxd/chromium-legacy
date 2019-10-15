@@ -11,7 +11,7 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/native_file_system_permission_context.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
@@ -24,11 +24,7 @@ class BrowserContext;
 // Chrome implementation of NativeFileSystemPermissionContext. Currently
 // implements a single per-origin write permission state.
 //
-// All methods should be called on the same sequence, except for the
-// constructor, destructor, and GetPermissionGrantsFromUIThread method.
-//
-// TODO(mek): Reconsider if this class should just be UI-thread only, avoiding
-// the need to make this ref-counted.
+// All methods must be called on the UI thread.
 //
 // This class does not inherit from ChooserContextBase because the model this
 // API uses doesn't really match what ChooserContextBase has to provide. The
@@ -40,10 +36,11 @@ class BrowserContext;
 // ChooserContextBase.
 class ChromeNativeFileSystemPermissionContext
     : public content::NativeFileSystemPermissionContext,
-      public RefcountedKeyedService {
+      public KeyedService {
  public:
   explicit ChromeNativeFileSystemPermissionContext(
       content::BrowserContext* context);
+  ~ChromeNativeFileSystemPermissionContext() override;
 
   class WritePermissionGrantImpl
       : public content::NativeFileSystemPermissionGrant {
@@ -65,7 +62,7 @@ class ChromeNativeFileSystemPermissionContext
     };
 
     WritePermissionGrantImpl(
-        scoped_refptr<ChromeNativeFileSystemPermissionContext> context,
+        base::WeakPtr<ChromeNativeFileSystemPermissionContext> context,
         const url::Origin& origin,
         const Key& key,
         bool is_directory);
@@ -113,7 +110,7 @@ class ChromeNativeFileSystemPermissionContext
 
     SEQUENCE_CHECKER(sequence_checker_);
 
-    scoped_refptr<ChromeNativeFileSystemPermissionContext> const context_;
+    base::WeakPtr<ChromeNativeFileSystemPermissionContext> const context_;
     const url::Origin origin_;
     const Key key_;
     const bool is_directory_;
@@ -161,6 +158,9 @@ class ChromeNativeFileSystemPermissionContext
       int frame_id,
       base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
 
+  // Returns a snapshot of the currently granted permissions.
+  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from this
+  // method when grants stop being scoped to a frame.
   struct Grants {
     Grants();
     ~Grants();
@@ -174,17 +174,6 @@ class ChromeNativeFileSystemPermissionContext
                              int process_id,
                              int frame_id);
 
-  // This method must be called on the UI thread, and calls the callback with a
-  // snapshot of the currently granted permissions after looking them up.
-  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from this
-  // method when grants stop being scoped to a frame.
-  static void GetPermissionGrantsFromUIThread(
-      content::BrowserContext* browser_context,
-      const url::Origin& origin,
-      int process_id,
-      int frame_id,
-      base::OnceCallback<void(Grants)> callback);
-
   // Revokes directory read access for the given origin in the given tab.
   void RevokeDirectoryReadGrants(const url::Origin& origin,
                                  int process_id,
@@ -196,21 +185,13 @@ class ChromeNativeFileSystemPermissionContext
 
   // Revokes write access and directory read access for the given origin in the
   // given tab.
-  static void RevokeGrantsForOriginAndTabFromUIThread(
-      content::BrowserContext* browser_context,
-      const url::Origin& origin,
-      int process_id,
-      int frame_id);
-
-  // RefcountedKeyedService:
-  void ShutdownOnUIThread() override;
+  void RevokeGrantsForOriginAndTab(const url::Origin& origin,
+                                   int process_id,
+                                   int frame_id);
 
   HostContentSettingsMap* content_settings() { return content_settings_.get(); }
 
  private:
-  // Destructor is private because this class is refcounted.
-  ~ChromeNativeFileSystemPermissionContext() override;
-
   void PermissionGrantDestroyed(WritePermissionGrantImpl* grant);
 
   void DidConfirmSensitiveDirectoryAccess(
@@ -230,6 +211,8 @@ class ChromeNativeFileSystemPermissionContext
 
   scoped_refptr<HostContentSettingsMap> content_settings_;
 
+  base::WeakPtrFactory<ChromeNativeFileSystemPermissionContext> weak_factory_{
+      this};
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeFileSystemPermissionContext);
 };
 

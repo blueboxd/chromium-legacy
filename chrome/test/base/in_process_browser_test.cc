@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_switches.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -475,9 +476,9 @@ base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   base::CommandLine::SwitchMap switches =
       base::CommandLine::ForCurrentProcess()->GetSwitches();
   switches.erase(switches::kUserDataDir);
-  switches.erase(content::kSingleProcessTestsFlag);
+  switches.erase(switches::kSingleProcessTests);
   switches.erase(switches::kSingleProcess);
-  new_command_line.AppendSwitch(content::kLaunchAsBrowser);
+  new_command_line.AppendSwitch(switches::kLaunchAsBrowser);
 
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);

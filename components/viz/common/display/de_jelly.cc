@@ -5,18 +5,36 @@
 #include "components/viz/common/display/de_jelly.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "base/time/time.h"
+#include "components/viz/common/common_jni_headers/DeJellyUtils_jni.h"
+#endif
 
 namespace viz {
 
 bool DeJellyEnabled() {
+  if (base::FeatureList::IsEnabled(features::kDisableDeJelly))
+    return false;
+
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDeJelly);
 }
 
 bool DeJellyActive() {
-  // TODO(ericrk): Android specific bits to be added in a follow-up CL.
-  return DeJellyEnabled();
+  if (!DeJellyEnabled())
+    return false;
+
+#if defined(OS_ANDROID)
+  return Java_DeJellyUtils_useDeJelly(base::android::AttachCurrentThread());
+#endif
+
+  return true;
 }
 
 float DeJellyScreenWidth() {
@@ -26,8 +44,10 @@ float DeJellyScreenWidth() {
   if (!value.empty())
     return std::atoi(value.c_str());
 
-  // TODO(ericrk): We can automatically handle this on Android. For now return
-  // a reasonable default.
+#if defined(OS_ANDROID)
+  return Java_DeJellyUtils_screenWidth(base::android::AttachCurrentThread());
+#endif
+
   return 1440.0f;
 }
 

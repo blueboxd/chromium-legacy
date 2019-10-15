@@ -20,7 +20,6 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class AutocompleteProviderListener;
-class HistoryURLProvider;
 
 namespace base {
 class Value;
@@ -55,7 +54,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
-                                     HistoryURLProvider* history_url_provider,
                                      AutocompleteProviderListener* listener);
 
   // Registers a preference used to cache zero suggest results.
@@ -83,7 +81,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
                            TestStartWillStopForSomeInput);
   ZeroSuggestProvider(AutocompleteProviderClient* client,
-                      HistoryURLProvider* history_url_provider,
                       AutocompleteProviderListener* listener);
 
   ~ZeroSuggestProvider() override;
@@ -146,10 +143,10 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // received.
   void ConvertResultsToAutocompleteMatches();
 
-  // Returns an AutocompleteMatch for the current URL. The match should be in
+  // Returns an AutocompleteMatch for the current text. The match should be in
   // the top position so that pressing enter has the effect of reloading the
   // page.
-  AutocompleteMatch MatchForCurrentURL();
+  AutocompleteMatch MatchForCurrentText();
 
   // When the user is in the Most Visited field trial, we ask the TopSites
   // service for the most visited URLs. It then calls back to this function to
@@ -180,9 +177,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   ResultType TypeOfResultToRun(const GURL& current_url,
                                const GURL& suggest_url);
 
-  // Used for efficiency when creating the verbatim match.  Can be null.
-  HistoryURLProvider* history_url_provider_;
-
   AutocompleteProviderListener* listener_;
 
   // The result type that is currently being processed by provider.
@@ -209,8 +203,9 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Loader used to retrieve results.
   std::unique_ptr<network::SimpleURLLoader> loader_;
 
-  // Suggestion for the current URL.
-  AutocompleteMatch current_url_match_;
+  // The verbatim match for the current text, whether it's a URL or search query
+  // (which can occur for Query in Omnibox / Query Refinements).
+  AutocompleteMatch current_text_match_;
 
   // Contains suggest and navigation results as well as relevance parsed from
   // the response for the most recent zero suggest input URL.

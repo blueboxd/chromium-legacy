@@ -40,6 +40,12 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         /** A {@link CallbackHelper} that can wait for the onSheetContentChanged event. */
         public final CallbackHelper mContentChangedCallbackHelper = new CallbackHelper();
 
+        /** A {@link CallbackHelper} that can wait for the sheet to be in its full state. */
+        public final CallbackHelper mFullCallbackHelper = new CallbackHelper();
+
+        /** A {@link CallbackHelper} that can wait for the sheet to be hidden. */
+        public final CallbackHelper mHiddenCallbackHelper = new CallbackHelper();
+
         /** The last value that the onOffsetChanged event sent. */
         private float mLastOffsetChangedValue;
 
@@ -62,6 +68,15 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         @Override
         public void onSheetContentChanged(BottomSheetContent newContent) {
             mContentChangedCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onSheetStateChanged(int newState) {
+            if (newState == BottomSheet.SheetState.HIDDEN) {
+                mHiddenCallbackHelper.notifyCalled();
+            } else if (newState == BottomSheet.SheetState.FULL) {
+                mFullCallbackHelper.notifyCalled();
+            }
         }
 
         /** @return The last value passed in to {@link #onSheetOffsetChanged(float)}. */

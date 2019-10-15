@@ -170,6 +170,7 @@
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
 <translation id="3371831930909698441">번역을 사용할 수 있습니다. 화면 하단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="3393920035788932672">팝업 허용</translation>
+<translation id="3443810440409579745">탭을 수신했습니다.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />분</translation>
 <translation id="3448016392200048164">분할 보기</translation>
 <translation id="345565170154308620">비밀번호 관리...</translation>
@@ -232,6 +233,7 @@
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
 <translation id="430967081421617822">전체 기간</translation>
+<translation id="4334428914252001502">읽지 않은 기사 1개 있음</translation>
 <translation id="4338650699862464074">방문한 페이지의 URL을 Google에 전송합니다.</translation>
 <translation id="4359125752503270327">이 페이지는 다른 애플리케이션에서 열립니다.</translation>
 <translation id="4375040482473363939">QR 코드 검색</translation>
@@ -298,6 +300,7 @@
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
+<translation id="5365716706805792666">비밀번호가 정보 유출에 포함되었는지 Google에서 확인할 수 있습니다. Google 계정으로 로그인하면 이 기능이 사용 설정됩니다.</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5407969256130905701">변경사항 취소</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
@@ -448,6 +451,7 @@
 <translation id="7348502496356775519">북마크</translation>
 <translation id="7383797227493018512">읽기 목록</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7409985198648820906">읽지 않은 기사 <ph name="UNREAD_COUNT" />개 있음</translation>
 <translation id="7425346204213733349">북마크, 방문 기록, 비밀번호, 기타 설정이 더 이상 Google 계정에 동기화되지 않습니다. 하지만 기존 데이터는 Google 계정에 계속 저장됩니다.</translation>
 <translation id="7454057999980797137">도/군</translation>
 <translation id="7456847797759667638">위치 열기...</translation>

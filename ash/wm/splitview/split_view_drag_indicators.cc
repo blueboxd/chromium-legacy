@@ -378,7 +378,6 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       // Get the preview area bounds from the split view controller.
       preview_area_bounds =
           SplitViewController::Get()->GetSnappedWindowBoundsInScreen(
-              GetWidget()->GetNativeWindow(),
               preview_state == IndicatorState::kPreviewAreaLeft
                   ? SplitViewController::LEFT
                   : SplitViewController::RIGHT);

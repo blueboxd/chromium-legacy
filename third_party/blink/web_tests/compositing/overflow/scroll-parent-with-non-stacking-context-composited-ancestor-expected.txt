@@ -40,7 +40,7 @@
       "position": [0, 44],
       "bounds": [60, 128],
       "backfaceVisibility": "hidden",
-      "transform": 4
+      "transform": 3
     }
   ],
   "transforms": [
@@ -64,16 +64,6 @@
     },
     {
       "id": 3,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [5, 5, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
       "parent": 1,
       "transform": [
         [1, 0, 0, 0],

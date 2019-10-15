@@ -41,11 +41,11 @@ base::Value GetPrintTicket(PrinterType type) {
   ticket.SetIntKey(kSettingPrinterType, type);
   ticket.SetBoolKey(kSettingRasterizePdf, false);
   ticket.SetIntKey(kSettingScaleFactor, 100);
+  ticket.SetIntKey(kSettingScalingType, FIT_TO_PAGE);
   ticket.SetIntKey(kSettingPagesPerSheet, 1);
   ticket.SetIntKey(kSettingDpiHorizontal, kTestPrinterDpi);
   ticket.SetIntKey(kSettingDpiVertical, kTestPrinterDpi);
   ticket.SetStringKey(kSettingDeviceName, kDummyPrinterName);
-  ticket.SetBoolKey(kSettingFitToPageEnabled, true);
   ticket.SetIntKey(kSettingPageWidth, 215900);
   ticket.SetIntKey(kSettingPageHeight, 279400);
   ticket.SetBoolKey(kSettingShowSystemDialog, false);

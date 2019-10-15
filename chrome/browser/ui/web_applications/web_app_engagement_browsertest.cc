@@ -6,6 +6,7 @@
 
 #include <bitset>
 
+#include "base/metrics/statistics_recorder.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -119,6 +120,40 @@ void ExpectTotalCounts(const base::HistogramTester& tester,
   }
 }
 
+void ExpectLaunchCounts(const base::HistogramTester& tester,
+                        base::HistogramBase::Count windowLaunches,
+                        base::HistogramBase::Count tabLaunches) {
+  tester.ExpectBucketCount("Extensions.HostedAppLaunchContainer",
+                           apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                           windowLaunches);
+  tester.ExpectBucketCount("Extensions.HostedAppLaunchContainer",
+                           apps::mojom::LaunchContainer::kLaunchContainerTab,
+                           tabLaunches);
+  tester.ExpectTotalCount("Extensions.HostedAppLaunchContainer",
+                          windowLaunches + tabLaunches);
+
+  if (tabLaunches > 0) {
+    tester.ExpectUniqueSample("Extensions.AppTabLaunchType",
+                              extensions::LAUNCH_TYPE_REGULAR, tabLaunches);
+  } else {
+    EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
+                           "Extensions.AppTabLaunchType"));
+  }
+
+  tester.ExpectUniqueSample("Extensions.BookmarkAppLaunchSource",
+                            apps::mojom::AppLaunchSource::kSourceTest,
+                            windowLaunches + tabLaunches);
+
+  tester.ExpectBucketCount("Extensions.BookmarkAppLaunchContainer",
+                           apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                           windowLaunches);
+  tester.ExpectBucketCount("Extensions.BookmarkAppLaunchContainer",
+                           apps::mojom::LaunchContainer::kLaunchContainerTab,
+                           tabLaunches);
+  tester.ExpectTotalCount("Extensions.BookmarkAppLaunchContainer",
+                          windowLaunches + tabLaunches);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -192,6 +227,13 @@ class WebAppEngagementBrowserTest : public WebAppControllerBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebAppEngagementBrowserTest);
 };
 
+// TODO(crbug.com/1012171): Migrate all to WebAppEngagementBrowserTest.
+class HostedAppEngagementBrowserTest : public WebAppEngagementBrowserTest {
+ public:
+  HostedAppEngagementBrowserTest() = default;
+  ~HostedAppEngagementBrowserTest() override = default;
+};
+
 IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInWindow) {
   base::HistogramTester tester;
 
@@ -216,9 +258,10 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInWindow) {
 
   TestEngagementEventWebAppLaunch(tester, histograms);
   TestEngagementEventsAfterLaunch(histograms, app_browser);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/1, /*tabLaunches=*/0);
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInTab) {
+IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, AppInTab) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
@@ -241,9 +284,10 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInTab) {
 
   TestEngagementEventWebAppLaunch(tester, histograms);
   TestEngagementEventsAfterLaunch(histograms, browser);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/0, /*tabLaunches=*/1);
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppWithoutScope) {
+IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, AppWithoutScope) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
@@ -270,6 +314,7 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppWithoutScope) {
 
   TestEngagementEventWebAppLaunch(tester, histograms);
   TestEngagementEventsAfterLaunch(histograms, browser);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/1, /*tabLaunches=*/0);
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, TwoApps) {
@@ -315,6 +360,7 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, TwoApps) {
                       SiteEngagementService::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH,
                       3);
   ExpectTotalCounts(tester, ~histograms, 0);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/3, /*tabLaunches=*/0);
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
@@ -355,9 +401,10 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
                       SiteEngagementService::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH,
                       4);
   ExpectTotalCounts(tester, ~histograms, 0);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/4, /*tabLaunches=*/0);
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, DefaultApp) {
+IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, DefaultApp) {
   base::HistogramTester tester;
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -380,9 +427,11 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, DefaultApp) {
 
   TestEngagementEventWebAppLaunch(tester, histograms);
   TestEngagementEventsAfterLaunch(histograms, browser);
+  ExpectLaunchCounts(tester, /*windowLaunches=*/1, /*tabLaunches=*/0);
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, NavigateAwayFromAppTab) {
+IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, NavigateAwayFromAppTab) {
+  base::HistogramTester tester;
   const GURL app_url = GURL("http://example.org/app/");
   const GURL outer_url = GURL("http://example.org/");
 
@@ -412,6 +461,7 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, NavigateAwayFromAppTab) {
     histograms[kHistogramUpToThreeUserInstalledApps] = true;
     TestEngagementEventsAfterLaunch(histograms, browser);
   }
+  ExpectLaunchCounts(tester, /*windowLaunches=*/0, /*tabLaunches=*/1);
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, RecordedForNonApps) {
@@ -436,6 +486,13 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, RecordedForNonApps) {
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     WebAppEngagementBrowserTest,
+    ::testing::Values(ControllerType::kHostedAppController,
+                      ControllerType::kUnifiedControllerWithBookmarkApp,
+                      ControllerType::kUnifiedControllerWithWebApp));
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    HostedAppEngagementBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp));
 

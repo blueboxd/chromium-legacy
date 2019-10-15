@@ -326,13 +326,6 @@ std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
   return container;
 }
 
-base::string16 DeviceChooserContentView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK
-             ? chooser_controller_->GetOkButtonLabel()
-             : chooser_controller_->GetCancelButtonLabel();
-}
-
 bool DeviceChooserContentView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return chooser_controller_->BothButtonsAlwaysEnabled() ||

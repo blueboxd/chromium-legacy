@@ -71,6 +71,7 @@ import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
@@ -222,6 +223,14 @@ public class DownloadUtils {
         }
         DownloadMetrics.recordDownloadPageOpen(source);
         return true;
+    }
+
+    /**
+     * @return Whether Chrome is currently offline and Offline Home should be shown for downloads.
+     */
+    public static boolean shouldShowOfflineHome() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_HOME)
+                && NetworkChangeNotifier.isInitialized() && !NetworkChangeNotifier.isOnline();
     }
 
     /**

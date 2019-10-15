@@ -5,7 +5,6 @@
       "bounds": [913, 235],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [313, 0],
       "paintInvalidations": [
         {
           "object": "Scrolling Contents Layer",
@@ -35,7 +34,6 @@
       "bounds": [913, 235],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [513, 0],
       "paintInvalidations": [
         {
           "object": "Scrolling Contents Layer",

@@ -46,6 +46,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
+#include "url/url_constants.h"
 
 // TODO(crbug.com/826982): life cycle events. Extensions can be installed and
 // uninstalled. ExtensionApps should implement extensions::InstallObserver and
@@ -100,6 +101,26 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromFileManager:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
+}
+
+apps::AppLaunchParams CreateAppLaunchParamsForIntent(
+    const std::string& app_id,
+    const apps::mojom::IntentPtr& intent) {
+  apps::AppLaunchParams params(
+      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      apps::mojom::AppLaunchSource::kSourceNone);
+
+  if (intent->scheme.has_value() && intent->host.has_value() &&
+      intent->path.has_value()) {
+    params.source = apps::mojom::AppLaunchSource::kSourceIntentUrl;
+    params.override_url =
+        GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
+             intent->host.value() + intent->path.value());
+    DCHECK(params.override_url.is_valid());
+  }
+
+  return params;
 }
 }  // namespace
 
@@ -325,7 +346,13 @@ void ExtensionApps::LaunchAppWithIntent(const std::string& app_id,
                                         apps::mojom::IntentPtr intent,
                                         apps::mojom::LaunchSource launch_source,
                                         int64_t display_id) {
-  NOTIMPLEMENTED();
+  if (!profile_) {
+    return;
+  }
+
+  AppLaunchParams params = CreateAppLaunchParamsForIntent(app_id, intent);
+
+  apps::LaunchService::Get(profile_)->OpenApplication(params);
 }
 
 void ExtensionApps::SetPermission(const std::string& app_id,
@@ -595,6 +622,10 @@ void ExtensionApps::OnPackageListInitialRefreshed() {
   for (const auto& app_name : arc_prefs_->GetPackagesFromPrefs()) {
     ApplyChromeBadge(app_name);
   }
+}
+
+void ExtensionApps::OnArcAppListPrefsDestroyed() {
+  arc_prefs_ = nullptr;
 }
 
 // static

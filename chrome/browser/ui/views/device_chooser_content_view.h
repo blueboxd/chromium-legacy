@@ -65,7 +65,6 @@ class DeviceChooserContentView : public views::View,
 
   base::string16 GetWindowTitle() const;
   std::unique_ptr<views::View> CreateExtraView();
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
   bool IsDialogButtonEnabled(ui::DialogButton button) const;
   void Accept();
   void Cancel();

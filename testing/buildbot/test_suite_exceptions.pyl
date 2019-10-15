@@ -282,6 +282,13 @@
       'mac-archive-rel',
     ],
   },
+  'chrome_java_test_pagecontroller_tests': {
+    'modifications': {
+      'android-pie-arm64-rel': {
+        'experiment_percentage': 100, # https://crbug.com/924194
+      },
+    },
+  },
   'chrome_public_test_apk': {
     'remove_from': [
       'android-asan',  # https://crbug.com/964562

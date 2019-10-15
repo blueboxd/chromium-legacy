@@ -35,12 +35,12 @@
 #include "media/base/simple_watch_timer.h"
 #include "media/base/text_track.h"
 #include "media/blink/buffered_data_source_host_impl.h"
+#include "media/blink/learning_experiment_helper.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer_data_source.h"
 #include "media/blink/video_frame_compositor.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/pipeline_controller.h"
-#include "media/learning/common/experiment_helper.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/media_session/public/cpp/media_position.h"
 #include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
@@ -1015,7 +1015,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   RendererFactorySelector::FactoryType reported_renderer_type_;
   SimpleWatchTimer simple_watch_timer_;
 
-  learning::ExperimentHelper will_play_helper_;
+  LearningExperimentHelper will_play_helper_;
 
   base::WeakPtr<WebMediaPlayerImpl> weak_this_;
   base::WeakPtrFactory<WebMediaPlayerImpl> weak_factory_{this};

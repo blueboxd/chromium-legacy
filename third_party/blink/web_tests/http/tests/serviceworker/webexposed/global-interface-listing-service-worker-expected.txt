@@ -3744,6 +3744,7 @@ interface WorkerNavigator
     getter storage
     getter usb
     getter userAgent
+    getter wakeLock
     method constructor
 interface WritableStream
     attribute @@toStringTag

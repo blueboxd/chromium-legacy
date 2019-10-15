@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/test_switches.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/app/mojo/mojo_init.h"
@@ -227,7 +228,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
   void TearDown() override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            kSingleProcessTestsFlag)) {
+            switches::kSingleProcessTests)) {
       // In a single-process mode, we need to avoid destructing mock_process_
       // because it will call _exit(0) and kill the process before the browser
       // side is ready to exit.

@@ -8,7 +8,7 @@
 
 promise_test(t => {
   self.testRunner.setPermission('wake-lock-screen', 'denied', location.origin, location.origin);
-  return promise_rejects(t, "NotAllowedError", WakeLock.request('screen'));
+  return promise_rejects(t, "NotAllowedError", navigator.wakeLock.request('screen'));
 }, 'Denied requests should abort with NotAllowedError');
 </script>
 </body>

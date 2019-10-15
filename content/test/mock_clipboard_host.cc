@@ -127,6 +127,13 @@ void MockClipboardHost::WriteCustomData(
     custom_data_[it.first] = it.second;
 }
 
+void MockClipboardHost::WriteRawData(const base::string16& format,
+                                     mojo_base::BigBuffer data) {
+  if (needs_reset_)
+    Reset();
+  raw_data_[format] = std::move(data);
+}
+
 void MockClipboardHost::WriteBookmark(const std::string& url,
                                       const base::string16& title) {}
 

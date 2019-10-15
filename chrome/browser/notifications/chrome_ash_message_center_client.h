@@ -6,12 +6,11 @@
 #define CHROME_BROWSER_NOTIFICATIONS_CHROME_ASH_MESSAGE_CENTER_CLIENT_H_
 
 #include "ash/public/cpp/notifier_settings_controller.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_platform_bridge_chromeos.h"
 #include "chrome/browser/notifications/notifier_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 // This class serves as Chrome's AshMessageCenterClient, as well as the
 // NotificationPlatformBridge for ChromeOS. It dispatches notifications to Ash
@@ -19,8 +18,7 @@
 // NotifierControllers to provide notifier settings information to Ash (visible
 // in NotifierSettingsView).
 class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
-                                     public NotifierController::Observer,
-                                     public content::NotificationObserver {
+                                     public NotifierController::Observer {
  public:
   explicit ChromeAshMessageCenterClient(
       NotificationPlatformBridgeDelegate* delegate);
@@ -46,11 +44,6 @@ class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
                                 bool enabled) override;
 
  private:
-  // content::NotificationObserver override.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   NotificationPlatformBridgeDelegate* delegate_;
 
   // Notifier source for each notifier type.
@@ -59,7 +52,7 @@ class ChromeAshMessageCenterClient : public ash::NotifierSettingsController,
 
   base::ObserverList<ash::NotifierSettingsObserver> notifier_observers_;
 
-  content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<ChromeAshMessageCenterClient> weak_ptr_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAshMessageCenterClient);
 };

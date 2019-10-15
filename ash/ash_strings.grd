@@ -826,11 +826,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_CHARGING_FROM_DUAL_ROLE_TITLE" desc="The message title of a notification indicating that the device is being charged by a connected dual-role USB Type-C device.">
         Charging from <ph name="POWER_SOURCE">$1<ex>USB-C device (left port)</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICE_TITLE" desc="The message title of a notification indicating that the device is charging the connected USB Type-C device.">
-        Charging <ph name="POWER_SOURCE">$1<ex>USB-C device (left port)</ex></ph>
+      <message name="IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICE_TITLE" desc="The message title of a notification indicating that the device is powering the connected USB Type-C device.">
+        Powering <ph name="POWER_SOURCE">$1<ex>USB-C device (left port)</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICES_TITLE" desc="The message title of a notification indicating that the device is charging multiple connected USB Type-C devices.">
-        Charging connected USB-C devices
+      <message name="IDS_ASH_STATUS_TRAY_CHARGING_DUAL_ROLE_DEVICES_TITLE" desc="The message title of a notification indicating that the device is powering multiple connected USB Type-C devices.">
+        Powering connected USB-C devices
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DUAL_ROLE_MESSAGE" desc="The message body of a notification, which indicates that the user can click the notification to see and change which device is being used as a power source.">
         Click for more options

@@ -516,6 +516,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
 TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
   std::string preflight_call_metric =
       "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+  std::string preflight_latency_metric =
+      "Autofill.BetterAuth.CardUnmaskPreflightDuration";
 
   {
     // Create local card and set user as eligible for FIDO auth.
@@ -532,6 +534,7 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
 
     // If only local cards are available, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -549,6 +552,7 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
 
     // If user is not verifiable, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -568,8 +572,10 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
     // eligible for FIDO authentication, except on iOS.
 #if defined(OS_IOS)
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
 #else
     histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
 #endif
   }
 }

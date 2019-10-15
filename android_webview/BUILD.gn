@@ -632,6 +632,7 @@ android_library("browser_java") {
     "//components/variations:load_seed_result_enum_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
+    "//components/viz/common:common_java",
     "//content/public/android:content_java",
     "//device/gamepad:java",
     "//mojo/public/java:system_java",

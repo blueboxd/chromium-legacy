@@ -34,6 +34,7 @@ enum AppLaunchSource {
   kSourceInstalledNotification = 20,
   kSourceContextMenu = 21,
   kSourceArc = 22,
+  kSourceIntentUrl = 23,  // App launch triggered by a URL.
 };
 
 // Don't remove items or change the order of this enum.  It's used in

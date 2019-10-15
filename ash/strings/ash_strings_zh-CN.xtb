@@ -60,7 +60,7 @@
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1761222317188459878">切换网络连接设置。<ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">向右滚动</translation>
-<translation id="1812997170047690955">我的屏幕上有什么内容？</translation>
+<translation id="1812997170047690955">我屏幕上有什么内容？</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">智能助理（正在加载中…）</translation>
 <translation id="1838895407229022812">当前已关闭护眼模式。</translation>
@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">休息一下！</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">快捷方式已关闭</translation>
 <translation id="6910714959251846841">必须对您的设备执行 Powerwash 才能安装这项更新。详细了解最新的 <ph name="SYSTEM_APP_NAME" />更新。</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
 <translation id="6919251195245069855">无法识别您的智能卡，请重试。</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">VPN 连接已断开</translation>
 <translation id="7377169924702866686">大写锁定已打开。</translation>
 <translation id="7378594059915113390">媒体控件</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" /> 分 <ph name="SECONDS_REMAINING" /> 秒</translation>
 <translation id="7398254312354928459">已切换网络连接</translation>
 <translation id="7405710164030118432">要解锁此设备，请输入您的 Family Link 家长访问码</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>

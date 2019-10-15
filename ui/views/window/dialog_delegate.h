@@ -95,12 +95,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Overrides may construct the view; this will only be called once per dialog.
   virtual std::unique_ptr<View> CreateExtraView();
 
-  // Override this function to adjust the padding between the extra view and
-  // the confirm/cancel buttons. Note that if there are no buttons, this will
-  // not be used.
-  // If a custom padding should be used, returns true and populates |padding|.
-  virtual bool GetExtraViewPadding(int* padding);
-
   // Override this function to display a footnote view below the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
   virtual std::unique_ptr<View> CreateFootnoteView();

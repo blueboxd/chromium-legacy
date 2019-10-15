@@ -213,6 +213,14 @@ base::Value NetLogQuicPublicResetPacketParams(
   return dict;
 }
 
+base::Value NetLogQuicPathData(const quic::QuicPathFrameBuffer& buffer) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("data",
+              NetLogBinaryValue(reinterpret_cast<const char*>(buffer.data()),
+                                buffer.size()));
+  return dict;
+}
+
 base::Value NetLogQuicCryptoHandshakeMessageParams(
     const quic::CryptoHandshakeMessage* message) {
   base::Value dict(base::Value::Type::DICTIONARY);
@@ -508,8 +516,16 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
           });
       break;
     case quic::PATH_RESPONSE_FRAME:
+      net_log_.AddEvent(
+          NetLogEventType::QUIC_SESSION_PATH_RESPONSE_FRAME_SENT, [&] {
+            return NetLogQuicPathData(frame.path_response_frame->data_buffer);
+          });
       break;
     case quic::PATH_CHALLENGE_FRAME:
+      net_log_.AddEvent(
+          NetLogEventType::QUIC_SESSION_PATH_CHALLENGE_FRAME_SENT, [&] {
+            return NetLogQuicPathData(frame.path_challenge_frame->data_buffer);
+          });
       break;
     case quic::STOP_SENDING_FRAME:
       net_log_.AddEvent(
@@ -682,6 +698,22 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STREAM_FRAME_RECEIVED,
                     [&] { return NetLogQuicStreamFrameParams(frame); });
+}
+
+void QuicConnectionLogger::OnPathChallengeFrame(
+    const quic::QuicPathChallengeFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PATH_CHALLENGE_FRAME_RECEIVED,
+                    [&] { return NetLogQuicPathData(frame.data_buffer); });
+}
+
+void QuicConnectionLogger::OnPathResponseFrame(
+    const quic::QuicPathResponseFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PATH_RESPONSE_FRAME_RECEIVED,
+                    [&] { return NetLogQuicPathData(frame.data_buffer); });
 }
 
 void QuicConnectionLogger::OnCryptoFrame(const quic::QuicCryptoFrame& frame) {

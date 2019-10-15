@@ -5,7 +5,6 @@
       "bounds": [2000, 2000],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [200, 200],
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'Text Text Text Text Text Text Text Text Text Text Text Text Text'",

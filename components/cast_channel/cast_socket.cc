@@ -34,6 +34,7 @@
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -76,14 +77,14 @@ void OnConnected(
 void ConnectOnUIThread(
     CastSocketImpl::NetworkContextGetter network_context_getter,
     const net::AddressList& remote_address_list,
-    network::mojom::TCPConnectedSocketRequest request,
+    mojo::PendingReceiver<network::mojom::TCPConnectedSocket> receiver,
     network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   network_context_getter.Run()->CreateTCPConnectedSocket(
       base::nullopt /* local_addr */, remote_address_list,
       nullptr /* tcp_connected_socket_options */,
       net::MutableNetworkTrafficAnnotationTag(
           CastSocketImpl::GetNetworkTrafficAnnotationTag()),
-      std::move(request), mojo::NullRemote() /* observer */,
+      std::move(receiver), mojo::NullRemote() /* observer */,
       base::BindOnce(OnConnected, std::move(callback)));
 }
 
@@ -382,7 +383,7 @@ int CastSocketImpl::DoTcpConnect() {
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(ConnectOnUIThread, network_context_getter_,
                                 net::AddressList(open_params_.ip_endpoint),
-                                mojo::MakeRequest(&tcp_socket_),
+                                tcp_socket_.BindNewPipeAndPassReceiver(),
                                 base::BindOnce(&CastSocketImpl::OnConnect,
                                                weak_factory_.GetWeakPtr())));
 

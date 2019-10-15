@@ -377,3 +377,4 @@ abi_test_clobber_d15:
 .size	abi_test_clobber_d15,.-abi_test_clobber_d15
 #endif
 #endif  // !OPENSSL_NO_ASM
+.section	.note.GNU-stack,"",%progbits

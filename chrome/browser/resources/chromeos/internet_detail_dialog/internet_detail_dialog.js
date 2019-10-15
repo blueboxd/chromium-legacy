@@ -523,7 +523,7 @@ Polymer({
       return;
     }
     const config = this.getDefaultConfigProperties_();
-    config.proxySetings = event.detail;
+    config.proxySettings = event.detail;
     this.setMojoNetworkProperties_(config);
   },
 

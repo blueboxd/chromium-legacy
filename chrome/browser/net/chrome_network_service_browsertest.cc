@@ -43,11 +43,12 @@ void SetCookie(
   base::Time t = base::Time::Now();
   net::CanonicalCookie cookie(kCookieName, kCookieValue, "www.test.com", "/", t,
                               t + base::TimeDelta::FromDays(1), base::Time(),
-                              false, false, net::CookieSameSite::NO_RESTRICTION,
+                              true /* secure */, false /* http-only*/,
+                              net::CookieSameSite::NO_RESTRICTION,
                               net::COOKIE_PRIORITY_DEFAULT);
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
-      cookie, "http", net::CookieOptions(),
+      cookie, "https", net::CookieOptions(),
       base::BindLambdaForTesting(
           [&](net::CanonicalCookie::CookieInclusionStatus status) {
             run_loop.Quit();

@@ -36,7 +36,7 @@ from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.memoized import memoized
 from blinkpy.common.net.buildbot import Build
 from blinkpy.tool.commands.command import Command
-from blinkpy.web_tests.controllers.test_result_writer import TestResultWriter
+from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port import base, factory
 
@@ -101,12 +101,12 @@ class AbstractRebaseliningCommand(Command):
     def _file_name_for_actual_result(self, test_name, suffix):
         # output_filename takes extensions starting with '.'.
         return self._host_port.output_filename(
-            test_name, TestResultWriter.FILENAME_SUFFIX_ACTUAL, '.' + suffix)
+            test_name, test_failures.FILENAME_SUFFIX_ACTUAL, '.' + suffix)
 
     def _file_name_for_expected_result(self, test_name, suffix):
         # output_filename takes extensions starting with '.'.
         return self._host_port.output_filename(
-            test_name, TestResultWriter.FILENAME_SUFFIX_EXPECTED, '.' + suffix)
+            test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.' + suffix)
 
 
 class ChangeSet(object):

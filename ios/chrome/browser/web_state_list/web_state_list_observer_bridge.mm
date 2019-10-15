@@ -120,3 +120,25 @@ void WebStateListObserverBridge::WebStateActivatedAt(
                       atIndex:active_index
                        reason:reason];
 }
+
+void WebStateListObserverBridge::WillCloseAllWebStates(
+    WebStateList* web_state_list,
+    bool user_action) {
+  const SEL selector = @selector(webStateList:willCloseAllWebStatesUserAction:);
+  if (![observer_ respondsToSelector:selector])
+    return;
+
+  [observer_ webStateList:web_state_list
+      willCloseAllWebStatesUserAction:(user_action ? YES : NO)];
+}
+
+void WebStateListObserverBridge::DidCloseAllWebStates(
+    WebStateList* web_state_list,
+    bool user_action) {
+  const SEL selector = @selector(webStateList:didCloseAllWebStatesUserAction:);
+  if (![observer_ respondsToSelector:selector])
+    return;
+
+  [observer_ webStateList:web_state_list
+      didCloseAllWebStatesUserAction:(user_action ? YES : NO)];
+}

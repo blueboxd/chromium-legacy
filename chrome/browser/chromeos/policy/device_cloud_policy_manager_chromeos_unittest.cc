@@ -732,7 +732,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOSEnrollmentTest);
 };
 
-TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Success) {
+// Flaky. https://crbug.com/1014318
+TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, DISABLED_Success) {
   RunTest();
   ExpectSuccessfulEnrollment();
 }
@@ -820,7 +821,9 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR, status_.store_status());
 }
 
-TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterSucceeds) {
+// Flaky. https://crbug.com/1014318
+TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
+       DISABLED_UnregisterSucceeds) {
   // Enroll first.
   RunTest();
   ExpectSuccessfulEnrollment();

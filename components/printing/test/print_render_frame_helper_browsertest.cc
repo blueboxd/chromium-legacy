@@ -271,7 +271,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   }
 
   void OnClosePrintPreviewDialog() {
-    GetPrintRenderFrameHelper()->OnClosePrintPreviewDialog();
+    GetPrintRenderFrameHelper()->OnPrintPreviewDialogClosed();
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 

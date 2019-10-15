@@ -100,21 +100,26 @@ test.realbox.setUp = function() {
   setUpPage('local-ntp-template');
 
   configData.realboxEnabled = true;
+  configData.suggestionTransparencyEnabled = true;
 
   chrome.embeddedSearch = {
     newTabPage: {},
     searchBox: {
+      deleteAutocompleteMatch(line) {
+        test.realbox.deletedLines.push(line);
+      },
       queryAutocomplete(query) {
         test.realbox.queries.push(query);
       },
-      deleteAutocompleteMatch(line) {
-        test.realbox.deletedLines.push(line);
-      }
+      stopAutocomplete(clearResult) {
+        test.realbox.stops.push(clearResult);
+      },
     },
   };
 
-  test.realbox.queries = [];
   test.realbox.deletedLines = [];
+  test.realbox.queries = [];
+  test.realbox.stops = [];
 
   initLocalNTP(/*isGooglePage=*/ true);
 
@@ -575,6 +580,24 @@ test.realbox.testSupportedDeletion = function() {
   assertEquals(newMatchesEl.children[0], document.activeElement);
 };
 
+test.realbox.testNonShiftDelete = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()],
+  });
+
+  const deleteKey = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Delete',
+  });
+  test.realbox.realboxEl.dispatchEvent(deleteKey);  // Previously threw error.
+  assertFalse(deleteKey.defaultPrevented);
+};
+
 test.realbox.testRemoveIcon = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
@@ -605,8 +628,44 @@ test.realbox.testRemoveIcon = function() {
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(0, test.realbox.deletedLines[0]);
 
+  assertEquals(0, test.realbox.stops.length);
+  icon.dispatchEvent(new Event('focusout', {
+    bubbles: true,
+    cancelable: true,
+    target: icon,
+    relatedTarget: document.body,
+  }));
+  assertEquals(0, test.realbox.stops.length);
+
   chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
       {success: true, matches: []});
 
   assertEquals(0, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
+};
+
+test.realbox.testPressEnterOnResult = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  const matches = [test.realbox.getSearchMatch({supportsDeletion: true})];
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
+      {input: test.realbox.realboxEl.value, matches});
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(1, matchEls.length);
+
+  let clicked = false;
+  matchEls[0].onclick = () => clicked = true;
+
+  const shiftEnter = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Enter',
+    target: matchEls[0],
+    shiftKey: true,
+  });
+  test.realbox.realboxEl.dispatchEvent(shiftEnter);
+  assertTrue(shiftEnter.defaultPrevented);
+
+  assertTrue(clicked);
 };

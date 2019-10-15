@@ -15,7 +15,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -59,12 +61,12 @@ class TLSClientSocketTestBase {
  protected:
   // One of the two fields will be set, depending on the mode.
   struct SocketHandle {
-    mojom::TCPConnectedSocketPtr tcp_socket;
+    mojo::Remote<mojom::TCPConnectedSocket> tcp_socket;
     mojom::ProxyResolvingSocketPtr proxy_socket;
   };
 
   struct SocketRequest {
-    mojom::TCPConnectedSocketRequest tcp_socket_request;
+    mojo::PendingReceiver<mojom::TCPConnectedSocket> tcp_socket_receiver;
     mojom::ProxyResolvingSocketRequest proxy_socket_request;
   };
 
@@ -113,7 +115,8 @@ class TLSClientSocketTestBase {
   SocketRequest MakeRequest(SocketHandle* handle) {
     SocketRequest result;
     if (mode_ == kDirect)
-      result.tcp_socket_request = mojo::MakeRequest(&handle->tcp_socket);
+      result.tcp_socket_receiver =
+          handle->tcp_socket.BindNewPipeAndPassReceiver();
     else
       result.proxy_socket_request = mojo::MakeRequest(&handle->proxy_socket);
     return result;
@@ -129,23 +132,24 @@ class TLSClientSocketTestBase {
   int CreateSocketSync(SocketRequest request,
                        const net::IPEndPoint& remote_addr) {
     if (mode_ == kDirect) {
-      return CreateTCPConnectedSocketSync(std::move(request.tcp_socket_request),
-                                          remote_addr);
+      return CreateTCPConnectedSocketSync(
+          std::move(request.tcp_socket_receiver), remote_addr);
     } else {
       return CreateProxyResolvingSocketSync(
           std::move(request.proxy_socket_request), remote_addr);
     }
   }
 
-  int CreateTCPConnectedSocketSync(mojom::TCPConnectedSocketRequest request,
-                                   const net::IPEndPoint& remote_addr) {
+  int CreateTCPConnectedSocketSync(
+      mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver,
+      const net::IPEndPoint& remote_addr) {
     net::AddressList remote_addr_list(remote_addr);
     base::RunLoop run_loop;
     int net_error = net::ERR_FAILED;
     factory_->CreateTCPConnectedSocket(
         base::nullopt /* local_addr */, remote_addr_list,
         nullptr /* tcp_connected_socket_options */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, std::move(request),
+        TRAFFIC_ANNOTATION_FOR_TESTS, std::move(receiver),
         pre_tls_observer()->GetObserverRemote(),
         base::BindLambdaForTesting(
             [&](int result,
@@ -299,9 +303,6 @@ class TLSClientSocketTestBase {
   std::unique_ptr<ProxyResolvingSocketFactoryMojo> proxy_resolving_factory_;
   TestSocketObserver pre_tls_observer_;
   TestSocketObserver post_tls_observer_;
-  mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
-  mojo::StrongBindingSet<mojom::TCPConnectedSocket>
-      tcp_connected_socket_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TLSClientSocketTestBase);
 };
@@ -401,8 +402,8 @@ TEST_P(TLSClientSocketTest, ClosePipesRunUntilIdleAndUpgradeToTLS) {
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
 }
 
-// Calling UpgradeToTLS on the same TCPConnectedSocketPtr is illegal and should
-// receive an error.
+// Calling UpgradeToTLS on the same mojo::Remote<TCPConnectedSocket> is illegal
+// and should receive an error.
 TEST_P(TLSClientSocketTest, UpgradeToTLSTwice) {
   const net::MockRead kReads[] = {net::MockRead(net::ASYNC, net::OK, 0)};
   net::SequencedSocketData data_provider(kReads, base::span<net::MockWrite>());
@@ -980,10 +981,11 @@ TEST_P(TLSClientSocketIoModeTest, MultipleWriteToTLSSocket) {
   net::SSLSocketDataProvider ssl_socket(net::ASYNC, net::OK);
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
-  mojom::TCPConnectedSocketPtr client_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> client_socket;
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
-  EXPECT_EQ(net::OK, CreateTCPConnectedSocketSync(
-                         mojo::MakeRequest(&client_socket), server_addr));
+  EXPECT_EQ(net::OK,
+            CreateTCPConnectedSocketSync(
+                client_socket.BindNewPipeAndPassReceiver(), server_addr));
 
   net::HostPortPair host_port_pair("example.org", 443);
   pre_tls_recv_handle()->reset();
@@ -1030,10 +1032,11 @@ TEST_P(TLSClientSocketIoModeTest, SSLInfo) {
   ssl_socket.ssl_info.is_issued_by_known_root = true;
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
-  mojom::TCPConnectedSocketPtr client_socket;
+  mojo::Remote<mojom::TCPConnectedSocket> client_socket;
   net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
-  EXPECT_EQ(net::OK, CreateTCPConnectedSocketSync(
-                         mojo::MakeRequest(&client_socket), server_addr));
+  EXPECT_EQ(net::OK,
+            CreateTCPConnectedSocketSync(
+                client_socket.BindNewPipeAndPassReceiver(), server_addr));
 
   net::HostPortPair host_port_pair("example.org", 443);
   pre_tls_recv_handle()->reset();
@@ -1105,11 +1108,12 @@ class TLSClientSocketTestWithEmbeddedTestServerBase
     // Proxy connections don't support TLSClientSocketOptions.
     DCHECK_EQ(kDirect, mode());
 
-    mojom::TCPConnectedSocketPtr tcp_socket;
+    mojo::Remote<mojom::TCPConnectedSocket> tcp_socket;
     net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(),
                                 server_.port());
-    EXPECT_EQ(net::OK, CreateTCPConnectedSocketSync(
-                           mojo::MakeRequest(&tcp_socket), server_addr));
+    EXPECT_EQ(net::OK,
+              CreateTCPConnectedSocketSync(
+                  tcp_socket.BindNewPipeAndPassReceiver(), server_addr));
 
     pre_tls_recv_handle()->reset();
     pre_tls_send_handle()->reset();

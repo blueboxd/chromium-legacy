@@ -26,7 +26,7 @@ transform: translateZ(-100px) rotateY(45deg);
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 9
+      "transform": 6
     }
   ],
   "transforms": [
@@ -76,42 +76,7 @@ transform: translateZ(-100px) rotateY(45deg);
     },
     {
       "id": 5,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, -0.002],
-        [0, 0, 0, 1]
-      ],
-      "origin": [152, 152]
-    },
-    {
-      "id": 6,
-      "parent": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [12, 12, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 7,
-      "parent": 6,
-      "transform": [
-        [0.766044443118978, -0.556670399226419, -0.32139380484327, 0],
-        [0, 0.5, -0.866025403784439, 0],
-        [0.642787609686539, 0.663413948168938, 0.383022221559489, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [140, 140],
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 8,
-      "parent": 7,
+      "parent": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -122,8 +87,8 @@ transform: translateZ(-100px) rotateY(45deg);
       "renderingContext": 1
     },
     {
-      "id": 9,
-      "parent": 8,
+      "id": 6,
+      "parent": 5,
       "transform": [
         [0.766044443118978, 0, 0.642787609686539, 0],
         [0, 1, 0, 0],

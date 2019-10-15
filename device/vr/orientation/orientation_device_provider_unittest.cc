@@ -89,11 +89,11 @@ class VROrientationDeviceProviderTest : public testing::Test {
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                mojom::VRDisplayInfoPtr,
-                               mojom::XRRuntimePtr device)>
+                               mojo::PendingRemote<mojom::XRRuntime> device)>
   DeviceAndIdCallbackFailIfCalled() {
-    return base::BindRepeating([](device::mojom::XRDeviceId id,
-                                  mojom::VRDisplayInfoPtr,
-                                  mojom::XRRuntimePtr device) { FAIL(); });
+    return base::BindRepeating(
+        [](device::mojom::XRDeviceId id, mojom::VRDisplayInfoPtr,
+           mojo::PendingRemote<mojom::XRRuntime> device) { FAIL(); });
   }
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId)>
@@ -103,11 +103,12 @@ class VROrientationDeviceProviderTest : public testing::Test {
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                mojom::VRDisplayInfoPtr,
-                               mojom::XRRuntimePtr device)>
+                               mojo::PendingRemote<mojom::XRRuntime> device)>
   DeviceAndIdCallbackMustBeCalled(base::RunLoop* loop) {
     return base::BindRepeating(
         [](base::OnceClosure quit_closure, device::mojom::XRDeviceId id,
-           mojom::VRDisplayInfoPtr info, mojom::XRRuntimePtr device) {
+           mojom::VRDisplayInfoPtr info,
+           mojo::PendingRemote<mojom::XRRuntime> device) {
           ASSERT_TRUE(device);
           ASSERT_TRUE(info);
           std::move(quit_closure).Run();

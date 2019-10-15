@@ -14,7 +14,6 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [285, 900],
-      "scrollPosition": [0, 150],
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='block'",

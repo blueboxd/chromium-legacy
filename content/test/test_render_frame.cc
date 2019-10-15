@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/frame.mojom.h"
@@ -29,6 +30,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_navigation_control.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace content {
 
@@ -226,6 +228,9 @@ class MockFrameHost : public mojom::FrameHost {
 #endif
 
   void EvictFromBackForwardCache() override {}
+
+  void DidChangeThemeColor(
+      const base::Optional<::SkColor>& theme_color) override {}
 
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>

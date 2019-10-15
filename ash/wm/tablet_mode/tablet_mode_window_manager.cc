@@ -132,8 +132,7 @@ int CalculateCarryOverDividerPostion(
       return left_window ? work_area.height() - left_window_bounds.height()
                          : right_window_bounds.height();
     default:
-      return SplitViewController::Get()->GetDefaultDividerPosition(
-          left_window ? left_window : right_window);
+      return SplitViewController::Get()->GetDefaultDividerPosition();
   }
 }
 

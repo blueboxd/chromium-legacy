@@ -17,7 +17,8 @@ namespace app.runtime {
 
   // Enumeration of app launch sources.
   // This should be kept in sync with AppLaunchSource in
-  // extensions/common/constants.h, and GetLaunchSourceEnum() in
+  // components/services/app_service/public/mojom/types.mojom, and
+  // GetLaunchSourceEnum() in
   // extensions/browser/api/app_runtime/app_runtime_api.cc.
   // Note the enumeration is used in UMA histogram so entries
   // should not be re-ordered or removed.
@@ -43,7 +44,8 @@ namespace app.runtime {
     test,
     installed_notification,
     context_menu,
-    arc
+    arc,
+    intent_url
   };
 
   // An app can be launched with a specific action in mind, for example, to

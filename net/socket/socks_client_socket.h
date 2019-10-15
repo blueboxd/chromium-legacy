@@ -35,6 +35,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
                     const HostPortPair& destination,
                     RequestPriority priority,
                     HostResolver* host_resolver,
+                    bool disable_secure_dns,
                     const NetworkTrafficAnnotationTag& traffic_annotation);
 
   // On destruction Disconnect() is called.
@@ -136,6 +137,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
 
   // Used to resolve the hostname to which the SOCKS proxy will connect.
   HostResolver* host_resolver_;
+  bool disable_secure_dns_;
   std::unique_ptr<HostResolver::ResolveHostRequest> resolve_host_request_;
   const HostPortPair destination_;
   RequestPriority priority_;

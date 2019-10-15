@@ -16,6 +16,7 @@ VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaForGLReadback;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaRenderer;
 VIZ_COMMON_EXPORT extern const base::Feature kRecordSkPicture;
 VIZ_COMMON_EXPORT extern const base::Feature kVizDisplayCompositor;
+VIZ_COMMON_EXPORT extern const base::Feature kDisableDeJelly;
 
 VIZ_COMMON_EXPORT bool IsVizDisplayCompositorEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingDebugEnabled();

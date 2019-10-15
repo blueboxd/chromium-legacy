@@ -20,8 +20,8 @@ namespace content {
 // owned by the NativeFileSystemManagerImpl instance passed in to the
 // constructor.
 //
-// This class is not thread safe, all methods should be called on the same
-// sequence as storage::FileSystemContext, which today always is the IO thread.
+// This class is not thread safe, all methods must be called from the same
+// sequence.
 class NativeFileSystemDirectoryHandleImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemDirectoryHandle {

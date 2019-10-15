@@ -41,6 +41,8 @@ class CORE_EXPORT FrameImpl final : public GarbageCollected<FrameImpl>,
       uint32_t max_length,
       GetTextSurroundingSelectionCallback callback) final;
 
+  void SendInterventionReport(const String& id, const String& message) final;
+
  private:
   mojo::AssociatedReceiver<mojom::blink::Frame> receiver_{this};
 

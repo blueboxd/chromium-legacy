@@ -28,6 +28,7 @@ include_rules = [
   "+components/variations",
   "+components/vector_icons",
   "+content/public/browser",
+  "+content/public/common",
   "+extensions/common/constants.h",
   "+net",
   "+services/network/public/cpp",

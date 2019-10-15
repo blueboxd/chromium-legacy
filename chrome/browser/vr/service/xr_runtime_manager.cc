@@ -363,9 +363,10 @@ bool XRRuntimeManager::AreAllProvidersInitialized() {
   return num_initialized_providers_ == providers_.size();
 }
 
-void XRRuntimeManager::AddRuntime(device::mojom::XRDeviceId id,
-                                  device::mojom::VRDisplayInfoPtr info,
-                                  device::mojom::XRRuntimePtr runtime) {
+void XRRuntimeManager::AddRuntime(
+    device::mojom::XRDeviceId id,
+    device::mojom::VRDisplayInfoPtr info,
+    mojo::PendingRemote<device::mojom::XRRuntime> runtime) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(runtimes_.find(id) == runtimes_.end());
 

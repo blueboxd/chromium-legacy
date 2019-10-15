@@ -337,6 +337,11 @@ def summarize_results(port_obj, expectations, initial_results,
             if is_unexpected:
                 test_dict.update(_interpret_test_failures(retry_result.failures))
 
+        for test_result, _ in merged_results:
+            for artifact_name, artifacts in test_result.artifacts.artifacts.items():
+                artifact_dict = test_dict.setdefault('artifacts', {})
+                artifact_dict.setdefault(artifact_name, []).extend(artifacts)
+
         # Store test hierarchically by directory. e.g.
         # foo/bar/baz.html: test_dict
         # foo/bar/baz1.html: test_dict

@@ -14,6 +14,8 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gl/android/scoped_java_surface.h"
+#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence_egl.h"
@@ -36,7 +38,7 @@ void ArImageTransport::DestroySharedBuffers(vr::WebXrPresentationState* webxr) {
   DVLOG(2) << __func__;
   DCHECK(IsOnGlThread());
 
-  if (!webxr)
+  if (!webxr || !UseSharedBuffer())
     return;
 
   std::vector<std::unique_ptr<vr::WebXrSharedBuffer>> buffers =
@@ -65,6 +67,21 @@ void ArImageTransport::Initialize(vr::WebXrPresentationState* webxr,
 
   glGenFramebuffersEXT(1, &camera_fbo_);
 
+  shared_buffer_draw_ = base::AndroidHardwareBufferCompat::IsSupportAvailable();
+
+  if (shared_buffer_draw_) {
+    DVLOG(2) << __func__ << ": UseSharedBuffer()=true";
+  } else {
+    DVLOG(2) << __func__ << ": UseSharedBuffer()=false, setting up surface";
+    glGenTextures(1, &transport_texture_id_);
+    transport_surface_texture_ =
+        gl::SurfaceTexture::Create(transport_texture_id_);
+    surface_size_ = {0, 0};
+    mailbox_bridge_->CreateSurface(transport_surface_texture_.get());
+    transport_surface_texture_->SetFrameAvailableCallback(base::BindRepeating(
+        &ArImageTransport::OnFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
+  }
+
   mailbox_bridge_->CreateAndBindContextProvider(
       base::BindOnce(&ArImageTransport::OnMailboxBridgeReady,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -77,6 +94,39 @@ void ArImageTransport::OnMailboxBridgeReady(base::OnceClosure callback) {
   DCHECK(mailbox_bridge_->IsConnected());
 
   std::move(callback).Run();
+}
+
+void ArImageTransport::SetFrameAvailableCallback(
+    XrFrameCallback on_transport_frame_available) {
+  DVLOG(2) << __func__;
+  on_transport_frame_available_ = std::move(on_transport_frame_available);
+}
+
+void ArImageTransport::OnFrameAvailable() {
+  DVLOG(2) << __func__;
+  DCHECK(on_transport_frame_available_);
+
+  // This function assumes that there's only at most one frame in "processing"
+  // state at any given time, the webxr_ state handling ensures that. Drawing
+  // and swapping twice without an intervening UpdateTexImage call would lose
+  // an image, and that would lead to images and poses getting out of sync.
+  //
+  // It also assumes that the ArImageTransport and Surface only exist for the
+  // duration of a single session, and a new session will use fresh objects. For
+  // comparison, see GvrSchedulerDelegate::OnWebXrFrameAvailable which has more
+  // complex logic to support a lifetime across multiple sessions, including
+  // handling a possibly-unconsumed frame left over from a previous session.
+
+  transport_surface_texture_->UpdateTexImage();
+
+  // The SurfaceTexture needs to be drawn using the corresponding
+  // UV transform, that's usually a Y flip.
+  transport_surface_texture_->GetTransformMatrix(
+      &transport_surface_texture_uv_matrix_[0]);
+  transport_surface_texture_uv_transform_.matrix().setColMajorf(
+      transport_surface_texture_uv_matrix_);
+
+  on_transport_frame_available_.Run(transport_surface_texture_uv_transform_);
 }
 
 GLuint ArImageTransport::GetCameraTextureId() {
@@ -190,8 +240,14 @@ void ArImageTransport::CopyDrawnImageToFramebuffer(
     const gfx::Transform& uv_transform) {
   DVLOG(2) << __func__;
 
-  vr::WebXrSharedBuffer* shared_buffer =
-      webxr->GetRenderingFrame()->shared_buffer.get();
+  GLuint source_texture;
+  if (UseSharedBuffer()) {
+    vr::WebXrSharedBuffer* shared_buffer =
+        webxr->GetRenderingFrame()->shared_buffer.get();
+    source_texture = shared_buffer->local_texture;
+  } else {
+    source_texture = transport_texture_id_;
+  }
 
   // Set the blend mode for combining the drawn image (source) with the camera
   // image (destination). WebXR assumes that the canvas has premultiplied alpha,
@@ -201,8 +257,7 @@ void ArImageTransport::CopyDrawnImageToFramebuffer(
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-  CopyTextureToFramebuffer(shared_buffer->local_texture, frame_size,
-                           uv_transform);
+  CopyTextureToFramebuffer(source_texture, frame_size, uv_transform);
 }
 
 void ArImageTransport::CopyTextureToFramebuffer(
@@ -223,6 +278,26 @@ void ArImageTransport::CopyTextureToFramebuffer(
   float uv_transform_floats[16];
   uv_transform.matrix().asColMajorf(uv_transform_floats);
   ar_renderer_->Draw(texture, uv_transform_floats, 0, 0);
+}
+
+void ArImageTransport::CopyMailboxToSurfaceAndSwap(
+    const gfx::Size& frame_size,
+    const gpu::MailboxHolder& mailbox) {
+  DVLOG(2) << __func__;
+  if (frame_size != surface_size_) {
+    DVLOG(2) << __func__ << " resize from " << surface_size_.ToString()
+             << " to " << frame_size.ToString();
+    transport_surface_texture_->SetDefaultBufferSize(frame_size.width(),
+                                                     frame_size.height());
+    mailbox_bridge_->ResizeSurface(frame_size.width(), frame_size.height());
+    surface_size_ = frame_size;
+  }
+
+  // Draw the image to the surface in the GPU process's command buffer context.
+  // This will trigger an OnFrameAvailable event once the corresponding
+  // SurfaceTexture in the local GL context is ready for updating.
+  bool swapped = mailbox_bridge_->CopyMailboxToSurfaceAndSwap(mailbox);
+  DCHECK(swapped);
 }
 
 bool ArImageTransport::IsOnGlThread() const {

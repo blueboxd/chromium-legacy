@@ -404,4 +404,11 @@ TEST_F(CodecImageTest, GetAHardwareBuffer) {
   EXPECT_TRUE(i->was_rendered_to_front_buffer());
 }
 
+TEST_F(CodecImageTest, GetAHardwareBufferAfterRelease) {
+  // Make sure that we get a nullptr AHB once we've marked the image as unused.
+  auto i = NewImage(kTextureOwner);
+  i->NotifyUnused();
+  EXPECT_FALSE(i->GetAHardwareBuffer());
+}
+
 }  // namespace media

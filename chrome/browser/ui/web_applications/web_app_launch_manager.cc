@@ -4,17 +4,22 @@
 
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/common/constants.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
@@ -67,9 +72,6 @@ content::WebContents* ShowWebApplicationWindow(
   DCHECK(tab_helper);
   tab_helper->SetAppId(app_id);
 
-  // TODO(https://crbug.com/988928): Update SiteEngagementService
-  // and AppBannerSettingsHelper.
-
   browser->window()->Show();
   web_contents->SetInitialFocus();
 
@@ -96,12 +98,37 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
 
   Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
 
-  return ShowWebApplicationWindow(
-      params, params.app_id,
-      params.override_url.is_empty()
-          ? provider_->registrar().GetAppLaunchURL(params.app_id)
-          : params.override_url,
-      browser, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  const GURL url = params.override_url.is_empty()
+                       ? provider_->registrar().GetAppLaunchURL(params.app_id)
+                       : params.override_url;
+  content::WebContents* web_contents =
+      ShowWebApplicationWindow(params, params.app_id, url, browser,
+                               WindowOpenDisposition::NEW_FOREGROUND_TAB);
+
+  // TODO(crbug.com/1014328): Populate WebApp metrics instead of Extensions.
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.HostedAppLaunchContainer",
+                            params.container);
+  if (params.container == apps::mojom::LaunchContainer::kLaunchContainerTab) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType",
+                              extensions::LAUNCH_TYPE_REGULAR, 100);
+  }
+  UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchSource",
+                            params.source);
+  UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
+                            params.container);
+
+  // Record the launch time in the site engagement service. A recent web
+  // app launch will provide an engagement boost to the origin.
+  SiteEngagementService::Get(profile())->SetLastShortcutLaunchTime(web_contents,
+                                                                   url);
+
+  // Refresh the app banner added to homescreen event. The user may have
+  // cleared their browsing data since installing the app, which removes the
+  // event and will potentially permit a banner to be shown for the site.
+  RecordAppBanner(web_contents, url);
+
+  return web_contents;
 }
 
 bool WebAppLaunchManager::OpenApplicationWindow(

@@ -7,10 +7,12 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
@@ -1120,6 +1122,57 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, FlingFromLeftEdgeToGoBack) {
                    0, ui::ET_SCROLL_FLING_START);
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
+}
+
+TEST_F(ToplevelWindowEventHandlerBackGestureTest, DonotStartGoingBack) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  auto* shell = Shell::Get();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Point start(0, 100);
+
+  // Should not go back if it is not in ACTIVE session.
+  ASSERT_FALSE(shell->overview_controller()->InOverviewSession());
+  ASSERT_FALSE(shell->home_screen_controller()->IsHomeScreenVisible());
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+  generator->GestureScrollSequence(
+      start,
+      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
+                 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  // Should not go back while in overview mode but splitview is not active.
+  ASSERT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  ASSERT_EQ(session_manager::SessionState::ACTIVE,
+            shell->session_controller()->GetSessionState());
+  shell->overview_controller()->StartOverview();
+  ASSERT_TRUE(shell->overview_controller()->InOverviewSession());
+  generator->GestureScrollSequence(
+      start,
+      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
+                 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  // Should not go back if home screen is not visible.
+  shell->overview_controller()->EndOverview();
+  ASSERT_FALSE(shell->overview_controller()->InOverviewSession());
+  shell->home_screen_controller()->GoHome(GetPrimaryDisplay().id());
+  ASSERT_TRUE(shell->home_screen_controller()->IsHomeScreenVisible());
+  generator->GestureScrollSequence(
+      start,
+      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
+                 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
 }
 
 namespace {

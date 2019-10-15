@@ -272,10 +272,17 @@ adds noise to the list of approved images.
 Additionally, the tests normally rely on the Gold server for viewing images
 produced by a test run. This does not work if the data is not actually uploaded.
 
-In order to get around both of these issues, simply pass the `--local-run` flag
-to the tests. This will disable uploading, but otherwise go through the same
-steps as a test normally would. Each test will also print out a `file://` URL to
-the image it produces and a link to all approved images for that test in Gold.
+The pixel tests contain logic to automatically determine whether they are
+running on a workstation or not, as well as to determine what git revision is
+being tested. This *should* mean that the pixel tests will automatically work
+when run locally. However, if the local run detection code fails for some
+reason, you can manually pass some flags to force the same behavior:
+
+In order to get around the local run issues, simply pass the `--local-run=1`
+flag to the tests. This will disable uploading, but otherwise go through the
+same steps as a test normally would. Each test will also print out a `file://`
+URL to the image it produces and a link to all approved images for that test in
+Gold.
 
 Because the image produced by the test locally is likely slightly different from
 any of the approved images in Gold, local test runs are likely to fail during

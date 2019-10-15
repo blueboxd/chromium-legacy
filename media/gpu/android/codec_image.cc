@@ -150,6 +150,11 @@ bool CodecImage::ScheduleOverlayPlane(
 
 void CodecImage::NotifyOverlayPromotion(bool promotion,
                                         const gfx::Rect& bounds) {
+  // Use-after-release.  It happens if the renderer crashes before getting
+  // returns from viz.
+  if (!promotion_hint_cb_)
+    return;
+
   if (!codec_buffer_wait_coordinator_ && promotion) {
     // When |CodecImage| is already backed by SurfaceView, and it should be used
     // as overlay.
@@ -339,7 +344,12 @@ void CodecImage::ReleaseCodecBuffer() {
 
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 CodecImage::GetAHardwareBuffer() {
-  DCHECK(codec_buffer_wait_coordinator_);
+  // It would be nice if this didn't happen, but we can be incorrectly marked
+  // as free when viz is still using us for drawing.  This can happen if the
+  // renderer crashes before receiving returns.  It's hard to catch elsewhere,
+  // so just handle it gracefully here.
+  if (!codec_buffer_wait_coordinator_)
+    return nullptr;
 
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
   return codec_buffer_wait_coordinator_->texture_owner()->GetAHardwareBuffer();

@@ -24,6 +24,17 @@ class MetricsStateManager;
 
 namespace android_webview {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has
+// been persisted for one or two milestones. Visible for testing.
+enum class BackfillInstallDate {
+  kValidInstallDatePref = 0,
+  kCouldNotGetPackageManagerInstallDate = 1,
+  kPersistedPackageManagerInstallDate = 2,
+  kMaxValue = kPersistedPackageManagerInstallDate,
+};
+
 // AwMetricsServiceClient is a singleton which manages WebView metrics
 // collection.
 //

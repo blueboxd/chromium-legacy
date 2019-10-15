@@ -31,7 +31,8 @@ int main(int argc, char** argv) {
 
   WebContentRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
-      WebContentRunner::CreateDefaultWebContext(kWebRunnerFeatures));
+      base::BindOnce(&WebContentRunner::CreateDefaultWebContext,
+                     kWebRunnerFeatures));
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

@@ -53,7 +53,7 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
 
   void EnterFullscreenModeForTab(WebContents*,
                                  const GURL&,
-                                 const blink::WebFullscreenOptions&) override {
+                                 const blink::FullScreenOptions&) override {
     is_fullscreen_ = true;
   }
 

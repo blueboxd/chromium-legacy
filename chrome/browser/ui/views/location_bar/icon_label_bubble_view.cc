@@ -199,14 +199,17 @@ double IconLabelBubbleView::WidthMultiplier() const {
   double size_fraction = 1.0;
   if (state < open_state_fraction_)
     size_fraction = state / open_state_fraction_;
-  if (state > (1.0 - open_state_fraction_))
+  else if (state > (1.0 - open_state_fraction_))
     size_fraction = (1.0 - state) / open_state_fraction_;
   return size_fraction;
 }
 
 bool IconLabelBubbleView::IsShrinking() const {
-  return slide_animation_.is_animating() && !is_animation_paused_ &&
-         slide_animation_.GetCurrentValue() > (1.0 - open_state_fraction_);
+  if (!slide_animation_.is_animating() || is_animation_paused_)
+    return false;
+  return slide_animation_.IsClosing() ||
+         (open_state_fraction_ < 1.0 &&
+          slide_animation_.GetCurrentValue() > (1.0 - open_state_fraction_));
 }
 
 bool IconLabelBubbleView::ShowBubble(const ui::Event& event) {
@@ -401,10 +404,6 @@ int IconLabelBubbleView::GetExtraInternalSpacing() const {
   return 0;
 }
 
-base::TimeDelta IconLabelBubbleView::GetSlideDurationTime() const {
-  return base::TimeDelta::FromMilliseconds(3000);
-}
-
 int IconLabelBubbleView::GetWidthBetweenIconAndSeparator() const {
   return ShouldShowSeparator() ? kIconLabelBubbleSpaceBesideSeparator : 0;
 }
@@ -421,13 +420,23 @@ const char* IconLabelBubbleView::GetClassName() const {
   return "IconLabelBubbleView";
 }
 
-void IconLabelBubbleView::SetUpForInOutAnimation() {
+void IconLabelBubbleView::SetUpForAnimation() {
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetVisible(false);
-  slide_animation_.SetSlideDuration(GetSlideDurationTime());
+  slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   slide_animation_.SetTweenType(kIconLabelBubbleTweenType);
+  open_state_fraction_ = 1.0;
+}
+
+void IconLabelBubbleView::SetUpForInOutAnimation() {
+  SetUpForAnimation();
+  // The duration of the slide includes the appearance of the label (600ms),
+  // statically showing the label (1800ms), and hiding the label (600ms). The
+  // proportion of time spent in each portion of the animation is controlled by
+  // kIconLabelBubbleOpenTimeFraction.
+  slide_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(3000));
   open_state_fraction_ = gfx::Tween::CalculateValue(
       kIconLabelBubbleTweenType, kIconLabelBubbleOpenTimeFraction);
 }

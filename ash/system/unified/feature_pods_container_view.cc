@@ -163,6 +163,23 @@ int FeaturePodsContainerView::GetVisibleCount() const {
       });
 }
 
+void FeaturePodsContainerView::EnsurePageWithButton(FeaturePodButton* button) {
+  int index = visible_buttons_.GetIndexOfView(button->parent());
+  if (index < 0)
+    return;
+
+  int tiles_per_page = GetTilesPerPage();
+  int first_index = pagination_model_->selected_page() * tiles_per_page;
+  int last_index =
+      ((pagination_model_->selected_page() + 1) * tiles_per_page) - 1;
+  if (index < first_index || index > last_index) {
+    int page = ((index + 1) / tiles_per_page) +
+               ((index + 1) % tiles_per_page ? 1 : 0) - 1;
+
+    pagination_model_->SelectPage(page, true /*animate*/);
+  }
+}
+
 gfx::Point FeaturePodsContainerView::GetButtonPosition(
     int visible_index) const {
   int row = visible_index / kUnifiedFeaturePodItemsInRow;

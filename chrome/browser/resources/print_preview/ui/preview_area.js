@@ -605,10 +605,7 @@ Polymer({
 
     // Simple settings: ranges, layout, header/footer, pages per sheet, fit to
     // page, css background, selection only, rasterize, scaling, dpi
-    const isScalingTypeFitToPage = this.getSettingValue('scalingTypePdf') ===
-        print_preview.ScalingType.FIT_TO_PAGE;
-    if (isScalingTypeFitToPage !== lastTicket.fitToPageEnabled ||
-        !areRangesEqual(
+    if (!areRangesEqual(
             /** @type {!Array<{from: number, to: number}>} */
             (this.getSettingValue('ranges')), lastTicket.pageRange) ||
         this.getSettingValue('layout') !== lastTicket.landscape ||
@@ -620,7 +617,7 @@ Polymer({
         this.getSettingValue('selectionOnly') !==
             lastTicket.shouldPrintSelectionOnly ||
         this.getSettingValue('rasterize') !== lastTicket.rasterizePDF ||
-        this.getScaleFactorForTicket_() !== lastTicket.scaleFactor) {
+        this.isScalingChanged_(lastTicket)) {
       return true;
     }
 
@@ -658,15 +655,46 @@ Polymer({
         /** @type {boolean} */ (this.getSettingValue('color')));
   },
 
-  /** @return {number} Scale factor. */
+  /** @return {number} Scale factor for print ticket. */
   getScaleFactorForTicket_: function() {
-    const scalingSettingKey = this.getSetting('scalingTypePdf').available ?
-        'scalingTypePdf' :
-        'scalingType';
-    return this.getSettingValue(scalingSettingKey) ===
+    return this.getSettingValue(this.getScalingSettingKey_()) ===
             print_preview.ScalingType.CUSTOM ?
         parseInt(this.getSettingValue('scaling'), 10) :
         100;
+  },
+
+  /** @return {string} Appropriate key for the scaling type setting. */
+  getScalingSettingKey_: function() {
+    return this.getSetting('scalingTypePdf').available ? 'scalingTypePdf' :
+                                                         'scalingType';
+  },
+
+  /**
+   * @param {Object} lastTicket Last print ticket.
+   * @return {boolean} Whether new scaling settings update the previewed
+   *     document.
+   */
+  isScalingChanged_: function(lastTicket) {
+    // Preview always updates if the scale factor is changed.
+    if (this.getScaleFactorForTicket_() !== lastTicket.scaleFactor) {
+      return true;
+    }
+
+    // If both scale factors and type match, no scaling change happened.
+    const scalingType = this.getSettingValue(this.getScalingSettingKey_());
+    if (scalingType === lastTicket.scalingType) {
+      return false;
+    }
+
+    // Scaling doesn't always change because of a scalingType change. Changing
+    // between custom scaling with a scale factor of 100 and default scaling
+    // makes no difference.
+    const defaultToCustom = scalingType === print_preview.ScalingType.DEFAULT &&
+        lastTicket.scalingType === print_preview.ScalingType.CUSTOM;
+    const customToDefault = scalingType === print_preview.ScalingType.CUSTOM &&
+        lastTicket.scalingType === print_preview.ScalingType.DEFAULT;
+
+    return !defaultToCustom && !customToDefault;
   },
 
   /**
@@ -703,9 +731,8 @@ Polymer({
       isFirstRequest: this.inFlightRequestId_ == 0,
       requestID: this.inFlightRequestId_,
       previewModifiable: this.documentModifiable,
-      fitToPageEnabled: this.getSettingValue('scalingTypePdf') ===
-          print_preview.ScalingType.FIT_TO_PAGE,
       scaleFactor: this.getScaleFactorForTicket_(),
+      scalingType: this.getSettingValue(this.getScalingSettingKey_()),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
       shouldPrintSelectionOnly: this.getSettingValue('selectionOnly'),
       // NOTE: Even though the remaining fields don't directly relate to the

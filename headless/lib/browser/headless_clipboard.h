@@ -48,8 +48,12 @@ class HeadlessClipboard : public ui::Clipboard {
   void ReadBookmark(base::string16* title, std::string* url) const override;
   void ReadData(const ui::ClipboardFormatType& format,
                 std::string* result) const override;
-  void WriteObjects(ui::ClipboardBuffer buffer,
-                    const ObjectMap& objects) override;
+  void WritePortableRepresentations(ui::ClipboardBuffer buffer,
+                                    const ObjectMap& objects) override;
+  void WritePlatformRepresentations(
+      ui::ClipboardBuffer buffer,
+      std::vector<Clipboard::PlatformRepresentation> platform_representations)
+      override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
                  size_t markup_len,

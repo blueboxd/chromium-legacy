@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">Zeit für eine Pause.</translation>
 <translation id="683971173229319003">Suche + L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktivieren</translation>
+<translation id="6878400149835617132">Tastenkombination deaktiviert</translation>
 <translation id="6910714959251846841">Damit dieses Update installiert werden kann, muss auf Ihrem Gerät ein Powerwash durchgeführt werden. Informieren Sie sich über das aktuelle <ph name="SYSTEM_APP_NAME" />-Update.</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>
 <translation id="6919251195245069855">Ihre Smartcard wurde nicht erkannt. Bitte versuchen Sie es noch einmal.</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">VPN-Verbindung getrennt</translation>
 <translation id="7377169924702866686">Feststelltaste An</translation>
 <translation id="7378594059915113390">Mediensteuerelemente</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> Sek.</translation>
 <translation id="7398254312354928459">Netzwerkverbindung gewechselt</translation>
 <translation id="7405710164030118432">Wenn Sie das Gerät entsperren möchten, geben Sie Ihren Eltern-Zugangscode für Family Link ein</translation>
 <translation id="742594950370306541">Kamera wird verwendet.</translation>

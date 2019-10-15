@@ -23,6 +23,9 @@ class SharedURLLoaderFactory;
 
 namespace safe_browsing {
 
+using RTLookupRequestCallback =
+    base::OnceCallback<void(std::unique_ptr<RTLookupRequest>)>;
+
 using RTLookupResponseCallback =
     base::OnceCallback<void(std::unique_ptr<RTLookupResponse>)>;
 
@@ -42,9 +45,12 @@ class RealTimeUrlLookupService {
   // local hash-based method.
   bool IsInBackoffMode();
 
-  // Start the full URL lookup for |url| and call |callback| on the same thread
-  // when done.
-  void StartLookup(const GURL& url, RTLookupResponseCallback callback);
+  // Start the full URL lookup for |url|, call |request_callback| on the same
+  // thread when request is sent, call |response_callback| on the same thread
+  // when response is received.
+  void StartLookup(const GURL& url,
+                   RTLookupRequestCallback request_callback,
+                   RTLookupResponseCallback response_callback);
 
   // Returns the SBThreatType for a given
   // RTLookupResponse::ThreatInfo::ThreatType

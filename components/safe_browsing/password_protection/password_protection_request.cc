@@ -201,6 +201,7 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
   // If a sample ping is send, only the URL and referrer chain is sent in the
   // request.
   if (is_sampled_ping) {
+    LogPasswordProtectionSampleReportSent();
     request_proto_->set_report_type(
         LoginReputationClientRequest::SAMPLE_REPORT);
     request_proto_->clear_trigger_type();

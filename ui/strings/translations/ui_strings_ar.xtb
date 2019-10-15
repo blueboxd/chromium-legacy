@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">إجراء اتصال باستخدام</translation>
 <translation id="335581015389089642">الحديث</translation>
 <translation id="3389286852084373014">النص كبير جدًا</translation>
-<translation id="3443810440409579745">تم استلام علامة تبويب.</translation>
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="348799646910989694">إخفاء الرف تلقائيًا</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{يتبقى يوم واحد}zero{يتبقى عدد # من الأيام}two{يتبقى يومان (#)}few{يتبقى # أيام}many{يتبقى # يومًا}other{يتبقى # من الأيام}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507">مركز الإشعارات، <ph name="UNREAD_NOTIFICATION_COUNT" /> من الإشعارات غير المقروءة</translation>
 <translation id="4730374152663651037">التطبيقات المستخدمة بشكل متكرر</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{يتبقى شهر واحد}zero{يتبقى # شهر}two{يتبقى شهرين (#)}few{يتبقى # أشهر}many{يتبقى # شهرًا}other{يتبقى # شهر}}</translation>
-<translation id="4881695831933465202">فتح</translation>
 <translation id="4888938634149558681">إجراء مكالمة</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{ثانية واحدة}zero{# من الثواني}two{ثانيتان (#)}few{# ثوانٍ}many{# ثانية}other{# من الثواني}}</translation>
 <translation id="4971687151119236543">المقطع الصوتي السابق للوسائط</translation>

@@ -114,6 +114,10 @@ void HomeScreenController::OnWindowDragEnded() {
   UpdateVisibility();
 }
 
+bool HomeScreenController::IsHomeScreenVisible() const {
+  return delegate_->IsHomeScreenVisible();
+}
+
 void HomeScreenController::OnOverviewModeStarting() {
   // Only animate the home screen when overview mode is using slide animation.
   bool animate = Shell::Get()

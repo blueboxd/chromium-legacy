@@ -56,9 +56,9 @@ class LayoutObjectFactory {
                                                 int start_offset,
                                                 int length,
                                                 LegacyLayout);
-  static LayoutProgress* CreateLayoutProgress(Node* node,
-                                              const ComputedStyle& style,
-                                              LegacyLayout legacy);
+  static LayoutProgress* CreateProgress(Node* node,
+                                        const ComputedStyle& style,
+                                        LegacyLayout legacy);
 };
 
 }  // namespace blink

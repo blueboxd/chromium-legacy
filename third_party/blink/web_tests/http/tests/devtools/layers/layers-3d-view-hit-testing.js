@@ -7,8 +7,8 @@
   await TestRunner.loadModule('layers_test_runner');
 
   await TestRunner.loadHTML(`
-      <div id="a" style="transform:translateZ(0px) translateY(60px) rotateZ(45deg);width:300px;height:300px;margin-left:100px; border: 1px solid black;">
-          <div id="b" style="transform:translateX(0px) translateY(0px) translateZ(0px) rotateX(45deg) rotateY(45deg);width:300px;height:300px; border: 1px solid black;"></div>
+      <div id="a" style="will-change: transform; transform:translateY(60px) rotateZ(45deg);width:300px;height:300px;margin-left:100px; border: 1px solid black;">
+          <div id="b" style="will-change: transform; transform:translateX(0px) translateY(0px) rotateX(45deg) rotateY(45deg);width:300px;height:300px; border: 1px solid black;"></div>
       </div>
   `);
 

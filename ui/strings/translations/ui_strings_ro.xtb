@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">Apelează de pe</translation>
 <translation id="335581015389089642">Voce</translation>
 <translation id="3389286852084373014">Textul este prea mare</translation>
-<translation id="3443810440409579745">Fila a fost primită.</translation>
 <translation id="3479552764303398839">Nu acum</translation>
 <translation id="348799646910989694">Raft ascuns automat</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{O zi rămasă}few{# zile rămase}other{# de zile rămase}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507">Centrul de notificări, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificări necitite</translation>
 <translation id="4730374152663651037">FOLOSITE FRECVENT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 lună rămasă}few{# luni rămase}other{# de luni rămase}}</translation>
-<translation id="4881695831933465202">Deschide</translation>
 <translation id="4888938634149558681">Apelează</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{o secundă}few{# secunde}other{# de secunde}}</translation>
 <translation id="4971687151119236543">Melodia anterioară din conținutul media</translation>

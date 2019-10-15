@@ -20,21 +20,12 @@ CASE 1, original layer tree with overlap1 and overlap2:
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='A' class='overlap1')",
       "position": [80, 80],
       "bounds": [180, 180],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -72,21 +63,12 @@ CASE 2, overlap3 gets added:
           "reason": "chunk appeared"
         }
       ],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -124,21 +106,12 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
           "reason": "chunk disappeared"
         }
       ],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -181,21 +154,12 @@ CASE 4, overlap1 gets removed:
           "reason": "paint property change"
         }
       ],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -243,21 +207,12 @@ CASE 5, overlap2 gets added back:
           "reason": "paint property change"
         }
       ],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -310,21 +265,12 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
           "reason": "paint property change"
         }
       ],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

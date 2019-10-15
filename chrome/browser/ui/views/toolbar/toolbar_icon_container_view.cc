@@ -29,7 +29,11 @@ ToolbarIconContainerView::ToolbarIconContainerView(bool uses_highlight)
                   gfx::Insets(0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)));
 }
 
-ToolbarIconContainerView::~ToolbarIconContainerView() = default;
+ToolbarIconContainerView::~ToolbarIconContainerView() {
+  // As childred might be Observers of |this|, we need to destroy them before
+  // destroying |observers_|.
+  RemoveAllChildViews(true);
+}
 
 void ToolbarIconContainerView::UpdateAllIcons() {}
 

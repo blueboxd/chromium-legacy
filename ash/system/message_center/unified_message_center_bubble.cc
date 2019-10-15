@@ -93,6 +93,14 @@ bool UnifiedMessageCenterBubble::FocusOut(bool reverse) {
   return tray_->FocusQuickSettings(reverse);
 }
 
+void UnifiedMessageCenterBubble::FocusFirstNotification() {
+  message_center_view_->GetFocusManager()->AdvanceFocus(false /*reverse*/);
+}
+
+bool UnifiedMessageCenterBubble::IsMessageCenterVisible() {
+  return message_center_view_->GetVisible();
+}
+
 TrayBackgroundView* UnifiedMessageCenterBubble::GetTray() const {
   return tray_;
 }

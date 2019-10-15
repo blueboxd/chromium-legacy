@@ -532,7 +532,7 @@ OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() {
 
 content::NativeFileSystemPermissionContext*
 OffTheRecordProfileImpl::GetNativeFileSystemPermissionContext() {
-  return NativeFileSystemPermissionContextFactory::GetForProfile(this).get();
+  return NativeFileSystemPermissionContextFactory::GetForProfile(this);
 }
 
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {

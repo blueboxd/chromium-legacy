@@ -32,7 +32,7 @@ struct FrameSinkManagerParams {
 
 struct VizDevToolsParams {
   // Socket for viz devtools server.
-  network.mojom.TCPServerSocket server_socket;
+  pending_remote<network.mojom.TCPServerSocket> server_socket;
 
   // Port the devtools server socket is bound to.
   uint16 server_port;

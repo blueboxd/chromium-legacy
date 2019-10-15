@@ -399,6 +399,7 @@
 <translation id="6820676911989879663">Pidä tauko</translation>
 <translation id="683971173229319003">Haku+L</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">Pikanäppäin poistettu käytöstä</translation>
 <translation id="6910714959251846841">Tämän päivityksen asennus edellyttää laitteen powerwashia. Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="6919251195245069855">Älykorttia ei tunnistettu. Yritä uudelleen.</translation>
@@ -429,7 +430,6 @@
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7377169924702866686">Caps Lock on päällä.</translation>
 <translation id="7378594059915113390">Mediaohjaimet</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />. <ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Verkko vaihdettu</translation>
 <translation id="7405710164030118432">Avaa laitteen lukitus vanhemman Family Link ‑käyttökoodilla</translation>
 <translation id="742594950370306541">Kamera on käytössä.</translation>

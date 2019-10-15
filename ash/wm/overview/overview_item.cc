@@ -611,6 +611,14 @@ void OverviewItem::OnSelectorItemDragEnded(bool snap) {
   is_being_dragged_ = false;
 }
 
+void OverviewItem::SetVisibleDuringWindowDragging(bool visible) {
+  aura::Window::Windows windows = GetWindowsForHomeGesture();
+  for (auto* window : windows) {
+    ui::Layer* layer = window->layer();
+    layer->SetOpacity(visible ? 1.f : 0.f);
+  }
+}
+
 ScopedOverviewTransformWindow::GridWindowFillMode
 OverviewItem::GetWindowDimensionsType() const {
   return transform_window_.type();

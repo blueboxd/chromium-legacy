@@ -187,12 +187,20 @@ void ArCoreGl::CreateSession(mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRPresentationTransportOptions::New();
   transport_options->wait_for_gpu_fence = true;
 
-  // Currently, AR mode only supports Android O+ due to requiring
-  // AHardwareBuffer-backed GpuMemoryBuffer shared images. This could be
-  // extended back to Android N by using the SUBMIT_AS_MAILBOX_HOLDER method
-  // that uses Surface/SurfaceTexture.
-  transport_options->transport_method =
-      device::mojom::XRPresentationTransportMethod::DRAW_INTO_TEXTURE_MAILBOX;
+  if (ar_image_transport_->UseSharedBuffer()) {
+    DVLOG(2) << __func__
+             << ": UseSharedBuffer()=true, DRAW_INTO_TEXTURE_MAILBOX";
+    transport_options->transport_method =
+        device::mojom::XRPresentationTransportMethod::DRAW_INTO_TEXTURE_MAILBOX;
+  } else {
+    DVLOG(2) << __func__
+             << ": UseSharedBuffer()=false, SUBMIT_AS_MAILBOX_HOLDER";
+    transport_options->transport_method =
+        device::mojom::XRPresentationTransportMethod::SUBMIT_AS_MAILBOX_HOLDER;
+    transport_options->wait_for_transfer_notification = true;
+    ar_image_transport_->SetFrameAvailableCallback(base::BindRepeating(
+        &ArCoreGl::OnTransportFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
+  }
 
   auto submit_frame_sink = device::mojom::XRPresentationConnection::New();
   submit_frame_sink->client_receiver =
@@ -389,14 +397,17 @@ void ArCoreGl::GetFrameData(
     frame_data->left_eye = display_info_->left_eye.Clone();
     display_info_changed_ = false;
   }
-  // Set up a shared buffer for the renderer to draw into, it'll be sent
-  // alongside the frame pose.
-  gpu::MailboxHolder buffer_holder = ar_image_transport_->TransferFrame(
-      webxr_.get(), transfer_size_, uv_transform_);
+
+  if (ar_image_transport_->UseSharedBuffer()) {
+    // Set up a shared buffer for the renderer to draw into, it'll be sent
+    // alongside the frame pose.
+    gpu::MailboxHolder buffer_holder = ar_image_transport_->TransferFrame(
+        webxr_.get(), transfer_size_, uv_transform_);
+    frame_data->buffer_holder = buffer_holder;
+  }
 
   // Create the frame data to return to the renderer.
   frame_data->pose = std::move(pose);
-  frame_data->buffer_holder = buffer_holder;
   frame_data->time_delta = base::TimeTicks::Now() - base::TimeTicks();
 
   if (options && options->include_plane_data) {
@@ -481,7 +492,59 @@ void ArCoreGl::SubmitFrameMissing(int16_t frame_index,
 void ArCoreGl::SubmitFrame(int16_t frame_index,
                            const gpu::MailboxHolder& mailbox,
                            base::TimeDelta time_waited) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << __func__ << ": frame=" << frame_index;
+  DCHECK(!ar_image_transport_->UseSharedBuffer());
+
+  if (!IsSubmitFrameExpected(frame_index))
+    return;
+
+  webxr_->ProcessOrDefer(base::BindOnce(&ArCoreGl::ProcessFrameFromMailbox,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        frame_index, mailbox));
+}
+
+void ArCoreGl::ProcessFrameFromMailbox(int16_t frame_index,
+                                       const gpu::MailboxHolder& mailbox) {
+  DVLOG(2) << __func__ << ": frame=" << frame_index;
+  DCHECK(webxr_->HaveProcessingFrame());
+  DCHECK(!ar_image_transport_->UseSharedBuffer());
+
+  ar_image_transport_->CopyMailboxToSurfaceAndSwap(transfer_size_, mailbox);
+  // Notify the client that we're done with the mailbox so that the underlying
+  // image is eligible for destruction.
+  submit_client_->OnSubmitFrameTransferred(true);
+
+  CopyCameraImageToFramebuffer();
+
+  // Now wait for ar_image_transport_ to call OnTransportFrameAvailable
+  // indicating that the image drawn onto the Surface is ready for consumption
+  // from the SurfaceTexture.
+}
+
+void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
+  DVLOG(2) << __func__;
+  DCHECK(!ar_image_transport_->UseSharedBuffer());
+  DCHECK(webxr_->HaveProcessingFrame());
+  webxr_->TransitionFrameProcessingToRendering();
+
+  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
+  ar_image_transport_->CopyDrawnImageToFramebuffer(
+      webxr_.get(), camera_image_size_, uv_transform);
+
+  surface_->SwapBuffers(base::DoNothing());
+  DVLOG(3) << __func__ << ": SwapBuffers";
+
+  webxr_->EndFrameRendering();
+
+  if (submit_client_) {
+    // Create a local GpuFence and pass it to the Renderer via IPC.
+    std::unique_ptr<gl::GLFence> gl_fence = gl::GLFence::CreateForGpuFence();
+    std::unique_ptr<gfx::GpuFence> gpu_fence2 = gl_fence->GetGpuFence();
+    submit_client_->OnSubmitFrameGpuFence(
+        gfx::CloneHandleForIPC(gpu_fence2->GetGpuFenceHandle()));
+  }
+  // We finished processing a frame, unblock a potentially waiting next frame.
+  webxr_->TryDeferredProcessing();
 }
 
 void ArCoreGl::SubmitFrameWithTextureHandle(int16_t frame_index,
@@ -493,6 +556,7 @@ void ArCoreGl::SubmitFrameDrawnIntoTexture(int16_t frame_index,
                                            const gpu::SyncToken& sync_token,
                                            base::TimeDelta time_waited) {
   DVLOG(2) << __func__ << ": frame=" << frame_index;
+  DCHECK(ar_image_transport_->UseSharedBuffer());
 
   if (!IsSubmitFrameExpected(frame_index))
     return;
@@ -509,6 +573,7 @@ void ArCoreGl::ProcessFrameDrawnIntoTexture(int16_t frame_index,
   TRACE_EVENT0("gpu", "ArCore SubmitFrame");
 
   DCHECK(webxr_->HaveProcessingFrame());
+  DCHECK(ar_image_transport_->UseSharedBuffer());
   CopyCameraImageToFramebuffer();
 
   ar_image_transport_->CreateGpuFenceForSyncToken(
@@ -521,6 +586,7 @@ void ArCoreGl::OnWebXrTokenSignaled(int16_t frame_index,
   DVLOG(3) << __func__ << ": frame=" << frame_index;
 
   DCHECK(webxr_->HaveProcessingFrame());
+  DCHECK(ar_image_transport_->UseSharedBuffer());
   webxr_->TransitionFrameProcessingToRendering();
 
   glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);

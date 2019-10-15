@@ -1219,3 +1219,4 @@ _armv4_AES_decrypt:
 .align	2
 #endif
 #endif  // !OPENSSL_NO_ASM
+.section	.note.GNU-stack,"",%progbits

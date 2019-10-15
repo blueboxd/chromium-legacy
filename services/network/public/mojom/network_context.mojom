@@ -956,7 +956,7 @@ interface NetworkContext {
   CreateTCPServerSocket(IPEndPoint local_addr,
                         uint32 backlog,
                         MutableNetworkTrafficAnnotationTag traffic_annotation,
-                        TCPServerSocket& socket)
+                        pending_receiver<TCPServerSocket> socket)
       => (int32 result, IPEndPoint? local_addr_out);
 
   // Creates a TCP socket connected to |remote_addr|. |observer| if non-null
@@ -979,7 +979,7 @@ interface NetworkContext {
       AddressList remote_addr_list,
       TCPConnectedSocketOptions? tcp_connected_socket_options,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
-      TCPConnectedSocket& socket,
+      pending_receiver<TCPConnectedSocket> socket,
       pending_remote<SocketObserver>? observer)
       => (int32 result,
           IPEndPoint? local_addr,
@@ -1089,7 +1089,7 @@ interface NetworkContext {
   // Such requests will receive ERR_FAILED via |response_client|.
   ResolveHost(HostPortPair host,
               ResolveHostParameters? optional_parameters,
-              ResolveHostClient response_client);
+              pending_remote<ResolveHostClient> response_client);
 
   // Creates a HostResolver interface that can be passed to code/processes
   // without direct access to NetworkContext to make ResolveHost requests.
@@ -1106,7 +1106,7 @@ interface NetworkContext {
   // the contained ResolveHost method, consider adding the ability for this to
   // be a restricted resolver with some functionality disabled (eg maybe MDNS).
   CreateHostResolver(DnsConfigOverrides? config_overrides,
-                     HostResolver& host_resolver);
+                     pending_receiver<HostResolver> host_resolver);
 
   // Checks the given certificate against the CertVerifier and CTVerifier. This
   // implementation is currently specific for use by Signed Exchange.

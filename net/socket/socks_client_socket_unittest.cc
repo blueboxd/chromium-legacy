@@ -95,7 +95,8 @@ std::unique_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   tcp_sock_ = socket.get();
   return std::make_unique<SOCKSClientSocket>(
       std::move(socket), HostPortPair(hostname, port), DEFAULT_PRIORITY,
-      host_resolver, TRAFFIC_ANNOTATION_FOR_TESTS);
+      host_resolver, false /* disable_secure_dns */,
+      TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
 // Tests a complete handshake and the disconnection.
@@ -435,7 +436,8 @@ TEST_F(SOCKSClientSocketTest, Tag) {
   MockHostResolver host_resolver;
   SOCKSClientSocket socket(std::unique_ptr<StreamSocket>(tagging_sock),
                            HostPortPair("localhost", 80), DEFAULT_PRIORITY,
-                           &host_resolver, TRAFFIC_ANNOTATION_FOR_TESTS);
+                           &host_resolver, false /* disable_secure_dns */,
+                           TRAFFIC_ANNOTATION_FOR_TESTS);
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
 #if defined(OS_ANDROID)
@@ -443,6 +445,26 @@ TEST_F(SOCKSClientSocketTest, Tag) {
   socket.ApplySocketTag(tag);
   EXPECT_EQ(tagging_sock->tag(), tag);
 #endif  // OS_ANDROID
+}
+
+TEST_F(SOCKSClientSocketTest, SetDisableSecureDns) {
+  for (bool disable_secure_dns : {false, true}) {
+    StaticSocketDataProvider data;
+    TestNetLog log;
+    MockHostResolver host_resolver;
+    SOCKSClientSocket socket(
+        std::make_unique<MockTCPClientSocket>(address_list_, &log, &data),
+        HostPortPair("localhost", 80), DEFAULT_PRIORITY, &host_resolver,
+        disable_secure_dns, TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    EXPECT_EQ(ERR_IO_PENDING, socket.Connect(callback_.callback()));
+    EXPECT_EQ(disable_secure_dns,
+              host_resolver.last_secure_dns_mode_override().has_value());
+    if (disable_secure_dns) {
+      EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
+                host_resolver.last_secure_dns_mode_override().value());
+    }
+  }
 }
 
 }  // namespace net

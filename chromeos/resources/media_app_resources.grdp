@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
+  <!-- Privileged app host contents. -->
   <include name="IDR_MEDIA_APP_INDEX_HTML"
       file="../components/media_app_ui/resources/index.html"
       type="BINDATA" />
+  <include name="IDR_MEDIA_APP_PWA_HTML"
+      file="../components/media_app_ui/resources/pwa.html"
+      type="BINDATA" />
+  <include name="IDR_MEDIA_APP_MANIFEST"
+      file="../components/media_app_ui/resources/manifest.json"
+      type="BINDATA" />
+
+  <!-- Unprivileged guest contents. -->
   <include name="IDR_MEDIA_APP_APP_HTML"
       file="../components/media_app_ui/resources/app.html"
       type="BINDATA" />
@@ -17,6 +26,11 @@
       <include name="IDR_MEDIA_APP_DROP_TARGET_MODULE_JS"
           file="../components/media_app_ui/resources/app/app/js/app_drop_target_module.js"
           type="BINDATA" />
+
+      <!-- Note the icon is fetched from the privileged origin. -->
+      <include name="IDR_MEDIA_APP_ICON_256"
+            file="../components/media_app_ui/resources/app/app/assets/app_icon_256.png"
+            type="BINDATA" />
     </then>
     <else>
       <include name="IDR_MEDIA_APP_APP_JS"
@@ -28,6 +42,11 @@
       <include name="IDR_MEDIA_APP_DROP_TARGET_MODULE_JS"
           file="../components/media_app_ui/resources/mock/js/mock_module.js"
           type="BINDATA" />
+
+      <!-- Use a placeholder icon when enable_cros_media_app = false. -->
+      <include name="IDR_MEDIA_APP_ICON_256"
+            file="../../ui/file_manager/gallery/images/icon256.png"
+            type="BINDATA" />
     </else>
   </if>
 </grit-part>

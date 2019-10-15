@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
+#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -60,6 +61,9 @@
     self.bannerViewController.buttonText =
         base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetButtonLabel(
             ConfirmInfoBarDelegate::BUTTON_OK));
+    gfx::Image modelIcon = self.confirmInfobarDelegate->GetIcon();
+    if (!modelIcon.IsEmpty())
+      self.bannerViewController.iconImage = modelIcon.ToUIImage();
   }
 }
 

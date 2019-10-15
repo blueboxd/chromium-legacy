@@ -264,7 +264,14 @@ namespace autotestPrivate {
     boolean isAnimating;
     boolean isVisible;
   };
-  
+
+  dictionary ArcAppTracingInfo {
+    boolean success;
+    double fps;
+    double commitDeviation;
+    double renderQuality;
+  };
+
   callback GetArcAppWindowInfoCallback = void (ArcAppWindowInfo info);
 
   callback LaunchArcAppCallback = void (boolean appLaunched);
@@ -278,6 +285,8 @@ namespace autotestPrivate {
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
   callback SetOverviewModeStateCallback = void(boolean finished);
+
+  callback ArcAppTracingCallback = void(ArcAppTracingInfo info);
 
   callback WaitForDisplayRotationCallback = void (boolean success);
 
@@ -613,6 +622,14 @@ namespace autotestPrivate {
     // |callback|: called when the operation has completed.
     static void getArcAppWindowInfo(DOMString packageName,
                                     GetArcAppWindowInfoCallback callback);
+
+    // Start ARC performance tracing for the active ARC app window.
+    // |callback|: Called when the operation has completed.
+    static void arcAppTracingStart(VoidCallback callback);
+
+    // Stop ARC performance tracing if it was started and analyze results.
+    // |callback|: callback to deliver tracing results.
+    static void arcAppTracingStopAndAnalyze(ArcAppTracingCallback callback);
 
     // Swap the windows in the split view.
     // |callback|: Called when the operation has completed.

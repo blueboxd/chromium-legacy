@@ -75,8 +75,6 @@
 <translation id="4230135487732243613">Да се свържат ли данните ви в Chromium с този профил?</translation>
 <translation id="4271805377592243930">Получаване на помощ за Chromium</translation>
 <translation id="4285930937574705105">Инсталирането не бе успешно поради неизвестна грешка. Ако Chromium понастоящем се изпълнява, моля, затворете го и опитайте отново.</translation>
-<translation id="4371648796594901282">За подробности относно Chromium OS, моля, вижте
-<ph name="LINK_BEGIN" />Всичко за Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Искате ли да излезете от Chromium въпреки това?</translation>
 <translation id="4415566066719264597">Разрешаване на Chromium да се изпълнява на заден план</translation>
 <translation id="4423735387467980091">Персонализиране и контролиране на Chromium</translation>
@@ -184,6 +182,7 @@
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7827169012280634081">Изчистване на „бисквитките“ и данните за сайтовете при излизане от Chromium</translation>
 <translation id="7867198900892795913">Chromium не можа да се актуализира до най-новата версия. Това означава, че пропускате нови функции и корекции за сигурност.</translation>
+<translation id="7898472181347242998">За да разберете дали устройството ви е актуално, отворете <ph name="LINK_BEGIN" />настройките на Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">Налице е актуализация на Chromium, която ще бъде приложена веднага щом рестартирате.</translation>
 <translation id="7937630085815544518">Бяхте влезли в Chromium като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="7975919845073681630">Тази инсталация на Chromium е алтернативна и не може да се зададе като браузър по подразбиране.</translation>

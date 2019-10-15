@@ -159,7 +159,8 @@ HttpAuthHandlerRegistryFactory::Create(
     HttpAuthHandlerNTLM::Factory* ntlm_factory =
         new HttpAuthHandlerNTLM::Factory();
 #if defined(OS_WIN)
-    ntlm_factory->set_sspi_library(std::make_unique<SSPILibraryDefault>());
+    ntlm_factory->set_sspi_library(
+        std::make_unique<SSPILibraryDefault>(NTLMSP_NAME));
 #endif  // defined(OS_WIN)
     registry_factory->RegisterSchemeFactory(kNtlmAuthScheme, ntlm_factory);
   }
@@ -169,7 +170,8 @@ HttpAuthHandlerRegistryFactory::Create(
     HttpAuthHandlerNegotiate::Factory* negotiate_factory =
         new HttpAuthHandlerNegotiate::Factory(negotiate_auth_system_factory);
 #if defined(OS_WIN)
-    negotiate_factory->set_library(std::make_unique<SSPILibraryDefault>());
+    negotiate_factory->set_library(
+        std::make_unique<SSPILibraryDefault>(NEGOSSP_NAME));
 #elif BUILDFLAG(USE_EXTERNAL_GSSAPI)
     negotiate_factory->set_library(
         std::make_unique<GSSAPISharedLibrary>(gssapi_library_name));

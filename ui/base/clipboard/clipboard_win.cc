@@ -557,8 +557,8 @@ void ClipboardWin::ReadData(const ClipboardFormatType& format,
   ::GlobalUnlock(data);
 }
 
-void ClipboardWin::WriteObjects(ClipboardBuffer buffer,
-                                const ObjectMap& objects) {
+void ClipboardWin::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                const ObjectMap& objects) {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
   ScopedClipboard clipboard;
@@ -568,7 +568,21 @@ void ClipboardWin::WriteObjects(ClipboardBuffer buffer,
   ::EmptyClipboard();
 
   for (const auto& object : objects)
-    DispatchObject(object.first, object.second);
+    DispatchPortableRepresentation(object.first, object.second);
+}
+
+void ClipboardWin::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return;
+
+  ::EmptyClipboard();
+
+  DispatchPlatformRepresentations(std::move(platform_representations));
 }
 
 void ClipboardWin::WriteText(const char* text_data, size_t text_len) {

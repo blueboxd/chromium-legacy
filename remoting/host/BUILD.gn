@@ -54,6 +54,23 @@ source_set("host") {
   ]
 }
 
+source_set("base") {
+  sources = [
+    "host_exit_codes.cc",
+    "host_exit_codes.h",
+    "logging.h",
+    "logging_linux.cc",
+    "logging_mac.cc",
+    "logging_win.cc",
+    "username.cc",
+    "username.h",
+  ]
+  deps = [
+    "//base",
+    "//remoting/base",
+  ]
+}
+
 # This must be a static library instead of a source set because
 # remoting_unittests requires that remoting_me2me_host.cc not be pulled in,
 # which in turn depends on remoting_me2me_host_static which isn't part of that
@@ -173,8 +190,6 @@ static_library("common") {
     "host_details.h",
     "host_event_logger.h",
     "host_event_logger_win.cc",
-    "host_exit_codes.cc",
-    "host_exit_codes.h",
     "host_experiment_session_plugin.cc",
     "host_experiment_session_plugin.h",
     "host_export.h",
@@ -221,10 +236,6 @@ static_library("common") {
     "ipc_video_frame_capturer.h",
     "it2me_desktop_environment.cc",
     "it2me_desktop_environment.h",
-    "logging.h",
-    "logging_linux.cc",
-    "logging_mac.cc",
-    "logging_win.cc",
     "me2me_desktop_environment.cc",
     "me2me_desktop_environment.h",
     "mouse_cursor_monitor_proxy.cc",
@@ -288,8 +299,6 @@ static_library("common") {
     "usage_stats_consent.h",
     "usage_stats_consent_mac.cc",
     "usage_stats_consent_win.cc",
-    "username.cc",
-    "username.h",
     "xmpp_register_support_host_request.cc",
     "xmpp_register_support_host_request.h",
     "xsession_chooser_linux.cc",
@@ -306,6 +315,7 @@ static_library("common") {
   defines = [ "WEBRTC_CHROMIUM_BUILD" ]
 
   deps = [
+    ":base",
     "//base:i18n",
     "//build:branding_buildflags",
     "//components/policy/core/common",

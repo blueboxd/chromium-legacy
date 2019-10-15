@@ -14,6 +14,7 @@
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/vr_device_base.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,9 +116,9 @@ class VRDeviceTest : public testing::Test {
 // will receive the "vrdevicechanged" event.
 TEST_F(VRDeviceTest, DeviceChangedDispatched) {
   auto device = MakeVRDevice();
-  auto device_ptr = device->BindXRRuntimePtr();
+  mojo::Remote<mojom::XRRuntime> device_remote(device->BindXRRuntime());
   StubVRDeviceEventListener listener;
-  device_ptr->ListenToDeviceChanges(
+  device_remote->ListenToDeviceChanges(
       listener.BindPendingRemote(),
       base::DoNothing());  // TODO: consider getting initial info
   base::RunLoop().RunUntilIdle();
@@ -130,9 +131,9 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
   device::mojom::VRDisplayEventReason mounted =
       device::mojom::VRDisplayEventReason::MOUNTED;
   auto device = MakeVRDevice();
-  auto device_ptr = device->BindXRRuntimePtr();
+  mojo::Remote<mojom::XRRuntime> device_remote(device->BindXRRuntime());
   StubVRDeviceEventListener listener;
-  device_ptr->ListenToDeviceChanges(
+  device_remote->ListenToDeviceChanges(
       listener.BindPendingRemote(),
       base::DoNothing());  // TODO: consider getting initial data
   base::RunLoop().RunUntilIdle();

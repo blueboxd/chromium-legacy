@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">Ring op fra</translation>
 <translation id="335581015389089642">Tale</translation>
 <translation id="3389286852084373014">Teksten er for lang</translation>
-<translation id="3443810440409579745">Du har modtaget en fane.</translation>
 <translation id="3479552764303398839">Ikke nu</translation>
 <translation id="348799646910989694">Hylden skjules automatisk</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag tilbage}one{# dage tilbage}other{# dage tilbage}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507">Notifikationscenter, <ph name="UNREAD_NOTIFICATION_COUNT" /> ulæste notifikationer</translation>
 <translation id="4730374152663651037">OFTE ANVENDT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Der er 1 måned tilbage}one{Der er # måned tilbage}other{Der er # måneder tilbage}}</translation>
-<translation id="4881695831933465202">Åbn</translation>
 <translation id="4888938634149558681">Ring op</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}one{# sekunder}other{# sekunder}}</translation>
 <translation id="4971687151119236543">Medie: Forrige nummer</translation>

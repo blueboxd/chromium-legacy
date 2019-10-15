@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">Zavolat pomocí služby</translation>
 <translation id="335581015389089642">Řeč</translation>
 <translation id="3389286852084373014">Text je příliš dlouhý</translation>
-<translation id="3443810440409579745">Byla přijata karta.</translation>
 <translation id="3479552764303398839">Teď ne</translation>
 <translation id="348799646910989694">Polička byla automaticky skryta</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zbývá 1 den}few{Zbývají # dny}many{Zbývá # dne}other{Zbývá # dnů}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČASTO POUŽÍVANÉ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{zbývá 1 měsíc}few{zbývají # měsíce}many{zbývá # měsíce}other{zbývá # měsíců}}</translation>
-<translation id="4881695831933465202">Otevřít</translation>
 <translation id="4888938634149558681">Volat</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekundy}other{# sekund}}</translation>
 <translation id="4971687151119236543">Média – předchozí skladba</translation>

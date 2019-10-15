@@ -87,8 +87,7 @@ NavigationState::NavigationState(
         per_navigation_mojo_interface_commit_callback,
     std::unique_ptr<NavigationClient> navigation_client,
     bool was_initiated_in_this_frame)
-    : request_committed_(false),
-      was_within_same_document_(false),
+    : was_within_same_document_(false),
       was_initiated_in_this_frame_(was_initiated_in_this_frame),
       is_content_initiated_(is_content_initiated),
       common_params_(std::move(common_params)),

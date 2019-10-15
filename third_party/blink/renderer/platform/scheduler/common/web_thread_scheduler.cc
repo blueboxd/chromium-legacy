@@ -200,13 +200,6 @@ void WebThreadScheduler::SetRendererProcessType(WebRendererProcessType type) {
   NOTREACHED();
 }
 
-WebScopedVirtualTimePauser WebThreadScheduler::CreateWebScopedVirtualTimePauser(
-    const char* name,
-    WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
-  NOTREACHED();
-  return WebScopedVirtualTimePauser();
-}
-
 void WebThreadScheduler::OnMainFrameRequestedForInput() {
   NOTREACHED();
 }

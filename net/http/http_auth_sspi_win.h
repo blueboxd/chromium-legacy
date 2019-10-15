@@ -18,6 +18,7 @@
 
 #include "base/strings/string16.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_negotiate_auth_system.h"
@@ -29,15 +30,33 @@ class HttpAuthChallengeTokenizer;
 // SSPILibrary is introduced so unit tests can mock the calls to Windows' SSPI
 // implementation. The default implementation simply passes the arguments on to
 // the SSPI implementation provided by Secur32.dll.
-// NOTE(cbentzel): I considered replacing the Secur32.dll with a mock DLL, but
-// decided that it wasn't worth the effort as this is unlikely to be performance
-// sensitive code.
-class SSPILibrary {
+//
+// A single SSPILibrary can only be used with a single security package. Hence
+// the package is bound at construction time. Overridable SSPI methods exclude
+// the security package parameter since it is implicit.
+class NET_EXPORT_PRIVATE SSPILibrary {
  public:
+  explicit SSPILibrary(const wchar_t* package) : package_name_(package) {}
   virtual ~SSPILibrary() {}
 
+  // Determines the maximum token length in bytes for a particular SSPI package.
+  //
+  // |library| and |max_token_length| must be non-nullptr pointers to valid
+  // objects.
+  //
+  // If the return value is OK, |*max_token_length| contains the maximum token
+  // length in bytes.
+  //
+  // If the return value is ERR_UNSUPPORTED_AUTH_SCHEME, |package| is not an
+  // known SSPI authentication scheme on this system. |*max_token_length| is not
+  // changed.
+  //
+  // If the return value is ERR_UNEXPECTED, there was an unanticipated problem
+  // in the underlying SSPI call. The details are logged, and
+  // |*max_token_length| is not changed.
+  Error DetermineMaxTokenLength(ULONG* max_token_length);
+
   virtual SECURITY_STATUS AcquireCredentialsHandle(LPWSTR pszPrincipal,
-                                                   LPWSTR pszPackage,
                                                    unsigned long fCredentialUse,
                                                    void* pvLogonId,
                                                    void* pvAuthData,
@@ -64,23 +83,30 @@ class SSPILibrary {
                                                    PVOID pBuffer,
                                                    ULONG cbBuffer) = 0;
 
-  virtual SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
-                                                   PSecPkgInfoW *pkgInfo) = 0;
+  virtual SECURITY_STATUS QuerySecurityPackageInfo(PSecPkgInfoW* pkgInfo) = 0;
 
   virtual SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) = 0;
 
   virtual SECURITY_STATUS DeleteSecurityContext(PCtxtHandle phContext) = 0;
 
   virtual SECURITY_STATUS FreeContextBuffer(PVOID pvContextBuffer) = 0;
+
+ protected:
+  // Security package used with DetermineMaxTokenLength(),
+  // QuerySecurityPackageInfo(), AcquireCredentialsHandle(). All of these must
+  // be consistent.
+  const std::wstring package_name_;
+  ULONG max_token_length_ = 0;
+
+  bool is_supported_ = true;
 };
 
 class SSPILibraryDefault : public SSPILibrary {
  public:
-  SSPILibraryDefault() {}
+  explicit SSPILibraryDefault(const wchar_t* package) : SSPILibrary(package) {}
   ~SSPILibraryDefault() override {}
 
   SECURITY_STATUS AcquireCredentialsHandle(LPWSTR pszPrincipal,
-                                           LPWSTR pszPackage,
                                            unsigned long fCredentialUse,
                                            void* pvLogonId,
                                            void* pvAuthData,
@@ -107,8 +133,7 @@ class SSPILibraryDefault : public SSPILibrary {
                                            PVOID pBuffer,
                                            ULONG cbBuffer) override;
 
-  SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
-                                           PSecPkgInfoW* pkgInfo) override;
+  SECURITY_STATUS QuerySecurityPackageInfo(PSecPkgInfoW* pkgInfo) override;
 
   SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) override;
 
@@ -119,10 +144,7 @@ class SSPILibraryDefault : public SSPILibrary {
 
 class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
  public:
-  HttpAuthSSPI(SSPILibrary* sspi_library,
-               const std::string& scheme,
-               const SEC_WCHAR* security_package,
-               ULONG max_token_length);
+  HttpAuthSSPI(SSPILibrary* sspi_library, const std::string& scheme);
   ~HttpAuthSSPI() override;
 
   // HttpNegotiateAuthSystem implementation:
@@ -155,9 +177,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
 
   SSPILibrary* library_;
   std::string scheme_;
-  const SEC_WCHAR* security_package_;
   std::string decoded_server_auth_token_;
-  ULONG max_token_length_;
   CredHandle cred_;
   CtxtHandle ctxt_;
   HttpAuth::DelegationType delegation_type_;
@@ -172,25 +192,6 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
 NET_EXPORT_PRIVATE void SplitDomainAndUser(const base::string16& combined,
                                            base::string16* domain,
                                            base::string16* user);
-
-// Determines the maximum token length in bytes for a particular SSPI package.
-//
-// |library| and |max_token_length| must be non-nullptr pointers to valid
-// objects.
-//
-// If the return value is OK, |*max_token_length| contains the maximum token
-// length in bytes.
-//
-// If the return value is ERR_UNSUPPORTED_AUTH_SCHEME, |package| is not an
-// known SSPI authentication scheme on this system. |*max_token_length| is not
-// changed.
-//
-// If the return value is ERR_UNEXPECTED, there was an unanticipated problem
-// in the underlying SSPI call. The details are logged, and |*max_token_length|
-// is not changed.
-NET_EXPORT_PRIVATE int DetermineMaxTokenLength(SSPILibrary* library,
-                                               const std::wstring& package,
-                                               ULONG* max_token_length);
 
 }  // namespace net
 

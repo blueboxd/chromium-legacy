@@ -187,7 +187,7 @@ void ZeroSuggestProviderTest::SetUp() {
             turl_model->GetDefaultSearchProvider()->GetEngineType(
                 turl_model->search_terms_data()));
 
-  provider_ = ZeroSuggestProvider::Create(client_.get(), nullptr, this);
+  provider_ = ZeroSuggestProvider::Create(client_.get(), this);
 }
 
 void ZeroSuggestProviderTest::OnProviderUpdate(bool updated_matches) {

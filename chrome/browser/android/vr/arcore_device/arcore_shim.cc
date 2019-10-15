@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/android/build_info.h"
 #include "base/logging.h"
 
 namespace {
@@ -120,7 +121,8 @@ bool LoadArCoreSdk(const std::string& libraryPath) {
 }
 
 bool IsArCoreSupported() {
-  return base::AndroidHardwareBufferCompat::IsSupportAvailable();
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_NOUGAT;
 }
 
 }  // namespace vr

@@ -14,18 +14,17 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
-      "position": [18, 10],
-      "bounds": [210, 160],
+      "bounds": [210, 210],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow DIV class='box'",
       "bounds": [210, 210],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 4
+      "transform": 5
     }
   ],
   "transforms": [
@@ -50,6 +49,16 @@
     },
     {
       "id": 3,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [18, 10, 0, 1]
+      ]
+    },
+    {
+      "id": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -58,8 +67,8 @@
       ]
     },
     {
-      "id": 4,
-      "parent": 3,
+      "id": 5,
+      "parent": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

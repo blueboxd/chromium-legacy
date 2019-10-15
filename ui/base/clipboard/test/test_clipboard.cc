@@ -149,12 +149,21 @@ void TestClipboard::ClearLastModifiedTime() {
   last_modified_time_ = base::Time();
 }
 
-void TestClipboard::WriteObjects(ClipboardBuffer buffer,
-                                 const ObjectMap& objects) {
+void TestClipboard::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                 const ObjectMap& objects) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   for (const auto& kv : objects)
-    DispatchObject(kv.first, kv.second);
+    DispatchPortableRepresentation(kv.first, kv.second);
+  default_store_buffer_ = ClipboardBuffer::kCopyPaste;
+}
+
+void TestClipboard::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  Clear(buffer);
+  default_store_buffer_ = buffer;
+  DispatchPlatformRepresentations(std::move(platform_representations));
   default_store_buffer_ = ClipboardBuffer::kCopyPaste;
 }
 

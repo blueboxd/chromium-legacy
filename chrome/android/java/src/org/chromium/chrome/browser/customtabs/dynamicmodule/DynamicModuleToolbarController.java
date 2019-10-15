@@ -9,10 +9,10 @@ import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.ui.util.TokenHolder;
 
 import javax.inject.Inject;
 
@@ -27,7 +27,7 @@ public class DynamicModuleToolbarController implements InflationObserver, Native
     private final CustomTabToolbarCoordinator mToolbarCoordinator;
     private final CustomTabIntentDataProvider mIntentDataProvider;
 
-    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
+    private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mHasReleasedToken;
 
     @Inject
@@ -73,6 +73,6 @@ public class DynamicModuleToolbarController implements InflationObserver, Native
 
     @VisibleForTesting
     boolean hasAcquiredToken() {
-        return mControlsHidingToken != FullscreenManager.INVALID_TOKEN;
+        return mControlsHidingToken != TokenHolder.INVALID_TOKEN;
     }
 }

@@ -60,6 +60,8 @@ Checkbox::Checkbox(const base::string16& label, ButtonListener* listener)
   // Checkboxes always have a focus ring, even when the platform otherwise
   // doesn't generally use them for buttons.
   SetInstallFocusRingOnFocus(true);
+  focus_ring()->SetPathGenerator(
+      std::make_unique<FocusRingHighlightPathGenerator>());
 }
 
 Checkbox::~Checkbox() = default;

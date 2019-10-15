@@ -10,7 +10,7 @@
 
 #include "ui/views/controls/scroll_view.h"
 
-class MediaNotificationContainerImpl;
+class MediaNotificationContainerImplView;
 
 // MediaNotificationListView is a container that holds a list of active media
 // sessions.
@@ -21,17 +21,18 @@ class MediaNotificationListView : public views::ScrollView {
 
   void ShowNotification(
       const std::string& id,
-      std::unique_ptr<MediaNotificationContainerImpl> notification);
+      std::unique_ptr<MediaNotificationContainerImplView> notification);
   void HideNotification(const std::string& id);
   bool empty() { return notifications_.empty(); }
 
-  const std::map<const std::string, MediaNotificationContainerImpl*>&
+  const std::map<const std::string, MediaNotificationContainerImplView*>&
   notifications_for_testing() const {
     return notifications_;
   }
 
  private:
-  std::map<const std::string, MediaNotificationContainerImpl*> notifications_;
+  std::map<const std::string, MediaNotificationContainerImplView*>
+      notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationListView);
 };

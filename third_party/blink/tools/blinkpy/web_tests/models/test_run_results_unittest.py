@@ -37,18 +37,19 @@ from blinkpy.web_tests.port.driver import DriverOutput
 
 def get_result(test_name, result_type=test_expectations.PASS, run_time=0):
     failures = []
+    dummy_1, dummy_2 = DriverOutput(None, None, None, None), DriverOutput(None, None, None, None)
     if result_type == test_expectations.TIMEOUT:
-        failures = [test_failures.FailureTimeout(None, None)]
+        failures = [test_failures.FailureTimeout(dummy_1)]
     elif result_type == test_expectations.AUDIO:
-        failures = [test_failures.FailureAudioMismatch(None, None)]
+        failures = [test_failures.FailureAudioMismatch(dummy_1, dummy_2)]
     elif result_type == test_expectations.TEXT:
-        failures = [test_failures.FailureTextMismatch(None, None)]
+        failures = [test_failures.FailureTextMismatch(dummy_1, dummy_2)]
     elif result_type == test_expectations.IMAGE:
-        failures = [test_failures.FailureImageHashMismatch(None, None)]
+        failures = [test_failures.FailureImageHashMismatch(dummy_1, dummy_2)]
     elif result_type == test_expectations.CRASH:
-        failures = [test_failures.FailureCrash(None, None)]
+        failures = [test_failures.FailureCrash(dummy_1)]
     elif result_type == test_expectations.LEAK:
-        failures = [test_failures.FailureLeak(None, None)]
+        failures = [test_failures.FailureLeak(dummy_1)]
     return test_results.TestResult(test_name, failures=failures, test_run_time=run_time)
 
 

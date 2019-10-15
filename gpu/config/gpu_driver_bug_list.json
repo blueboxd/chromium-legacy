@@ -3175,22 +3175,6 @@
       ]
     },
     {
-      "id": 298,
-      "cr_bugs": [941716],
-      "description": "AImageReader is very crashy on this driver version",
-      "os": {
-        "type" : "android"
-      },
-      "gl_vendor": "Qualcomm.*",
-      "driver_version": {
-        "op": "=",
-        "value": "269.0"
-      },
-      "features": [
-        "disable_aimagereader"
-      ]
-    },
-    {
       "id": 299,
       "description": "Context lost recovery often fails on PowerVR Rogue GE8* GPUs on Android.",
       "cr_bugs": [942106],

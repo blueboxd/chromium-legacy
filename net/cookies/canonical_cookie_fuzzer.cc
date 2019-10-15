@@ -38,11 +38,27 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const base::Time expiration = getRandomTime(&data_provider);
   const base::Time last_access = getRandomTime(&data_provider);
 
+  const CookieSameSite same_site =
+      data_provider.PickValueInArray<CookieSameSite>({
+          CookieSameSite::UNSPECIFIED,
+          CookieSameSite::NO_RESTRICTION,
+          CookieSameSite::LAX_MODE,
+          CookieSameSite::STRICT_MODE,
+          CookieSameSite::EXTENDED_MODE,
+      });
+
+  const CookiePriority priority =
+      data_provider.PickValueInArray<CookiePriority>({
+          CookiePriority::COOKIE_PRIORITY_LOW,
+          CookiePriority::COOKIE_PRIORITY_MEDIUM,
+          CookiePriority::COOKIE_PRIORITY_HIGH,
+      });
+
   const std::unique_ptr<const CanonicalCookie> sanitized_cookie =
       CanonicalCookie::CreateSanitizedCookie(
           url, name, value, domain, path, creation, expiration, last_access,
-          data_provider.ConsumeBool(), data_provider.ConsumeBool(),
-          CookieSameSite::UNSPECIFIED, CookiePriority::COOKIE_PRIORITY_DEFAULT);
+          data_provider.ConsumeBool(), data_provider.ConsumeBool(), same_site,
+          priority);
 
   if (sanitized_cookie) {
     CHECK(sanitized_cookie->IsCanonical());

@@ -628,6 +628,8 @@ void NavigationSimulatorImpl::Commit() {
         FrameHostMsg_SwapOut_ACK(previous_rfh->GetRoutingID()));
   }
 
+  loading_scenario_ =
+      TestRenderFrameHost::LoadingScenario::NewDocumentNavigation;
   state_ = FINISHED;
   if (!keep_loading_)
     StopLoading();
@@ -801,6 +803,8 @@ void NavigationSimulatorImpl::CommitSameDocument() {
     state_ = FAILED;
     return;
   }
+  loading_scenario_ =
+      TestRenderFrameHost::LoadingScenario::kSameDocumentNavigation;
   state_ = FINISHED;
   if (!keep_loading_)
     StopLoading();
@@ -1341,7 +1345,7 @@ void NavigationSimulatorImpl::SetKeepLoading(bool keep_loading) {
 
 void NavigationSimulatorImpl::StopLoading() {
   CHECK(render_frame_host_);
-  render_frame_host_->SimulateLoadingCompleted();
+  render_frame_host_->SimulateLoadingCompleted(loading_scenario_);
 }
 
 void NavigationSimulatorImpl::FailLoading(

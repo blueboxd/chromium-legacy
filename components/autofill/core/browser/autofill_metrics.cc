@@ -927,6 +927,13 @@ void AutofillMetrics::LogCardUnmaskPreflightCalled() {
 }
 
 // static
+void AutofillMetrics::LogCardUnmaskPreflightDuration(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes("Autofill.BetterAuth.CardUnmaskPreflightDuration",
+                              duration);
+}
+
+// static
 void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
                             NUM_UNMASK_PROMPT_EVENTS);

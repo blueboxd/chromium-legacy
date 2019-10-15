@@ -37,6 +37,7 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
+#include "components/autofill/core/browser/test_autofill_tick_clock.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_form_structure.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -4290,6 +4291,8 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
       features::kAutofillCreditCardAuthentication);
   std::string preflight_call_metric =
       "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+  std::string preflight_latency_metric =
+      "Autofill.BetterAuth.CardUnmaskPreflightDuration";
 
   // Set up our form data.
   FormData form;
@@ -4314,6 +4317,7 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
                                           form.fields[0]);
     // If no masked server cards are available, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -4328,6 +4332,7 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
                                           form.fields[0]);
     // If user is not verifiable, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -4342,6 +4347,7 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
                                           form.fields[0]);
     // If no masked server cards are available, then no preflight call is made.
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
 
   {
@@ -4358,8 +4364,10 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     // user is eligible for FIDO authentication (except iOS).
 #if defined(OS_IOS)
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
 #else
     histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
 #endif
   }
 
@@ -4377,8 +4385,10 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     // user is eligible for FIDO authentication (except iOS).
 #if defined(OS_IOS)
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
 #else
     histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
+    histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
 #endif
   }
 }
@@ -7562,6 +7572,10 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
 // Verify that we correctly log metrics tracking the duration of form fill.
 // TODO(crbug.com/1009364) Test is flake on many builders.
 TEST_F(AutofillMetricsTest, FormFillDuration) {
+  base::TimeTicks now = AutofillTickClock::NowTicks();
+  TestAutofillTickClock test_clock;
+  test_clock.SetNowTicks(now);
+
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -7603,6 +7617,10 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     SCOPED_TRACE("Test 1");
     base::HistogramTester histogram_tester;
     autofill_manager_->OnFormsSeen(forms, AutofillTickClock::NowTicks());
+    base::TimeTicks parse_time = autofill_manager_->form_structures()
+                                     .begin()
+                                     ->second->form_parsed_timestamp();
+    test_clock.SetNowTicks(parse_time + base::TimeDelta::FromMicroseconds(17));
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
 
@@ -7629,6 +7647,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->OnTextFieldDidChange(
         form, form.fields.front(), gfx::RectF(),
         parse_time + base::TimeDelta::FromMicroseconds(3));
+    test_clock.SetNowTicks(parse_time + base::TimeDelta::FromMicroseconds(17));
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
 
@@ -7656,6 +7675,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
                                      ->second->form_parsed_timestamp();
     autofill_manager_->OnDidFillAutofillFormData(
         form, parse_time + base::TimeDelta::FromMicroseconds(5));
+    test_clock.SetNowTicks(parse_time + base::TimeDelta::FromMicroseconds(17));
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
 
@@ -7689,6 +7709,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->OnTextFieldDidChange(
         form, form.fields.front(), gfx::RectF(),
         parse_time + base::TimeDelta::FromMicroseconds(3));
+    test_clock.SetNowTicks(parse_time + base::TimeDelta::FromMicroseconds(17));
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
 
@@ -7720,6 +7741,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
     autofill_manager_->OnTextFieldDidChange(
         form, form.fields.front(), gfx::RectF(),
         parse_time + base::TimeDelta::FromMicroseconds(3));
+    test_clock.SetNowTicks(parse_time + base::TimeDelta::FromMicroseconds(17));
     autofill_manager_->OnFormSubmitted(form, false,
                                        SubmissionSource::FORM_SUBMISSION);
 
@@ -7748,6 +7770,7 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
       if (kv.second->form_parsed_timestamp() > parse_time)
         parse_time = kv.second->form_parsed_timestamp();
     }
+    test_clock.SetNowTicks(parse_time + base::TimeDelta::FromMicroseconds(17));
     autofill_manager_->OnFormSubmitted(second_form, false,
                                        SubmissionSource::FORM_SUBMISSION);
 

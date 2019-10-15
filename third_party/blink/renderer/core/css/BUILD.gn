@@ -5,7 +5,6 @@
 import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("css") {
-  split_count = 10
   sources = [
     "abstract_property_set_css_style_declaration.cc",
     "abstract_property_set_css_style_declaration.h",

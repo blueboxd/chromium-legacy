@@ -6,7 +6,6 @@ Not scaled:
       "bounds": [4008, 4016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [100, 100],
       "transform": 2
     },
     {
@@ -118,7 +117,6 @@ Scale=0.5:
       "bounds": [4008, 4016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [100, 100],
       "transform": 2
     },
     {
@@ -230,7 +228,6 @@ Scale=1.5:
       "bounds": [4008, 4016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [100, 100],
       "transform": 2
     },
     {

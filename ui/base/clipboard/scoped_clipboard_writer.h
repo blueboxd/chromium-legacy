@@ -61,8 +61,9 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
   void WritePickledData(const base::Pickle& pickle,
                         const ClipboardFormatType& format);
 
-  // Adds custom data to clipboard.
-  void WriteData(const std::string& type, const std::string& data);
+  // Data is written to the system clipboard in the same order as WriteData
+  // calls are received.
+  void WriteData(const base::string16& format, mojo_base::BigBuffer data);
 
   void WriteImage(const SkBitmap& bitmap);
 
@@ -71,9 +72,13 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
 
  private:
   // We accumulate the data passed to the various targets in the |objects_|
-  // vector, and pass it to Clipboard::WriteObjects() during object destruction.
+  // vector, and pass it to Clipboard::WritePortableRepresentations() during
+  // object destruction.
   Clipboard::ObjectMap objects_;
 
+  std::vector<Clipboard::PlatformRepresentation> platform_representations_;
+
+  // The type is set at construction, and can be changed before committing.
   const ClipboardBuffer buffer_;
 
   SkBitmap bitmap_;
@@ -84,4 +89,3 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
 }  // namespace ui
 
 #endif  // UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
-

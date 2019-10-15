@@ -280,13 +280,17 @@ INSTANTIATE_TEST_SUITE_P(NativeFileSystemFileWriterImplTest,
                          ::testing::Bool());
 
 TEST_F(NativeFileSystemFileWriterImplTest, WriteInvalidBlob) {
+  // This test primarily verifies behavior of the browser process in the
+  // presence of a compromised renderer process. The situation this tests for
+  // normally can't occur. As such it doesn't really matter what status the
+  // write operation returns, the important part is that nothing crashes.
+
   mojo::PendingRemote<blink::mojom::Blob> blob;
   ignore_result(blob.InitWithNewPipeAndPassReceiver());
 
   uint64_t bytes_written;
   NativeFileSystemStatus result =
       WriteBlobSync(0, std::move(blob), &bytes_written);
-  EXPECT_EQ(result, NativeFileSystemStatus::kInvalidArgument);
   EXPECT_EQ(bytes_written, 0u);
 
   result = CloseSync();

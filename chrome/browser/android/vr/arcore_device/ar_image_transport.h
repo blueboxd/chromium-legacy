@@ -13,6 +13,10 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "ui/gfx/geometry/size_f.h"
 
+namespace gl {
+class SurfaceTexture;
+}  // namespace gl
+
 namespace gfx {
 class GpuFence;
 }  // namespace gfx
@@ -29,6 +33,8 @@ struct WebXrSharedBuffer;
 }  // namespace vr
 
 namespace device {
+
+using XrFrameCallback = base::RepeatingCallback<void(const gfx::Transform&)>;
 
 // This class handles transporting WebGL rendered output from the GPU process's
 // command buffer GL context to the local GL context, and compositing WebGL
@@ -69,14 +75,21 @@ class ArImageTransport {
                                         const gfx::Size& frame_size,
                                         const gfx::Transform& uv_transform);
   virtual void WaitSyncToken(const gpu::SyncToken& sync_token);
+  virtual void CopyMailboxToSurfaceAndSwap(const gfx::Size& frame_size,
+                                           const gpu::MailboxHolder& mailbox);
+
+  bool UseSharedBuffer() { return shared_buffer_draw_; }
+  void SetFrameAvailableCallback(XrFrameCallback on_frame_available);
 
  private:
   std::unique_ptr<vr::WebXrSharedBuffer> CreateBuffer();
   void ResizeSharedBuffer(vr::WebXrPresentationState* webxr,
                           const gfx::Size& size,
                           vr::WebXrSharedBuffer* buffer);
+  void ResizeSurface(const gfx::Size& size);
   bool IsOnGlThread() const;
   void OnMailboxBridgeReady(base::OnceClosure callback);
+  void OnFrameAvailable();
   std::unique_ptr<ArRenderer> ar_renderer_;
   // samplerExternalOES texture for the camera image.
   GLuint camera_texture_id_arcore_ = 0;
@@ -85,6 +98,20 @@ class ArImageTransport {
   scoped_refptr<base::SingleThreadTaskRunner> gl_thread_task_runner_;
 
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
+
+  // If true, use shared buffer transport aka DRAW_INTO_TEXTURE_MAILBOX.
+  // If false, use Surface transport aka SUBMIT_AS_MAILBOX_HOLDER.
+  bool shared_buffer_draw_ = false;
+
+  // Used for Surface transport (Android N)
+  //
+  // samplerExternalOES texture data for WebXR content image.
+  GLuint transport_texture_id_ = 0;
+  gfx::Size surface_size_;
+  scoped_refptr<gl::SurfaceTexture> transport_surface_texture_;
+  gfx::Transform transport_surface_texture_uv_transform_;
+  float transport_surface_texture_uv_matrix_[16];
+  XrFrameCallback on_transport_frame_available_;
 
   // Must be last.
   base::WeakPtrFactory<ArImageTransport> weak_ptr_factory_{this};

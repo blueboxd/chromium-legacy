@@ -66,6 +66,7 @@ source_set("base") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//google_apis",
+    "//remoting/base/grpc_support",
     "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",

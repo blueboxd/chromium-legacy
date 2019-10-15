@@ -60,7 +60,9 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // should be in screen coordinates. Returns false if the the gesture event
   // was not processed.
   bool OnPressEvent(Mode mode, const gfx::Point& location);
-  bool OnScrollEvent(const gfx::Point& location, float scroll_y);
+  bool OnScrollEvent(const gfx::Point& location,
+                     float scroll_x,
+                     float scroll_y);
   bool OnReleaseEvent(const gfx::Point& location,
                       base::Optional<float> velocity_y);
 
@@ -158,7 +160,9 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // Called by OnPress/Scroll/ReleaseEvent() when the drag from the shelf or
   // from the top starts/continues/ends. |location| is in screen coordinate.
   void OnDragStarted(const gfx::Point& location);
-  void OnDragContinued(const gfx::Point& location, float scroll_y);
+  void OnDragContinued(const gfx::Point& location,
+                       float scroll_x,
+                       float scroll_y);
   bool OnDragEnded(const gfx::Point& location,
                    base::Optional<float> velocity_y);
   void OnDragCancelled();

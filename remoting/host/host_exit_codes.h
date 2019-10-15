@@ -35,6 +35,10 @@ enum HostExitCodes {
 };
 
 const char* ExitCodeToString(HostExitCodes exit_code);
+
+// Returns nullptr if |exit_code| is not a HostExitCodes.
+const char* ExitCodeToStringUnchecked(int exit_code);
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_HOST_EXIT_CODES_H_

@@ -26,20 +26,20 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='box')",
       "position": [-5, 115],
       "bounds": [110, 110],
-      "transform": 4
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited box rotate45'",
       "position": [-5, -5],
       "bounds": [110, 110],
       "backgroundColor": "#0000FF",
-      "transform": 6
+      "transform": 5
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='box')",
       "position": [-5, 115],
       "bounds": [110, 110],
-      "transform": 7
+      "transform": 4
     }
   ],
   "transforms": [
@@ -78,21 +78,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [172, 28, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
         [316, 28, 0, 1]
       ]
     },
     {
-      "id": 6,
-      "parent": 5,
+      "id": 5,
+      "parent": 4,
       "transform": [
         [0.707106781186548, 0.707106781186548, 0, 0],
         [-0.707106781186548, 0.707106781186548, 0, 0],
@@ -100,15 +91,6 @@
         [0, 0, 0, 1]
       ],
       "origin": [50, 50]
-    },
-    {
-      "id": 7,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [316, 28, 0, 1]
-      ]
     }
   ]
 }

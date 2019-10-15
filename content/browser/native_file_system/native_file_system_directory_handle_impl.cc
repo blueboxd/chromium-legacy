@@ -83,7 +83,7 @@ void NativeFileSystemDirectoryHandleImpl::RequestPermission(
 void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& basename,
                                                   bool create,
                                                   GetFileCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   storage::FileSystemURL child_url;
   blink::mojom::NativeFileSystemErrorPtr get_child_url_result =
@@ -130,7 +130,7 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
     const std::string& basename,
     bool create,
     GetDirectoryCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   storage::FileSystemURL child_url;
   blink::mojom::NativeFileSystemErrorPtr get_child_url_result =
@@ -175,7 +175,7 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
 
 void NativeFileSystemDirectoryHandleImpl::GetEntries(
     GetEntriesCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DoFileSystemOperation(
       FROM_HERE, &FileSystemOperationRunner::ReadDirectory,
@@ -190,7 +190,7 @@ void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
     const std::string& basename,
     bool recurse,
     RemoveEntryCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   storage::FileSystemURL child_url;
   blink::mojom::NativeFileSystemErrorPtr get_child_url_result =
@@ -212,7 +212,7 @@ void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
 
 void NativeFileSystemDirectoryHandleImpl::Transfer(
     mojo::PendingReceiver<NativeFileSystemTransferToken> token) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   manager()->CreateTransferToken(*this, std::move(token));
 }
@@ -220,7 +220,7 @@ void NativeFileSystemDirectoryHandleImpl::Transfer(
 void NativeFileSystemDirectoryHandleImpl::GetFileWithWritePermission(
     const storage::FileSystemURL& child_url,
     GetFileCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
@@ -237,7 +237,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetFile(
     const storage::FileSystemURL& url,
     GetFileCallback callback,
     base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
@@ -253,7 +253,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetFile(
 void NativeFileSystemDirectoryHandleImpl::GetDirectoryWithWritePermission(
     const storage::FileSystemURL& child_url,
     GetDirectoryCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
@@ -270,7 +270,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
     const storage::FileSystemURL& url,
     GetDirectoryCallback callback,
     base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
@@ -288,7 +288,7 @@ void NativeFileSystemDirectoryHandleImpl::DidReadDirectory(
     base::File::Error result,
     std::vector<filesystem::mojom::DirectoryEntry> file_list,
     bool has_more) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (result != base::File::FILE_OK) {
     DCHECK(!has_more);
@@ -325,7 +325,7 @@ void NativeFileSystemDirectoryHandleImpl::RemoveEntryImpl(
     const storage::FileSystemURL& url,
     bool recurse,
     RemoveEntryCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 

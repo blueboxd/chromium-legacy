@@ -876,6 +876,123 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
       entries.front(), ukm::builders::AdFrameLoad::kLoading_CacheBytes2Name, 0);
 }
 
+// Verifies that the ad unloaded by the heavy ad intervention receives an
+// intervention report prior to being unloaded.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       HeavyAdInterventionFired_ReportSent) {
+  base::HistogramTester histogram_tester;
+  auto incomplete_resource_response =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          true /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Create a navigation observer that will watch for the intervention to
+  // navigate the frame.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  GURL url = embedded_test_server()->GetURL(
+      "/ads_observer/ad_with_incomplete_resource.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::RenderFrameHost* ad_frame =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+
+  content::DOMMessageQueue message_queue(ad_frame);
+
+  const std::string report_script = R"(
+      function process(report) {
+        if (report.body.id === 'HeavyAdIntervention')
+          window.domAutomationController.send('REPORT');
+      }
+
+      let observer = new ReportingObserver((reports, observer) => {
+        reports.forEach(process);
+      });
+      observer.observe();
+
+      window.addEventListener('unload', function(event) {
+        observer.takeRecords().forEach(process);
+        window.domAutomationController.send('END');
+      });
+  )";
+  EXPECT_TRUE(content::ExecJs(ad_frame, report_script,
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(incomplete_resource_response.get(), kMaxHeavyAdNetworkSize);
+
+  std::string message;
+  bool got_report = false;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"REPORT\"") {
+      got_report = true;
+      break;
+    }
+    if (message == "\"END\"")
+      break;
+  }
+  EXPECT_TRUE(got_report);
+}
+
+// Verifies that reports are sent to all children.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
+                       HeavyAdInterventionFired_ReportsToAllChildren) {
+  base::HistogramTester histogram_tester;
+  auto large_resource =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          embedded_test_server(), "/ads_observer/incomplete_resource.js",
+          false /*relative_url_is_prefix*/);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Create a navigation observer that will watch for the intervention to
+  // navigate the frame.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver child_observer(web_contents, 2);
+  content::TestNavigationObserver error_observer(web_contents,
+                                                 net::ERR_BLOCKED_BY_CLIENT);
+
+  auto waiter = CreateAdsPageLoadMetricsTestWaiter();
+  auto console_delegate = std::make_unique<content::ConsoleObserverDelegate>(
+      web_contents, "Ad was removed*");
+  web_contents->SetDelegate(console_delegate.get());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "foo.com", "/ad_tagging/frame_factory.html"));
+
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "createAdFrame('/ad_tagging/frame_factory.html', '');"));
+
+  child_observer.Wait();
+
+  content::RenderFrameHost* ad_frame =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+
+  auto cross_origin_ad_url = embedded_test_server()->GetURL(
+      "xyz.com", "/ad_tagging/frame_factory.html");
+
+  EXPECT_TRUE(ExecJs(
+      ad_frame,
+      "createAdFrame('/ads_observer/ad_with_incomplete_resource.html', '');",
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(ExecJs(ad_frame,
+                     "createAdFrame('" + cross_origin_ad_url.spec() + "', '');",
+                     content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // Load a resource large enough to trigger the intervention.
+  LoadLargeResource(large_resource.get(), kMaxHeavyAdNetworkSize);
+
+  error_observer.WaitForNavigationFinished();
+
+  // Every frame should get a report (ad_with_incomplete_resource.html loads two
+  // frames).
+  EXPECT_EQ(4u, console_delegate->messages().size());
+}
+
 // Verifies that the frame is navigated to the intervention page when a
 // heavy ad intervention triggers.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
@@ -904,6 +1021,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   // Wait for the intervention page navigation to finish on the frame.
   error_observer.WaitForNavigationFinished();
+
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
 
   // Check that the ad frame was navigated to the intervention page.
   EXPECT_FALSE(error_observer.last_navigation_succeeded());
@@ -1030,6 +1150,9 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
 
   // Wait for the intervention page navigation to finish on the frame.
   error_observer.WaitForNavigationFinished();
+
+  histogram_tester.ExpectUniqueSample(kHeavyAdInterventionTypeHistogramId,
+                                      FrameData::HeavyAdStatus::kNetwork, 1);
 
   // Check that the ad frame was navigated to the intervention page.
   EXPECT_FALSE(error_observer.last_navigation_succeeded());

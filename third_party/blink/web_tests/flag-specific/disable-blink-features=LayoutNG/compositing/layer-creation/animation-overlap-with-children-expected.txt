@@ -19,20 +19,20 @@ Should be composited
       "bounds": [250, 50],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 5
+      "transform": 3
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='test1 box')",
       "position": [5, 15],
       "bounds": [100, 100],
-      "transform": 8
+      "transform": 3
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 9
+      "transform": 4
     }
   ],
   "transforms": [
@@ -57,64 +57,16 @@ Should be composited
     },
     {
       "id": 3,
+      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [8, 8, 0, 1]
+        [6, 6, 0, 1]
       ]
     },
     {
       "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [6, 6, 0, 1]
-      ]
-    },
-    {
-      "id": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-      ]
-    },
-    {
-      "id": 8,
-      "parent": 7,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [6, 6, 0, 1]
-      ]
-    },
-    {
-      "id": 9,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

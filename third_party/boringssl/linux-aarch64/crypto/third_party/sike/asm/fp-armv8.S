@@ -996,3 +996,4 @@ sike_mpdblsubx2_asm:
 	ret
 #endif
 #endif  // !OPENSSL_NO_ASM
+.section	.note.GNU-stack,"",%progbits

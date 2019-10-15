@@ -5,7 +5,6 @@
       "bounds": [1026, 996],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 411],
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'pservers-pattern-01-b \u2190'",

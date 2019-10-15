@@ -5,7 +5,6 @@
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 20],
       "transform": 1
     },
     {
@@ -19,12 +18,12 @@
           "reason": "background"
         }
       ],
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='scrollable'",
       "bounds": [302, 302],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='transform'",
@@ -38,19 +37,19 @@
           "reason": "background"
         }
       ],
-      "transform": 7
+      "transform": 6
     },
     {
       "name": "Horizontal Scrollbar Layer",
       "position": [1, 301],
       "bounds": [300, 0],
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "Vertical Scrollbar Layer",
       "position": [301, 1],
       "bounds": [0, 300],
-      "transform": 4
+      "transform": 3
     }
   ],
   "transforms": [
@@ -65,11 +64,12 @@
     },
     {
       "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -20, 0, 1]
+        [40, 50, 0, 1]
       ]
     },
     {
@@ -79,7 +79,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [40, 50, 0, 1]
+        [64, 53, 0, 1]
       ]
     },
     {
@@ -89,7 +89,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [64, 53, 0, 1]
+        [0, -30, 0, 1]
       ]
     },
     {
@@ -99,22 +99,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -30, 0, 1]
+        [89, 78, 0, 1]
       ]
     },
     {
       "id": 6,
       "parent": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [89, 78, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
       "transform": [
         [3.53553390593274, 3.53553390593274, 0, 0],
         [-3.53553390593274, 3.53553390593274, 0, 0],

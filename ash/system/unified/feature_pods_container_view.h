@@ -50,6 +50,9 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // Returns the number of children that prefer to be visible.
   int GetVisibleCount() const;
 
+  // Make sure button is visible by switching page if needed.
+  void EnsurePageWithButton(FeaturePodButton* button);
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void ChildVisibilityChanged(View* child) override;

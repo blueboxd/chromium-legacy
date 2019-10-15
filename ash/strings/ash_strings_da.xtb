@@ -313,7 +313,7 @@
 <translation id="5673434351075758678">Fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="5682642926269496722">Google Assistent er ikke tilgængelig for den aktuelle brugerkonto.</translation>
 <translation id="5691772641933328258">Fingeraftrykket kunne ikke genkendes</translation>
-<translation id="5710450975648804523">Forstyr ikke er aktiveret.</translation>
+<translation id="5710450975648804523">Forstyr ikke er aktiveret</translation>
 <translation id="574392208103952083">Mellem</translation>
 <translation id="5744083938413354016">Tryk og træk</translation>
 <translation id="5750765938512549687">Bluetooth er slået fra</translation>
@@ -398,6 +398,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6820676911989879663">Hold en pause</translation>
 <translation id="683971173229319003">Søg+L</translation>
 <translation id="6857811139397017780">Aktivér <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">Genvejen er deaktiveret</translation>
 <translation id="6910714959251846841">Denne opdatering kræver, at der udføres en powerwash på din enhed. Få flere oplysninger om den nyeste <ph name="SYSTEM_APP_NAME" />-opdatering.</translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
 <translation id="6919251195245069855">Dit chipkort blev ikke genkendt. Prøv igen.</translation>
@@ -428,7 +429,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="7377169924702866686">Caps Lock er slået til.</translation>
 <translation id="7378594059915113390">Mediestyring</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />sek.</translation>
 <translation id="7398254312354928459">Der blev skiftet netværksforbindelse</translation>
 <translation id="7405710164030118432">Angiv forældreadgangskoden til Family Link for at låse enheden op</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>

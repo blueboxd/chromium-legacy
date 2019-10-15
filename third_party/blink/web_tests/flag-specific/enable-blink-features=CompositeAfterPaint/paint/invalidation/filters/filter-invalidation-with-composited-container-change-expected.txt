@@ -15,14 +15,27 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='box' class='green box blurry'",
-      "bounds": [238, 238],
+      "position": [-30, -30],
+      "bounds": [260, 260],
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='box' class='green box blurry'",
-          "rect": [0, 0, 238, 238],
+          "rect": [0, 0, 260, 260],
           "reason": "full layer"
         }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
       ]
     }
   ]

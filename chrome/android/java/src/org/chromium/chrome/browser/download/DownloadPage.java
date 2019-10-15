@@ -42,10 +42,12 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
     protected void initialize(ChromeActivity activity, final NativePageHost host) {
         ThreadUtils.assertOnUiThread();
 
-        DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder()
-                                                 .setIsOffTheRecord(host.isIncognito())
-                                                 .setIsSeparateActivity(false)
-                                                 .build();
+        DownloadManagerUiConfig config =
+                new DownloadManagerUiConfig.Builder()
+                        .setIsOffTheRecord(host.isIncognito())
+                        .setIsSeparateActivity(false)
+                        .setShowOfflineHome(DownloadUtils.shouldShowOfflineHome())
+                        .build();
         mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(activity, config,
                 ((SnackbarManageable) activity).getSnackbarManager(), activity.getComponentName(),
                 activity.getModalDialogManager());

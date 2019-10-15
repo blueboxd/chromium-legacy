@@ -19,14 +19,14 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow PRE id='layers')",
       "position": [0, -250],
       "bounds": [792, 100],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='indicator box'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -41,15 +41,6 @@
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 250, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

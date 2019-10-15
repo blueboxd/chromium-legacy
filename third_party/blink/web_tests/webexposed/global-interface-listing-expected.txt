@@ -5206,6 +5206,7 @@ interface Navigator
     getter userAgent
     getter vendor
     getter vendorSub
+    getter wakeLock
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
     getter xr
@@ -8464,10 +8465,20 @@ interface VisualViewport : EventTarget
     setter onresize
     setter onscroll
 interface WakeLock
-    static method request
-    static method requestPermission
     attribute @@toStringTag
     method constructor
+    method request
+interface WakeLockEvent : Event
+    attribute @@toStringTag
+    getter lock
+    method constructor
+interface WakeLockSentinel : EventTarget
+    attribute @@toStringTag
+    getter onrelease
+    getter type
+    method constructor
+    method release
+    setter onrelease
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
     getter curve

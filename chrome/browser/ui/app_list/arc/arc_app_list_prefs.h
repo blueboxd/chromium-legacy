@@ -217,6 +217,9 @@ class ArcAppListPrefs : public KeyedService,
     virtual void OnInstallationFinished(const std::string& package_name,
                                         bool success) {}
 
+    // Notifies that ArcAppListPrefs is destroyed.
+    virtual void OnArcAppListPrefsDestroyed() {}
+
    protected:
     virtual ~Observer() {}
   };

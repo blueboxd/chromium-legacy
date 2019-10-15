@@ -5320,6 +5320,10 @@ grit("resources") {
     }
   }
 
+  if (is_win || is_mac || is_desktop_linux) {
+    deps += [ "//chrome/browser/resources/signin:polymer3_elements" ]
+  }
+
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {
     deps += [
       "//chrome/browser/resources/discards:discards_resources_gen",

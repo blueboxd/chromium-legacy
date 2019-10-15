@@ -127,7 +127,6 @@ include_rules = [
   "+third_party/blink/public/web/web_context_menu_data.h",
   "+third_party/blink/public/web/web_device_emulation_params.h",
   "+third_party/blink/public/web/web_drag_status.h",
-  "+third_party/blink/public/web/web_fullscreen_options.h",
   "+third_party/blink/public/web/web_ime_text_span.h",
   "+third_party/blink/public/web/web_media_player_action.h",
   "+third_party/blink/public/web/web_serialized_script_value_version.h",

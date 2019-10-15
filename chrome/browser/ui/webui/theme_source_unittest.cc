@@ -94,3 +94,15 @@ TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   EXPECT_EQ(result_data_size_, empty_size);
 #endif
 }
+
+TEST_F(WebUISourcesTest, ThemeAllowedOrigin) {
+  EXPECT_EQ(
+      theme_source()->GetAccessControlAllowOriginForOrigin("chrome://settings"),
+      "chrome://settings");
+  EXPECT_EQ(theme_source()->GetAccessControlAllowOriginForOrigin(
+                "chrome-extensions://some-id"),
+            "");
+  EXPECT_EQ(
+      theme_source()->GetAccessControlAllowOriginForOrigin("http://google.com"),
+      "");
+}

@@ -7,9 +7,12 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/zx/channel.h>
 
+#include "base/base_paths_fuchsia.h"
+#include "base/callback_helpers.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
+#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
@@ -175,8 +178,7 @@ class CastRunnerIntegrationTest : public testing::Test {
     const uint16_t kRemoteDebuggingAnyPort = 0;
     create_context_params.set_remote_debugging_port(kRemoteDebuggingAnyPort);
     cast_runner_ = std::make_unique<CastRunner>(
-        &outgoing_directory_,
-        WebContentRunner::CreateWebContext(std::move(create_context_params)));
+        &outgoing_directory_, std::move(create_context_params));
 
     // Connect to the CastRunner's fuchsia.sys.Runner interface.
     fidl::InterfaceHandle<fuchsia::io::Directory> directory;
@@ -319,7 +321,8 @@ TEST_F(CastRunnerIntegrationTest, BasicRequest) {
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<WebComponent*> web_component(
         run_loop.QuitClosure());
-    cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
+    cast_runner_->SetWebComponentCreatedCallbackForTest(
+        base::AdaptCallbackForRepeating(web_component.GetReceiveCallback()));
     run_loop.Run();
     ASSERT_NE(*web_component, nullptr);
     (*web_component)
@@ -405,7 +408,8 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
   });
   cr_fuchsia::ResultReceiver<WebComponent*> web_component(
       run_loop.QuitClosure());
-  cast_runner_->GetWebComponentForTest(web_component.GetReceiveCallback());
+  cast_runner_->SetWebComponentCreatedCallbackForTest(
+      AdaptCallbackForRepeating(web_component.GetReceiveCallback()));
   run_loop.Run();
   EXPECT_FALSE(web_component.has_value());
 }
@@ -426,8 +430,8 @@ TEST_F(CastRunnerIntegrationTest, UrlRequestRewriteRulesProvider) {
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<WebComponent*> web_component_receiver(
         run_loop.QuitClosure());
-    cast_runner_->GetWebComponentForTest(
-        web_component_receiver.GetReceiveCallback());
+    cast_runner_->SetWebComponentCreatedCallbackForTest(
+        AdaptCallbackForRepeating(web_component_receiver.GetReceiveCallback()));
     run_loop.Run();
     ASSERT_NE(*web_component_receiver, nullptr);
     web_component = *web_component_receiver;
@@ -534,7 +538,7 @@ TEST_F(CastRunnerIntegrationTest, RemoteDebugging) {
     cr_fuchsia::ResultReceiver<
         fuchsia::web::Context_GetRemoteDebuggingPort_Result>
         port_receiver(run_loop.QuitClosure());
-    cast_runner_->context()->GetRemoteDebuggingPort(
+    cast_runner_->GetContext()->GetRemoteDebuggingPort(
         cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
     run_loop.Run();
 
@@ -552,6 +556,59 @@ TEST_F(CastRunnerIntegrationTest, RemoteDebugging) {
   base::Value* devtools_url = devtools_list.GetList()[0].FindPath("url");
   ASSERT_TRUE(devtools_url->is_string());
   EXPECT_EQ(devtools_url->GetString(), kBlankAppUrl.spec());
+}
+
+TEST_F(CastRunnerIntegrationTest, IsolatedContext) {
+  const char kBlankAppId[] = "00000000";
+  const GURL kContentDirectoryUrl("fuchsia-dir://testdata/echo.html");
+
+  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
+
+  fuchsia::web::ContentDirectoryProvider provider;
+  provider.set_name("testdata");
+  base::FilePath pkg_path;
+  CHECK(base::PathService::Get(base::DIR_ASSETS, &pkg_path));
+  provider.set_directory(base::fuchsia::OpenDirectory(
+      pkg_path.AppendASCII("fuchsia/runners/cast/testdata")));
+  std::vector<fuchsia::web::ContentDirectoryProvider> providers;
+  providers.emplace_back(std::move(provider));
+  app_config_manager_.AddAppMappingWithContentDirectories(
+      kBlankAppId, kContentDirectoryUrl, std::move(providers));
+
+  // Launch the test-app component.
+  fuchsia::sys::ComponentControllerPtr component_controller =
+      StartCastComponent(base::StringPrintf("cast:%s", kBlankAppId));
+  component_controller.set_error_handler(&ComponentErrorHandler);
+
+  // Navigate to the page and verify that we read it.
+  {
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<WebComponent*> web_component(
+        run_loop.QuitClosure());
+    cast_runner_->SetWebComponentCreatedCallbackForTest(
+        AdaptCallbackForRepeating(web_component.GetReceiveCallback()));
+    run_loop.Run();
+    ASSERT_NE(*web_component, nullptr);
+
+    EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 1u);
+
+    cr_fuchsia::TestNavigationListener listener;
+    fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
+        &listener);
+    (*web_component)
+        ->frame()
+        ->SetNavigationEventListener(listener_binding.NewBinding());
+    listener.RunUntilUrlAndTitleEquals(kContentDirectoryUrl, "echo");
+  }
+
+  // Verify that the component is torn down when |component_controller| is
+  // unbound.
+  base::RunLoop run_loop;
+  component_state_->set_on_delete(run_loop.QuitClosure());
+  component_controller.Unbind();
+  run_loop.Run();
+
+  EXPECT_EQ(cast_runner_->GetChildCastRunnerCountForTest(), 0u);
 }
 
 }  // namespace castrunner

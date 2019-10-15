@@ -65,10 +65,11 @@ class SOCKSConnectJobTest : public testing::Test, public WithTaskEnvironment {
   ~SOCKSConnectJobTest() override {}
 
   static scoped_refptr<SOCKSSocketParams> CreateSOCKSParams(
-      SOCKSVersion socks_version) {
+      SOCKSVersion socks_version,
+      bool disable_secure_dns = false) {
     return base::MakeRefCounted<SOCKSSocketParams>(
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair(kProxyHostName, kProxyPort),
+            HostPortPair(kProxyHostName, kProxyPort), disable_secure_dns,
             OnHostResolutionCallback()),
         socks_version == SOCKSVersion::V5,
         socks_version == SOCKSVersion::V4
@@ -342,6 +343,23 @@ TEST_F(SOCKSConnectJobTest, Priority) {
       socks_connect_job.ChangePriority(
           static_cast<RequestPriority>(initial_priority));
       EXPECT_EQ(initial_priority, host_resolver_.request_priority(request_id));
+    }
+  }
+}
+
+TEST_F(SOCKSConnectJobTest, DisableSecureDns) {
+  for (bool disable_secure_dns : {false, true}) {
+    TestConnectJobDelegate test_delegate;
+    SOCKSConnectJob socks_connect_job(
+        DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+        CreateSOCKSParams(SOCKSVersion::V4, disable_secure_dns), &test_delegate,
+        nullptr /* net_log */);
+    ASSERT_THAT(socks_connect_job.Connect(), test::IsError(ERR_IO_PENDING));
+    EXPECT_EQ(disable_secure_dns,
+              host_resolver_.last_secure_dns_mode_override().has_value());
+    if (disable_secure_dns) {
+      EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
+                host_resolver_.last_secure_dns_mode_override().value());
     }
   }
 }

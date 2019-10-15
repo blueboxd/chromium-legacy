@@ -31,6 +31,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
+#include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -71,6 +72,10 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/html/pwa.html";
     infos[SystemAppType::TERMINAL].install_url = GURL(kChromeTerminalPWAURL);
+  }
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::MEDIA)) {
+    constexpr char kChromeMediaAppURL[] = "chrome://media-app/pwa.html";
+    infos[SystemAppType::MEDIA].install_url = {GURL(kChromeMediaAppURL)};
   }
 #endif  // OS_CHROMEOS
 
@@ -121,6 +126,8 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
           chromeos::features::kCameraSystemWebApp);
     case SystemAppType::TERMINAL:
       return base::FeatureList::IsEnabled(features::kTerminalSystemApp);
+    case SystemAppType::MEDIA:
+      return base::FeatureList::IsEnabled(chromeos::features::kMediaApp);
   }
 #else
   return false;

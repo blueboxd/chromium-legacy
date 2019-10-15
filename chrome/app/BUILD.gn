@@ -7,7 +7,6 @@ import("//chrome/common/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
 import("//components/nacl/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//printing/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
@@ -50,13 +49,10 @@ source_set("chrome_dll_resources") {
 
   if (is_win) {
     sources += [ "chrome_dll.rc" ]
-    if (enable_basic_printing) {
-      # The resource compiler can only handle macro functions up to 31 chars
-      # which the buildflag system produces for this. Make a define so we can
-      # toggle off of the enable-basic-printing flag in the .rc file.
-      defines = [ "ENABLE_PRINTING_FOR_RC" ]
-    }
-    deps += [ "//printing/buildflags" ]
+    deps += [
+      "//build:branding_buildflags",
+      "//printing/buildflags",
+    ]
   }
 }
 

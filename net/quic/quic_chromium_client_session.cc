@@ -1304,13 +1304,15 @@ bool QuicChromiumClientSession::CanPool(
     const std::string& hostname,
     PrivacyMode privacy_mode,
     const SocketTag& socket_tag,
-    const NetworkIsolationKey& network_isolation_key) const {
+    const NetworkIsolationKey& network_isolation_key,
+    bool disable_secure_dns) const {
   DCHECK(connection()->connected());
   if (privacy_mode != session_key_.privacy_mode() ||
       socket_tag != session_key_.socket_tag() ||
       (network_isolation_key != session_key_.network_isolation_key() &&
        base::FeatureList::IsEnabled(
-           features::kPartitionConnectionsByNetworkIsolationKey))) {
+           features::kPartitionConnectionsByNetworkIsolationKey)) ||
+      disable_secure_dns != session_key_.disable_secure_dns()) {
     // Privacy mode and socket tag must always match.
     return false;
   }
@@ -3085,9 +3087,9 @@ const DatagramClientSocket* QuicChromiumClientSession::GetDefaultSocket()
 }
 
 bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
-  bool result =
-      CanPool(hostname, session_key_.privacy_mode(), session_key_.socket_tag(),
-              session_key_.network_isolation_key());
+  bool result = CanPool(
+      hostname, session_key_.privacy_mode(), session_key_.socket_tag(),
+      session_key_.network_isolation_key(), session_key_.disable_secure_dns());
   if (result)
     streams_pushed_count_++;
   return result;

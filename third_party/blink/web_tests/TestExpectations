@@ -351,6 +351,10 @@ crbug.com/981719 external/wpt/css/css-ui/appearance-textfield-001.html [ Failure
 crbug.com/981719 [ Linux ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 crbug.com/981719 [ Win ] external/wpt/css/css-ui/webkit-appearance-textfield-001.html [ Failure ]
 
+# WebGPU tests are only run on GPU bots, so they are skipped by default and run
+# separately from other Web Tests.
+Bug(intentional) external/wpt/webgpu/ [ Skip ]
+
 # ====== Paint team owned tests to here ======
 
 crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure Pass ]
@@ -685,9 +689,6 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
-
-crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ Failure ]
-crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
@@ -1037,6 +1038,7 @@ crbug.com/714962 virtual/layout_ng_experimental/external/wpt/css/css-multicol/mu
 crbug.com/714962 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-large-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-small-001.xht [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-zero-height-001.xht [ Failure ]
+crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/nested-with-padding-and-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/abspos-after-break-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/abspos-new-width-rebalance.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/balance-float-after-forced-break.html [ Failure ]
@@ -2008,23 +2010,7 @@ crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [
 # The spec for "Propagation to the Initial Containing Block" was changed.
 # https://drafts.csswg.org/css-writing-modes-4/#icb
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-001.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-034.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-035.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-038.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-039.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-042.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-043.html [ Failure ]
 crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-044.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-046.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-047.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-048.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-049.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-050.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-051.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-052.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-053.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-054.html [ Failure ]
-crbug.com/988585 external/wpt/css/css-writing-modes/wm-propagation-body-055.html [ Failure ]
 
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
@@ -2696,11 +2682,12 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 # Subgrid is not implemented yet
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
-crbug.com/1012600 virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure Pass ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Retina ] external/wpt/preload/preload-with-type.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
+crbug.com/626703 [ Retina ] virtual/threaded/external/wpt/css/css-animations/animation-opacity-pause-and-set-time.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/rendering/non-replaced-elements/form-controls/select-sizing-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-number.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-number.html [ Failure ]
@@ -2869,6 +2856,11 @@ crbug.com/626703 external/wpt/mediacapture-streams/MediaStream-MediaElement-srcO
 crbug.com/626703 virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/626703 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Timeout ]
 crbug.com/699040 external/wpt/svg/text/reftests/text-xml-space-001.svg [ Failure ]
+crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
@@ -5751,6 +5743,10 @@ crbug.com/1013523 [ Release ] virtual/cross-origin-embedder-policy/external/wpt/
 crbug.com/1013523 [ Release Linux Mac ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Failure Pass ]
 crbug.com/1010472 [ Mac Debug ] virtual/disable-deferred-rendering/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
+crbug.com/1013779 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointerevent_touch-adjustment_click_target.html [ Failure Pass ]
+crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
 crbug.com/990900 external/wpt/cookie-store/idlharness.tentative.https.any.serviceworker.html [ Pass Timeout ]
 crbug.com/990900 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.html [ Pass Timeout ]

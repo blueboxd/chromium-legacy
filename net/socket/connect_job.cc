@@ -108,6 +108,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
     RequestPriority request_priority,
     SocketTag socket_tag,
     const NetworkIsolationKey& network_isolation_key,
+    bool disable_secure_dns,
     const CommonConnectJobParams* common_connect_job_params,
     ConnectJob::Delegate* delegate) {
   scoped_refptr<HttpProxySocketParams> http_proxy_params;
@@ -115,7 +116,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
 
   if (!proxy_server.is_direct()) {
     auto proxy_tcp_params = base::MakeRefCounted<TransportSocketParams>(
-        proxy_server.host_port_pair(), resolution_callback);
+        proxy_server.host_port_pair(), disable_secure_dns, resolution_callback);
 
     if (proxy_server.is_http() || proxy_server.is_https() ||
         proxy_server.is_quic()) {
@@ -150,7 +151,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
     scoped_refptr<TransportSocketParams> ssl_tcp_params;
     if (proxy_server.is_direct()) {
       ssl_tcp_params = base::MakeRefCounted<TransportSocketParams>(
-          endpoint, resolution_callback);
+          endpoint, disable_secure_dns, resolution_callback);
     }
     auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
         std::move(ssl_tcp_params), std::move(socks_params),
@@ -175,7 +176,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
 
   DCHECK(proxy_server.is_direct());
   auto tcp_params = base::MakeRefCounted<TransportSocketParams>(
-      endpoint, resolution_callback);
+      endpoint, disable_secure_dns, resolution_callback);
   return TransportConnectJob::CreateTransportConnectJob(
       std::move(tcp_params), request_priority, socket_tag,
       common_connect_job_params, delegate, nullptr /* net_log */);

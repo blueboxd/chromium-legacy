@@ -119,6 +119,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   void OnPackageRemoved(const std::string& package_name,
                         bool uninstalled) override;
   void OnPackageListInitialRefreshed() override;
+  void OnArcAppListPrefsDestroyed() override;
 
   void Publish(apps::mojom::AppPtr app);
 

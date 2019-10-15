@@ -831,55 +831,54 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("https://www.example.com/one/");
 
-  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  TestServiceWorkerObserver observer(helper_->context_wrapper());
-
-  scoped_refptr<ServiceWorkerRegistration> old_registration =
+  auto* initial_client =
+      helper_->AddNewPendingInstanceClient<FakeEmbeddedWorkerInstanceClient>(
+          helper_.get());
+  scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(script1, options);
-  old_registration->SetTaskRunnerForTest(runner);
-
   // Wait until the worker becomes active.
-  scoped_refptr<ServiceWorkerVersion> old_version =
-      old_registration->GetNewestVersion();
-  observer.RunUntilActivated(old_version.get(), runner);
+  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
 
   // Add a controllee and queue an unregister to force the uninstalling state.
   ServiceWorkerProviderHost* host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
   old_version->AddControllee(host);
-  EXPECT_TRUE(old_version->HasControllee());
   RunUnregisterJob(options.scope);
-  EXPECT_TRUE(old_registration->is_uninstalling());
 
   // Register another script.
-  scoped_refptr<ServiceWorkerRegistration> new_registration =
-      RunRegisterJob(script2, options);
-  EXPECT_NE(old_registration, new_registration);
-  new_registration->SetTaskRunnerForTest(runner);
-  // Wait until the worker becomes active.
+  EXPECT_EQ(registration, RunRegisterJob(script2, options));
+  // Wait until the worker becomes installed.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_EQ(old_version, registration->active_version());
   scoped_refptr<ServiceWorkerVersion> new_version =
-      new_registration->GetNewestVersion();
-  EXPECT_NE(old_version, new_version);
+      registration->waiting_version();
+
+  // Verify the new version is installed but not activated yet.
+  EXPECT_EQ(nullptr, registration->installing_version());
+  EXPECT_TRUE(new_version);
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
+
+  // Make the old version eligible for eviction.
+  old_version->RemoveControllee(host->client_uuid());
+  RequestTermination(&initial_client->host());
+
+  // Wait for activated.
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
   observer.RunUntilActivated(new_version.get(), runner);
 
-  EXPECT_TRUE(old_registration->is_uninstalling());
-  EXPECT_EQ(old_version, old_registration->active_version());
-  EXPECT_FALSE(old_registration->waiting_version());
-
-  // Verify the new version is installed and activated, but has no controllee.
-  EXPECT_FALSE(new_registration->installing_version());
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
+  // Verify state after the new version is activated.
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
+  EXPECT_EQ(nullptr, registration->installing_version());
+  EXPECT_EQ(nullptr, registration->waiting_version());
+  EXPECT_EQ(new_version, registration->active_version());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
-  EXPECT_FALSE(new_version->HasControllee());
-
-  // Remove the controllee from the old version and verify the new version
-  // doesn't get a controllee.
-  EXPECT_TRUE(old_version->HasControllee());
-  old_version->RemoveControllee(host->client_uuid());
-  EXPECT_FALSE(old_version->HasControllee());
-  EXPECT_FALSE(new_version->HasControllee());
-
-  // Cleanup.
-  RunUnregisterJob(options.scope);
 }
 
 TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
@@ -888,36 +887,28 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = GURL("https://www.example.com/one/");
 
-  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-  TestServiceWorkerObserver observer(helper_->context_wrapper());
-
-  scoped_refptr<ServiceWorkerRegistration> old_registration =
+  scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(script1, options);
-  old_registration->SetTaskRunnerForTest(runner);
-
   // Wait until the worker becomes active.
-  scoped_refptr<ServiceWorkerVersion> old_version =
-      old_registration->GetNewestVersion();
-  observer.RunUntilActivated(old_version.get(), runner);
+  base::RunLoop().RunUntilIdle();
 
   // Add a controllee and queue an unregister to force the uninstalling state.
   ServiceWorkerProviderHost* host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
   old_version->AddControllee(host);
   RunUnregisterJob(options.scope);
 
-  scoped_refptr<ServiceWorkerRegistration> new_registration =
-      RunRegisterJob(script2, options);
-  EXPECT_NE(old_registration, new_registration);
+  EXPECT_EQ(registration, RunRegisterJob(script2, options));
+  // Wait until the worker becomes installed.
+  base::RunLoop().RunUntilIdle();
 
-  // Wait until the worker becomes active.
+  EXPECT_EQ(registration, FindRegistrationForScope(options.scope));
   scoped_refptr<ServiceWorkerVersion> new_version =
-      new_registration->GetNewestVersion();
-  ASSERT_NE(old_version, new_version);
-  observer.RunUntilActivated(new_version.get(), runner);
+      registration->waiting_version();
+  ASSERT_TRUE(new_version);
 
-  EXPECT_EQ(new_registration, FindRegistrationForScope(options.scope));
-
-  // Unregister the new registration (but the old one is still live).
+  // Unregister the registration (but it's still live).
   RunUnregisterJob(options.scope);
   // Now it's not found in the storage.
   RunUnregisterJob(options.scope,
@@ -925,23 +916,82 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
 
   FindRegistrationForScope(options.scope,
                            blink::ServiceWorkerStatusCode::kErrorNotFound);
-  EXPECT_TRUE(old_registration->is_uninstalling());
-  EXPECT_EQ(old_version, old_registration->active_version());
+  EXPECT_TRUE(registration->is_uninstalling());
+  EXPECT_EQ(old_version, registration->active_version());
 
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, old_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, old_version->status());
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
   old_version->RemoveControllee(host->client_uuid());
-  // Wait until the worker becomes redundant.
-  observer.RunUntilStatusChange(old_version.get(),
-                                ServiceWorkerVersion::REDUNDANT);
 
   WaitForVersionRunningStatus(old_version, EmbeddedWorkerStatus::STOPPED);
   WaitForVersionRunningStatus(new_version, EmbeddedWorkerStatus::STOPPED);
 
-  EXPECT_FALSE(old_registration->is_uninstalling());
-  EXPECT_TRUE(old_registration->is_uninstalled());
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_TRUE(registration->is_uninstalled());
+
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, old_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, new_version->running_status());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, new_version->status());
+}
+
+TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
+  GURL script1("https://www.example.com/service_worker.js");
+  GURL script2("https://www.example.com/service_worker.js?new");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = GURL("https://www.example.com/one/");
+
+  auto* initial_client =
+      helper_->AddNewPendingInstanceClient<FakeEmbeddedWorkerInstanceClient>(
+          helper_.get());
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(script1, options);
+  // Wait until the worker becomes active.
+  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  ServiceWorkerProviderHost* host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> old_version =
+      registration->active_version();
+  old_version->AddControllee(host);
+  RunUnregisterJob(options.scope);
+
+  EXPECT_EQ(registration, RunRegisterJob(script2, options));
+  // Wait until the worker becomes installed.
+  base::RunLoop().RunUntilIdle();
+
+  scoped_refptr<ServiceWorkerVersion> new_version =
+      registration->waiting_version();
+  ASSERT_TRUE(new_version);
+
+  RunUnregisterJob(options.scope);
+
+  EXPECT_TRUE(registration->is_uninstalling());
+
+  EXPECT_EQ(registration, RunRegisterJob(script2, options));
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_EQ(new_version, registration->waiting_version());
+
+  old_version->RemoveControllee(host->client_uuid());
+  RequestTermination(&initial_client->host());
+
+  // Wait for activated.
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilActivated(new_version.get(), runner);
+
+  // Verify state after the new version is activated.
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
+  EXPECT_EQ(nullptr, registration->installing_version());
+  EXPECT_EQ(nullptr, registration->waiting_version());
+  EXPECT_EQ(new_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, new_version->status());
 }
 
 // A fake service worker for toggling whether a fetch event handler exists.
@@ -1828,6 +1878,68 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_UninstallingRegistration) {
   EXPECT_EQ(active_version, registration->active_version());
   EXPECT_EQ(nullptr, registration->waiting_version());
   EXPECT_EQ(nullptr, registration->installing_version());
+}
+
+TEST_P(ServiceWorkerUpdateJobTest, RegisterMultipleTimesWhileUninstalling) {
+  GURL script1("https://www.example.com/service_worker.js?first");
+  GURL script2("https://www.example.com/service_worker.js?second");
+  GURL script3("https://www.example.com/service_worker.js?third");
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = GURL("https://www.example.com/one/");
+
+  auto* initial_client =
+      helper_->AddNewPendingInstanceClient<FakeEmbeddedWorkerInstanceClient>(
+          helper_.get());
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      RunRegisterJob(script1, options);
+  // Wait until the worker becomes actvie.
+  base::RunLoop().RunUntilIdle();
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  registration->SetTaskRunnerForTest(runner);
+
+  // Add a controllee and queue an unregister to force the uninstalling state.
+  ServiceWorkerProviderHost* host = CreateControllee();
+  scoped_refptr<ServiceWorkerVersion> first_version =
+      registration->active_version();
+  first_version->AddControllee(host);
+  RunUnregisterJob(options.scope);
+
+  EXPECT_EQ(registration, RunRegisterJob(script2, options));
+  // Wait until the worker becomes installed.
+  base::RunLoop().RunUntilIdle();
+
+  scoped_refptr<ServiceWorkerVersion> second_version =
+      registration->waiting_version();
+  ASSERT_TRUE(second_version);
+
+  RunUnregisterJob(options.scope);
+
+  EXPECT_TRUE(registration->is_uninstalling());
+
+  EXPECT_EQ(registration, RunRegisterJob(script3, options));
+  TestServiceWorkerObserver observer(helper_->context_wrapper());
+  observer.RunUntilStatusChange(second_version.get(),
+                                ServiceWorkerVersion::REDUNDANT);
+  scoped_refptr<ServiceWorkerVersion> third_version =
+      registration->waiting_version();
+  ASSERT_TRUE(third_version);
+
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, second_version->status());
+
+  first_version->RemoveControllee(host->client_uuid());
+  RequestTermination(&initial_client->host());
+
+  // Wait for activated.
+  observer.RunUntilActivated(third_version.get(), runner);
+
+  // Verify the new version is activated.
+  EXPECT_FALSE(registration->is_uninstalling());
+  EXPECT_FALSE(registration->is_uninstalled());
+  EXPECT_EQ(nullptr, registration->installing_version());
+  EXPECT_EQ(nullptr, registration->waiting_version());
+  EXPECT_EQ(third_version, registration->active_version());
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, third_version->status());
 }
 
 class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient

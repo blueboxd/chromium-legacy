@@ -175,7 +175,6 @@ void ProfileMenuView::BuildMenu() {
   if (profile->IsRegularProfile()) {
     BuildIdentity();
     BuildSyncInfo();
-    BuildFeatureButtons();
     BuildAutofillButtons();
   } else if (profile->IsGuestSession()) {
     BuildGuestIdentity();
@@ -183,6 +182,7 @@ void ProfileMenuView::BuildMenu() {
     NOTREACHED();
   }
 
+  BuildFeatureButtons();
   BuildProfileManagementHeading();
   BuildSelectableProfiles();
   BuildProfileManagementFeatureButtons();
@@ -547,23 +547,35 @@ void ProfileMenuView::BuildSyncInfo() {
 void ProfileMenuView::BuildFeatureButtons() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
-  if (!identity_manager->HasUnconsentedPrimaryAccount())
-    return;
+  const bool is_guest = browser()->profile()->IsGuestSession();
+  const bool has_unconsented_account =
+      !is_guest && identity_manager->HasUnconsentedPrimaryAccount();
+  const bool has_primary_account =
+      !is_guest && identity_manager->HasPrimaryAccount();
+
+  if (has_unconsented_account) {
+    AddFeatureButton(
+#if defined(GOOGLE_CHROME_BUILD)
+        // The Google G icon needs to be shrunk, so it won't look too big
+        // compared to the other icons.
+        ImageForMenu(kGoogleGLogoIcon, /*icon_to_image_ratio=*/0.75),
+#else
+        gfx::ImageSkia(),
+#endif
+        l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT),
+        base::BindRepeating(
+            &ProfileMenuView::OnManageGoogleAccountButtonClicked,
+            base::Unretained(this)));
+  }
 
   AddFeatureButton(
-#if defined(GOOGLE_CHROME_BUILD)
-      // The Google G icon needs to be shrunk, so it won't look too big
-      // compared to the other icons.
-      ImageForMenu(kGoogleGLogoIcon, /*icon_to_image_ratio=*/0.75),
-#else
-      gfx::ImageSkia(),
-#endif
-      l10n_util::GetStringUTF16(IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT),
-      base::BindRepeating(&ProfileMenuView::OnManageGoogleAccountButtonClicked,
+      ImageForMenu(kCloseAllIcon),
+      l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
                           base::Unretained(this)));
 
-  if (!identity_manager->HasPrimaryAccount()) {
-    // The sign-out button is only shown when sync is off.
+  // The sign-out button is always at the bottom.
+  if (has_unconsented_account && !has_primary_account) {
     AddFeatureButton(
         ImageForMenu(kSignOutIcon),
         l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT),

@@ -71,6 +71,14 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
 
 CGRect GetBoundingRectOfElement(web::WebState* web_state,
                                 ElementSelector* selector) {
+#if !TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/1013714): Replace delay with improved JavaScript.
+  // As of iOS 13.1, devices need additional time to stabalize the page before
+  // getting the element location. Without this wait, the element's bounding
+  // rect will be incorrect.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
+#endif
+
   std::string selector_script =
       base::SysNSStringToUTF8(selector.selectorScript);
   std::string selector_description =

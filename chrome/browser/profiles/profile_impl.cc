@@ -1345,7 +1345,7 @@ ProfileImpl::RetriveInProgressDownloadManager() {
 
 content::NativeFileSystemPermissionContext*
 ProfileImpl::GetNativeFileSystemPermissionContext() {
-  return NativeFileSystemPermissionContextFactory::GetForProfile(this).get();
+  return NativeFileSystemPermissionContextFactory::GetForProfile(this);
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

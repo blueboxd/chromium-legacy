@@ -25,13 +25,14 @@ class IsolatedVRDeviceProvider
   ~IsolatedVRDeviceProvider() override;
 
   // If the VR API requires initialization that should happen here.
-  void Initialize(base::RepeatingCallback<void(device::mojom::XRDeviceId,
-                                               device::mojom::VRDisplayInfoPtr,
-                                               device::mojom::XRRuntimePtr)>
-                      add_device_callback,
-                  base::RepeatingCallback<void(device::mojom::XRDeviceId)>
-                      remove_device_callback,
-                  base::OnceClosure initialization_complete) override;
+  void Initialize(
+      base::RepeatingCallback<void(
+          device::mojom::XRDeviceId,
+          device::mojom::VRDisplayInfoPtr,
+          mojo::PendingRemote<device::mojom::XRRuntime>)> add_device_callback,
+      base::RepeatingCallback<void(device::mojom::XRDeviceId)>
+          remove_device_callback,
+      base::OnceClosure initialization_complete) override;
 
   // Returns true if initialization is complete.
   bool Initialized() override;
@@ -39,7 +40,7 @@ class IsolatedVRDeviceProvider
  private:
   // IsolatedXRRuntimeProviderClient
   void OnDeviceAdded(
-      device::mojom::XRRuntimePtr device,
+      mojo::PendingRemote<device::mojom::XRRuntime> device,
       mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
           gamepad_factory,
       mojo::PendingRemote<device::mojom::XRCompositorHost> compositor_host,
@@ -55,7 +56,7 @@ class IsolatedVRDeviceProvider
 
   base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                device::mojom::VRDisplayInfoPtr,
-                               device::mojom::XRRuntimePtr)>
+                               mojo::PendingRemote<device::mojom::XRRuntime>)>
       add_device_callback_;
   base::RepeatingCallback<void(device::mojom::XRDeviceId)>
       remove_device_callback_;

@@ -324,6 +324,9 @@ public class TabGridDialogMediatorUnitTest {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
 
+        // Mock that tab1 is in a group.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+
         // Mock that keyboard shows and group title is updated.
         keyboardVisibilityListener.keyboardVisibilityChanged(true);
         View.OnFocusChangeListener onFocusChangeListener =
@@ -348,6 +351,9 @@ public class TabGridDialogMediatorUnitTest {
         TextWatcher textWatcher = mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER);
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
+
+        // Mock that tab1 is in a group.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
 
         // Mock that keyboard shows but title edit text is not focused.
         keyboardVisibilityListener.keyboardVisibilityChanged(true);
@@ -624,6 +630,9 @@ public class TabGridDialogMediatorUnitTest {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
 
+        // Mock that tab1 is in a group.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+
         // Mock that we have a modified group title before dialog is hidden.
         TextWatcher textWatcher = mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER);
         View.OnFocusChangeListener onFocusChangeListener =
@@ -646,9 +655,62 @@ public class TabGridDialogMediatorUnitTest {
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
 
+        // Mock that tab1 is in a group.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+
         mMediator.hideDialog(false);
 
         // When title is not updated, don't store title when hide dialog.
+        verify(mTabGroupTitleEditor, never()).storeTabGroupTitle(anyInt(), anyString());
+        verify(mTabGroupTitleEditor, never()).updateTabGroupTitle(any(Tab.class), anyString());
+        assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(TAB1_TITLE));
+    }
+
+    @Test
+    public void hideDialog_ClosingLastTab_SkipStoreGroupTitle() {
+        mMediator.setCurrentTabIdForTest(TAB1_ID);
+        mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
+
+        // Mock that the last tab in the group is closed.
+        doReturn(new ArrayList<>()).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
+
+        // Mock that we have a modified group title before dialog is hidden.
+        TextWatcher textWatcher = mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER);
+        View.OnFocusChangeListener onFocusChangeListener =
+                mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER);
+        onFocusChangeListener.onFocusChange(mTitleTextView, true);
+        textWatcher.afterTextChanged(mEditable);
+        assertThat(mMediator.getCurrentGroupModifiedTitleForTesting(),
+                equalTo(CUSTOMIZED_DIALOG_TITLE));
+
+        mMediator.hideDialog(false);
+
+        // Skip storing dialog title when the last tab is closing.
+        verify(mTabGroupTitleEditor, never()).storeTabGroupTitle(anyInt(), anyString());
+        verify(mTabGroupTitleEditor, never()).updateTabGroupTitle(any(Tab.class), anyString());
+        assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(TAB1_TITLE));
+    }
+
+    @Test
+    public void hideDialog_SingleTab_SkipStoreGroupTitle() {
+        mMediator.setCurrentTabIdForTest(TAB1_ID);
+        mModel.set(TabGridPanelProperties.HEADER_TITLE, TAB1_TITLE);
+
+        // Mock that tab1 is now a single tab.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1)), TAB1_ID);
+
+        // Mock that we have a modified group title before dialog is hidden.
+        TextWatcher textWatcher = mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER);
+        View.OnFocusChangeListener onFocusChangeListener =
+                mModel.get(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER);
+        onFocusChangeListener.onFocusChange(mTitleTextView, true);
+        textWatcher.afterTextChanged(mEditable);
+        assertThat(mMediator.getCurrentGroupModifiedTitleForTesting(),
+                equalTo(CUSTOMIZED_DIALOG_TITLE));
+
+        mMediator.hideDialog(false);
+
+        // Skip storing dialog title when this group becomes a single tab.
         verify(mTabGroupTitleEditor, never()).storeTabGroupTitle(anyInt(), anyString());
         verify(mTabGroupTitleEditor, never()).updateTabGroupTitle(any(Tab.class), anyString());
         assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(TAB1_TITLE));

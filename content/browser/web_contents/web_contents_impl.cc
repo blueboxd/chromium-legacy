@@ -903,8 +903,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeThemeColor,
-                        OnThemeColorChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
@@ -2533,7 +2531,7 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
 
 void WebContentsImpl::EnterFullscreenMode(
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::FullScreenOptions& options) {
   // This method is being called to enter renderer-initiated fullscreen mode.
   // Make sure any existing fullscreen widget is shut down first.
   RenderWidgetHostView* const widget_view = GetFullscreenRenderWidgetHostView();
@@ -3142,7 +3140,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
       delegate_->EnterFullscreenModeForTab(this, GURL(),
-                                           blink::WebFullscreenOptions());
+                                           blink::FullScreenOptions());
     } else {
       widget_host_view->InitAsFullscreen(view);
     }
@@ -4629,8 +4627,9 @@ bool WebContentsImpl::CanOverscrollContent() const {
   return false;
 }
 
-void WebContentsImpl::OnThemeColorChanged(RenderFrameHostImpl* source,
-                                          base::Optional<SkColor> theme_color) {
+void WebContentsImpl::OnThemeColorChanged(
+    RenderFrameHostImpl* source,
+    const base::Optional<SkColor>& theme_color) {
   if (source != GetMainFrame()) {
     // Only the main frame may control the theme.
     return;
@@ -5429,8 +5428,16 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   if (!render_frame_host->GetParent() && IsBeingDestroyed() &&
-      record_max_frame_count_when_leaving_current_page_) {
+      record_max_frame_count_when_leaving_current_page_ &&
+      !static_cast<RenderFrameHostImpl*>(render_frame_host)
+           ->is_in_back_forward_cache()) {
     // Main frame has been deleted because WebContents is being destroyed.
+    // Note that we aren't recording this here when the main frame is in the
+    // back-forward cache because that means we've actually already navigated
+    // away from it (and we got to this point because the WebContents is
+    // deleted), which means |max_frame_count_| is already overwritten.
+    // The |max_frame_count_| value will instead be recorded from within
+    // |WebContentsImpl::ReadyToCommitNavigation()|.
     RecordMaxFrameCountUMA(max_frame_count_);
   }
 

@@ -12,6 +12,7 @@ import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
+import org.chromium.ui.util.TokenHolder;
 
 /**
  * Determines the desired visibility of the browser controls based on the current state of the
@@ -51,8 +52,9 @@ public class BrowserStateBrowserControlsVisibilityDelegate
 
     private void ensureControlsVisibleForMinDuration() {
         // Do not lock the controls as visible. Such as in testing.
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_MINIMUM_SHOW_DURATION))
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_MINIMUM_SHOW_DURATION)) {
             return;
+        }
         if (mHandler.hasMessages(0)) return; // Messages sent via post/postDelayed have what=0
 
         long currentShowingTime = SystemClock.uptimeMillis() - mCurrentShowingStartTime;

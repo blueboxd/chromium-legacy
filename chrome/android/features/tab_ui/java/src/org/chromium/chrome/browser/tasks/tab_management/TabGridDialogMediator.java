@@ -409,9 +409,15 @@ public class TabGridDialogMediator {
     }
 
     private void saveCurrentGroupModifiedTitle() {
-        if (mCurrentGroupModifiedTitle == null) return;
+        // When current group no longer exists, skip saving the title.
+        if (getRelatedTabs(mCurrentTabId).size() < 2) {
+            mCurrentGroupModifiedTitle = null;
+        }
+
+        if (mCurrentGroupModifiedTitle == null) {
+            return;
+        }
         assert mTabGroupTitleEditor != null;
-        assert mCurrentTabId != Tab.INVALID_TAB_ID;
 
         Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
         mTabGroupTitleEditor.storeTabGroupTitle(currentTab.getRootId(), mCurrentGroupModifiedTitle);

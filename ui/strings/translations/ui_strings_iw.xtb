@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">התקשרות באמצעות</translation>
 <translation id="335581015389089642">דיבור</translation>
 <translation id="3389286852084373014">הטקסט ארוך מדי</translation>
-<translation id="3443810440409579745">כרטיסייה התקבלה.</translation>
 <translation id="3479552764303398839">לא עכשיו</translation>
 <translation id="348799646910989694">המדף יוסתר באופן אוטומטי</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{נותר יום אחד}two{נותרו יומיים}many{נותרו # ימים}other{נותרו # ימים}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507">מרכז הודעות, <ph name="UNREAD_NOTIFICATION_COUNT" /> הודעות שלא נקראו</translation>
 <translation id="4730374152663651037">בשימוש לעתים קרובות</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{נותר חודש אחד}two{נותרו חודשיים}many{נותרו # חודשים}other{נותרו # חודשים}}</translation>
-<translation id="4881695831933465202">פתיחה</translation>
 <translation id="4888938634149558681">התקשרות</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{שנייה אחת}two{# שניות}many{# שניות}other{# שניות}}</translation>
 <translation id="4971687151119236543">רצועה קודמת במדיה</translation>

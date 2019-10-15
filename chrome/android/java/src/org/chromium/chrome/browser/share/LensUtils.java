@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -31,15 +32,16 @@ public class LensUtils {
     /**
      * See function for details.
      */
-    private static boolean sFakePassableLensVersionForTesting;
+    private static boolean sFakePassableLensEnvironmentForTesting;
 
     /*
      * If true, short-circuit the version name intent check to always return a high enough version.
+     * Also hardcode the device OS check to return true.
      * Used by test cases.
      * @param shouldFake Whether to fake the version check.
      */
-    public static void setFakePassableLensVersionForTesting(boolean shouldFake) {
-        sFakePassableLensVersionForTesting = shouldFake;
+    public static void setFakePassableLensEnvironmentForTesting(boolean shouldFake) {
+        sFakePassableLensEnvironmentForTesting = shouldFake;
     }
 
     /**
@@ -51,7 +53,7 @@ public class LensUtils {
      */
     public static String getLensActivityVersionNameIfAvailable(Context context) {
         // Use this syntax to avoid NPE if unset.
-        if (Boolean.TRUE.equals(sFakePassableLensVersionForTesting)) {
+        if (Boolean.TRUE.equals(sFakePassableLensEnvironmentForTesting)) {
             // Returns the minimum version which will meet the bar and allow future AGSA version
             // checks to succeed.
             return MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE;
@@ -131,6 +133,20 @@ public class LensUtils {
 
         // If versions are the same so far, but they have different length...
         return agsaNumbers.length < targetAgsaNumbers.length;
+    }
+
+    /**
+     * Checks whether the device is below Android O.  We restrict to these versions
+     * to limit to OS"s where image processing vulnerabilities can be retroactively
+     * fixed if they are discovered in the future.
+     * @return Whether the device is below Android O.
+     */
+    public static boolean isDeviceOsBelowMinimum() {
+        if (sFakePassableLensEnvironmentForTesting) {
+            return false;
+        }
+
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
     }
 
     /**

@@ -27,6 +27,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/concierge_client.h"
@@ -51,28 +52,64 @@ constexpr const char kKernel[] = "vmlinux";
 constexpr const char kRootFs[] = "system.raw.img";
 constexpr const char kVendorImage[] = "vendor.raw.img";
 
+// A move-only class to hold status of the host file system.
+class FileSystemStatus {
+ public:
+  FileSystemStatus(FileSystemStatus&& rhs) = default;
+  ~FileSystemStatus() = default;
+  FileSystemStatus& operator=(FileSystemStatus&& rhs) = default;
+
+  bool is_host_rootfs_writable() const { return is_host_rootfs_writable_; }
+  const base::FilePath& system_image_path() const { return system_image_path_; }
+  const base::FilePath& vendor_image_path() const { return vendor_image_path_; }
+  const base::FilePath& guest_kernel_path() const { return guest_kernel_path_; }
+  const base::FilePath& fstab_path() const { return fstab_path_; }
+
+  static FileSystemStatus GetFileSystemStatusBlocking() {
+    return FileSystemStatus();
+  }
+
+ private:
+  FileSystemStatus()
+      : is_host_rootfs_writable_(IsHostRootfsWritable()),
+        system_image_path_(SelectDlcOrBuiltin(base::FilePath(kRootFs))),
+        vendor_image_path_(SelectDlcOrBuiltin(base::FilePath(kVendorImage))),
+        guest_kernel_path_(SelectDlcOrBuiltin(base::FilePath(kKernel))),
+        fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))) {}
+
+  static bool IsHostRootfsWritable() {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    struct statvfs buf;
+    if (statvfs("/", &buf) < 0) {
+      PLOG(ERROR) << "statvfs() failed";
+      return false;
+    }
+    const bool rw = !(buf.f_flag & ST_RDONLY);
+    VLOG(1) << "Host's rootfs is " << (rw ? "rw" : "ro");
+    return rw;
+  }
+
+  static base::FilePath SelectDlcOrBuiltin(const base::FilePath& file) {
+    const base::FilePath dlc_path = base::FilePath(kDlcPath).Append(file);
+    if (base::PathExists(dlc_path)) {
+      VLOG(1) << "arcvm-dlc will be used for " << file.value();
+      return dlc_path;
+    }
+    return base::FilePath(kBuiltinPath).Append(file);
+  }
+
+  bool is_host_rootfs_writable_;
+  base::FilePath system_image_path_;
+  base::FilePath vendor_image_path_;
+  base::FilePath guest_kernel_path_;
+  base::FilePath fstab_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSystemStatus);
+};
+
 chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
-}
-
-bool IsHostRootfsWritable() {
-  struct statvfs buf;
-  if (statvfs("/", &buf) < 0) {
-    PLOG(ERROR) << "statvfs() failed";
-    return false;
-  }
-  const bool rw = !(buf.f_flag & ST_RDONLY);
-  VLOG(1) << "Host's rootfs is " << (rw ? "rw" : "ro");
-  return rw;
-}
-
-base::FilePath SelectDlcOrBuiltin(const base::FilePath& file) {
-  const base::FilePath dlc_path = base::FilePath(kDlcPath).Append(file);
-  if (base::PathExists(dlc_path)) {
-    VLOG(1) << "arcvm-dlc will be used for " << file.value();
-    return dlc_path;
-  }
-  return base::FilePath(kBuiltinPath).Append(file);
 }
 
 // TODO(pliard): Export host-side /data to the VM, and remove the function.
@@ -180,7 +217,8 @@ std::vector<std::string> GenerateKernelCmdline(
 vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     const std::string& user_id_hash,
     uint32_t cpus,
-    const std::string& disk_path,
+    const base::FilePath& data_disk_path,
+    const FileSystemStatus& file_system_status,
     std::vector<std::string> kernel_cmdline) {
   vm_tools::concierge::StartArcVmRequest request;
 
@@ -188,7 +226,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   request.set_owner_id(user_id_hash);
 
   request.add_params("root=/dev/vda");
-  if (IsHostRootfsWritable())
+  if (file_system_status.is_host_rootfs_writable())
     request.add_params("rw");
   request.add_params("init=/init");
   for (auto& entry : kernel_cmdline)
@@ -196,28 +234,27 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   vm_tools::concierge::VirtualMachineSpec* vm = request.mutable_vm();
 
-  vm->set_kernel(SelectDlcOrBuiltin(base::FilePath(kKernel)).value());
+  vm->set_kernel(file_system_status.guest_kernel_path().value());
 
   // Add / as /dev/vda.
-  vm->set_rootfs(SelectDlcOrBuiltin(base::FilePath(kRootFs)).value());
+  vm->set_rootfs(file_system_status.system_image_path().value());
 
   // Add /data as /dev/vdb.
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
-  disk_image->set_path(disk_path);
+  disk_image->set_path(data_disk_path.value());
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(true);
   disk_image->set_do_mount(true);
   // Add /vendor as /dev/vdc.
   disk_image = request.add_disks();
-  disk_image->set_path(
-      SelectDlcOrBuiltin(base::FilePath(kVendorImage)).value());
+  disk_image->set_path(file_system_status.vendor_image_path().value());
 
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);
 
   // Add Android fstab.
-  request.set_fstab(SelectDlcOrBuiltin(base::FilePath(kFstab)).value());
+  request.set_fstab(file_system_status.fstab_path().value());
 
   // Add cpus.
   request.set_cpus(cpus);
@@ -225,6 +262,8 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   return request;
 }
 
+// Gets a system property managed by crossystem. This function can be called
+// only with base::MayBlock().
 int GetSystemPropertyInt(const std::string& property) {
   std::string output;
   if (!base::GetAppOutput({kCrosSystemPath, property}, &output))
@@ -239,12 +278,11 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                            public chromeos::ConciergeClient::VmObserver,
                            public chromeos::ConciergeClient::Observer {
  public:
-  // Initializing |is_dev_mode_| and |is_host_on_vm_| is not always very fast.
-  // Try to initialize them in the constructor which usually runs when the
-  // system is not busy.
+  // Initializing |is_host_on_vm_| and |is_dev_mode_| is not always very fast.
+  // Try to initialize them in the constructor and in StartMiniArc respectively.
+  // They usually run when the system is not busy.
   ArcVmClientAdapter()
-      : is_dev_mode_(GetSystemPropertyInt("cros_debug") == 1),
-        is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
+      : is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
                            ->IsRunningOnVm()) {
     auto* client = GetConciergeClient();
     client->AddVmObserver(this);
@@ -292,9 +330,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
             StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_OFF) {
       play_store_auto_update_ = false;
     }
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), true));
-    should_notify_observers_ = true;
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(
+            []() { return GetSystemPropertyInt("cros_debug") == 1; }),
+        base::BindOnce(&ArcVmClientAdapter::OnIsDevMode,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,
@@ -332,6 +375,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   void ConciergeServiceRestarted() override {}
 
  private:
+  void OnIsDevMode(chromeos::VoidDBusMethodCallback callback,
+                   bool is_dev_mode) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true));
+    is_dev_mode_ = is_dev_mode;
+    should_notify_observers_ = true;
+  }
+
   void OnConciergeStarted(chromeos::VoidDBusMethodCallback callback,
                           bool success) {
     if (!success) {
@@ -342,7 +393,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "Concierge service started for arcvm.";
 
     base::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                        base::FilePath(kHomeDirectory)),
         base::BindOnce(&ArcVmClientAdapter::CreateDiskImageAfterSizeCheck,
@@ -388,10 +441,26 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "Disk image for arcvm ready. status=" << response.status()
             << ", disk=" << response.disk_path();
 
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&FileSystemStatus::GetFileSystemStatusBlocking),
+        base::BindOnce(&ArcVmClientAdapter::OnFileSystemStatus,
+                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       base::FilePath(response.disk_path())));
+  }
+
+  void OnFileSystemStatus(chromeos::VoidDBusMethodCallback callback,
+                          const base::FilePath& data_disk_path,
+                          FileSystemStatus file_system_status) {
+    VLOG(2) << "Got file system status";
+    DCHECK(is_dev_mode_);
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
-        lcd_density_, play_store_auto_update_, is_dev_mode_, is_host_on_vm_);
-    auto start_request = CreateStartArcVmRequest(
-        user_id_hash_, cpus_, response.disk_path(), std::move(kernel_cmdline));
+        lcd_density_, play_store_auto_update_, *is_dev_mode_, is_host_on_vm_);
+    auto start_request =
+        CreateStartArcVmRequest(user_id_hash_, cpus_, data_disk_path,
+                                file_system_status, std::move(kernel_cmdline));
     GetConciergeClient()->StartArcVm(
         start_request,
         base::BindOnce(&ArcVmClientAdapter::OnStartArcVmReply,
@@ -470,7 +539,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "OnArcVmServerProxyJobStopped result=" << result;
   }
 
-  const bool is_dev_mode_;
+  base::Optional<bool> is_dev_mode_;
   // True when the *host* is running on a VM.
   const bool is_host_on_vm_;
 

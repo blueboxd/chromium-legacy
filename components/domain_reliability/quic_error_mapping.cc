@@ -309,6 +309,8 @@ const struct QuicErrorMapping {
      "quic.window.update.received.on.read.unidirectional.stream"},
     {quic::QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES,
      "quic.too.many.buffered.control.frames"},
+    {quic::QUIC_TRANSPORT_INVALID_CLIENT_INDICATION,
+     "quic.transport.invalid.client.indication"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

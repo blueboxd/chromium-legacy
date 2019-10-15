@@ -91,6 +91,9 @@ public class BottomSheetObserverTest {
      */
     private void runCloseEventTest(boolean animationEnabled, boolean peekStateEnabled)
             throws TimeoutException {
+        CallbackHelper hiddenHelper = mObserver.mHiddenCallbackHelper;
+        int initialHideEvents = hiddenHelper.getCallCount();
+
         mBottomSheetTestRule.setSheetState(SheetState.FULL, false);
 
         mSheetContent.setPeekHeight(peekStateEnabled ? HeightMode.DEFAULT : HeightMode.DISABLED);
@@ -100,11 +103,17 @@ public class BottomSheetObserverTest {
         int initialOpenedCount = mObserver.mOpenedCallbackHelper.getCallCount();
 
         int closedCallbackCount = closedCallbackHelper.getCallCount();
-        mBottomSheetTestRule.setSheetState(
-                peekStateEnabled ? SheetState.PEEK : SheetState.HIDDEN, animationEnabled);
+
+        int targetState = peekStateEnabled ? SheetState.PEEK : SheetState.HIDDEN;
+        mBottomSheetTestRule.setSheetState(targetState, animationEnabled);
+
         closedCallbackHelper.waitForCallback(closedCallbackCount, 1);
 
+        if (targetState == SheetState.HIDDEN) hiddenHelper.waitForCallback(initialHideEvents, 1);
+
         assertEquals(initialOpenedCount, mObserver.mOpenedCallbackHelper.getCallCount());
+        assertEquals("Close event should have only been called once.",
+                closedCallbackCount + 1, closedCallbackHelper.getCallCount());
     }
 
     /** Test that the onSheetOpened event is triggered if the sheet is opened without animation. */
@@ -150,6 +159,8 @@ public class BottomSheetObserverTest {
             throws TimeoutException {
         mSheetContent.setPeekHeight(peekStateEnabled ? HeightMode.DEFAULT : HeightMode.DISABLED);
 
+        CallbackHelper fullCallbackHelper = mObserver.mFullCallbackHelper;
+        int initialFullCount = fullCallbackHelper.getCallCount();
         CallbackHelper openedCallbackHelper = mObserver.mOpenedCallbackHelper;
         int openedCallbackCount = openedCallbackHelper.getCallCount();
         CallbackHelper closedCallbackHelper = mObserver.mClosedCallbackHelper;
@@ -166,7 +177,12 @@ public class BottomSheetObserverTest {
         }
 
         mBottomSheetTestRule.setSheetState(SheetState.FULL, animationEnabled);
+
         openedCallbackHelper.waitForCallback(openedCallbackCount, 1);
+        fullCallbackHelper.waitForCallback(initialFullCount, 1);
+
+        assertEquals("Open event should have only been called once.",
+                openedCallbackCount + 1, openedCallbackHelper.getCallCount());
 
         assertEquals(initialClosedCount, closedCallbackHelper.getCallCount());
     }

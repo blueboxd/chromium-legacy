@@ -38,6 +38,8 @@ class WebStateListTestObserver : public WebStateListObserver {
     web_state_replaced_called_ = false;
     web_state_detached_called_ = false;
     web_state_activated_called_ = false;
+    will_close_all_webstates_called_ = false;
+    did_close_all_webstates_called_ = false;
   }
 
   // Returns whether WebStateInsertedAt was invoked.
@@ -55,6 +57,16 @@ class WebStateListTestObserver : public WebStateListObserver {
   // Returns whether WebStateActivatedAt was invoked.
   bool web_state_activated_called() const {
     return web_state_activated_called_;
+  }
+
+  // Returns whether WillCloseAllWebStates was invoked.
+  bool will_close_all_webstates_called() const {
+    return will_close_all_webstates_called_;
+  }
+
+  // Returns whether DidCloseAllWebStates was invoked.
+  bool did_close_all_webstates_called() const {
+    return did_close_all_webstates_called_;
   }
 
   // WebStateListObserver implementation.
@@ -96,12 +108,24 @@ class WebStateListTestObserver : public WebStateListObserver {
     web_state_activated_called_ = true;
   }
 
+  void WillCloseAllWebStates(WebStateList* web_state_list,
+                             bool user_action) override {
+    will_close_all_webstates_called_ = true;
+  }
+
+  void DidCloseAllWebStates(WebStateList* web_state_list,
+                            bool user_action) override {
+    did_close_all_webstates_called_ = true;
+  }
+
  private:
   bool web_state_inserted_called_ = false;
   bool web_state_moved_called_ = false;
   bool web_state_replaced_called_ = false;
   bool web_state_detached_called_ = false;
   bool web_state_activated_called_ = false;
+  bool will_close_all_webstates_called_ = false;
+  bool did_close_all_webstates_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListTestObserver);
 };
@@ -692,4 +716,41 @@ TEST_F(WebStateListTest, OpenersChildsBeforeOpener) {
   EXPECT_EQ(WebStateList::kInvalidIndex,
             web_state_list_.GetIndexOfLastWebStateOpenedBy(opener, start_index,
                                                            true));
+}
+
+// Test closing all webstates.
+TEST_F(WebStateListTest, CloseAllWebStates) {
+  AppendNewWebState(kURL0);
+  AppendNewWebState(kURL1);
+  AppendNewWebState(kURL2);
+
+  // Sanity check before closing WebStates.
+  EXPECT_EQ(3, web_state_list_.count());
+
+  observer_.ResetStatistics();
+  web_state_list_.CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
+
+  EXPECT_EQ(0, web_state_list_.count());
+
+  EXPECT_TRUE(observer_.web_state_detached_called());
+  EXPECT_TRUE(observer_.will_close_all_webstates_called());
+  EXPECT_TRUE(observer_.did_close_all_webstates_called());
+}
+
+// Test closing one webstate.
+TEST_F(WebStateListTest, CloseWebState) {
+  AppendNewWebState(kURL0);
+  AppendNewWebState(kURL1);
+  AppendNewWebState(kURL2);
+
+  // Sanity check before closing WebState.
+  EXPECT_EQ(3, web_state_list_.count());
+
+  observer_.ResetStatistics();
+  web_state_list_.CloseWebStateAt(0, WebStateList::CLOSE_USER_ACTION);
+
+  EXPECT_EQ(2, web_state_list_.count());
+  EXPECT_TRUE(observer_.web_state_detached_called());
+  EXPECT_FALSE(observer_.will_close_all_webstates_called());
+  EXPECT_FALSE(observer_.did_close_all_webstates_called());
 }

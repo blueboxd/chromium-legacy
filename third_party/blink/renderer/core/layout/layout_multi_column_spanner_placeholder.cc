@@ -131,7 +131,11 @@ void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {
   // calculated and set before layout. Copy this to the actual column-span:all
   // object before laying it out, so that it gets paginated correctly, in case
   // we have an enclosing fragmentation context.
-  layout_object_in_flow_thread_->SetLogicalTop(LogicalTop());
+  if (layout_object_in_flow_thread_->LogicalTop() != LogicalTop()) {
+    layout_object_in_flow_thread_->SetLogicalTop(LogicalTop());
+    if (FlowThread()->EnclosingFragmentationContext())
+      layout_object_in_flow_thread_->SetChildNeedsLayout(kMarkOnlyThis);
+  }
 
   // Lay out the actual column-span:all element.
   layout_object_in_flow_thread_->LayoutIfNeeded();

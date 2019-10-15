@@ -249,4 +249,36 @@ TEST_F(UnifiedMessageCenterBubbleTest, ReverseFocusCycle) {
             GetLastQuickSettingsFocusable());
 }
 
+TEST_F(UnifiedMessageCenterBubbleTest, FocusCycleWithNoNotifications) {
+  EnableMessageCenterRefactor();
+  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+
+  views::Widget* quick_settings_widget =
+      GetSystemTrayBubble()->GetBubbleWidget();
+  views::Widget* message_center_widget =
+      GetMessageCenterBubble()->GetBubbleWidget();
+
+  // First tab should focus the first element in the quick settings bubble.
+  DoTab();
+  EXPECT_TRUE(quick_settings_widget->IsActive());
+  EXPECT_FALSE(message_center_widget->IsActive());
+  EXPECT_EQ(quick_settings_widget->GetFocusManager()->GetFocusedView(),
+            GetFirstQuickSettingsFocusable());
+
+  // Keep tabbing until we reach the last focusable element in the quick
+  // settings bubble.
+  while (quick_settings_widget->GetFocusManager()->GetFocusedView() !=
+         GetLastQuickSettingsFocusable()) {
+    DoTab();
+  }
+
+  // Tab at the last element in the quick settings bubble should move focus to
+  // the first element in the quick settings bubble.
+  DoTab();
+  EXPECT_TRUE(quick_settings_widget->IsActive());
+  EXPECT_FALSE(message_center_widget->IsActive());
+  EXPECT_EQ(quick_settings_widget->GetFocusManager()->GetFocusedView(),
+            GetFirstQuickSettingsFocusable());
+}
+
 }  // namespace ash

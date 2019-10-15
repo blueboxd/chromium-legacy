@@ -367,7 +367,13 @@ TEST_F(EditableComboboxTest, LeftOrRightKeysMoveInTextfield) {
   EXPECT_EQ(ASCIIToUTF16("abcde"), combobox_->GetText());
 }
 
-TEST_F(EditableComboboxTest, UpOrDownKeysMoveInMenu) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Flaky on Windows and Mac. https://crbug.com/965601
+#define MAYBE_UpOrDownKeysMoveInMenu DISABLED_UpOrDownKeysMoveInMenu
+#else
+#define MAYBE_UpOrDownKeysMoveInMenu UpOrDownKeysMoveInMenu
+#endif
+TEST_F(EditableComboboxTest, MAYBE_UpOrDownKeysMoveInMenu) {
   InitEditableCombobox();
   combobox_->GetTextfieldForTest()->RequestFocus();
   SendKeyEvent(ui::VKEY_A);
@@ -503,7 +509,16 @@ TEST_F(EditableComboboxTest, EnterClosesMenuWhileSelectingHighlightedMenuItem) {
   EXPECT_EQ(ASCIIToUTF16("item[0]"), combobox_->GetText());
 }
 
-TEST_F(EditableComboboxTest, F4ClosesMenuWhileSelectingHighlightedMenuItem) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Flaky on Windows and Mac. https://crbug.com/965601
+#define MAYBE_F4ClosesMenuWhileSelectingHighlightedMenuItem \
+  DISABLED_F4ClosesMenuWhileSelectingHighlightedMenuItem
+#else
+#define MAYBE_F4ClosesMenuWhileSelectingHighlightedMenuItem \
+  F4ClosesMenuWhileSelectingHighlightedMenuItem
+#endif
+TEST_F(EditableComboboxTest,
+       MAYBE_F4ClosesMenuWhileSelectingHighlightedMenuItem) {
   InitEditableCombobox();
   combobox_->GetTextfieldForTest()->RequestFocus();
   SendKeyEvent(ui::VKEY_A);
@@ -561,10 +576,16 @@ TEST_F(EditableComboboxTest, SpaceIsReflectedInTextfield) {
   EXPECT_EQ(ASCIIToUTF16("a  b"), combobox_->GetText());
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// Flaky on Windows and Mac. https://crbug.com/965601
+#define MAYBE_MenuCanAdaptToContentChange DISABLED_MenuCanAdaptToContentChange
+#else
+#define MAYBE_MenuCanAdaptToContentChange MenuCanAdaptToContentChange
+#endif
 // We test that the menu can adapt to content change by using an
 // EditableCombobox with |filter_on_edit| set to true, which will change the
 // menu's content as the user types.
-TEST_F(EditableComboboxTest, MenuCanAdaptToContentChange) {
+TEST_F(EditableComboboxTest, MAYBE_MenuCanAdaptToContentChange) {
   std::vector<base::string16> items = {ASCIIToUTF16("abc"), ASCIIToUTF16("abd"),
                                        ASCIIToUTF16("bac"),
                                        ASCIIToUTF16("bad")};

@@ -16,7 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
@@ -37,9 +37,7 @@ const int kDefaultPort = 80;
 class DnsLookupRequest : public network::ResolveHostClientBase {
  public:
   DnsLookupRequest(int render_process_id, const std::string& hostname)
-      : binding_(this),
-        render_process_id_(render_process_id),
-        hostname_(hostname) {}
+      : render_process_id_(render_process_id), hostname_(hostname) {}
 
   // Return underlying network resolver status.
   // net::OK ==> Host was found synchronously.
@@ -57,12 +55,7 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
       return;
     }
 
-    DCHECK(!binding_);
-    network::mojom::ResolveHostClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    binding_.set_connection_error_handler(
-        base::BindOnce(&DnsLookupRequest::OnComplete, base::Unretained(this),
-                       net::ERR_FAILED, base::nullopt));
+    DCHECK(!receiver_.is_bound());
     net::HostPortPair host_port_pair(hostname_, kDefaultPort);
     network::mojom::ResolveHostParametersPtr resolve_host_parameters =
         network::mojom::ResolveHostParameters::New();
@@ -74,7 +67,10 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
     render_process_host->GetStoragePartition()
         ->GetNetworkContext()
         ->ResolveHost(host_port_pair, std::move(resolve_host_parameters),
-                      std::move(client_ptr));
+                      receiver_.BindNewPipeAndPassRemote());
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&DnsLookupRequest::OnComplete, base::Unretained(this),
+                       net::ERR_FAILED, base::nullopt));
   }
 
  private:
@@ -86,7 +82,7 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
     request_.reset();
   }
 
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   int render_process_id_;
   const std::string hostname_;
   std::unique_ptr<DnsLookupRequest> request_;

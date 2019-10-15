@@ -458,19 +458,19 @@ void ClipboardOzone::ReadData(const ClipboardFormatType& format,
   result->assign(clipboard_data.begin(), clipboard_data.end());
 }
 
-void ClipboardOzone::WriteObjects(ClipboardBuffer buffer,
-                                  const ObjectMap& objects) {
+void ClipboardOzone::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                  const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
 
   for (const auto& object : objects)
-    DispatchObject(static_cast<ObjectType>(object.first), object.second);
+    DispatchPortableRepresentation(object.first, object.second);
 
   async_clipboard_ozone_->OfferData(buffer);
 
   // Just like Aura/X11 implementation does, copy text data from the copy/paste
   // selection to the primary selection.
   if (buffer == ClipboardBuffer::kCopyPaste) {
-    auto text_iter = objects.find(ObjectType::kText);
+    auto text_iter = objects.find(PortableFormat::kText);
     if (text_iter != objects.end()) {
       const ObjectMapParams& params_vector = text_iter->second;
       if (params_vector.size()) {
@@ -486,6 +486,15 @@ void ClipboardOzone::WriteObjects(ClipboardBuffer buffer,
       async_clipboard_ozone_->OfferData(ClipboardBuffer::kSelection);
     }
   }
+}
+
+void ClipboardOzone::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  DCHECK(CalledOnValidThread());
+  DispatchPlatformRepresentations(std::move(platform_representations));
+
+  async_clipboard_ozone_->OfferData(buffer);
 }
 
 void ClipboardOzone::WriteText(const char* text_data, size_t text_len) {
@@ -537,7 +546,7 @@ void ClipboardOzone::WriteData(const ClipboardFormatType& format,
                                const char* data_data,
                                size_t data_len) {
   std::vector<uint8_t> data(data_data, data_data + data_len);
-  async_clipboard_ozone_->InsertData(data, format.ToString());
+  async_clipboard_ozone_->InsertData(std::move(data), format.ToString());
 }
 
 }  // namespace ui

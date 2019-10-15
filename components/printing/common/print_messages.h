@@ -366,9 +366,6 @@ IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
 // Tells the RenderFrame to switch the CSS to print media type, renders every
 // requested pages and switch back the CSS to display media type.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintPages)
-
-// Like PrintMsg_PrintPages, but using the print preview document's frame/node.
-IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
 #endif
 
 // Print content of an out-of-process subframe.
@@ -387,9 +384,6 @@ IPC_MESSAGE_ROUTED1(PrintMsg_SetPrintingEnabled, bool /* enabled */)
 // called multiple times as the user updates settings.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
                     base::DictionaryValue /* settings */)
-
-// Tells the RenderFrame that print preview dialog was closed.
-IPC_MESSAGE_ROUTED0(PrintMsg_ClosePrintPreviewDialog)
 #endif
 
 // Messages sent from the renderer to the browser.

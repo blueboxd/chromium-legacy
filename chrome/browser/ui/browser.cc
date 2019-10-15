@@ -1715,7 +1715,7 @@ bool Browser::EmbedsFullscreenWidget() {
 void Browser::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::FullScreenOptions& options) {
   exclusive_access_manager_->fullscreen_controller()->EnterFullscreenModeForTab(
       web_contents, origin);
 }
@@ -2320,10 +2320,6 @@ void Browser::ScheduleUIUpdate(WebContents* source, unsigned changed_flags) {
   if (tab_strip_model_->GetIndexOfWebContents(source) == TabStripModel::kNoTab)
     return;
 
-  // We ignore |INVALIDATE_TYPE_AUDIO| since we subscribe to
-  // RecentlyAudibleHelper via |OnTabAudibilityChanged()|.
-  changed_flags &= ~content::INVALIDATE_TYPE_AUDIO;
-
   // Do some synchronous updates.
   if (changed_flags & content::INVALIDATE_TYPE_URL) {
     if (source == tab_strip_model_->GetActiveWebContents()) {
@@ -2413,8 +2409,8 @@ void Browser::ProcessPendingUIUpdates() {
     }
 
     // Updates that don't depend upon the selected state go here.
-    if (flags &
-        (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
+    if (flags & (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE |
+                 content::INVALIDATE_TYPE_AUDIO)) {
       tab_strip_model_->UpdateWebContentsStateAt(
           tab_strip_model_->GetIndexOfWebContents(contents),
           TabChangeType::kAll);
@@ -2592,16 +2588,10 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
     zoom::ZoomController::FromWebContents(web_contents)->AddObserver(this);
     content_translate_driver->AddObserver(this);
     BookmarkTabHelper::FromWebContents(web_contents)->AddObserver(this);
-    audibility_subscriptions_[web_contents] =
-        RecentlyAudibleHelper::FromWebContents(web_contents)
-            ->RegisterCallback(
-                base::BindRepeating(&Browser::OnTabAudibilityChanged,
-                                    base::Unretained(this), web_contents));
   } else {
     zoom::ZoomController::FromWebContents(web_contents)->RemoveObserver(this);
     content_translate_driver->RemoveObserver(this);
     BookmarkTabHelper::FromWebContents(web_contents)->RemoveObserver(this);
-    audibility_subscriptions_.erase(web_contents);
   }
 }
 
@@ -2912,10 +2902,4 @@ BackgroundContents* Browser::CreateBackgroundContents(
       std::string());  // No extra headers.
 
   return contents;
-}
-
-void Browser::OnTabAudibilityChanged(content::WebContents* contents,
-                                     bool recently_audible) {
-  tab_strip_model_->UpdateWebContentsStateAt(
-      tab_strip_model_->GetIndexOfWebContents(contents), TabChangeType::kAll);
 }

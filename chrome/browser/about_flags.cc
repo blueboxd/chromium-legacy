@@ -2301,6 +2301,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOfflineIndicatorAlwaysHttpProbeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflineIndicatorAlwaysHttpProbeFeature)},
+    {"offline-home", flag_descriptions::kOfflineHomeName,
+     flag_descriptions::kOfflineHomeDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kOfflineHome)},
     {"offline-indicator-v2", flag_descriptions::kOfflineIndicatorV2Name,
      flag_descriptions::kOfflineIndicatorV2Description, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOfflineIndicatorV2)},
@@ -2703,10 +2706,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFileManagerFeedbackPanelName,
      flag_descriptions::kFileManagerFeedbackPanelDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableFileManagerFeedbackPanel)},
-    {"file-manager-format-dialog",
-     flag_descriptions::kFileManagerFormatDialogName,
-     flag_descriptions::kFileManagerFormatDialogDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEnableFileManagerFormatDialog)},
     {"file-manager-piex-wasm", flag_descriptions::kFileManagerPiexWasmName,
      flag_descriptions::kFileManagerPiexWasmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableFileManagerPiexWasm)},
@@ -4529,9 +4528,15 @@ const FeatureEntry kFeatureEntries[] = {
     {"scalable-app-list", flag_descriptions::kScalableAppListName,
      flag_descriptions::kScalableAppListDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kScalableAppList)},
+
     {"fuzzy-app-search", flag_descriptions::kFuzzyAppSearchName,
      flag_descriptions::kFuzzyAppSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableFuzzyAppSearch)},
+
+    {"aggregated-ml-search-ranking",
+     flag_descriptions::kAggregatedMlSearchRankingName,
+     flag_descriptions::kAggregatedMlSearchRankingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kEnableAggregatedMlSearchRanking)},
 
 #endif  // defined(OS_CHROMEOS)
 
@@ -4634,6 +4639,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMetalDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMetal)},
 #endif
+
+    {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
+     flag_descriptions::kEnableDeJellyDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableDeJelly)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

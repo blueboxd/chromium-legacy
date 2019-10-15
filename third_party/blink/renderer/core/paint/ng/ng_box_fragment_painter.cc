@@ -288,9 +288,8 @@ void NGBoxFragmentPainter::RecordScrollHitTestData(
   // Only create scroll hit test data for objects that scroll.
   const auto* layer = PhysicalFragment().Layer();
   if (!layer || !layer->GetScrollableArea() ||
-      !layer->GetScrollableArea()->ScrollsOverflow()) {
+      !layer->GetScrollableArea()->ScrollsOverflow())
     return;
-  }
 
   // TODO(pdr): Break dependency on LayoutObject functionality.
   const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
@@ -343,8 +342,10 @@ void NGBoxFragmentPainter::PaintObject(
       return;
   }
 
-  if (paint_phase == PaintPhase::kMask && is_visible)
-    return PaintMask(paint_info, paint_offset);
+  if (paint_phase == PaintPhase::kMask && is_visible) {
+    PaintMask(paint_info, paint_offset);
+    return;
+  }
 
   if (paint_phase == PaintPhase::kForeground &&
       paint_info.ShouldAddUrlMetadata()) {
@@ -379,15 +380,13 @@ void NGBoxFragmentPainter::PaintObject(
           PaintFloats(paint_info);
       }
     } else {
-      if (paint_phase != PaintPhase::kFloat) {
+      if (paint_phase != PaintPhase::kFloat)
         PaintBlockChildren(paint_info);
-      }
 
       if (paint_phase == PaintPhase::kFloat ||
           paint_phase == PaintPhase::kSelection ||
-          paint_phase == PaintPhase::kTextClip) {
+          paint_phase == PaintPhase::kTextClip)
         PaintFloats(paint_info);
-      }
     }
   }
 
@@ -525,9 +524,8 @@ void NGBoxFragmentPainter::PaintBlockFloatingChildren(
       continue;
     }
     if (const auto* child_container =
-            DynamicTo<NGPhysicalContainerFragment>(&child_fragment)) {
+            DynamicTo<NGPhysicalContainerFragment>(&child_fragment))
       PaintBlockFloatingChildren(*child_container, paint_info);
-    }
   }
 }
 
@@ -1175,8 +1173,7 @@ bool NGBoxFragmentPainter::ShouldPaint(
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   if (!fragment.IsInlineBox()) {
     return paint_state.LocalRectIntersectsCullRect(
-        ToLayoutBox(fragment.GetLayoutObject())
-            ->PhysicalSelfVisualOverflowRect());
+        ToLayoutBox(fragment.GetLayoutObject())->PhysicalVisualOverflowRect());
   }
   NOTREACHED();
   return false;

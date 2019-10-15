@@ -1296,9 +1296,9 @@ TEST_F(CompositedLayerMappingTest,
   // This test verifies layers with direct compositing reasons won't have
   // transformed rasterization, i.e. should raster in local space.
   SetBodyInnerHTML(R"HTML(
-    <div id='target1' style='transform:translateZ(0);'>foo</div>
-    <div id='target2' style='will-change:opacity;'>bar</div>
-    <div id='target3' style='backface-visibility:hidden;'>ham</div>
+    <div id='target1' style='will-change: transform;'>foo</div>
+    <div id='target2' style='will-change: opacity;'>bar</div>
+    <div id='target3' style='backface-visibility: hidden;'>ham</div>
   )HTML");
 
   {
@@ -1539,11 +1539,10 @@ TEST_F(CompositedLayerMappingTest,
     return;
 
   SetHtmlInnerHTML(R"HTML(
-    <div id=scroller style="transform: translateZ(0); overflow: scroll;
-    width: 200px; height: 400px;">
-      <div id=squashing
-          style='width: 200px; height: 200px; position: relative; will-change:
-transform'></div>
+    <div id=scroller style="will-change: transform; overflow: scroll;
+        width: 200px; height: 400px;">
+      <div id=squashing style='width: 200px; height: 200px; position: relative;
+          will-change: transform'></div>
       <div id=squashed style="width: 200px; height: 6000px; top: -100px;
           position: relative;">
       </div>

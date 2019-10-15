@@ -15,27 +15,16 @@ import org.chromium.base.annotations.NativeMethods;
 @JNINamespace("dom_distiller::android")
 public final class DomDistillerService {
 
-    private final long mDomDistillerServiceAndroid;
     private final DistilledPagePrefs mDistilledPagePrefs;
 
     private DomDistillerService(long nativeDomDistillerAndroidServicePtr) {
-        mDomDistillerServiceAndroid = nativeDomDistillerAndroidServicePtr;
-        mDistilledPagePrefs = new DistilledPagePrefs(
-                DomDistillerServiceJni.get().getDistilledPagePrefsPtr(mDomDistillerServiceAndroid));
+        mDistilledPagePrefs =
+                new DistilledPagePrefs(DomDistillerServiceJni.get().getDistilledPagePrefsPtr(
+                        nativeDomDistillerAndroidServicePtr));
     }
 
     public DistilledPagePrefs getDistilledPagePrefs() {
         return mDistilledPagePrefs;
-    }
-
-    public boolean hasEntry(String entryId) {
-        return DomDistillerServiceJni.get().hasEntry(
-                mDomDistillerServiceAndroid, DomDistillerService.this, entryId);
-    }
-
-    public String getUrlForEntry(String entryId) {
-        return DomDistillerServiceJni.get().getUrlForEntry(
-                mDomDistillerServiceAndroid, DomDistillerService.this, entryId);
     }
 
     @CalledByNative
@@ -46,10 +35,6 @@ public final class DomDistillerService {
 
     @NativeMethods
     interface Natives {
-        boolean hasEntry(
-                long nativeDomDistillerServiceAndroid, DomDistillerService caller, String entryId);
-        String getUrlForEntry(
-                long nativeDomDistillerServiceAndroid, DomDistillerService caller, String entryId);
         long getDistilledPagePrefsPtr(long nativeDomDistillerServiceAndroid);
     }
 }

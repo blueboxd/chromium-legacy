@@ -21,7 +21,8 @@ SpdySessionKey::SpdySessionKey(const HostPortPair& host_port_pair,
                                PrivacyMode privacy_mode,
                                IsProxySession is_proxy_session,
                                const SocketTag& socket_tag,
-                               const NetworkIsolationKey& network_isolation_key)
+                               const NetworkIsolationKey& network_isolation_key,
+                               bool disable_secure_dns)
     : host_port_proxy_pair_(host_port_pair, proxy_server),
       privacy_mode_(privacy_mode),
       is_proxy_session_(is_proxy_session),
@@ -30,7 +31,8 @@ SpdySessionKey::SpdySessionKey(const HostPortPair& host_port_pair,
           base::FeatureList::IsEnabled(
               features::kPartitionConnectionsByNetworkIsolationKey)
               ? network_isolation_key
-              : NetworkIsolationKey()) {
+              : NetworkIsolationKey()),
+      disable_secure_dns_(disable_secure_dns) {
   // IsProxySession::kTrue should only be used with direct connections, since
   // using multiple layers of proxies on top of each other isn't supported.
   DCHECK(is_proxy_session != IsProxySession::kTrue || proxy_server.is_direct());
@@ -46,10 +48,11 @@ SpdySessionKey::~SpdySessionKey() = default;
 bool SpdySessionKey::operator<(const SpdySessionKey& other) const {
   return std::tie(privacy_mode_, host_port_proxy_pair_.first,
                   host_port_proxy_pair_.second, is_proxy_session_,
-                  network_isolation_key_, socket_tag_) <
+                  network_isolation_key_, disable_secure_dns_, socket_tag_) <
          std::tie(other.privacy_mode_, other.host_port_proxy_pair_.first,
                   other.host_port_proxy_pair_.second, other.is_proxy_session_,
-                  other.network_isolation_key_, other.socket_tag_);
+                  other.network_isolation_key_, other.disable_secure_dns_,
+                  other.socket_tag_);
 }
 
 bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
@@ -59,6 +62,7 @@ bool SpdySessionKey::operator==(const SpdySessionKey& other) const {
          host_port_proxy_pair_.second == other.host_port_proxy_pair_.second &&
          is_proxy_session_ == other.is_proxy_session_ &&
          network_isolation_key_ == other.network_isolation_key_ &&
+         disable_secure_dns_ == other.disable_secure_dns_ &&
          socket_tag_ == other.socket_tag_;
 }
 

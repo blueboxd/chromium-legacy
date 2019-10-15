@@ -404,7 +404,7 @@ const char kV8CacheOptions[] = "v8-cache-options";
 // is only useful for tests.
 const char kEnableServiceBinaryLauncher[] = "enable-service-binary-launcher";
 
-// Enables the Skia benchmarking extension
+// Enables the Skia benchmarking extension.
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 
 // On platforms that support it, enables smooth scroll animation.
@@ -558,8 +558,11 @@ const char kDisableJavaScriptHarmonyShipping[] =
 // Enables experimental Harmony (ECMAScript 6) features.
 const char kJavaScriptHarmony[]             = "javascript-harmony";
 
-// Specifies the flags passed to JS engine
+// Specifies the flags passed to JS engine.
 const char kJavaScriptFlags[]               = "js-flags";
+
+// Flag to launch tests in the browser process.
+const char kLaunchAsBrowser[] = "as-browser";
 
 // Overrides the Lite Page Subresource host.
 const char kLitePagesServerSubresourceHost[] =
@@ -856,6 +859,9 @@ const char kValidateInputEventStream[] = "validate-input-event-stream";
 // will be used as a filter to determine if the child process should have the
 // kWaitForDebugger flag passed on or not.
 const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
+
+// Flag used by WebUI test runners to wait for debugger to be attached.
+const char kWaitForDebuggerWebUI[] = "wait-for-debugger-webui";
 
 // Set the antialiasing method used for webgl. (none, explicit, implicit, or
 // screenspace)

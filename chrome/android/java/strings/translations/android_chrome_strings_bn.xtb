@@ -69,12 +69,10 @@
 <translation id="1414981605391750300">Google এর সাথে যোগাযোগ করা হচ্ছে। এতে একটু সময় লাগবে…</translation>
 <translation id="1416550906796893042">অ্যাপ্লিকেশন ভার্সন</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
-<translation id="1445680696957526815">Chrome এর উপাদানগুলি একে অপরের সাথে বেমানান৷ Chrome আপগ্রেড করা হতে পারে, অনুগ্রহ করে কয়েক মিনিটের মধ্যে আবার চেষ্টা করুন৷ সমস্যাটি থেকে গেলে, Chrome আনইনস্টল করে পুনরায় ইনস্টল করুন৷</translation>
 <translation id="1446450296470737166">MIDI ডিভাইসগুলির পূর্ণ নিয়ন্ত্রণের অনুমতি দিন</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> শেয়ার করা যাচ্ছে না</translation>
 <translation id="145097072038377568">Android সেটিংসে বন্ধ করা অাছে</translation>
 <translation id="1477626028522505441">সার্ভার সমস্যার কারণে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
-<translation id="1501480321619201731">আইটেমের গ্রুপ মুছুন</translation>
 <translation id="1506061864768559482">সার্চ ইঞ্জিন</translation>
 <translation id="1513352483775369820">বুকমার্কগুলি এবং ওয়েব ইতিহাস</translation>
 <translation id="1513858653616922153">পাসওয়ার্ড মুছুন</translation>
@@ -230,7 +228,6 @@
 <translation id="2650751991977523696">আবার ফাইল ডাউনলোড করবেন?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#টি অডিও ফাইল}one{#টি অডিও ফাইল}other{#টি অডিও ফাইল}}</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
-<translation id="2671423594960767771">গ্রুপ শেয়ার করুন</translation>
 <translation id="2677748264148917807">ছেড়ে চলে যান</translation>
 <translation id="2704606927547763573">প্রতিলিপি করা হয়েছে</translation>
 <translation id="2707726405694321444">পৃষ্ঠা রিফ্রেশ করুন</translation>
@@ -260,7 +257,6 @@
 <translation id="2893180576842394309">সার্চ এবং অন্যান্য Google পরিষেবাকে আপনার মতো করে সাজিয়ে নিতে Google আপনার ইতিহাস ব্যবহার করতে পারে</translation>
 <translation id="2898264748040935573">স্টোর করা পাসওয়ার্ড এডিট করুন</translation>
 <translation id="2900528713135656174">ইভেন্ট তৈরি করুন</translation>
-<translation id="2902702728133930130">একটি অপ্রত্যাশিত ত্রুটির সাথে Chrome সূচনার সময় ব্যর্থ হয়েছে৷</translation>
 <translation id="290376772003165898">পৃষ্ঠাটি <ph name="LANGUAGE" /> ভাষায় নয়?</translation>
 <translation id="2904414404539560095">ট্যাব শেয়ার করা যাবে এমন ডিভাইসের সূচি সম্পূর্ণ স্ক্রিন জুড়ে খোলা হয়েছে।</translation>
 <translation id="2910701580606108292">কোনও সাইটে সুরক্ষিত কন্টেন্ট চালু হওয়ার আগে আমায় জিজ্ঞেস করা হোক</translation>
@@ -481,7 +477,6 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> আরও অনেক}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> আরও অনেক}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 এবং <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> আরও অনেক}}</translation>
 <translation id="4696983787092045100">আপনার ডিভাইসে টেক্সট পাঠান</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> এ অফলাইনে দেখুন</translation>
-<translation id="4698413471314543145">Chrome-এ চালনার জন্য প্রয়োজনীয় কঠিন কার্যকারিতা অনুপস্থিত আছে, হয় আপনার Chrome ইনস্টলেশনটি সম্পূর্ণ হয়নি, নতুবা Android-এর এই সংষ্করণটির সঙ্গে সামঞ্জস্যপূর্ণ হয়নি৷</translation>
 <translation id="4699172675775169585">ক্যাশে করা ছবি এবং ফাইলগুলি</translation>
 <translation id="4714588616299687897">আপনার ডেটা ৬০% পর্যন্ত সেভ করুন</translation>
 <translation id="4719927025381752090">অনুবাদ করুন</translation>

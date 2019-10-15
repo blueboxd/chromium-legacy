@@ -11,7 +11,6 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
-#include "base/win/iunknown_impl.h"
 #include "media/base/win/d3d11_create_device_cb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -80,7 +79,7 @@ ACTION_TEMPLATE(SetComPointeeAndReturnOk,
 // Use this function to create a mock so that they are ref-counted correctly.
 template <typename Interface>
 Microsoft::WRL::ComPtr<Interface> CreateD3D11Mock() {
-  return new Interface();
+  return Microsoft::WRL::Make<Interface>();
 }
 
 // Class for mocking D3D11CreateDevice() function.
@@ -92,20 +91,10 @@ class D3D11CreateDeviceMock {
 };
 
 template <class Interface>
-class MockCOMInterface : public Interface, public base::win::IUnknownImpl {
- public:
-  ULONG STDMETHODCALLTYPE AddRef() override { return IUnknownImpl::AddRef(); }
-  ULONG STDMETHODCALLTYPE Release() override { return IUnknownImpl::Release(); }
-
-  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
-    if (riid == __uuidof(Interface)) {
-      *ppv = static_cast<Interface*>(this);
-      AddRef();
-      return S_OK;
-    }
-    return IUnknownImpl::QueryInterface(riid, ppv);
-  }
-
+class MockCOMInterface
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          Interface> {
  protected:
   ~MockCOMInterface() override = default;
 };

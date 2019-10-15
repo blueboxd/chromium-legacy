@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,9 +50,9 @@ class FakeNetworkContext : public network::TestNetworkContext {
 
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
-      network::mojom::HostResolverRequest request) override {
+      mojo::PendingReceiver<network::mojom::HostResolver> receiver) override {
     ASSERT_FALSE(resolver_);
-    resolver_ = std::make_unique<FakeHostResolver>(std::move(request),
+    resolver_ = std::make_unique<FakeHostResolver>(std::move(receiver),
                                                    std::move(result_list_));
   }
 
@@ -69,11 +70,11 @@ class FirstHangingThenFakeResolverNetworkContext
 
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
-      network::mojom::HostResolverRequest request) override {
+      mojo::PendingReceiver<network::mojom::HostResolver> receiver) override {
     if (call_num == 0) {
-      resolver_ = std::make_unique<HangingHostResolver>(std::move(request));
+      resolver_ = std::make_unique<HangingHostResolver>(std::move(receiver));
     } else {
-      resolver_ = std::make_unique<FakeHostResolver>(std::move(request),
+      resolver_ = std::make_unique<FakeHostResolver>(std::move(receiver),
                                                      std::move(result_list_));
     }
     call_num++;

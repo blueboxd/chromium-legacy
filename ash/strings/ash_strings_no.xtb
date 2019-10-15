@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">Ta en pause!</translation>
 <translation id="683971173229319003">Søk+L</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">Snarveien er avslått</translation>
 <translation id="6910714959251846841">Denne oppdateringen krever en powerwash av enheten din. Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen.</translation>
 <translation id="6911468394164995108">Koble til annet</translation>
 <translation id="6919251195245069855">Smartkortet ditt ble ikke gjenkjent. Prøv på nytt.</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">VPN frakoblet</translation>
 <translation id="7377169924702866686">Caps Lock er på.</translation>
 <translation id="7378594059915113390">Mediekontroller</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Byttet nettverkstilkobling</translation>
 <translation id="7405710164030118432">For å låse opp enheten, skriv inn koden din for foreldretilgang til Family Link</translation>
 <translation id="742594950370306541">Kameraet er i bruk.</translation>

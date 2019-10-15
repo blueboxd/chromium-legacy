@@ -421,10 +421,6 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'CssBackground', function() {
   this.runMochaTest(preview_generation_test.TestNames.CssBackground);
 });
 
-TEST_F('PrintPreviewPreviewGenerationTest', 'FitToPage', function() {
-  this.runMochaTest(preview_generation_test.TestNames.FitToPage);
-});
-
 TEST_F('PrintPreviewPreviewGenerationTest', 'HeaderFooter', function() {
   this.runMochaTest(preview_generation_test.TestNames.HeaderFooter);
 });
@@ -459,6 +455,10 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'PagesPerSheet', function() {
 
 TEST_F('PrintPreviewPreviewGenerationTest', 'Scaling', function() {
   this.runMochaTest(preview_generation_test.TestNames.Scaling);
+});
+
+TEST_F('PrintPreviewPreviewGenerationTest', 'ScalingPdf', function() {
+  this.runMochaTest(preview_generation_test.TestNames.ScalingPdf);
 });
 
 GEN('#if !defined(OS_WIN) && !defined(OS_MACOSX)');

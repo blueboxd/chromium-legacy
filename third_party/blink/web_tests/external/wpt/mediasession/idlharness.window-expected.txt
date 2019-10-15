@@ -1,8 +1,6 @@
 This is a testharness.js-based test.
 PASS idl_test setup
-FAIL idl_test validation Validation error at line 39 in mediasession, inside `argument state`:
- setPositionState(optional MediaPositionState? state);
-                                               ^ Dictionary arguments cannot be nullable.
+PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Navigator: valid exposure set
 PASS Partial interface Navigator: member names are unique

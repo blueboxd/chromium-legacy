@@ -115,6 +115,9 @@ bool InInstantProcess(const InstantService* instant_service,
 // calculates and logs the total load time.
 void RecordNewTabLoadTime(content::WebContents* contents) {
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
+  // CoreTabHelper can be null in unittests.
+  if (!core_tab_helper)
+    return;
   if (core_tab_helper->new_tab_start_time().is_null())
     return;
 

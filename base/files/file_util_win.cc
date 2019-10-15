@@ -348,18 +348,7 @@ DWORD DoDeleteFile(const FilePath& path, bool recursive) {
              : ReturnLastErrorOrSuccessOnNotFound();
 }
 
-}  // namespace
-
-FilePath MakeAbsoluteFilePath(const FilePath& input) {
-  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
-  char16 file_path[MAX_PATH];
-  if (!_wfullpath(as_writable_wcstr(file_path), as_wcstr(input.value()),
-                  MAX_PATH))
-    return FilePath();
-  return FilePath(file_path);
-}
-
-bool DeleteFile(const FilePath& path, bool recursive) {
+bool DeleteFileAndRecordMetrics(const FilePath& path, bool recursive) {
   static constexpr char kRecursive[] = "DeleteFile.Recursive";
   static constexpr char kNonRecursive[] = "DeleteFile.NonRecursive";
   const StringPiece operation(recursive ? kRecursive : kNonRecursive);
@@ -377,6 +366,25 @@ bool DeleteFile(const FilePath& path, bool recursive) {
 
   RecordFilesystemError(operation, error);
   return false;
+}
+
+}  // namespace
+
+FilePath MakeAbsoluteFilePath(const FilePath& input) {
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
+  char16 file_path[MAX_PATH];
+  if (!_wfullpath(as_writable_wcstr(file_path), as_wcstr(input.value()),
+                  MAX_PATH))
+    return FilePath();
+  return FilePath(file_path);
+}
+
+bool DeleteFile(const FilePath& path, bool recursive) {
+  return DeleteFileAndRecordMetrics(path, recursive);
+}
+
+bool DeleteFileRecursively(const FilePath& path) {
+  return DeleteFileAndRecordMetrics(path, /*recursive=*/true);
 }
 
 bool DeleteFileAfterReboot(const FilePath& path) {
@@ -1025,7 +1033,7 @@ bool CopyAndDeleteDirectory(const FilePath& from_path,
                             const FilePath& to_path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   if (CopyDirectory(from_path, to_path, true)) {
-    if (DeleteFile(from_path, true))
+    if (DeleteFileRecursively(from_path))
       return true;
 
     // Like Move, this function is not transactional, so we just

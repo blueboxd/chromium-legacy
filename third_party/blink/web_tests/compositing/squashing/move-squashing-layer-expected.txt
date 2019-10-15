@@ -26,7 +26,7 @@ This tests that squashed layers' offset from renderer is updated properly. If no
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='squashed')",
       "position": [-92, -92],
       "bounds": [100, 100],
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -41,15 +41,6 @@ This tests that squashed layers' offset from renderer is updated properly. If no
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

@@ -56,7 +56,7 @@ LayoutObject* HTMLProgressElement::CreateLayoutObject(
   }
   UseCounter::Count(GetDocument(),
                     WebFeature::kProgressElementWithProgressBarAppearance);
-  return LayoutObjectFactory::CreateLayoutProgress(this, style, legacy);
+  return LayoutObjectFactory::CreateProgress(this, style, legacy);
 }
 
 LayoutProgress* HTMLProgressElement::GetLayoutProgress() const {

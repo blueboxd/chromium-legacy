@@ -4103,6 +4103,9 @@
   "DeviceLoginScreenDefaultScreenMagnifierType" : {
   },
 
+  "DeviceLoginScreenScreenMagnifierType" : {
+  },
+
   "DeviceLoginScreenDefaultVirtualKeyboardEnabled" : {
   },
 

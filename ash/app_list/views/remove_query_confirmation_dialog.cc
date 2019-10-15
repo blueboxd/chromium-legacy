@@ -30,6 +30,12 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
     : confirm_callback_(std::move(confirm_callback)),
       event_flags_(event_flags),
       contents_view_(contents_view) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_REMOVE_SUGGESTION_BUTTON_LABEL));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   l10n_util::GetStringUTF16(IDS_APP_CANCEL));
+
   const views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -70,13 +76,6 @@ ui::ModalType RemoveQueryConfirmationDialog::GetModalType() const {
 
 bool RemoveQueryConfirmationDialog::ShouldShowCloseButton() const {
   return false;
-}
-
-base::string16 RemoveQueryConfirmationDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_CANCEL
-             ? l10n_util::GetStringUTF16(IDS_APP_CANCEL)
-             : l10n_util::GetStringUTF16(IDS_REMOVE_SUGGESTION_BUTTON_LABEL);
 }
 
 bool RemoveQueryConfirmationDialog::Accept() {

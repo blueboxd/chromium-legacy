@@ -44,6 +44,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "aggregated-ml-search-ranking",
+    "owners": [ "thanhdng", "jiameng" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "allow-disable-mouse-acceleration",
     "owners": [ "zentaro" ],
     "expiry_milestone": 82
@@ -1155,6 +1160,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-de-jelly",
+    "owners": [ "ericrk", "//components/viz/OWNERS" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "enable-defer-all-script",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 82
@@ -1370,7 +1380,7 @@
   {
     "name": "enable-intent-picker",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "enable-javascript-harmony",
@@ -1967,8 +1977,8 @@
   },
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
-    "owners": [ "qingsi", "jeroendb" ],
-    "expiry_milestone": 78
+    "owners": [ "qingsi" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-webrtc-hw-h264-encoding",
@@ -2104,11 +2114,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "file-manager-format-dialog",
-    "owners": [ "austinct" ],
-    "expiry_milestone": 78
-  },
-  {
     // See https://crbug.com/904630, offical builds only.
     "name": "file-manager-piex-wasm",
     "owners": [ "noel" ],
@@ -2198,7 +2203,7 @@
   {
     "name": "form-controls-refresh",
     "owners": [ "iopopesc@microsoft.com", "//third_party/blink/renderer/core/OWNERS" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 81
   },
   {
     "name": "fractional-scroll-offsets",
@@ -2526,6 +2531,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "offline-home",
+    "owners": [ "shaktisahu", "dtrainor"],
+    "expiry_milestone": 85
+  },
+  {
     "name": "offline-indicator-always-http-probe",
     "owners": [ "jianli", "offline-dev" ],
     "expiry_milestone": 76
@@ -2681,11 +2691,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-reverse-tab-switch-logic",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "omnibox-rich-entity-suggestions",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
@@ -2713,7 +2718,7 @@
   {
     "name": "omnibox-tab-switch-suggestions",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-tab-switch-suggestions-dedicated-row",

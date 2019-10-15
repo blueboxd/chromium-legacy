@@ -95,7 +95,8 @@ DataReductionProxyService::DataReductionProxyService(
   // synchronously on the UI thread, and |this| outlives the caller (since the
   // caller is owned by |this|.
   if (!params::IsIncludedInHoldbackFieldTrial() ||
-      previews::params::IsLitePageServerPreviewsEnabled()) {
+      previews::params::IsLitePageServerPreviewsEnabled() ||
+      params::ForceEnableClientConfigServiceForAllDataSaverUsers()) {
     config_client_ = std::make_unique<DataReductionProxyConfigServiceClient>(
         GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
         config_.get(), this, network_connection_tracker_,
@@ -512,7 +513,8 @@ void DataReductionProxyService::StoreSerializedConfig(
     const std::string& serialized_config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!params::IsIncludedInHoldbackFieldTrial() ||
-         previews::params::IsLitePageServerPreviewsEnabled());
+         previews::params::IsLitePageServerPreviewsEnabled() ||
+         params::ForceEnableClientConfigServiceForAllDataSaverUsers());
 
   SetStringPref(prefs::kDataReductionProxyConfig, serialized_config);
   SetInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,

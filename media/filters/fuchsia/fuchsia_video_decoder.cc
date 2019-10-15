@@ -1032,11 +1032,15 @@ void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
 }
 
 void FuchsiaVideoDecoder::ReleaseInputBuffers() {
-  in_flight_input_packets_.clear();
   input_writer_queue_.ResetBuffers();
   input_buffer_collection_creator_.reset();
   input_buffer_collection_.reset();
   num_input_buffers_ = 0;
+
+  // |in_flight_input_packets_| must be destroyed after
+  // |input_writer_queue_.ResetBuffers()|. Otherwise |input_writer_queue_| may
+  // call SendInputPacket() in response to the packet destruction callbacks.
+  in_flight_input_packets_.clear();
 }
 
 void FuchsiaVideoDecoder::ReleaseOutputBuffers() {

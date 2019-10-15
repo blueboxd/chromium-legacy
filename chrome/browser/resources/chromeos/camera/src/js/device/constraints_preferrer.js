@@ -306,11 +306,14 @@ cca.device.VideoConstraintsPreferrer =
     // sorted by user preference of constant fps.
     const getFpses = (r) => {
       let constFpses = [null];
-      if (this.constFpsInfo_[deviceId][r].includes(30) &&
-          this.constFpsInfo_[deviceId][r].includes(60)) {
-        const prefFps =
-            this.prefFpses_[deviceId] && this.prefFpses_[deviceId][r] || 30;
-        constFpses = prefFps == 30 ? [30, 60] : [60, 30];
+      if (this.constFpsInfo_[deviceId][r].includes(30)) {
+        if (this.constFpsInfo_[deviceId][r].includes(60)) {
+          const prefFps =
+              this.prefFpses_[deviceId] && this.prefFpses_[deviceId][r] || 30;
+          constFpses = prefFps == 30 ? [30, 60] : [60, 30];
+        } else {
+          constFpses = [30];
+        }
       }
       return constFpses.map((fps) => [...r, fps]);
     };

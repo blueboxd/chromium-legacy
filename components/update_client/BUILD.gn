@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//net/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("network_impl") {
   sources = [
@@ -240,4 +241,26 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/re2",
   ]
+}
+
+fuzzer_test("update_client_protocol_serializer_fuzzer") {
+  sources = [
+    "protocol_serializer_fuzzer.cc",
+  ]
+  deps = [
+    ":update_client",
+    "//base:base",
+  ]
+  seed_corpus = "fuzzer_corpuses/protocol_serializer/"
+}
+
+fuzzer_test("update_client_protocol_parser_fuzzer") {
+  sources = [
+    "protocol_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":update_client",
+    "//base:base",
+  ]
+  seed_corpus = "fuzzer_corpuses/protocol_parser/"
 }

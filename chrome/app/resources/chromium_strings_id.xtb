@@ -77,7 +77,6 @@
 <translation id="4230135487732243613">Tautkan data Chromium Anda ke akun ini?</translation>
 <translation id="4271805377592243930">Dapatkan bantuan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
-<translation id="4371648796594901282">Untuk detail Chromium OS, lihat <ph name="LINK_BEGIN" />Tentang Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Tetap keluar dari Chromium?</translation>
 <translation id="4415566066719264597">Jalankan Chromium di Background</translation>
 <translation id="4423735387467980091">Menyesuaikan dan mengontrol Chromium</translation>
@@ -190,6 +189,7 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7827169012280634081">Hapus cookie dan data situs ketika Anda keluar dari Chromium</translation>
 <translation id="7867198900892795913">Chromium tidak dapat diupdate ke versi terbaru, sehingga Anda tidak mendapatkan perbaikan keamanan dan fitur baru.</translation>
+<translation id="7898472181347242998">Untuk melihat apakah versi pada perangkat Anda adalah yang terbaru, buka <ph name="LINK_BEGIN" />Setelan Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">Update baru untuk Chromium telah tersedia dan akan diterapkan segera setelah diluncurkan ulang.</translation>
 <translation id="7937630085815544518">Anda telah masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="7975919845073681630">Ini adalah pemasangan Chromium sekunder, dan tidak dapat digunakan sebagai browser default.</translation>

@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">Urobte si prestávku.</translation>
 <translation id="683971173229319003">Hľadať+L</translation>
 <translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">Skratka je vypnutá</translation>
 <translation id="6910714959251846841">Táto aktualizácia vyžaduje vykonať v zariadení obnovenie Powerwash. Prečítajte si ďalšie informácie o najnovšej aktualizácii aplikácie <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
 <translation id="6919251195245069855">Inteligentnú kartu sa nepodarilo rozpoznať. Skúste to znova.</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">Sieť VPN je odpojená</translation>
 <translation id="7377169924702866686">Kláves Caps Lock je zapnutý.</translation>
 <translation id="7378594059915113390">Ovládacie prvky médií</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Prepnuté sieťové pripojenie</translation>
 <translation id="7405710164030118432">Ak chcete toto zariadenie odomknúť, zadajte prístupový kód rodiča Family Link</translation>
 <translation id="742594950370306541">Fotoaparát sa používa.</translation>

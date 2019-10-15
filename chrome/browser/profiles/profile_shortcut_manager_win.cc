@@ -28,7 +28,6 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -45,7 +44,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -731,13 +729,12 @@ std::unique_ptr<ProfileShortcutManager> ProfileShortcutManager::Create(
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                 content::NotificationService::AllSources());
-
   profile_manager_->GetProfileAttributesStorage().AddObserver(this);
+  profile_manager_->AddObserver(this);
 }
 
 ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
+  profile_manager_->RemoveObserver(this);
   profile_manager_->GetProfileAttributesStorage().RemoveObserver(this);
 }
 
@@ -857,6 +854,14 @@ void ProfileShortcutManagerWin::OnProfileAvatarChanged(
   CreateOrUpdateProfileIcon(profile_path);
 }
 
+void ProfileShortcutManagerWin::OnProfileAdded(Profile* profile) {
+  if (profile->GetPrefs()->GetInteger(prefs::kProfileIconVersion) <
+      kCurrentProfileIconVersion) {
+    // Ensure the profile's icon file has been created.
+    CreateOrUpdateProfileIcon(profile->GetPath());
+  }
+}
+
 base::FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
     const base::FilePath& profile_path) {
   const ProfileAttributesStorage& storage =
@@ -922,19 +927,4 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
                      &CreateOrUpdateDesktopShortcutsAndIconForProfile, params));
 
   entry->SetShortcutName(params.profile_name);
-}
-
-void ProfileShortcutManagerWin::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
-
-  Profile* profile =
-      content::Source<Profile>(source).ptr()->GetOriginalProfile();
-  if (profile->GetPrefs()->GetInteger(prefs::kProfileIconVersion) <
-      kCurrentProfileIconVersion) {
-    // Ensure the profile's icon file has been created.
-    CreateOrUpdateProfileIcon(profile->GetPath());
-  }
 }

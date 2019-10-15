@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -216,6 +217,7 @@ void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
         base::BindOnce(&CreditCardAccessManager::OnDidGetUnmaskDetails,
                        weak_ptr_factory_.GetWeakPtr()),
         personal_data_manager_->app_locale());
+    preflight_call_timestamp_ = AutofillTickClock::NowTicks();
     AutofillMetrics::LogCardUnmaskPreflightCalled();
   }
 }
@@ -223,6 +225,10 @@ void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
 void CreditCardAccessManager::OnDidGetUnmaskDetails(
     AutofillClient::PaymentsRpcResult result,
     AutofillClient::UnmaskDetails& unmask_details) {
+  // Log latency for preflight call.
+  AutofillMetrics::LogCardUnmaskPreflightDuration(
+      AutofillTickClock::NowTicks() - preflight_call_timestamp_);
+
   unmask_details_request_in_progress_ = false;
   unmask_details_.offer_fido_opt_in = unmask_details.offer_fido_opt_in;
   unmask_details_.unmask_auth_method = unmask_details.unmask_auth_method;

@@ -31,10 +31,9 @@ using security_state::SecurityLevel;
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    Delegate* delegate)
     : IconLabelBubbleView(font_list), delegate_(delegate) {
-  label()->SetElideBehavior(gfx::ELIDE_MIDDLE);
   SetID(VIEW_ID_LOCATION_ICON);
   Update(true);
-  SetUpForInOutAnimation();
+  SetUpForAnimation();
 
   // Readability is guaranteed by the omnibox theme.
   label()->SetAutoColorReadabilityEnabled(false);
@@ -262,18 +261,10 @@ bool LocationIconView::IsTriggerableEvent(const ui::Event& event) {
   return IconLabelBubbleView::IsTriggerableEvent(event);
 }
 
-double LocationIconView::WidthMultiplier() const {
-  return GetAnimationValue();
-}
-
 gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
     gfx::Size size) const {
   const int kMinCharacters = 10;
   size.SetToMin(
       GetSizeForLabelWidth(font_list().GetExpectedTextWidth(kMinCharacters)));
   return size;
-}
-
-base::TimeDelta LocationIconView::GetSlideDurationTime() const {
-  return base::TimeDelta::FromMilliseconds(150);
 }

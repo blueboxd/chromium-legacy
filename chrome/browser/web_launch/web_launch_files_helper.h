@@ -28,10 +28,9 @@ class NavigationHandle;
 namespace web_launch {
 
 // A helper for sending launch paths to the renderer process.
-// Launch files cannot be sent immediately for two reasons:
-// 1) Creating NativeFileSystemFileEntries has to happen on the IO thread.
-// 2) The data is stored on a document for |launch_url_|, which is not created
-// until |launch_url_| is committed.
+// Launch files cannot be sent immediately because the data is stored on a
+// document for |launch_url_|, which is not created until |launch_url_| is
+// committed.
 //
 // Note: The lifetime of this class is tied to the WebContents it is attached
 // to. However, in general it will be destroyed before the WebContents, when the
@@ -54,10 +53,6 @@ class WebLaunchFilesHelper
   void DidFinishNavigation(content::NavigationHandle* handle) override;
 
  private:
-  // Callback which fires when launch entries have been created.
-  void SetLaunchEntries(
-      std::vector<blink::mojom::NativeFileSystemEntryPtr> launch_entries);
-
   // Sends the launch entries to the renderer if they have been created and the
   // renderer is ready to receive them.
   void MaybeSendLaunchEntries();

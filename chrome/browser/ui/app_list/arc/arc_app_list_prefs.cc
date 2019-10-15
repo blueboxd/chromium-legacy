@@ -410,6 +410,9 @@ ArcAppListPrefs::ArcAppListPrefs(
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
+  for (auto& observer : observer_list_)
+    observer.OnArcAppListPrefsDestroyed();
+
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   if (!arc_session_manager)
     return;

@@ -141,8 +141,13 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // case none of the members of this object should be touched again.
   bool RunNextCallback(bool proceed, bool showed_interstitial);
 
+  // Called when the |request| from the real-time lookup service is sent.
+  void OnRTLookupRequest(std::unique_ptr<RTLookupRequest> request);
+
   // Called when the |response| from the real-time lookup service is received.
   void OnRTLookupResponse(std::unique_ptr<RTLookupResponse> response);
+
+  void SetWebUIToken(int token);
 
   enum State {
     // Haven't started checking or checking is complete.
@@ -180,6 +185,10 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // |urls_| before |next_index_| have been checked. If |next_index_| is smaller
   // than the size of |urls_|, the URL at |next_index_| is being processed.
   size_t next_index_ = 0;
+
+  // Token used for displaying url real time lookup pings. A single token is
+  // sufficient since real time check only happens on main frame url.
+  int url_web_ui_token_ = -1;
 
   State state_ = STATE_NONE;
 

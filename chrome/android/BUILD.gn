@@ -325,6 +325,7 @@ android_library("chrome_java") {
     "//components/url_formatter/android:url_formatter_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
+    "//components/viz/common:common_java",
     "//components/viz/service:service_java",
     "//content/public/android:content_java",
     "//device/gamepad:java",

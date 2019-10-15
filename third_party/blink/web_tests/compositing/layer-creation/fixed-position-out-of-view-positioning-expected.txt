@@ -52,7 +52,6 @@ AFTER:
       "bounds": [2008, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 10],
       "transform": 1
     },
     {

@@ -22,7 +22,6 @@ lucicfg.config(
 # TODO(https://crbug.com/1011908) Migrate the configuration in these files to starlark
 [lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
     'commit-queue.cfg',
-    'cr-buildbucket.cfg',
     'luci-milo.cfg',
     'luci-notify.cfg',
     'luci-scheduler.cfg',
@@ -36,7 +35,9 @@ lucicfg.emit(
 
 luci.project(
     name = 'chromium',
+    buildbucket = 'cr-buildbucket.appspot.com',
     logdog = 'luci-logdog.appspot.com',
+    swarming = 'chromium-swarm.appspot.com',
     acls = [
         acl.entry(
             roles = [
@@ -55,3 +56,9 @@ luci.project(
 luci.logdog(
     gs_bucket = 'chromium-luci-logdog',
 )
+
+exec('//buckets/ci.star')
+exec('//buckets/findit.star')
+exec('//buckets/try.star')
+exec('//buckets/webrtc.star')
+exec('//buckets/webrtc.fyi.star')

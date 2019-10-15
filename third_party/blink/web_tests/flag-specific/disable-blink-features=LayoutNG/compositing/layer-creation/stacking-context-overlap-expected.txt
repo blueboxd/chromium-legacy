@@ -17,21 +17,12 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='container')",
       "position": [0, 10],
       "bounds": [142, 142],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

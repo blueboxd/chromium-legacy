@@ -385,7 +385,11 @@ void MediaNotificationView::UpdateActionButtonsVisibility() {
       action_button->InvalidateLayout();
   }
 
-  container_->OnVisibleActionsChanged(visible_actions);
+  // We want to give the container a list of all possibly visible actions, and
+  // not just currently visible actions so it can make a decision on whether or
+  // not to force an expanded state.
+  container_->OnVisibleActionsChanged(GetTopVisibleActions(
+      enabled_actions_, ignored_actions, GetMaxNumActions(true)));
 }
 
 void MediaNotificationView::UpdateViewForExpandedState() {
@@ -427,10 +431,9 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   }
 
   header_row_->SetExpanded(expanded);
+  container_->OnExpanded(expanded);
 
   UpdateActionButtonsVisibility();
-
-  container_->OnExpanded(expanded);
 }
 
 void MediaNotificationView::CreateMediaButton(

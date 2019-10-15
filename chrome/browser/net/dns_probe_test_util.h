@@ -9,6 +9,10 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,19 +34,21 @@ class FakeHostResolver : public network::mojom::HostResolver {
     Response response;
   };
 
-  FakeHostResolver(network::mojom::HostResolverRequest resolver_request,
-                   std::vector<SingleResult> result_list);
+  FakeHostResolver(
+      mojo::PendingReceiver<network::mojom::HostResolver> resolver_receiver,
+      std::vector<SingleResult> result_list);
 
-  FakeHostResolver(network::mojom::HostResolverRequest resolver_request,
-                   int32_t result,
-                   Response response);
+  FakeHostResolver(
+      mojo::PendingReceiver<network::mojom::HostResolver> resolver_receiver,
+      int32_t result,
+      Response response);
 
   ~FakeHostResolver() override;
 
-  void ResolveHost(
-      const net::HostPortPair& host,
-      network::mojom::ResolveHostParametersPtr optional_parameters,
-      network::mojom::ResolveHostClientPtr response_client) override;
+  void ResolveHost(const net::HostPortPair& host,
+                   network::mojom::ResolveHostParametersPtr optional_parameters,
+                   mojo::PendingRemote<network::mojom::ResolveHostClient>
+                       pending_response_client) override;
 
   void MdnsListen(const net::HostPortPair& host,
                   net::DnsQueryType query_type,
@@ -50,7 +56,7 @@ class FakeHostResolver : public network::mojom::HostResolver {
                   MdnsListenCallback callback) override;
 
  private:
-  mojo::Binding<network::mojom::HostResolver> binding_;
+  mojo::Receiver<network::mojom::HostResolver> receiver_;
   std::vector<SingleResult> result_list_;
   size_t next_result_ = 0;
 };
@@ -58,13 +64,13 @@ class FakeHostResolver : public network::mojom::HostResolver {
 class HangingHostResolver : public network::mojom::HostResolver {
  public:
   explicit HangingHostResolver(
-      network::mojom::HostResolverRequest resolver_request);
+      mojo::PendingReceiver<network::mojom::HostResolver> resolver_receiver);
   ~HangingHostResolver() override;
 
-  void ResolveHost(
-      const net::HostPortPair& host,
-      network::mojom::ResolveHostParametersPtr optional_parameters,
-      network::mojom::ResolveHostClientPtr response_client) override;
+  void ResolveHost(const net::HostPortPair& host,
+                   network::mojom::ResolveHostParametersPtr optional_parameters,
+                   mojo::PendingRemote<network::mojom::ResolveHostClient>
+                       response_client) override;
 
   void MdnsListen(const net::HostPortPair& host,
                   net::DnsQueryType query_type,
@@ -72,8 +78,8 @@ class HangingHostResolver : public network::mojom::HostResolver {
                   MdnsListenCallback callback) override;
 
  private:
-  mojo::Binding<network::mojom::HostResolver> binding_;
-  network::mojom::ResolveHostClientPtr response_client_;
+  mojo::Receiver<network::mojom::HostResolver> receiver_;
+  mojo::Remote<network::mojom::ResolveHostClient> response_client_;
 };
 
 class FakeHostResolverNetworkContext : public network::TestNetworkContext {
@@ -85,7 +91,7 @@ class FakeHostResolverNetworkContext : public network::TestNetworkContext {
 
   void CreateHostResolver(
       const base::Optional<net::DnsConfigOverrides>& config_overrides,
-      network::mojom::HostResolverRequest request) override;
+      mojo::PendingReceiver<network::mojom::HostResolver> receiver) override;
 
  private:
   std::vector<FakeHostResolver::SingleResult> system_result_list_;

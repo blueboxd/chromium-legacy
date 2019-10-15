@@ -51,9 +51,6 @@ std::unique_ptr<HttpNegotiateAuthSystem> CreateAuthSystem(
 #if !defined(OS_ANDROID)
     HttpAuthHandlerNegotiate::AuthLibrary* auth_library,
 #endif
-#if defined(OS_WIN)
-    ULONG max_token_length,
-#endif
     const HttpAuthPreferences* prefs,
     HttpAuthHandlerFactory::NegotiateAuthSystemFactory
         negotiate_auth_system_factory) {
@@ -62,8 +59,7 @@ std::unique_ptr<HttpNegotiateAuthSystem> CreateAuthSystem(
 #if defined(OS_ANDROID)
   return std::make_unique<net::android::HttpAuthNegotiateAndroid>(prefs);
 #elif defined(OS_WIN)
-  return std::make_unique<HttpAuthSSPI>(auth_library, "Negotiate", NEGOSSP_NAME,
-                                        max_token_length);
+  return std::make_unique<HttpAuthSSPI>(auth_library, "Negotiate");
 #elif defined(OS_POSIX)
   return std::make_unique<HttpAuthGSSAPI>(auth_library, "Negotiate",
                                           CHROME_GSS_SPNEGO_MECH_OID_DESC);
@@ -98,19 +94,11 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
 #if defined(OS_WIN)
   if (is_unsupported_ || reason == CREATE_PREEMPTIVE)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
-  if (max_token_length_ == 0) {
-    int rv = DetermineMaxTokenLength(auth_library_.get(), NEGOSSP_NAME,
-                                     &max_token_length_);
-    if (rv == ERR_UNSUPPORTED_AUTH_SCHEME)
-      is_unsupported_ = true;
-    if (rv != OK)
-      return rv;
-  }
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
   std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
-      CreateAuthSystem(auth_library_.get(), max_token_length_,
-                       http_auth_preferences(), negotiate_auth_system_factory_),
+      CreateAuthSystem(auth_library_.get(), http_auth_preferences(),
+                       negotiate_auth_system_factory_),
       http_auth_preferences(), host_resolver));
 #elif defined(OS_ANDROID)
   if (is_unsupported_ || !http_auth_preferences() ||

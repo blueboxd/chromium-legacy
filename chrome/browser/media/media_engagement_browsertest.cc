@@ -11,6 +11,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
 #include "chrome/browser/media/media_engagement_contents_observer.h"
@@ -477,8 +478,16 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnBrowserClose) {
   ExpectScores(1, 0, 1, 0);
 }
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+// Flaky timeout. https://crbug.com/1014229
+#define MAYBE_RecordSingleVisitOnSameOrigin \
+  DISABLED_RecordSingleVisitOnSameOrigin
+#else
+#define MAYBE_RecordSingleVisitOnSameOrigin RecordSingleVisitOnSameOrigin
+#endif
+
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       RecordSingleVisitOnSameOrigin) {
+                       MAYBE_RecordSingleVisitOnSameOrigin) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_small_frame_size.html",
                                        false);
   AdvanceMeaningfulPlaybackTime();

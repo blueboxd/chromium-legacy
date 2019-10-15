@@ -4,10 +4,11 @@
 
 import 'chrome://welcome/signin_view.js';
 
-import {TestSigninViewProxy} from 'chrome://test/welcome/test_signin_view_proxy.js';
-import {TestWelcomeBrowserProxy} from 'chrome://test/welcome/test_welcome_browser_proxy.js';
 import {SigninViewProxyImpl} from 'chrome://welcome/signin_view_proxy.js';
 import {WelcomeBrowserProxyImpl} from 'chrome://welcome/welcome_browser_proxy.js';
+
+import {TestSigninViewProxy} from './test_signin_view_proxy.js';
+import {TestWelcomeBrowserProxy} from './test_welcome_browser_proxy.js';
 
 suite('SigninViewTest', function() {
   /** @type {SigninViewElement} */

@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">Ta en paus!</translation>
 <translation id="683971173229319003">Sök+L</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">Kortkommandot har inaktiverats.</translation>
 <translation id="6910714959251846841">Den här uppdateringen kräver att en Powerwash görs av enheten. Läs mer om den senaste uppdateringen av <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
 <translation id="6919251195245069855">Det smarta kortet kändes inte igen. Försök igen.</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">VPN frånkopplat</translation>
 <translation id="7377169924702866686">Caps Lock är på.</translation>
 <translation id="7378594059915113390">Mediereglage</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">Bytte nätverksanslutning</translation>
 <translation id="7405710164030118432">Lås upp enheten genom att ange föräldraåtkomstkoden för Family Link</translation>
 <translation id="742594950370306541">Kameran används.</translation>

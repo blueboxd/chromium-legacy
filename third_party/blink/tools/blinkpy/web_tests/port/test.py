@@ -95,10 +95,10 @@ class TestList(object):
                  actual_text=None, expected_text=None, expected_image=None)
 
     def add_reftest(self, name, reference_name, same_image=True,
-                    actual_text=None, expected_text=None, crash=False):
+                    actual_text=None, expected_text=None, crash=False, error=''):
         self.add(name, actual_checksum='checksum', actual_image='IMAGE', expected_image=None,
                  actual_text=actual_text, expected_text=expected_text,
-                 crash=crash)
+                 crash=crash, error=error)
         if same_image:
             self.add_reference(reference_name)
         else:
@@ -116,14 +116,14 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 127
+TOTAL_TESTS = 151
 TOTAL_WONTFIX = 3
 TOTAL_SKIPS = 20 + TOTAL_WONTFIX
-TOTAL_CRASHES = 76
+TOTAL_CRASHES = 78
 
 UNEXPECTED_PASSES = 1
-UNEXPECTED_NON_VIRTUAL_FAILURES = 21
-UNEXPECTED_FAILURES = 44
+UNEXPECTED_NON_VIRTUAL_FAILURES = 33
+UNEXPECTED_FAILURES = 65
 
 
 def unit_test_list():
@@ -144,6 +144,37 @@ def unit_test_list():
               actual_text=None, expected_text=None,
               actual_image=None, expected_image=None,
               actual_checksum=None)
+    tests.add('failures/unexpected/image-mismatch.html',
+              actual_image='image_fail-pngtEXtchecksum\x00checksum_fail',
+              expected_image='image-pngtEXtchecksum\x00checksum-png')
+    tests.add('failures/unexpected/no-image-generated.html',
+              expected_image='image-pngtEXtchecksum\x00checksum-png',
+              actual_image=None, actual_checksum=None)
+    tests.add('failures/unexpected/no-image-baseline.html',
+              actual_image='image_fail-pngtEXtchecksum\x00checksum_fail',
+              expected_image=None)
+    tests.add('failures/unexpected/audio-mismatch.html',
+              actual_audio=base64.b64encode('audio_fail-wav'), expected_audio='audio-wav',
+              actual_text=None, expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
+    tests.add('failures/unexpected/no-audio-baseline.html',
+              actual_audio=base64.b64encode('audio_fail-wav'),
+              actual_text=None, expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
+    tests.add('failures/unexpected/no-audio-generated.html',
+              expected_audio=base64.b64encode('audio_fail-wav'),
+              actual_text=None, expected_text=None,
+              actual_image=None, expected_image=None,
+              actual_checksum=None)
+    tests.add('failures/unexpected/text-mismatch-overlay.html',
+              actual_text='"paintInvalidations": [\nfail',
+              expected_text='"paintInvalidations": [\npass')
+    tests.add('failures/unexpected/no-text-baseline.html',
+              actual_text='"paintInvalidations": [\nfail', expected_text=None)
+    tests.add('failures/unexpected/no-text-generated.html',
+              actual_text=None, expected_text='"paintInvalidations": [\npass')
     tests.add('failures/expected/keyboard.html', keyboard=True)
     tests.add('failures/expected/newlines_leading.html',
               expected_text='\nfoo\n', actual_text='foo\n')
@@ -167,6 +198,8 @@ layer at (0,0) size 800x34
         text run at (0,0) width 133: "This is an image test!"
 """, expected_text=None)
     tests.add('failures/unexpected/crash.html', crash=True)
+    tests.add('failures/unexpected/crash-with-sample.html', crash=True)
+    tests.add('failures/unexpected/crash-with-delayed-log.html', crash=True)
     tests.add('failures/unexpected/crash-with-stderr.html', crash=True,
               error='mock-std-error-output')
     tests.add('failures/unexpected/web-process-crash-with-stderr.html', web_process_crash=True,
@@ -238,6 +271,9 @@ layer at (0,0) size 800x34
     tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html')
     tests.add_reftest('failures/unexpected/crash-reftest.html', 'failures/unexpected/crash-reftest-expected.html', crash=True)
     tests.add_reftest('failures/unexpected/reftest.html', 'failures/unexpected/reftest-expected.html', same_image=False)
+    tests.add_reftest('failures/unexpected/reftest-mismatch-with-text-mismatch-with-stderr.html',
+                      'failures/unexpected/reftest-mismatch-with-text-mismatch-with-stderr-expected.html',
+                      same_image=False, actual_text='actual', expected_text='expected', error='oops')
     tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html')
     tests.add('failures/unexpected/reftest-nopixel.html', actual_checksum=None, actual_image=None, expected_image=None)
     tests.add('failures/unexpected/reftest-nopixel-expected.html', actual_checksum=None, actual_image=None)
@@ -419,6 +455,26 @@ class TestPort(Port):
             'linux': ['precise', 'trusty']
         }
 
+    def look_for_new_samples(self, crashed_processes, start_time):
+        del start_time
+        sample_files = {}
+        for cp in crashed_processes:
+            if cp[0].endswith('crash-with-sample.html'):
+                sample_file = cp[0].replace('.html', '_sample.txt')
+                self._filesystem.maybe_make_directory(
+                    self._filesystem.dirname(sample_file))
+                self._filesystem.write_binary_file(sample_file, 'crash sample file')
+                sample_files[cp[0]] = sample_file
+        return sample_files
+
+    def look_for_new_crash_logs(self, crashed_processes, start_time):
+        del start_time
+        crash_logs = {}
+        for cp in crashed_processes:
+            if cp[0].endswith('-with-delayed-log.html'):
+                crash_logs[cp[0]] = ('delayed crash log', '/tmp')
+        return crash_logs
+
     def _path_to_driver(self, target=None):
         # This routine shouldn't normally be called, but it is called by
         # the mock_drt Driver. We return something, but make sure it's useless.
@@ -560,6 +616,7 @@ class TestDriver(Driver):
         actual_text = test.actual_text
         crash = test.crash
         web_process_crash = test.web_process_crash
+        leak = test.leak
 
         if 'flaky/text.html' in test_name and not test_name in self._port._flakes:
             self._port._flakes.add(test_name)
@@ -590,24 +647,30 @@ class TestDriver(Driver):
             audio = base64.b64decode(test.actual_audio)
         crashed_process_name = None
         crashed_pid = None
+
+        leak_log = ''
+        if leak:
+            leak_log = 'leak detected'
+
+        crash_log = ''
         if crash:
             crashed_process_name = self._port.driver_name()
             crashed_pid = 1
+            crash_log = 'crash log'
         elif web_process_crash:
             crashed_process_name = 'WebProcess'
             crashed_pid = 2
+            crash_log = 'web process crash log'
 
-        crash_log = ''
         if crashed_process_name:
             crash_logs = CrashLogs(self._port.host)
-            crash_log = crash_logs.find_newest_log(crashed_process_name, None) or ''
+            crash_log = crash_logs.find_newest_log(crashed_process_name, None) or crash_log
 
         if 'crash-reftest.html' in test_name:
             crashed_process_name = self._port.driver_name()
             crashed_pid = 3
             crash = True
             crash_log = 'reftest crash log'
-
         if test.actual_checksum == driver_input.image_hash:
             image = None
         else:
@@ -616,7 +679,7 @@ class TestDriver(Driver):
                             crash=(crash or web_process_crash), crashed_process_name=crashed_process_name,
                             crashed_pid=crashed_pid, crash_log=crash_log,
                             test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
-                            leak=test.leak)
+                            leak=test.leak, leak_log=leak_log)
 
     def stop(self, timeout_secs=0.0):
         self.started = False

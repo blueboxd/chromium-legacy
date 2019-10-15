@@ -16,6 +16,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -48,7 +49,7 @@ class TestHttpClient {
     factory_.CreateTCPConnectedSocket(
         base::nullopt /* local address */, addresses,
         nullptr /* tcp_connected_socket_options */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, mojo::MakeRequest(&socket_),
+        TRAFFIC_ANNOTATION_FOR_TESTS, socket_.BindNewPipeAndPassReceiver(),
         mojo::NullRemote() /* observer */,
         base::BindOnce(
             [](base::RunLoop* run_loop, int* result_out,
@@ -148,7 +149,7 @@ class TestHttpClient {
   mojo::ScopedDataPipeConsumerHandle receive_pipe_handle_;
   mojo::ScopedDataPipeProducerHandle send_pipe_handle_;
 
-  network::mojom::TCPConnectedSocketPtr socket_;
+  mojo::Remote<network::mojom::TCPConnectedSocket> socket_;
 };
 
 }  // namespace
@@ -170,7 +171,8 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
     base::RunLoop run_loop;
     factory_.CreateTCPServerSocket(
         net::IPEndPoint(net::IPAddress::IPv6Localhost(), 0), 1 /* backlog */,
-        TRAFFIC_ANNOTATION_FOR_TESTS, mojo::MakeRequest(&server_socket_),
+        TRAFFIC_ANNOTATION_FOR_TESTS,
+        server_socket_.InitWithNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::RunLoop* run_loop, int* result_out,
                net::IPEndPoint* local_addr_out, int result,
@@ -276,7 +278,7 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
 
   net::TestURLRequestContext url_request_context_;
   SocketFactory factory_;
-  mojom::TCPServerSocketPtr server_socket_;
+  mojo::PendingRemote<mojom::TCPServerSocket> server_socket_;
 };
 
 class WebSocketTest : public HttpServerTest {

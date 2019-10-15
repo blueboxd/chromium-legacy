@@ -112,6 +112,16 @@ std::string HoldbackFieldTrialGroup() {
   return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
 }
 
+bool ForceEnableClientConfigServiceForAllDataSaverUsers() {
+  // Client config is enabled for all data users that are not in the
+  // kDataReductionProxyHoldback. Users that have kDataReductionProxyHoldback
+  // enabled have config service client enabled only if
+  // |force_enable_config_service_fetches| is set to true.
+  return GetFieldTrialParamByFeatureAsBool(
+      data_reduction_proxy::features::kDataReductionProxyHoldback,
+      "force_enable_config_service_fetches", false);
+}
+
 bool FetchWarmupProbeURLEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableDataReductionProxyWarmupURLFetch);

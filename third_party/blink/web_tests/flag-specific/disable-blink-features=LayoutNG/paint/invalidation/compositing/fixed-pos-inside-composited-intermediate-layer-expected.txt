@@ -5,7 +5,6 @@
       "bounds": [785, 30020],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 100],
       "transform": 1
     },
     {
@@ -13,20 +12,20 @@
       "bounds": [500, 500],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='containerOverlapsComposited')",
       "position": [12, 12],
       "bounds": [100, 30000],
-      "transform": 5
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "bounds": [50, 50],
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
-      "transform": 6
+      "transform": 3
     }
   ],
   "transforms": [
@@ -41,44 +40,16 @@
     },
     {
       "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -100, 0, 1]
+        [8, 8, 0, 1]
       ]
     },
     {
       "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -100, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 6,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

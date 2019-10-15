@@ -10,14 +10,14 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/wake_lock/wake_lock_sentinel.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
 WakeLockStateRecord::WakeLockStateRecord(ExecutionContext* execution_context,
                                          WakeLockType type)
-    : wake_lock_type_(ToMojomWakeLockType(type)),
-      execution_context_(execution_context) {
+    : wake_lock_type_(type), execution_context_(execution_context) {
   DCHECK_NE(execution_context, nullptr);
 }
 
@@ -41,54 +41,35 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
     execution_context_->GetBrowserInterfaceBroker().GetInterface(
         wake_lock_service.BindNewPipeAndPassReceiver());
 
-    wake_lock_service->GetWakeLock(
-        wake_lock_type_, device::mojom::blink::WakeLockReason::kOther,
-        "Blink Wake Lock", wake_lock_.BindNewPipeAndPassReceiver());
+    wake_lock_service->GetWakeLock(ToMojomWakeLockType(wake_lock_type_),
+                                   device::mojom::blink::WakeLockReason::kOther,
+                                   "Blink Wake Lock",
+                                   wake_lock_.BindNewPipeAndPassReceiver());
     wake_lock_.set_disconnect_handler(
         WTF::Bind(&WakeLockStateRecord::OnWakeLockConnectionError,
                   WrapWeakPersistent(this)));
     wake_lock_->RequestWakeLock();
   }
-  DCHECK(!active_locks_.Contains(resolver));
-  active_locks_.insert(resolver);
+  auto* sentinel = MakeGarbageCollected<WakeLockSentinel>(
+      resolver->GetScriptState(), wake_lock_type_, this);
+  wake_lock_sentinels_.insert(sentinel);
+  resolver->Resolve(sentinel);
 }
 
-void WakeLockStateRecord::ReleaseWakeLock(ScriptPromiseResolver* resolver) {
-  // https://w3c.github.io/wake-lock/#release-wake-lock-algorithm
-  // 1. Reject lockPromise with an "AbortError" DOMException.
-  resolver->Reject(MakeGarbageCollected<DOMException>(
-      DOMExceptionCode::kAbortError, "Wake Lock released"));
+void WakeLockStateRecord::UnregisterSentinel(WakeLockSentinel* sentinel) {
+  auto iterator = wake_lock_sentinels_.find(sentinel);
+  DCHECK(iterator != wake_lock_sentinels_.end());
+  wake_lock_sentinels_.erase(iterator);
 
-  // 2. Let document be the responsible document of the current settings object.
-  // 3. Let record be the platform wake lock's state record associated with
-  // document and type.
-  // 4. If record.[[ActiveLocks]] does not contain lockPromise, abort these
-  // steps.
-  auto iterator = active_locks_.find(resolver);
-  if (iterator == active_locks_.end())
-    return;
-
-  // 5. Remove lockPromise from record.[[ActiveLocks]].
-  active_locks_.erase(iterator);
-
-  // 6. If the internal slot [[ActiveLocks]] of all the platform wake lock's
-  // state records are all empty, then run the following steps in parallel:
-  // 6.1. Ask the underlying operation system to release the wake lock of type
-  //      type and let success be true if the operation succeeded, or else
-  //      false.
-  if (active_locks_.IsEmpty() && wake_lock_.is_bound()) {
+  if (wake_lock_sentinels_.IsEmpty() && wake_lock_.is_bound()) {
     wake_lock_->CancelWakeLock();
     wake_lock_.reset();
-
-    // 6.2. If success is true and type is "screen" run the following:
-    // 6.2.1. Reset the platform-specific inactivity timer after which the
-    //        screen is actually turned off.
   }
 }
 
 void WakeLockStateRecord::ClearWakeLocks() {
-  while (!active_locks_.IsEmpty())
-    ReleaseWakeLock(*active_locks_.begin());
+  while (!wake_lock_sentinels_.IsEmpty())
+    (*wake_lock_sentinels_.begin())->DoRelease();
 }
 
 void WakeLockStateRecord::OnWakeLockConnectionError() {
@@ -98,7 +79,7 @@ void WakeLockStateRecord::OnWakeLockConnectionError() {
 
 void WakeLockStateRecord::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
-  visitor->Trace(active_locks_);
+  visitor->Trace(wake_lock_sentinels_);
 }
 
 }  // namespace blink

@@ -54,29 +54,11 @@ a:visited {
 
 #mv-tiles,
 .mv-tiles-old {
-  display: flex;
-  flex-wrap: wrap;
   font-size: 0;
-  justify-content: center;
-  /* 5 112px tiles per row. If you change this, also change the corresponding
-   * values in local_ntp.css. */
-  max-width: calc(var(--md-tile-size) * var(--md-max-tiles-row));
   opacity: 0;
-  position: static;
-  /* This align correctly for both LTR and RTL */
-  text-align: -webkit-auto;
+  position: relative;
   transition: opacity 300ms;
   user-select: none;
-}
-
-body.grid-layout #mv-tiles,
-body.grid-layout .mv-tiles-old {
-  display: block;
-  flex-wrap: unset;
-  justify-content: unset;
-  max-width: unset;
-  position: relative;
-  text-align: unset;
 }
 
 .mv-tiles-old {
@@ -101,11 +83,11 @@ body.grid-layout .mv-tiles-old {
 
 /* Prevent transitions on the held tile in order for it to smoothly follow the
  * mouse. */
-.grid-reorder .grid-tile {
+.reorder .grid-tile {
   transition-duration: 0s;
 }
 
-.grid-reorder {
+.reorder {
   z-index: 10;  /* Ensure the held tile is visible. */
 }
 
@@ -124,46 +106,24 @@ body.grid-layout .mv-tiles-old {
   width: var(--md-tile-size);
 }
 
-.reorder {
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
-      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
-  color: rgb(var(--GG800-rgb));
-  transition-duration: 200ms;
-}
-
-@media (prefers-color-scheme: dark) {
-  .reorder {
-    background-color: rgb(var(--dark-mode-bg-rgb));
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .4),
-        0 4px 8px 3px rgba(0, 0, 0, .25);
-    color: rgb(var(--GG100-rgb));
-  }
-}
-
-.reorder .md-tile-inner {
-  z-index: unset;
-}
-
 .md-empty-tile {
   display: none;
 }
 
 body:not(.reordering) .md-tile:hover,
-.grid-reorder .md-tile {
+.reorder .md-tile {
   background-color: rgba(var(--GG900-rgb), .06);
 }
 
 @media (prefers-color-scheme: dark) {
   body:not(.reordering) .md-tile:hover,
-  .grid-reorder .md-tile {
+  .reorder .md-tile {
     background-color: rgba(255, 255, 255, .1);
   }
 }
 
 body.dark-theme:not(.reordering) .md-tile:hover,
-body.dark-theme .grid-reorder .md-tile {
+body.dark-theme .reorder .md-tile {
   background-color: rgba(255, 255, 255, .1);
 }
 
@@ -254,7 +214,7 @@ body.mac-chromeos .md-title {
 }
 
 /* Apply when a custom background is set. */
-body.custom-background .md-tile:not(.reorder) .md-title {
+body.custom-background .md-title {
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, .35));
 }
 
@@ -263,12 +223,9 @@ body.use-title-container .md-title {
   background-color: white;
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
-  padding: 0 8px;
-}
-
-body.use-title-container .md-tile:not(.reorder) {
   color: rgb(var(--GG800-rgb));
   filter: unset;
+  padding: 0 8px;
 }
 
 .md-menu {
@@ -343,13 +300,13 @@ body:not(.reordering) .md-menu:focus::after {
   }
 }
 
-body.dark-theme .md-tile:not(.reorder) .md-menu::after,
+body.dark-theme .md-tile .md-menu::after,
 body.dark-theme:not(.reordering) .md-menu:focus:not(.mouse-navigation)::after {
   background-color: white;
 }
 
 @media (prefers-color-scheme: dark) {
-  body.dark-theme .md-tile:not(.reorder) .md-menu::after,
+  body.dark-theme .md-tile .md-menu::after,
   body.dark-theme:not(.reordering)
       .md-menu:focus:not(.mouse-navigation)::after {
     background-color: rgb(var(--GG200-rgb));

@@ -128,13 +128,6 @@ blink_modules_sources("bindings_modules_impl") {
     "//third_party/blink/renderer/modules/mediarecorder:buildflags",
     "//third_party/dawn/src/dawn:dawn_headers",
   ]
-
-  if (!is_component_build && is_win) {
-    # This target as a static library (for non-component builds) is >4GB on
-    # Windows, this causes linking to fail. As a workaround, split it into
-    # multiple shards.
-    split_count = 5
-  }
 }
 
 action("generate_v8_context_snapshot_external_references") {

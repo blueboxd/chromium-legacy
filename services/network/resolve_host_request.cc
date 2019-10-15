@@ -36,13 +36,13 @@ ResolveHostRequest::~ResolveHostRequest() {
 
   if (response_client_.is_bound()) {
     response_client_->OnComplete(net::ERR_FAILED, base::nullopt);
-    response_client_ = nullptr;
+    response_client_.reset();
   }
 }
 
 int ResolveHostRequest::Start(
     mojom::ResolveHostHandleRequest control_handle_request,
-    mojom::ResolveHostClientPtr response_client,
+    mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client,
     net::CompletionOnceCallback callback) {
   DCHECK(internal_request_);
   DCHECK(!control_handle_binding_.is_bound());
@@ -53,6 +53,8 @@ int ResolveHostRequest::Start(
   // callback.
   int rv = internal_request_->Start(
       base::BindOnce(&ResolveHostRequest::OnComplete, base::Unretained(this)));
+  mojo::Remote<mojom::ResolveHostClient> response_client(
+      std::move(pending_response_client));
   if (rv != net::ERR_IO_PENDING) {
     response_client->OnComplete(rv, GetAddressResults());
     return rv;
@@ -64,7 +66,7 @@ int ResolveHostRequest::Start(
   response_client_ = std::move(response_client);
   // Unretained |this| reference is safe because connection error cannot occur
   // if |response_client_| goes out of scope.
-  response_client_.set_connection_error_handler(base::BindOnce(
+  response_client_.set_disconnect_handler(base::BindOnce(
       &ResolveHostRequest::Cancel, base::Unretained(this), net::ERR_FAILED));
 
   callback_ = std::move(callback);
@@ -90,7 +92,7 @@ void ResolveHostRequest::OnComplete(int error) {
   control_handle_binding_.Close();
   SignalNonAddressResults();
   response_client_->OnComplete(error, GetAddressResults());
-  response_client_ = nullptr;
+  response_client_.reset();
 
   // Invoke completion callback last as it may delete |this|.
   std::move(callback_).Run(error);

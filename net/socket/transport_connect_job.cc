@@ -47,8 +47,10 @@ bool AddressListOnlyContainsIPv6(const AddressList& list) {
 
 TransportSocketParams::TransportSocketParams(
     const HostPortPair& host_port_pair,
+    bool disable_secure_dns,
     const OnHostResolutionCallback& host_resolution_callback)
     : destination_(host_port_pair),
+      disable_secure_dns_(disable_secure_dns),
       host_resolution_callback_(host_resolution_callback) {}
 
 TransportSocketParams::~TransportSocketParams() = default;
@@ -259,6 +261,8 @@ int TransportConnectJob::DoResolveHost() {
 
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority();
+  if (params_->disable_secure_dns())
+    parameters.secure_dns_mode_override = DnsConfig::SecureDnsMode::OFF;
   request_ = host_resolver()->CreateRequest(params_->destination(), net_log(),
                                             parameters);
 

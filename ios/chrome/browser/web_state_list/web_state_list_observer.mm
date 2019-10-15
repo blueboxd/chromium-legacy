@@ -45,3 +45,9 @@ void WebStateListObserver::WebStateActivatedAt(WebStateList* web_state_list,
                                                web::WebState* new_web_state,
                                                int active_index,
                                                int reason) {}
+
+void WebStateListObserver::WillCloseAllWebStates(WebStateList* web_state_list,
+                                                 bool user_action) {}
+
+void WebStateListObserver::DidCloseAllWebStates(WebStateList* web_state_list,
+                                                bool user_action) {}

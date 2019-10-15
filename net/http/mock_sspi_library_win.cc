@@ -98,8 +98,8 @@ struct MockContext {
 
 }  // namespace
 
-MockSSPILibrary::MockSSPILibrary() {
-}
+MockSSPILibrary::MockSSPILibrary(const wchar_t* package)
+    : SSPILibrary(package) {}
 
 MockSSPILibrary::~MockSSPILibrary() {
   EXPECT_TRUE(expected_package_queries_.empty());
@@ -110,7 +110,6 @@ MockSSPILibrary::~MockSSPILibrary() {
 
 SECURITY_STATUS MockSSPILibrary::AcquireCredentialsHandle(
     LPWSTR pszPrincipal,
-    LPWSTR pszPackage,
     unsigned long fCredentialUse,
     void* pvLogonId,
     void* pvAuthData,
@@ -122,7 +121,7 @@ SECURITY_STATUS MockSSPILibrary::AcquireCredentialsHandle(
   auto* credential = new MockCredential;
   credential->source_principal = pszPrincipal ? base::as_u16cstr(pszPrincipal)
                                               : STRING16_LITERAL("<Default>");
-  credential->package = base::as_u16cstr(pszPackage);
+  credential->package = base::as_u16cstr(package_name_.c_str());
   credential->has_explicit_credentials = !!pvAuthData;
 
   credential->StoreInHandle(phCredential);
@@ -232,12 +231,17 @@ SECURITY_STATUS MockSSPILibrary::QueryContextAttributesEx(PCtxtHandle phContext,
 }
 
 SECURITY_STATUS MockSSPILibrary::QuerySecurityPackageInfo(
-    LPWSTR pszPackageName, PSecPkgInfoW *pkgInfo) {
-  EXPECT_TRUE(!expected_package_queries_.empty());
+    PSecPkgInfoW* pkgInfo) {
+  if (expected_package_queries_.empty()) {
+    static SecPkgInfoW kDefaultPkgInfo{
+        0, 0, 0, kDefaultMaxTokenLength, nullptr, nullptr};
+    *pkgInfo = &kDefaultPkgInfo;
+    expected_freed_packages_.insert(&kDefaultPkgInfo);
+    return SEC_E_OK;
+  }
+
   PackageQuery package_query = expected_package_queries_.front();
   expected_package_queries_.pop_front();
-  std::wstring actual_package(pszPackageName);
-  EXPECT_EQ(package_query.expected_package, actual_package);
   *pkgInfo = package_query.package_info;
   if (package_query.response_code == SEC_E_OK)
     expected_freed_packages_.insert(package_query.package_info);
@@ -271,12 +275,10 @@ SECURITY_STATUS MockSSPILibrary::FreeContextBuffer(PVOID pvContextBuffer) {
 }
 
 void MockSSPILibrary::ExpectQuerySecurityPackageInfo(
-    const std::wstring& expected_package,
     SECURITY_STATUS response_code,
     PSecPkgInfoW package_info) {
-  PackageQuery package_query = {expected_package, response_code,
-                                package_info};
-  expected_package_queries_.push_back(package_query);
+  expected_package_queries_.emplace_back(
+      PackageQuery{response_code, package_info});
 }
 
 }  // namespace net

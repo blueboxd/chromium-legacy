@@ -764,6 +764,7 @@ constexpr ProfileMenuViewBase::ActionableItem
         ProfileMenuViewBase::ActionableItem::kCreditCardsButton,
         ProfileMenuViewBase::ActionableItem::kAddressesButton,
         ProfileMenuViewBase::ActionableItem::kSigninButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
         ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
         ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
         ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
@@ -789,6 +790,7 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncEnabled[] = {
     ProfileMenuViewBase::ActionableItem::kAddressesButton,
     ProfileMenuViewBase::ActionableItem::kSyncSettingsButton,
     ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+    ProfileMenuViewBase::ActionableItem::kExitProfileButton,
     ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
     ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
@@ -814,6 +816,7 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
     ProfileMenuViewBase::ActionableItem::kAddressesButton,
     ProfileMenuViewBase::ActionableItem::kSyncErrorButton,
     ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+    ProfileMenuViewBase::ActionableItem::kExitProfileButton,
     ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
     ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
     ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
@@ -840,6 +843,7 @@ constexpr ProfileMenuViewBase::ActionableItem
         ProfileMenuViewBase::ActionableItem::kAddressesButton,
         ProfileMenuViewBase::ActionableItem::kSigninAccountButton,
         ProfileMenuViewBase::ActionableItem::kManageGoogleAccountButton,
+        ProfileMenuViewBase::ActionableItem::kExitProfileButton,
         ProfileMenuViewBase::ActionableItem::kSignoutButton,
         ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
         ProfileMenuViewBase::ActionableItem::kGuestProfileButton,
@@ -874,12 +878,13 @@ PROFILE_MENU_CLICK_TEST(
 // List of actionable items in the correct order as they appear in the menu.
 // If a new button is added to the menu, it should also be added to this list.
 constexpr ProfileMenuViewBase::ActionableItem kActionableItems_GuestProfile[] =
-    {ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
+    {ProfileMenuViewBase::ActionableItem::kExitProfileButton,
+     ProfileMenuViewBase::ActionableItem::kManageProfilesButton,
      ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
      ProfileMenuViewBase::ActionableItem::kAddNewProfileButton,
      // The first button is added again to finish the cycle and test that
      // there are no other buttons at the end.
-     ProfileMenuViewBase::ActionableItem::kManageProfilesButton};
+     ProfileMenuViewBase::ActionableItem::kExitProfileButton};
 
 PROFILE_MENU_CLICK_TEST(kActionableItems_GuestProfile,
                         ProfileMenuClickTest_GuestProfile) {
@@ -902,8 +907,9 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kExitProfileButton};
 
+// TODO(crbug.com/1012167, 1014343): This crashes on Linux CFI bot.
 PROFILE_MENU_CLICK_TEST(kActionableItems_IncognitoProfile,
-                        ProfileMenuClickTest_IncognitoProfile) {
+                        DISABLED_ProfileMenuClickTest_IncognitoProfile) {
   SetTargetBrowser(CreateIncognitoBrowser(browser()->profile()));
 
   RunTest();

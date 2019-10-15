@@ -13,6 +13,7 @@
 #include "components/safe_browsing/realtime/policy_engine.h"
 #include "components/safe_browsing/realtime/url_lookup_service.h"
 #include "components/safe_browsing/web_ui/constants.h"
+#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -431,17 +432,48 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
     return;
   }
 
-  RTLookupResponseCallback result_callback =
+  RTLookupRequestCallback request_callback =
+      base::Bind(&SafeBrowsingUrlCheckerImpl::OnRTLookupRequest,
+                 weak_factory_.GetWeakPtr());
+
+  RTLookupResponseCallback response_callback =
       base::Bind(&SafeBrowsingUrlCheckerImpl::OnRTLookupResponse,
                  weak_factory_.GetWeakPtr());
+
   auto* rt_lookup_service = database_manager_->GetRealTimeUrlLookupService();
-  rt_lookup_service->StartLookup(url, std::move(result_callback));
+  rt_lookup_service->StartLookup(url, std::move(request_callback),
+                                 std::move(response_callback));
+}
+
+void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
+    std::unique_ptr<RTLookupRequest> request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // The following is to log this RTLookupRequest on any open
+  // chrome://safe-browsing pages.
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&WebUIInfoSingleton::AddToRTLookupPings,
+                     base::Unretained(WebUIInfoSingleton::GetInstance()),
+                     *request),
+      base::BindOnce(&SafeBrowsingUrlCheckerImpl::SetWebUIToken,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
     std::unique_ptr<RTLookupResponse> response) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK_EQ(content::ResourceType::kMainFrame, resource_type_);
+
+  if (url_web_ui_token_ != -1) {
+    // The following is to log this RTLookupResponse on any open
+    // chrome://safe-browsing pages.
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&WebUIInfoSingleton::AddToRTLookupResponses,
+                       base::Unretained(WebUIInfoSingleton::GetInstance()),
+                       url_web_ui_token_, *response));
+  }
 
   const GURL& url = urls_[next_index_].url;
   if (response && (response->threat_info_size() > 0) &&
@@ -454,8 +486,10 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
   } else {
     OnUrlResult(url, SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }
+}
 
-  // TODO(vakh): Log |response| to chrome://safe-browsing
+void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
+  url_web_ui_token_ = token;
 }
 
 }  // namespace safe_browsing

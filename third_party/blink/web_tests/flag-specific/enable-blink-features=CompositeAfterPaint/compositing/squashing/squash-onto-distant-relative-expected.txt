@@ -5,11 +5,6 @@
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='squashing'",
-      "drawsContent": false,
-      "backgroundColor": "#FFFFFF"
     }
   ]
 }

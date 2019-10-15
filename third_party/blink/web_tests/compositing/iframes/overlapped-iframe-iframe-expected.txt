@@ -21,12 +21,12 @@
       "bounds": [210, 210],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutIFrame (positioned) IFRAME id='overlap'",
       "bounds": [304, 304],
-      "transform": 4
+      "transform": 3
     }
   ],
   "transforms": [
@@ -41,16 +41,7 @@
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [2, 2, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -59,7 +50,7 @@
       ]
     },
     {
-      "id": 4,
+      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

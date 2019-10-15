@@ -74,6 +74,23 @@ void RecordFeatureUsage(content::RenderFrameHost* rfh,
       rfh, page_load_features);
 }
 
+std::string GetHeavyAdReportMessage(const FrameData& frame_data) {
+  const char kChromeStatusMessage[] =
+      "See https://www.chromestatus.com/feature/4800491902992384";
+  switch (frame_data.heavy_ad_status()) {
+    case FrameData::HeavyAdStatus::kNetwork:
+      return "Ad was removed because its network usage exceeded the limit. " +
+             std::string(kChromeStatusMessage);
+    case FrameData::HeavyAdStatus::kTotalCpu:
+    case FrameData::HeavyAdStatus::kPeakCpu:
+      return "Ad was removed because its CPU usage exceeded the limit. " +
+             std::string(kChromeStatusMessage);
+    case FrameData::HeavyAdStatus::kNone:
+      NOTREACHED();
+      return "";
+  }
+}
+
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 const char kDisallowedByBlocklistHistogramName[] =
     "PageLoad.Clients.Ads.HeavyAds.DisallowedByBlocklist";
@@ -177,57 +194,9 @@ void AdsPageLoadMetricsObserver::OnTimingUpdate(
   FrameData* ancestor_data = FindFrameData(subframe_rfh->GetFrameTreeNodeId());
 
   // Only update the frame with the root frames timing updates.
-  if (ancestor_data &&
-      ancestor_data->frame_tree_node_id() == subframe_rfh->GetFrameTreeNodeId())
+  if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
+                           subframe_rfh->GetFrameTreeNodeId())
     ancestor_data->set_timing(timing.Clone());
-}
-
-void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
-    content::RenderFrameHost* render_frame_host,
-    FrameData* frame_data) {
-  DCHECK(render_frame_host);
-  if (!frame_data->MaybeTriggerHeavyAdIntervention())
-    return;
-
-  // Check to see if we are allowed to activate on this host.
-  if (IsBlocklisted())
-    return;
-
-  // Find the RenderFrameHost associated with this frame data. It is possible
-  // that this frame no longer exists. We do not care if the frame has
-  // moved to a new process because once the frame has been tagged as an ad, it
-  // is always considered an ad.
-  while (render_frame_host && render_frame_host->GetFrameTreeNodeId() !=
-                                  frame_data->frame_tree_node_id()) {
-    render_frame_host = render_frame_host->GetParent();
-  }
-  if (!render_frame_host)
-    return;
-
-  // Ensure that this RenderFrameHost is a subframe.
-  DCHECK(render_frame_host->GetParent());
-
-  GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
-      render_frame_host, render_frame_host->GetLastCommittedURL(),
-      heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
-
-  RecordFeatureUsage(render_frame_host,
-                     blink::mojom::WebFeature::kHeavyAdIntervention);
-
-  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
-                FrameData::FrameVisibility::kAnyVisibility,
-                frame_data->heavy_ad_status_with_noise());
-  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
-                frame_data->visibility(),
-                frame_data->heavy_ad_status_with_noise());
-
-  // Report intervention to the blocklist.
-  if (auto* blocklist = GetHeavyAdBlocklist()) {
-    blocklist->AddEntry(
-        GetDelegate().GetWebContents()->GetLastCommittedURL().host(),
-        true /* opt_out */,
-        static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType));
-  }
 }
 
 void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
@@ -422,7 +391,7 @@ void AdsPageLoadMetricsObserver::FrameDisplayStateChanged(
   // chain, then update it. The display property is propagated to all child
   // frames.
   if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
-                           ancestor_data->frame_tree_node_id()) {
+                           ancestor_data->root_frame_tree_node_id()) {
     ancestor_data->SetDisplayState(is_display_none);
   }
 }
@@ -435,7 +404,7 @@ void AdsPageLoadMetricsObserver::FrameSizeChanged(
   // If the frame whose size has changed is the root of the ad ancestry chain,
   // then update it
   if (ancestor_data && render_frame_host->GetFrameTreeNodeId() ==
-                           ancestor_data->frame_tree_node_id()) {
+                           ancestor_data->root_frame_tree_node_id()) {
     ancestor_data->SetFrameSize(frame_size);
   }
 }
@@ -472,7 +441,7 @@ void AdsPageLoadMetricsObserver::OnFrameDeleted(
 
   // If the root ad frame has been deleted, flush histograms for the frame and
   // remove it from storage. All child frames should be deleted by this point.
-  if (ancestor_data && ancestor_data->frame_tree_node_id() ==
+  if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
                            render_frame_host->GetFrameTreeNodeId()) {
     RecordPerFrameHistogramsForAdTagging(*ancestor_data);
     RecordPerFrameHistogramsForCpuUsage(*ancestor_data);
@@ -973,6 +942,74 @@ FrameData* AdsPageLoadMetricsObserver::FindFrameData(FrameTreeNodeId id) {
     return nullptr;
 
   return &*id_and_data->second;
+}
+
+void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
+    content::RenderFrameHost* render_frame_host,
+    FrameData* frame_data) {
+  DCHECK(render_frame_host);
+  if (!frame_data->MaybeTriggerHeavyAdIntervention())
+    return;
+
+  // Check to see if we are allowed to activate on this host.
+  if (IsBlocklisted())
+    return;
+
+  // We should always unload the root of the ad subtree. Find the
+  // RenderFrameHost of the root ad frame associated with |frame_data|.
+  // |render_frame_host| may be the frame host for a subframe of the ad which we
+  // received a resource update for. Traversing the tree here guarantees
+  // that the frame we unload is an ancestor of |render_frame_host|. We cannot
+  // check if render frame hosts are ads so we rely on matching the
+  // root_frame_tree_node_id of |frame_data|. It is possible that this frame no
+  // longer exists. We do not care if the frame has moved to a new process
+  // because once the frame has been tagged as an ad, it is always considered an
+  // ad by our heuristics.
+  while (render_frame_host && render_frame_host->GetFrameTreeNodeId() !=
+                                  frame_data->root_frame_tree_node_id()) {
+    render_frame_host = render_frame_host->GetParent();
+  }
+  if (!render_frame_host)
+    return;
+
+  // Ensure that this RenderFrameHost is a subframe.
+  DCHECK(render_frame_host->GetParent());
+
+  const char kReportId[] = "HeavyAdIntervention";
+  std::string report_message = GetHeavyAdReportMessage(*frame_data);
+
+  // Report to all child frames that will be unloaded. Once all reports are
+  // queued, the frame will be unloaded. Because the IPC messages are ordered
+  // wrt to each frames unload, we do not need to wait before loading the error
+  // page. Reports will be added to ReportingObserver queues synchronously when
+  // the IPC message is handled, which guarantees they will be available in the
+  // the unload handler.
+  for (content::RenderFrameHost* reporting_frame :
+       render_frame_host->GetFramesInSubtree()) {
+    reporting_frame->SendInterventionReport(kReportId, report_message);
+  }
+
+  // Report intervention to the blocklist.
+  if (auto* blocklist = GetHeavyAdBlocklist()) {
+    blocklist->AddEntry(
+        GetDelegate().GetWebContents()->GetLastCommittedURL().host(),
+        true /* opt_out */,
+        static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType));
+  }
+
+  GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
+      render_frame_host, render_frame_host->GetLastCommittedURL(),
+      heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
+
+  RecordFeatureUsage(render_frame_host,
+                     blink::mojom::WebFeature::kHeavyAdIntervention);
+
+  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
+                FrameData::FrameVisibility::kAnyVisibility,
+                frame_data->heavy_ad_status_with_noise());
+  ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
+                frame_data->visibility(),
+                frame_data->heavy_ad_status_with_noise());
 }
 
 bool AdsPageLoadMetricsObserver::IsBlocklisted() {

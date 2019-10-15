@@ -279,6 +279,7 @@ void RecentTabHelperTest::FastForwardSnapshotController() {
 void RecentTabHelperTest::StartAndCommitNavigation(
     std::unique_ptr<content::NavigationSimulator> simulator) {
   simulator->SetAutoAdvance(false);
+  simulator->SetKeepLoading(true);
   simulator->Start();
 
   // Need to flush the task queue manually since there may be async tasks

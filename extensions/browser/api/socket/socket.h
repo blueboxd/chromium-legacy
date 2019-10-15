@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -51,12 +52,12 @@ using RecvFromCompletionCallback =
 using ListenCallback =
     base::OnceCallback<void(int, const std::string& error_msg)>;
 
-using AcceptCompletionCallback =
-    base::OnceCallback<void(int,
-                            network::mojom::TCPConnectedSocketPtr,
-                            const base::Optional<net::IPEndPoint>&,
-                            mojo::ScopedDataPipeConsumerHandle,
-                            mojo::ScopedDataPipeProducerHandle)>;
+using AcceptCompletionCallback = base::OnceCallback<void(
+    int,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket>,
+    const base::Optional<net::IPEndPoint>&,
+    mojo::ScopedDataPipeConsumerHandle,
+    mojo::ScopedDataPipeProducerHandle)>;
 
 // A Socket wraps a low-level socket and includes housekeeping information that
 // we need to manage it in the context of an extension.

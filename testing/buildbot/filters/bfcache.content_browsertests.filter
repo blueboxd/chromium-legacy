@@ -85,9 +85,6 @@
 -NavigationControllerBrowserTest.PageStateWithIframeAfterForwardInCompetingFrames
 -SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndMainFrameWins
 
-# Failing on all platforms, need to be triaged, see https://crbug.com/1010870.
--WebContentsImplBrowserTest.MaxFrameCountForCrossProcessNavigation
-
 # Failing on android only, need to be triaged, see https://crbug.com/1006267.
 -BackForwardCacheMetricsBrowserTest.Fetch
 -BackForwardCacheMetricsBrowserTest.XHR

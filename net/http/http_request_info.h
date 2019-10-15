@@ -48,6 +48,9 @@ struct NET_EXPORT HttpRequestInfo {
   // tracked by the server (e.g. without channel id).
   PrivacyMode privacy_mode;
 
+  // Whether secure DNS should be disabled for the request.
+  bool disable_secure_dns;
+
   // Tag applied to all sockets used to service request.
   SocketTag socket_tag;
 

@@ -19,6 +19,10 @@ class PerformanceManagerLockObserver : public content::LockObserver {
                                     int render_frame_id) override;
   void OnFrameStopsHoldingWebLocks(int render_process_id,
                                    int render_frame_id) override;
+  void OnFrameStartsHoldingIndexedDBConnections(int render_process_id,
+                                                int render_frame_id) override;
+  void OnFrameStopsHoldingIndexedDBConnections(int render_process_id,
+                                               int render_frame_id) override;
 };
 
 }  // namespace performance_manager

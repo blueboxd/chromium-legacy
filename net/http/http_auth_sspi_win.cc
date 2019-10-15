@@ -23,7 +23,6 @@
 #include "net/log/net_log_with_source.h"
 
 namespace net {
-
 using DelegationType = HttpAuth::DelegationType;
 
 namespace {
@@ -109,8 +108,7 @@ base::Value InitializeSecurityContextParams(SSPILibrary* library,
   return params;
 }
 
-Error MapAcquireCredentialsStatusToError(SECURITY_STATUS status,
-                                         const SEC_WCHAR* package) {
+Error MapAcquireCredentialsStatusToError(SECURITY_STATUS status) {
   switch (status) {
     case SEC_E_OK:
       return OK;
@@ -131,7 +129,6 @@ Error MapAcquireCredentialsStatusToError(SECURITY_STATUS status,
 }
 
 Error AcquireExplicitCredentials(SSPILibrary* library,
-                                 const SEC_WCHAR* package,
                                  const base::string16& domain,
                                  const base::string16& user,
                                  const base::string16& password,
@@ -156,7 +153,6 @@ Error AcquireExplicitCredentials(SSPILibrary* library,
   // Pass the username/password to get the credentials handle.
   SECURITY_STATUS status = library->AcquireCredentialsHandle(
       nullptr,                          // pszPrincipal
-      const_cast<SEC_WCHAR*>(package),  // pszPackage
       SECPKG_CRED_OUTBOUND,             // fCredentialUse
       nullptr,                          // pvLogonID
       &identity,                        // pAuthData
@@ -165,7 +161,7 @@ Error AcquireExplicitCredentials(SSPILibrary* library,
       cred,                             // phCredential
       &expiry);                         // ptsExpiry
 
-  auto result = MapAcquireCredentialsStatusToError(status, package);
+  auto result = MapAcquireCredentialsStatusToError(status);
   net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_ACQUIRE_CREDS, [&] {
     return AcquireCredentialsHandleParams(&domain, &user, result, status);
   });
@@ -173,7 +169,6 @@ Error AcquireExplicitCredentials(SSPILibrary* library,
 }
 
 Error AcquireDefaultCredentials(SSPILibrary* library,
-                                const SEC_WCHAR* package,
                                 const NetLogWithSource& net_log,
                                 CredHandle* cred) {
   TimeStamp expiry;
@@ -185,7 +180,6 @@ Error AcquireDefaultCredentials(SSPILibrary* library,
   // for a single sign-on.
   SECURITY_STATUS status = library->AcquireCredentialsHandle(
       nullptr,                          // pszPrincipal
-      const_cast<SEC_WCHAR*>(package),  // pszPackage
       SECPKG_CRED_OUTBOUND,             // fCredentialUse
       nullptr,                          // pvLogonID
       nullptr,                          // pAuthData
@@ -194,7 +188,7 @@ Error AcquireDefaultCredentials(SSPILibrary* library,
       cred,                             // phCredential
       &expiry);                         // ptsExpiry
 
-  auto result = MapAcquireCredentialsStatusToError(status, package);
+  auto result = MapAcquireCredentialsStatusToError(status);
   net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_ACQUIRE_CREDS, [&] {
     return AcquireCredentialsHandleParams(nullptr, nullptr, result, status);
   });
@@ -267,9 +261,36 @@ Error MapFreeContextBufferStatusToError(SECURITY_STATUS status) {
 
 }  // anonymous namespace
 
+Error SSPILibrary::DetermineMaxTokenLength(ULONG* max_token_length) {
+  if (!is_supported_)
+    return ERR_UNSUPPORTED_AUTH_SCHEME;
+
+  if (max_token_length_ != 0) {
+    *max_token_length = max_token_length_;
+    return OK;
+  }
+
+  DCHECK(max_token_length);
+  PSecPkgInfo pkg_info = nullptr;
+  is_supported_ = false;
+
+  SECURITY_STATUS status = QuerySecurityPackageInfo(&pkg_info);
+  Error rv = MapQuerySecurityPackageInfoStatusToError(status);
+  if (rv != OK)
+    return rv;
+  int token_length = pkg_info->cbMaxToken;
+
+  status = FreeContextBuffer(pkg_info);
+  rv = MapFreeContextBufferStatusToError(status);
+  if (rv != OK)
+    return rv;
+  *max_token_length = max_token_length_ = token_length;
+  is_supported_ = true;
+  return OK;
+}
+
 SECURITY_STATUS SSPILibraryDefault::AcquireCredentialsHandle(
     LPWSTR pszPrincipal,
-    LPWSTR pszPackage,
     unsigned long fCredentialUse,
     void* pvLogonId,
     void* pvAuthData,
@@ -277,9 +298,10 @@ SECURITY_STATUS SSPILibraryDefault::AcquireCredentialsHandle(
     void* pvGetKeyArgument,
     PCredHandle phCredential,
     PTimeStamp ptsExpiry) {
-  return ::AcquireCredentialsHandleW(pszPrincipal, pszPackage, fCredentialUse,
-                                     pvLogonId, pvAuthData, pGetKeyFn,
-                                     pvGetKeyArgument, phCredential, ptsExpiry);
+  return ::AcquireCredentialsHandleW(
+      pszPrincipal, const_cast<LPWSTR>(package_name_.c_str()), fCredentialUse,
+      pvLogonId, pvAuthData, pGetKeyFn, pvGetKeyArgument, phCredential,
+      ptsExpiry);
 }
 
 SECURITY_STATUS SSPILibraryDefault::InitializeSecurityContext(
@@ -314,9 +336,9 @@ SECURITY_STATUS SSPILibraryDefault::QueryContextAttributesEx(
 }
 
 SECURITY_STATUS SSPILibraryDefault::QuerySecurityPackageInfo(
-    LPWSTR pszPackageName,
     PSecPkgInfoW* pkgInfo) {
-  return ::QuerySecurityPackageInfoW(pszPackageName, pkgInfo);
+  return ::QuerySecurityPackageInfoW(const_cast<LPWSTR>(package_name_.c_str()),
+                                     pkgInfo);
 }
 
 SECURITY_STATUS SSPILibraryDefault::FreeCredentialsHandle(
@@ -333,14 +355,9 @@ SECURITY_STATUS SSPILibraryDefault::FreeContextBuffer(PVOID pvContextBuffer) {
   return ::FreeContextBuffer(pvContextBuffer);
 }
 
-HttpAuthSSPI::HttpAuthSSPI(SSPILibrary* library,
-                           const std::string& scheme,
-                           const SEC_WCHAR* security_package,
-                           ULONG max_token_length)
+HttpAuthSSPI::HttpAuthSSPI(SSPILibrary* library, const std::string& scheme)
     : library_(library),
       scheme_(scheme),
-      security_package_(security_package),
-      max_token_length_(max_token_length),
       delegation_type_(DelegationType::kNone) {
   DCHECK(library_);
   SecInvalidateHandle(&cred_);
@@ -432,13 +449,12 @@ int HttpAuthSSPI::OnFirstRound(const AuthCredentials* credentials,
     base::string16 domain;
     base::string16 user;
     SplitDomainAndUser(credentials->username(), &domain, &user);
-    rv = AcquireExplicitCredentials(library_, security_package_, domain, user,
+    rv = AcquireExplicitCredentials(library_, domain, user,
                                     credentials->password(), net_log, &cred_);
     if (rv != OK)
       return rv;
   } else {
-    rv =
-        AcquireDefaultCredentials(library_, security_package_, net_log, &cred_);
+    rv = AcquireDefaultCredentials(library_, net_log, &cred_);
     if (rv != OK)
       return rv;
   }
@@ -453,6 +469,12 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
                                        const NetLogWithSource& net_log,
                                        void** out_token,
                                        int* out_token_len) {
+  ULONG max_token_length = 0;
+  // Microsoft SDKs have a loose relationship with const.
+  Error rv = library_->DetermineMaxTokenLength(&max_token_length);
+  if (rv != OK)
+    return rv;
+
   CtxtHandle* ctxt_ptr = nullptr;
   SecBufferDesc in_buffer_desc, out_buffer_desc;
   SecBufferDesc* in_buffer_desc_ptr = nullptr;
@@ -508,7 +530,7 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
   out_buffer_desc.cBuffers = 1;
   out_buffer_desc.pBuffers = &out_buffer;
   out_buffer.BufferType = SECBUFFER_TOKEN;
-  out_buffer.cbBuffer = max_token_length_;
+  out_buffer.cbBuffer = max_token_length;
   out_buffer.pvBuffer = malloc(out_buffer.cbBuffer);
   if (!out_buffer.pvBuffer)
     return ERR_OUT_OF_MEMORY;
@@ -538,7 +560,7 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
       &out_buffer_desc,                // pOutput
       &context_attributes,             // pfContextAttr
       nullptr);                        // ptsExpiry
-  Error rv = MapInitializeSecurityContextStatusToError(status);
+  rv = MapInitializeSecurityContextStatusToError(status);
   net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX, [&] {
     return InitializeSecurityContextParams(library_, &ctxt_, rv, status,
                                            context_attributes);
@@ -572,26 +594,6 @@ void SplitDomainAndUser(const base::string16& combined,
     *domain = combined.substr(0, backslash_idx);
     *user = combined.substr(backslash_idx + 1);
   }
-}
-
-int DetermineMaxTokenLength(SSPILibrary* library,
-                            const std::wstring& package,
-                            ULONG* max_token_length) {
-  DCHECK(library);
-  DCHECK(max_token_length);
-  PSecPkgInfo pkg_info = nullptr;
-  SECURITY_STATUS status = library->QuerySecurityPackageInfo(
-      const_cast<wchar_t *>(package.c_str()), &pkg_info);
-  int rv = MapQuerySecurityPackageInfoStatusToError(status);
-  if (rv != OK)
-    return rv;
-  int token_length = pkg_info->cbMaxToken;
-  status = library->FreeContextBuffer(pkg_info);
-  rv = MapFreeContextBufferStatusToError(status);
-  if (rv != OK)
-    return rv;
-  *max_token_length = token_length;
-  return OK;
 }
 
 }  // namespace net

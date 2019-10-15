@@ -175,6 +175,7 @@ void ClipboardMap::CommitToAndroidClipboard() {
     Java_Clipboard_setText(env, clipboard_manager_, str);
   } else {
     Java_Clipboard_clear(env, clipboard_manager_);
+    // TODO(huangdarwin): Implement raw clipboard support for arbitrary formats.
     NOTIMPLEMENTED();
   }
   map_state_ = MapState::kUpToDate;
@@ -431,14 +432,26 @@ void ClipboardAndroid::ClearLastModifiedTime() {
 }
 
 // Main entry point used to write several values in the clipboard.
-void ClipboardAndroid::WriteObjects(ClipboardBuffer buffer,
-                                    const ObjectMap& objects) {
+void ClipboardAndroid::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                    const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
   g_map.Get().Clear();
 
   for (const auto& object : objects)
-    DispatchObject(object.first, object.second);
+    DispatchPortableRepresentation(object.first, object.second);
+
+  g_map.Get().CommitToAndroidClipboard();
+}
+
+void ClipboardAndroid::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+  g_map.Get().Clear();
+
+  DispatchPlatformRepresentations(std::move(platform_representations));
 
   g_map.Get().CommitToAndroidClipboard();
 }

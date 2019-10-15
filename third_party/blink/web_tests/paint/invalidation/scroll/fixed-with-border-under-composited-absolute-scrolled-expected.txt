@@ -5,7 +5,6 @@
       "bounds": [785, 2001],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 400],
       "transform": 1
     },
     {
@@ -14,7 +13,7 @@
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='fixed'",
@@ -42,16 +41,7 @@
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -400, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

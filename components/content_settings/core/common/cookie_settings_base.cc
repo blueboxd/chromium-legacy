@@ -8,6 +8,7 @@
 #include "base/debug/task_trace.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/content_settings/core/common/features.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
@@ -71,9 +72,11 @@ void CookieSettingsBase::GetCookieSetting(
 bool CookieSettingsBase::IsCookieAccessAllowed(
     const GURL& url,
     const GURL& first_party_url) const {
-  DCHECK(!base::FeatureList::IsEnabled(kImprovedCookieControls) ||
-         !first_party_url.is_empty() || url.is_empty())
-      << url;
+#if !defined(OS_IOS)
+  // IOS uses this method with an empty |first_party_url| but we don't have
+  // content settings on IOS, so it does not matter.
+  DCHECK(!first_party_url.is_empty() || url.is_empty()) << url;
+#endif
   ContentSetting setting;
   GetCookieSetting(url, first_party_url, nullptr, &setting);
   return IsAllowed(setting);
@@ -85,17 +88,15 @@ bool CookieSettingsBase::IsCookieAccessAllowed(
     const base::Optional<url::Origin>& top_frame_origin) const {
   // TODO(crbug.com/988398): top_frame_origin is not yet always available.
   // Ensure that the DCHECK always passes and remove the FeatureList check.
-  if (!base::FeatureList::IsEnabled(kImprovedCookieControls) &&
-      !base::FeatureList::IsEnabled(
-          kImprovedCookieControlsForThirdPartyCookieBlocking)) {
-    return IsCookieAccessAllowed(url, site_for_cookies);
-  }
-  DCHECK(top_frame_origin || site_for_cookies.is_empty())
+  DCHECK((!base::FeatureList::IsEnabled(kImprovedCookieControls) &&
+          !base::FeatureList::IsEnabled(
+              kImprovedCookieControlsForThirdPartyCookieBlocking)) ||
+         top_frame_origin || site_for_cookies.is_empty())
       << url << " " << site_for_cookies;
 
   ContentSetting setting;
   GetCookieSettingInternal(
-      url, top_frame_origin ? top_frame_origin->GetURL() : GURL(),
+      url, top_frame_origin ? top_frame_origin->GetURL() : site_for_cookies,
       IsThirdPartyRequest(url, site_for_cookies), nullptr, &setting);
   return IsAllowed(setting);
 }

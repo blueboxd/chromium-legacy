@@ -369,7 +369,7 @@ void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
 void MimeHandlerViewGuest::EnterFullscreenModeForTab(
     content::WebContents*,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::FullScreenOptions& options) {
   if (SetFullscreenState(true)) {
     auto* delegate = embedder_web_contents()->GetDelegate();
     if (delegate) {

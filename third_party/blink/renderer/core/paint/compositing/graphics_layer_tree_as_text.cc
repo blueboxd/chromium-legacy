@@ -24,14 +24,6 @@ String PointerAsString(const void* ptr) {
   return ts.Release();
 }
 
-FloatPoint ScrollPosition(const GraphicsLayer& layer) {
-  if (const auto* scrollable_area =
-          layer.Client().GetScrollableAreaForTesting(&layer)) {
-    return scrollable_area->ScrollPosition();
-  }
-  return FloatPoint();
-}
-
 std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     const GraphicsLayer* layer,
     LayerTreeFlags flags,
@@ -79,10 +71,6 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
     json->SetString("backgroundColor",
                     Color(layer->BackgroundColor()).NameForLayoutTreeAsText());
   }
-
-  FloatPoint scroll_position(ScrollPosition(*layer));
-  if (scroll_position != FloatPoint())
-    json->SetArray("scrollPosition", PointAsJSONArray(scroll_position));
 
   if ((flags & kLayerTreeIncludesPaintInvalidations) &&
       layer->Client().IsTrackingRasterInvalidations() &&
@@ -222,6 +210,7 @@ class LayersAsJSONArray {
     }
 
     transforms_json_->PushObject(std::move(transform_json));
+    transform_id_map_.Set(&transform, id);
     return id;
   }
 

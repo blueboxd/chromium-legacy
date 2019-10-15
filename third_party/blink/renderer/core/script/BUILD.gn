@@ -5,8 +5,6 @@
 import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("script") {
-  split_count = 5
-
   sources = [
     "classic_pending_script.cc",
     "classic_pending_script.h",

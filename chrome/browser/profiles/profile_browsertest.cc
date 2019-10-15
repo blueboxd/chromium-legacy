@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
@@ -670,96 +669,3 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
     profile_destroyed_observer.Wait();
   }
 }
-
-namespace {
-
-// Watches for the destruction of the specified path (Which, in the tests that
-// use it, is typically a directory), and expects the parent directory not to be
-// deleted.
-//
-// This is used the the media cache deletion tests, so handles all the possible
-// orderings of events that could happen:
-//
-// * In PRE_* tests, the media cache could deleted before the test completes, by
-// the task posted on Profile / isolated app URLRequestContext creation.
-//
-// * In the followup test, the media cache could be deleted by the off-thread
-// delete media cache task before the FileDestructionWatcher starts watching for
-// deletion, or even before it's created.
-//
-// * In the followup test, the media cache could be deleted after the
-// FileDestructionWatcher starts watching.
-//
-// It also may be possible to get a notification of the media cache being
-// created from the the previous test, so this allows multiple watch events to
-// happen, before the path is actually deleted.
-//
-// The public methods are called on the UI thread, the private ones called on a
-// separate SequencedTaskRunner.
-class FileDestructionWatcher {
- public:
-  explicit FileDestructionWatcher(const base::FilePath& watched_file_path)
-      : watched_file_path_(watched_file_path) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  }
-
-  void WaitForDestruction() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!watcher_);
-    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&FileDestructionWatcher::StartWatchingPath,
-                                  base::Unretained(this)));
-    run_loop_.Run();
-    // The watcher should be destroyed before quitting the run loop, once the
-    // file has been destroyed.
-    DCHECK(!watcher_);
-
-    // Double check that the file was destroyed, and that the parent directory
-    // was not.
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    EXPECT_FALSE(base::PathExists(watched_file_path_));
-    EXPECT_TRUE(base::PathExists(watched_file_path_.DirName()));
-  }
-
- private:
-  void StartWatchingPath() {
-    DCHECK(!watcher_);
-    watcher_ = std::make_unique<base::FilePathWatcher>();
-    // Start watching before checking if the file exists, as the file could be
-    // destroyed between the existence check and when we start watching, if the
-    // order were reversed.
-    EXPECT_TRUE(watcher_->Watch(
-        watched_file_path_, false /* recursive */,
-        base::BindRepeating(&FileDestructionWatcher::OnPathChanged,
-                            base::Unretained(this))));
-    CheckIfPathExists();
-  }
-
-  void OnPathChanged(const base::FilePath& path, bool error) {
-    EXPECT_EQ(watched_file_path_, path);
-    EXPECT_FALSE(error);
-    CheckIfPathExists();
-  }
-
-  // Checks if the path exists, and if so, destroys the watcher and quits
-  // |run_loop_|.
-  void CheckIfPathExists() {
-    if (!base::PathExists(watched_file_path_)) {
-      watcher_.reset();
-      run_loop_.Quit();
-      return;
-    }
-  }
-
-  base::RunLoop run_loop_;
-  const base::FilePath watched_file_path_;
-
-  // Created and destroyed off of the UI thread, on the sequence used to watch
-  // for changes.
-  std::unique_ptr<base::FilePathWatcher> watcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileDestructionWatcher);
-};
-
-}  // namespace

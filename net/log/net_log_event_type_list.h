@@ -2007,6 +2007,30 @@ EVENT_TYPE(QUIC_SESSION_CLOSED)
 //  }
 EVENT_TYPE(QUIC_SESSION_CONNECTIVITY_PROBING_FINISHED)
 
+// Session sent a PATH_CHALLENGE frame.
+//  {
+//    "data": <The challenge data in base64 string>
+//  }
+EVENT_TYPE(QUIC_SESSION_PATH_CHALLENGE_FRAME_SENT)
+
+// Session received a PATH_CHALLENGE frame.
+//  {
+//    "data": <The challenge data in base64 string>
+//  }
+EVENT_TYPE(QUIC_SESSION_PATH_CHALLENGE_FRAME_RECEIVED)
+
+// Session sent a PATH_RESPONSE frame.
+//  {
+//    "data": <The response data in base64 string>
+//  }
+EVENT_TYPE(QUIC_SESSION_PATH_RESPONSE_FRAME_SENT)
+
+// Session received a PATH_RESPONSE frame.
+//  {
+//    "data": <The response data in base64 string>
+//  }
+EVENT_TYPE(QUIC_SESSION_PATH_RESPONSE_FRAME_RECEIVED)
+
 // Session sent a CRYPTO frame.
 //  {
 //    "encryption_level": <The quic::EncryptionLevel of the frame>,

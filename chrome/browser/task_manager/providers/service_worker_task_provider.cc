@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_running_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/child_process_host.h"
@@ -23,9 +22,7 @@ using content::BrowserThread;
 
 namespace task_manager {
 
-ServiceWorkerTaskProvider::ServiceWorkerTaskProvider()
-    : scoped_context_observer_(this) {}
-
+ServiceWorkerTaskProvider::ServiceWorkerTaskProvider() = default;
 ServiceWorkerTaskProvider::~ServiceWorkerTaskProvider() = default;
 
 Task* ServiceWorkerTaskProvider::GetTaskOfUrlRequest(int child_id,

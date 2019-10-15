@@ -36,6 +36,10 @@ namespace policy {
 
 namespace {
 
+const int kDisabledScreenMagnifier = 0;
+const int kFullScreenMagnifier = 1;
+const int kDockedScreenMagnifier = 2;
+
 // Spins the loop until a notification is received from |prefs| that the value
 // of |pref_name| has changed. If the notification is received before Wait()
 // has been called, Wait() returns immediately and no loop is spun.
@@ -114,6 +118,12 @@ void LoginScreenAccessibilityPolicyBrowsertest::SetUpOnMainThread() {
       chromeos::AccessibilityManager::Get();
   ASSERT_TRUE(accessibility_manager);
   accessibility_manager->SetProfileForTest(
+      chromeos::ProfileHelper::GetSigninProfile());
+
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+  ASSERT_TRUE(magnification_manager);
+  magnification_manager->SetProfileForTest(
       chromeos::ProfileHelper::GetSigninProfile());
 }
 
@@ -907,5 +917,116 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   // Verify that the keyboard focus highlight can be enabled manually again.
   accessibility_manager->SetFocusHighlightEnabled(false);
   EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenFullScreenMagnifier) {
+  // Verifies that the state of the full-screen magnifier accessibility
+  // feature on the login screen can be controlled through device policy.
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+  PrefService* prefs = login_profile_->GetPrefs();
+  ASSERT_TRUE(prefs);
+  ASSERT_TRUE(magnification_manager);
+  EXPECT_FALSE(
+      prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+
+  // Manually enable the full-screen magnifier mode.
+  prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled, true);
+  EXPECT_TRUE(
+      prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+
+  // Disable the screen magnifier through device policy and wait for the
+  // change to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_screen_magnifier_type(kDisabledScreenMagnifier);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityScreenMagnifierEnabled);
+
+  // Verify that the pref which controls the full-screen magnifier mode in the
+  // login profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+
+  // Verify that the full-screen magnifier mode cannot be enabled manually
+  // anymore.
+  prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled, true);
+  EXPECT_FALSE(
+      prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+
+  // Enable the full-screen magnifier mode through device policy as a
+  // recommended value and wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_screen_magnifier_type(kFullScreenMagnifier);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_screen_magnifier_type_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityScreenMagnifierEnabled);
+
+  // Verify that the pref which controls the full-screen magnifier mode in the
+  // login profile is managed by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+
+  // Verify that the full-screen magnifier mode cannot be enabled manually
+  // anymore.
+  prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled, false);
+  EXPECT_TRUE(
+      prefs->GetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenDockedMagnifier) {
+  // Verifies that the state of the docked magnifier accessibility
+  // feature on the login screen can be controlled through device policy.
+  chromeos::MagnificationManager* magnification_manager =
+      chromeos::MagnificationManager::Get();
+  ASSERT_TRUE(magnification_manager);
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Manually enable the docked magnifier mode.
+  magnification_manager->SetDockedMagnifierEnabled(true);
+  EXPECT_TRUE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Disable the screen magnifier through device policy and wait for the
+  // change to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_screen_magnifier_type(kDisabledScreenMagnifier);
+  RefreshDevicePolicyAndWaitForPrefChange(ash::prefs::kDockedMagnifierEnabled);
+
+  // Verify that the pref which controls the docked magnifier mode in the
+  // login profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kDockedMagnifierEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kDockedMagnifierEnabled));
+
+  // Verify that the docked magnifier mode cannot be enabled manually
+  // anymore.
+  magnification_manager->SetDockedMagnifierEnabled(true);
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
+
+  // Enable the docked magnifier mode through device policy as a recommended
+  // value and wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_screen_magnifier_type(kDockedScreenMagnifier);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_screen_magnifier_type_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(ash::prefs::kDockedMagnifierEnabled);
+
+  // Verify that the pref which controls the docked magnifier mode in the
+  // login profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kDockedMagnifierEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kDockedMagnifierEnabled));
+
+  // Verify that the docked magnifier mode can be enabled manually again.
+  magnification_manager->SetDockedMagnifierEnabled(false);
+  EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
 }
 }  // namespace policy

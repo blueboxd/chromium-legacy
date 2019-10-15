@@ -328,7 +328,7 @@ CreateProviderHostForServiceWorkerContext(
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateForController(
+      ServiceWorkerProviderHost::CreateForServiceWorker(
           std::move(context), base::WrapRefCounted(hosted_version),
           &provider_info);
 

@@ -21,9 +21,10 @@
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/socket.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/tcp_client_socket.h"
@@ -171,12 +172,12 @@ class SocketExtensionWithDnsLookupFunction
       int result,
       const base::Optional<net::AddressList>& resolved_addresses) override;
 
-  network::mojom::HostResolverPtrInfo host_resolver_info_;
-  network::mojom::HostResolverPtr host_resolver_;
+  mojo::PendingRemote<network::mojom::HostResolver> pending_host_resolver_;
+  mojo::Remote<network::mojom::HostResolver> host_resolver_;
 
   // A reference to |this| must be taken while the request is being made on this
-  // binding so the object is alive when the request completes.
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  // receiver so the object is alive when the request completes.
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
 };
 
 class SocketCreateFunction : public SocketAsyncApiFunction {
@@ -312,7 +313,7 @@ class SocketAcceptFunction : public SocketAsyncApiFunction {
 
  private:
   void OnAccept(int result_code,
-                network::mojom::TCPConnectedSocketPtr socket,
+                mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
                 const base::Optional<net::IPEndPoint>& remote_addr,
                 mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                 mojo::ScopedDataPipeProducerHandle send_pipe_handle);

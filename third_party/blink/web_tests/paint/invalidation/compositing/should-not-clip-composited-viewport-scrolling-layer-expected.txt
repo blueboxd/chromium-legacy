@@ -5,7 +5,6 @@
       "bounds": [2008, 1516],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [900, 700],
       "paintInvalidations": [
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='content'",

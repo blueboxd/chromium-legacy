@@ -25,7 +25,7 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 4
+      "transform": 5
     }
   ],
   "transforms": [
@@ -54,6 +54,11 @@
       "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
+    },
+    {
+      "id": 5,
+      "parent": 4,
+      "renderingContext": 2
     }
   ]
 }

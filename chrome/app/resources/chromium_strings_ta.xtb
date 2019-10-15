@@ -77,8 +77,6 @@
 <translation id="4230135487732243613">உங்கள் Chromium தரவை இந்தக் கணக்குடன் இணைக்கவா?</translation>
 <translation id="4271805377592243930">Chromium தொடர்பான உதவி பெறுக</translation>
 <translation id="4285930937574705105">குறிப்பிடப்படாத பிழைக் காரணமாக நிறுவல் தோல்வியடைந்தது. Chromium தற்போது இயக்கத்தில் இருந்தால், அதை மூடி, பின்னர் முயலவும்.</translation>
-<translation id="4371648796594901282">Chromium OS விவரங்களுக்கு <ph name="LINK_BEGIN" />
-      Chromium OS அறிமுகம்<ph name="LINK_END" /> என்பதைப் பார்க்கவும்</translation>
 <translation id="4407044323746248786">Chromium இலிருந்து வெளியேறவா?</translation>
 <translation id="4415566066719264597">பின்னணியில் Chromiumஐ இயங்க அனுமதி</translation>
 <translation id="4423735387467980091">Chromium ஐ தனிப்பயனாக்கி கட்டுப்படுத்துக</translation>
@@ -191,6 +189,7 @@
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7827169012280634081">நீங்கள் Chromiumமை விட்டு வெளியேறும் போது குக்கீகளையும் வலைதளத் தரவையும் அழிக்கும்</translation>
 <translation id="7867198900892795913">Chromium சமீபத்திய பதிப்பிற்குப் புதுப்பிக்கப்படவில்லை என்பதால், புதிய அம்சங்களையும் பாதுகாப்புத் திருத்தங்களையும் தவறவிடுகிறீர்கள்.</translation>
+<translation id="7898472181347242998">உங்கள் சாதனம் புதுப்பித்த நிலையில் உள்ளதா என்பதைப் பார்க்க <ph name="LINK_BEGIN" />Chromium OS அமைப்புகளுக்குச்<ph name="LINK_END" /> செல்லவும்</translation>
 <translation id="7901117350626490574">Chromiumமின் புதிய புதுப்பிப்பு உள்ளது, மீண்டும் தொடங்கும்போது அது பயன்படுத்தப்படும்.</translation>
 <translation id="7937630085815544518">Chromiumமில் <ph name="USER_EMAIL_ADDRESS" /> ஆக உள்நுழைந்திருந்தீர்கள். மீண்டும் உள்நுழைய அதே கணக்கைப் பயன்படுத்தவும்.</translation>
 <translation id="7975919845073681630">இது Chromium இன் இரண்டாம் நிலை நிறுவல் என்பதால், அதை இயல்புநிலை உலாவியாக அமைக்க முடியாது.</translation>

@@ -175,7 +175,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
   network_context->CreateTCPServerSocket(
       net::IPEndPoint(net::IPAddress(address), port), backlog,
       pepper_socket_utils::PepperTCPNetworkAnnotationTag(),
-      mojo::MakeRequest(&socket_),
+      socket_.BindNewPipeAndPassReceiver(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPServerSocketMessageFilter::OnListenCompleted,
                          weak_ptr_factory_.GetWeakPtr(), reply_context),
@@ -205,8 +205,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgAccept(
           base::BindOnce(&PepperTCPServerSocketMessageFilter::OnAcceptCompleted,
                          base::Unretained(this), reply_context,
                          std::move(socket_observer_receiver)),
-          net::ERR_FAILED, base::nullopt /* remote_addr */,
-          network::mojom::TCPConnectedSocketPtr(),
+          net::ERR_FAILED, base::nullopt /* remote_addr */, mojo::NullRemote(),
           mojo::ScopedDataPipeConsumerHandle(),
           mojo::ScopedDataPipeProducerHandle()));
   return PP_OK_COMPLETIONPENDING;
@@ -291,7 +290,7 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
         socket_observer_receiver,
     int net_result,
     const base::Optional<net::IPEndPoint>& remote_addr,
-    network::mojom::TCPConnectedSocketPtr connected_socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -311,7 +310,7 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     return;
   }
 
-  if (!remote_addr || !connected_socket.is_bound()) {
+  if (!remote_addr || !connected_socket.is_valid()) {
     SendAcceptError(context, NetErrorToPepperError(net_result));
     return;
   }
@@ -332,14 +331,14 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread,
-          this, context, connected_socket.PassInterface(),
+          this, context, std::move(connected_socket),
           std::move(socket_observer_receiver), std::move(receive_stream),
           std::move(send_stream), bound_addr_, pp_remote_addr));
 }
 
 void PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread(
     const ppapi::host::ReplyMessageContext& context,
-    network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::PendingReceiver<network::mojom::SocketObserver>
         socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,

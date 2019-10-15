@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -74,14 +73,6 @@ class TasksView extends LinearLayout {
      */
     void setFakeSearchBoxClickListener(@Nullable View.OnClickListener listener) {
         mSearchBoxText.setOnClickListener(listener);
-    }
-
-    /**
-     * Set the given watcher for the fake search box.
-     * @param textWatcher The given {@link TextWatcher}.
-     */
-    void setFakeSearchBoxTextWatcher(TextWatcher textWatcher) {
-        mSearchBoxText.addTextChangedListener(textWatcher);
     }
 
     /**

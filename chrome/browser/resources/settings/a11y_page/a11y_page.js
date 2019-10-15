@@ -68,6 +68,17 @@ Polymer({
     },
 
     /**
+     * Whether to show OS settings.
+     * @private {boolean}
+     */
+    showOsSettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('showOSSettings');
+      },
+    },
+
+    /**
      * Whether the caption settings link opens externally.
      * @private {boolean}
      */
@@ -135,6 +146,11 @@ Polymer({
   /** @private */
   onManageAccessibilityFeaturesTap_: function() {
     settings.navigateTo(settings.routes.MANAGE_ACCESSIBILITY);
+  },
+
+  /** @private */
+  onManageSystemAccessibilityFeaturesTap_: function() {
+    window.location.href = 'chrome://os-settings/manageAccessibility';
   },
   // </if>
 

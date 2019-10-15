@@ -24,6 +24,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/resources/grit/webui_resources.h"
 
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     : SigninWebDialogUI(web_ui) {
@@ -34,16 +35,18 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
   source->UseStringsJs();
-  source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);
+  source->EnableReplaceI18nInJS();
 
   if (is_sync_allowed) {
+    source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+    source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
+    source->OverrideContentSecurityPolicyScriptSrc(
+        "script-src chrome://resources chrome://test 'self';");
+
     source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
-    source->AddResourcePath("sync_confirmation_browser_proxy.html",
-                            IDR_SYNC_CONFIRMATION_BROWSER_PROXY_HTML);
+    source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
     source->AddResourcePath("sync_confirmation_browser_proxy.js",
                             IDR_SYNC_CONFIRMATION_BROWSER_PROXY_JS);
-    source->AddResourcePath("sync_confirmation_app.html",
-                            IDR_SYNC_CONFIRMATION_APP_HTML);
     source->AddResourcePath("sync_confirmation_app.js",
                             IDR_SYNC_CONFIRMATION_APP_JS);
     source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
@@ -81,6 +84,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     source->AddString("accountPictureUrl", custom_picture_url);
   } else {
     source->SetDefaultResource(IDR_SYNC_DISABLED_CONFIRMATION_HTML);
+    source->AddResourcePath("signin_shared_old_css.html",
+                            IDR_SIGNIN_SHARED_OLD_CSS_HTML);
     source->AddResourcePath("sync_disabled_confirmation.js",
                             IDR_SYNC_DISABLED_CONFIRMATION_JS);
 

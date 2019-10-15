@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <fuchsia/sys/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/command_line.h"
@@ -51,7 +50,7 @@ int main(int argc, char** argv) {
 
   CastRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
-      WebContentRunner::CreateWebContext(std::move(create_context_params)));
+      std::move(create_context_params));
 
   base::fuchsia::ComponentContextForCurrentProcess()
       ->outgoing()

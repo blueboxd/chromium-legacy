@@ -47,6 +47,8 @@ const base::Feature kScalableAppList{"ScalableAppList",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFuzzyAppSearch{"EnableFuzzyAppSearch",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAggregatedMlSearchRanking{
+    "EnableAggregatedMlSearchRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -118,6 +120,10 @@ bool IsScalableAppListEnabled() {
 
 bool IsFuzzyAppSearchEnabled() {
   return base::FeatureList::IsEnabled(kEnableFuzzyAppSearch);
+}
+
+bool IsAggregatedMlSearchRankingEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAggregatedMlSearchRanking);
 }
 
 std::string AnswerServerUrl() {

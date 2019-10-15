@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/media_message_center/media_notification_item.h"
@@ -92,7 +93,10 @@ MediaToolbarButtonController::MediaToolbarButtonController(
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-MediaToolbarButtonController::~MediaToolbarButtonController() = default;
+MediaToolbarButtonController::~MediaToolbarButtonController() {
+  for (auto container_pair : observed_containers_)
+    container_pair.second->RemoveObserver(this);
+}
 
 void MediaToolbarButtonController::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
@@ -161,7 +165,14 @@ void MediaToolbarButtonController::ShowNotification(const std::string& id) {
   if (it != sessions_.end())
     item = it->second.item()->GetWeakPtr();
 
-  dialog_delegate_->ShowMediaSession(id, item);
+  MediaNotificationContainerImpl* container =
+      dialog_delegate_->ShowMediaSession(id, item);
+
+  // Observe the container for dismissal.
+  if (container) {
+    container->AddObserver(this);
+    observed_containers_[id] = container;
+  }
 }
 
 void MediaToolbarButtonController::HideNotification(const std::string& id) {
@@ -202,6 +213,20 @@ void MediaToolbarButtonController::LogMediaSessionActionButtonPressed(
                             IsWebContentsFocused(web_contents));
 }
 
+void MediaToolbarButtonController::OnContainerDismissed(const std::string& id) {
+  auto it = sessions_.find(id);
+  if (it != sessions_.end())
+    it->second.item()->Dismiss();
+}
+
+void MediaToolbarButtonController::OnContainerDestroyed(const std::string& id) {
+  auto iter = observed_containers_.find(id);
+  DCHECK(iter != observed_containers_.end());
+
+  iter->second->RemoveObserver(this);
+  observed_containers_.erase(iter);
+}
+
 void MediaToolbarButtonController::SetDialogDelegate(
     MediaDialogDelegate* delegate) {
   DCHECK(!delegate || !dialog_delegate_);
@@ -219,18 +244,18 @@ void MediaToolbarButtonController::SetDialogDelegate(
     if (it != sessions_.end())
       item = it->second.item()->GetWeakPtr();
 
-    dialog_delegate_->ShowMediaSession(id, item);
+    MediaNotificationContainerImpl* container =
+        dialog_delegate_->ShowMediaSession(id, item);
+
+    // Observe the container for dismissal.
+    if (container) {
+      container->AddObserver(this);
+      observed_containers_[id] = container;
+    }
   }
 
   media_message_center::RecordConcurrentNotificationCount(
       active_controllable_session_ids_.size());
-}
-
-void MediaToolbarButtonController::OnDismissButtonClicked(
-    const std::string& id) {
-  auto it = sessions_.find(id);
-  if (it != sessions_.end())
-    it->second.item()->Dismiss();
 }
 
 void MediaToolbarButtonController::OnReceivedAudioFocusRequests(

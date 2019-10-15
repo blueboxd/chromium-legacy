@@ -134,7 +134,7 @@ class BitmapFetcherBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// WARNING:  These tests work with --single_process, but not
+// WARNING:  These tests work with --single-process-tests, but not
 // --single-process.  The reason is that the sandbox does not get created
 // for us by the test process if --single-process is used.
 

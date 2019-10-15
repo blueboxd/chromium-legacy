@@ -42,6 +42,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.lang.annotation.Retention;
@@ -209,12 +210,6 @@ public abstract class UrlBar extends AutocompleteEditText {
          *         whatever's in the URL bar verbatim.
          */
         boolean shouldCutCopyVerbatim();
-
-        /**
-         * Called to notify that a tap or long press gesture has been detected.
-         * @param isLongPress Whether or not is a long press gesture.
-         */
-        void gestureDetected(boolean isLongPress);
     }
 
     /** Provides updates about the URL text changes. */
@@ -277,14 +272,16 @@ public abstract class UrlBar extends AutocompleteEditText {
                 new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public void onLongPress(MotionEvent e) {
-                        mUrlBarDelegate.gestureDetected(true);
+                        ToolbarManager.recordOmniboxFocusReason(
+                                ToolbarManager.OmniboxFocusReason.OMNIBOX_LONG_PRESS);
                         performLongClick();
                     }
 
                     @Override
                     public boolean onSingleTapUp(MotionEvent e) {
                         requestFocus();
-                        mUrlBarDelegate.gestureDetected(false);
+                        ToolbarManager.recordOmniboxFocusReason(
+                                ToolbarManager.OmniboxFocusReason.OMNIBOX_TAP);
                         return true;
                     }
                 }, ThreadUtils.getUiThreadHandler());

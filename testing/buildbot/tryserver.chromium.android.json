@@ -250,6 +250,12 @@
       },
       {
         "isolate_coverage_data": true,
+        "name": "chrome_java_test_pagecontroller_junit_tests",
+        "swarming": {},
+        "test": "chrome_java_test_pagecontroller_junit_tests"
+      },
+      {
+        "isolate_coverage_data": true,
         "name": "chrome_junit_tests",
         "swarming": {},
         "test": "chrome_junit_tests"

@@ -89,11 +89,12 @@ TCPSocket::TCPSocket(content::BrowserContext* browser_context,
       mojo_data_pump_(nullptr),
       task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
-TCPSocket::TCPSocket(network::mojom::TCPConnectedSocketPtr socket,
-                     mojo::ScopedDataPipeConsumerHandle receive_stream,
-                     mojo::ScopedDataPipeProducerHandle send_stream,
-                     const base::Optional<net::IPEndPoint>& remote_addr,
-                     const std::string& owner_extension_id)
+TCPSocket::TCPSocket(
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream,
+    const base::Optional<net::IPEndPoint>& remote_addr,
+    const std::string& owner_extension_id)
     : Socket(owner_extension_id),
       browser_context_(nullptr),
       socket_mode_(CLIENT),
@@ -141,7 +142,7 @@ void TCPSocket::Connect(const net::AddressList& address,
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&TCPSocket::ConnectOnUIThread,
                                 storage_partition_, browser_context_, address,
-                                mojo::MakeRequest(&client_socket_),
+                                client_socket_.BindNewPipeAndPassReceiver(),
                                 std::move(completion_callback_ui)));
 }
 
@@ -266,13 +267,13 @@ void TCPSocket::Listen(const std::string& address,
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&TCPSocket::ListenOnUIThread, storage_partition_,
                      browser_context_, ip_end_point, backlog,
-                     mojo::MakeRequest(&server_socket_),
+                     server_socket_.BindNewPipeAndPassReceiver(),
                      std::move(completion_callback_ui)));
 }
 
 void TCPSocket::Accept(AcceptCompletionCallback callback) {
-  if (socket_mode_ != SERVER || !server_socket_.get()) {
-    std::move(callback).Run(net::ERR_FAILED, nullptr, base::nullopt,
+  if (socket_mode_ != SERVER || !server_socket_) {
+    std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote(), base::nullopt,
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
     return;
@@ -280,7 +281,7 @@ void TCPSocket::Accept(AcceptCompletionCallback callback) {
 
   // Limits to only 1 blocked accept call.
   if (accept_callback_) {
-    std::move(callback).Run(net::ERR_FAILED, nullptr, base::nullopt,
+    std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote(), base::nullopt,
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
     return;
@@ -330,7 +331,7 @@ void TCPSocket::ConnectOnUIThread(
     content::StoragePartition* storage_partition,
     content::BrowserContext* browser_context,
     const net::AddressList& remote_addr_list,
-    network::mojom::TCPConnectedSocketRequest request,
+    mojo::PendingReceiver<network::mojom::TCPConnectedSocket> receiver,
     network::mojom::NetworkContext::CreateTCPConnectedSocketCallback
         completion_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -343,7 +344,7 @@ void TCPSocket::ConnectOnUIThread(
       base::nullopt, remote_addr_list, nullptr /* options */,
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
-      std::move(request), mojo::NullRemote() /* observer */,
+      std::move(receiver), mojo::NullRemote() /* observer */,
       std::move(completion_callback));
 }
 
@@ -390,7 +391,7 @@ void TCPSocket::ListenOnUIThread(
     content::BrowserContext* browser_context,
     const net::IPEndPoint& local_addr,
     int backlog,
-    network::mojom::TCPServerSocketRequest request,
+    mojo::PendingReceiver<network::mojom::TCPServerSocket> receiver,
     network::mojom::NetworkContext::CreateTCPServerSocketCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -402,7 +403,7 @@ void TCPSocket::ListenOnUIThread(
       local_addr, backlog,
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
-      std::move(request), std::move(callback));
+      std::move(receiver), std::move(callback));
 }
 
 // static
@@ -440,11 +441,12 @@ content::StoragePartition* TCPSocket::GetStoragePartitionHelper() {
                    browser_context_);
 }
 
-void TCPSocket::OnAccept(int result,
-                         const base::Optional<net::IPEndPoint>& remote_addr,
-                         network::mojom::TCPConnectedSocketPtr connected_socket,
-                         mojo::ScopedDataPipeConsumerHandle receive_stream,
-                         mojo::ScopedDataPipeProducerHandle send_stream) {
+void TCPSocket::OnAccept(
+    int result,
+    const base::Optional<net::IPEndPoint>& remote_addr,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK(accept_callback_);
   std::move(accept_callback_)
       .Run(result, std::move(connected_socket), remote_addr,
@@ -571,7 +573,7 @@ ResumableTCPSocket::ResumableTCPSocket(content::BrowserContext* browser_context,
       paused_(false) {}
 
 ResumableTCPSocket::ResumableTCPSocket(
-    network::mojom::TCPConnectedSocketPtr socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream,
     const base::Optional<net::IPEndPoint>& remote_addr,

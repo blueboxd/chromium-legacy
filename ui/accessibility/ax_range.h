@@ -243,7 +243,8 @@ class AXRange {
   // Pass -1 for max_count to retrieve all text.
   base::string16 GetText(AXTextConcatenationBehavior concatenation_behavior =
                              AXTextConcatenationBehavior::kAsTextContent,
-                         int max_count = -1) const {
+                         int max_count = -1,
+                         bool include_ignored = false) const {
     base::string16 range_text;
     bool should_append_newline = false;
     bool found_trailing_newline = false;
@@ -271,8 +272,10 @@ class AXRange {
             start->IsInLineBreak() ||
             (found_trailing_newline && start->IsInWhiteSpace());
 
-        range_text += current_anchor_text.substr(start->text_offset(),
-                                                 characters_to_append);
+        if (!include_ignored && !start->IsIgnored()) {
+          range_text += current_anchor_text.substr(start->text_offset(),
+                                                   characters_to_append);
+        }
       }
 
       DCHECK(max_count < 0 || int{range_text.length()} <= max_count);

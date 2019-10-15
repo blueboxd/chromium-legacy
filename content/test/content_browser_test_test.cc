@@ -16,6 +16,7 @@
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -82,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_RendererCrash");
   new_test.AppendSwitch(switches::kRunManualTestsFlag);
-  new_test.AppendSwitch(kSingleProcessTestsFlag);
+  new_test.AppendSwitch(switches::kSingleProcessTests);
 
 #if defined(THREAD_SANITIZER)
   // TSan appears to not be able to report intentional crashes from sandboxed
@@ -123,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, BrowserCrashCallStack) {
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_BrowserCrash");
   new_test.AppendSwitch(switches::kRunManualTestsFlag);
-  new_test.AppendSwitch(kSingleProcessTestsFlag);
+  new_test.AppendSwitch(switches::kSingleProcessTests);
   std::string output;
   base::GetAppOutputAndError(new_test, &output);
 
@@ -193,11 +194,11 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunMockTests) {
   // will need to change accordingly.
   std::string file_name = "../../content/test/content_browser_test_test.cc";
   EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_PassTest", file_name, 152));
+      val, "MockContentBrowserTest.DISABLED_PassTest", file_name, 153));
   EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_FailTest", file_name, 156));
+      val, "MockContentBrowserTest.DISABLED_FailTest", file_name, 157));
   EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_CrashTest", file_name, 160));
+      val, "MockContentBrowserTest.DISABLED_CrashTest", file_name, 161));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);

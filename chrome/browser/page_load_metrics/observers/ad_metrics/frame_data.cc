@@ -55,12 +55,12 @@ FrameData::ResourceMimeType FrameData::GetResourceMimeType(
   return ResourceMimeType::kOther;
 }
 
-FrameData::FrameData(FrameTreeNodeId frame_tree_node_id,
+FrameData::FrameData(FrameTreeNodeId root_frame_tree_node_id,
                      int heavy_ad_network_threshold_noise)
-    : bytes_(0u),
+    : root_frame_tree_node_id_(root_frame_tree_node_id),
+      bytes_(0u),
       network_bytes_(0u),
       same_origin_bytes_(0u),
-      frame_tree_node_id_(frame_tree_node_id),
       origin_status_(OriginStatus::kUnknown),
       frame_navigated_(false),
       user_activation_status_(UserActivationStatus::kNoActivation),

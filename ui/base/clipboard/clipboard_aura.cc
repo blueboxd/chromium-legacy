@@ -543,12 +543,23 @@ void ClipboardAura::ReadData(const ClipboardFormatType& format,
   clipboard_internal_->ReadData(format.ToString(), result);
 }
 
-void ClipboardAura::WriteObjects(ClipboardBuffer buffer,
-                                 const ObjectMap& objects) {
+void ClipboardAura::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                 const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK(IsSupportedClipboardBuffer(buffer));
   for (const auto& object : objects)
-    DispatchObject(object.first, object.second);
+    DispatchPortableRepresentation(object.first, object.second);
+  ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get());
+}
+
+void ClipboardAura::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsSupportedClipboardBuffer(buffer));
+
+  DispatchPlatformRepresentations(std::move(platform_representations));
+
   ClipboardDataBuilder::CommitToClipboard(clipboard_internal_.get());
 }
 

@@ -72,9 +72,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
    private:
     NegotiateAuthSystemFactory negotiate_auth_system_factory_;
-#if defined(OS_WIN)
-    ULONG max_token_length_ = 0;
-#endif
     bool is_unsupported_ = false;
 #if !defined(OS_ANDROID)
     std::unique_ptr<AuthLibrary> auth_library_;

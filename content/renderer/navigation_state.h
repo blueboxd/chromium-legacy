@@ -57,11 +57,9 @@ class CONTENT_EXPORT NavigationState {
   const mojom::CommitNavigationParams& commit_params() const {
     return *commit_params_;
   }
-  bool request_committed() const { return request_committed_; }
   bool uses_per_navigation_mojo_interface() const {
     return navigation_client_.get();
   }
-  void set_request_committed(bool value) { request_committed_ = value; }
   void set_was_within_same_document(bool value) {
     was_within_same_document_ = value;
   }
@@ -106,7 +104,6 @@ class CONTENT_EXPORT NavigationState {
       std::unique_ptr<NavigationClient> navigation_client,
       bool was_initiated_in_this_frame);
 
-  bool request_committed_;
   bool was_within_same_document_;
 
   // Indicates whether the navigation was initiated by the same RenderFrame

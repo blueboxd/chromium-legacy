@@ -16,11 +16,10 @@ Should be composited
     },
     {
       "name": "LayoutNGBlockFlow DIV class='composited banner'",
-      "position": [6, 6],
       "bounds": [250, 50],
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 2
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='test1 box'",
@@ -48,6 +47,16 @@ Should be composited
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, 0, 0, 1]
+      ]
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [6, 6, 0, 1]
       ]
     }
   ]

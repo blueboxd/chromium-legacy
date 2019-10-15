@@ -92,7 +92,7 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 // AutofillSaveCardImprovedUserConsent functionality to Chrome OS, Android, and
 // iOS without bringing the extended title string change with it.
 const base::Feature kAutofillSaveCardShowNoThanks{
-    "AutofillSaveCardShowNoThanks", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillSaveCardShowNoThanks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls what title and bubble label for the credit card upload bubble are
 // shown to users.

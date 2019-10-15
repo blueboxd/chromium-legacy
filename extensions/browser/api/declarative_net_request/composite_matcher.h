@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -21,22 +22,22 @@ namespace declarative_net_request {
 // while respecting their priorities.
 class CompositeMatcher {
  public:
-  struct RedirectAction {
-    RedirectAction(base::Optional<GURL> redirect_url, bool notify);
-    ~RedirectAction();
-    RedirectAction(RedirectAction&& other);
-    RedirectAction& operator=(RedirectAction&& other);
+  struct RedirectActionInfo {
+    RedirectActionInfo(base::Optional<RequestAction> action, bool notify);
+    ~RedirectActionInfo();
+    RedirectActionInfo(RedirectActionInfo&& other);
+    RedirectActionInfo& operator=(RedirectActionInfo&& other);
 
-    // The URL the request will be redirected to. The request should not be
-    // redirected if this is not specified.
-    base::Optional<GURL> redirect_url;
+    // The action to be taken for this request. If specified, the action type
+    // must be |REDIRECT|.
+    base::Optional<RequestAction> action;
 
     // Whether the extension should be notified that the request was unable to
     // be redirected as the extension lacks the appropriate host permission for
     // the request.
     bool notify_request_withheld = false;
 
-    DISALLOW_COPY_AND_ASSIGN(RedirectAction);
+    DISALLOW_COPY_AND_ASSIGN(RedirectActionInfo);
   };
 
   using MatcherList = std::vector<std::unique_ptr<RulesetMatcher>>;
@@ -49,14 +50,15 @@ class CompositeMatcher {
   // corresponding ID is already present, updates the matcher.
   void AddOrUpdateRuleset(std::unique_ptr<RulesetMatcher> new_matcher);
 
-  // Returns whether the network request as specified by |params| should be
-  // blocked.
-  bool ShouldBlockRequest(const RequestParams& params) const;
+  // Returns a RequestAction if the network request specified by |params| should
+  // be blocked.
+  base::Optional<RequestAction> GetBlockOrCollapseAction(
+      const RequestParams& params) const;
 
-  // Returns a RedirectAction struct containing a redirect URL if the request
-  // is to be redirected, and whether the extension should be notified if its
-  // access to the request is withheld.
-  RedirectAction ShouldRedirectRequest(
+  // Returns a RedirectActionInfo struct containing a RequestAction if the
+  // request is to be redirected, and whether the extension should be notified
+  // if its access to the request is withheld.
+  RedirectActionInfo GetRedirectAction(
       const RequestParams& params,
       PermissionsData::PageAccess page_access) const;
 

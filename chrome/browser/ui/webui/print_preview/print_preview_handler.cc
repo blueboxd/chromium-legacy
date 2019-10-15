@@ -315,9 +315,6 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
   if (print_settings.FindIntKey(kSettingCopies).value_or(1) > 1)
     ReportPrintSettingHistogram(COPIES);
 
-  if (preview_settings.FindIntKey(kSettingScaleFactor).value_or(100) != 100)
-    ReportPrintSettingHistogram(SCALING);
-
   if (preview_settings.FindIntKey(kSettingPagesPerSheet).value_or(1) != 1)
     ReportPrintSettingHistogram(PAGES_PER_SHEET);
 
@@ -354,8 +351,14 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
   if (preview_settings.FindBoolKey(kSettingRasterizePdf).value_or(false))
     ReportPrintSettingHistogram(PRINT_AS_IMAGE);
 
-  if (is_pdf &&
-      preview_settings.FindBoolKey(kSettingFitToPageEnabled).value_or(false)) {
+  ScalingType scaling_type =
+      static_cast<ScalingType>(preview_settings.FindIntKey(kSettingScalingType)
+                                   .value_or(ScalingType::DEFAULT));
+  if (scaling_type == ScalingType::CUSTOM) {
+    ReportPrintSettingHistogram(SCALING);
+  }
+
+  if (is_pdf && scaling_type == ScalingType::FIT_TO_PAGE) {
     ReportPrintSettingHistogram(FIT_TO_PAGE);
   }
 

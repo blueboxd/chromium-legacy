@@ -96,7 +96,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         TestThreadUtils.runOnUiThreadBlocking(() -> FirstRunStatus.setFirstRunFlowComplete(false));
         deleteTestFiles();
         ContextMenuHelper.setHardcodedImageBytesForTesting(null);
-        LensUtils.setFakePassableLensVersionForTesting(false);
+        LensUtils.setFakePassableLensEnvironmentForTesting(false);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
         mTestUrl = mTestServer.getURL(TEST_PATH);
         deleteTestFiles();
         ContextMenuHelper.setHardcodedImageBytesForTesting(null);
-        LensUtils.setFakePassableLensVersionForTesting(false);
+        LensUtils.setFakePassableLensEnvironmentForTesting(false);
         mDownloadTestRule.startMainActivityWithURL(mTestUrl);
         mDownloadTestRule.assertWaitForPageScaleFactorMatch(0.5f);
     }
@@ -142,7 +142,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     public void testSearchWithGoogleLensFiresIntent() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
 
-        LensUtils.setFakePassableLensVersionForTesting(true);
+        LensUtils.setFakePassableLensEnvironmentForTesting(true);
         ShareHelper.setIgnoreActivityNotFoundExceptionForTesting(true);
         hardcodeTestImageForSharing();
 
@@ -415,7 +415,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Feature({"Browser", "ContextMenu"})
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageOptionsLensEnabled() throws TimeoutException {
-        LensUtils.setFakePassableLensVersionForTesting(true);
+        LensUtils.setFakePassableLensEnvironmentForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
@@ -455,7 +455,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngineLensEnabled()
             throws TimeoutException {
-        LensUtils.setFakePassableLensVersionForTesting(true);
+        LensUtils.setFakePassableLensEnvironmentForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
@@ -495,7 +495,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @EnableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageLinkOptionsSearchLensEnabled()
             throws TimeoutException {
-        LensUtils.setFakePassableLensVersionForTesting(true);
+        LensUtils.setFakePassableLensEnvironmentForTesting(true);
 
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImageLink");

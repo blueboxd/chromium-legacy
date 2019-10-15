@@ -43,6 +43,9 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   void OnWindowDragStarted();
   void OnWindowDragEnded();
 
+  // True if home screen is visible.
+  bool IsHomeScreenVisible() const;
+
   HomeLauncherGestureHandler* home_launcher_gesture_handler() {
     return home_launcher_gesture_handler_.get();
   }

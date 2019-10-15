@@ -261,8 +261,7 @@ public final class FeedConfiguration {
     }
 
     /** @return Whether to ask the server for "Feed" UI or just basic UI. */
-    @VisibleForTesting
-    static boolean getFeedUiEnabled() {
+    public static boolean getFeedUiEnabled() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, FEED_UI_ENABLED,
                 FEED_UI_ENABLED_DEFAULT);

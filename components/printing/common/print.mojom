@@ -14,8 +14,18 @@ interface PrintRenderer {
 // Render process interface exposed to the browser to handle most of the
 // printing grunt work for RenderView.
 interface PrintRenderFrame {
-  // Tells the RenderFrame to initiate print preview for the entire
-  // document. Optionally provides a |print_renderer| to render print documents.
+  // Tells the RenderFrame to switch the CSS to print media type, render every
+  // requested page using the print preview document's frame/node, and then
+  // switch the CSS back to display media type.
+  PrintForSystemDialog();
+
+  // Tells the RenderFrame to initiate print preview for the entire document.
+  // Optionally provides a |print_renderer| to render print documents.
+  [EnableIf=enable_print_preview]
   InitiatePrintPreview(associated PrintRenderer? print_renderer,
                        bool has_selection);
+
+  // Tells the RenderFrame that the print preview dialog was closed.
+  [EnableIf=enable_print_preview]
+  OnPrintPreviewDialogClosed();
 };

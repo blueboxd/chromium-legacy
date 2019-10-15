@@ -5,7 +5,6 @@
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 500],
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
@@ -34,7 +33,7 @@
           "reason": "full layer"
         }
       ],
-      "transform": 4
+      "transform": 3
     }
   ],
   "transforms": [
@@ -58,16 +57,7 @@
     },
     {
       "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -500, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

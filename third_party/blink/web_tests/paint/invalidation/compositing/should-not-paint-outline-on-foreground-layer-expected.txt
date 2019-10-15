@@ -15,7 +15,6 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [3000, 3000],
-      "scrollPosition": [0, 400],
       "transform": 2
     },
     {
@@ -23,12 +22,12 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FF0000",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow DIV id='container' (foreground) Layer",
       "bounds": [3000, 3000],
-      "transform": 4
+      "transform": 2
     },
     {
       "name": "Scroll Corner Layer",
@@ -49,26 +48,6 @@
     },
     {
       "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -400, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -400, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
       "parent": 1,
       "transform": [
         [1, 0, 0, 0],

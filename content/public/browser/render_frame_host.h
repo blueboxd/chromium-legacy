@@ -27,6 +27,7 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -125,6 +126,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // there is no parent. The result may be in a different process than the
   // current RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
+
+  // Returns a vector of all RenderFrameHosts in the subtree rooted at |this|.
+  // The results may be in different processes.
+  // TODO(https://crbug.com/1013740): Consider exposing a way for the browser
+  // process to run a function across a subtree in all renderers rather than
+  // exposing the RenderFrameHosts of the frames here.
+  virtual std::vector<RenderFrameHost*> GetFramesInSubtree() = 0;
 
   // Returns whether or not this RenderFrameHost is a descendant of |ancestor|.
   // This is equivalent to check that |ancestor| is reached by iterating on
@@ -289,13 +297,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual bool HasSelection() = 0;
 
   // Text surrounding selection.
-  typedef base::OnceCallback<void(const base::string16& content,
-                                  uint32_t start_offset,
-                                  uint32_t end_offset)>
-      TextSurroundingSelectionCallback;
   virtual void RequestTextSurroundingSelection(
-      TextSurroundingSelectionCallback callback,
+      blink::mojom::Frame::GetTextSurroundingSelectionCallback callback,
       int max_length) = 0;
+
+  // Generates an intervention report in this frame.
+  virtual void SendInterventionReport(const std::string& id,
+                                      const std::string& message) = 0;
 
   // Tell the render frame to enable a set of javascript bindings. The argument
   // should be a combination of values from BindingsPolicy.

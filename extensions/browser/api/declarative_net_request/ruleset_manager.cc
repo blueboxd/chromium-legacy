@@ -162,13 +162,6 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
          allowed_pages.MatchesURL(*request.frame_data.pending_main_frame_url);
 }
 
-bool ShouldCollapseResourceType(flat_rule::ElementType type) {
-  // TODO(crbug.com/848842): Add support for other element types like
-  // OBJECT.
-  return type == flat_rule::ElementType_IMAGE ||
-         type == flat_rule::ElementType_SUBDOCUMENT;
-}
-
 void NotifyRequestWithheld(const ExtensionId& extension_id,
                            const WebRequestInfo& request) {
   DCHECK(ExtensionsAPIClient::Get());
@@ -404,13 +397,10 @@ base::Optional<RequestAction> RulesetManager::GetBlockOrCollapseAction(
     const std::vector<const ExtensionRulesetData*>& rulesets,
     const RequestParams& params) const {
   for (const ExtensionRulesetData* ruleset : rulesets) {
-    if (ruleset->matcher->ShouldBlockRequest(params)) {
-      RequestAction action = ShouldCollapseResourceType(params.element_type)
-                                 ? RequestAction(RequestAction::Type::COLLAPSE)
-                                 : RequestAction(RequestAction::Type::BLOCK);
-      action.extension_id = ruleset->extension_id;
+    base::Optional<RequestAction> action =
+        ruleset->matcher->GetBlockOrCollapseAction(params);
+    if (action)
       return action;
-    }
   }
   return base::nullopt;
 }
@@ -439,23 +429,20 @@ base::Optional<RequestAction> RulesetManager::GetRedirectOrUpgradeAction(
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
         request.initiator, request.type);
 
-    CompositeMatcher::RedirectAction redirect_action =
-        ruleset->matcher->ShouldRedirectRequest(params, page_access);
+    CompositeMatcher::RedirectActionInfo redirect_action_info =
+        ruleset->matcher->GetRedirectAction(params, page_access);
 
-    DCHECK(!(redirect_action.redirect_url &&
-             redirect_action.notify_request_withheld));
-    if (redirect_action.notify_request_withheld) {
+    DCHECK(!(redirect_action_info.action &&
+             redirect_action_info.notify_request_withheld));
+    if (redirect_action_info.notify_request_withheld) {
       NotifyRequestWithheld(ruleset->extension_id, request);
       continue;
     }
 
-    if (!redirect_action.redirect_url)
+    if (!redirect_action_info.action)
       continue;
 
-    RequestAction action(RequestAction::Type::REDIRECT);
-    action.redirect_url = std::move(redirect_action.redirect_url);
-    action.extension_id = ruleset->extension_id;
-    return action;
+    return std::move(redirect_action_info.action);
   }
 
   return base::nullopt;

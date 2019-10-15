@@ -7,7 +7,6 @@ cr.define('preview_generation_test', function() {
   const TestNames = {
     Color: 'color',
     CssBackground: 'css background',
-    FitToPage: 'fit to page',
     HeaderFooter: 'header/footer',
     Layout: 'layout',
     Margins: 'margins',
@@ -17,6 +16,7 @@ cr.define('preview_generation_test', function() {
     Rasterize: 'rasterize',
     PagesPerSheet: 'pages per sheet',
     Scaling: 'scaling',
+    ScalingPdf: 'scalingPdf',
     SelectionOnly: 'selection only',
     Destination: 'destination',
     ChangeMarginsByPagesPerSheet: 'change margins by pages per sheet',
@@ -126,17 +126,6 @@ cr.define('preview_generation_test', function() {
     test(assert(TestNames.CssBackground), function() {
       return testSimpleSetting(
           'cssBackground', false, true, 'shouldPrintBackgrounds', false, true);
-    });
-
-    /** Validate changing the scalingTypePdf setting updates the preview. */
-    test(assert(TestNames.FitToPage), function() {
-      // Set PDF document so setting is available.
-      initialSettings.previewModifiable = false;
-      initialSettings.previewIsPdf = true;
-      return testSimpleSetting(
-          'scalingTypePdf', print_preview.ScalingType.DEFAULT,
-          print_preview.ScalingType.FIT_TO_PAGE, 'fitToPageEnabled', false,
-          true);
     });
 
     /** Validate changing the header/footer setting updates the preview. */
@@ -411,6 +400,112 @@ cr.define('preview_generation_test', function() {
             assertEquals(
                 print_preview.ScalingType.CUSTOM,
                 page.getSettingValue('scalingType'));
+          });
+    });
+
+    /** Validate changing the scalingTypePdf setting updates the preview. */
+    test(assert(TestNames.ScalingPdf), function() {
+      // Set PDF document so setting is available.
+      initialSettings.previewModifiable = false;
+      initialSettings.previewIsPdf = true;
+      return initialize()
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(0, ticket.requestID);
+            assertEquals(100, ticket.scaleFactor);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('100', page.getSettingValue('scaling'));
+            assertEquals(
+                print_preview.ScalingType.DEFAULT,
+                page.getSettingValue('scalingTypePdf'));
+            // DEFAULT -> FIT_TO_PAGE
+            page.setSetting(
+                'scalingTypePdf', print_preview.ScalingType.FIT_TO_PAGE);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(100, ticket.scaleFactor);
+            assertEquals(1, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('100', page.getSettingValue('scaling'));
+            assertEquals(
+                print_preview.ScalingType.FIT_TO_PAGE,
+                page.getSettingValue('scalingTypePdf'));
+            // FIT_TO_PAGE -> CUSTOM
+            page.setSetting('scalingTypePdf', print_preview.ScalingType.CUSTOM);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(100, ticket.scaleFactor);
+            assertEquals(2, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('100', page.getSettingValue('scaling'));
+            assertEquals(
+                print_preview.ScalingType.CUSTOM,
+                page.getSettingValue('scalingTypePdf'));
+            // CUSTOM -> FIT_TO_PAGE
+            page.setSetting(
+                'scalingTypePdf', print_preview.ScalingType.FIT_TO_PAGE);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(100, ticket.scaleFactor);
+            assertEquals(3, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('100', page.getSettingValue('scaling'));
+            assertEquals(
+                print_preview.ScalingType.FIT_TO_PAGE,
+                page.getSettingValue('scalingTypePdf'));
+            // FIT_TO_PAGE -> DEFAULT
+            page.setSetting(
+                'scalingTypePdf', print_preview.ScalingType.DEFAULT);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(100, ticket.scaleFactor);
+            assertEquals(4, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('100', page.getSettingValue('scaling'));
+            assertEquals(
+                print_preview.ScalingType.DEFAULT,
+                page.getSettingValue('scalingTypePdf'));
+            // DEFAULT -> CUSTOM
+            page.setSetting('scalingTypePdf', print_preview.ScalingType.CUSTOM);
+            // Need to set custom value != 100 for preview to regenerate.
+            page.setSetting('scaling', '120');
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(120, ticket.scaleFactor);
+            // DEFAULT -> CUSTOM will result in a scaling change only if the
+            // scale factor changes. Therefore, the requestId should only be one
+            // more than the last set of scaling changes.
+            assertEquals(5, ticket.requestID);
+            nativeLayer.resetResolver('getPreview');
+            assertEquals('120', page.getSettingValue('scaling'));
+            assertEquals(
+                print_preview.ScalingType.CUSTOM,
+                page.getSettingValue('scalingTypePdf'));
+            // CUSTOM -> DEFAULT
+            page.setSetting(
+                'scalingTypePdf', print_preview.ScalingType.DEFAULT);
+            // This should regenerate the preview, since the custom value is not
+            // 100.
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            const ticket = JSON.parse(args.printTicket);
+            assertEquals(100, ticket.scaleFactor);
+            assertEquals(6, ticket.requestID);
+            assertEquals('120', page.getSettingValue('scaling'));
+            assertEquals(
+                print_preview.ScalingType.DEFAULT,
+                page.getSettingValue('scalingTypePdf'));
           });
     });
 

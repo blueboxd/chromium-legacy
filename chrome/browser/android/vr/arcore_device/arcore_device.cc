@@ -122,11 +122,16 @@ void ArCoreDevice::RequestSession(
   DVLOG(1) << __func__;
   DCHECK(IsOnMainThread());
 
-  if (session_state_->pending_request_session_callback_) {
+  if (HasExclusiveSession()) {
     DVLOG(1) << __func__ << ": Rejecting additional session request";
     std::move(callback).Run(nullptr, mojo::NullRemote());
     return;
   }
+
+  // Set HasExclusiveSession status to true. This lasts until OnSessionEnded.
+  OnStartPresenting();
+
+  DCHECK(!session_state_->pending_request_session_callback_);
   session_state_->pending_request_session_callback_ = std::move(callback);
 
   bool use_dom_overlay = base::Contains(
@@ -200,6 +205,9 @@ void ArCoreDevice::OnDrawingSurfaceDestroyed() {
 void ArCoreDevice::OnSessionEnded() {
   DVLOG(1) << __func__;
 
+  if (!HasExclusiveSession())
+    return;
+
   // This may be a no-op in case session end was initiated from the Java side.
   arcore_session_utils_->EndSession();
 
@@ -225,6 +233,9 @@ void ArCoreDevice::OnSessionEnded() {
   // Create a new mailbox bridge for use in the next session. (This is cheap,
   // the constructor doesn't establish a GL context.)
   mailbox_bridge_ = std::make_unique<vr::MailboxToSurfaceBridge>();
+
+  // This sets HasExclusiveSession status to false.
+  OnExitPresent();
 }
 
 void ArCoreDevice::CallDeferredRequestSessionCallback(bool success) {

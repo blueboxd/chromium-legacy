@@ -14,7 +14,6 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [205, 1022],
-      "scrollPosition": [0, 922],
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='text'",

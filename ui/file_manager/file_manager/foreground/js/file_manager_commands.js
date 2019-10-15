@@ -673,17 +673,7 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
 
     const volumeInfo = fileManager.volumeManager.getVolumeInfo(assert(root));
     if (volumeInfo) {
-      if (loadTimeData.getBoolean('FORMAT_DIALOG_ENABLED')) {
-        fileManager.ui.formatDialog.showModal(volumeInfo);
-      } else {
-        fileManager.ui.confirmDialog.show(
-            loadTimeData.getString('FORMATTING_WARNING'),
-            chrome.fileManagerPrivate.formatVolume.bind(
-                null, volumeInfo.volumeId,
-                chrome.fileManagerPrivate.FormatFileSystemType.VFAT,
-                'UNTITLED'),
-            null, null);
-      }
+      fileManager.ui.formatDialog.showModal(volumeInfo);
     }
   }
 

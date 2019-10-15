@@ -77,5 +77,6 @@
       ImplementedAs: "DOMWebSocket",
     },
     "USB",
+    "WakeLockSentinel",
   ],
 }

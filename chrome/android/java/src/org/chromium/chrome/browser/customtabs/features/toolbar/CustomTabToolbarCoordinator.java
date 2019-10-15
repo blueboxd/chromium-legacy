@@ -10,6 +10,8 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -32,11 +34,11 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.ui.util.TokenHolder;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import androidx.browser.customtabs.CustomTabsIntent;
 import dagger.Lazy;
 
 /**
@@ -68,7 +70,7 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final CustomTabBrowserControlsVisibilityDelegate mVisibilityDelegate;
 
-    private int mControlsHidingToken = FullscreenManager.INVALID_TOKEN;
+    private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mInitializedToolbarWithNative;
 
     @Inject

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view_observer.h"
-#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/background.h"
@@ -60,16 +60,22 @@ bool MediaDialogView::IsShowing() {
   return instance_ != nullptr;
 }
 
-void MediaDialogView::ShowMediaSession(
+MediaNotificationContainerImpl* MediaDialogView::ShowMediaSession(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item) {
-  active_sessions_view_->ShowNotification(
-      id, std::make_unique<MediaNotificationContainerImpl>(this, controller_,
-                                                           id, item));
+  auto container =
+      std::make_unique<MediaNotificationContainerImplView>(id, item);
+  MediaNotificationContainerImplView* container_ptr = container.get();
+  container_ptr->AddObserver(this);
+  observed_containers_[id] = container_ptr;
+
+  active_sessions_view_->ShowNotification(id, std::move(container));
   OnAnchorBoundsChanged();
 
   for (auto& observer : observers_)
     observer.OnMediaSessionShown();
+
+  return container_ptr;
 }
 
 void MediaDialogView::HideMediaSession(const std::string& id) {
@@ -118,6 +124,23 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, 1);
 }
 
+void MediaDialogView::OnContainerExpanded(bool expanded) {
+  OnAnchorBoundsChanged();
+}
+
+void MediaDialogView::OnContainerMetadataChanged() {
+  for (auto& observer : observers_)
+    observer.OnMediaSessionMetadataUpdated();
+}
+
+void MediaDialogView::OnContainerDestroyed(const std::string& id) {
+  auto iter = observed_containers_.find(id);
+  DCHECK(iter != observed_containers_.end());
+
+  iter->second->RemoveObserver(this);
+  observed_containers_.erase(iter);
+}
+
 void MediaDialogView::AddObserver(MediaDialogViewObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -126,12 +149,7 @@ void MediaDialogView::RemoveObserver(MediaDialogViewObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void MediaDialogView::OnMediaSessionMetadataChanged() {
-  for (auto& observer : observers_)
-    observer.OnMediaSessionMetadataUpdated();
-}
-
-const std::map<const std::string, MediaNotificationContainerImpl*>&
+const std::map<const std::string, MediaNotificationContainerImplView*>&
 MediaDialogView::GetNotificationsForTesting() const {
   return active_sessions_view_->notifications_for_testing();
 }
@@ -146,7 +164,10 @@ MediaDialogView::MediaDialogView(views::View* anchor_view,
   DCHECK(controller_);
 }
 
-MediaDialogView::~MediaDialogView() = default;
+MediaDialogView::~MediaDialogView() {
+  for (auto container_pair : observed_containers_)
+    container_pair.second->RemoveObserver(this);
+}
 
 void MediaDialogView::Init() {
   // Remove margins.

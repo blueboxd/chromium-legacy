@@ -18,6 +18,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/ip_endpoint.h"
 #include "ppapi/c/pp_instance.h"
@@ -96,17 +98,18 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   void OnListenCompleted(const ppapi::host::ReplyMessageContext& context,
                          int net_result,
                          const base::Optional<net::IPEndPoint>& local_addr);
-  void OnAcceptCompleted(const ppapi::host::ReplyMessageContext& context,
-                         mojo::PendingReceiver<network::mojom::SocketObserver>
-                             socket_observer_receiver,
-                         int net_result,
-                         const base::Optional<net::IPEndPoint>& remote_addr,
-                         network::mojom::TCPConnectedSocketPtr connected_socket,
-                         mojo::ScopedDataPipeConsumerHandle receive_stream,
-                         mojo::ScopedDataPipeProducerHandle send_stream);
+  void OnAcceptCompleted(
+      const ppapi::host::ReplyMessageContext& context,
+      mojo::PendingReceiver<network::mojom::SocketObserver>
+          socket_observer_receiver,
+      int net_result,
+      const base::Optional<net::IPEndPoint>& remote_addr,
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
+      mojo::ScopedDataPipeConsumerHandle receive_stream,
+      mojo::ScopedDataPipeProducerHandle send_stream);
   void OnAcceptCompletedOnIOThread(
       const ppapi::host::ReplyMessageContext& context,
-      network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
       mojo::PendingReceiver<network::mojom::SocketObserver>
           socket_observer_receiver,
       mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -146,7 +149,7 @@ class CONTENT_EXPORT PepperTCPServerSocketMessageFilter
   PP_Instance instance_;
 
   State state_;
-  network::mojom::TCPServerSocketPtr socket_;
+  mojo::Remote<network::mojom::TCPServerSocket> socket_;
 
   PP_NetAddress_Private bound_addr_;
 

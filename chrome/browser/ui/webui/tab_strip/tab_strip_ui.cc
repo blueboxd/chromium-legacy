@@ -184,6 +184,11 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     FireWebUIListener("tab-updated", GetTabData(contents, index));
   }
 
+  void TabBlockedStateChanged(content::WebContents* contents,
+                              int index) override {
+    FireWebUIListener("tab-updated", GetTabData(contents, index));
+  }
+
  protected:
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
@@ -235,6 +240,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                         static_cast<int>(tab_renderer_data.network_state));
     tab_data.SetBoolean("shouldHideThrobber",
                         tab_renderer_data.should_hide_throbber);
+    tab_data.SetBoolean("blocked", tab_renderer_data.blocked);
     tab_data.SetBoolean("crashed", tab_renderer_data.IsCrashed());
     // TODO(johntlee): Add the rest of TabRendererData
 
@@ -292,6 +298,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     colors.SetString("--tabstrip-indicator-capturing-color",
                      color_utils::SkColorToRgbaString(tp.GetColor(
                          ThemeProperties::COLOR_TAB_ALERT_CAPTURING)));
+    colors.SetString("--tabstrip-tab-blocked-color",
+                     color_utils::SkColorToRgbaString(
+                         ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
+                             ui::NativeTheme::kColorId_ProminentButtonColor)));
 
     ResolveJavascriptCallback(callback_id, colors);
   }

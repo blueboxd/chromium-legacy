@@ -13,6 +13,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_wake_lock_sentinel.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -317,24 +318,16 @@ v8::Promise::PromiseState ScriptPromiseUtils::GetPromiseState(
 }
 
 // static
-String ScriptPromiseUtils::GetPromiseResolutionAsString(
-    const ScriptPromise& promise) {
-  auto v8_promise = promise.V8Value().As<v8::Promise>();
-  if (v8_promise->State() == v8::Promise::kPending) {
-    return g_empty_string;
-  }
-  ScriptValue promise_result(promise.GetIsolate(), v8_promise->Result());
-  String value;
-  if (!promise_result.ToString(value)) {
-    return g_empty_string;
-  }
-  return value;
-}
-
-// static
 DOMException* ScriptPromiseUtils::GetPromiseResolutionAsDOMException(
     const ScriptPromise& promise) {
   return V8DOMException::ToImplWithTypeCheck(
+      promise.GetIsolate(), promise.V8Value().As<v8::Promise>()->Result());
+}
+
+// static
+WakeLockSentinel* ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(
+    const ScriptPromise& promise) {
+  return V8WakeLockSentinel::ToImplWithTypeCheck(
       promise.GetIsolate(), promise.V8Value().As<v8::Promise>()->Result());
 }
 

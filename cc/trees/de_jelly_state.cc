@@ -54,6 +54,17 @@ void DeJellyState::AdvanceFrame(LayerTreeImpl* layer_tree_impl) {
     return;
   }
 
+  // Compute the fallback movement of a scrolling element based purely on the
+  // scroll offset of the currently scrolling node.
+  float previous_scroll_offset = scroll_offset_;
+  scroll_offset_ = layer_tree_impl->property_trees()
+                       ->transform_tree.Node(scroll_transform_node_)
+                       ->scroll_offset.y();
+  fallback_delta_y_ = scroll_offset_ - previous_scroll_offset;
+  gfx::Vector3dF vector(0, fallback_delta_y_, 0);
+  new_scroll_node_transform_->TransformVector(&vector);
+  fallback_delta_y_ = vector.y();
+
   // Don't attempt de-jelly while the omnibox is transitioning in or out. There
   // is no correct way to handle this.
   float top_controls_shown_ratio =
@@ -115,17 +126,20 @@ void DeJellyState::UpdateSharedQuadState(LayerTreeImpl* layer_tree_impl,
 
   // Get the previous transform (if any).
   const auto& found = previous_transforms_.find(transform_id);
+
+  float delta_y = 0.0f;
   if (found == previous_transforms_.end()) {
-    return;
+    delta_y = fallback_delta_y_;
+  } else {
+    // Calculate the delta of point (0, 0) from the previous frame.
+    gfx::Transform previous_transform = found->second;
+    gfx::PointF new_point(0, 0);
+    transform.TransformPoint(&new_point);
+    gfx::PointF old_point(0, 0);
+    previous_transform.TransformPoint(&old_point);
+    delta_y = old_point.y() - new_point.y();
   }
 
-  // Calculate the delta of point (0, 0) from the previous frame.
-  gfx::Transform previous_transform = found->second;
-  gfx::PointF new_point(0, 0);
-  transform.TransformPoint(&new_point);
-  gfx::PointF old_point(0, 0);
-  previous_transform.TransformPoint(&old_point);
-  float delta_y = old_point.y() - new_point.y();
   if (delta_y == 0.0f) {
     return;
   }

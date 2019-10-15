@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tasks;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEARCH_BOX_TEXT_WATCHER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
@@ -23,8 +22,6 @@ class TasksViewBinder {
     public static void bind(PropertyModel model, TasksView view, PropertyKey propertyKey) {
         if (propertyKey == FAKE_SEARCH_BOX_CLICK_LISTENER) {
             view.setFakeSearchBoxClickListener(model.get(FAKE_SEARCH_BOX_CLICK_LISTENER));
-        } else if (propertyKey == FAKE_SEARCH_BOX_TEXT_WATCHER) {
-            view.setFakeSearchBoxTextWatcher(model.get(FAKE_SEARCH_BOX_TEXT_WATCHER));
         } else if (propertyKey == IS_FAKE_SEARCH_BOX_VISIBLE) {
             view.setFakeSearchBoxVisibility(model.get(IS_FAKE_SEARCH_BOX_VISIBLE));
         } else if (propertyKey == IS_INCOGNITO) {

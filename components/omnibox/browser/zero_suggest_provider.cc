@@ -29,8 +29,9 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_classification.h"
+#include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
-#include "components/omnibox/browser/history_url_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -192,9 +193,8 @@ const char ZeroSuggestProvider::kMostVisitedVariant[] = "MostVisited";
 // static
 ZeroSuggestProvider* ZeroSuggestProvider::Create(
     AutocompleteProviderClient* client,
-    HistoryURLProvider* history_url_provider,
     AutocompleteProviderListener* listener) {
-  return new ZeroSuggestProvider(client, history_url_provider, listener);
+  return new ZeroSuggestProvider(client, listener);
 }
 
 // static
@@ -230,7 +230,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   permanent_text_ = input.text();
   current_query_ = input.current_url().spec();
   current_title_ = input.current_title();
-  current_url_match_ = MatchForCurrentURL();
+  current_text_match_ = MatchForCurrentText();
 
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = current_page_classification_;
@@ -334,10 +334,8 @@ void ZeroSuggestProvider::ResetSession() {
 
 ZeroSuggestProvider::ZeroSuggestProvider(
     AutocompleteProviderClient* client,
-    HistoryURLProvider* history_url_provider,
     AutocompleteProviderListener* listener)
     : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client),
-      history_url_provider_(history_url_provider),
       listener_(listener),
       result_type_running_(NONE) {
   // Record whether remote zero suggest is possible for this user / profile.
@@ -542,10 +540,10 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     // URL suggestions to users who are not in the personalized field trial for
     // zero query suggestions.
     if (IsNTPPage(current_page_classification_) ||
-        !current_url_match_.destination_url.is_valid()) {
+        !current_text_match_.destination_url.is_valid()) {
       return;
     }
-    matches_.push_back(current_url_match_);
+    matches_.push_back(current_text_match_);
     int relevance = 600;
     if (num_results > 0) {
       UMA_HISTOGRAM_COUNTS_1M(
@@ -569,12 +567,12 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   if (num_results == 0)
     return;
 
-  // Do not add the default URL match if we're on the NTP to prevent
+  // Do not add the default text match if we're on the NTP to prevent
   // chrome-native://newtab or chrome://newtab from showing up on the list of
   // suggestions.
   if (!IsNTPPage(current_page_classification_) &&
-      current_url_match_.destination_url.is_valid()) {
-    matches_.push_back(current_url_match_);
+      current_text_match_.destination_url.is_valid()) {
+    matches_.push_back(current_text_match_);
   }
 
   for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
@@ -587,7 +585,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   }
 }
 
-AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
+AutocompleteMatch ZeroSuggestProvider::MatchForCurrentText() {
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It
   // gets dropped as soon as the user types something.
@@ -597,9 +595,15 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
       (base::FeatureList::IsEnabled(omnibox::kDisplayTitleForCurrentUrl))
           ? current_title_
           : base::string16();
-  return VerbatimMatchForURL(client(), tmp, GURL(current_query_), description,
-                             history_url_provider_,
-                             results_.verbatim_relevance);
+
+  // We pass a nullptr as the |history_url_provider| parameter now to force
+  // VerbatimMatch to do a classification, since the text can be a search query.
+  // TODO(tommycli): Simplify this - probably just bypass VerbatimMatchForURL.
+  AutocompleteMatch match = VerbatimMatchForURL(
+      client(), tmp, GURL(current_query_), description,
+      /*history_url_provider=*/nullptr, results_.verbatim_relevance);
+  match.provider = this;
+  return match;
 }
 
 bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(

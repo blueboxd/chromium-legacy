@@ -7,6 +7,7 @@ include_rules = [
   "+components/signin/core/browser/android",
   "+components/signin/public/identity_manager/android",
   "+components/spellcheck/browser",
+  "+components/viz/common/java",
   "+jni",
   "+media/base/android/java",
   "+services/media_session/public",

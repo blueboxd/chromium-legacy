@@ -114,7 +114,8 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     GroupId(const HostPortPair& destination,
             SocketType socket_type,
             PrivacyMode privacy_mode,
-            NetworkIsolationKey network_isolation_key = NetworkIsolationKey());
+            NetworkIsolationKey network_isolation_key = NetworkIsolationKey(),
+            bool disable_secure_dns = false);
     GroupId(const GroupId& group_id);
 
     ~GroupId();
@@ -132,21 +133,25 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       return network_isolation_key_;
     }
 
+    bool disable_secure_dns() const { return disable_secure_dns_; }
+
     // Returns the group ID as a string, for logging.
     std::string ToString() const;
 
     bool operator==(const GroupId& other) const {
       return std::tie(destination_, socket_type_, privacy_mode_,
-                      network_isolation_key_) ==
+                      network_isolation_key_, disable_secure_dns_) ==
              std::tie(other.destination_, other.socket_type_,
-                      other.privacy_mode_, other.network_isolation_key_);
+                      other.privacy_mode_, other.network_isolation_key_,
+                      other.disable_secure_dns_);
     }
 
     bool operator<(const GroupId& other) const {
       return std::tie(destination_, socket_type_, privacy_mode_,
-                      network_isolation_key_) <
+                      network_isolation_key_, disable_secure_dns_) <
              std::tie(other.destination_, other.socket_type_,
-                      other.privacy_mode_, other.network_isolation_key_);
+                      other.privacy_mode_, other.network_isolation_key_,
+                      other.disable_secure_dns_);
     }
 
    private:
@@ -160,6 +165,9 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     // Used to separate requests made in different contexts.
     NetworkIsolationKey network_isolation_key_;
+
+    // If host resolutions for this request may not use secure DNS.
+    bool disable_secure_dns_;
   };
 
   // Parameters that, in combination with GroupId, proxy, websocket information,

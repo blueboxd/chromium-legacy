@@ -73,13 +73,6 @@ bool RelaunchRequiredDialogView::Accept() {
   return false;
 }
 
-base::string16 RelaunchRequiredDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_RELAUNCH_ACCEPT_BUTTON
-                                       : IDS_RELAUNCH_REQUIRED_CANCEL_BUTTON);
-}
-
 ui::ModalType RelaunchRequiredDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -121,6 +114,12 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
           base::BindRepeating(&RelaunchRequiredDialogView::UpdateWindowTitle,
                               base::Unretained(this))) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_RELAUNCH_REQUIRED_CANCEL_BUTTON));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_REQUIRED);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

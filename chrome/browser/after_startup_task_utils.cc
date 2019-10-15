@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -177,6 +178,14 @@ class StartupObserver : public WebContentsObserver {
                    int error_code,
                    const base::string16& error_description) override {
     if (!render_frame_host->GetParent())
+      OnStartupComplete();
+  }
+
+  // Starting the browser with a file download url will not result in
+  // DidFinishLoad firing, so watch for this case too. crbug.com/1006954
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->IsInMainFrame() && navigation_handle->IsDownload())
       OnStartupComplete();
   }
 

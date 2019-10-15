@@ -273,18 +273,28 @@ void ClipboardMac::ReadData(const ClipboardFormatType& format,
     result->assign(static_cast<const char*>([data bytes]), [data length]);
 }
 
-void ClipboardMac::WriteObjects(ClipboardBuffer buffer,
-                                const ObjectMap& objects) {
+void ClipboardMac::WritePortableRepresentations(ClipboardBuffer buffer,
+                                                const ObjectMap& objects) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
   NSPasteboard* pb = GetPasteboard();
   [pb declareTypes:@[] owner:nil];
 
-  for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end();
-       ++iter) {
-    DispatchObject(iter->first, iter->second);
-  }
+  for (const auto& object : objects)
+    DispatchPortableRepresentation(object.first, object.second);
+}
+
+void ClipboardMac::WritePlatformRepresentations(
+    ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
+
+  NSPasteboard* pb = GetPasteboard();
+  [pb declareTypes:@[] owner:nil];
+
+  DispatchPlatformRepresentations(std::move(platform_representations));
 }
 
 void ClipboardMac::WriteText(const char* text_data, size_t text_len) {

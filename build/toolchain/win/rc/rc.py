@@ -162,7 +162,7 @@ def RunRc(preprocessed_output, is_utf8, flags):
   rc_cmd.append('/fo' + flags.output)
   if is_utf8:
     rc_cmd.append('/utf-8')
-  # TODO(thakis): rc currently always prints full paths for /showIncludes,
+  # TODO(thakis): cl currently always prints full paths for /showIncludes,
   # but clang-cl /P doesn't.  Which one is right?
   if flags.show_includes:
     rc_cmd.append('/showIncludes')
@@ -172,7 +172,63 @@ def RunRc(preprocessed_output, is_utf8, flags):
   rc_cmd += flags.includes
   p = subprocess.Popen(rc_cmd, stdin=subprocess.PIPE)
   p.communicate(input=preprocessed_output)
+
+  if flags.show_includes and p.returncode == 0:
+    # Since tool("rc") can't have deps, add deps on this script and on rc.py
+    # and its deps here, so that rc edges become dirty if rc.py changes.
+    print('Note: including file: ../../build/toolchain/win/tool_wrapper.py')
+    print('Note: including file: ../../build/toolchain/win/rc/rc.py')
+    print(
+        'Note: including file: ../../build/toolchain/win/rc/linux64/rc.sha1')
+    print('Note: including file: ../../build/toolchain/win/rc/mac/rc.sha1')
+    print(
+        'Note: including file: ../../build/toolchain/win/rc/win/rc.exe.sha1')
+
   return p.returncode
+
+
+def CompareToMsRcOutput(preprocessed_output, is_utf8, flags):
+  msrc_in = flags.output + '.preprocessed.rc'
+
+  # Strip preprocessor line markers.
+  preprocessed_output = re.sub(r'^#.*$', '', preprocessed_output, flags=re.M)
+  if is_utf8:
+    preprocessed_output = preprocessed_output.decode('utf-8').encode('utf-16le')
+  with open(msrc_in, 'wb') as f:
+    f.write(preprocessed_output)
+
+  msrc_out = flags.output + '_ms_rc'
+  msrc_cmd = ['rc', '/nologo', '/fo' + msrc_out]
+
+  # Make sure rc-relative resources can be found. rc.exe looks for external
+  # resource files next to the file, but the preprocessed file isn't where the
+  # input was.
+  # Note that rc searches external resource files in the order of
+  # 1. next to the input file
+  # 2. relative to cwd
+  # 3. next to -I directories
+  # Changing the cwd means we'd have to rewrite all -I flags, so just add
+  # the input file dir as -I flag. That technically gets the order of 1 and 2
+  # wrong, but in Chromium's build the cwd is the gn out dir, and generated
+  # files there are in obj/ and gen/, so this difference doesn't matter in
+  # practice.
+  if os.path.dirname(flags.input):
+    msrc_cmd += [ '-I' + os.path.dirname(flags.input) ]
+
+  # Microsoft rc.exe searches for referenced files relative to -I flags in
+  # addition to the pwd, so -I flags need to be passed both to both
+  # the preprocessor and rc.
+  msrc_cmd += flags.includes
+
+  # Input must come last.
+  msrc_cmd += [ msrc_in ]
+
+  rc_exe_exit_code = subprocess.call(msrc_cmd)
+  # Assert Microsoft rc.exe and rc.py produced identical .res files.
+  if rc_exe_exit_code == 0:
+    import filecmp
+    assert filecmp.cmp(msrc_out, flags.output)
+  return rc_exe_exit_code
 
 
 def main():
@@ -185,7 +241,17 @@ def main():
   flags = ParseFlags()
   rc_file_data, is_utf8 = ReadInput(flags.input)
   preprocessed_output = Preprocess(rc_file_data, flags)
-  return RunRc(preprocessed_output, is_utf8, flags)
+  rc_exe_exit_code = RunRc(preprocessed_output, is_utf8, flags)
+
+  # 5. On Windows, we also call Microsoft's rc.exe and check that we produced
+  #   the same output.
+  # Since Microsoft's rc has a preprocessor that only accepts 32 characters
+  # for macro names, feed the clang-preprocessed source into it instead
+  # of using ms rc's preprocessor.
+  if sys.platform == 'win32' and rc_exe_exit_code == 0:
+    rc_exe_exit_code = CompareToMsRcOutput(preprocessed_output, is_utf8, flags)
+
+  return rc_exe_exit_code
 
 
 if __name__ == '__main__':

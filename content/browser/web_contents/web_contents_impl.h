@@ -574,7 +574,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void GetNFC(mojo::PendingReceiver<device::mojom::NFC> receiver) override;
 #endif
   void EnterFullscreenMode(const GURL& origin,
-                           const blink::WebFullscreenOptions& options) override;
+                           const blink::FullScreenOptions& options) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   void FullscreenStateChanged(RenderFrameHost* rfh,
                               bool is_fullscreen) override;
@@ -636,6 +636,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                    int context_id) override;
   RenderFrameHostImpl* GetMainFrameForInnerDelegate(
       FrameTreeNode* frame_tree_node) override;
+  void OnThemeColorChanged(RenderFrameHostImpl* source,
+                           const base::Optional<SkColor>& theme_color) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1282,8 +1284,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                       const base::string16& user_input);
 
   // IPC message handlers.
-  void OnThemeColorChanged(RenderFrameHostImpl* source,
-                           base::Optional<SkColor> theme_color);
   void OnDidLoadResourceFromMemoryCache(
       RenderFrameHostImpl* source,
       const GURL& url,

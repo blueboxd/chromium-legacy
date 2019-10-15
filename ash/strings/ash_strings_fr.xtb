@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">Faites une pause !</translation>
 <translation id="683971173229319003">Recherche+L</translation>
 <translation id="6857811139397017780">Activer <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">Raccourci désactivé</translation>
 <translation id="6910714959251846841">Cette mise à jour nécessite que vous utilisiez la fonctionnalité Powerwash sur votre appareil. Obtenez de plus amples informations sur la dernière mise à jour <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="6919251195245069855">Impossible de reconnaître votre carte à puce. Veuillez réessayer.</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7377169924702866686">La touche de verrouillage des majuscules est activée</translation>
 <translation id="7378594059915113390">Commandes multimédias</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" /> min <ph name="SECONDS_REMAINING" /> s</translation>
 <translation id="7398254312354928459">La connexion réseau a été établie</translation>
 <translation id="7405710164030118432">Pour déverrouiller l'appareil, saisissez le code d'accès parental Family Link</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>

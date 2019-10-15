@@ -86,8 +86,7 @@ PepperHostResolverMessageFilter::PepperHostResolverMessageFilter(
     : external_plugin_(host->external_plugin()),
       private_api_(private_api),
       render_process_id_(0),
-      render_frame_id_(0),
-      binding_(this) {
+      render_frame_id_(0) {
   DCHECK(host);
 
   if (!host->GetRenderFrameIDsForInstance(
@@ -145,19 +144,16 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
   // thread pending). Balanced in OnComplete();
   AddRef();
 
-  network::mojom::ResolveHostClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&PepperHostResolverMessageFilter::OnComplete,
-                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
-
   network::mojom::ResolveHostParametersPtr parameters =
       network::mojom::ResolveHostParameters::New();
   PrepareRequestInfo(hint, parameters.get());
 
   storage_partition->GetNetworkContext()->ResolveHost(
       net::HostPortPair(host_port.host, host_port.port), std::move(parameters),
-      std::move(client_ptr));
+      receiver_.BindNewPipeAndPassRemote());
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&PepperHostResolverMessageFilter::OnComplete,
+                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
   host_resolve_context_ = context->MakeReplyMessageContext();
 
   return PP_OK_COMPLETIONPENDING;
@@ -167,7 +163,7 @@ void PepperHostResolverMessageFilter::OnComplete(
     int result,
     const base::Optional<net::AddressList>& resolved_addresses) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  binding_.Close();
+  receiver_.reset();
 
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},

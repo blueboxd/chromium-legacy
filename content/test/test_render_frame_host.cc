@@ -19,6 +19,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
@@ -693,7 +694,25 @@ TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver() {
       .InitWithNewPipeAndPassReceiver();
 }
 
-void TestRenderFrameHost::SimulateLoadingCompleted() {
+void TestRenderFrameHost::SimulateLoadingCompleted(
+    TestRenderFrameHost::LoadingScenario loading_scenario) {
+  if (!is_loading())
+    return;
+
+  if (loading_scenario == LoadingScenario::NewDocumentNavigation) {
+    static_cast<IPC::Listener*>(GetRenderViewHost())
+        ->OnMessageReceived(ViewHostMsg_DocumentAvailableInMainFrame(
+            GetRenderViewHost()->GetRoutingID(),
+            /* uses_temporary_zoom_level */ false));
+
+    OnMessageReceived(FrameHostMsg_DidFinishDocumentLoad(GetRoutingID()));
+
+    DocumentOnLoadCompleted();
+
+    OnMessageReceived(
+        FrameHostMsg_DidFinishLoad(GetRoutingID(), GetLastCommittedURL()));
+  }
+
   OnDidStopLoading();
 }
 

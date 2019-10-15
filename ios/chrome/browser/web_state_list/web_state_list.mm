@@ -333,8 +333,13 @@ void WebStateList::CloseWebStateAt(int index, int close_flags) {
 }
 
 void WebStateList::CloseAllWebStates(int close_flags) {
+  const bool user_action = IsClosingFlagSet(close_flags, CLOSE_USER_ACTION);
+  for (auto& observer : observers_)
+    observer.WillCloseAllWebStates(this, user_action);
   while (!empty())
     CloseWebStateAt(count() - 1, close_flags);
+  for (auto& observer : observers_)
+    observer.DidCloseAllWebStates(this, user_action);
 }
 
 void WebStateList::ActivateWebStateAt(int index) {

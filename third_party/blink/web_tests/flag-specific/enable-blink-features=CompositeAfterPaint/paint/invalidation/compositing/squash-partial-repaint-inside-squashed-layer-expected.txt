@@ -8,10 +8,10 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited box behind'",
-      "position": [100, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#0000FF"
+      "backgroundColor": "#0000FF",
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='box middle'",
@@ -24,6 +24,17 @@
           "rect": [80, 80, 182, 29],
           "reason": "background"
         }
+      ]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [100, 100, 0, 1]
       ]
     }
   ]

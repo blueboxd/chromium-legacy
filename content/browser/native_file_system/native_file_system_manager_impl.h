@@ -44,8 +44,8 @@ class StoragePartitionImpl;
 // NativeFileSystemDirectoryHandleImpl and NativeFileSystemTransferTokenImpl
 // instances for a specific storage partition.
 //
-// This class is not thread safe, it is constructed on the UI thread, and after
-// that all methods should be called on the IO thread.
+// This class is not thread safe, it must be constructed and used on the UI
+// thread only.
 class CONTENT_EXPORT NativeFileSystemManagerImpl
     : public NativeFileSystemEntryFactory,
       public blink::mojom::NativeFileSystemManager {
@@ -82,11 +82,6 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       bool off_the_record);
 
   void BindReceiver(
-      const BindingContext& binding_context,
-      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
-
-  static void BindReceiverFromUIThread(
-      StoragePartitionImpl* storage_partition,
       const BindingContext& binding_context,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
 
@@ -155,12 +150,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       ResolvedTokenCallback callback);
 
   storage::FileSystemContext* context() {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return context_.get();
   }
-  storage::BlobStorageContext* blob_context() {
-    return blob_context_->context();
-  }
+  ChromeBlobStorageContext* blob_context() { return blob_context_.get(); }
   const base::SequenceBound<storage::FileSystemOperationRunner>&
   operation_runner();
 
@@ -244,6 +237,8 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
           writer_receiver,
       bool has_transient_user_activation);
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;

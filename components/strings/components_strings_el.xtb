@@ -5,6 +5,8 @@
 <translation id="1010200102790553230">Φόρτωση σελίδας αργότερα</translation>
 <translation id="1015730422737071372">Καταχωρίστε επιπλέον λεπτομέρειες</translation>
 <translation id="1021110881106174305">Αποδεκτές κάρτες</translation>
+<translation id="1023523064224774104">Το Chromium εντόπισε ότι μόλις καταχωρίσατε τον κωδικό πρόσβασής σας σε έναν ύποπτο
+          ιστότοπο. Επαναφέρετε άμεσα τον κωδικό πρόσβασής σας!</translation>
 <translation id="1032854598605920125">Περιστροφή προς τα δεξιά</translation>
 <translation id="1035334672863811645">σύνδεση στο Chrome</translation>
 <translation id="1036348656032585052">Απενεργοποίηση</translation>
@@ -550,6 +552,7 @@
 <translation id="3655670868607891010">Αν αυτό το μήνυμα εμφανίζεται συχνά, μπορείτε να βρείτε βοήθεια εδώ <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Αναθεώρηση</translation>
 <translation id="366077651725703012">Ενημέρωση πιστωτικής κάρτας</translation>
+<translation id="3672525478985456967">Το όνομα αυτού του ιστοτόπου φαίνεται παρόμοιο με του ιστοτόπου <ph name="LOOKALIKE_DOMAIN" />. Οι εισβολείς απομιμούνται μερικές φορές ιστοτόπους κάνοντας μικρές, δυσδιάκριτες αλλαγές στο όνομα τομέα.</translation>
 <translation id="3676592649209844519">Αναγνωριστικό συσκευής:</translation>
 <translation id="3677008721441257057">Μήπως εννοούσατε &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;;</translation>
 <translation id="3678029195006412963">Δεν ήταν δυνατή η έγκριση του αιτήματος</translation>
@@ -725,6 +728,7 @@
 <translation id="4477350412780666475">Επόμενο κομμάτι</translation>
 <translation id="4482953324121162758">Αυτός ο ιστότοπος δεν θα μεταφραστεί.</translation>
 <translation id="4490717597759821841">A7</translation>
+<translation id="4492519888999857993">Αυτές οι λειτουργίες είναι απενεργοποιημένες από προεπιλογή. Δεν θα είναι διαθέσιμες σε μελλοντικές εκδόσεις του Chrome.</translation>
 <translation id="4493480324863638523">Μη έγκυρο URL. Πρέπει να είναι ένα URL με βασική μορφή, π.χ. http://example.com ή https://example.com.</translation>
 <translation id="4503882053543859973">Architecture-D</translation>
 <translation id="4506176782989081258">Σφάλμα επικύρωσης: <ph name="VALIDATION_ERROR" /></translation>
@@ -798,6 +802,7 @@
 <translation id="4880827082731008257">Αναζήτηση ιστορικού</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4901778704868714008">Αποθήκευση…</translation>
 <translation id="4913987521957242411">Τρύπημα επάνω αριστερά</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{και 1 ακόμη ιστοσελίδα}other{και # ακόμη ιστοσελίδες}}</translation>
 <translation id="4923417429809017348">Αυτή η σελίδα έχει μεταφραστεί από μια άγνωστη γλώσσας στα <ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -872,6 +877,7 @@
 <translation id="5230733896359313003">Διεύθυνση αποστολής</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
+<translation id="5234764350956374838">Παράβλεψη</translation>
 <translation id="5250209940322997802">"Σύνδεση σε δίκτυο"</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5252000469029418751">C7 (Φάκελος)</translation>
@@ -919,8 +925,6 @@
 <translation id="5457113250005438886">Μη έγκυρο</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}other{<ph name="CONTACT_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ακόμη}}</translation>
 <translation id="5470861586879999274">&amp;Επανάληψη επεξεργασίας</translation>
-<translation id="5473728911100096288">Ενεργοποιώντας αυτές τις λειτουργίες, θα χρησιμοποιείτε λειτουργίες που έχουν καταργηθεί
-    και θα εξαφανιστούν σε μελλοντικές εκδόσεις.</translation>
 <translation id="5478437291406423475">B6/C4 (Φάκελος)</translation>
 <translation id="5481076368049295676">Αυτό το περιεχόμενο μπορεί να προσπαθήσει να εγκαταστήσει επικίνδυνο λογισμικό στη συσκευή σας το οποίο κλέβει ή διαγράφει τα στοιχεία σας. <ph name="BEGIN_LINK" />Εμφάνιση ούτως ή άλλως<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Προσθήκη έγκυρης διεύθυνσης</translation>
@@ -1160,6 +1164,7 @@
 <translation id="6671697161687535275">Να καταργηθεί η πρόταση φόρμας από το Chromium;</translation>
 <translation id="6685834062052613830">Αποσυνδεθείτε και ολοκληρώστε την εγκατάσταση</translation>
 <translation id="6689271823431384964">Το Chrome προσφέρεται να αποθηκεύσει τις κάρτες σας στον Λογαριασμό σας Google, επειδή έχετε συνδεθεί. Μπορείτε να αλλάξετε αυτήν τη συμπεριφορά στις ρυθμίσεις. Το όνομα του κατόχου κάρτας προέρχεται από τον λογαριασμό σας.</translation>
+<translation id="6704582573942289642">Είναι ο σωστός ιστότοπος;</translation>
 <translation id="6707256370811247129">Σάρωση των περιεχομένων της κρυφής μνήμης και των αρχείων που κατεβάζετε ή ανεβάζετε στο Chrome.</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6710594484020273272">&lt;Πληκτρολογήστε όρο αναζήτησης&gt;</translation>
@@ -1168,7 +1173,6 @@
 <translation id="6738516213925468394">Τα δεδομένα σας κρυπτογραφήθηκαν με τη <ph name="BEGIN_LINK" />φράση πρόσβασης συγχρονισμού<ph name="END_LINK" /> στις <ph name="TIME" />. Καταχωρίστε την, για να ξεκινήσει ο συγχρονισμός.</translation>
 <translation id="674375294223700098">Άγνωστο σφάλμα πιστοποιητικού διακομιστή</translation>
 <translation id="6744009308914054259">Ενώ περιμένετε για την επίτευξη κάποιας σύνδεσης, μπορείτε να μεταβείτε στις Λήψεις, για να διαβάσετε άρθρα εκτός σύνδεσης.</translation>
-<translation id="6747611005629681221">Προειδοποίηση: Ακολουθούν λειτουργίες που καταργήθηκαν!</translation>
 <translation id="6753269504797312559">Τιμή πολιτικής</translation>
 <translation id="6757797048963528358">Η συσκευή σας τέθηκε σε αδράνεια.</translation>
 <translation id="6768213884286397650">Hagaki (Ταχυδρομική κάρτα)</translation>
@@ -1455,6 +1459,7 @@
 <translation id="8184538546369750125">Χρήση καθολικής προεπιλεγμένης ρύθμισης (Επιτρέπεται)</translation>
 <translation id="8194797478851900357">&amp;Αναίρεση μετακίνησης</translation>
 <translation id="8197543752516192074">Μετάφραση σελίδας</translation>
+<translation id="8197899142098070286">Το Chrome εντόπισε ότι μόλις καταχωρίσατε τον κωδικό πρόσβασής σας έναν ύποπτο ιστότοπο. Επαναφέρετε άμεσα τον κωδικό πρόσβασής σας!</translation>
 <translation id="8201077131113104583">Η διεύθυνση URL ενημέρωσης για την επέκταση με αναγνωριστικό ID "<ph name="EXTENSION_ID" />", δεν είναι έγκυρη.</translation>
 <translation id="8202097416529803614">Σύνοψη παραγγελίας</translation>
 <translation id="8202370299023114387">Διένεξη</translation>

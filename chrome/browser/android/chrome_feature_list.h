@@ -87,6 +87,7 @@ extern const base::Feature kNewPhotoPicker;
 extern const base::Feature kNotificationSuspender;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPLaunchAfterInactivity;
+extern const base::Feature kOfflineHome;
 extern const base::Feature kOfflineIndicatorV2;
 extern const base::Feature kOmniboxSpareRenderer;
 extern const base::Feature kOverlayNewLayout;

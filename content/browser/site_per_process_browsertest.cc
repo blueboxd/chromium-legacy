@@ -1823,10 +1823,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   DCHECK_EQ(filter->last_rect().y(), 0);
 }
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+// Flaky timeout. https://crbug.com/1014155
+#define MAYBE_KeyboardScrollBubblingFromOOPIF \
+  DISABLED_KeyboardScrollBubblingFromOOPIF
+#else
+#define MAYBE_KeyboardScrollBubblingFromOOPIF KeyboardScrollBubblingFromOOPIF
+#endif
+
 // Tests that scrolling with the keyboard will bubble unused scroll to the
 // OOPIF's parent.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       KeyboardScrollBubblingFromOOPIF) {
+                       MAYBE_KeyboardScrollBubblingFromOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_iframe_in_scrollable_div.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4160,8 +4168,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
 
 // Test that HasReceivedUserGesture and HasReceivedUserGestureBeforeNavigation
 // are propagated correctly across origins.
+// Flaky. https://crbug.com/1014175
 IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
-                       PropagateUserGestureFlag) {
+                       DISABLED_PropagateUserGestureFlag) {
   GURL main_url(embedded_test_server()->GetURL(
       "example.com", "/media/autoplay/autoplay-enabled.html"));
   GURL foo_url(embedded_test_server()->GetURL(

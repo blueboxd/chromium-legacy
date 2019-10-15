@@ -7,7 +7,9 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -54,7 +56,8 @@ void NativeFileSystemFileHandleImpl::RequestPermission(
 }
 
 void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kPermissionDenied),
@@ -77,7 +80,7 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
 void NativeFileSystemFileHandleImpl::CreateFileWriter(
     bool keep_existing_data,
     CreateFileWriterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileHandleImpl::CreateFileWriterImpl,
@@ -92,16 +95,52 @@ void NativeFileSystemFileHandleImpl::CreateFileWriter(
 
 void NativeFileSystemFileHandleImpl::Transfer(
     mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   manager()->CreateTransferToken(*this, std::move(token));
 }
+
+namespace {
+
+void CreateBlobOnIOThread(
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const scoped_refptr<ChromeBlobStorageContext>& blob_context,
+    mojo::PendingReceiver<blink::mojom::Blob> blob_receiver,
+    const storage::FileSystemURL& url,
+    const std::string& blob_uuid,
+    const std::string& content_type,
+    const base::File::Info& info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto blob_builder = std::make_unique<storage::BlobDataBuilder>(blob_uuid);
+  // Only append if the file has data.
+  if (info.size > 0) {
+    // Use AppendFileSystemFile here, since we're streaming the file directly
+    // from the file system backend, and the file thus might not actually be
+    // backed by a file on disk.
+    blob_builder->AppendFileSystemFile(url.ToGURL(), 0, info.size,
+                                       info.last_modified,
+                                       std::move(file_system_context));
+  }
+  blob_builder->set_content_type(content_type);
+
+  std::unique_ptr<BlobDataHandle> blob_handle =
+      blob_context->context()->AddFinishedBlob(std::move(blob_builder));
+
+  // Since the blob we're creating doesn't depend on other blobs, and doesn't
+  // require blob memory/disk quota, creating the blob can't fail.
+  DCHECK(!blob_handle->IsBroken());
+
+  BlobImpl::Create(std::move(blob_handle), std::move(blob_receiver));
+}
+
+}  // namespace
 
 void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
     AsBlobCallback callback,
     base::File::Error result,
     const base::File::Info& info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
@@ -110,17 +149,7 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
   }
 
   std::string uuid = base::GenerateGUID();
-  auto blob_builder = std::make_unique<storage::BlobDataBuilder>(uuid);
-
-  // Only append if the file has data.
-  if (info.size > 0) {
-    // Use AppendFileSystemFile here, since we're streaming the file directly
-    // from the file system backend, and the file thus might not actually be
-    // backed by a file on disk.
-    blob_builder->AppendFileSystemFile(url().ToGURL(), 0, info.size,
-                                       info.last_modified,
-                                       file_system_context());
-  }
+  std::string content_type;
 
   base::FilePath::StringType extension = url().path().Extension();
   if (!extension.empty()) {
@@ -130,34 +159,33 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
     // however that method can potentially block and thus can't be called from
     // the IO thread.
     if (net::GetWellKnownMimeTypeFromExtension(extension.substr(1), &mime_type))
-      blob_builder->set_content_type(mime_type);
+      content_type = std::move(mime_type);
   }
+  // TODO(https://crbug.com/962306): Consider some kind of fallback type when
+  // the above mime type detection fails.
 
-  std::unique_ptr<BlobDataHandle> blob_handle =
-      blob_context()->AddFinishedBlob(std::move(blob_builder));
-  if (blob_handle->IsBroken()) {
-    std::move(callback).Run(
-        native_file_system_error::FromStatus(
-            NativeFileSystemStatus::kOperationFailed, "Failed to create blob."),
-        nullptr);
-    return;
-  }
-
-  std::string content_type = blob_handle->content_type();
   mojo::PendingRemote<blink::mojom::Blob> blob_remote;
-  BlobImpl::Create(std::move(blob_handle),
-                   blob_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingReceiver<blink::mojom::Blob> blob_receiver =
+      blob_remote.InitWithNewPipeAndPassReceiver();
 
   std::move(callback).Run(
       native_file_system_error::Ok(),
       blink::mojom::SerializedBlob::New(uuid, content_type, info.size,
                                         std::move(blob_remote)));
+
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&CreateBlobOnIOThread,
+                     base::WrapRefCounted(file_system_context()),
+                     base::WrapRefCounted(manager()->blob_context()),
+                     std::move(blob_receiver), url(), std::move(uuid),
+                     std::move(content_type), info));
 }
 
 void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(
     bool keep_existing_data,
     CreateFileWriterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
@@ -175,7 +203,7 @@ void NativeFileSystemFileHandleImpl::CreateSwapFile(
     int count,
     bool keep_existing_data,
     CreateFileWriterCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(count >= 0);
   DCHECK(max_swap_files_ >= 0);
 
@@ -247,7 +275,7 @@ void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
     bool keep_existing_data,
     CreateFileWriterCallback callback,
     base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result == base::File::FILE_ERROR_EXISTS) {
     // Creation attempt failed. We need to find an unused filename.
     CreateSwapFile(count + 1, keep_existing_data, std::move(callback));
@@ -291,7 +319,7 @@ void NativeFileSystemFileHandleImpl::DidCopySwapFile(
     storage::IsolatedContext::ScopedFSHandle swap_file_system,
     CreateFileWriterCallback callback,
     base::File::Error result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != base::File::FILE_OK) {
     DLOG(ERROR) << "Error Creating Swap File, status: "
                 << base::File::ErrorToString(result)

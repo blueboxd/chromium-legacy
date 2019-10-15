@@ -1549,7 +1549,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                   /*expected_count*/ 2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -1,
-                  /*expected_text*/ L"frame\n",
+                  /*expected_text*/ L"frame",
                   /*expected_count*/ -1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
@@ -1737,8 +1737,13 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
   AssertMoveByUnitForMarkup(TextUnit_Word,
                             "a <a>link with multiple words</a> and text after.",
-                            {L"a ", L"link ", L"with ", L"multiple ", L"words ",
+                            {L"a ", L"link ", L"with ", L"multiple ", L"words",
                              L"and ", L"text ", L"after."});
+
+  AssertMoveByUnitForMarkup(TextUnit_Word,
+                            "a <span aria-hidden='true'>span with ignored "
+                            "text</span> and text after.",
+                            {L"a ", L"and ", L"text ", L"after."});
 
   // AssertMoveByUnitForMarkup(
   //     TextUnit_Word, "<ul><li>item one</li><li>item two</li></ul>",

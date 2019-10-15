@@ -22,6 +22,19 @@ void SetIsHoldingWebLock(int render_process_id,
     frame_node->SetIsHoldingWebLock(is_holding_web_lock);
 }
 
+void SetIsHoldingIndexedDBConnections(int render_process_id,
+                                      int render_frame_id,
+                                      bool is_holding_indexed_db_connection,
+                                      GraphImpl* graph) {
+  FrameNodeImpl* frame_node =
+      graph->GetFrameNodeById(render_process_id, render_frame_id);
+  // TODO(https://crbug.com/980533): Rename
+  // FrameNodeImpl::SetIsHoldingIndexedDBLock() to
+  // SetIsHoldingIndexedDBConnections().
+  if (frame_node)
+    frame_node->SetIsHoldingIndexedDBLock(is_holding_indexed_db_connection);
+}
+
 }  // namespace
 
 PerformanceManagerLockObserver::PerformanceManagerLockObserver() = default;
@@ -45,6 +58,22 @@ void PerformanceManagerLockObserver::OnFrameStopsHoldingWebLocks(
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(&SetIsHoldingWebLock, render_process_id,
                                 render_frame_id, false));
+}
+
+void PerformanceManagerLockObserver::OnFrameStartsHoldingIndexedDBConnections(
+    int render_process_id,
+    int render_frame_id) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&SetIsHoldingIndexedDBConnections,
+                                render_process_id, render_frame_id, true));
+}
+
+void PerformanceManagerLockObserver::OnFrameStopsHoldingIndexedDBConnections(
+    int render_process_id,
+    int render_frame_id) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&SetIsHoldingIndexedDBConnections,
+                                render_process_id, render_frame_id, false));
 }
 
 }  // namespace performance_manager

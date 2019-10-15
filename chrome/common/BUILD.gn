@@ -590,6 +590,7 @@ component("chrome_features") {
     "//device/vr/buildflags",
     "//extensions/buildflags",
     "//media:media_buildflags",
+    "//net:buildflags",
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//rlz/buildflags",

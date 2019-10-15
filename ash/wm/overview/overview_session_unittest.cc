@@ -1251,8 +1251,10 @@ TEST_P(OverviewSessionTest, RemoveDisplayWithAnimation) {
 }
 
 // Tests that dragging a window from the top of a display creates a drop target
-// on that display.
-TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromTop) {
+// on that display. The workflow will be real after the tablet disambiguation
+// work. Until then, this test can safely be disabled.
+TEST_P(OverviewSessionTest,
+       DISABLED_DropTargetOnCorrectDisplayForDraggingFromTop) {
   UpdateDisplay("600x600,600x600");
   EnterTabletMode();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
@@ -1329,7 +1331,7 @@ TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EXPECT_FALSE(GetDropTarget(1));
   gfx::PointF drag_point = primary_screen_item->target_bounds().CenterPoint();
   overview_session()->InitiateDrag(primary_screen_item, drag_point,
-                                   /*is_touch_dragging=*/false);
+                                   /*is_touch_dragging=*/true);
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
   drag_point.Offset(5.f, 0.f);
@@ -1342,7 +1344,7 @@ TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
   EXPECT_FALSE(GetDropTarget(1));
   drag_point = secondary_screen_item->target_bounds().CenterPoint();
   overview_session()->InitiateDrag(secondary_screen_item, drag_point,
-                                   /*is_touch_dragging=*/false);
+                                   /*is_touch_dragging=*/true);
   EXPECT_FALSE(GetDropTarget(0));
   EXPECT_FALSE(GetDropTarget(1));
   drag_point.Offset(5.f, 0.f);
@@ -3224,14 +3226,14 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
     return window;
   }
 
-  gfx::Rect GetSplitViewLeftWindowBounds(aura::Window* window) {
+  gfx::Rect GetSplitViewLeftWindowBounds() {
     return split_view_controller()->GetSnappedWindowBoundsInScreen(
-        window, SplitViewController::LEFT);
+        SplitViewController::LEFT);
   }
 
-  gfx::Rect GetSplitViewRightWindowBounds(aura::Window* window) {
+  gfx::Rect GetSplitViewRightWindowBounds() {
     return split_view_controller()->GetSnappedWindowBoundsInScreen(
-        window, SplitViewController::RIGHT);
+        SplitViewController::RIGHT);
   }
 
   gfx::Rect GetSplitViewDividerBounds(bool is_dragging) {
@@ -3645,7 +3647,7 @@ TEST_P(SplitViewOverviewSessionTest,
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller()->state());
   EXPECT_TRUE(split_view_controller()->left_window() == nullptr);
-  EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
+  EXPECT_EQ(GetSplitViewRightWindowBounds(), GetGridBounds());
 
   // Verify that when dragged to the right, the window grid is located where the
   // left window of split view mode should be.
@@ -3654,7 +3656,7 @@ TEST_P(SplitViewOverviewSessionTest,
   EXPECT_EQ(SplitViewController::State::kNoSnap,
             split_view_controller()->state());
   EXPECT_TRUE(split_view_controller()->right_window() == nullptr);
-  EXPECT_EQ(GetSplitViewLeftWindowBounds(window1.get()), GetGridBounds());
+  EXPECT_EQ(GetSplitViewLeftWindowBounds(), GetGridBounds());
 
   // Verify that when dragged to the center, the window grid is has the
   // dimensions of the work area.
@@ -3679,11 +3681,11 @@ TEST_P(SplitViewOverviewSessionTest,
   // Verify that when there is a snapped window, the window grid bounds remain
   // constant despite overview items being dragged left and right.
   overview_session()->Drag(overview_item, left);
-  EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
+  EXPECT_EQ(GetSplitViewRightWindowBounds(), GetGridBounds());
   overview_session()->Drag(overview_item, right);
-  EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
+  EXPECT_EQ(GetSplitViewRightWindowBounds(), GetGridBounds());
   overview_session()->Drag(overview_item, center);
-  EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
+  EXPECT_EQ(GetSplitViewRightWindowBounds(), GetGridBounds());
 }
 
 // Tests dragging a unsnappable window.
@@ -4590,7 +4592,7 @@ TEST_P(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_EQ(GetGridBounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
 
   split_view_controller()->SwapWindows();
   EXPECT_EQ(split_view_controller()->state(),
@@ -4599,7 +4601,7 @@ TEST_P(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
             SplitViewController::RIGHT);
   EXPECT_EQ(GetGridBounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::LEFT));
+                SplitViewController::LEFT));
 }
 
 // Verify the behavior when trying to exit overview with one snapped window
@@ -4844,7 +4846,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_NE(GetGridBounds(), overview_bounds);
-  EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds(window1.get()));
+  EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds());
   window1.reset();
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -4899,7 +4901,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
-  EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds(window1.get()));
+  EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds());
   const gfx::Rect overview_snapped_bounds = GetGridBounds();
 
   // Resize that happens on the right edge of the left snapped window will
@@ -4911,7 +4913,7 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
   EXPECT_NE(GetGridBounds(), overview_snapped_bounds);
-  EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds(window1.get()));
+  EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds());
 
   // Resize that happens on the left edge of the left snapped window will end
   // overview. The same for the resize that happens on the top or bottom edge of

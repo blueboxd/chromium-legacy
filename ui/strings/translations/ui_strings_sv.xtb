@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">Ring från</translation>
 <translation id="335581015389089642">Tal</translation>
 <translation id="3389286852084373014">Texten är för stor</translation>
-<translation id="3443810440409579745">En flik har tagits emot.</translation>
 <translation id="3479552764303398839">Inte nu</translation>
 <translation id="348799646910989694">Hyllan döljs automatiskt</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 dag kvar}other{# dagar kvar}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507"><ph name="UNREAD_NOTIFICATION_COUNT" /> olästa aviseringar i meddelandecentret</translation>
 <translation id="4730374152663651037">OFTA ANVÄNDA</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 månad kvar}other{# månader kvar}}</translation>
-<translation id="4881695831933465202">Öppna</translation>
 <translation id="4888938634149558681">Ring</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekunder}}</translation>
 <translation id="4971687151119236543">Föregående spår</translation>

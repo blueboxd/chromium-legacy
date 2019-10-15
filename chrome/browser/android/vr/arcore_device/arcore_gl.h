@@ -130,6 +130,8 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   // mojom::XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
 
+  void ProcessFrameFromMailbox(int16_t frame_index,
+                               const gpu::MailboxHolder& mailbox);
   void ProcessFrameDrawnIntoTexture(int16_t frame_index,
                                     const gpu::SyncToken& sync_token);
   void OnWebXrTokenSignaled(int16_t frame_index,
@@ -152,6 +154,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   void OnArImageTransportReady(base::OnceCallback<void(bool)> callback);
   bool IsOnGlThread() const;
   void CopyCameraImageToFramebuffer();
+  void OnTransportFrameAvailable(const gfx::Transform& uv_transform);
 
   base::OnceClosure session_shutdown_callback_;
 

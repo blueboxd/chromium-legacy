@@ -33,13 +33,6 @@ bool IsTabletMode() {
          Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
-// Returns the desired spacing between the back and home buttons.
-int GetButtonSpacing() {
-  if (IsTabletMode() && ShelfConfig::Get()->is_in_app())
-    return 0;
-  return ShelfConfig::Get()->button_spacing();
-}
-
 // Returns the bounds for the first button shown in this view (the back
 // button in tablet mode, the home button otherwise).
 gfx::Rect GetFirstButtonBounds() {
@@ -51,9 +44,10 @@ gfx::Rect GetFirstButtonBounds() {
 // always the home button and only in tablet mode, which implies a horizontal
 // shelf).
 gfx::Rect GetSecondButtonBounds() {
-  return gfx::Rect(ShelfConfig::Get()->control_size() + GetButtonSpacing(), 0,
-                   ShelfConfig::Get()->control_size(),
-                   ShelfConfig::Get()->control_size());
+  return gfx::Rect(
+      ShelfConfig::Get()->control_size() + ShelfConfig::Get()->button_spacing(),
+      0, ShelfConfig::Get()->control_size(),
+      ShelfConfig::Get()->control_size());
 }
 
 }  // namespace
@@ -235,7 +229,8 @@ gfx::Size ShelfNavigationWidget::GetIdealSize() const {
   if (!shelf_->IsHorizontalAlignment())
     return gfx::Size(control_size, control_size);
   return gfx::Size(
-      IsTabletMode() ? (2 * control_size + GetButtonSpacing()) : control_size,
+      IsTabletMode() ? (2 * control_size + ShelfConfig::Get()->button_spacing())
+                     : control_size,
       control_size);
 }
 

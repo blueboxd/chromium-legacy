@@ -33,6 +33,8 @@ class ThemeSource : public content::URLDataSource {
   bool ShouldServiceRequest(const GURL& url,
                             content::ResourceContext* resource_context,
                             int render_process_id) override;
+  std::string GetAccessControlAllowOriginForOrigin(
+      const std::string& origin) override;
 
  private:
   // Fetches and sends the theme bitmap.

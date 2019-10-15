@@ -19,9 +19,8 @@ namespace net {
 
 HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
     SSPILibrary* sspi_library,
-    ULONG max_token_length,
     const HttpAuthPreferences* http_auth_preferences)
-    : auth_sspi_(sspi_library, "NTLM", NTLMSP_NAME, max_token_length),
+    : auth_sspi_(sspi_library, "NTLM"),
       http_auth_preferences_(http_auth_preferences) {}
 
 HttpAuthHandlerNTLM::~HttpAuthHandlerNTLM() {
@@ -40,13 +39,8 @@ bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
   return http_auth_preferences_->CanUseDefaultCredentials(origin_);
 }
 
-HttpAuthHandlerNTLM::Factory::Factory()
-    : max_token_length_(0),
-      is_unsupported_(false) {
-}
-
-HttpAuthHandlerNTLM::Factory::~Factory() {
-}
+HttpAuthHandlerNTLM::Factory::Factory() {}
+HttpAuthHandlerNTLM::Factory::~Factory() {}
 
 int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
@@ -58,20 +52,12 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
     const NetLogWithSource& net_log,
     HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
-  if (is_unsupported_ || reason == CREATE_PREEMPTIVE)
+  if (reason == CREATE_PREEMPTIVE)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
-  if (max_token_length_ == 0) {
-    int rv = DetermineMaxTokenLength(sspi_library_.get(), NTLMSP_NAME,
-                                     &max_token_length_);
-    if (rv == ERR_UNSUPPORTED_AUTH_SCHEME)
-      is_unsupported_ = true;
-    if (rv != OK)
-      return rv;
-  }
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
-  std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNTLM(
-      sspi_library_.get(), max_token_length_, http_auth_preferences()));
+  std::unique_ptr<HttpAuthHandler> tmp_handler(
+      new HttpAuthHandlerNTLM(sspi_library_.get(), http_auth_preferences()));
   if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
                                       net_log))
     return ERR_INVALID_RESPONSE;

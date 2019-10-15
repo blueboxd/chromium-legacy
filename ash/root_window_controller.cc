@@ -790,7 +790,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   display::Screen* screen = display::Screen::GetScreen();
   if (screen->GetDisplayNearestWindow(root_window).id() ==
       screen->GetPrimaryDisplay().id()) {
-    split_view_controller_ = std::make_unique<SplitViewController>();
+    split_view_controller_ = std::make_unique<SplitViewController>(root_window);
   }
   Shell* shell = Shell::Get();
   shell->InitRootWindow(root_window);

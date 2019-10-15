@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 
-#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -31,7 +31,7 @@ MediaNotificationListView::~MediaNotificationListView() = default;
 
 void MediaNotificationListView::ShowNotification(
     const std::string& id,
-    std::unique_ptr<MediaNotificationContainerImpl> notification) {
+    std::unique_ptr<MediaNotificationContainerImplView> notification) {
   DCHECK(!base::Contains(notifications_, id));
   DCHECK_NE(nullptr, notification.get());
 

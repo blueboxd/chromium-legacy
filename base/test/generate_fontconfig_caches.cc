@@ -52,7 +52,7 @@ int main() {
 
   // Delete directory before generating fontconfig caches. This will notify
   // future fontconfig_caches changes.
-  CHECK(base::DeleteFile(fontconfig_caches, /*recursive=*/true));
+  CHECK(base::DeleteFileRecursively(fontconfig_caches));
 
   base::SetUpFontconfig();
   FcInit();

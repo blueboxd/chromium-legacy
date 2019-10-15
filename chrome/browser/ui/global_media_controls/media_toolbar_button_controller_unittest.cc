@@ -62,8 +62,9 @@ class MockMediaDialogDelegate : public MediaDialogDelegate {
   // MediaDialogDelegate implementation.
   MOCK_METHOD2(
       ShowMediaSession,
-      void(const std::string& id,
-           base::WeakPtr<media_message_center::MediaNotificationItem> item));
+      MediaNotificationContainerImpl*(
+          const std::string& id,
+          base::WeakPtr<media_message_center::MediaNotificationItem> item));
   MOCK_METHOD1(HideMediaSession, void(const std::string& id));
 
  private:
@@ -165,7 +166,7 @@ class MediaToolbarButtonControllerTest : public testing::Test {
   }
 
   void SimulateDismissButtonClicked(const base::UnguessableToken& id) {
-    controller_->OnDismissButtonClicked(id.ToString());
+    controller_->OnContainerDismissed(id.ToString());
   }
 
   void ExpectHistogramCountRecorded(int count, int size) {

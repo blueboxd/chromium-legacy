@@ -36,7 +36,6 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;

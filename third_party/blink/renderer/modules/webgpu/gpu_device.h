@@ -104,8 +104,7 @@ class GPUDevice final : public EventTargetWithInlineData,
   GPUQueue* getQueue();
 
   void pushErrorScope(const WTF::String& filter);
-  ScriptPromise popErrorScope(ScriptState* script_state,
-                              ExceptionState& exception_state);
+  ScriptPromise popErrorScope(ScriptState* script_state);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(uncapturederror, kUncapturederror)
 

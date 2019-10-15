@@ -16,10 +16,6 @@
 <script>
 
 test(function(t) {
-  assert_true(internals.runtimeFlags.cssAltTextEnabled);
-}, "Make sure that CSS Alt Text is enabled.");
-
-test(function(t) {
   var parentAXNode = accessibilityController.accessibleElementById("controlparent");
   var contentTextNode = parentAXNode.childAtIndex(0);
   var imageNode = parentAXNode.childAtIndex(1);

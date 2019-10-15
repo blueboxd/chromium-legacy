@@ -46,7 +46,7 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
     web_contents_ =
         content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
     permission_context_ =
-        base::MakeRefCounted<ChromeNativeFileSystemPermissionContext>(
+        std::make_unique<ChromeNativeFileSystemPermissionContext>(
             browser_context());
   }
 
@@ -119,7 +119,7 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<ChromeNativeFileSystemPermissionContext> permission_context_;
+  std::unique_ptr<ChromeNativeFileSystemPermissionContext> permission_context_;
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
   TestingProfile profile_;
   std::unique_ptr<WebContents> web_contents_;

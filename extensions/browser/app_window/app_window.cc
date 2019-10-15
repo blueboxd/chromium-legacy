@@ -913,7 +913,7 @@ void AppWindow::NavigationStateChanged(content::WebContents* source,
 void AppWindow::EnterFullscreenModeForTab(
     content::WebContents* source,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::FullScreenOptions& options) {
   ToggleFullscreenModeForTab(source, true);
 }
 

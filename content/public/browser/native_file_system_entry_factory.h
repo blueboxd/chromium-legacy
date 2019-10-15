@@ -16,10 +16,11 @@
 
 namespace content {
 
-// Exposes methods for creating NativeFileSystemEntries.
+// Exposes methods for creating NativeFileSystemEntries. All these methods need
+// to be called on the UI thread.
 class CONTENT_EXPORT NativeFileSystemEntryFactory
     : public base::RefCountedThreadSafe<NativeFileSystemEntryFactory,
-                                        BrowserThread::DeleteOnIOThread> {
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   // Context from which a created handle is going to be used. This is used for
   // security and permission checks. Pass in MSG_ROUTING_NONE as frame_id if
@@ -56,7 +57,7 @@ class CONTENT_EXPORT NativeFileSystemEntryFactory
       const base::FilePath& directory_path) = 0;
 
  protected:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<NativeFileSystemEntryFactory>;
   virtual ~NativeFileSystemEntryFactory() {}
 };

@@ -1345,8 +1345,26 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-font-properties.html [ WontF
 
 # 'writing-mode: sideways-lr' and 'sideways-rl' are not implemented.
 # Note other tests for these properties are skipped in W3CImportExpectations.
-external/wpt/css/css-writing-modes/slr-alongside-vlr-floats.html [ WontFix ]
-external/wpt/css/css-writing-modes/srl-alongside-vrl-floats.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/slr-alongside-vlr-floats.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/srl-alongside-vrl-floats.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-034.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-035.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-038.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-039.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-042.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-043.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-046.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-047.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-048.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-049.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-050.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-051.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-052.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-053.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-054.html [ WontFix ]
+crbug.com/680331 external/wpt/css/css-writing-modes/wm-propagation-body-055.html [ WontFix ]
+crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-lr-writing-mode-and-rtl-direction.html [ WontFix ]
+crbug.com/680331 external/wpt/css/cssom-view/scrollIntoView-sideways-rl-writing-mode-and-rtl-direction.html [ WontFix ]
 
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
@@ -2055,10 +2073,6 @@ external/wpt/web-share/share-image-manual.https.html [ WontFix ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-basic-manual.html [ WontFix ]
 external/wpt/uievents/order-of-events/mouse-events/wheel-scrolling-manual.html [ WontFix ]
 external/wpt/html/webappapis/user-prompts/print-manual.html [ WontFix ]
-
-# WebGPU tests are only run on GPU bots, so they are skipped by default and run
-# separately from other Web Tests.
-external/wpt/webgpu/ [ WontFix ]
 
 # Tests that do not pass with the Blink CORS, but pass with OOR-CORS.
 # We maintain the Blink CORS for a while, and keep it work without regressions.

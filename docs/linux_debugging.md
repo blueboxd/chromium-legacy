@@ -332,10 +332,10 @@ By default the `browser_tests` forks a new browser for each test. To debug the
 browser side of a single test, use a command like
 
 ```
-gdb --args out/Debug/browser_tests --single_process --gtest_filter=MyTestName
+gdb --args out/Debug/browser_tests --single-process-tests --gtest_filter=MyTestName
 ```
 
-**note the underscore in `single_process`** -- this makes the test harness and
+**note the use of `single-process-tests`** -- this makes the test harness and
 browser process share the outermost process.
 
 

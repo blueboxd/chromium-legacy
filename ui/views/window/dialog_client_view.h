@@ -102,7 +102,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   void UpdateDialogButton(LabelButton** member, ui::DialogButton type);
 
   // Returns the spacing between the extra view and the ok/cancel buttons. 0 if
-  // no extra view. Otherwise uses GetExtraViewPadding() or the default padding.
+  // no extra view. Otherwise uses the default padding.
   int GetExtraViewSpacing() const;
 
   // Returns Views in the button row, as they should appear in the layout. If

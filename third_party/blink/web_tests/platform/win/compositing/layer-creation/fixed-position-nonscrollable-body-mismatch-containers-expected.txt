@@ -17,20 +17,20 @@ Even though the fixed-position element's container is nonscrollable, it should s
       "name": "Scrolling Contents Layer",
       "position": [1, 1],
       "bounds": [285, 800],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "Scroll Corner Layer",
       "position": [286, 286],
       "bounds": [15, 15],
-      "transform": 3
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='fixed lime box'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
-      "transform": 4
+      "transform": 2
     }
   ],
   "transforms": [
@@ -45,24 +45,6 @@ Even though the fixed-position element's container is nonscrollable, it should s
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 72, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 72, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

@@ -22,10 +22,7 @@ class StartSurfaceLocationBarDelegate
     // Implements TasksSurface.FakeSearchBoxDelegate.
     @Override
     public void requestUrlFocus(@Nullable String pastedText) {
-        mLocationBar.setUrlBarFocus(true, pastedText,
-                pastedText == null
-                        ? LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_TAP
-                        : LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS);
+        mLocationBar.setUrlBarFocus(true);
     }
 
     // Implements StartSurfaceMediator.Delegate.

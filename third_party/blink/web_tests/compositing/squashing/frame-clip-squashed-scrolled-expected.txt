@@ -5,7 +5,6 @@
       "bounds": [785, 2038],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 300],
       "transform": 1
     }
   ],

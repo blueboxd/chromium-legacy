@@ -34,7 +34,6 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   bool Accept() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;

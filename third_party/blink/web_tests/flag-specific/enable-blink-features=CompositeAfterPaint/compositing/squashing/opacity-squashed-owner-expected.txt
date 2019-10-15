@@ -8,15 +8,26 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='target' class='composited box opaque'",
-      "position": [8, 8],
       "bounds": [100, 100],
-      "backgroundColor": "#ADD8E6"
+      "backgroundColor": "#ADD8E6",
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='squashed'",
       "position": [16, 4],
       "bounds": [40, 90],
       "backgroundColor": "#90EE90"
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }

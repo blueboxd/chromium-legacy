@@ -15,6 +15,7 @@
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,8 +81,6 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
         ContentFaviconDriver::FromWebContents(web_contents());
     web_contents_tester()->NavigateAndCommit(page_url);
     static_cast<content::WebContentsObserver*>(favicon_driver)
-        ->DocumentOnLoadCompletedInMainFrame();
-    static_cast<content::WebContentsObserver*>(favicon_driver)
         ->DidUpdateFaviconURL(candidates);
     base::RunLoop().RunUntilIdle();
   }
@@ -106,7 +105,10 @@ TEST_F(ContentFaviconDriverTest, ShouldCauseImageDownload) {
 TEST_F(ContentFaviconDriverTest, ShouldNotCauseImageDownload) {
   ContentFaviconDriver* favicon_driver =
       ContentFaviconDriver::FromWebContents(web_contents());
-  web_contents_tester()->NavigateAndCommit(kPageURL);
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      kPageURL, web_contents());
+  navigation->SetKeepLoading(true);
+  navigation->Commit();
   static_cast<content::WebContentsObserver*>(favicon_driver)
       ->DidUpdateFaviconURL({content::FaviconURL(
           kIconURL, content::FaviconURL::IconType::kFavicon, kEmptyIconSizes)});

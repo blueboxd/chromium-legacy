@@ -154,11 +154,6 @@ bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
   return false;
 }
 
-ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
-  DialogClientView* client = new DialogClientView(widget, GetContentsView());
-  return client;
-}
-
 NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
     Widget* widget) {
   BubbleFrameView* frame = new BubbleDialogFrameView(title_margins_);

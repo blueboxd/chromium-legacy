@@ -40,17 +40,12 @@ class KeywordHintView : public views::Button {
   // The minimum size is just big enough to show the tab.
   gfx::Size GetMinimumSize() const override;
   const char* GetClassName() const override;
-  void Layout() override;
-  gfx::Size CalculatePreferredSize() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   void OnThemeChanged() override;
 
  private:
   // Creates a label for non-chip text.
   views::Label* CreateLabel(SkColor text_color, SkColor background_color);
-
-  int GetCornerRadius() const;
 
   Profile* profile_ = nullptr;
 

@@ -72,6 +72,7 @@ jumbo_component("clipboard") {
 
   deps = [
     "//base",
+    "//mojo/public/cpp/base",
     "//net",
     "//skia",
     "//ui/events/platform",

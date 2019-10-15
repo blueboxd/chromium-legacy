@@ -5,7 +5,6 @@
       "bounds": [1016, 585],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [216, 0],
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='target'",

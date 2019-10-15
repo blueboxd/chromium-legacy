@@ -23,31 +23,31 @@ Before:
       "name": "LayoutBlockFlow (positioned) DIV class='side side-2'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 8
+      "transform": 7
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-3'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 11
+      "transform": 9
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-4'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 14
+      "transform": 11
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-5'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 17
+      "transform": 13
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-6'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 20
+      "transform": 15
     }
   ],
   "transforms": [
@@ -104,26 +104,13 @@ Before:
     },
     {
       "id": 6,
-      "parent": 2,
-      "transform": [
-        [0.353553390593274, 0.25, -0.5, 0],
-        [0, 0.353553390593274, 0.707106781186548, 0],
-        [0.353553390593274, -0.25, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
       "id": 7,
       "parent": 6,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 8,
-      "parent": 7,
       "transform": [
         [0, 0, -1, 0],
         [0, 1, 0, 0],
@@ -135,27 +122,14 @@ Before:
       "renderingContext": 1
     },
     {
+      "id": 8,
+      "parent": 3,
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
+    },
+    {
       "id": 9,
-      "parent": 2,
-      "transform": [
-        [0.353553390593274, 0.25, -0.5, 0],
-        [0, 0.353553390593274, 0.707106781186548, 0],
-        [0.353553390593274, -0.25, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 10,
-      "parent": 9,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 11,
-      "parent": 10,
+      "parent": 8,
       "transform": [
         [-1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -167,27 +141,14 @@ Before:
       "renderingContext": 1
     },
     {
-      "id": 12,
-      "parent": 2,
-      "transform": [
-        [0.353553390593274, 0.25, -0.5, 0],
-        [0, 0.353553390593274, 0.707106781186548, 0],
-        [0.353553390593274, -0.25, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "id": 10,
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
-      "id": 13,
-      "parent": 12,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 14,
-      "parent": 13,
+      "id": 11,
+      "parent": 10,
       "transform": [
         [0, 0, 1, 0],
         [0, 1, 0, 0],
@@ -199,27 +160,14 @@ Before:
       "renderingContext": 1
     },
     {
-      "id": 15,
-      "parent": 2,
-      "transform": [
-        [0.353553390593274, 0.25, -0.5, 0],
-        [0, 0.353553390593274, 0.707106781186548, 0],
-        [0.353553390593274, -0.25, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "id": 12,
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
-      "id": 16,
-      "parent": 15,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 17,
-      "parent": 16,
+      "id": 13,
+      "parent": 12,
       "transform": [
         [1, 0, 0, 0],
         [0, 0, 1, 0],
@@ -231,27 +179,14 @@ Before:
       "renderingContext": 1
     },
     {
-      "id": 18,
-      "parent": 2,
-      "transform": [
-        [0.353553390593274, 0.25, -0.5, 0],
-        [0, 0.353553390593274, 0.707106781186548, 0],
-        [0.353553390593274, -0.25, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "id": 14,
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
-      "id": 19,
-      "parent": 18,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 20,
-      "parent": 19,
+      "id": 15,
+      "parent": 14,
       "transform": [
         [1, 0, 0, 0],
         [0, 0, -1, 0],
@@ -284,43 +219,43 @@ After:
       "name": "LayoutBlockFlow (positioned) DIV class='side side-2'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 8
+      "transform": 7
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-3'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 11
+      "transform": 9
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-4'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 14
+      "transform": 11
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-5'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 17
+      "transform": 13
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='side side-6'",
       "bounds": [100, 100],
       "backgroundColor": "#00FF00CC",
-      "transform": 20
+      "transform": 15
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='box top left'",
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 21
+      "transform": 16
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top right')",
       "bounds": [300, 300],
-      "transform": 22
+      "transform": 16
     }
   ],
   "transforms": [
@@ -377,26 +312,13 @@ After:
     },
     {
       "id": 6,
-      "parent": 2,
-      "transform": [
-        [0.707106781186548, 0.5, -0.5, 0],
-        [0, 0.707106781186548, 0.707106781186548, 0],
-        [0.707106781186548, -0.5, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
       "id": 7,
       "parent": 6,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 8,
-      "parent": 7,
       "transform": [
         [0, 0, -1, 0],
         [0, 1, 0, 0],
@@ -408,27 +330,14 @@ After:
       "renderingContext": 1
     },
     {
+      "id": 8,
+      "parent": 3,
+      "flattenInheritedTransform": false,
+      "renderingContext": 1
+    },
+    {
       "id": 9,
-      "parent": 2,
-      "transform": [
-        [0.707106781186548, 0.5, -0.5, 0],
-        [0, 0.707106781186548, 0.707106781186548, 0],
-        [0.707106781186548, -0.5, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 10,
-      "parent": 9,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 11,
-      "parent": 10,
+      "parent": 8,
       "transform": [
         [-1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -440,27 +349,14 @@ After:
       "renderingContext": 1
     },
     {
-      "id": 12,
-      "parent": 2,
-      "transform": [
-        [0.707106781186548, 0.5, -0.5, 0],
-        [0, 0.707106781186548, 0.707106781186548, 0],
-        [0.707106781186548, -0.5, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "id": 10,
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
-      "id": 13,
-      "parent": 12,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 14,
-      "parent": 13,
+      "id": 11,
+      "parent": 10,
       "transform": [
         [0, 0, 1, 0],
         [0, 1, 0, 0],
@@ -472,27 +368,14 @@ After:
       "renderingContext": 1
     },
     {
-      "id": 15,
-      "parent": 2,
-      "transform": [
-        [0.707106781186548, 0.5, -0.5, 0],
-        [0, 0.707106781186548, 0.707106781186548, 0],
-        [0.707106781186548, -0.5, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "id": 12,
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
-      "id": 16,
-      "parent": 15,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 17,
-      "parent": 16,
+      "id": 13,
+      "parent": 12,
       "transform": [
         [1, 0, 0, 0],
         [0, 0, 1, 0],
@@ -504,27 +387,14 @@ After:
       "renderingContext": 1
     },
     {
-      "id": 18,
-      "parent": 2,
-      "transform": [
-        [0.707106781186548, 0.5, -0.5, 0],
-        [0, 0.707106781186548, 0.707106781186548, 0],
-        [0.707106781186548, -0.5, 0.5, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [50, 50],
+      "id": 14,
+      "parent": 3,
       "flattenInheritedTransform": false,
       "renderingContext": 1
     },
     {
-      "id": 19,
-      "parent": 18,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 20,
-      "parent": 19,
+      "id": 15,
+      "parent": 14,
       "transform": [
         [1, 0, 0, 0],
         [0, 0, -1, 0],
@@ -536,16 +406,7 @@ After:
       "renderingContext": 1
     },
     {
-      "id": 21,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 22,
+      "id": 16,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">Зателефонувати через</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3389286852084373014">SMS-повідомлення завелике</translation>
-<translation id="3443810440409579745">Вкладку отримано.</translation>
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="348799646910989694">Автоматичне ховання полиці</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Залишився 1 день}one{Залишився # день}few{Залишилося # дні}many{Залишилося # днів}other{Залишилося # дня}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507">Центр сповіщень, непрочитаних сповіщень: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ЧАСТО ВИКОРИСТОВУЮТЬСЯ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Залишився 1 місяць}one{Залишився # місяць}few{Залишилося # місяці}many{Залишилося # місяців}other{Залишилося # місяця}}</translation>
-<translation id="4881695831933465202">Відкрити</translation>
 <translation id="4888938634149558681">Зателефонувати</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунди}many{# секунд}other{# секунди}}</translation>
 <translation id="4971687151119236543">Попередня композиція</translation>

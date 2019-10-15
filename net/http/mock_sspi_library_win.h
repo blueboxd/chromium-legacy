@@ -16,8 +16,12 @@ namespace net {
 // the system SSPI library calls.
 class MockSSPILibrary : public SSPILibrary {
  public:
-  MockSSPILibrary();
+  explicit MockSSPILibrary(const wchar_t* package);
   ~MockSSPILibrary() override;
+
+  // Default max token length regardless of package name returned by
+  // QuerySecurityPackageInfo() if no expectations are set.
+  static constexpr unsigned long kDefaultMaxTokenLength = 1024;
 
   // SSPILibrary methods:
 
@@ -26,7 +30,6 @@ class MockSSPILibrary : public SSPILibrary {
   //
   // On return ptsExpiry is set to a constant.
   SECURITY_STATUS AcquireCredentialsHandle(LPWSTR pszPrincipal,
-                                           LPWSTR pszPackage,
                                            unsigned long fCredentialUse,
                                            void* pvLogonId,
                                            void* pvAuthData,
@@ -74,8 +77,7 @@ class MockSSPILibrary : public SSPILibrary {
                                            PVOID pBuffer,
                                            ULONG cbBuffer) override;
 
-  SECURITY_STATUS QuerySecurityPackageInfo(LPWSTR pszPackageName,
-                                           PSecPkgInfoW* pkgInfo) override;
+  SECURITY_STATUS QuerySecurityPackageInfo(PSecPkgInfoW* pkgInfo) override;
   SECURITY_STATUS FreeCredentialsHandle(PCredHandle phCredential) override;
   SECURITY_STATUS DeleteSecurityContext(PCtxtHandle phContext) override;
   SECURITY_STATUS FreeContextBuffer(PVOID pvContextBuffer) override;
@@ -84,30 +86,7 @@ class MockSSPILibrary : public SSPILibrary {
   //
   // Each expectation established by |ExpectSecurityQueryPackageInfo()| must be
   // matched by a call to |QuerySecurityPackageInfo()| during the lifetime of
-  // the MockSSPILibrary. The |expected_package| argument must equal the
-  // |*pszPackageName| argument to |QuerySecurityPackageInfo()| for there to be
-  // a match. The expectations also establish an explicit ordering.
-  //
-  // For example, this sequence will be successful.
-  //   MockSSPILibrary lib;
-  //   lib.ExpectQuerySecurityPackageInfo(L"NTLM", ...)
-  //   lib.ExpectQuerySecurityPackageInfo(L"Negotiate", ...)
-  //   lib.QuerySecurityPackageInfo(L"NTLM", ...)
-  //   lib.QuerySecurityPackageInfo(L"Negotiate", ...)
-  //
-  // This sequence will fail since the queries do not occur in the order
-  // established by the expectations.
-  //   MockSSPILibrary lib;
-  //   lib.ExpectQuerySecurityPackageInfo(L"NTLM", ...)
-  //   lib.ExpectQuerySecurityPackageInfo(L"Negotiate", ...)
-  //   lib.QuerySecurityPackageInfo(L"Negotiate", ...)
-  //   lib.QuerySecurityPackageInfo(L"NTLM", ...)
-  //
-  // This sequence will fail because there were not enough queries.
-  //   MockSSPILibrary lib;
-  //   lib.ExpectQuerySecurityPackageInfo(L"NTLM", ...)
-  //   lib.ExpectQuerySecurityPackageInfo(L"Negotiate", ...)
-  //   lib.QuerySecurityPackageInfo(L"NTLM", ...)
+  // the MockSSPILibrary. The expectations establish an explicit ordering.
   //
   // |response_code| is used as the return value for
   // |QuerySecurityPackageInfo()|. If |response_code| is SEC_E_OK,
@@ -117,13 +96,11 @@ class MockSSPILibrary : public SSPILibrary {
   // |package_info| is assigned to |*pkgInfo| in |QuerySecurityPackageInfo|.
   // The lifetime of |*package_info| should last at least until the matching
   // |QuerySecurityPackageInfo()| is called.
-  void ExpectQuerySecurityPackageInfo(const std::wstring& expected_package,
-                                      SECURITY_STATUS response_code,
+  void ExpectQuerySecurityPackageInfo(SECURITY_STATUS response_code,
                                       PSecPkgInfoW package_info);
 
  private:
   struct PackageQuery {
-    std::wstring expected_package;
     SECURITY_STATUS response_code;
     PSecPkgInfoW package_info;
   };

@@ -43,7 +43,6 @@ class RemoveQueryConfirmationDialog
   bool ShouldShowCloseButton() const override;
 
   // views::DialogDelegate:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 

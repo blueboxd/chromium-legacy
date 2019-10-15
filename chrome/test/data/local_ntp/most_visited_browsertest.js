@@ -25,7 +25,7 @@ test.mostVisited.MOST_VISITED = 'most-visited';
 test.mostVisited.CLASSES = {
   GRID_TILE: 'grid-tile',
   GRID_TILE_CONTAINER: 'grid-tile-container',
-  GRID_REORDER: 'grid-reorder',
+  REORDER: 'reorder',
   REORDERING: 'reordering',
 };
 
@@ -79,7 +79,6 @@ test.mostVisited.setUp = function() {
       });
 
   test.mostVisited.mostvisited = test.mostVisited.init();
-  test.mostVisited.mostvisited.enableGridLayoutForTesting();
   test.mostVisited.grid = new test.mostVisited.mostvisited.Grid();
 };
 
@@ -375,21 +374,21 @@ test.mostVisited.testReorderStart = function() {
     assertEquals(i, Number(tile.getAttribute('rid')));
     assertTrue(tile.firstChild.draggable);
 
-    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
     assertFalse(
         document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
     // Start the reorder flow.
     tile.firstChild.dispatchEvent(dragStart);
 
-    assertTrue(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+    assertTrue(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
     assertTrue(
         document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
     // Stop the reorder flow.
     document.dispatchEvent(dragEnd);
 
-    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+    assertFalse(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
     assertFalse(
         document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
   }
@@ -400,8 +399,7 @@ test.mostVisited.testReorderStart = function() {
   assertFalse(addButton.firstChild.draggable);
   addButton.firstChild.dispatchEvent(dragStart);
 
-  assertFalse(
-      addButton.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+  assertFalse(addButton.classList.contains(test.mostVisited.CLASSES.REORDER));
   assertFalse(
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 };
@@ -436,7 +434,7 @@ test.mostVisited.testReorderStartTouch = function() {
   assertEquals('false', tile.getAttribute('add'));
   assertEquals(0, Number(tile.getAttribute('rid')));
 
-  assertFalse(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+  assertFalse(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
   assertFalse(
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
@@ -444,14 +442,14 @@ test.mostVisited.testReorderStartTouch = function() {
   tile.firstChild.dispatchEvent(touchStart);
   tile.firstChild.dispatchEvent(touchMove);
 
-  assertTrue(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+  assertTrue(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
   assertTrue(
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
   // Stop the reorder flow.
   tile.firstChild.dispatchEvent(touchEnd);
 
-  assertFalse(tile.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+  assertFalse(tile.classList.contains(test.mostVisited.CLASSES.REORDER));
   assertFalse(
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 
@@ -461,8 +459,7 @@ test.mostVisited.testReorderStartTouch = function() {
   addButton.firstChild.dispatchEvent(touchStart);
   addButton.firstChild.dispatchEvent(touchMove);
 
-  assertFalse(
-      addButton.classList.contains(test.mostVisited.CLASSES.GRID_REORDER));
+  assertFalse(addButton.classList.contains(test.mostVisited.CLASSES.REORDER));
   assertFalse(
       document.body.classList.contains(test.mostVisited.CLASSES.REORDERING));
 };

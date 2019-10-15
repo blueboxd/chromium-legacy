@@ -143,10 +143,6 @@ std::unique_ptr<View> DialogDelegate::CreateExtraView() {
   return nullptr;
 }
 
-bool DialogDelegate::GetExtraViewPadding(int* padding) {
-  return false;
-}
-
 std::unique_ptr<View> DialogDelegate::CreateFootnoteView() {
   return nullptr;
 }

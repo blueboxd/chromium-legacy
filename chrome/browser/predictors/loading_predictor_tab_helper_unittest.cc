@@ -98,6 +98,10 @@ void LoadingPredictorTabHelperTest::NavigateAndCommitInFrame(
     content::RenderFrameHost* rfh) {
   auto navigation =
       content::NavigationSimulator::CreateRendererInitiated(GURL(url), rfh);
+  // These tests simulate loading events manually.
+  // TODO(ahemery): Consider refactoring to rely on load events dispatched by
+  // NavigationSimulator.
+  navigation->SetKeepLoading(true);
   navigation->Start();
   navigation->Commit();
 }
@@ -114,6 +118,11 @@ TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigation) {
 TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationWithRedirects) {
   auto navigation = content::NavigationSimulator::CreateRendererInitiated(
       GURL("http://test.org"), main_rfh());
+  // The problem here is that mock_collector_ is a strict mock, which expects
+  // a particular set of loading events and fails when extra is present.
+  // TOOO(ahemery): Consider refactoring this to rely on loading events
+  // in NavigationSimulator.
+  navigation->SetKeepLoading(true);
   auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
   EXPECT_CALL(*mock_collector_, RecordStartNavigation(navigation_id));
   navigation->Start();
@@ -143,6 +152,11 @@ TEST_F(LoadingPredictorTabHelperTest, SubframeNavigation) {
 TEST_F(LoadingPredictorTabHelperTest, MainFrameNavigationFailed) {
   auto navigation = content::NavigationSimulator::CreateRendererInitiated(
       GURL("http://test.org"), main_rfh());
+  navigation->SetKeepLoading(true);
+  // The problem here is that mock_collector_ is a strict mock, which expects
+  // a particular set of loading events and fails when extra is present.
+  // TOOO(ahemery): Consider refactoring this to rely on loading events
+  // in NavigationSimulator.
   auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
   EXPECT_CALL(*mock_collector_, RecordStartNavigation(navigation_id));
   EXPECT_CALL(*mock_collector_,

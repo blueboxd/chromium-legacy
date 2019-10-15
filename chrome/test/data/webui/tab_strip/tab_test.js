@@ -59,7 +59,8 @@ suite('Tab', function() {
   });
 
   test(
-      'toggles a [hide-icon] attribute when the icon container should be shown',
+      'toggles a [hide-icon_] attribute when the icon container should be ' +
+          'shown',
       () => {
         tabElement.tab = Object.assign({}, tab, {showIcon: true});
         assertFalse(tabElement.hasAttribute('hide-icon_'));
@@ -67,14 +68,14 @@ suite('Tab', function() {
         assertTrue(tabElement.hasAttribute('hide-icon_'));
       });
 
-  test('toggles a [pinned] attribute when pinned', () => {
+  test('toggles a [pinned_] attribute when pinned', () => {
     tabElement.tab = Object.assign({}, tab, {pinned: true});
     assertTrue(tabElement.hasAttribute('pinned_'));
     tabElement.tab = Object.assign({}, tab, {pinned: false});
     assertFalse(tabElement.hasAttribute('pinned_'));
   });
 
-  test('toggles a [loading] attribute when loading', () => {
+  test('toggles a [loading_] attribute when loading', () => {
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.LOADING});
     assertTrue(tabElement.hasAttribute('loading_'));
@@ -83,13 +84,20 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('loading_'));
   });
 
-  test('toggles a [waiting] attribute when waiting', () => {
+  test('toggles a [waiting_] attribute when waiting', () => {
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.WAITING});
     assertTrue(tabElement.hasAttribute('waiting_'));
     tabElement.tab =
         Object.assign({}, tab, {networkState: TabNetworkState.NONE});
     assertFalse(tabElement.hasAttribute('waiting_'));
+  });
+
+  test('toggles a [blocked_] attribute when blocked', () => {
+    tabElement.tab = Object.assign({}, tab, {blocked: true});
+    assertTrue(tabElement.hasAttribute('blocked_'));
+    tabElement.tab = Object.assign({}, tab, {blocked: false});
+    assertFalse(tabElement.hasAttribute('blocked_'));
   });
 
   test('toggles a [crashed] attribute when crashed', () => {

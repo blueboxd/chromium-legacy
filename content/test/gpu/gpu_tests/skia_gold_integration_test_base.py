@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 from datetime import date
 import json
 import logging
@@ -40,6 +41,23 @@ else:
 SKIA_GOLD_INSTANCE = 'chrome-gpu'
 
 
+@contextlib.contextmanager
+def RunInChromiumSrc():
+  old_cwd = os.getcwd()
+  os.chdir(path_util.GetChromiumSrcDir())
+  try:
+    yield
+  finally:
+    os.chdir(old_cwd)
+
+
+# This is mainly used to determine if we need to run a subprocess through the
+# shell - on Windows, finding executables via PATH doesn't work properly unless
+# run through the shell.
+def IsWin():
+  return sys.platform == 'win32'
+
+
 class _ImageParameters(object):
   def __init__(self):
     # Parameters for cloud storage reference images.
@@ -67,6 +85,9 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   _image_parameters = None
 
   _skia_gold_temp_dir = None
+
+  _local_run = None
+  _build_revision = None
 
   @classmethod
   def SetParsedCommandLineOptions(cls, options):
@@ -115,7 +136,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     parser.add_option(
       '--build-revision',
       help='Chrome revision being tested.',
-      default="unknownrev")
+      default=None)
     parser.add_option(
       '--test-machine-name',
       help='Name of the test machine. Specifying this argument causes this '
@@ -148,12 +169,13 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
            'if the Skia Gold image comparison reported a failure, but '
            'otherwise perform the same steps as usual.')
     parser.add_option(
-      '--local-run',
-      action='store_true', default=False,
-      help='Runs the tests in a manner more suitable for local testing. '
-           'Specifically, runs goldctl in extra_imgtest_args mode (no upload) '
-           'and outputs local links to generated images. Implies '
-           '--no-luci-auth.')
+      '--local-run', default=None, type=int,
+      help='Specifies to run the test harness in local run mode or not. When '
+           'run in local mode, uploading to Gold is disabled and links to '
+           'help with local debugging are output. Running in local mode also '
+           'implies --no-luci-auth. If left unset, the test harness will '
+           'attempt to detect whether it is running on a workstation or not '
+           'and set this option accordingly.')
     parser.add_option(
       '--no-luci-auth',
       action='store_true', default=False,
@@ -225,8 +247,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                           cls.GetParsedCommandLineOptions().test_machine_name)
     base_bucket = '%s/gold_failures' % (cls._error_image_cloud_storage_bucket)
     image_name_with_revision_and_machine = '%s_%s_%s.png' % (
-      image_name, machine_name,
-      cls.GetParsedCommandLineOptions().build_revision)
+      image_name, machine_name, cls._GetBuildRevision())
     cls._UploadBitmapToCloudStorage(
       base_bucket, image_name_with_revision_and_machine, screenshot,
       public=True)
@@ -317,7 +338,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     parsed_options = self.GetParsedCommandLineOptions()
     build_id_args = [
       '--commit',
-      parsed_options.build_revision,
+      self._GetBuildRevision(),
     ]
     # If --review-patch-issue is passed, then we assume we're running on a
     # trybot.
@@ -381,7 +402,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     extra_imgtest_args = []
     extra_auth_args = []
     parsed_options = self.GetParsedCommandLineOptions()
-    if parsed_options.local_run:
+    if self._IsLocalRun():
       extra_imgtest_args.append('--dryrun')
     elif not parsed_options.no_luci_auth:
       extra_auth_args = ['--luci']
@@ -489,6 +510,52 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       except Exception as e:
         logging.error(str(e))
       raise
+
+  @classmethod
+  def _IsLocalRun(cls):
+    """Returns whether the test is running on a local workstation or not."""
+    # Do nothing if we've already determine whether we're in local mode or not.
+    if cls._local_run is not None:
+      pass
+    # Use the --local-run value if it's been set.
+    elif cls.GetParsedCommandLineOptions().local_run is not None:
+      cls._local_run = cls.GetParsedCommandLineOptions().local_run
+    # Look for the presence of a git repo as a heuristic to determine whether
+    # we're running on a workstation or a bot.
+    else:
+      with RunInChromiumSrc():
+        try:
+          subprocess.check_call(['git', 'status'], shell=IsWin())
+          logging.warning(
+              'Automatically determined that test is running on a workstation')
+          cls._local_run = True
+        except subprocess.CalledProcessError:
+          logging.warning(
+              'Automatically determined that test is running on a bot')
+          cls._local_run = False
+    return cls._local_run
+
+  @classmethod
+  def _GetBuildRevision(cls):
+    """Returns the current git master revision being tested."""
+    # Do nothing if we've already determined the build revision.
+    if cls._build_revision is not None:
+      pass
+    # use the --build-revision value if it's been set.
+    elif cls.GetParsedCommandLineOptions().build_revision:
+      cls._build_revision = cls.GetParsedCommandLineOptions().build_revision
+    # Try to determine what revision we're on using git.
+    else:
+      with RunInChromiumSrc():
+        try:
+          cls._build_revision = subprocess.check_output(
+              ['git', 'rev-parse', 'origin/master'], shell=IsWin()).strip()
+          logging.warning('Automatically determined build revision to be %s',
+              cls._build_revision)
+        except subprocess.CalledProcessError:
+          raise Exception('--build-revision not passed, and unable to '
+                          'determine revision using git')
+    return cls._build_revision
 
   @classmethod
   def GenerateGpuTests(cls, options):

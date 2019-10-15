@@ -86,12 +86,12 @@ gfx::Rect GetBoundsInTabletMode(WindowState* state_object) {
 
   if (state_object->GetStateType() == WindowStateType::kLeftSnapped) {
     return SplitViewController::Get()->GetSnappedWindowBoundsInParent(
-        state_object->window(), SplitViewController::LEFT);
+        SplitViewController::LEFT);
   }
 
   if (state_object->GetStateType() == WindowStateType::kRightSnapped) {
     return SplitViewController::Get()->GetSnappedWindowBoundsInParent(
-        state_object->window(), SplitViewController::RIGHT);
+        SplitViewController::RIGHT);
   }
 
   gfx::Rect bounds_in_parent;

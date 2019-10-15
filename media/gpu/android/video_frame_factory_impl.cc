@@ -324,6 +324,26 @@ void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
   frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER,
                                 !!codec_buffer_wait_coordinator);
 
+  // TODO(liberato): if this is run via being dropped, then it would be nice
+  // to find that out rather than treating the image as unused.  If the renderer
+  // is torn down, then this will be dropped rather than run.  While |provider_|
+  // allows this, it doesn't have enough information to understand if the image
+  // is free or not.  The problem only really affects the pool, since the
+  // direct provider destroys the SharedImage which works in either case.  Any
+  // use of the image (e.g., if viz is still using it after the renderer has
+  // been torn down unexpectedly), will just not draw anything.  That's fine.
+  //
+  // However, the pool will try to re-use the image, so the SharedImage remains
+  // valid.  However, it's not a good idea to draw with it until the CodecImage
+  // is re-initialized with a new frame.  If the renderer is torn down without
+  // getting returns from viz, then the pool does the wrong thing.  However,
+  // the pool really doesn't know anything about VideoFrames, and dropping the
+  // callback does, in fact, signal that it's unused now (as described in the
+  // api).  So, we probably should wrap the release cb in a default invoke, and
+  // if the default invoke happens, do something.  Unclear what, though.  Can't
+  // move it into the CodecImage (might hold a ref to the CodecImage in the cb),
+  // so it's unclear.  As it is, CodecImage just handles the case where it's
+  // used after release.
   frame->SetReleaseMailboxCB(std::move(record.release_cb));
 
   // Note that we don't want to handle the CodecImageGroup here.  It needs to be

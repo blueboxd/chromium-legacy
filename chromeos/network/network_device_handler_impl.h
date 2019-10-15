@@ -139,16 +139,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   void Init(NetworkStateHandler* network_state_handler);
 
-  // Apply the current value of |cellular_allow_roaming_| to all existing
+  // Applies the current value of |cellular_allow_roaming_| to all existing
   // cellular devices of Shill.
   void ApplyCellularAllowRoamingToShill();
 
-  // Apply the current value of |mac_addr_randomization_enabled_| to wifi
+  // Applies the current value of |mac_addr_randomization_enabled_| to wifi
   // devices.
   void ApplyMACAddressRandomizationToShill();
 
-  // Apply the current value of |usb_ethernet_mac_address_source_| to primary
-  // enabled USB Ethernet device.
+  // Applies the current value of |usb_ethernet_mac_address_source_| to primary
+  // enabled USB Ethernet device. Does nothing if MAC address source is not
+  // specified yet.
   void ApplyUsbEthernetMacAddressSourceToShill();
 
   void OnSetUsbEthernetMacAddressSourceError(

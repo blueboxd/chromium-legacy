@@ -9,6 +9,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "base/command_line.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/test/data/webui/signin_browsertest.h"');
+GEN('#include "services/network/public/cpp/features.h"');
 
 /**
  * Test fixture for
@@ -24,19 +25,12 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
 
   /** @override */
   get browsePreload() {
-    return 'chrome://sync-confirmation/sync_confirmation_app.html';
+    return 'chrome://sync-confirmation/test_loader.html?module=signin/sync_confirmation_test.js';
   }
 
   /** @override */
-  get extraLibraries() {
-    return [
-      ...super.extraLibraries,
-      '//chrome/test/data/webui/test_browser_proxy.js',
-      '//chrome/browser/resources/signin/sync_confirmation/' +
-          'sync_confirmation_browser_proxy.js',
-      'test_sync_confirmation_browser_proxy.js',
-      'sync_confirmation_test.js',
-    ];
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 

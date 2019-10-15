@@ -30,15 +30,38 @@ import cPickle
 
 from blinkpy.web_tests.models import test_failures
 
+from blinkpy.common import path_finder
+
+path_finder.add_typ_dir_to_sys_path()
+
+from typ.artifacts import Artifacts
+
+def build_test_result(
+    driver_output, test_name, retry_attempt=0,
+        failures=None, test_run_time=None, reftest_type=None,
+        pid=None, references=None, device_failed=False, crash_site=None):
+    failures = failures or []
+    if not failures and driver_output.error:
+        failures.append(test_failures.PassWithStderr(driver_output))
+    return TestResult(
+        test_name, retry_attempt=retry_attempt,
+        failures=failures, test_run_time=test_run_time,
+        reftest_type=reftest_type, pid=pid, references=references,
+        device_failed=device_failed, crash_site=crash_site)
+
 
 class TestResult(object):
     """Data object containing the results of a single test."""
+    repeat_tests = True
+    results_directory = ''
+    filesystem = None
 
     @staticmethod
     def loads(string):
         return cPickle.loads(string)
 
-    def __init__(self, test_name, failures=None, test_run_time=None, reftest_type=None,
+    def __init__(self, test_name, retry_attempt=0,  failures=None,
+                 test_run_time=None, reftest_type=None,
                  pid=None, references=None, device_failed=False, crash_site=None):
         self.test_name = test_name
         self.failures = failures or []
@@ -51,7 +74,7 @@ class TestResult(object):
         self.has_repaint_overlay = any(
             failure.has_repaint_overlay for failure in self.failures)
         self.crash_site = crash_site
-
+        self.retry_attempt = retry_attempt
         # FIXME: Setting this in the constructor makes this class hard to mutate.
         self.type = test_failures.determine_result_type(failures)
 
@@ -60,11 +83,20 @@ class TestResult(object):
         self.shard_name = ''
         self.total_run_time = 0  # The time taken to run the test plus any references, compute diffs, etc.
         self.test_number = None
+        self.artifacts = Artifacts(
+            self.results_directory, self.filesystem, retry_attempt,
+            repeat_tests=self.repeat_tests)
+
+    def create_artifacts(self):
+        for failure in self.failures:
+            failure.create_artifacts(self.artifacts)
 
     def __eq__(self, other):
         return (self.test_name == other.test_name and
                 self.failures == other.failures and
-                self.test_run_time == other.test_run_time)
+                self.test_run_time == other.test_run_time and
+                self.retry_attempt == other.retry_attempt and
+                self.results_directory == other.results_directory)
 
     def __ne__(self, other):
         return not (self == other)

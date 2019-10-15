@@ -5,11 +5,16 @@
 cr.define('print_preview', function() {
   'use strict';
 
-  /** @enum {number} */
+  /**
+   * Must be kept in sync with the C++ ScalingType enum in
+   * printing/print_job_constants.h.
+   * @enum {number}
+   */
   const ScalingType = {
     DEFAULT: 0,
     FIT_TO_PAGE: 1,
-    CUSTOM: 2,
+    FIT_TO_PAPER: 2,
+    CUSTOM: 3,
   };
 
   // Export

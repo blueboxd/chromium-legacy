@@ -56,7 +56,8 @@ class TransportConnectJobTest : public WithTaskEnvironment,
 
   static scoped_refptr<TransportSocketParams> DefaultParams() {
     return base::MakeRefCounted<TransportSocketParams>(
-        HostPortPair(kHostName, 80), OnHostResolutionCallback());
+        HostPortPair(kHostName, 80), false /* disable_secure_dns */,
+        OnHostResolutionCallback());
   }
 
  protected:
@@ -252,6 +253,26 @@ TEST_F(TransportConnectJobTest, ConnectionSuccess) {
       test_delegate.StartJobExpectingResult(
           &transport_connect_job, OK,
           host_resolution_synchronous && connection_synchronous);
+    }
+  }
+}
+
+TEST_F(TransportConnectJobTest, DisableSecureDns) {
+  for (bool disable_secure_dns : {false, true}) {
+    TestConnectJobDelegate test_delegate;
+    TransportConnectJob transport_connect_job(
+        DEFAULT_PRIORITY, SocketTag(), &common_connect_job_params_,
+        base::MakeRefCounted<TransportSocketParams>(HostPortPair(kHostName, 80),
+                                                    disable_secure_dns,
+                                                    OnHostResolutionCallback()),
+        &test_delegate, nullptr /* net_log */);
+    test_delegate.StartJobExpectingResult(&transport_connect_job, OK,
+                                          false /* expect_sync_result */);
+    EXPECT_EQ(disable_secure_dns,
+              host_resolver_.last_secure_dns_mode_override().has_value());
+    if (disable_secure_dns) {
+      EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
+                host_resolver_.last_secure_dns_mode_override().value());
     }
   }
 }

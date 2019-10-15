@@ -47,8 +47,6 @@
 <translation id="2094919256425865063">Να τερματιστεί η λειτουργία του Chrome ούτως ή άλλως;</translation>
 <translation id="2120620239521071941">Με αυτήν την ενέργεια θα διαγραφούν <ph name="ITEMS_COUNT" /> στοιχεία από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Συμβάλετε στη βελτίωση του Chrome, αναφέροντας τις <ph name="BEGIN_LINK" />τρέχουσες ρυθμίσεις<ph name="END_LINK" /></translation>
-<translation id="2128103434102193461">Για λεπτομέρειες σχετικά με το Chrome OS, ανατρέξτε στην ενότητα <ph name="LINK_BEGIN" />
-      Σχετικά με το Chrome OS<ph name="LINK_END" /></translation>
 <translation id="2151406531797534936">Επανεκκινήστε το Chrome τώρα</translation>
 <translation id="2246246234298806438">Το Google Chrome δεν είναι δυνατό να εμφανίσει την προεπισκόπηση εκτύπωσης όταν λείπει το ενσωματωμένο πρόγραμμα προβολής PDF.</translation>
 <translation id="2290014774651636340">Λείπουν κλειδιά του Google API. Ορισμένες λειτουργίες του Google Chrome θα απενεργοποιηθούν.</translation>
@@ -198,6 +196,7 @@
 <translation id="7486227612705979895">Το Chrome θα αποκτήσει πρόσβαση στο Drive, για να κάνει προτάσεις στη γραμμή διευθύνσεων</translation>
 <translation id="7531671357096394523">Κλείστε όλα τα αντίγραφα του Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
+<translation id="7573289029918943991">Για να διαπιστώσετε εάν η συσκευή σας είναι ενημερωμένη, μεταβείτε στις <ph name="LINK_BEGIN" />Ρυθμίσεις του Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Αυτός ο υπολογιστής δεν θα λαμβάνει πλέον ενημερώσεις του Google Chrome επειδή το Mac OS X 10.9 δεν υποστηρίζεται πλέον.</translation>
 <translation id="7592736734348559088">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας επειδή τα στοιχεία σύνδεσης στο λογαριασμό σας δεν έχουν ενημερωθεί.</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>

@@ -63,12 +63,27 @@ BASE_EXPORT int64_t ComputeDirectorySize(const FilePath& root_path);
 // Returns true if successful, false otherwise. It is considered successful
 // to attempt to delete a file that does not exist.
 //
-// In posix environment and if |path| is a symbolic link, this deletes only
+// In POSIX environment and if |path| is a symbolic link, this deletes only
 // the symlink. (even if the symlink points to a non-existent file)
 //
 // WARNING: USING THIS WITH recursive==true IS EQUIVALENT
 //          TO "rm -rf", SO USE WITH CAUTION.
+//
+// Note: The |recursive| parameter is in the process of being removed. Use
+// DeleteFileRecursively() instead. See https://crbug.com/1009837
 BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
+
+// Deletes the given path, whether it's a file or a directory.
+// If it's a directory, it's perfectly happy to delete all of the
+// directory's contents, including subdirectories and their contents.
+// Returns true if successful, false otherwise. It is considered successful
+// to attempt to delete a file that does not exist.
+//
+// In POSIX environment and if |path| is a symbolic link, this deletes only
+// the symlink. (even if the symlink points to a non-existent file)
+//
+// WARNING: USING THIS EQUIVALENT TO "rm -rf", SO USE WITH CAUTION.
+BASE_EXPORT bool DeleteFileRecursively(const FilePath& path);
 
 #if defined(OS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until

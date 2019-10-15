@@ -5,7 +5,6 @@
       "bounds": [1566, 1781],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [766, 1181],
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative red'",

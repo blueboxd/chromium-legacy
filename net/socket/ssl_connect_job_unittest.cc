@@ -83,9 +83,11 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
         session_(CreateNetworkSession()),
         direct_transport_socket_params_(
             new TransportSocketParams(HostPortPair("host", 443),
+                                      false /* disable_secure_dns */,
                                       OnHostResolutionCallback())),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
+                                      false /* disable_secure_dns */,
                                       OnHostResolutionCallback())),
         socks_socket_params_(
             new SOCKSSocketParams(proxy_transport_socket_params_,
@@ -405,6 +407,30 @@ TEST_F(SSLConnectJobTest, RequestPriority) {
       ssl_connect_job->ChangePriority(
           static_cast<RequestPriority>(initial_priority));
       EXPECT_EQ(initial_priority, host_resolver_.request_priority(request_id));
+    }
+  }
+}
+
+TEST_F(SSLConnectJobTest, DisableSecureDns) {
+  for (bool disable_secure_dns : {false, true}) {
+    TestConnectJobDelegate test_delegate;
+    direct_transport_socket_params_ =
+        base::MakeRefCounted<TransportSocketParams>(HostPortPair("host", 443),
+                                                    disable_secure_dns,
+                                                    OnHostResolutionCallback());
+    auto common_connect_job_params = session_->CreateCommonConnectJobParams();
+    std::unique_ptr<ConnectJob> ssl_connect_job =
+        std::make_unique<SSLConnectJob>(DEFAULT_PRIORITY, SocketTag(),
+                                        &common_connect_job_params,
+                                        SSLParams(ProxyServer::SCHEME_DIRECT),
+                                        &test_delegate, nullptr /* net_log */);
+
+    EXPECT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+    EXPECT_EQ(disable_secure_dns,
+              host_resolver_.last_secure_dns_mode_override().has_value());
+    if (disable_secure_dns) {
+      EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
+                host_resolver_.last_secure_dns_mode_override().value());
     }
   }
 }

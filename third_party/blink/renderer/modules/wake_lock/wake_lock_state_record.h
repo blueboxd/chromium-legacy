@@ -16,6 +16,7 @@ namespace blink {
 
 class ExecutionContext;
 class ScriptPromiseResolver;
+class WakeLockSentinel;
 
 // https://w3c.github.io/wake-lock/#concepts-and-state-record
 // Per-document and per-wake lock type internal data.
@@ -25,36 +26,31 @@ class MODULES_EXPORT WakeLockStateRecord final
   WakeLockStateRecord(ExecutionContext*, WakeLockType);
 
   void AcquireWakeLock(ScriptPromiseResolver*);
-  void ReleaseWakeLock(ScriptPromiseResolver*);
   void ClearWakeLocks();
+
+  void UnregisterSentinel(WakeLockSentinel*);
 
   void Trace(blink::Visitor* visitor);
 
  private:
-  using ActiveLocksType = HeapHashSet<Member<ScriptPromiseResolver>>;
-
-  friend class WakeLockControllerTest;
-
   // Handle connection errors from |wake_lock_|.
   void OnWakeLockConnectionError();
 
-  // A list of Promises representing active wake locks associated with the
-  // responsible document.
-  ActiveLocksType active_locks_;
+  // A set with all WakeLockSentinel instances belonging to this
+  // Navigator/WorkerNavigator.
+  HeapHashSet<Member<WakeLockSentinel>> wake_lock_sentinels_;
 
   // An actual platform WakeLock. If bound, it means there is an active wake
   // lock for a given type.
   mojo::Remote<device::mojom::blink::WakeLock> wake_lock_;
-  device::mojom::blink::WakeLockType wake_lock_type_;
+  WakeLockType wake_lock_type_;
 
   // ExecutionContext from which we will connect to |wake_lock_service_|.
   Member<ExecutionContext> execution_context_;
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, AcquireWakeLock);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseAllWakeLocks);
-  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseNonExistentWakeLock);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseOneWakeLock);
-  FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseRejectsPromise);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ClearWakeLocks);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, WakeLockConnectionError);
 };

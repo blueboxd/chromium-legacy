@@ -64,6 +64,7 @@ SOCKSClientSocket::SOCKSClientSocket(
     const HostPortPair& destination,
     RequestPriority priority,
     HostResolver* host_resolver,
+    bool disable_secure_dns,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : transport_socket_(std::move(transport_socket)),
       next_state_(STATE_NONE),
@@ -72,6 +73,7 @@ SOCKSClientSocket::SOCKSClientSocket(
       bytes_received_(0),
       was_ever_used_(false),
       host_resolver_(host_resolver),
+      disable_secure_dns_(disable_secure_dns),
       destination_(destination),
       priority_(priority),
       net_log_(transport_socket_->NetLog()),
@@ -305,6 +307,8 @@ int SOCKSClientSocket::DoResolveHost() {
   HostResolver::ResolveHostParameters parameters;
   parameters.dns_query_type = DnsQueryType::A;
   parameters.initial_priority = priority_;
+  if (disable_secure_dns_)
+    parameters.secure_dns_mode_override = DnsConfig::SecureDnsMode::OFF;
   resolve_host_request_ =
       host_resolver_->CreateRequest(destination_, net_log_, parameters);
 

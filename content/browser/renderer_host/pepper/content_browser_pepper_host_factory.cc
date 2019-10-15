@@ -252,7 +252,7 @@ std::unique_ptr<ppapi::host::ResourceHost>
 ContentBrowserPepperHostFactory::CreateAcceptedTCPSocket(
     PP_Instance instance,
     ppapi::TCPSocketVersion version,
-    network::mojom::TCPConnectedSocketPtrInfo connected_socket,
+    mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
     mojo::PendingReceiver<network::mojom::SocketObserver>
         socket_observer_receiver,
     mojo::ScopedDataPipeConsumerHandle receive_stream,

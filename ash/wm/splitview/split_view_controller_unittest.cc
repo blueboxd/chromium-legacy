@@ -294,7 +294,7 @@ TEST_P(SplitViewControllerTest, Basic) {
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
   EXPECT_EQ(window1->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::LEFT));
+                SplitViewController::LEFT));
 
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
@@ -305,7 +305,7 @@ TEST_P(SplitViewControllerTest, Basic) {
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window2.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
 
   EndSplitView();
   EXPECT_EQ(split_view_controller()->state(),
@@ -1552,7 +1552,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   gfx::Rect snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
-          window1.get(), SplitViewController::LEFT);
+          SplitViewController::LEFT);
   // The snapped window bounds can't be pushed outside of the display area.
   EXPECT_EQ(snapped_window_bounds.x(), display_bounds.x());
   EXPECT_EQ(snapped_window_bounds.width(),
@@ -1589,7 +1589,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
-          window1.get(), SplitViewController::LEFT);
+          SplitViewController::LEFT);
   EXPECT_EQ(snapped_window_bounds.y(), display_bounds.y());
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());
@@ -1621,7 +1621,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
-          window1.get(), SplitViewController::RIGHT);
+          SplitViewController::RIGHT);
   EXPECT_EQ(snapped_window_bounds.x(), display_bounds.x());
   EXPECT_EQ(snapped_window_bounds.width(),
             window1->delegate()->GetMinimumSize().width());
@@ -1653,7 +1653,7 @@ TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
   snapped_window_bounds =
       split_view_controller()->GetSnappedWindowBoundsInScreen(
-          window1.get(), SplitViewController::RIGHT);
+          SplitViewController::RIGHT);
   EXPECT_EQ(snapped_window_bounds.y(), display_bounds.y());
   EXPECT_EQ(snapped_window_bounds.height(),
             window1->delegate()->GetMinimumSize().height());
@@ -2145,7 +2145,7 @@ TEST_P(SplitViewControllerTest, AdjustTransientChildBounds) {
   // Now try to manually move the bubble out of the snapped window.
   bubble_window->SetBoundsInScreen(
       split_view_controller()->GetSnappedWindowBoundsInScreen(
-          window, SplitViewController::RIGHT),
+          SplitViewController::RIGHT),
       display::Screen::GetScreen()->GetDisplayNearestWindow(window));
   // Test that the bubble can't be moved outside of its anchor widget.
   EXPECT_TRUE(window_bounds.Contains(bubble_window->GetBoundsInScreen()));
@@ -2910,7 +2910,7 @@ TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
   // bounds as it's to be snapped to LEFT.
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window2.get(), SplitViewController::LEFT));
+                SplitViewController::LEFT));
   EXPECT_FALSE(window1->GetProperty(kCanAttachToAnotherWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(0, 300));
   EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kPreviewAreaLeft);
@@ -2918,7 +2918,7 @@ TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
   // bounds as it's to be snapped to RIGHT.
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window2.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
   EXPECT_FALSE(window1->GetProperty(kCanAttachToAnotherWindowKey));
 
   CompleteDrag(std::move(resizer));
@@ -2966,7 +2966,7 @@ TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_NE(window2->GetBoundsInScreen(), work_area_bounds);
   EXPECT_NE(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window2.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
   CompleteDrag(std::move(resizer));
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
@@ -3099,7 +3099,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
   EXPECT_EQ(GetIndicatorState(resizer.get()), IndicatorState::kNone);
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window2.get(), SplitViewController::LEFT));
+                SplitViewController::LEFT));
   // Not in overview.
   CheckOverviewEnterExitHistogram("DoNotEnterInSplitViewByDrag", {0, 0},
                                   {0, 3});
@@ -3116,7 +3116,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
   // The source window's bounds should remain the same.
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window2.get(), SplitViewController::LEFT));
+                SplitViewController::LEFT));
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
@@ -3255,7 +3255,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   // The source window still remains the same bounds.
   EXPECT_EQ(window1->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::LEFT));
+                SplitViewController::LEFT));
   CheckOverviewEnterExitHistogram("DoNotExitInSplitView4", {0, 2}, {1, 0});
 
   // 2.a. The dragged window can replace the only snapped window in the split
@@ -3500,7 +3500,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
                gfx::Point(0, work_area_bounds.CenterPoint().y()));
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   // Drag it to middle.
@@ -3513,7 +3513,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
                                          work_area_bounds.CenterPoint().y()));
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::LEFT));
+                SplitViewController::LEFT));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   CompleteDrag(std::move(resizer));
@@ -3545,7 +3545,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   EXPECT_NE(drop_target_widget->GetNativeWindow()->bounds(), window1->bounds());
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
 
   // Drag |window1| to the right preview split area.
   DragWindowTo(resizer.get(), gfx::Point(work_area_bounds.right(),
@@ -3553,7 +3553,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   // Overview bounds stays the same.
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   // Drag |window1| to the left preview split area.
@@ -3561,7 +3561,7 @@ TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
                gfx::Point(0, work_area_bounds.CenterPoint().y()));
   EXPECT_EQ(current_grid->bounds(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
-                window1.get(), SplitViewController::RIGHT));
+                SplitViewController::RIGHT));
   EXPECT_EQ(0.f, target_opacity(drop_target_widget));
 
   CompleteDrag(std::move(resizer));
@@ -4575,11 +4575,10 @@ TEST_P(SplitViewAppDraggingTest, AutoHideShelf) {
   // Shelf should be shown after drag and snapped window should be covered by
   // the auto-hide-shown shelf.
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
-  EXPECT_EQ(
-      split_view_controller()
-          ->GetSnappedWindowBoundsInScreen(window(), SplitViewController::LEFT)
-          .height(),
-      display_bounds.height());
+  EXPECT_EQ(split_view_controller()
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
+                .height(),
+            display_bounds.height());
 }
 
 // Tests the functionalities that fling the window when preview area is shown.

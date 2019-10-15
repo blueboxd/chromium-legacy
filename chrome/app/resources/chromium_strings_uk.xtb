@@ -77,8 +77,6 @@
 <translation id="4230135487732243613">Пов’язати ваші дані Chromium із цим обліковим записом?</translation>
 <translation id="4271805377592243930">Отримати довідку щодо Chromium</translation>
 <translation id="4285930937574705105">Не вдалося встановити через невизначену помилку. Якщо Chromium зараз запущено, закрийте його та повторіть спробу.</translation>
-<translation id="4371648796594901282">Щоб отримати докладнішу інформацію, перегляньте сторінку <ph name="LINK_BEGIN" />
-      Про ОС Chromium<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Усе одно вийти з Chromium?</translation>
 <translation id="4415566066719264597">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
@@ -191,6 +189,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7827169012280634081">Видаляти файли cookie й дані сайтів, коли ви закриваєте Chromium</translation>
 <translation id="7867198900892795913">Не вдалось оновити Chromium до останньої версії. Ви не зможете скористатися новими функціями та застосувати виправлення системи безпеки.</translation>
+<translation id="7898472181347242998">Щоб дізнатися, чи пристрій використовує актуальну версію операційної системи, перейдіть у <ph name="LINK_BEGIN" />налаштування ОС Chromium<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">Доступне оновлення Chromium, його буде застосовано відразу після перезапуску.</translation>
 <translation id="7937630085815544518">Ви ввійшли в Chromium як <ph name="USER_EMAIL_ADDRESS" />. Скористайтеся тим самим обліковим записом, щоб увійти знову.</translation>
 <translation id="7975919845073681630">Це додаткове встановлення Chromium. Його не можна зробити вашим веб-переглядачем за умовчанням.</translation>

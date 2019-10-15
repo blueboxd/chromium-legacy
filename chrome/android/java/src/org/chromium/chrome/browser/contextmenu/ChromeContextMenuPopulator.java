@@ -214,7 +214,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         // Only add new values at the end, right before NUM_ENTRIES.
         @IntDef({LensSupportStatus.LENS_SUPPORTED, LensSupportStatus.NON_GOOGLE_SEARCH_ENGINE,
                 LensSupportStatus.ACTIVITY_NOT_ACCESSIBLE, LensSupportStatus.OUT_OF_DATE,
-                LensSupportStatus.SEARCH_BY_IMAGE_UNAVAILABLE})
+                LensSupportStatus.SEARCH_BY_IMAGE_UNAVAILABLE, LensSupportStatus.LEGACY_OS})
         @Retention(RetentionPolicy.SOURCE)
         public @interface LensSupportStatus {
             int LENS_SUPPORTED = 0;
@@ -222,7 +222,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int ACTIVITY_NOT_ACCESSIBLE = 2;
             int OUT_OF_DATE = 3;
             int SEARCH_BY_IMAGE_UNAVAILABLE = 4;
-            int NUM_ENTRIES = 5;
+            int LEGACY_OS = 5;
+            int NUM_ENTRIES = 6;
         }
 
         /**
@@ -627,6 +628,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
         if (LensUtils.isAgsaVersionBelowMinimum(versionName)) {
             ContextMenuUma.recordLensSupportStatus(ContextMenuUma.LensSupportStatus.OUT_OF_DATE);
+            return false;
+        }
+
+        if (LensUtils.isDeviceOsBelowMinimum()) {
+            ContextMenuUma.recordLensSupportStatus(ContextMenuUma.LensSupportStatus.LEGACY_OS);
             return false;
         }
 

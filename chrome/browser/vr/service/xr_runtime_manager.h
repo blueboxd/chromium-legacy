@@ -24,6 +24,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace device {
 class VRDeviceProvider;
@@ -117,7 +118,7 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
 
   void AddRuntime(device::mojom::XRDeviceId id,
                   device::mojom::VRDisplayInfoPtr info,
-                  device::mojom::XRRuntimePtr runtime);
+                  mojo::PendingRemote<device::mojom::XRRuntime> runtime);
   void RemoveRuntime(device::mojom::XRDeviceId id);
 
   ProviderList providers_;

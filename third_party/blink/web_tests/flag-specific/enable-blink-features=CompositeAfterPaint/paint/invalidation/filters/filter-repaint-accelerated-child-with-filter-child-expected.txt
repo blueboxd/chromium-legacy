@@ -8,14 +8,27 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
-      "bounds": [154, 254],
+      "position": [-14, -14],
+      "bounds": [160, 260],
       "backgroundColor": "#008000",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='resize' class='drop-shadow'",
-          "rect": [0, 0, 154, 254],
+          "rect": [0, 0, 160, 260],
           "reason": "geometry"
         }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
       ]
     }
   ]

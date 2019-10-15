@@ -135,6 +135,10 @@
       },
     },
 
+    'android_pagecontroller_self_tests': {
+      'chrome_java_test_pagecontroller_tests': {},
+    },
+
     'android_smoke_tests': {
       'chrome_public_smoke_test': {},
     },
@@ -2409,6 +2413,7 @@
     'chromium_junit_tests': {
       'android_webview_junit_tests': {},
       'base_junit_tests': {},
+      'chrome_java_test_pagecontroller_junit_tests': {},
       'chrome_junit_tests': {},
       'components_background_task_scheduler_junit_tests': {},
       'components_gcm_driver_junit_tests': {},
@@ -5203,6 +5208,7 @@
       'android_ar_gtests',
       'android_ddready_vr_gtests',
       'android_monochrome_smoke_tests',
+      'android_pagecontroller_self_tests',
       'android_smoke_tests',
       'chromium_tracing_gtests',
       # No standard tests due to capacity, no Vega tests since it's currently
@@ -5211,6 +5217,7 @@
 
     'android_pie_rel_gtests': [
       'android_monochrome_smoke_tests',
+      'android_pagecontroller_self_tests',
       'android_smoke_tests',
       'system_webview_shell_instrumentation_tests',
       'webview_cts_tests_gtest',

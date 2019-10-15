@@ -69,7 +69,6 @@ class WebTestRunner(object):
 
         self._expectations = None
         self._test_inputs = []
-        self._retry_attempt = 0
         self._shards_to_redo = []
 
         self._current_run_results = None
@@ -84,10 +83,8 @@ class WebTestRunner(object):
         # prevents content shell reuse.
         if not self._options.must_use_derived_batch_size and retry_attempt >= 1:
             batch_size = 1
-
         self._expectations = expectations
         self._test_inputs = test_inputs
-        self._retry_attempt = retry_attempt
 
         test_run_results = TestRunResults(self._expectations, len(test_inputs) + len(tests_to_skip))
         self._current_run_results = test_run_results
@@ -162,17 +159,12 @@ class WebTestRunner(object):
             shard.test_inputs = list(itertools.chain(*tests_by_args.values()))
 
     def _worker_factory(self, worker_connection):
-        results_directory = self._results_directory
-        if self._retry_attempt > 0:
-            results_directory = self._filesystem.join(self._results_directory,
-                                                      'retry_%d' % self._retry_attempt)
-            self._filesystem.maybe_make_directory(results_directory)
-        return Worker(worker_connection, results_directory, self._options)
+        return Worker(worker_connection, self._results_directory, self._options)
 
     def _mark_interrupted_tests_as_skipped(self, test_run_results):
         for test_input in self._test_inputs:
             if test_input.test_name not in test_run_results.results_by_name:
-                result = test_results.TestResult(test_input.test_name, [test_failures.FailureEarlyExit()])
+                result = test_results.TestResult(test_input.test_name, failures=[test_failures.FailureEarlyExit()])
                 # FIXME: We probably need to loop here if there are multiple iterations.
                 # FIXME: Also, these results are really neither expected nor unexpected. We probably
                 # need a third type of result.

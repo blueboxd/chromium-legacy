@@ -232,8 +232,7 @@ void GPUDevice::pushErrorScope(const WTF::String& filter) {
                                   AsDawnEnum<DawnErrorFilter>(filter));
 }
 
-ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state,
-                                       ExceptionState& exception_state) {
+ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -244,9 +243,10 @@ ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state,
 
   if (!GetProcs().devicePopErrorScope(GetHandle(), callback->UnboundCallback(),
                                       callback->AsUserdata())) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
-                                      "No error scopes to pop.");
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, "No error scopes to pop."));
     delete callback;
+    return promise;
   }
 
   // WebGPU guarantees callbacks complete in finite time. Flush now so that

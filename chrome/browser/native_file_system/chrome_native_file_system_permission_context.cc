@@ -85,6 +85,9 @@ void ShowWritePermissionPromptOnUIThread(
     return;
   }
 
+  // Drop fullscreen mode so that the user sees the URL bar.
+  web_contents->ForSecurityDropFullscreen();
+
   request_manager->AddRequest(
       {origin, path, is_directory},
       base::BindOnce(
@@ -130,6 +133,9 @@ void ShowDirectoryAccessConfirmationPromptOnUIThread(
     // Requested from a worker, or a no longer existing tab.
     std::move(callback).Run(PermissionAction::DISMISSED);
   }
+
+  // Drop fullscreen mode so that the user sees the URL bar.
+  web_contents->ForSecurityDropFullscreen();
 
   ShowNativeFileSystemDirectoryAccessConfirmationDialog(
       origin, path, std::move(callback), web_contents);
@@ -411,7 +417,7 @@ operator<(const Key& rhs) const {
 
 ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
     WritePermissionGrantImpl(
-        scoped_refptr<ChromeNativeFileSystemPermissionContext> context,
+        base::WeakPtr<ChromeNativeFileSystemPermissionContext> context,
         const url::Origin& origin,
         const Key& key,
         bool is_directory)
@@ -461,7 +467,7 @@ void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
 
 bool ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
     CanRequestPermission() {
-  return context_->CanRequestWritePermission(origin_);
+  return context_ && context_->CanRequestWritePermission(origin_);
 }
 
 void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
@@ -475,7 +481,8 @@ void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
 
 ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
     ~WritePermissionGrantImpl() {
-  context_->PermissionGrantDestroyed(this);
+  if (context_)
+    context_->PermissionGrantDestroyed(this);
 }
 
 void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
@@ -536,6 +543,9 @@ ChromeNativeFileSystemPermissionContext::
   content_settings_ = base::WrapRefCounted(
       HostContentSettingsMapFactory::GetForProfile(profile));
 }
+
+ChromeNativeFileSystemPermissionContext::
+    ~ChromeNativeFileSystemPermissionContext() = default;
 
 scoped_refptr<content::NativeFileSystemPermissionGrant>
 ChromeNativeFileSystemPermissionContext::GetReadPermissionGrant(
@@ -603,7 +613,7 @@ ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
   // status, and store a reference to it in |origin_state| by assigning
   // |existing_grant|.
   auto result = base::MakeRefCounted<WritePermissionGrantImpl>(
-      this, origin, grant_key, is_directory);
+      weak_factory_.GetWeakPtr(), origin, grant_key, is_directory);
   if (result->CanRequestPermission()) {
     if (user_action == UserAction::kSave) {
       result->SetStatus(WritePermissionGrantImpl::PermissionStatus::GRANTED);
@@ -662,8 +672,8 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
       base::BindOnce(&ShouldBlockAccessToPath, paths[0]),
       base::BindOnce(&ChromeNativeFileSystemPermissionContext::
                          DidConfirmSensitiveDirectoryAccess,
-                     this, origin, paths, is_directory, process_id, frame_id,
-                     std::move(callback)));
+                     weak_factory_.GetWeakPtr(), origin, paths, is_directory,
+                     process_id, frame_id, std::move(callback)));
 }
 
 void ChromeNativeFileSystemPermissionContext::PerformAfterWriteChecks(
@@ -716,28 +726,6 @@ ChromeNativeFileSystemPermissionContext::GetPermissionGrants(
   return grants;
 }
 
-// static
-void ChromeNativeFileSystemPermissionContext::GetPermissionGrantsFromUIThread(
-    content::BrowserContext* browser_context,
-    const url::Origin& origin,
-    int process_id,
-    int frame_id,
-    base::OnceCallback<void(Grants)> callback) {
-  auto permission_context =
-      NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
-          browser_context);
-  if (!permission_context) {
-    std::move(callback).Run(Grants());
-    return;
-  }
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(
-          &ChromeNativeFileSystemPermissionContext::GetPermissionGrants,
-          permission_context, origin, process_id, frame_id),
-      std::move(callback));
-}
-
 void ChromeNativeFileSystemPermissionContext::RevokeDirectoryReadGrants(
     const url::Origin& origin,
     int process_id,
@@ -787,36 +775,13 @@ void ChromeNativeFileSystemPermissionContext::RevokeWriteGrants(
   }
 }
 
-// static
-void ChromeNativeFileSystemPermissionContext::
-    RevokeGrantsForOriginAndTabFromUIThread(
-        content::BrowserContext* browser_context,
-        const url::Origin& origin,
-        int process_id,
-        int frame_id) {
-  auto permission_context =
-      NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
-          browser_context);
-  if (!permission_context) {
-    // With no context there is nothing to revoke.
-    return;
-  }
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(
-          [](const scoped_refptr<ChromeNativeFileSystemPermissionContext>&
-                 context,
-             const url::Origin& origin, int process_id, int frame_id) {
-            context->RevokeDirectoryReadGrants(origin, process_id, frame_id);
-            context->RevokeWriteGrants(origin, process_id, frame_id);
-          },
-          std::move(permission_context), origin, process_id, frame_id));
+void ChromeNativeFileSystemPermissionContext::RevokeGrantsForOriginAndTab(
+    const url::Origin& origin,
+    int process_id,
+    int frame_id) {
+  RevokeDirectoryReadGrants(origin, process_id, frame_id);
+  RevokeWriteGrants(origin, process_id, frame_id);
 }
-
-void ChromeNativeFileSystemPermissionContext::ShutdownOnUIThread() {}
-
-ChromeNativeFileSystemPermissionContext::
-    ~ChromeNativeFileSystemPermissionContext() = default;
 
 void ChromeNativeFileSystemPermissionContext::PermissionGrantDestroyed(
     WritePermissionGrantImpl* grant) {

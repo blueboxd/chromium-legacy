@@ -8,6 +8,7 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
+#include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -63,6 +64,11 @@ void FrameImpl::GetTextSurroundingSelection(
   std::move(callback).Run(surrounding_text.TextContent(),
                           surrounding_text.StartOffsetInTextContent(),
                           surrounding_text.EndOffsetInTextContent());
+}
+
+void FrameImpl::SendInterventionReport(const String& id,
+                                       const String& message) {
+  Intervention::GenerateReport(GetSupplementable(), id, message);
 }
 
 }  // namespace blink

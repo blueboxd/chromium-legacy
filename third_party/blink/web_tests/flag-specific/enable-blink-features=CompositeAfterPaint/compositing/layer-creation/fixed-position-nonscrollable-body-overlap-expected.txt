@@ -10,10 +10,10 @@ Even though we can opt-out of fixed-position compositing for unscrollable fixed-
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='absolute composited red box'",
-      "position": [10, 100],
       "bounds": [100, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#FF0000"
+      "backgroundColor": "#FF0000",
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='fixed lime box'",
@@ -21,6 +21,17 @@ Even though we can opt-out of fixed-position compositing for unscrollable fixed-
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FF00"
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [10, 100, 0, 1]
+      ]
     }
   ]
 }

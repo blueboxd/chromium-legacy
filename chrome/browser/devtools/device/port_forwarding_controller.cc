@@ -28,7 +28,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -153,20 +153,18 @@ class PortForwardingHostResolver : public network::ResolveHostClientBase {
                              const std::string& host,
                              int port,
                              ResolveHostCallback resolve_host_callback)
-      : binding_(this),
-        resolve_host_callback_(std::move(resolve_host_callback)) {
+      : resolve_host_callback_(std::move(resolve_host_callback)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!binding_);
+    DCHECK(!receiver_.is_bound());
 
-    network::mojom::ResolveHostClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    binding_.set_connection_error_handler(
-        base::BindOnce(&PortForwardingHostResolver::OnComplete,
-                       base::Unretained(this), net::ERR_FAILED, base::nullopt));
     net::HostPortPair host_port_pair(host, port);
     content::BrowserContext::GetDefaultStoragePartition(profile)
         ->GetNetworkContext()
-        ->ResolveHost(host_port_pair, nullptr, std::move(client_ptr));
+        ->ResolveHost(host_port_pair, nullptr,
+                      receiver_.BindNewPipeAndPassRemote());
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&PortForwardingHostResolver::OnComplete,
+                       base::Unretained(this), net::ERR_FAILED, base::nullopt));
   }
 
  private:
@@ -190,7 +188,7 @@ class PortForwardingHostResolver : public network::ResolveHostClientBase {
     delete this;
   }
 
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   ResolveHostCallback resolve_host_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PortForwardingHostResolver);

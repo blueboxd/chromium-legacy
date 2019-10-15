@@ -1011,12 +1011,12 @@ void NetworkContext::CreateTCPServerSocket(
     const net::IPEndPoint& local_addr,
     uint32_t backlog,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPServerSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
     CreateTCPServerSocketCallback callback) {
   socket_factory_->CreateTCPServerSocket(
       local_addr, backlog,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(callback));
+      std::move(receiver), std::move(callback));
 }
 
 void NetworkContext::CreateTCPConnectedSocket(
@@ -1024,13 +1024,13 @@ void NetworkContext::CreateTCPConnectedSocket(
     const net::AddressList& remote_addr_list,
     mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TCPConnectedSocketRequest request,
+    mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     CreateTCPConnectedSocketCallback callback) {
   socket_factory_->CreateTCPConnectedSocket(
       local_addr, remote_addr_list, std::move(tcp_connected_socket_options),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      std::move(request), std::move(observer), std::move(callback));
+      std::move(receiver), std::move(observer), std::move(callback));
 }
 
 void NetworkContext::CreateTCPBoundSocket(
@@ -1106,7 +1106,7 @@ void NetworkContext::CreateNetLogExporter(
 void NetworkContext::ResolveHost(
     const net::HostPortPair& host,
     mojom::ResolveHostParametersPtr optional_parameters,
-    mojom::ResolveHostClientPtr response_client) {
+    mojo::PendingRemote<mojom::ResolveHostClient> response_client) {
   if (!internal_host_resolver_) {
     internal_host_resolver_ = std::make_unique<HostResolver>(
         url_request_context_->host_resolver(), url_request_context_->net_log());
@@ -1118,7 +1118,7 @@ void NetworkContext::ResolveHost(
 
 void NetworkContext::CreateHostResolver(
     const base::Optional<net::DnsConfigOverrides>& config_overrides,
-    mojom::HostResolverRequest request) {
+    mojo::PendingReceiver<mojom::HostResolver> receiver) {
   net::HostResolver* internal_resolver = url_request_context_->host_resolver();
   std::unique_ptr<net::HostResolver> private_internal_resolver;
 
@@ -1145,7 +1145,7 @@ void NetworkContext::CreateHostResolver(
 
   host_resolvers_.emplace(
       std::make_unique<HostResolver>(
-          std::move(request),
+          std::move(receiver),
           base::BindOnce(&NetworkContext::OnHostResolverShutdown,
                          base::Unretained(this)),
           internal_resolver, url_request_context_->net_log()),

@@ -23,7 +23,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_util.h"
@@ -189,9 +188,8 @@ void DumpResidency(size_t start,
   }
 }
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// Used for "LibraryLoader.PrefetchDetailedStatus".
+// These values were used in the past for recording
+// "LibraryLoader.PrefetchDetailedStatus".
 enum class PrefetchStatus {
   kSuccess = 0,
   kWrongOrdering = 1,
@@ -269,9 +267,6 @@ void NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(bool ordered_only) {
 #endif
 
   PrefetchStatus status = ForkAndPrefetch(ordered_only);
-  UMA_HISTOGRAM_BOOLEAN("LibraryLoader.PrefetchStatus",
-                        status == PrefetchStatus::kSuccess);
-  UMA_HISTOGRAM_ENUMERATION("LibraryLoader.PrefetchDetailedStatus", status);
   if (status != PrefetchStatus::kSuccess) {
     LOG(WARNING) << "Cannot prefetch the library. status = "
                  << static_cast<int>(status);

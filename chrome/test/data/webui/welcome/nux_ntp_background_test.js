@@ -4,10 +4,11 @@
 
 import 'chrome://welcome/ntp_background/nux_ntp_background.js';
 
-import {TestMetricsProxy} from 'chrome://test/welcome/test_metrics_proxy.js';
-import {TestNtpBackgroundProxy} from 'chrome://test/welcome/test_ntp_background_proxy.js';
 import {NtpBackgroundMetricsProxyImpl} from 'chrome://welcome/ntp_background/ntp_background_metrics_proxy.js';
 import {NtpBackgroundProxyImpl} from 'chrome://welcome/ntp_background/ntp_background_proxy.js';
+
+import {TestMetricsProxy} from './test_metrics_proxy.js';
+import {TestNtpBackgroundProxy} from './test_ntp_background_proxy.js';
 
 suite('NuxNtpBackgroundTest', function() {
   /** @type {!Array<!NtpBackgroundData} */

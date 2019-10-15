@@ -24,6 +24,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 
@@ -36,7 +37,7 @@ class ScopedClipboardWriter;
 // Clipboard:
 // - reads from and writes to the system clipboard.
 // - specifies an ordering in which to write types to the clipboard
-//   (see |ObjectType|).
+//   (see PortableFormat).
 // - is generalized for all targets/operating systems.
 class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
  public:
@@ -157,17 +158,12 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   virtual void ClearLastModifiedTime();
 
  protected:
-  static Clipboard* Create();
-
-  Clipboard() = default;
-  virtual ~Clipboard() = default;
-
-  // ObjectType designates the type of data to be stored in the clipboard. This
-  // designation is shared across all OSes. The system-specific designation
-  // is defined by ClipboardFormatType. A single ObjectType might be represented
-  // by several system-specific ClipboardFormatTypes. For example, on Linux the
-  // kText ObjectType maps to "text/plain", "STRING", and several other
-  // formats. On windows it maps to CF_UNICODETEXT.
+  // PortableFormat designates the type of data to be stored in the clipboard.
+  // This designation is shared across all OSes. The system-specific designation
+  // is defined by ClipboardFormatType. A single PortableFormat might be
+  // represented by several system-specific ClipboardFormatTypes. For example,
+  // on Linux the kText PortableFormat maps to "text/plain", "STRING", and
+  // several other formats. On windows it maps to CF_UNICODETEXT.
   //
   // The order below is the order in which data will be written to the
   // clipboard, so more specific types must be listed before less specific
@@ -175,7 +171,7 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // clipboard to contain a bitmap, HTML markup representing the image, a URL to
   // the image, and the image's alt text. Having the types follow this order
   // maximizes the amount of data that can be extracted by various programs.
-  enum class ObjectType {
+  enum class PortableFormat {
     kBitmap,  // Bitmap from shared memory.
     kHtml,
     kRtf,
@@ -185,8 +181,9 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
     kData,  // Arbitrary block of bytes.
   };
 
-  // ObjectMap is a map from ObjectType to associated data.
-  // The data is organized differently for each ObjectType. The following
+  // TODO (https://crbug.com/994928): Rename ObjectMap-related types.
+  // ObjectMap is a map from PortableFormat to associated data.
+  // The data is organized differently for each PortableFormat. The following
   // table summarizes what kind of data is stored for each key.
   // * indicates an optional argument.
   //
@@ -194,7 +191,7 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // -------------------------------------
   // kBitmap    bitmap       A pointer to a SkBitmap. The caller must ensure
   //                         the SkBitmap remains live for the duration of
-  //                         the WriteObjects call.
+  //                         the WritePortableRepresentations call.
   // kHtml      html         char array
   //            url*         char array
   // kRtf       data         byte array
@@ -206,14 +203,42 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   //            data         byte array
   using ObjectMapParam = std::vector<char>;
   using ObjectMapParams = std::vector<ObjectMapParam>;
-  using ObjectMap = base::flat_map<ObjectType, ObjectMapParams>;
+  using ObjectMap = base::flat_map<PortableFormat, ObjectMapParams>;
+
+  // PlatformRepresentation is used for DispatchPlatformRepresentations, and
+  // supports writing directly to the system clipboard, without custom type
+  // mapping per platform.
+  struct PlatformRepresentation {
+    std::string format;
+    // BigBuffer shared memory is still writable from the renderer when backed
+    // by shared memory, so PlatformRepresentation's data.data() must not be
+    // branched on, and *data.data() must not be accessed, except to copy it
+    // into private memory.
+    mojo_base::BigBuffer data;
+  };
+
+  static Clipboard* Create();
+
+  Clipboard();
+  virtual ~Clipboard();
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
   // contents of |objects|.
-  virtual void WriteObjects(ClipboardBuffer buffer,
-                            const ObjectMap& objects) = 0;
+  virtual void WritePortableRepresentations(ClipboardBuffer buffer,
+                                            const ObjectMap& objects) = 0;
+  // Write |platform_representations|, in the order of their appearance in
+  // |platform_representations|.
+  virtual void WritePlatformRepresentations(
+      ClipboardBuffer buffer,
+      std::vector<Clipboard::PlatformRepresentation>
+          platform_representations) = 0;
 
-  void DispatchObject(ObjectType type, const ObjectMapParams& params);
+  void DispatchPortableRepresentation(PortableFormat format,
+                                      const ObjectMapParams& params);
+
+  // Write directly to the system clipboard.
+  void DispatchPlatformRepresentations(
+      std::vector<Clipboard::PlatformRepresentation> platform_representations);
 
   virtual void WriteText(const char* text_data, size_t text_len) = 0;
 
@@ -233,12 +258,15 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
 
   virtual void WriteBitmap(const SkBitmap& bitmap) = 0;
 
+  // |data_data| is shared memory, and is still writable from the renderer.
+  // Therefore, |data_data| must not be branched on, and *|data_data| must not
+  // be accessed, except to copy it into private memory.
   virtual void WriteData(const ClipboardFormatType& format,
                          const char* data_data,
                          size_t data_len) = 0;
 
  private:
-  // For access to WriteObjects().
+  // For access to WritePortableRepresentations().
   friend class ForwardingTestingClipboard;
   friend class ScopedClipboardWriter;
   friend class TestClipboard;

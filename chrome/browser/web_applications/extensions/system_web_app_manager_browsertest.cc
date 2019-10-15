@@ -126,17 +126,36 @@ class TestWebUIControllerFactory : public content::WebUIControllerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestWebUIControllerFactory);
 };
 
-SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest()
-    : factory_(std::make_unique<TestWebUIControllerFactory>()),
-      test_web_app_provider_creator_(
-          base::BindOnce(&SystemWebAppManagerBrowserTest::CreateWebAppProvider,
-                         base::Unretained(this))) {
+SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
+    bool install_mock) {
   scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
-  content::WebUIControllerFactory::RegisterFactory(factory_.get());
+  if (install_mock) {
+    factory_ = std::make_unique<TestWebUIControllerFactory>();
+    test_web_app_provider_creator_ =
+        std::make_unique<TestWebAppProviderCreator>(base::BindOnce(
+            &SystemWebAppManagerBrowserTest::CreateWebAppProvider,
+            base::Unretained(this)));
+    content::WebUIControllerFactory::RegisterFactory(factory_.get());
+  }
 }
 
 SystemWebAppManagerBrowserTest::~SystemWebAppManagerBrowserTest() {
-  content::WebUIControllerFactory::UnregisterFactoryForTesting(factory_.get());
+  if (factory_) {
+    content::WebUIControllerFactory::UnregisterFactoryForTesting(
+        factory_.get());
+  }
+}
+
+// static
+const extensions::Extension*
+SystemWebAppManagerBrowserTest::GetExtensionForAppBrowser(Browser* browser) {
+  return static_cast<extensions::HostedAppBrowserController*>(
+             browser->app_controller())
+      ->GetExtensionForTesting();
+}
+
+SystemWebAppManager& SystemWebAppManagerBrowserTest::GetManager() {
+  return WebAppProvider::Get(browser()->profile())->system_web_app_manager();
 }
 
 std::unique_ptr<KeyedService>
@@ -165,18 +184,20 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
 
 Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch(
     SystemAppType system_app_type) {
-  Profile* profile = browser()->profile();
-
   // Wait for the System Web Apps to install.
-  base::RunLoop run_loop;
-  test_system_web_app_manager_->on_apps_synchronized().Post(
-      FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
+  if (factory_) {
+    base::RunLoop run_loop;
+    GetManager().on_apps_synchronized().Post(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  } else {
+    GetManager().InstallSystemAppsForTesting();
+  }
 
   base::Optional<AppId> app_id =
-      test_system_web_app_manager_->GetAppIdForSystemApp(system_app_type);
+      GetManager().GetAppIdForSystemApp(system_app_type);
   DCHECK(app_id.has_value());
 
+  Profile* profile = browser()->profile();
   const extensions::Extension* app =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
           app_id.value());
@@ -187,11 +208,8 @@ Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch(
 
 // Test that System Apps install correctly with a manifest.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
-  const extensions::Extension* app =
-      static_cast<extensions::HostedAppBrowserController*>(
-          WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS)
-              ->app_controller())
-          ->GetExtensionForTesting();
+  const extensions::Extension* app = GetExtensionForAppBrowser(
+      WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS));
   EXPECT_EQ("Test System App", app->name());
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0),
             extensions::AppThemeColorInfo::GetThemeColor(app));
@@ -202,9 +220,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   EXPECT_EQ(extensions::util::GetInstalledPwaForUrl(
                 browser()->profile(), content::GetWebUIURL("test-system-app/")),
             app);
-  EXPECT_TRUE(WebAppProvider::Get(browser()->profile())
-                  ->system_web_app_manager()
-                  .IsSystemWebApp(app->id()));
+  EXPECT_TRUE(GetManager().IsSystemWebApp(app->id()));
 }
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://

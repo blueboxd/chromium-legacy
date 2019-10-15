@@ -77,7 +77,7 @@ bool RemoveCookieTester::GetCookie(const std::string& host,
   waiting_callback_ = true;
   net::CookieOptions cookie_options;
   cookie_manager_->GetCookieList(
-      GURL("http://" + host + "/"), cookie_options,
+      GURL("https://" + host + "/"), cookie_options,
       base::BindOnce(&RemoveCookieTester::GetCookieListCallback,
                      base::Unretained(this)));
   BlockUntilNotified();
@@ -97,10 +97,10 @@ void RemoveCookieTester::AddCookie(const std::string& host,
   options.set_include_httponly();
   cookie_manager_->SetCanonicalCookie(
       net::CanonicalCookie(name, value, host, "/", base::Time(), base::Time(),
-                           base::Time(), false, false,
+                           base::Time(), true /* secure*/, false /* http only*/,
                            net::CookieSameSite::NO_RESTRICTION,
                            net::COOKIE_PRIORITY_MEDIUM),
-      "http", options,
+      "https", options,
       base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
                      base::Unretained(this)));
   BlockUntilNotified();
@@ -146,7 +146,6 @@ class ProfileResetTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ProfileResetTest, ResetCookiesAndSiteData) {
   RemoveCookieTester tester(browser()->profile());
-  std::string host_prefix("http://");
   tester.AddCookie(kCookieHostname, kCookieName, kCookieValue);
   net::CanonicalCookie cookie;
   ASSERT_TRUE(tester.GetCookie(kCookieHostname, &cookie));
@@ -155,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(ProfileResetTest, ResetCookiesAndSiteData) {
 
   ResetAndWait(ProfileResetter::COOKIES_AND_SITE_DATA);
 
-  EXPECT_FALSE(tester.GetCookie(host_prefix + kCookieHostname, &cookie));
+  EXPECT_FALSE(tester.GetCookie(kCookieHostname, &cookie));
 }
 
 }  // namespace

@@ -100,6 +100,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // bubble is shown.
   void SetTrayBubbleHeight(int height);
 
+  // Focus the first notification in the message center.
+  void FocusFirstNotification();
+
   bool FocusMessageCenter(bool reverse);
 
   bool FocusQuickSettings(bool reverse);

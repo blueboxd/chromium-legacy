@@ -63,7 +63,7 @@ class FakeWebContentsDelegate : public WebContentsDelegate {
   void EnterFullscreenModeForTab(
       WebContents* web_contents,
       const GURL& origin,
-      const blink::WebFullscreenOptions& options) override {
+      const blink::FullScreenOptions& options) override {
     fullscreened_contents_ = web_contents;
   }
 
@@ -182,7 +182,7 @@ TEST_F(ScreenOrientationProviderTest, DelegateRequireFullScreenLockOnce) {
 
   // Simulates entering full screen.
   main_test_rfh()->OnMessageReceived(FrameHostMsg_EnterFullscreen(
-      main_test_rfh()->GetRoutingID(), blink::WebFullscreenOptions()));
+      main_test_rfh()->GetRoutingID(), blink::FullScreenOptions()));
   ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
 
   base::Optional<ScreenOrientationLockResult> result_2;
@@ -285,7 +285,7 @@ TEST_F(ScreenOrientationProviderTest, UnlockWhenExitingFullScreen) {
 
   // Simulates entering full screen.
   main_test_rfh()->OnMessageReceived(FrameHostMsg_EnterFullscreen(
-      main_test_rfh()->GetRoutingID(), blink::WebFullscreenOptions()));
+      main_test_rfh()->GetRoutingID(), blink::FullScreenOptions()));
   ASSERT_TRUE(contents()->IsFullscreenForCurrentTab());
 
   base::Optional<ScreenOrientationLockResult> result;

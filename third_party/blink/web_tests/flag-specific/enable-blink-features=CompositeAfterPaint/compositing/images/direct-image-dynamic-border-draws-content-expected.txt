@@ -10,8 +10,19 @@ layer tree before image style change
     },
     {
       "name": "LayoutImage IMG class='composited'",
-      "position": [8, 8],
-      "bounds": [256, 256]
+      "bounds": [256, 256],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }
@@ -28,8 +39,19 @@ layer tree after image style change
     },
     {
       "name": "LayoutImage IMG class='composited border'",
-      "position": [8, 8],
-      "bounds": [260, 260]
+      "bounds": [260, 260],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
     }
   ]
 }

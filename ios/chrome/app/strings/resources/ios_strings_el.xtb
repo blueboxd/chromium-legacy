@@ -170,6 +170,7 @@
 <translation id="3335947283844343239">Εκ Νέου Άνοιγμα Κλεισμένης Καρτέλας</translation>
 <translation id="3371831930909698441">Διατίθεται μετάφραση. Διαθέσιμες επιλογές κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="3393920035788932672">Επιτρέπ. τα αναδυόμ.</translation>
+<translation id="3443810440409579745">Η καρτέλα λήφθηκε.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> λεπτά</translation>
 <translation id="3448016392200048164">Προβολή διαχωρισμού οθόνης</translation>
 <translation id="345565170154308620">Διαχείριση κωδικών πρόσβασης…</translation>
@@ -232,6 +233,7 @@
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
 <translation id="430793432425771671">Συγχρονισμός όλων</translation>
 <translation id="430967081421617822">Από την αρχή</translation>
+<translation id="4334428914252001502">1 μη αναγνωσμένο άρθρο.</translation>
 <translation id="4338650699862464074">Αποστέλλει στην Google URL των σελίδων που επισκέπτεστε.</translation>
 <translation id="4359125752503270327">Αυτή η σελίδα θα ανοίξει σε άλλη εφαρμογή.</translation>
 <translation id="4375040482473363939">Αναζήτηση κωδικού QR</translation>
@@ -298,6 +300,7 @@
 <translation id="5300589172476337783">Εμφάνιση</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
 <translation id="5327248766486351172">Όνομα</translation>
+<translation id="5365716706805792666">Το Google μπορεί να ελέγχει εάν οι κωδικοί πρόσβασής σας ήταν μέρος της παραβίασης δεδομένων. Αυτή η λειτουργία θα ενεργοποιείται όταν συνδέεστε με τον Λογαριασμό σας Google.</translation>
 <translation id="5388358297987318779">Άνοιγμα εικόνας</translation>
 <translation id="5407969256130905701">Απόρριψη αλλαγών</translation>
 <translation id="5409365236829784218">Δεν υπάρχουν εγκατεστ. εφαρμογές για το άνοιγμα του αρχείου</translation>
@@ -449,6 +452,7 @@
 <translation id="7348502496356775519">Σελιδοδείκτης</translation>
 <translation id="7383797227493018512">Λίστα ανάγνωσης</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> μη αναγνωσμένα άρθρα.</translation>
 <translation id="7425346204213733349">Οι αλλαγές στους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και σε άλλες ρυθμίσεις δεν θα συγχρονίζονται πλέον με το Λογαριασμό σας Google. Ωστόσο, τα υπάρχοντα δεδομένα σας θα παραμείνουν αποθηκευμένα στο Λογαριασμό σας Google.</translation>
 <translation id="7454057999980797137">Νομός/Επαρχία</translation>
 <translation id="7456847797759667638">Άνοιγμα Τοποθεσίας...</translation>

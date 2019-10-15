@@ -115,14 +115,16 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
           // This code path is only for workers, hence always pass in
           // MSG_ROUTING_NONE as frame ID. Frames themselves go through
           // RenderFrameHostImpl instead.
-          NativeFileSystemManagerImpl::BindReceiverFromUIThread(
-              static_cast<StoragePartitionImpl*>(host->GetStoragePartition()),
+          auto* storage_partition =
+              static_cast<StoragePartitionImpl*>(host->GetStoragePartition());
+          auto* manager = storage_partition->GetNativeFileSystemManager();
+          manager->BindReceiver(
               NativeFileSystemManagerImpl::BindingContext(
                   origin,
-                  // TODO(https://crbug.com/989323): Obtain and use a better URL
-                  // for workers instead of the origin as source url. This URL
-                  // will be used for SafeBrowsing checks and for the Quarantine
-                  // Service.
+                  // TODO(https://crbug.com/989323): Obtain and use a better
+                  // URL for workers instead of the origin as source url.
+                  // This URL will be used for SafeBrowsing checks and for
+                  // the Quarantine Service.
                   origin.GetURL(), host->GetID(), MSG_ROUTING_NONE),
               std::move(receiver));
         }));

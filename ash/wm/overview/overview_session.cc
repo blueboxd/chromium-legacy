@@ -477,6 +477,7 @@ void OverviewSession::OnWindowDragContinued(
   target_grid->OnWindowDragContinued(dragged_window, location_in_screen,
                                      indicator_state);
 }
+
 void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
                                         const gfx::PointF& location_in_screen,
                                         bool should_drop_window_into_overview,
@@ -487,6 +488,11 @@ void OverviewSession::OnWindowDragEnded(aura::Window* dragged_window,
     return;
   target_grid->OnWindowDragEnded(dragged_window, location_in_screen,
                                  should_drop_window_into_overview, snap);
+}
+
+void OverviewSession::SetVisibleDuringWindowDragging(bool visible) {
+  for (auto& grid : grid_list_)
+    grid->SetVisibleDuringWindowDragging(visible);
 }
 
 void OverviewSession::PositionWindows(

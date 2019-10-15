@@ -1022,6 +1022,19 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
       }
     }
 
+    if (container.has_login_screen_screen_magnifier_type()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_screen_magnifier_type_options(),
+              container.login_screen_screen_magnifier_type_options(), &level)) {
+        policies->Set(
+            key::kDeviceLoginScreenScreenMagnifierType, level,
+            POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+            DecodeIntegerValue(container.login_screen_screen_magnifier_type()),
+            nullptr);
+      }
+    }
+
     if (container.has_login_screen_keyboard_focus_highlight_enabled()) {
       PolicyLevel level;
       if (GetPolicyLevel(

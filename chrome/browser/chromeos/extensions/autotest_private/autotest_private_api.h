@@ -829,6 +829,38 @@ class AutotestPrivateGetArcAppWindowInfoFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+// Starts ARC app performance tracing for the current ARC app window.
+class AutotestPrivateArcAppTracingStartFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateArcAppTracingStartFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.arcAppTracingStart",
+                             AUTOTESTPRIVATE_ARCAPPTRACINGSTART)
+
+ private:
+  ~AutotestPrivateArcAppTracingStartFunction() override;
+  ResponseAction Run() override;
+};
+
+// Stops active ARC app performance tracing if it was active and analyzes
+// results. Result is returned to the previously registered callback for
+// traceActiveArcAppStart.
+class AutotestPrivateArcAppTracingStopAndAnalyzeFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateArcAppTracingStopAndAnalyzeFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.arcAppTracingStopAndAnalyze",
+                             AUTOTESTPRIVATE_ARCAPPTRACINGSTOPANDANALYZE)
+
+ private:
+  ~AutotestPrivateArcAppTracingStopAndAnalyzeFunction() override;
+  ResponseAction Run() override;
+
+  void OnTracingResult(bool success,
+                       double fps,
+                       double commit_deviation,
+                       double render_quality);
+};
+
 class AutotestPrivateSwapWindowsInSplitViewFunction : public ExtensionFunction {
  public:
   AutotestPrivateSwapWindowsInSplitViewFunction();

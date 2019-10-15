@@ -66,6 +66,28 @@ public class AwMetricsServiceClient {
         return shouldRecordPackageName(ctx) ? ctx.getPackageName() : null;
     }
 
+    /**
+     * Gets a long representing the install time of the embedder application. Units are in seconds,
+     * as this is the resolution used by the metrics service. Returns {@code -1} upon failure.
+     */
+    // TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has been persisted
+    // for one or two milestones.
+    @CalledByNative
+    private static long getAppInstallTime() {
+        try {
+            Context ctx = ContextUtils.getApplicationContext();
+            long installTimeMs = ctx.getPackageManager()
+                                         .getPackageInfo(ctx.getPackageName(), 0 /* flags */)
+                                         .firstInstallTime;
+            long installTimeSec = installTimeMs / 1000;
+            return installTimeSec;
+        } catch (PackageManager.NameNotFoundException e) {
+            // This should never happen.
+            Log.e(TAG, "App could not find itself by package name!");
+            return -1;
+        }
+    }
+
     @NativeMethods
     interface Natives {
         void setHaveMetricsConsent(boolean userConsent, boolean appConsent);

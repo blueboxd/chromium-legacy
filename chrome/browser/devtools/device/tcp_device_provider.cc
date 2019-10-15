@@ -18,7 +18,7 @@
 #include "chrome/browser/devtools/device/adb/adb_client_socket.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
@@ -41,17 +41,16 @@ static void RunSocketCallback(
 
 class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
  public:
-  ResolveHostAndOpenSocket(const net::HostPortPair& address,
-                           const AdbClientSocket::SocketCallback& callback,
-                           network::mojom::HostResolverPtr* host_resolver)
-      : callback_(callback), binding_(this) {
-    network::mojom::ResolveHostClientPtr client_ptr;
-    binding_.Bind(mojo::MakeRequest(&client_ptr));
-    binding_.set_connection_error_handler(
+  ResolveHostAndOpenSocket(
+      const net::HostPortPair& address,
+      const AdbClientSocket::SocketCallback& callback,
+      mojo::Remote<network::mojom::HostResolver>* host_resolver)
+      : callback_(callback) {
+    (*host_resolver)
+        ->ResolveHost(address, nullptr, receiver_.BindNewPipeAndPassRemote());
+    receiver_.set_disconnect_handler(
         base::BindOnce(&ResolveHostAndOpenSocket::OnComplete,
                        base::Unretained(this), net::ERR_FAILED, base::nullopt));
-
-    (*host_resolver)->ResolveHost(address, nullptr, std::move(client_ptr));
   }
 
  private:
@@ -77,7 +76,7 @@ class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
   }
 
   AdbClientSocket::SocketCallback callback_;
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
 };
 
 }  // namespace
@@ -157,16 +156,18 @@ TCPDeviceProvider::~TCPDeviceProvider() {
 }
 
 void TCPDeviceProvider::InitializeHostResolver() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&TCPDeviceProvider::InitializeHostResolverOnUI,
-                                this, mojo::MakeRequest(&host_resolver_)));
-  host_resolver_.set_connection_error_handler(base::BindOnce(
+  host_resolver_.reset();
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&TCPDeviceProvider::InitializeHostResolverOnUI, this,
+                     host_resolver_.BindNewPipeAndPassReceiver()));
+  host_resolver_.set_disconnect_handler(base::BindOnce(
       &TCPDeviceProvider::InitializeHostResolver, base::Unretained(this)));
 }
 
 void TCPDeviceProvider::InitializeHostResolverOnUI(
-    network::mojom::HostResolverRequest request) {
+    mojo::PendingReceiver<network::mojom::HostResolver> receiver) {
   g_browser_process->system_network_context_manager()
       ->GetContext()
-      ->CreateHostResolver(base::nullopt, std::move(request));
+      ->CreateHostResolver(base::nullopt, std::move(receiver));
 }

@@ -289,7 +289,7 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
 void AwWebContentsDelegate::EnterFullscreenModeForTab(
     content::WebContents* web_contents,
     const GURL& origin,
-    const blink::WebFullscreenOptions& options) {
+    const blink::FullScreenOptions& options) {
   WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin,
                                                         options);
   is_fullscreen_ = true;

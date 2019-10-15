@@ -1610,6 +1610,8 @@ component("net") {
       "third_party/quiche/src/quic/core/quic_interval.h",
       "third_party/quiche/src/quic/core/quic_interval_set.h",
       "third_party/quiche/src/quic/core/quic_lru_cache.h",
+      "third_party/quiche/src/quic/core/quic_mtu_discovery.cc",
+      "third_party/quiche/src/quic/core/quic_mtu_discovery.h",
       "third_party/quiche/src/quic/core/quic_one_block_arena.h",
       "third_party/quiche/src/quic/core/quic_packet_creator.cc",
       "third_party/quiche/src/quic/core/quic_packet_creator.h",
@@ -1726,6 +1728,9 @@ component("net") {
       "third_party/quiche/src/quic/platform/api/quic_uint128.h",
       "third_party/quiche/src/quic/quic_transport/quic_transport_client_session.cc",
       "third_party/quiche/src/quic/quic_transport/quic_transport_client_session.h",
+      "third_party/quiche/src/quic/quic_transport/quic_transport_server_session.cc",
+      "third_party/quiche/src/quic/quic_transport/quic_transport_server_session.h",
+      "third_party/quiche/src/quic/quic_transport/quic_transport_session_interface.h",
       "third_party/quiche/src/spdy/core/fifo_write_scheduler.h",
       "third_party/quiche/src/spdy/core/hpack/hpack_constants.cc",
       "third_party/quiche/src/spdy/core/hpack/hpack_constants.h",
@@ -3272,7 +3277,7 @@ if (is_linux) {
     ]
   }
 
-  executable("quic_client_for_interop_test") {
+  executable("quic_client_interop_test") {
     sources = [
       "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
       "third_party/quiche/src/quic/tools/quic_client_interop_test_bin.cc",
@@ -5628,6 +5633,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/platform/api/quic_string_utils_test.cc",
     "third_party/quiche/src/quic/platform/api/quic_text_utils_test.cc",
     "third_party/quiche/src/quic/quic_transport/quic_transport_client_session_test.cc",
+    "third_party/quiche/src/quic/quic_transport/quic_transport_server_session_test.cc",
     "third_party/quiche/src/quic/test_tools/crypto_test_utils_test.cc",
     "third_party/quiche/src/quic/test_tools/mock_quic_time_wait_list_manager.cc",
     "third_party/quiche/src/quic/test_tools/mock_quic_time_wait_list_manager.h",
@@ -6641,7 +6647,7 @@ fuzzer_test("net_unescape_url_component_fuzzer") {
     "//base",
     "//net",
   ]
-  dict = "base/unescape_url_component_fuzzer.dict"
+  dict = "data/fuzzer_dictionaries/unescape_url_component_fuzzer.dict"
   libfuzzer_options = [ "max_len = 2048" ]
 }
 
@@ -6685,6 +6691,18 @@ fuzzer_test("net_http_chunked_decoder_fuzzer") {
   sources = [
     "http/http_chunked_decoder_fuzzer.cc",
   ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//net",
+  ]
+  dict = "data/fuzzer_dictionaries/http_chunked_decoder_fuzzer.dict"
+}
+
+fuzzer_test("net_http_content_disposition_fuzzer") {
+  sources = [
+    "http/http_content_disposition_fuzzer.cc",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_content_disposition_fuzzer.dict"
   deps = [
     ":net_fuzzer_test_support",
     "//net",

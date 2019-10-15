@@ -84,6 +84,7 @@ source_set("browser_tests") {
     "bookmark_app_registrar_browsertest.cc",
     "system_web_app_manager_browsertest.cc",
     "system_web_app_manager_browsertest.h",
+    "system_web_app_manager_browsertest_chromeos.cc",
     "web_app_audio_focus_browsertest.cc",
   ]
 
@@ -95,6 +96,7 @@ source_set("browser_tests") {
     "//chrome/app/theme:chrome_unscaled_resources_grit",
     "//chrome/browser",
     "//chrome/browser/ui",
+    "//chrome/browser/web_applications",
     "//chrome/browser/web_applications:web_app_test_group",
     "//chrome/browser/web_applications:web_applications_on_extensions",
     "//chrome/browser/web_applications:web_applications_on_extensions_test_support",
@@ -107,4 +109,11 @@ source_set("browser_tests") {
     "//extensions/common",
     "//net:test_support",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      "//chromeos/components/media_app_ui",
+      "//chromeos/constants",
+    ]
+  }
 }

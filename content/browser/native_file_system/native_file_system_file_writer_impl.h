@@ -23,13 +23,8 @@ namespace content {
 // owned by the NativeFileSystemManagerImpl instance passed in to the
 // constructor.
 //
-// This class is not thread safe, all methods should be called on the IO thread.
-// The link to the IO thread is due to its dependencies on both the blob system
-// (via storage::BlobStorageContext) and the file system backends (via
-// storage::FileSystemContext and storage::FileSystemOperationRunner, which both
-// expect some of their methods to always be called on the IO thread).
-// See https://crbug.com/957249 for some thoughts about the blob system aspect
-// of this.
+// This class is not thread safe, all methods must be called from the same
+// sequence.
 class CONTENT_EXPORT NativeFileSystemFileWriterImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemFileWriter {
@@ -76,9 +71,6 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void WriteImpl(uint64_t offset,
                  mojo::PendingRemote<blink::mojom::Blob> data,
                  WriteCallback callback);
-  void DoWriteBlob(WriteCallback callback,
-                   uint64_t position,
-                   std::unique_ptr<storage::BlobDataHandle> blob);
   void WriteStreamImpl(uint64_t offset,
                        mojo::ScopedDataPipeConsumerHandle stream,
                        WriteStreamCallback callback);

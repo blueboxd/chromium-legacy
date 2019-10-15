@@ -56,7 +56,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   net::SOCKSClientSocket socket(
       std::move(fuzzed_socket), net::HostPortPair("foo", 80),
-      net::DEFAULT_PRIORITY, &mock_host_resolver, TRAFFIC_ANNOTATION_FOR_TESTS);
+      net::DEFAULT_PRIORITY, &mock_host_resolver,
+      false /* disable_secure_dns */, TRAFFIC_ANNOTATION_FOR_TESTS);
   int result = socket.Connect(callback.callback());
   callback.GetResult(result);
   return 0;

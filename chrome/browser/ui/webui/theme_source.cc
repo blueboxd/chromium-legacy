@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,8 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/url_data_source.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -238,4 +241,16 @@ void ThemeSource::SendThemeImage(
         base::BindOnce(&ProcessResourceOnUiThread, resource_id, scale, data),
         base::BindOnce(callback, data));
   }
+}
+
+std::string ThemeSource::GetAccessControlAllowOriginForOrigin(
+    const std::string& origin) {
+  std::string allowed_origin_prefix = content::kChromeUIScheme;
+  allowed_origin_prefix += "://";
+  if (base::StartsWith(origin, allowed_origin_prefix,
+                       base::CompareCase::SENSITIVE)) {
+    return origin;
+  }
+
+  return content::URLDataSource::GetAccessControlAllowOriginForOrigin(origin);
 }

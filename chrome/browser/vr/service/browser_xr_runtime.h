@@ -52,9 +52,10 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
  public:
   using RequestSessionCallback =
       base::OnceCallback<void(device::mojom::XRSessionPtr)>;
-  explicit BrowserXRRuntime(device::mojom::XRDeviceId id,
-                            device::mojom::XRRuntimePtr runtime,
-                            device::mojom::VRDisplayInfoPtr info);
+  explicit BrowserXRRuntime(
+      device::mojom::XRDeviceId id,
+      mojo::PendingRemote<device::mojom::XRRuntime> runtime,
+      device::mojom::VRDisplayInfoPtr info);
   ~BrowserXRRuntime() override;
 
   void ExitVrFromPresentingService();
@@ -119,7 +120,7 @@ class BrowserXRRuntime : public device::mojom::XRRuntimeEventListener {
   void OnInitialized();
 
   device::mojom::XRDeviceId id_;
-  device::mojom::XRRuntimePtr runtime_;
+  mojo::Remote<device::mojom::XRRuntime> runtime_;
   mojo::Remote<device::mojom::XRSessionController>
       immersive_session_controller_;
 

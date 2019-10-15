@@ -59,20 +59,19 @@ TEST(HttpAuthSSPITest, DetermineMaxTokenLength_Normal) {
   memset(&package_info, 0x0, sizeof(package_info));
   package_info.cbMaxToken = 1337;
 
-  MockSSPILibrary mock_library;
-  mock_library.ExpectQuerySecurityPackageInfo(L"NTLM", SEC_E_OK, &package_info);
+  MockSSPILibrary mock_library{L"NTLM"};
+  mock_library.ExpectQuerySecurityPackageInfo(SEC_E_OK, &package_info);
   ULONG max_token_length = kMaxTokenLength;
-  int rv = DetermineMaxTokenLength(&mock_library, L"NTLM", &max_token_length);
+  int rv = mock_library.DetermineMaxTokenLength(&max_token_length);
   EXPECT_THAT(rv, IsOk());
   EXPECT_EQ(1337u, max_token_length);
 }
 
 TEST(HttpAuthSSPITest, DetermineMaxTokenLength_InvalidPackage) {
-  MockSSPILibrary mock_library;
-  mock_library.ExpectQuerySecurityPackageInfo(L"Foo", SEC_E_SECPKG_NOT_FOUND,
-                                              nullptr);
+  MockSSPILibrary mock_library{L"Foo"};
+  mock_library.ExpectQuerySecurityPackageInfo(SEC_E_SECPKG_NOT_FOUND, nullptr);
   ULONG max_token_length = kMaxTokenLength;
-  int rv = DetermineMaxTokenLength(&mock_library, L"Foo", &max_token_length);
+  int rv = mock_library.DetermineMaxTokenLength(&max_token_length);
   EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
   // |DetermineMaxTokenLength()| interface states that |max_token_length| should
   // not change on failure.
@@ -81,9 +80,8 @@ TEST(HttpAuthSSPITest, DetermineMaxTokenLength_InvalidPackage) {
 
 TEST(HttpAuthSSPITest, ParseChallenge_FirstRound) {
   // The first round should just consist of an unadorned "Negotiate" header.
-  MockSSPILibrary mock_library;
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate",
-                         NEGOSSP_NAME, kMaxTokenLength);
+  MockSSPILibrary mock_library{NEGOSSP_NAME};
+  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
   std::string challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -94,9 +92,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_FirstRound) {
 TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
   // The first round should just have "Negotiate", and the second round should
   // have a valid base64 token associated with it.
-  MockSSPILibrary mock_library;
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate",
-                         NEGOSSP_NAME, kMaxTokenLength);
+  MockSSPILibrary mock_library{NEGOSSP_NAME};
+  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -120,9 +117,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
 TEST(HttpAuthSSPITest, ParseChallenge_UnexpectedTokenFirstRound) {
   // If the first round challenge has an additional authentication token, it
   // should be treated as an invalid challenge from the server.
-  MockSSPILibrary mock_library;
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate",
-                         NEGOSSP_NAME, kMaxTokenLength);
+  MockSSPILibrary mock_library{NEGOSSP_NAME};
+  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
   std::string challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -133,9 +129,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_UnexpectedTokenFirstRound) {
 TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
   // If a later-round challenge is simply "Negotiate", it should be treated as
   // an authentication challenge rejection from the server or proxy.
-  MockSSPILibrary mock_library;
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate",
-                         NEGOSSP_NAME, kMaxTokenLength);
+  MockSSPILibrary mock_library{NEGOSSP_NAME};
+  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -157,9 +152,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
 TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
   // If a later-round challenge has an invalid base64 encoded token, it should
   // be treated as an invalid challenge.
-  MockSSPILibrary mock_library;
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate",
-                         NEGOSSP_NAME, kMaxTokenLength);
+  MockSSPILibrary mock_library{NEGOSSP_NAME};
+  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -180,9 +174,8 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
 
 // Runs through a full handshake against the MockSSPILibrary.
 TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds) {
-  MockSSPILibrary mock_library;
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate", NEGOSSP_NAME,
-                         kMaxTokenLength);
+  MockSSPILibrary mock_library{NEGOSSP_NAME};
+  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -222,9 +215,8 @@ TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds) {
 // Test NetLogs produced while going through a full Negotiate handshake.
 TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds_Logging) {
   BoundTestNetLog net_log;
-  MockSSPILibrary mock_library;
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate", NEGOSSP_NAME,
-                         kMaxTokenLength);
+  MockSSPILibrary mock_library{NEGOSSP_NAME};
+  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());

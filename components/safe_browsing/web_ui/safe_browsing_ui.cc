@@ -176,6 +176,36 @@ void WebUIInfoSingleton::ClearPGPings() {
   std::map<int, LoginReputationClientResponse>().swap(pg_responses_);
 }
 
+int WebUIInfoSingleton::AddToRTLookupPings(const RTLookupRequest request) {
+  if (!HasListener())
+    return -1;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyRTLookupPingJsListener(rt_lookup_pings_.size(),
+                                                 request);
+
+  rt_lookup_pings_.push_back(request);
+
+  return rt_lookup_pings_.size() - 1;
+}
+
+void WebUIInfoSingleton::AddToRTLookupResponses(
+    int token,
+    const RTLookupResponse response) {
+  if (!HasListener())
+    return;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyRTLookupResponseJsListener(token, response);
+
+  rt_lookup_responses_[token] = response;
+}
+
+void WebUIInfoSingleton::ClearRTLookupPings() {
+  std::vector<RTLookupRequest>().swap(rt_lookup_pings_);
+  std::map<int, RTLookupResponse>().swap(rt_lookup_responses_);
+}
+
 void WebUIInfoSingleton::LogMessage(const std::string& message) {
   if (!HasListener())
     return;
@@ -213,6 +243,7 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
     ClearClientDownloadResponsesReceived();
     ClearPGEvents();
     ClearPGPings();
+    ClearRTLookupPings();
     ClearLogMessages();
   }
 }
@@ -942,6 +973,53 @@ base::Value SerializeChromeUserPopulation(
   return std::move(population_dict);
 }
 
+base::Value SerializeRTThreatInfo(
+    const RTLookupResponse::ThreatInfo& threat_info) {
+  base::DictionaryValue threat_info_dict;
+  std::string threat_type;
+  switch (threat_info.threat_type()) {
+    case RTLookupResponse::ThreatInfo::THREAT_TYPE_UNSPECIFIED:
+      threat_type = "THREAT_TYPE_UNSPECIFIED";
+      break;
+    case RTLookupResponse::ThreatInfo::WEB_MALWARE:
+      threat_type = "WEB_MALWARE";
+      break;
+    case RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING:
+      threat_type = "SOCIAL_ENGINEERING";
+      break;
+    case RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE:
+      threat_type = "UNWANTED_SOFTWARE";
+      break;
+    case RTLookupResponse::ThreatInfo::UNCLEAR_BILLING:
+      threat_type = "UNCLEAR_BILLING";
+      break;
+  }
+  threat_info_dict.SetKey("threat_type", base::Value(threat_type));
+
+  threat_info_dict.SetKey(
+      "cache_duration_sec",
+      base::Value(static_cast<double>(threat_info.cache_duration_sec())));
+
+  threat_info_dict.SetKey("cache_expression",
+                          base::Value(threat_info.cache_expression()));
+
+  std::string verdict_type;
+  switch (threat_info.verdict_type()) {
+    case RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED:
+      verdict_type = "VERDICT_TYPE_UNSPECIFIED";
+      break;
+    case RTLookupResponse::ThreatInfo::SAFE:
+      verdict_type = "SAFE";
+      break;
+    case RTLookupResponse::ThreatInfo::DANGEROUS:
+      verdict_type = "DANGEROUS";
+      break;
+  }
+  threat_info_dict.SetKey("verdict_type", base::Value(verdict_type));
+
+  return std::move(threat_info_dict);
+}
+
 base::Value SerializeDomFeatures(const DomFeatures& dom_features) {
   base::DictionaryValue dom_features_dict;
   auto feature_map = std::make_unique<base::ListValue>();
@@ -1045,6 +1123,52 @@ std::string SerializePGResponse(const LoginReputationClientResponse& response) {
   response_dict.SetKey("cache_expression",
                        base::Value(response.cache_expression()));
   response_dict.SetKey("verdict_token", base::Value(response.verdict_token()));
+
+  std::string response_serialized;
+  JSONStringValueSerializer serializer(&response_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(response_dict);
+  return response_serialized;
+}
+
+std::string SerializeRTLookupPing(const RTLookupRequest& request) {
+  base::DictionaryValue request_dict;
+
+  request_dict.SetKey("url", base::Value(request.url()));
+  request_dict.SetKey("population",
+                      SerializeChromeUserPopulation(request.population()));
+
+  std::string lookupType;
+  switch (request.lookup_type()) {
+    case RTLookupRequest::LOOKUP_TYPE_UNSPECIFIED:
+      lookupType = "LOOKUP_TYPE_UNSPECIFIED";
+      break;
+    case RTLookupRequest::NAVIGATION:
+      lookupType = "NAVIGATION";
+      break;
+    case RTLookupRequest::DOWNLOAD:
+      lookupType = "DOWNLOAD";
+      break;
+  }
+
+  request_dict.SetKey("lookup_type", base::Value(lookupType));
+
+  std::string request_serialized;
+  JSONStringValueSerializer serializer(&request_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(request_dict);
+  return request_serialized;
+}
+
+std::string SerializeRTLookupResponse(const RTLookupResponse& response) {
+  base::DictionaryValue response_dict;
+
+  base::ListValue threat_info_list;
+  for (const RTLookupResponse::ThreatInfo& threat_info :
+       response.threat_info()) {
+    threat_info_list.Append(SerializeRTThreatInfo(threat_info));
+  }
+  response_dict.SetKey("threat_infos", std::move(threat_info_list));
 
   std::string response_serialized;
   JSONStringValueSerializer serializer(&response_serialized);
@@ -1324,6 +1448,45 @@ void SafeBrowsingUIHandler::GetPGResponses(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
 }
 
+void SafeBrowsingUIHandler::GetRTLookupPings(const base::ListValue* args) {
+  const std::vector<RTLookupRequest> requests =
+      WebUIInfoSingleton::GetInstance()->rt_lookup_pings();
+
+  base::ListValue pings_sent;
+  for (size_t request_index = 0; request_index < requests.size();
+       request_index++) {
+    base::ListValue ping_entry;
+    ping_entry.Append(base::Value(int(request_index)));
+    ping_entry.Append(
+        base::Value(SerializeRTLookupPing(requests[request_index])));
+    pings_sent.Append(std::move(ping_entry));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), pings_sent);
+}
+
+void SafeBrowsingUIHandler::GetRTLookupResponses(const base::ListValue* args) {
+  const std::map<int, RTLookupResponse> responses =
+      WebUIInfoSingleton::GetInstance()->rt_lookup_responses();
+
+  base::ListValue responses_sent;
+  for (const auto& token_and_response : responses) {
+    base::ListValue response_entry;
+    response_entry.Append(base::Value(token_and_response.first));
+    response_entry.Append(
+        base::Value(SerializeRTLookupResponse(token_and_response.second)));
+    responses_sent.Append(std::move(response_entry));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
+}
+
 void SafeBrowsingUIHandler::GetReferrerChain(const base::ListValue* args) {
   std::string url_string;
   args->GetString(1, &url_string);
@@ -1431,6 +1594,28 @@ void SafeBrowsingUIHandler::NotifyPGResponseJsListener(
   FireWebUIListener("pg-responses-update", response_list);
 }
 
+void SafeBrowsingUIHandler::NotifyRTLookupPingJsListener(
+    int token,
+    const RTLookupRequest& request) {
+  base::ListValue request_list;
+  request_list.Append(base::Value(token));
+  request_list.Append(base::Value(SerializeRTLookupPing(request)));
+
+  AllowJavascript();
+  FireWebUIListener("rt-lookup-pings-update", request_list);
+}
+
+void SafeBrowsingUIHandler::NotifyRTLookupResponseJsListener(
+    int token,
+    const RTLookupResponse& response) {
+  base::ListValue response_list;
+  response_list.Append(base::Value(token));
+  response_list.Append(base::Value(SerializeRTLookupResponse(response)));
+
+  AllowJavascript();
+  FireWebUIListener("rt-lookup-responses-update", response_list);
+}
+
 void SafeBrowsingUIHandler::NotifyLogMessageJsListener(
     const base::Time& timestamp,
     const std::string& message) {
@@ -1484,6 +1669,14 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPGResponses",
       base::BindRepeating(&SafeBrowsingUIHandler::GetPGResponses,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getRTLookupPings",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupPings,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getRTLookupResponses",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetRTLookupResponses,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getLogMessages",

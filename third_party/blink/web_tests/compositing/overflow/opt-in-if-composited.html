@@ -20,7 +20,7 @@ onload = function() {
             result += "Fail.\n"
     }
 
-    document.getElementById("scroller").style.webkitTransform = "translateZ(0)";
+    document.getElementById("scroller").style.willChange = "transform";
     requestAnimationFrame(function() {
         if (window.internals) {
             result += "Should be using composited scrolling (since we're compositing anyhow): ";
@@ -30,7 +30,7 @@ onload = function() {
                 result += "Fail.\n"
         }
 
-        document.getElementById("scroller").style.webkitTransform = "";
+        document.getElementById("scroller").style.willChange = "";
         requestAnimationFrame(function() {
             if (window.internals) {
                 result += "Should not be using composited scrolling (since we've lost our direct reason): ";

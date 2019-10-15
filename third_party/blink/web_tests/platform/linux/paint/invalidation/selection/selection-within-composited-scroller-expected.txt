@@ -17,7 +17,6 @@
       "bounds": [200, 1620],
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
-      "scrollPosition": [0, 450],
       "paintInvalidations": [
         {
           "object": "NGPhysicalTextFragment 'test'",

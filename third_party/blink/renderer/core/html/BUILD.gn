@@ -2,12 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/split_static_library.gni")
 import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("html") {
-  split_count = 4
-
   sources = [
     "anchor_element_metrics.cc",
     "anchor_element_metrics.h",

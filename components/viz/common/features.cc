@@ -44,6 +44,11 @@ const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
 const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Kill-switch to disable de-jelly, even if flags/properties indicate it should
+// be enabled.
+const base::Feature kDisableDeJelly{"DisableDeJelly",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsVizDisplayCompositorEnabled() {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // We can't remove the feature switch yet because OOP-D isn't enabled on all

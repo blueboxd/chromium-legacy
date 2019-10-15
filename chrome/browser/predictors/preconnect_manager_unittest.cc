@@ -69,15 +69,18 @@ class MockNetworkContext : public network::TestNetworkContext {
         << "Not all resolve host requests were satisfied";
   }
 
-  void ResolveHost(
-      const net::HostPortPair& host_port,
-      network::mojom::ResolveHostParametersPtr optional_parameters,
-      network::mojom::ResolveHostClientPtr response_client) override {
+  void ResolveHost(const net::HostPortPair& host_port,
+                   network::mojom::ResolveHostParametersPtr optional_parameters,
+                   mojo::PendingRemote<network::mojom::ResolveHostClient>
+                       response_client) override {
     const std::string& host = host_port.host();
     EXPECT_FALSE(IsHangingHost(GURL(host)))
         << " Hosts marked as hanging should not be resolved.";
     EXPECT_TRUE(
-        resolve_host_clients_.emplace(host, std::move(response_client)).second);
+        resolve_host_clients_
+            .emplace(host, mojo::Remote<network::mojom::ResolveHostClient>(
+                               std::move(response_client)))
+            .second);
     ResolveHostProxy(host);
   }
 
@@ -146,7 +149,7 @@ class MockNetworkContext : public network::TestNetworkContext {
                      url.host()) != hanging_hosts_.end();
   }
 
-  std::map<std::string, network::mojom::ResolveHostClientPtr>
+  std::map<std::string, mojo::Remote<network::mojom::ResolveHostClient>>
       resolve_host_clients_;
   std::map<GURL, mojo::Remote<network::mojom::ProxyLookupClient>>
       proxy_lookup_clients_;

@@ -355,10 +355,9 @@ TEST_F(PaintLayerClipperTest, ContainPaintClip) {
 
   PaintLayer* layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(layer, &layer->GetLayoutObject().FirstFragment(),
-                           kPaintingClipRectsIgnoringOverflowClip,
-                           kIgnorePlatformOverlayScrollbarSize,
-                           kIgnoreOverflowClip);
+  ClipRectsContext context(
+      layer, &layer->GetLayoutObject().FirstFragment(), kPaintingClipRects,
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
   PhysicalRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
@@ -394,8 +393,8 @@ TEST_F(PaintLayerClipperTest, NestedContainPaintClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
   ClipRectsContext context(
       layer->Parent(), &layer->Parent()->GetLayoutObject().FirstFragment(),
-      kPaintingClipRectsIgnoringOverflowClip,
-      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
+      kPaintingClipRects, kIgnorePlatformOverlayScrollbarSize,
+      kIgnoreOverflowClip);
   PhysicalRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
@@ -639,10 +638,9 @@ TEST_F(PaintLayerClipperTest, IgnoreRootLayerClipWithCSSClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("root"))->Layer();
   PaintLayer* target =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(root, &root->GetLayoutObject().FirstFragment(),
-                           kPaintingClipRectsIgnoringOverflowClip,
-                           kIgnorePlatformOverlayScrollbarSize,
-                           kIgnoreOverflowClip);
+  ClipRectsContext context(
+      root, &root->GetLayoutObject().FirstFragment(), kPaintingClipRects,
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
   PhysicalRect infinite_rect(LayoutRect::InfiniteIntRect());
   PhysicalRect layer_bounds(infinite_rect);
   ClipRect background_rect(infinite_rect);
@@ -675,10 +673,9 @@ TEST_F(PaintLayerClipperTest, IgnoreRootLayerClipWithOverflowClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("root"))->Layer();
   PaintLayer* target =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(root, &root->GetLayoutObject().FirstFragment(),
-                           kPaintingClipRectsIgnoringOverflowClip,
-                           kIgnorePlatformOverlayScrollbarSize,
-                           kIgnoreOverflowClip);
+  ClipRectsContext context(
+      root, &root->GetLayoutObject().FirstFragment(), kPaintingClipRects,
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
   PhysicalRect infinite_rect(LayoutRect::InfiniteIntRect());
   PhysicalRect layer_bounds(infinite_rect);
   ClipRect background_rect(infinite_rect);
@@ -712,10 +709,9 @@ TEST_F(PaintLayerClipperTest, IgnoreRootLayerClipWithBothClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("root"))->Layer();
   PaintLayer* target =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(root, &root->GetLayoutObject().FirstFragment(),
-                           kPaintingClipRectsIgnoringOverflowClip,
-                           kIgnorePlatformOverlayScrollbarSize,
-                           kIgnoreOverflowClip);
+  ClipRectsContext context(
+      root, &root->GetLayoutObject().FirstFragment(), kPaintingClipRects,
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
   PhysicalRect infinite_rect(LayoutRect::InfiniteIntRect());
   PhysicalRect layer_bounds(infinite_rect);
   ClipRect background_rect(infinite_rect);

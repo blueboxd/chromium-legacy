@@ -116,6 +116,7 @@ TEST_P(NativeWidgetMacInteractiveUITest, ShowAttainsKeyStatus) {
 
 // Test that ShowInactive does not take keyWindow status.
 TEST_P(NativeWidgetMacInteractiveUITest, ShowInactiveIgnoresKeyStatus) {
+  WidgetTest::WaitForSystemAppActivation();
   Widget* widget = MakeWidget();
   NSWindow* widget_window = widget->GetNativeWindow().GetNativeNSWindow();
 

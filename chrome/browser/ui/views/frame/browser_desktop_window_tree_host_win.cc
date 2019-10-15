@@ -46,8 +46,7 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
     : DesktopWindowTreeHostWin(native_widget_delegate,
                                desktop_native_widget_aura),
       browser_view_(browser_view),
-      browser_frame_(browser_frame),
-      profile_observer_(this) {
+      browser_frame_(browser_frame) {
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 }

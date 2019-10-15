@@ -29,6 +29,10 @@ const char kTestFileContents[] = "test";
 
 }  // namespace
 
+@interface ICCameraDevice ()
+- (instancetype)initWithDictionary:(id)properties NS_DESIGNATED_INITIALIZER;
+@end
+
 @interface MockMTPICCameraDevice : ICCameraDevice {
  @private
   base::scoped_nsobject<NSMutableArray> allMediaFiles_;
@@ -39,6 +43,10 @@ const char kTestFileContents[] = "test";
 @end
 
 @implementation MockMTPICCameraDevice
+
+- (instancetype)init {
+  return [super initWithDictionary:@{}];
+}
 
 - (NSString*)mountPoint {
   return @"mountPoint";
@@ -157,7 +165,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         storage_monitor::TestStorageMonitor::CreateAndInstall();
     manager_.SetNotifications(monitor->receiver());
 
-    camera_ = [MockMTPICCameraDevice alloc];
+    camera_ = [[MockMTPICCameraDevice alloc] init];
     id<ICDeviceBrowserDelegate> delegate = manager_.device_browser_delegate();
     [delegate deviceBrowser:manager_.device_browser_for_test()
                didAddDevice:camera_

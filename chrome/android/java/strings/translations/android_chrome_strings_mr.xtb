@@ -69,12 +69,10 @@
 <translation id="1414981605391750300">Google शी संपर्क साधत आहे. याला एखादे मिनिट लागेल…</translation>
 <translation id="1416550906796893042">ॲप्लिकेशन आवृत्ती</translation>
 <translation id="1430915738399379752">प्रिंट</translation>
-<translation id="1445680696957526815">Chrome चे घटक एकमेकांशी विसंगत आहेत. Chrome श्रेणीसुधारित होत असावे, कृपया काही मिनिटांमध्ये पुन्हा प्रयत्न करा. समस्या सुरु राहिल्यास, Chrome अनइंस्टॉल करून पहा आणि पुन्हा इंस्टॉल करून पहा.</translation>
 <translation id="1446450296470737166">MIDI डिव्हाइसेसच्या पूर्ण नियंत्रणास अनुमती द्या</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> शेअर करू शकत नाही</translation>
 <translation id="145097072038377568">Android सेटिंग्ज मध्‍ये बंद करा</translation>
 <translation id="1477626028522505441">सर्व्हर समस्यांमुळे <ph name="FILE_NAME" /> डाउनलोड अयशस्वी झाले.</translation>
-<translation id="1501480321619201731">गट हटवा</translation>
 <translation id="1506061864768559482">शोध इंजिन</translation>
 <translation id="1513352483775369820">बुकमार्क आणि वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड हटवा</translation>
@@ -230,7 +228,6 @@
 <translation id="2650751991977523696">फाइल पुन्हा डाउनलोड करायची?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ऑडिओ फाइल}other{# ऑडिओ फायली}}</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
-<translation id="2671423594960767771">गट शेअर करा</translation>
 <translation id="2677748264148917807">सोडा</translation>
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2707726405694321444">पृष्ठ रिफ्रेश करा</translation>
@@ -260,7 +257,6 @@
 <translation id="2893180576842394309">शोध आणि इतर Google सेवा पर्सनलाइझ करण्यासाठी Google कदाचित तुमच्या इतिहासाचा वापर करू शकते.</translation>
 <translation id="2898264748040935573">स्टोअर केलेला पासवर्ड संपादित करा</translation>
 <translation id="2900528713135656174">इव्हेंट तयार करा</translation>
-<translation id="2902702728133930130">सुरू करताना अनपेक्षित एररमुळे Chrome अयशस्वी झाले.</translation>
 <translation id="290376772003165898">पेज <ph name="LANGUAGE" />मध्ये नाही?</translation>
 <translation id="2904414404539560095">पूर्ण उंचीवर उघडलेल्या टॅबसह शेअर करण्यासाठी डिव्हाइसची सूची.</translation>
 <translation id="2910701580606108292">सायटींना संरक्षित आशय प्ले करू देण्याआधी विचारा</translation>
@@ -479,7 +475,6 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अधिक}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> अधिक}}</translation>
 <translation id="4696983787092045100">तुमच्या डिव्हाइसवर एसएमएस पाठवा</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> मध्ये ऑफलाइन पाहा</translation>
-<translation id="4698413471314543145">Chrome रन करण्यासाठी आवश्यक असलेली महत्त्वाची कार्यक्षमता गमावली आहे; एकतर तुमचे Chrome इंस्टॉलेशन पूर्ण झाले आहे किंवा Android च्या या आवृत्तीशी कंपॅटिबल नाही.</translation>
 <translation id="4699172675775169585">कॅश   इमेज आणि फायली</translation>
 <translation id="4714588616299687897">तुमचा सुमारे 60% डेटा वाचवा</translation>
 <translation id="4719927025381752090">भाषांतर करण्यास ऑफर करा</translation>

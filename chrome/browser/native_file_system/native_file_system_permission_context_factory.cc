@@ -11,19 +11,19 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
-scoped_refptr<ChromeNativeFileSystemPermissionContext>
+ChromeNativeFileSystemPermissionContext*
 NativeFileSystemPermissionContextFactory::GetForProfile(
     content::BrowserContext* profile) {
   return static_cast<ChromeNativeFileSystemPermissionContext*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-scoped_refptr<ChromeNativeFileSystemPermissionContext>
+ChromeNativeFileSystemPermissionContext*
 NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
     content::BrowserContext* profile) {
   return static_cast<ChromeNativeFileSystemPermissionContext*>(
-      GetInstance()->GetServiceForBrowserContext(profile, false).get());
+      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
@@ -35,7 +35,7 @@ NativeFileSystemPermissionContextFactory::GetInstance() {
 
 NativeFileSystemPermissionContextFactory::
     NativeFileSystemPermissionContextFactory()
-    : RefcountedBrowserContextKeyedServiceFactory(
+    : BrowserContextKeyedServiceFactory(
           "NativeFileSystemPermissionContext",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HostContentSettingsMapFactory::GetInstance());
@@ -50,8 +50,7 @@ NativeFileSystemPermissionContextFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-scoped_refptr<RefcountedKeyedService>
-NativeFileSystemPermissionContextFactory::BuildServiceInstanceFor(
+KeyedService* NativeFileSystemPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ChromeNativeFileSystemPermissionContext(profile);
 }

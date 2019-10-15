@@ -213,6 +213,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     features.DisableIfNotSet(::features::kSmsReceiver);
 
     features.DisableIfNotSet(::features::kWebXr);
+
+    // De-jelly is never supported on WebView.
+    features.EnableIfNotSet(::features::kDisableDeJelly);
   }
 
   android_webview::RegisterPathProvider();

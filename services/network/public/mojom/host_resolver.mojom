@@ -276,7 +276,7 @@ interface HostResolver {
   // |response_client|.
   ResolveHost(HostPortPair host,
               ResolveHostParameters? optional_parameters,
-              ResolveHostClient response_client);
+              pending_remote<ResolveHostClient> response_client);
 
   // Starts a listener to watch for updates to a multicast DNS result. Result is
   // a network error code indicating the success of starting the listener. On

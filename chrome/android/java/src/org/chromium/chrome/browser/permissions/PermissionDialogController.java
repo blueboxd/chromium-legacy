@@ -11,8 +11,6 @@ import androidx.annotation.IntDef;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -33,13 +31,13 @@ import java.util.List;
  */
 public class PermissionDialogController
         implements AndroidPermissionRequester.RequestDelegate, ModalDialogProperties.Controller {
-    @IntDef({State.NOT_SHOWING, State.PROMPT_PENDING, State.PROMPT_OPEN, State.PROMPT_ACCEPTED,
-            State.PROMPT_DENIED, State.REQUEST_ANDROID_PERMISSIONS})
+    @IntDef({State.NOT_SHOWING, State.PROMPT_OPEN, State.PROMPT_ACCEPTED, State.PROMPT_DENIED,
+            State.REQUEST_ANDROID_PERMISSIONS})
     @Retention(RetentionPolicy.SOURCE)
     private @interface State {
         int NOT_SHOWING = 0;
         // We don't show prompts while Chrome Home is showing.
-        int PROMPT_PENDING = 1;
+        // int PROMPT_PENDING = 1; // Obsolete.
         int PROMPT_OPEN = 2;
         int PROMPT_ACCEPTED = 3;
         int PROMPT_DENIED = 4;
@@ -139,7 +137,6 @@ public class PermissionDialogController
         assert mState == State.NOT_SHOWING;
 
         mDialogDelegate = mRequestQueue.remove(0);
-        mState = State.PROMPT_PENDING;
         ChromeActivity activity = mDialogDelegate.getTab().getActivity();
 
         // It's possible for the activity to be null if we reach here just after the user
@@ -152,35 +149,6 @@ public class PermissionDialogController
             destroyDelegate();
             return;
         }
-
-        // Suppress modals while Chrome Home is open. Eventually we will want to handle other cases
-        // whereby the tab is obscured so modals don't pop up on top of (e.g.) the tab switcher or
-        // the three-dot menu.
-        final BottomSheet bottomSheet = activity.getBottomSheet();
-        if (bottomSheet == null || !bottomSheet.isSheetOpen()) {
-            showDialog();
-        } else {
-            bottomSheet.addObserver(new EmptyBottomSheetObserver() {
-                @Override
-                public void onSheetClosed(int reason) {
-                    bottomSheet.removeObserver(this);
-                    if (reason == BottomSheet.StateChangeReason.NAVIGATION) {
-                        // Dismiss the prompt as it would otherwise be dismissed momentarily once
-                        // the navigation completes.
-                        // TODO(timloh): This logs a dismiss (and we also already logged a show),
-                        // even though the user didn't see anything.
-                        mDialogDelegate.onDismiss();
-                        destroyDelegate();
-                    } else {
-                        showDialog();
-                    }
-                }
-            });
-        }
-    }
-
-    private void showDialog() {
-        assert mState == State.PROMPT_PENDING;
 
         // The tab may have navigated or been closed while we were waiting for Chrome Home to close.
         if (mDialogDelegate == null) {
@@ -205,8 +173,8 @@ public class PermissionDialogController
                 mModalDialogManager.dismissDialog(
                         mDialogModel, DialogDismissalCause.DISMISSED_BY_NATIVE);
             } else {
-                assert mState == State.PROMPT_PENDING || mState == State.REQUEST_ANDROID_PERMISSIONS
-                        || mState == State.PROMPT_DENIED || mState == State.PROMPT_ACCEPTED;
+                assert mState == State.REQUEST_ANDROID_PERMISSIONS || mState == State.PROMPT_DENIED
+                        || mState == State.PROMPT_ACCEPTED;
             }
         } else {
             assert mRequestQueue.contains(delegate);

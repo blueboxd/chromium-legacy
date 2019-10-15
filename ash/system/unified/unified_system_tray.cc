@@ -178,7 +178,7 @@ bool UnifiedSystemTray::IsSliderBubbleShown() const {
 
 bool UnifiedSystemTray::IsMessageCenterBubbleShown() const {
   if (message_center_bubble_)
-    return !!message_center_bubble_->GetBubbleWidget();
+    return message_center_bubble_->IsMessageCenterVisible();
 
   return false;
 }
@@ -215,6 +215,14 @@ void UnifiedSystemTray::ShowNetworkDetailedViewBubble(bool show_by_click) {
 
 void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
   ui_delegate_->SetTrayBubbleHeight(height);
+}
+
+void UnifiedSystemTray::FocusFirstNotification() {
+  if (!features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
+
+  FocusMessageCenter(false /*reverse*/);
+  message_center_bubble()->FocusFirstNotification();
 }
 
 bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {

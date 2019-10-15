@@ -7518,6 +7518,11 @@
         "test": "base_junit_tests"
       },
       {
+        "name": "chrome_java_test_pagecontroller_junit_tests",
+        "swarming": {},
+        "test": "chrome_java_test_pagecontroller_junit_tests"
+      },
+      {
         "name": "chrome_junit_tests",
         "swarming": {},
         "test": "chrome_junit_tests"

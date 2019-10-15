@@ -74,9 +74,8 @@ void AutocompleteMatchToAssistedQuery(
   // enter one of SEARCH_SUGGEST or NAVSUGGEST.
   if (provider) {
     if (provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST &&
-        (match != AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED)) {
-      DCHECK((match == AutocompleteMatchType::SEARCH_SUGGEST) ||
-             (match == AutocompleteMatchType::NAVSUGGEST));
+        (match == AutocompleteMatchType::SEARCH_SUGGEST ||
+         match == AutocompleteMatchType::NAVSUGGEST)) {
       // We abuse this subtype and use it to for zero-suggest suggestions that
       // aren't personalized by the server. That is, it indicates either
       // client-side most-likely URL suggestions or server-side suggestions
@@ -266,8 +265,8 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_SHORTCUTS)
     providers_.push_back(new ShortcutsProvider(provider_client_.get()));
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST) {
-    zero_suggest_provider_ = ZeroSuggestProvider::Create(
-        provider_client_.get(), history_url_provider_, this);
+    zero_suggest_provider_ =
+        ZeroSuggestProvider::Create(provider_client_.get(), this);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
   }

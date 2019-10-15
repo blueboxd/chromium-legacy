@@ -15,6 +15,9 @@
 #include "extensions/browser/api/socket/socket.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/common/api/socket.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
@@ -45,7 +48,7 @@ class TCPSocket : public Socket {
             const std::string& owner_extension_id);
 
   // Created using TCPServerSocket::Accept().
-  TCPSocket(network::mojom::TCPConnectedSocketPtr socket,
+  TCPSocket(mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
             mojo::ScopedDataPipeConsumerHandle receive_stream,
             mojo::ScopedDataPipeProducerHandle send_stream,
             const base::Optional<net::IPEndPoint>& remote_addr,
@@ -103,7 +106,7 @@ class TCPSocket : public Socket {
       content::StoragePartition* storage_partition,
       content::BrowserContext* browser_context,
       const net::AddressList& remote_address_list,
-      network::mojom::TCPConnectedSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TCPConnectedSocket> receiver,
       network::mojom::NetworkContext::CreateTCPConnectedSocketCallback
           callback);
   static void OnConnectCompleteOnUIThread(
@@ -128,7 +131,7 @@ class TCPSocket : public Socket {
       content::BrowserContext* browser_context,
       const net::IPEndPoint& local_addr,
       int backlog,
-      network::mojom::TCPServerSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TCPServerSocket> receiver,
       network::mojom::NetworkContext::CreateTCPServerSocketCallback callback);
   static void OnListenCompleteOnUIThread(
       const scoped_refptr<base::SequencedTaskRunner>& original_task_runner,
@@ -137,11 +140,12 @@ class TCPSocket : public Socket {
       const base::Optional<net::IPEndPoint>& local_addr);
   void OnListenComplete(int result,
                         const base::Optional<net::IPEndPoint>& local_addr);
-  void OnAccept(int result,
-                const base::Optional<net::IPEndPoint>& remote_addr,
-                network::mojom::TCPConnectedSocketPtr connected_socket,
-                mojo::ScopedDataPipeConsumerHandle receive_stream,
-                mojo::ScopedDataPipeProducerHandle send_stream);
+  void OnAccept(
+      int result,
+      const base::Optional<net::IPEndPoint>& remote_addr,
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> connected_socket,
+      mojo::ScopedDataPipeConsumerHandle receive_stream,
+      mojo::ScopedDataPipeProducerHandle send_stream);
   void OnWriteComplete(net::CompletionOnceCallback callback, int result);
   void OnReadComplete(int result, scoped_refptr<net::IOBuffer> io_buffer);
   void OnUpgradeToTLSComplete(UpgradeToTLSCallback callback,
@@ -168,9 +172,9 @@ class TCPSocket : public Socket {
   SocketMode socket_mode_;
 
   // CLIENT mode.
-  network::mojom::TCPConnectedSocketPtr client_socket_;
+  mojo::Remote<network::mojom::TCPConnectedSocket> client_socket_;
   // SERVER mode.
-  network::mojom::TCPServerSocketPtr server_socket_;
+  mojo::Remote<network::mojom::TCPServerSocket> server_socket_;
 
   net::CompletionOnceCallback connect_callback_;
   ListenCallback listen_callback_;
@@ -202,11 +206,12 @@ class ResumableTCPSocket : public TCPSocket {
   ResumableTCPSocket(content::BrowserContext* browser_context,
                      const std::string& owner_extension_id);
   // Created using TCPServerSocket::Accept().
-  ResumableTCPSocket(network::mojom::TCPConnectedSocketPtr socket,
-                     mojo::ScopedDataPipeConsumerHandle receive_stream,
-                     mojo::ScopedDataPipeProducerHandle send_stream,
-                     const base::Optional<net::IPEndPoint>& remote_addr,
-                     const std::string& owner_extension_id);
+  ResumableTCPSocket(
+      mojo::PendingRemote<network::mojom::TCPConnectedSocket> socket,
+      mojo::ScopedDataPipeConsumerHandle receive_stream,
+      mojo::ScopedDataPipeProducerHandle send_stream,
+      const base::Optional<net::IPEndPoint>& remote_addr,
+      const std::string& owner_extension_id);
 
   ~ResumableTCPSocket() override;
 

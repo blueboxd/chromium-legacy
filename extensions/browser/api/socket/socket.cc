@@ -103,8 +103,8 @@ void Socket::Listen(const std::string& address,
 }
 
 void Socket::Accept(AcceptCompletionCallback callback) {
-  std::move(callback).Run(net::ERR_FAILED, nullptr /* socket */, base::nullopt,
-                          mojo::ScopedDataPipeConsumerHandle(),
+  std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote() /* socket */,
+                          base::nullopt, mojo::ScopedDataPipeConsumerHandle(),
                           mojo::ScopedDataPipeProducerHandle());
 }
 

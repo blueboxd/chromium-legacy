@@ -24,3 +24,6 @@
 -TwoClientTypedUrlsSyncTest.AddThenDelete_E2ETest
 -TwoClientTypedUrlsSyncTest.DisableEnableSync_E2ETest
 -TwoClientAutofillProfileSyncTest.DISABLED_E2ETest_TwoClientsAddAutofillProfiles
+# Flaky on bots. Can't log in to GCM.
+-TwoClientDictionarySyncTest.Sanity_E2ETest
+-USS/TwoClientBookmarksSyncTestIncludingUssTests.E2ETest_TwoClientsAddBookmarks/0

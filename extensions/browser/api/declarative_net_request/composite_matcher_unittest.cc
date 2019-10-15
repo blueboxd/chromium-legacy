@@ -24,7 +24,7 @@ namespace extensions {
 namespace declarative_net_request {
 
 using PageAccess = PermissionsData::PageAccess;
-using RedirectAction = CompositeMatcher::RedirectAction;
+using RedirectActionInfo = CompositeMatcher::RedirectActionInfo;
 
 class CompositeMatcherTest : public ::testing::Test {
  public:
@@ -86,7 +86,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   google_params.is_third_party = false;
 
   // The second ruleset should get more priority.
-  EXPECT_FALSE(composite_matcher->ShouldBlockRequest(google_params));
+  EXPECT_FALSE(
+      composite_matcher->GetBlockOrCollapseAction(google_params).has_value());
 
   GURL example_url = GURL("http://example.com");
   RequestParams example_params;
@@ -95,10 +96,11 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
       url_pattern_index::flat::ElementType_SUBDOCUMENT;
   example_params.is_third_party = false;
 
-  RedirectAction action = composite_matcher->ShouldRedirectRequest(
+  RedirectActionInfo action_info = composite_matcher->GetRedirectAction(
       example_params, PageAccess::kAllowed);
-  EXPECT_EQ(GURL("http://ruleset2.com"), action.redirect_url);
-  EXPECT_FALSE(action.notify_request_withheld);
+  ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(GURL("http://ruleset2.com"), action_info.action->redirect_url);
+  EXPECT_FALSE(action_info.notify_request_withheld);
 
   // Now switch the priority of the two rulesets. This requires re-constructing
   // the two ruleset matchers.
@@ -120,12 +122,14 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   example_params.allow_rule_cache.clear();
 
   // The first ruleset should get more priority.
-  EXPECT_TRUE(composite_matcher->ShouldBlockRequest(google_params));
+  EXPECT_TRUE(
+      composite_matcher->GetBlockOrCollapseAction(google_params).has_value());
 
-  action = composite_matcher->ShouldRedirectRequest(example_params,
-                                                    PageAccess::kAllowed);
-  EXPECT_EQ(GURL("http://ruleset1.com"), action.redirect_url);
-  EXPECT_FALSE(action.notify_request_withheld);
+  action_info = composite_matcher->GetRedirectAction(example_params,
+                                                     PageAccess::kAllowed);
+  ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(GURL("http://ruleset1.com"), action_info.action->redirect_url);
+  EXPECT_FALSE(action_info.notify_request_withheld);
 }
 
 // Ensure allow rules in a higher priority matcher override redirect
@@ -188,10 +192,11 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   google_params.is_third_party = false;
 
   // The second ruleset should get more priority.
-  RedirectAction action = composite_matcher->ShouldRedirectRequest(
-      google_params, PageAccess::kAllowed);
-  EXPECT_EQ(GURL("http://ruleset2.com"), action.redirect_url);
-  EXPECT_FALSE(action.notify_request_withheld);
+  RedirectActionInfo action_info =
+      composite_matcher->GetRedirectAction(google_params, PageAccess::kAllowed);
+  ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(GURL("http://ruleset2.com"), action_info.action->redirect_url);
+  EXPECT_FALSE(action_info.notify_request_withheld);
 
   // Send a request to example.com with headers, expect the allow rule to be
   // matched and the headers to remain.
@@ -226,10 +231,10 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
 
   // The first ruleset should get more priority and so the request to google.com
   // should not be redirected.
-  action = composite_matcher->ShouldRedirectRequest(google_params,
-                                                    PageAccess::kAllowed);
-  EXPECT_FALSE(action.redirect_url);
-  EXPECT_FALSE(action.notify_request_withheld);
+  action_info =
+      composite_matcher->GetRedirectAction(google_params, PageAccess::kAllowed);
+  EXPECT_FALSE(action_info.action.has_value());
+  EXPECT_FALSE(action_info.notify_request_withheld);
 
   // The request to example.com should now have its headers removed.
   example_params.allow_rule_cache.clear();
@@ -310,11 +315,11 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
     params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
     params.is_third_party = false;
 
-    RedirectAction redirect_action =
-        composite_matcher->ShouldRedirectRequest(params, test_case.access);
+    RedirectActionInfo redirect_action_info =
+        composite_matcher->GetRedirectAction(params, test_case.access);
 
     EXPECT_EQ(test_case.should_notify_withheld,
-              redirect_action.notify_request_withheld);
+              redirect_action_info.notify_request_withheld);
   }
 }
 
@@ -387,16 +392,18 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
     params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
     params.is_third_party = false;
 
-    RedirectAction redirect_action =
-        composite_matcher->ShouldRedirectRequest(params, PageAccess::kAllowed);
+    RedirectActionInfo redirect_action_info =
+        composite_matcher->GetRedirectAction(params, PageAccess::kAllowed);
 
     if (test_case.expected_final_url) {
-      EXPECT_EQ(test_case.expected_final_url->spec(),
-                redirect_action.redirect_url->spec());
-    } else
-      EXPECT_FALSE(redirect_action.redirect_url);
+      ASSERT_TRUE(redirect_action_info.action);
+      EXPECT_EQ(test_case.expected_final_url,
+                redirect_action_info.action->redirect_url);
+    } else {
+      EXPECT_FALSE(redirect_action_info.action.has_value());
+    }
 
-    EXPECT_FALSE(redirect_action.notify_request_withheld);
+    EXPECT_FALSE(redirect_action_info.notify_request_withheld);
   }
 }
 

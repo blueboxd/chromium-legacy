@@ -14,11 +14,8 @@
 #include "chrome/browser/task_manager/providers/task_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
-
-namespace content {
-class ServiceWorkerContext;
-}
 
 namespace task_manager {
 
@@ -82,7 +79,7 @@ class ServiceWorkerTaskProvider : public TaskProvider,
 
   ScopedObserver<content::ServiceWorkerContext,
                  content::ServiceWorkerContextObserver>
-      scoped_context_observer_;
+      scoped_context_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTaskProvider);
 };

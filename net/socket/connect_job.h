@@ -188,6 +188,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
       RequestPriority request_priority,
       SocketTag socket_tag,
       const NetworkIsolationKey& network_isolation_key,
+      bool disable_secure_dns,
       const CommonConnectJobParams* common_connect_job_params,
       ConnectJob::Delegate* delegate);
 

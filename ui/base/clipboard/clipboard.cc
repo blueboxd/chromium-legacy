@@ -99,19 +99,23 @@ base::Time Clipboard::GetLastModifiedTime() const {
 
 void Clipboard::ClearLastModifiedTime() {}
 
-void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
+Clipboard::Clipboard() = default;
+Clipboard::~Clipboard() = default;
+
+void Clipboard::DispatchPortableRepresentation(PortableFormat format,
+                                               const ObjectMapParams& params) {
   // Ignore writes with empty parameters.
   for (const auto& param : params) {
     if (param.empty())
       return;
   }
 
-  switch (type) {
-    case ObjectType::kText:
+  switch (format) {
+    case PortableFormat::kText:
       WriteText(&(params[0].front()), params[0].size());
       break;
 
-    case ObjectType::kHtml:
+    case PortableFormat::kHtml:
       if (params.size() == 2) {
         if (params[1].empty())
           return;
@@ -122,20 +126,20 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       }
       break;
 
-    case ObjectType::kRtf:
+    case PortableFormat::kRtf:
       WriteRTF(&(params[0].front()), params[0].size());
       break;
 
-    case ObjectType::kBookmark:
+    case PortableFormat::kBookmark:
       WriteBookmark(&(params[0].front()), params[0].size(),
                     &(params[1].front()), params[1].size());
       break;
 
-    case ObjectType::kWebkit:
+    case PortableFormat::kWebkit:
       WriteWebSmartPaste();
       break;
 
-    case ObjectType::kBitmap: {
+    case PortableFormat::kBitmap: {
       // Usually, the params are just UTF-8 strings. However, for images,
       // ScopedClipboardWriter actually sizes the buffer to sizeof(SkBitmap*),
       // aliases the contents of the vector to a SkBitmap**, and writes the
@@ -145,7 +149,7 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       break;
     }
 
-    case ObjectType::kData:
+    case PortableFormat::kData:
       WriteData(ClipboardFormatType::Deserialize(
                     std::string(&(params[0].front()), params[0].size())),
                 &(params[1].front()), params[1].size());
@@ -153,6 +157,15 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
 
     default:
       NOTREACHED();
+  }
+}
+
+void Clipboard::DispatchPlatformRepresentations(
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  for (const auto& representation : platform_representations) {
+    WriteData(ClipboardFormatType::GetType(representation.format),
+              reinterpret_cast<const char*>(representation.data.data()),
+              representation.data.size());
   }
 }
 

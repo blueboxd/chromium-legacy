@@ -173,7 +173,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
       scoped_refptr<ServiceWorkerVersion> version) {
     auto provider_info =
         blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-    version->provider_host_ = ServiceWorkerProviderHost::PreCreateForController(
+    version->provider_host_ = ServiceWorkerProviderHost::CreateForServiceWorker(
         context()->AsWeakPtr(), version, &provider_info);
     return provider_info;
   }

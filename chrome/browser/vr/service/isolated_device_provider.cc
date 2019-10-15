@@ -19,12 +19,11 @@ namespace vr {
 void IsolatedVRDeviceProvider::Initialize(
     base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                  device::mojom::VRDisplayInfoPtr,
-                                 device::mojom::XRRuntimePtr)>
+                                 mojo::PendingRemote<device::mojom::XRRuntime>)>
         add_device_callback,
     base::RepeatingCallback<void(device::mojom::XRDeviceId)>
         remove_device_callback,
     base::OnceClosure initialization_complete) {
-
   add_device_callback_ = std::move(add_device_callback);
   remove_device_callback_ = std::move(remove_device_callback);
   initialization_complete_ = std::move(initialization_complete);
@@ -37,7 +36,7 @@ bool IsolatedVRDeviceProvider::Initialized() {
 }
 
 void IsolatedVRDeviceProvider::OnDeviceAdded(
-    device::mojom::XRRuntimePtr device,
+    mojo::PendingRemote<device::mojom::XRRuntime> device,
     mojo::PendingRemote<device::mojom::IsolatedXRGamepadProviderFactory>
         gamepad_factory,
     mojo::PendingRemote<device::mojom::XRCompositorHost> compositor_host,

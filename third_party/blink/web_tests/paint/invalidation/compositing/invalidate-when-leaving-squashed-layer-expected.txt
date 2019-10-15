@@ -24,7 +24,7 @@
           "reason": "disappeared"
         }
       ],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='target'",
@@ -38,7 +38,7 @@
           "reason": "full layer"
         }
       ],
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -53,15 +53,6 @@
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

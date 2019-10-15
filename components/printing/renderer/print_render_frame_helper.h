@@ -19,7 +19,7 @@
 #include "components/printing/common/print.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/common/metafile_utils.h"
@@ -212,16 +212,18 @@ class PrintRenderFrameHelper
       mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame> receiver);
 
   // printing::mojom::PrintRenderFrame:
+  void PrintForSystemDialog() override;
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void InitiatePrintPreview(
       mojom::PrintRendererAssociatedPtrInfo print_renderer,
       bool has_selection) override;
+  void OnPrintPreviewDialogClosed() override;
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Message handlers ---------------------------------------------------------
   void OnPrintPages();
-  void OnPrintForSystemDialog();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnPrintPreview(const base::DictionaryValue& settings);
-  void OnClosePrintPreviewDialog();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnPrintFrameContent(const PrintMsg_PrintFrame_Params& params);
   void OnPrintingDone(bool success);
@@ -426,8 +428,7 @@ class PrintRenderFrameHelper
   // etc.).
   mojom::PrintRendererAssociatedPtr print_renderer_;
 
-  mojo::AssociatedReceiver<mojom::PrintRenderFrame>
-      print_render_frame_receiver_{this};
+  mojo::AssociatedReceiverSet<mojom::PrintRenderFrame> receivers_;
 
   // Keeps track of the state of print preview between messages.
   // TODO(vitalybuka): Create PrintPreviewContext when needed and delete after

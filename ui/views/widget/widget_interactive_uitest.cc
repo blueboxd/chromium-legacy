@@ -1260,6 +1260,7 @@ TEST_F(WidgetTestInteractive, ShowCreatesActiveWindow) {
 }
 
 TEST_F(WidgetTestInteractive, ShowInactive) {
+  WidgetTest::WaitForSystemAppActivation();
   Widget* widget = CreateTopLevelPlatformWidget();
 
   ShowInactiveSync(widget);

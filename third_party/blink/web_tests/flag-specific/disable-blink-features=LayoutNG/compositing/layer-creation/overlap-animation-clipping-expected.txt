@@ -25,28 +25,28 @@
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 6
+      "transform": 5
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV id='to-animate2' class='box animating2'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
+      "transform": 7
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFF00",
+      "transform": 8
+    },
+    {
+      "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFF00",
       "transform": 9
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
-      "bounds": [100, 100],
-      "contentsOpaque": true,
-      "backgroundColor": "#FFFF00",
-      "transform": 11
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV class='box yellow'",
-      "bounds": [100, 100],
-      "contentsOpaque": true,
-      "backgroundColor": "#FFFF00",
-      "transform": 12
     }
   ],
   "transforms": [
@@ -80,6 +80,7 @@
     },
     {
       "id": 4,
+      "parent": 3,
       "transform": [
         [...],
         [...],
@@ -99,7 +100,7 @@
     },
     {
       "id": 6,
-      "parent": 5,
+      "parent": 3,
       "transform": [
         [...],
         [...],
@@ -109,6 +110,7 @@
     },
     {
       "id": 7,
+      "parent": 6,
       "transform": [
         [...],
         [...],
@@ -118,7 +120,7 @@
     },
     {
       "id": 8,
-      "parent": 7,
+      "parent": 3,
       "transform": [
         [...],
         [...],
@@ -128,35 +130,6 @@
     },
     {
       "id": 9,
-      "parent": 8,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 10,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 11,
-      "parent": 10,
-      "transform": [
-        [...],
-        [...],
-        [...],
-        [...]
-      ]
-    },
-    {
-      "id": 12,
       "transform": [
         [...],
         [...],

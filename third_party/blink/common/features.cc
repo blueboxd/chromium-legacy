@@ -402,5 +402,9 @@ const base::Feature kLowerJavaScriptPriorityWhenForceDeferred{
 const base::Feature kHtmlImportsRequestInitiatorLock{
     "HtmlImportsRequestInitiatorLock", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When 'enabled', directly compositing images is turned off.
+const base::Feature kDisableDirectlyCompositedImages{
+    "DisableDirectlyCompositedImages", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

@@ -68,7 +68,7 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
   void EnterFullscreen(GURL url) {
     WebContentsImpl* web_contents_impl =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    web_contents_impl->EnterFullscreenMode(url, blink::WebFullscreenOptions());
+    web_contents_impl->EnterFullscreenMode(url, blink::FullScreenOptions());
   }
 
   base::FilePath CreateTestFile(const std::string& contents) {

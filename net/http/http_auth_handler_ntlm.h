@@ -84,8 +84,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
 
    private:
 #if defined(NTLM_SSPI)
-    ULONG max_token_length_ = 0;
-    bool is_unsupported_ = false;
     std::unique_ptr<SSPILibrary> sspi_library_;
 #endif  // defined(NTLM_SSPI)
 
@@ -137,7 +135,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
 #endif
 #if defined(NTLM_SSPI)
   HttpAuthHandlerNTLM(SSPILibrary* sspi_library,
-                      ULONG max_token_length,
                       const HttpAuthPreferences* http_auth_preferences);
 #endif
 

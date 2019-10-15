@@ -250,6 +250,31 @@ TEST_F(TransportClientSocketPoolTest, SetResolvePriorityOnInit) {
   }
 }
 
+TEST_F(TransportClientSocketPoolTest, SetDisableSecureDns) {
+  for (bool disable_secure_dns : {false, true}) {
+    TestCompletionCallback callback;
+    ClientSocketHandle handle;
+    ClientSocketPool::GroupId group_id(
+        HostPortPair("www.google.com", 80), ClientSocketPool::SocketType::kHttp,
+        PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+        disable_secure_dns);
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        handle.Init(group_id, params_, base::nullopt /* proxy_annotation_tag */,
+                    LOW, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                    callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                    pool_.get(), NetLogWithSource()));
+    EXPECT_EQ(disable_secure_dns,
+              session_deps_.host_resolver->last_secure_dns_mode_override()
+                  .has_value());
+    if (disable_secure_dns) {
+      EXPECT_EQ(
+          net::DnsConfig::SecureDnsMode::OFF,
+          session_deps_.host_resolver->last_secure_dns_mode_override().value());
+    }
+  }
+}
+
 TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
   session_deps_.host_resolver->set_ondemand_mode(true);
 

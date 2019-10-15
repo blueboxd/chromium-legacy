@@ -20,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_switches.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -210,7 +211,7 @@ int LaunchChromeTests(size_t parallel_jobs,
   // mimics the behavior in standalone Chrome, where this is done in
   // chrome/app/chrome_main.cc, which does not get called by tests.
   std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler;
-  if (command_line.HasSwitch(content::kLaunchAsBrowser))
+  if (command_line.HasSwitch(switches::kLaunchAsBrowser))
     sampling_profiler = std::make_unique<MainThreadStackSamplingProfiler>();
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

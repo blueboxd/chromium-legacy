@@ -89,11 +89,6 @@ const base::Feature kDriveFsMirroring{"DriveFsMirroring",
 const base::Feature kEnableFileManagerFeedbackPanel{
     "EnableFeedbackPanel", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the enhanced external media formatting dialog in the file manager,
-// with support for labelling and also NTFS/exFAT filesystems.
-const base::Feature kEnableFileManagerFormatDialog{
-    "EnableFileManagerFormatDialog", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable the piex-wasm module for raw image preview image extraction.
 const base::Feature kEnableFileManagerPiexWasm{
     "PiexWasm", base::FEATURE_ENABLED_BY_DEFAULT};

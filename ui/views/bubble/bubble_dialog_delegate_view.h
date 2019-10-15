@@ -59,7 +59,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // DialogDelegateView:
   BubbleDialogDelegateView* AsBubbleDialogDelegate() override;
   bool ShouldShowCloseButton() const override;
-  ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 

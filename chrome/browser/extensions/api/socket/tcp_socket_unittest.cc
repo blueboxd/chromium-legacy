@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_storage_partition.h"
 #include "extensions/browser/api/socket/tcp_socket.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -636,7 +637,9 @@ TEST_F(TCPSocketServerTest, ListenAccept) {
   base::RunLoop accept_run_loop;
   net::IPEndPoint accept_client_addr;
   socket->Accept(base::BindLambdaForTesting(
-      [&](int result, network::mojom::TCPConnectedSocketPtr accepted_socket,
+      [&](int result,
+          mojo::PendingRemote<network::mojom::TCPConnectedSocket>
+              accepted_socket,
           const base::Optional<net::IPEndPoint>& remote_addr,
           mojo::ScopedDataPipeConsumerHandle receive_handle,
           mojo::ScopedDataPipeProducerHandle send_handle) {
@@ -691,7 +694,9 @@ TEST_F(TCPSocketServerTest, ReadAndWrite) {
   std::unique_ptr<TCPSocket> accepted_socket;
 
   socket->Accept(base::BindLambdaForTesting(
-      [&](int result, network::mojom::TCPConnectedSocketPtr connected_socket,
+      [&](int result,
+          mojo::PendingRemote<network::mojom::TCPConnectedSocket>
+              connected_socket,
           const base::Optional<net::IPEndPoint>& remote_addr,
           mojo::ScopedDataPipeConsumerHandle receive_handle,
           mojo::ScopedDataPipeProducerHandle send_handle) {

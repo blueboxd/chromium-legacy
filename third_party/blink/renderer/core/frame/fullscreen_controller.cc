@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/web/web_fullscreen_options.h"
+#include "third_party/blink/public/common/fullscreen/fullscreen_options.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -168,7 +168,7 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
     return;
 
   DCHECK(state_ == State::kInitial);
-  blink::WebFullscreenOptions blink_options;
+  blink::FullScreenOptions blink_options;
   // Only clone options if the feature is enabled.
   blink_options.prefers_navigation_bar = options->navigationUI() != "hide";
   GetWebFrameClient(frame).EnterFullscreen(blink_options);

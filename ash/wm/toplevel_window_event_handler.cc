@@ -4,10 +4,13 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/back_gesture_affordance.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_resizer.h"
@@ -105,7 +108,26 @@ bool CanStartGoingBack() {
   if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
     return false;
 
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+  Shell* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  // Do not enable back gesture if it is not in an ACTIVE session. e.g, login
+  // screen, lock screen.
+  if (shell->session_controller()->GetSessionState() !=
+      session_manager::SessionState::ACTIVE) {
+    return false;
+  }
+
+  // Do not enable back gesture while overview mode is active but splitview is
+  // not active.
+  if (shell->overview_controller()->InOverviewSession() &&
+      !SplitViewController::Get()->InSplitViewMode()) {
+    return false;
+  }
+
+  // Do not enable back gesture if home screen is visible.
+  if (shell->home_screen_controller()->IsHomeScreenVisible())
     return false;
 
   return true;

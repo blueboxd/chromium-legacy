@@ -36,6 +36,9 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver_source.h"
@@ -67,10 +70,11 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
  public:
   using Callback = base::OnceCallback<void(base::Value*)>;
 
-  DnsLookupClient(network::mojom::ResolveHostClientRequest request,
-                  Callback callback)
-      : binding_(this, std::move(request)), callback_(std::move(callback)) {
-    binding_.set_connection_error_handler(
+  DnsLookupClient(
+      mojo::PendingReceiver<network::mojom::ResolveHostClient> receiver,
+      Callback callback)
+      : receiver_(this, std::move(receiver)), callback_(std::move(callback)) {
+    receiver_.set_disconnect_handler(
         base::BindOnce(&DnsLookupClient::OnComplete, base::Unretained(this),
                        net::ERR_FAILED, base::nullopt));
   }
@@ -96,7 +100,7 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
   }
 
  private:
-  mojo::Binding<network::mojom::ResolveHostClient> binding_;
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_;
   Callback callback_;
 };
 
@@ -215,15 +219,15 @@ void NetInternalsTest::MessageHandler::DnsLookup(
   auto resolve_host_parameters = network::mojom::ResolveHostParameters::New();
   if (local)
     resolve_host_parameters->source = net::HostResolverSource::LOCAL_ONLY;
-  network::mojom::ResolveHostClientPtr client_ptr;
+  mojo::PendingRemote<network::mojom::ResolveHostClient> client;
   // DnsLookupClient owns itself.
-  new DnsLookupClient(mojo::MakeRequest(&client_ptr),
+  new DnsLookupClient(client.InitWithNewPipeAndPassReceiver(),
                       base::BindOnce(&MessageHandler::RunJavascriptCallback,
                                      weak_factory_.GetWeakPtr()));
   content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
       ->GetNetworkContext()
       ->ResolveHost(net::HostPortPair(hostname, 80),
-                    std::move(resolve_host_parameters), std::move(client_ptr));
+                    std::move(resolve_host_parameters), std::move(client));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

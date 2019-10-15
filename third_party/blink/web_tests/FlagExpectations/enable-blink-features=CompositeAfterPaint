@@ -16,6 +16,9 @@ Bug(none) virtual/scroll_customization/fast/events/touch/ [ Skip ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 
+# Filenames are too long on Windows.
+Bug(1014132) virtual/controls-refresh-high-contrast/ [ Skip ]
+
 # Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]

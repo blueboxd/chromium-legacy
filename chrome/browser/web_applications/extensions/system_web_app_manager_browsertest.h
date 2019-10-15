@@ -15,6 +15,10 @@
 class Browser;
 class KeyedService;
 
+namespace extensions {
+class Extension;
+}
+
 namespace web_app {
 
 class TestSystemWebAppManager;
@@ -23,10 +27,23 @@ enum class SystemAppType;
 
 class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
  public:
-  SystemWebAppManagerBrowserTest();
+  // Performs common initialization for testing SystemWebAppManager features.
+  // If true, |install_mock| installs a WebUIController that serves a mock
+  // System PWA, and ensures the WebAppProvider associated with the startup
+  // profile is a TestWebAppProviderCreator.
+  explicit SystemWebAppManagerBrowserTest(bool install_mock = true);
+
   ~SystemWebAppManagerBrowserTest() override;
 
- protected:
+  // Gets the Extension* from the HostedAppBrowserController associated with
+  // |browser|.
+  static const extensions::Extension* GetExtensionForAppBrowser(
+      Browser* browser);
+
+  // Returns the SystemWebAppManager for browser()->profile(). This will be a
+  // TestSystemWebAppManager if initialized with |install_mock| true.
+  SystemWebAppManager& GetManager();
+
   Browser* WaitForSystemAppInstallAndLaunch(SystemAppType system_app_type);
 
  private:
@@ -34,7 +51,7 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestWebUIControllerFactory> factory_;
-  TestWebAppProviderCreator test_web_app_provider_creator_;
+  std::unique_ptr<TestWebAppProviderCreator> test_web_app_provider_creator_;
   TestSystemWebAppManager* test_system_web_app_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerBrowserTest);

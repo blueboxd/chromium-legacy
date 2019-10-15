@@ -90,6 +90,11 @@ void RemoteSafeBrowsingDatabaseManager::ClientRequest::OnRequestDone(
   db_manager_->CancelCheck(client_);
 }
 
+RealTimeUrlLookupService*
+RemoteSafeBrowsingDatabaseManager::GetRealTimeUrlLookupService() {
+  return rt_url_lookup_service_.get();
+}
+
 //
 // RemoteSafeBrowsingDatabaseManager methods
 //
@@ -234,7 +239,7 @@ RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
     const GURL& url,
     Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTREACHED();
+  // TODO(crbug.com/1014202): Add local high confidence allowlist.
   return AsyncMatch::NO_MATCH;
 }
 
@@ -331,6 +336,10 @@ void RemoteSafeBrowsingDatabaseManager::StartOnIOThread(
     const V4ProtocolConfig& config) {
   VLOG(1) << "RemoteSafeBrowsingDatabaseManager starting";
   SafeBrowsingDatabaseManager::StartOnIOThread(url_loader_factory, config);
+
+  rt_url_lookup_service_ =
+      std::make_unique<RealTimeUrlLookupService>(url_loader_factory);
+
   enabled_ = true;
 }
 
@@ -347,6 +356,8 @@ void RemoteSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
     req->OnRequestDone(SB_THREAT_TYPE_SAFE, ThreatMetadata());
   }
   enabled_ = false;
+
+  rt_url_lookup_service_.reset();
 
   SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
 }

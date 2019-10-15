@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -31,6 +32,7 @@ class Connector;
 }  // namespace service_manager
 
 class MediaDialogDelegate;
+class MediaNotificationContainerImpl;
 class MediaToolbarButtonControllerDelegate;
 
 // Controller for the MediaToolbarButtonView that decides when to show or hide
@@ -38,7 +40,8 @@ class MediaToolbarButtonControllerDelegate;
 // MediaDialogView to display.
 class MediaToolbarButtonController
     : public media_session::mojom::AudioFocusObserver,
-      public media_message_center::MediaNotificationController {
+      public media_message_center::MediaNotificationController,
+      public MediaNotificationContainerObserver {
  public:
   MediaToolbarButtonController(const base::UnguessableToken& source_id,
                                service_manager::Connector* connector,
@@ -58,10 +61,13 @@ class MediaToolbarButtonController
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
   void LogMediaSessionActionButtonPressed(const std::string& id) override;
 
-  void SetDialogDelegate(MediaDialogDelegate* delegate);
+  // MediaNotificationContainerObserver implementation.
+  void OnContainerExpanded(bool expanded) override {}
+  void OnContainerMetadataChanged() override {}
+  void OnContainerDismissed(const std::string& id) override;
+  void OnContainerDestroyed(const std::string& id) override;
 
-  // Called when the dismiss button was clicked on a session.
-  void OnDismissButtonClicked(const std::string& id);
+  void SetDialogDelegate(MediaDialogDelegate* delegate);
 
  private:
   friend class MediaToolbarButtonControllerTest;
@@ -117,7 +123,10 @@ class MediaToolbarButtonController
 
   // Stores a Session for each media session keyed by its |request_id| in string
   // format.
-  std::map<const std::string, Session> sessions_;
+  std::map<std::string, Session> sessions_;
+
+  // A map of all containers we're currently observing.
+  std::map<std::string, MediaNotificationContainerImpl*> observed_containers_;
 
   // Connections with the media session service to listen for audio focus
   // updates and control media sessions.

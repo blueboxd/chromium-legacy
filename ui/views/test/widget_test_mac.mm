@@ -6,10 +6,12 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/root_view.h"
@@ -105,6 +107,23 @@ Widget::Widgets WidgetTest::GetAllWidgets() {
       all_widgets.insert(widget);
   }
   return all_widgets;
+}
+
+// static
+void WidgetTest::WaitForSystemAppActivation() {
+  if (base::mac::IsAtMostOS10_14())
+    return;
+
+  // This seems to be only necessary on 10.15+ but it's obscure why. Shortly
+  // after launching an app, the system sends ApplicationDidFinishLaunching
+  // (which is normal), which causes AppKit on 10.15 to try to find a window to
+  // activate. If it finds one it will makeKeyAndOrderFront: it, which breaks
+  // tests that are deliberately creating inactive windows.
+  base::scoped_nsobject<WindowedNSNotificationObserver> observer(
+      [[WindowedNSNotificationObserver alloc]
+          initForNotification:NSApplicationDidFinishLaunchingNotification
+                       object:NSApp]);
+  [observer wait];
 }
 
 }  // namespace test

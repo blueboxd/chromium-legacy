@@ -19,6 +19,7 @@ export const TabNetworkState = {
 /**
  * @typedef {{
  *    active: boolean,
+ *    blocked: boolean,
  *    crashed: boolean,
  *    favIconUrl: (string|undefined),
  *    id: number,

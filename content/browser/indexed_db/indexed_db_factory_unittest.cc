@@ -23,7 +23,7 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
-#include "content/browser/indexed_db/indexed_db_execution_context.h"
+#include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
@@ -59,8 +59,6 @@ base::FilePath CreateAndReturnTempDir(base::ScopedTempDir* temp_dir) {
 
 void CreateAndBindTransactionPlaceholder(
     base::WeakPtr<IndexedDBTransaction> transaction) {}
-
-constexpr IndexedDBExecutionContext kTestExecutionContext(4, 2);
 
 }  // namespace
 
@@ -150,8 +148,9 @@ class IndexedDBFactoryTest : public testing::Test {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        callbacks, db_callbacks, kTestExecutionContext, transaction_id,
-        IndexedDBDatabaseMetadata::NO_VERSION,
+        callbacks, db_callbacks,
+        IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+        transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
         std::move(create_transaction_callback));
 
     // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -449,8 +448,9 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesConnections) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, kTestExecutionContext, transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection), origin,
                   context()->data_path());
@@ -510,8 +510,9 @@ TEST_F(IndexedDBFactoryTest, ConnectionForceClose) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, kTestExecutionContext, transaction_id,
-      IndexedDBDatabaseMetadata::DEFAULT_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
       std::move(create_transaction_callback));
   factory()->Open(ASCIIToUTF16("db"), std::move(connection), origin,
                   context()->data_path());
@@ -541,8 +542,9 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, kTestExecutionContext, transaction_id,
-      IndexedDBDatabaseMetadata::NO_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
       std::move(create_transaction_callback));
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -578,8 +580,9 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, kTestExecutionContext, transaction_id,
-      IndexedDBDatabaseMetadata::NO_VERSION,
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
       std::move(create_transaction_callback));
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
@@ -717,7 +720,8 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   auto create_transaction_callback =
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, dummy_database_callbacks, kTestExecutionContext,
+      callbacks, dummy_database_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
       /*transaction_id=*/1, /*version=*/1,
       std::move(create_transaction_callback));
   factory()->Open(name, std::move(connection), origin, context()->data_path());
@@ -757,8 +761,9 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
       base::BindOnce(&CreateAndBindTransactionPlaceholder);
 
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      callbacks, db_callbacks, kTestExecutionContext, transaction_id,
-      db_version, std::move(create_transaction_callback));
+      callbacks, db_callbacks,
+      IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+      transaction_id, db_version, std::move(create_transaction_callback));
   {
     base::RunLoop loop;
     callbacks->CallOnUpgradeNeeded(
@@ -791,7 +796,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        failed_open_callbacks, db_callbacks2, kTestExecutionContext,
+        failed_open_callbacks, db_callbacks2,
+        IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
         transaction_id, db_version, std::move(create_transaction_callback));
     factory()->Open(db_name, std::move(connection), origin,
                     context()->data_path());
@@ -838,7 +844,9 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
     auto create_transaction_callback =
         base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto pending_connection = std::make_unique<IndexedDBPendingConnection>(
-        callbacks, db_callbacks, kTestExecutionContext, transaction_id,
+        callbacks, db_callbacks,
+        IndexedDBExecutionContextConnectionTracker::Handle::CreateForTesting(),
+        transaction_id,
         /*version=*/1, std::move(create_transaction_callback));
 
     {

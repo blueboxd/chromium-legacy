@@ -1073,7 +1073,8 @@ bool AppListControllerImpl::ProcessHomeLauncherGesture(
           HomeLauncherGestureHandler::Mode::kSlideDownToHide, screen_location);
     case ui::ET_GESTURE_SCROLL_UPDATE:
       return home_launcher_gesture_handler->OnScrollEvent(
-          screen_location, event->details().scroll_y());
+          screen_location, event->details().scroll_x(),
+          event->details().scroll_y());
     case ui::ET_GESTURE_END:
       return home_launcher_gesture_handler->OnReleaseEvent(
           screen_location,
@@ -1497,6 +1498,10 @@ void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
 
   presenter_.GetView()->OnTabletModeAnimationTransitionNotified(
       CalculateAnimationTransitionForMetrics(trigger, launcher_will_show));
+}
+
+bool AppListControllerImpl::IsHomeScreenVisible() {
+  return IsVisible();
 }
 
 }  // namespace ash

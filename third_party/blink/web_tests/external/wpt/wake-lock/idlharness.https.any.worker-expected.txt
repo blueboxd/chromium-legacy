@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS idl_test validation
+PASS WakeLock interface: existence and properties of interface object
+PASS WakeLock interface object length
+PASS WakeLock interface object name
+PASS WakeLock interface: existence and properties of interface prototype object
+PASS WakeLock interface: existence and properties of interface prototype object's "constructor" property
+PASS WakeLock interface: existence and properties of interface prototype object's @@unscopables property
+PASS WakeLock interface: member requestPermission
+FAIL WakeLock interface: operation request(WakeLockType, WakeLockRequestOptions) assert_own_property: interface object missing static operation expected property "request" missing
+PASS WakeLock must be primary interface of navigator.wakeLock
+PASS Stringification of navigator.wakeLock
+PASS WakeLock interface: navigator.wakeLock must not have property "requestPermission"
+PASS WakeLock interface: navigator.wakeLock must inherit property "request(WakeLockType, WakeLockRequestOptions)" with the proper type
+FAIL WakeLock interface: calling request(WakeLockType, WakeLockRequestOptions) on navigator.wakeLock with too few arguments must throw TypeError assert_own_property: interface object must have static operation as own property expected property "request" missing
+Harness: the test ran to completion.
+

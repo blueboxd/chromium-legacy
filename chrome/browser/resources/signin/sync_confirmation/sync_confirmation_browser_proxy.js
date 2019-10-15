@@ -6,75 +6,69 @@
  * @fileoverview A helper object used by the sync confirmation dialog to
  * interact with the browser.
  */
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
-cr.define('sync.confirmation', function() {
-  /** @interface */
-  class SyncConfirmationBrowserProxy {
-    /**
-     * Called when the user confirms the Sync Confirmation dialog.
-     * @param {!Array<string>} description Strings that the user was presented
-     *     with in the UI.
-     * @param {string} confirmation Text of the element that the user
-     *     clicked on.
-     */
-    confirm(description, confirmation) {}
+/** @interface */
+export class SyncConfirmationBrowserProxy {
+  /**
+   * Called when the user confirms the Sync Confirmation dialog.
+   * @param {!Array<string>} description Strings that the user was presented
+   *     with in the UI.
+   * @param {string} confirmation Text of the element that the user
+   *     clicked on.
+   */
+  confirm(description, confirmation) {}
 
-    /**
-     * Called when the user undoes the Sync confirmation.
-     */
-    undo() {}
+  /**
+   * Called when the user undoes the Sync confirmation.
+   */
+  undo() {}
 
-    /**
-     * Called when the user clicks on the Settings link in
-     *     the Sync Confirmation dialog.
-     * @param {!Array<string>} description Strings that the user was presented
-     *     with in the UI.
-     * @param {string} confirmation Text of the element that the user
-     *     clicked on.
-     */
-    goToSettings(description, confirmation) {}
+  /**
+   * Called when the user clicks on the Settings link in
+   *     the Sync Confirmation dialog.
+   * @param {!Array<string>} description Strings that the user was presented
+   *     with in the UI.
+   * @param {string} confirmation Text of the element that the user
+   *     clicked on.
+   */
+  goToSettings(description, confirmation) {}
 
-    /** @param {!Array<number>} height */
-    initializedWithSize(height) {}
+  /** @param {!Array<number>} height */
+  initializedWithSize(height) {}
 
-    /**
-     * Called when the WebUIListener for "account-image-changed" was added.
-     */
-    requestAccountImage() {}
+  /**
+   * Called when the WebUIListener for "account-image-changed" was added.
+   */
+  requestAccountImage() {}
+}
+
+/** @implements {SyncConfirmationBrowserProxy} */
+export class SyncConfirmationBrowserProxyImpl {
+  /** @override */
+  confirm(description, confirmation) {
+    chrome.send('confirm', [description, confirmation]);
   }
 
-  /** @implements {sync.confirmation.SyncConfirmationBrowserProxy} */
-  class SyncConfirmationBrowserProxyImpl {
-    /** @override */
-    confirm(description, confirmation) {
-      chrome.send('confirm', [description, confirmation]);
-    }
-
-    /** @override */
-    undo() {
-      chrome.send('undo');
-    }
-
-    /** @override */
-    goToSettings(description, confirmation) {
-      chrome.send('goToSettings', [description, confirmation]);
-    }
-
-    /** @override */
-    initializedWithSize(height) {
-      chrome.send('initializedWithSize', height);
-    }
-
-    /** @override */
-    requestAccountImage() {
-      chrome.send('accountImageRequest');
-    }
+  /** @override */
+  undo() {
+    chrome.send('undo');
   }
 
-  cr.addSingletonGetter(SyncConfirmationBrowserProxyImpl);
+  /** @override */
+  goToSettings(description, confirmation) {
+    chrome.send('goToSettings', [description, confirmation]);
+  }
 
-  return {
-    SyncConfirmationBrowserProxy: SyncConfirmationBrowserProxy,
-    SyncConfirmationBrowserProxyImpl: SyncConfirmationBrowserProxyImpl,
-  };
-});
+  /** @override */
+  initializedWithSize(height) {
+    chrome.send('initializedWithSize', height);
+  }
+
+  /** @override */
+  requestAccountImage() {
+    chrome.send('accountImageRequest');
+  }
+}
+
+addSingletonGetter(SyncConfirmationBrowserProxyImpl);

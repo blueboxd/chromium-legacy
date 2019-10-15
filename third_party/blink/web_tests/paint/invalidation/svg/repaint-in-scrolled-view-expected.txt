@@ -5,7 +5,6 @@
       "bounds": [2000, 2000],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [400, 400],
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect id='rect'",

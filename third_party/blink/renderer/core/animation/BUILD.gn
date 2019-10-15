@@ -19,7 +19,6 @@ buildflag_header("buildflags") {
 }
 
 blink_core_sources("animation") {
-  split_count = 5
   sources = [
     "animatable.cc",
     "animatable.h",

@@ -265,6 +265,10 @@ void LogPasswordProtectionNetworkResponseAndDuration(
   }
 }
 
+void LogPasswordProtectionSampleReportSent() {
+  base::UmaHistogramBoolean("PasswordProtection.SampleReportSent", true);
+}
+
 void LogWarningAction(WarningUIType ui_type,
                       WarningAction action,
                       ReusedPasswordAccountType password_account_type) {

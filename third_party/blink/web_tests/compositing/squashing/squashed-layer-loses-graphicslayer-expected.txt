@@ -20,21 +20,12 @@ CASE 1, original layer tree:
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='A' class='overlap1')",
       "position": [80, 80],
       "bounds": [260, 260],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [60, 60, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

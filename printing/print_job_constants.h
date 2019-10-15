@@ -26,9 +26,7 @@ PRINTING_EXPORT extern const char kSettingDpiDefault[];
 PRINTING_EXPORT extern const char kSettingDpiHorizontal[];
 PRINTING_EXPORT extern const char kSettingDpiVertical[];
 PRINTING_EXPORT extern const char kSettingDuplexMode[];
-PRINTING_EXPORT extern const char kSettingFitToPageEnabled[];
 PRINTING_EXPORT extern const char kSettingFitToPageScaling[];
-PRINTING_EXPORT extern const char kSettingFitToPaperEnabled[];
 PRINTING_EXPORT extern const char kSettingHeaderFooterEnabled[];
 PRINTING_EXPORT extern const float kSettingHeaderFooterInterstice;
 PRINTING_EXPORT extern const char kSettingHeaderFooterDate[];
@@ -68,6 +66,7 @@ PRINTING_EXPORT extern const char kSettingPrinterOptions[];
 PRINTING_EXPORT extern const char kSettingPrinterType[];
 PRINTING_EXPORT extern const char kSettingRasterizePdf[];
 PRINTING_EXPORT extern const char kSettingScaleFactor[];
+PRINTING_EXPORT extern const char kSettingScalingType[];
 PRINTING_EXPORT extern const char kSettingTicket[];
 PRINTING_EXPORT extern const char kSettingSendUserInfo[];
 PRINTING_EXPORT extern const char kSettingShouldPrintBackgrounds[];
@@ -151,6 +150,16 @@ enum MarginType {
   PRINTABLE_AREA_MARGINS,
   CUSTOM_MARGINS,
   MARGIN_TYPE_LAST = CUSTOM_MARGINS
+};
+
+// Must match print_preview.ScalingType in
+// chrome/browser/resources/print_preview/data/scaling.js
+enum ScalingType {
+  DEFAULT,
+  FIT_TO_PAGE,
+  FIT_TO_PAPER,
+  CUSTOM,
+  SCALING_TYPE_LAST = CUSTOM
 };
 
 // Must match print_preview.PrinterType in

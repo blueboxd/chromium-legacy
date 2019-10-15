@@ -51,7 +51,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   base::string16 GetWindowTitle() const override;
 
   // views::DialogDelegate:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
   std::unique_ptr<views::View> CreateExtraView() override;
@@ -95,6 +94,11 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   // | Get help                         |
   // ------------------------------------
 
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   chooser_controller->GetOkButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   chooser_controller->GetCancelButtonLabel());
+
   SetLayoutManager(std::make_unique<views::FillLayout>());
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
@@ -118,11 +122,6 @@ base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
 views::View* ChooserBubbleUiViewDelegate::GetInitiallyFocusedView() {
   const views::DialogClientView* dcv = GetDialogClientView();
   return dcv ? dcv->cancel_button() : nullptr;
-}
-
-base::string16 ChooserBubbleUiViewDelegate::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return device_chooser_content_view_->GetDialogButtonLabel(button);
 }
 
 bool ChooserBubbleUiViewDelegate::IsDialogButtonEnabled(

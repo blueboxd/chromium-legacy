@@ -106,7 +106,6 @@ class LocationIconView : public IconLabelBubbleView {
  protected:
   // IconLabelBubbleView:
   bool IsTriggerableEvent(const ui::Event& event) override;
-  double WidthMultiplier() const override;
 
  private:
   // The security level when the location icon was last updated. Used to decide
@@ -120,8 +119,6 @@ class LocationIconView : public IconLabelBubbleView {
 
   // Returns what the minimum size would be if the preferred size were |size|.
   gfx::Size GetMinimumSizeForPreferredSize(gfx::Size size) const;
-
-  base::TimeDelta GetSlideDurationTime() const override;
 
   Delegate* delegate_;
 

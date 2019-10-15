@@ -124,7 +124,15 @@ void ServiceWorkerRegisterJob::StartImpl() {
                                weak_factory_.GetWeakPtr());
   }
 
-  context_->storage()->FindRegistrationForScope(scope_, std::move(next_step));
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      context_->storage()->GetUninstallingRegistration(scope_);
+  if (registration.get())
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(next_step),
+                       blink::ServiceWorkerStatusCode::kOk, registration));
+  else
+    context_->storage()->FindRegistrationForScope(scope_, std::move(next_step));
 }
 
 void ServiceWorkerRegisterJob::Abort() {

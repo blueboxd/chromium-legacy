@@ -270,6 +270,11 @@ class AXPosition {
     return GetNodeInTree(tree_id_, anchor_id_);
   }
 
+  bool IsIgnored() const {
+    AXNodeType* anchor = GetAnchor();
+    return anchor && anchor->IsIgnored();
+  }
+
   AXPositionKind kind() const { return kind_; }
   int child_index() const { return child_index_; }
   int text_offset() const { return text_offset_; }
@@ -1306,11 +1311,11 @@ class AXPosition {
   // not visible to a specific platform's APIs.
   AXPositionInstance AsPositionBeforeCharacter() const {
     AXPositionInstance text_position = AsTextPosition();
-    if (!text_position->AtEndOfAnchor())
+    if (!text_position->AtEndOfAnchor() && !text_position->IsIgnored())
       return text_position;
 
     AXPositionInstance tree_position = CreateNextLeafTreePosition();
-    while (!tree_position->MaxTextOffset())
+    while (!tree_position->MaxTextOffset() || tree_position->IsIgnored())
       tree_position = tree_position->CreateNextLeafTreePosition();
     return tree_position->AsTextPosition();
   }
@@ -1320,11 +1325,11 @@ class AXPosition {
   // See `AsPositionBeforeCharacter`, as this is its "reversed" version.
   AXPositionInstance AsPositionAfterCharacter() const {
     AXPositionInstance text_position = AsTextPosition();
-    if (!text_position->AtStartOfAnchor())
+    if (!text_position->AtStartOfAnchor() && !text_position->IsIgnored())
       return text_position;
 
     AXPositionInstance tree_position = CreatePreviousLeafTreePosition();
-    while (!tree_position->MaxTextOffset())
+    while (!tree_position->MaxTextOffset() || tree_position->IsIgnored())
       tree_position = tree_position->CreatePreviousLeafTreePosition();
     return tree_position->CreatePositionAtEndOfAnchor()->AsTextPosition();
   }
@@ -1432,7 +1437,8 @@ class AXPosition {
 
           text_position = std::move(next_position);
         } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordStartOffsets().empty());
+                 text_position->GetWordStartOffsets().empty() ||
+                 (text_position->IsIgnored()));
 
         if (at_last_anchor_boundary)
           break;
@@ -1513,7 +1519,8 @@ class AXPosition {
 
           text_position = std::move(previous_position);
         } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordStartOffsets().empty());
+                 text_position->GetWordStartOffsets().empty() ||
+                 text_position->IsIgnored());
 
         if (at_last_anchor_boundary)
           break;
@@ -1600,7 +1607,8 @@ class AXPosition {
 
           text_position = std::move(next_position);
         } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordEndOffsets().empty());
+                 text_position->GetWordEndOffsets().empty() ||
+                 text_position->IsIgnored());
 
         if (at_last_anchor_boundary)
           break;
@@ -1688,7 +1696,8 @@ class AXPosition {
 
           text_position = std::move(previous_position);
         } while (!text_position->MaxTextOffset() ||
-                 text_position->GetWordStartOffsets().empty());
+                 text_position->GetWordStartOffsets().empty() ||
+                 text_position->IsIgnored());
 
         if (at_last_anchor_boundary)
           break;
@@ -2599,19 +2608,19 @@ class AXPosition {
   }
 
   static bool AtStartOfPagePredicate(const AXPositionInstance& position) {
-    return position->AtStartOfPage();
+    return !position->IsIgnored() && position->AtStartOfPage();
   }
 
   static bool AtEndOfPagePredicate(const AXPositionInstance& position) {
-    return position->AtEndOfPage();
+    return !position->IsIgnored() && position->AtEndOfPage();
   }
 
   static bool AtStartOfLinePredicate(const AXPositionInstance& position) {
-    return position->AtStartOfLine();
+    return !position->IsIgnored() && position->AtStartOfLine();
   }
 
   static bool AtEndOfLinePredicate(const AXPositionInstance& position) {
-    return position->AtEndOfLine();
+    return !position->IsIgnored() && position->AtEndOfLine();
   }
 
   // Default behavior is to never abort.

@@ -84,12 +84,6 @@ int RelaunchRecommendedBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 RelaunchRecommendedBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
-  return l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON);
-}
-
 base::string16 RelaunchRecommendedBubbleView::GetWindowTitle() const {
   return relaunch_recommended_timer_.GetWindowTitle();
 }
@@ -160,6 +154,10 @@ RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
           detection_time,
           base::BindRepeating(&RelaunchRecommendedBubbleView::UpdateWindowTitle,
                               base::Unretained(this))) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_RELAUNCH_ACCEPT_BUTTON));
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_RECOMMENDED);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

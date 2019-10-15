@@ -14,14 +14,14 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [785, 1000],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='yellow fixed'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -36,15 +36,6 @@
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 13, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

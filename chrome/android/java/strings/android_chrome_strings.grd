@@ -2540,6 +2540,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DOWNLOAD_MANAGER_JUST_NOW" desc="Text on a label describing that the associated download event happened just now.">
         Just Now
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HOME" desc="The title text on download home indicating that we are in offline mode.">
+        Offline Home
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_EXPLORE_OFFLINE" desc="Tab text for the offline content in download home which contains recommended offline content for the user.">
+        Explore Offline
+      </message>
 
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">
@@ -2688,6 +2694,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- New Tab Page strings -->
+      <message name="IDS_EXPLORE_OFFLINE_CARD_MESSAGE" desc="Text informing the user that they are currently offline and they can tap here to explore the offline feed. ">
+        You are currently offline.\n<ph name="BEGIN_LINK">&lt;link&gt;</ph>Explore your offline feed.<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
       <message name="IDS_RECENT_TABS" desc="Text for button to show 'Recent tabs', i.e. recently closed tabs and tabs that are open on other devices [CHAR-LIMIT=20]">
         Recent tabs
       </message>

@@ -4,12 +4,13 @@
 
 import 'chrome://welcome/google_apps/nux_google_apps.js';
 
-import {TestBookmarkProxy} from 'chrome://test/welcome/test_bookmark_proxy.js';
-import {TestGoogleAppProxy} from 'chrome://test/welcome/test_google_app_proxy.js';
-import {TestMetricsProxy} from 'chrome://test/welcome/test_metrics_proxy.js';
 import {GoogleAppProxyImpl} from 'chrome://welcome/google_apps/google_app_proxy.js';
 import {GoogleAppsMetricsProxyImpl} from 'chrome://welcome/google_apps/google_apps_metrics_proxy.js';
 import {BookmarkBarManager, BookmarkProxyImpl} from 'chrome://welcome/shared/bookmark_proxy.js';
+
+import {TestBookmarkProxy} from './test_bookmark_proxy.js';
+import {TestGoogleAppProxy} from './test_google_app_proxy.js';
+import {TestMetricsProxy} from './test_metrics_proxy.js';
 
 suite('AppChooserTest', function() {
   const apps = [

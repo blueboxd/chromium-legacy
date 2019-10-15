@@ -14,6 +14,7 @@
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
@@ -49,7 +50,7 @@ TEST_F(RulesetMatcherTest, BlockingRule) {
 
   auto should_block_request = [&matcher](const RequestParams& params) {
     return !matcher->HasMatchingAllowRule(params) &&
-           matcher->HasMatchingBlockRule(params);
+           matcher->GetBlockOrCollapseAction(params).has_value();
   };
 
   GURL google_url("http://google.com");
@@ -77,11 +78,6 @@ TEST_F(RulesetMatcherTest, RedirectRule) {
   std::unique_ptr<RulesetMatcher> matcher;
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
 
-  auto should_redirect_request = [&matcher](const RequestParams& params,
-                                            GURL* redirect_url) {
-    return matcher->GetRedirectRule(params, redirect_url) != nullptr;
-  };
-
   GURL google_url("http://google.com");
   GURL yahoo_url("http://yahoo.com");
 
@@ -90,12 +86,13 @@ TEST_F(RulesetMatcherTest, RedirectRule) {
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
 
-  GURL redirect_url;
-  EXPECT_TRUE(should_redirect_request(params, &redirect_url));
-  EXPECT_EQ(yahoo_url, redirect_url);
+  base::Optional<RequestAction> redirect_action =
+      matcher->GetRedirectAction(params);
+  ASSERT_TRUE(redirect_action);
+  EXPECT_EQ(yahoo_url, redirect_action->redirect_url);
 
   params.url = &yahoo_url;
-  EXPECT_FALSE(should_redirect_request(params, &redirect_url));
+  EXPECT_FALSE(matcher->GetRedirectAction(params));
 }
 
 // Test that a URL cannot redirect to itself, as filed in crbug.com/954646.
@@ -116,8 +113,7 @@ TEST_F(RulesetMatcherTest, PreventSelfRedirect) {
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
 
-  GURL redirect_url;
-  EXPECT_FALSE(matcher->GetRedirectRule(params, &redirect_url));
+  EXPECT_FALSE(matcher->GetRedirectAction(params));
 }
 
 // Tests a simple upgrade scheme rule.
@@ -131,7 +127,7 @@ TEST_F(RulesetMatcherTest, UpgradeRule) {
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
 
   auto should_upgrade_request = [&matcher](const RequestParams& params) {
-    return matcher->GetUpgradeRule(params) != nullptr;
+    return matcher->GetUpgradeAction(params).has_value();
   };
 
   GURL google_url("http://google.com");
@@ -232,21 +228,21 @@ TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
   const size_t kId = 1;
   const size_t kPriority = 1;
   const size_t kRuleCountLimit = 10;
-  const ExtensionId extension_id = "extension_id";
   ASSERT_TRUE(CreateVerifiedMatcher(
-      {rule},
-      CreateTemporarySource(kId, kPriority, kRuleCountLimit, extension_id),
+      {rule}, CreateTemporarySource(kId, kPriority, kRuleCountLimit),
       &matcher));
 
   GURL example_url("http://example.com");
   RequestParams params;
   params.url = &example_url;
 
-  GURL redirect_url;
-  EXPECT_TRUE(matcher->GetRedirectRule(params, &redirect_url));
+  base::Optional<RequestAction> redirect_action =
+      matcher->GetRedirectAction(params);
+
+  ASSERT_TRUE(redirect_action.has_value());
   GURL expected_redirect_url(
-      "chrome-extension://extension_id/path/newfile.js?query#fragment");
-  EXPECT_EQ(expected_redirect_url, redirect_url);
+      "chrome-extension://extensionid/path/newfile.js?query#fragment");
+  EXPECT_EQ(expected_redirect_url, redirect_action->redirect_url);
 }
 
 // Tests a rule to redirect to a static url.
@@ -265,10 +261,12 @@ TEST_F(RulesetMatcherTest, RedirectToStaticUrl) {
   RequestParams params;
   params.url = &example_url;
 
-  GURL redirect_url;
+  base::Optional<RequestAction> redirect_action =
+      matcher->GetRedirectAction(params);
+
+  ASSERT_TRUE(redirect_action.has_value());
   GURL expected_redirect_url("https://google.com");
-  EXPECT_TRUE(matcher->GetRedirectRule(params, &redirect_url));
-  EXPECT_EQ(expected_redirect_url, redirect_url);
+  EXPECT_EQ(expected_redirect_url, redirect_action->redirect_url);
 }
 
 // Tests url transformation rules.
@@ -396,17 +394,20 @@ TEST_F(RulesetMatcherTest, UrlTransform) {
     RequestParams params;
     params.url = &url;
 
-    GURL redirect_url;
+    base::Optional<RequestAction> redirect_action =
+        matcher->GetRedirectAction(params);
+
     if (!test_case.expected_redirect_url) {
-      EXPECT_FALSE(matcher->GetRedirectRule(params, &redirect_url))
-          << redirect_url.spec();
+      EXPECT_FALSE(redirect_action) << redirect_action->redirect_url->spec();
       continue;
     }
 
     ASSERT_TRUE(GURL(*test_case.expected_redirect_url).is_valid())
         << *test_case.expected_redirect_url;
-    EXPECT_TRUE(matcher->GetRedirectRule(params, &redirect_url));
-    EXPECT_EQ(*test_case.expected_redirect_url, redirect_url.spec());
+
+    ASSERT_TRUE(redirect_action.has_value());
+    EXPECT_EQ(GURL(*test_case.expected_redirect_url),
+              redirect_action->redirect_url);
   }
 }
 

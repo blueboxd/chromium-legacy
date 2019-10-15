@@ -31,12 +31,15 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.download.DownloadOpenSource;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesSection;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.cards.ExploreOfflineCard;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -126,6 +129,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private int mSearchBoxBoundsVerticalInset;
 
     private ScrollDelegate mScrollDelegate;
+    private ExploreOfflineCard mExploreOfflineCard;
 
     /**
      * A delegate used to obtain information about scroll state and perform various scroll
@@ -173,6 +177,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         mMiddleSpacer = findViewById(R.id.ntp_middle_spacer);
         mSearchProviderLogoView = findViewById(R.id.search_provider_logo);
         mSearchBoxView = findViewById(R.id.search_box);
+        mExploreOfflineCard = new ExploreOfflineCard(this, openDownloadHomeCallback());
         insertSiteSectionView();
 
         int variation = ExploreSitesBridge.getVariation();
@@ -525,23 +530,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         // Hide or show the views above the tile grid as needed, including logo, search box, and
         // spacers.
-        int visibility = mSearchProviderHasLogo ? View.VISIBLE : View.GONE;
-        int logoVisibility = shouldShowLogo() ? View.VISIBLE : View.GONE;
-        int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            View child = getChildAt(i);
-            if (child == mSiteSectionViewHolder.itemView) break;
-
-            // Don't change the visibility of a ViewStub as that will automagically inflate it.
-            if (child instanceof ViewStub) continue;
-
-            if (child == mSearchProviderLogoView) {
-                child.setVisibility(logoVisibility);
-            } else {
-                child.setVisibility(visibility);
-            }
-        }
-
+        mSearchProviderLogoView.setVisibility(shouldShowLogo() ? View.VISIBLE : View.GONE);
+        mSearchBoxView.setVisibility(mSearchProviderHasLogo ? View.VISIBLE : View.GONE);
         updateTileGridPlaceholderVisibility();
 
         onUrlFocusAnimationChanged();
@@ -864,6 +854,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     }
 
     private void onDestroy() {
+        if (mExploreOfflineCard != null) mExploreOfflineCard.destroy();
         VrModuleProvider.unregisterVrModeObserver(this);
         // Need to null-check compositor view holder and layout manager since they might've
         // been cleared by now.
@@ -893,6 +884,13 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             measureExactly(mSearchProviderLogoView, exploreWidth,
                     mSearchProviderLogoView.getMeasuredHeight());
         }
+    }
+
+    private Runnable openDownloadHomeCallback() {
+        return () -> {
+            DownloadUtils.showDownloadManager(mActivity, mActivity.getActivityTabProvider().get(),
+                    DownloadOpenSource.NEW_TAB_PAGE);
+        };
     }
 
     /**

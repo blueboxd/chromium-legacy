@@ -52,8 +52,9 @@ constexpr net::NetworkTrafficAnnotationTag
 
 }  // namespace
 
-HttpServer::HttpServer(mojom::TCPServerSocketPtr server_socket,
-                       HttpServer::Delegate* delegate)
+HttpServer::HttpServer(
+    mojo::PendingRemote<mojom::TCPServerSocket> server_socket,
+    HttpServer::Delegate* delegate)
     : server_socket_(std::move(server_socket)),
       delegate_(delegate),
       last_id_(0) {
@@ -187,7 +188,7 @@ void HttpServer::DoAcceptLoop() {
 void HttpServer::OnAcceptCompleted(
     int rv,
     const base::Optional<net::IPEndPoint>& remote_addr,
-    mojom::TCPConnectedSocketPtr connected_socket,
+    mojo::PendingRemote<mojom::TCPConnectedSocket> connected_socket,
     mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
     mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
   if (rv != net::OK) {

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -48,10 +49,14 @@
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "net/base/host_port_pair.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "url/gurl.h"
 
 using content::NavigationSimulator;
@@ -280,6 +285,86 @@ void TestHistograms(const base::HistogramTester& histograms,
   }
 }
 
+// Waits for an error page for the heavy ad intervention to be navigated to.
+class ErrorPageWaiter : public content::WebContentsObserver {
+ public:
+  explicit ErrorPageWaiter(content::WebContents* contents)
+      : content::WebContentsObserver(contents) {}
+  ~ErrorPageWaiter() override = default;
+
+  // content::WebContentsObserver:
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    if (handle->GetNetErrorCode() != net::ERR_BLOCKED_BY_CLIENT) {
+      is_error_page_ = false;
+      return;
+    }
+
+    is_error_page_ = true;
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
+  }
+
+  // Immediately returns if we are on an error page.
+  void WaitForError() {
+    if (is_error_page_)
+      return;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  base::OnceClosure quit_closure_;
+  bool is_error_page_ = false;
+};
+
+// Mock frame remote. Processes calls to SendInterventionReport and waits
+// for all pending messages to be sent.
+class FrameRemoteTester : public blink::mojom::Frame {
+ public:
+  FrameRemoteTester() = default;
+  ~FrameRemoteTester() override = default;
+
+  void BindPendingReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
+    receivers_.Add(this, mojo::PendingAssociatedReceiver<blink::mojom::Frame>(
+                             std::move(handle)));
+  }
+
+  // blink::mojom::Frame
+  void SendInterventionReport(const std::string& id,
+                              const std::string& message) override {
+    if (!on_empty_report_callback_)
+      return;
+
+    if (id.empty()) {
+      std::move(on_empty_report_callback_).Run();
+      return;
+    }
+    had_message_ = true;
+  }
+
+  void GetTextSurroundingSelection(
+      uint32_t max_length,
+      GetTextSurroundingSelectionCallback callback) override {}
+
+  // Sends an empty message and waits for it to be received. Returns true if any
+  // other messages were received.
+  bool FlushForTesting(RenderFrameHost* render_frame_host) {
+    base::RunLoop run_loop;
+    on_empty_report_callback_ = run_loop.QuitClosure();
+    render_frame_host->SendInterventionReport("", "");
+    run_loop.Run();
+    int had_message = had_message_;
+    had_message_ = false;
+    return had_message;
+  }
+
+ private:
+  bool had_message_ = false;
+  base::OnceClosure on_empty_report_callback_;
+  mojo::AssociatedReceiverSet<blink::mojom::Frame> receivers_;
+};
+
 }  // namespace
 
 class AdsPageLoadMetricsObserverTest
@@ -373,6 +458,15 @@ class AdsPageLoadMetricsObserverTest
     auto navigation_simulator =
         NavigationSimulator::CreateRendererInitiated(GURL(url), subframe);
     navigation_simulator->Commit();
+
+    blink::AssociatedInterfaceProvider* remote_interfaces =
+        navigation_simulator->GetFinalRenderFrameHost()
+            ->GetRemoteAssociatedInterfaces();
+    remote_interfaces->OverrideBinderForTesting(
+        blink::mojom::Frame::Name_,
+        base::BindRepeating(&FrameRemoteTester::BindPendingReceiver,
+                            base::Unretained(&frame_remote_tester_)));
+
     return navigation_simulator->GetFinalRenderFrameHost();
   }
 
@@ -426,6 +520,12 @@ class AdsPageLoadMetricsObserverTest
   }
 
   HeavyAdBlocklist* blocklist() { return test_blocklist_.get(); }
+
+  // Flushes all intervention report messages and returns a bool if there was a
+  // message.
+  bool HasInterventionReportsAfterFlush(RenderFrameHost* render_frame_host) {
+    return frame_remote_tester_.FlushForTesting(render_frame_host);
+  }
 
   void OverrideVisibilityTrackerWithMockClock() {
     clock_ = std::make_unique<base::SimpleTestTickClock>();
@@ -491,6 +591,7 @@ class AdsPageLoadMetricsObserverTest
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   std::unique_ptr<page_load_metrics::PageLoadMetricsObserverTester> tester_;
+  FrameRemoteTester frame_remote_tester_;
 
   // The clock used by the ui::ScopedVisibilityTracker, assigned if non-null.
   std::unique_ptr<base::SimpleTestTickClock> clock_;
@@ -1648,12 +1749,17 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
   // Load just under the threshold amount of bytes.
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) - 1);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
+
+  ErrorPageWaiter waiter(web_contents());
 
   // Load enough bytes to trigger the intervention.
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 2);
 
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+  waiter.WaitForError();
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
@@ -1676,9 +1782,12 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("HeavyAds.InterventionType2"), 0);
 
+  ErrorPageWaiter waiter(web_contents());
+
   // Load enough bytes to meet the noised threshold criteria.
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 1);
 
+  waiter.WaitForError();
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
@@ -1700,8 +1809,9 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   // Load network bytes that trip the heavy ad threshold without noise.
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
                      heavy_ad_thresholds::kMaxNetworkBytes / 1024 + 1);
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -1735,6 +1845,9 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   // Verify the frame can still trip the CPU threshold.
   UseCpuTimeUnderThreshold(ad_frame, base::TimeDelta::FromMilliseconds(
                                          heavy_ad_thresholds::kMaxCpuTime + 1));
+
+  // Verify we did not trigger the intervention.
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kTotalCpu, 1);
@@ -1766,12 +1879,18 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdTotalCpuUsage_InterventionFired) {
   AdvancePageDuration(base::TimeDelta::FromSeconds(30));
   UseCpuTimeUnderThreshold(ad_frame, base::TimeDelta::FromMilliseconds(
                                          heavy_ad_thresholds::kMaxCpuTime - 1));
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
+
   AdvancePageDuration(base::TimeDelta::FromSeconds(30));
+
   // Use enough CPU to trigger the intervention.
+  ErrorPageWaiter waiter(web_contents());
   OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1));
 
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+  waiter.WaitForError();
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kTotalCpu, 1);
@@ -1793,13 +1912,17 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdPeakCpuUsage_InterventionFired) {
       ad_frame,
       base::TimeDelta::FromMilliseconds(
           heavy_ad_thresholds::kMaxPeakWindowedPercent * 30000 / 100 - 1));
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
 
   // Use enough CPU to trigger the intervention.
+  ErrorPageWaiter waiter(web_contents());
   AdvancePageDuration(base::TimeDelta::FromSeconds(10));
   OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1));
 
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+  waiter.WaitForError();
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kPeakCpu, 1);
@@ -1816,8 +1939,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureDisabled_NotFired) {
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
                      (kMaxHeavyAdNetworkBytes / 1024) + 1);
 
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
+
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), 0);
 }
@@ -1837,8 +1961,7 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -1864,8 +1987,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklistFull_NotFired) {
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 0);
+  // Verify we did not trigger the intervention.
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest,
@@ -1886,11 +2009,15 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Add enough data to trigger the intervention.
+  ErrorPageWaiter waiter(web_contents());
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
-  histogram_tester().ExpectTotalCount(
-      SuffixedHistogram("HeavyAds.InterventionType2"), 1);
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+  waiter.WaitForError();
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.InterventionType2"),
+      FrameData::HeavyAdStatus::kNetwork, 1);
 
   // This histogram should not be recorded when the blocklist is disabled.
   histogram_tester().ExpectTotalCount(
@@ -1913,10 +2040,13 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
 
   // Add enough data to trigger the intervention.
+  ErrorPageWaiter waiter(web_contents());
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   // Verify the intervention triggered.
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+  waiter.WaitForError();
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kNetwork, 1);
@@ -1931,9 +2061,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
                      (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
 
   // Verify the intervention did not occur again.
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("HeavyAds.InterventionType2"),
-      FrameData::HeavyAdStatus::kNetwork, 1);
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
   histogram_tester().ExpectBucketCount(
       SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), true, 1);
 }

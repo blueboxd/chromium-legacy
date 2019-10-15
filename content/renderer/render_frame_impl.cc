@@ -4316,16 +4316,10 @@ void RenderFrameImpl::DidAccessInitialDocument() {
   // NOTE: Do not call back into JavaScript here, since this call is made from a
   // V8 security check.
 
-  // If the request hasn't yet committed, notify the browser process that it is
-  // no longer safe to show the pending URL of the main frame, since a URL spoof
-  // is now possible. (If the request has committed, the browser already knows.)
-  if (!has_accessed_initial_document_) {
-    NavigationState* navigation_state =
-        NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
-    if (!navigation_state->request_committed()) {
-      Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
-    }
-  }
+  // Notify the browser process that it is no longer safe to show the pending
+  // URL of the main frame, since a URL spoof is now possible.
+  if (!has_accessed_initial_document_)
+    Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
 
   has_accessed_initial_document_ = true;
 }
@@ -5158,8 +5152,7 @@ void RenderFrameImpl::DidChangeThemeColor() {
   if (frame_->Parent())
     return;
 
-  Send(new FrameHostMsg_DidChangeThemeColor(
-      routing_id_, frame_->GetDocument().ThemeColor()));
+  GetFrameHost()->DidChangeThemeColor(frame_->GetDocument().ThemeColor());
 }
 
 void RenderFrameImpl::ForwardResourceTimingToParent(
@@ -5182,7 +5175,6 @@ void RenderFrameImpl::DidBlockNavigation(
 
 void RenderFrameImpl::NavigateBackForwardSoon(int offset,
                                               bool has_user_gesture) {
-  render_view()->NavigateBackForwardSoon(offset, has_user_gesture);
   Send(new FrameHostMsg_GoToEntryAtOffset(GetRoutingID(), offset,
                                           has_user_gesture));
 }
@@ -5697,8 +5689,7 @@ void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
     render_accessibility_->HandleAccessibilityFindInPageTermination();
 }
 
-void RenderFrameImpl::EnterFullscreen(
-    const blink::WebFullscreenOptions& options) {
+void RenderFrameImpl::EnterFullscreen(const blink::FullScreenOptions& options) {
   Send(new FrameHostMsg_EnterFullscreen(routing_id_, options));
 }
 
@@ -6018,9 +6009,6 @@ bool RenderFrameImpl::UpdateNavigationHistory(
         navigation_state->commit_params().pending_history_list_offset;
   }
 
-  if (commit_type == blink::WebHistoryCommitType::kWebBackForwardCommit)
-    render_view_->DidCommitProvisionalHistoryLoad();
-
   return is_new_navigation;
 }
 
@@ -6080,13 +6068,6 @@ void RenderFrameImpl::UpdateStateForCommit(
         render_widget_->compositor_deps()->IsUseZoomForDSFEnabled(),
         render_widget_->GetScreenInfo().device_scale_factor);
   }
-
-  // Remember that we've already processed this request, so we don't update
-  // the session history again.  We do this regardless of whether this is
-  // a session history navigation, because if we attempted a session history
-  // navigation without valid HistoryItem state, WebCore will think it is a
-  // new navigation.
-  navigation_state->set_request_committed(true);
 
   // If we are a top frame navigation to another document we should clear any
   // existing autoplay flags on the Page. This is because flags are stored at

@@ -91,9 +91,9 @@ std::unique_ptr<UiDevToolsServer> UiDevToolsServer::CreateForViews(
   // TODO(mhashmi): Change port if more than one inspectable clients
   auto server =
       base::WrapUnique(new UiDevToolsServer(port, kUIDevtoolsServerTag));
-  network::mojom::TCPServerSocketPtr server_socket;
-  auto request = mojo::MakeRequest(&server_socket);
-  CreateTCPServerSocket(std::move(request), network_context, port,
+  mojo::PendingRemote<network::mojom::TCPServerSocket> server_socket;
+  auto receiver = server_socket.InitWithNewPipeAndPassReceiver();
+  CreateTCPServerSocket(std::move(receiver), network_context, port,
                         kUIDevtoolsServerTag,
                         base::BindOnce(&UiDevToolsServer::MakeServer,
                                        server->weak_ptr_factory_.GetWeakPtr(),
@@ -103,7 +103,7 @@ std::unique_ptr<UiDevToolsServer> UiDevToolsServer::CreateForViews(
 
 // static
 std::unique_ptr<UiDevToolsServer> UiDevToolsServer::CreateForViz(
-    network::mojom::TCPServerSocketPtr server_socket,
+    mojo::PendingRemote<network::mojom::TCPServerSocket> server_socket,
     int port) {
   auto server =
       base::WrapUnique(new UiDevToolsServer(port, kVizDevtoolsServerTag));
@@ -113,7 +113,8 @@ std::unique_ptr<UiDevToolsServer> UiDevToolsServer::CreateForViz(
 
 // static
 void UiDevToolsServer::CreateTCPServerSocket(
-    network::mojom::TCPServerSocketRequest server_socket_request,
+    mojo::PendingReceiver<network::mojom::TCPServerSocket>
+        server_socket_receiver,
     network::mojom::NetworkContext* network_context,
     int port,
     net::NetworkTrafficAnnotationTag tag,
@@ -124,7 +125,7 @@ void UiDevToolsServer::CreateTCPServerSocket(
   network_context->CreateTCPServerSocket(
       net::IPEndPoint(address, port), kBacklog,
       net::MutableNetworkTrafficAnnotationTag(tag),
-      std::move(server_socket_request), std::move(callback));
+      std::move(server_socket_receiver), std::move(callback));
 }
 
 // static
@@ -174,7 +175,7 @@ void UiDevToolsServer::SendOverWebSocket(int connection_id,
 }
 
 void UiDevToolsServer::MakeServer(
-    network::mojom::TCPServerSocketPtr server_socket,
+    mojo::PendingRemote<network::mojom::TCPServerSocket> server_socket,
     int result,
     const base::Optional<net::IPEndPoint>& local_addr) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(devtools_server_sequence_);

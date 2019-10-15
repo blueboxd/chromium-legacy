@@ -25,4 +25,9 @@ const char* ExitCodeToString(HostExitCodes exit_code) {
   return ValueToName(kHostExitCodeStrings, exit_code);
 }
 
+const char* ExitCodeToStringUnchecked(int exit_code) {
+  return ValueToNameUnchecked(kHostExitCodeStrings,
+                              static_cast<HostExitCodes>(exit_code));
+}
+
 }  // namespace remoting

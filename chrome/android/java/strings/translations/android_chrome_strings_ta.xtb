@@ -69,12 +69,10 @@
 <translation id="1414981605391750300">Googleஐத் தொடர்புகொள்கிறது. இதற்குச் சில வினாடிகள் ஆகலாம்…</translation>
 <translation id="1416550906796893042">ஆப்ஸின் பதிப்பு</translation>
 <translation id="1430915738399379752">அச்சிடுக</translation>
-<translation id="1445680696957526815">Chrome இன் கூறுகள் ஒன்றுக்கொன்று இணங்கவில்லை. Chrome மேம்படுத்தலில் இருக்கக்கூடும் என்பதால், சில நிமிடங்களுக்குப் பிறகு முயற்சிக்கவும். சிக்கல் தொடர்ந்தால் Chromeஐ நிறுவல்நீக்கி, மீண்டும் நிறுவவும்.</translation>
 <translation id="1446450296470737166">MIDI சாதனங்களுக்கு முழுக் கட்டுப்பாட்டை அனுமதி</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" />ஐப் பகிர முடியவில்லை</translation>
 <translation id="145097072038377568">Android அமைப்புகளில் முடக்கப்பட்டுள்ளது.</translation>
 <translation id="1477626028522505441">சேவையகச் சிக்கல்களால் <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
-<translation id="1501480321619201731">குழுவை நீக்கு</translation>
 <translation id="1506061864768559482">தேடல் இன்ஜின்</translation>
 <translation id="1513352483775369820">புத்தகக்குறிகளும் இணைய வரலாறும்</translation>
 <translation id="1513858653616922153">கடவுச்சொல்லை நீக்கு</translation>
@@ -208,7 +206,7 @@
 <translation id="2498359688066513246">உதவி &amp; கருத்து</translation>
 <translation id="2501278716633472235">திரும்பிச் செல்</translation>
 <translation id="2513403576141822879">தனியுரிமை, பாதுகாப்பு, தரவுச் சேகரிப்பு ஆகியவற்றுடன் தொடர்புடைய மேலும் பல அமைப்புகளுக்கு, <ph name="BEGIN_LINK" />ஒத்திசைவும் Google சேவைகளும்<ph name="END_LINK" /> என்பதைப் பார்க்கவும்</translation>
-<translation id="2518590038762162553">லைட் பயன்முறையில் பக்கங்களை Chrome வேகமாக ஏற்றுவதோடு டேட்டாவை 60 சதவீதம் குறைவாகவும் பயன்படுத்தும். நீங்கள் பார்க்கும் பக்கங்களை மேம்படுத்த Chrome உங்கள் இணைய டிராஃபிக்கை Googleளுக்கு அனுப்பும். <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
+<translation id="2518590038762162553">லைட் பயன்முறையில் பக்கங்களை Chrome வேகமாக ஏற்றுவதோடு டேட்டாவை 60 சதவீதம் வரை குறைவாகவும் பயன்படுத்தும். நீங்கள் பார்க்கும் பக்கங்களை மேம்படுத்த Chrome உங்கள் இணைய டிராஃபிக்கை Googleளுக்கு அனுப்பும். <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">நீங்கள் பார்வையிடும் பக்கங்களின் URLகளை Googleளுக்கு அனுப்பும்</translation>
 <translation id="2532336938189706096">இணைய பார்வை</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> வரலாற்று உள்ளடக்கங்கள் நீக்கப்பட்டன</translation>
@@ -230,7 +228,6 @@
 <translation id="2650751991977523696">கோப்பை மீண்டும் பதிவிறக்கவா?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ஆடியோ கோப்பு}other{# ஆடியோ கோப்புகள்}}</translation>
 <translation id="2653659639078652383">சமர்ப்பி</translation>
-<translation id="2671423594960767771">குழுவைப் பகிரும்</translation>
 <translation id="2677748264148917807">வெளியேறு</translation>
 <translation id="2704606927547763573">நகலெடுக்கப்பட்டது</translation>
 <translation id="2707726405694321444">பக்கத்தைப் புதுப்பி</translation>
@@ -260,7 +257,6 @@
 <translation id="2893180576842394309">‘தேடல்’ மற்றும் பிற Google சேவைகளைத் தனிப்பயனாக்க, உங்கள் வரலாற்றை Google பயன்படுத்தக்கூடும்</translation>
 <translation id="2898264748040935573">சேமிக்கப்பட்ட கடவுச்சொல்லைத் திருத்தும் பட்டன்</translation>
 <translation id="2900528713135656174">நிகழ்வை உருவாக்கவும்</translation>
-<translation id="2902702728133930130">Chrome தொடங்கப்படும்போது எதிர்பாராத பிழையால் தோல்வியடைந்தது.</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" /> மொழியில் பக்கம் இல்லையா?</translation>
 <translation id="2904414404539560095">தாவலைப் பகிர்வதற்கான சாதனங்களின் பட்டியல் திரையின் முழு அளவிற்குத் திறக்கப்பட்டுள்ளது.</translation>
 <translation id="2910701580606108292">பாதுகாக்கப்பட்ட உள்ளடக்கத்தை இயக்குவதற்குத் தளங்களை அனுமதிக்கும் முன்பு அனுமதி கோரும்</translation>
@@ -479,7 +475,6 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> விருப்பம்}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> விருப்பங்கள்}}</translation>
 <translation id="4696983787092045100">எனது சாதனங்களுக்கு உரைச் செய்தியை அனுப்பு</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> இல் உள்ளடக்கத்தை ஆஃப்லைனில் பார்க்கலாம்</translation>
-<translation id="4698413471314543145">Chrome இயங்குவதற்கான முக்கிய செயல்பாட்டைக் காணவில்லை; Chrome நிறுவல் முழுமையடையாமல் இருந்திருக்கலாம் அல்லது Android இன் இந்தப் பதிப்பில் இணங்காமல் இருக்கலாம்.</translation>
 <translation id="4699172675775169585">தற்காலிகமாகச் சேமிக்கப்பட்ட படங்கள் மற்றும் கோப்புகள்</translation>
 <translation id="4714588616299687897">தரவில் 60% வரை சேமியுங்கள்</translation>
 <translation id="4719927025381752090">மொழிபெயர்ப்பதற்கான சலுகை</translation>

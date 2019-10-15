@@ -19,20 +19,19 @@
       "bounds": [189, 270],
       "contentsOpaque": true,
       "backgroundColor": "#CCCCCC",
-      "scrollPosition": [0, 50],
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "Scroll Corner Layer",
       "position": [190, 110],
       "bounds": [15, 15],
-      "transform": 4
+      "transform": 1
     },
     {
       "name": "LayoutTextControl TEXTAREA",
       "bounds": [206, 126],
       "backgroundColor": "#CCCCCC",
-      "transform": 5
+      "transform": 3
     },
     {
       "name": "Scrolling Contents Layer",
@@ -40,14 +39,13 @@
       "bounds": [189, 270],
       "contentsOpaque": true,
       "backgroundColor": "#CCCCCC",
-      "scrollPosition": [0, 50],
-      "transform": 7
+      "transform": 4
     },
     {
       "name": "Scroll Corner Layer",
       "position": [190, 110],
       "bounds": [15, 15],
-      "transform": 8
+      "transform": 3
     }
   ],
   "transforms": [
@@ -62,67 +60,31 @@
     },
     {
       "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [18, 18, 0, 1]
+        [0, -50, 0, 1]
       ]
     },
     {
       "id": 3,
-      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, -50, 0, 1]
+        [248, 18, 0, 1]
       ]
     },
     {
       "id": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [18, 18, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [248, 18, 0, 1]
-      ]
-    },
-    {
-      "id": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [248, 18, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
+      "parent": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -50, 0, 1]
-      ]
-    },
-    {
-      "id": 8,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [248, 18, 0, 1]
       ]
     }
   ]

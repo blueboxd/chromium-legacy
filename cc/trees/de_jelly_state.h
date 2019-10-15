@@ -41,6 +41,9 @@ class CC_EXPORT DeJellyState {
  private:
   bool should_de_jelly_ = false;
   int scroll_transform_node_ = 0;
+  float scroll_offset_ = 0;
+  float fallback_delta_y_ = 0;
+
   base::Optional<gfx::Transform> new_scroll_node_transform_;
   std::map<int, gfx::Transform> previous_transforms_;
   std::map<int, gfx::Transform> new_transforms_;

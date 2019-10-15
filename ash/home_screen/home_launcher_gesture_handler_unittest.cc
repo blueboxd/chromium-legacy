@@ -7,10 +7,14 @@
 #include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/rounded_label_widget.h"
@@ -129,14 +133,14 @@ TEST_F(HomeLauncherGestureHandlerTest, CancellingSlideUp) {
   // Tests that when cancelling a scroll that was on the bottom half, the window
   // is still visible.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   GetGestureHandler()->Cancel();
   EXPECT_TRUE(window->IsVisible());
 
   // Tests that when cancelling a scroll that was on the top half, the window is
   // now invisible.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 0.f, 1.f);
   GetGestureHandler()->Cancel();
   EXPECT_FALSE(window->IsVisible());
 }
@@ -151,7 +155,7 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideUp) {
 
   // Tests that flinging down in this mode will keep the window visible.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 10.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300),
                                       /*velocity_y=*/base::nullopt);
   ASSERT_TRUE(window->IsVisible());
@@ -159,7 +163,7 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideUp) {
   // Tests that flinging up in this mode will hide the window and show the
   // home launcher.
   DoPress(Mode::kSlideUpToShow);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), -10.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, -10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300),
                                       /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(window->IsVisible());
@@ -176,14 +180,14 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideDown) {
 
   // Tests that flinging up in this mode will not show the mru window.
   DoPress(Mode::kSlideDownToHide);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), -10.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 0.f, -10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100),
                                       /*velocity_y=*/base::nullopt);
   ASSERT_FALSE(window->IsVisible());
 
   // Tests that flinging down in this mode will show the mru window.
   DoPress(Mode::kSlideDownToHide);
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 10.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 0.f, 10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100),
                                       /*velocity_y=*/base::nullopt);
   EXPECT_TRUE(window->IsVisible());
@@ -198,7 +202,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SlidingBelowPressPoint) {
   // Tests that the windows transform does not change when trying to slide below
   // the press event location.
   GetGestureHandler()->OnPressEvent(Mode::kSlideUpToShow, gfx::Point(0, 400));
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 420), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 420), 0.f, 1.f);
   EXPECT_EQ(gfx::Transform(), window->transform());
 }
 
@@ -221,7 +225,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
 
   // Tests that while scrolling the window transform changes.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   EXPECT_NE(window1_initial_translation,
             window1->transform().To2dTranslation().y());
   EXPECT_NE(window2_initial_translation,
@@ -261,7 +265,7 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewModeNoWindows) {
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
 
   // Tests that while scrolling the window transform changes.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   EXPECT_EQ(0.f, widget_window->transform().To2dTranslation().x());
   EXPECT_NE(0.f, widget_window->transform().To2dTranslation().y());
 
@@ -314,7 +318,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   EXPECT_EQ(window1.get(), GetGestureHandler()->GetActiveWindow());
 
   // Tests that while scrolling the window transforms change.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   EXPECT_NE(window1->transform(), gfx::Transform());
   EXPECT_NE(window2_initial_translation,
             window2->transform().To2dTranslation().y());
@@ -362,7 +366,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   EXPECT_EQ(window2.get(), GetGestureHandler()->GetSecondaryWindow());
 
   // Tests that while scrolling the window transforms change.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   EXPECT_NE(window1->transform(), gfx::Transform());
   EXPECT_NE(window2->transform(), gfx::Transform());
 
@@ -406,7 +410,7 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
 
   // Fling up to complete showing the home launcher, the shelf should remain
   // transparent.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), -10.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, -10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300),
                                       /*velocity_y=*/base::nullopt);
   EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
@@ -424,7 +428,7 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
 
   // Fling down to hide the home launcher, the shelf should still be
   // transparent.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), -10.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 0.f, -10.f);
   EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
             AshTestBase::GetPrimaryShelf()
                 ->shelf_layout_manager()
@@ -547,7 +551,7 @@ TEST_F(HomeLauncherGestureHandlerTest, HideHomeLauncherDuringDraggingTest) {
   auto window = CreateWindowForTesting();
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   aura::Window* home_screen_window =
       Shell::Get()->home_screen_controller()->delegate()->GetHomeScreenWindow();
   EXPECT_TRUE(home_screen_window);
@@ -600,7 +604,7 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   EXPECT_FALSE(window2->IsVisible());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   GetGestureHandler()->OnReleaseEvent(shelf_bounds.CenterPoint(),
                                       base::nullopt);
   EXPECT_TRUE(window2->IsVisible());
@@ -609,7 +613,7 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   EXPECT_FALSE(window2->IsVisible());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(200, 200),
       -DragWindowFromShelfController::kVelocityToHomeScreenThreshold);
@@ -623,7 +627,7 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   EXPECT_FALSE(window2->IsVisible());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(200, 200), base::nullopt);
@@ -640,7 +644,7 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   EXPECT_FALSE(window2->IsVisible());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.f, 1.f);
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 200), base::nullopt);
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -668,7 +672,7 @@ TEST_F(HomeLauncherGestureHandlerTest, MinimizedWindowsShowInOverview) {
   EXPECT_FALSE(window3->IsVisible());
   EXPECT_TRUE(WindowState::Get(window3.get())->IsMinimized());
   // Drag it far enough so overview should be open behind the dragged window.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_FALSE(overview_controller->overview_session()->IsWindowInOverview(
@@ -695,12 +699,12 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowOverviewWhenHold) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(
-      gfx::Point(200, 200),
+      gfx::Point(200, 200), 0.f,
       DragWindowFromShelfController::kShowOverviewThreshold + 1);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnScrollEvent(
-      gfx::Point(200, 200),
+      gfx::Point(200, 200), 0.f,
       DragWindowFromShelfController::kShowOverviewThreshold);
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(200, 200), base::nullopt);
@@ -722,7 +726,7 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(
-      gfx::Point(200, 300),
+      gfx::Point(200, 300), 0.f,
       DragWindowFromShelfController::kShowOverviewThreshold + 1);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -734,7 +738,7 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
   // Drag it for a large distance and then drag back to release.
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(
@@ -754,7 +758,7 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.f, 1.f);
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 400), base::nullopt);
@@ -776,7 +780,7 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingInOverview) {
   // where the window should go based on the release position.
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(
@@ -790,7 +794,7 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingInOverview) {
   // If fling velocity is equal or larger than kVelocityToHomeScreenThreshold
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.f, 1.f);
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(0, 350),
@@ -818,7 +822,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   // If the window is only dragged for a small distance:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(100, 350), base::nullopt);
@@ -830,7 +834,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   // If the window is dragged for a long distance:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(100, 200), base::nullopt);
@@ -845,7 +849,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   // If the window is flung with a small velocity:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(
@@ -860,7 +864,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   // If the window is flung with a large velocity:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
-  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(
@@ -874,6 +878,79 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   EXPECT_FALSE(split_view_controller->IsWindowInSplitView(window1.get()));
   EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
   overview_controller->EndOverview();
+}
+
+// Test that in kDragWindowToHomeOrOverview mode, wallpaper should be blurred
+// as in overview, even though overview might not open during dragging.
+TEST_F(HomeLauncherGestureHandlerTest, WallpaperBlurDuringDragging) {
+  UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  auto window = CreateWindowForTesting();
+
+  GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
+                                    shelf_bounds.CenterPoint());
+  GetGestureHandler()->OnScrollEvent(
+      gfx::Point(shelf_bounds.x(), shelf_bounds.y() - 1), 0.f,
+      DragWindowFromShelfController::kShowOverviewThreshold + 1);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  auto* wallpaper_view =
+      RootWindowController::ForWindow(window->GetRootWindow())
+          ->wallpaper_widget_controller()
+          ->wallpaper_view();
+  EXPECT_EQ(wallpaper_view->repaint_blur(), kWallpaperBlurSigma);
+
+  GetGestureHandler()->OnReleaseEvent(shelf_bounds.CenterPoint(),
+                                      /*velocity_y=*/base::nullopt);
+  EXPECT_EQ(wallpaper_view->repaint_blur(), kWallpaperClearBlurSigma);
+}
+
+// Test that in kDragWindowToHomeOrOverview mode, overview is hidden during
+// dragging and shown when drag slows down or stops.
+TEST_F(HomeLauncherGestureHandlerTest, HideOverviewDuringDragging) {
+  UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  auto window2 = CreateWindowForTesting();
+  auto window1 = CreateWindowForTesting();
+
+  GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
+                                    shelf_bounds.CenterPoint());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.5f, 0.5f);
+  base::RunLoop().RunUntilIdle();
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  GetGestureHandler()->OnReleaseEvent(shelf_bounds.CenterPoint(),
+                                      /*velocity_y=*/base::nullopt);
+}
+
+// Test that in kDragWindowToHomeOrOverview mode, we do not show drag-to-snap
+// or cannot-snap drag indicators.
+TEST_F(HomeLauncherGestureHandlerTest, NoDragToSnapIndicator) {
+  UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  auto window = CreateWindowForTesting();
+
+  GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
+                                    shelf_bounds.CenterPoint());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.5f, 0.5f);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  OverviewSession* overview_session = overview_controller->overview_session();
+  IndicatorState indicator_state =
+      overview_session->split_view_drag_indicators()->current_indicator_state();
+  EXPECT_EQ(indicator_state, IndicatorState::kNone);
+
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.5f, 0.5f);
+  indicator_state =
+      overview_session->split_view_drag_indicators()->current_indicator_state();
+  EXPECT_EQ(indicator_state, IndicatorState::kPreviewAreaLeft);
+
+  GetGestureHandler()->OnReleaseEvent(shelf_bounds.CenterPoint(),
+                                      /*velocity_y=*/base::nullopt);
 }
 
 class HomeLauncherModeGestureHandlerTest
@@ -913,7 +990,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
 
   // Test that on scrolling to a point on the top half of the work area, the
   // window's opacity is between 0 and 0.5 and its transform has changed.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 0.f, 1.f);
   const gfx::Transform top_half_transform = window->transform();
   EXPECT_NE(gfx::Transform(), top_half_transform);
   EXPECT_GT(window->layer()->opacity(), 0.f);
@@ -921,7 +998,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, TransformAndOpacityChangesOnScroll) {
 
   // Test that on scrolling to a point on the bottom half of the work area, the
   // window's opacity is between 0.5 and 1 and its transform has changed.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   EXPECT_NE(gfx::Transform(), window->transform());
   EXPECT_NE(gfx::Transform(), top_half_transform);
   EXPECT_GT(window->layer()->opacity(), 0.5f);
@@ -942,7 +1019,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, BelowHalfShowsWindow) {
   ASSERT_FALSE(window3->IsVisible());
 
   // After a scroll the transform and opacity are no longer the identity and 1.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, 1.f);
   EXPECT_NE(gfx::Transform(), window1->transform());
   EXPECT_NE(1.f, window1->layer()->opacity());
 
@@ -1003,7 +1080,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, WindowWithTransientChild) {
 
   // Tests that after scrolling to the halfway point, the transient child's
   // opacity and transform are halfway to their final values.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.f, 1.f);
   EXPECT_LE(0.45f, child->layer()->opacity());
   EXPECT_GE(0.55f, child->layer()->opacity());
   EXPECT_NE(gfx::Transform(), child->transform());
@@ -1025,7 +1102,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, EndScrollOnTabletModeEnd) {
   ASSERT_TRUE(GetGestureHandler()->GetActiveWindow());
 
   // Scroll to a point above the halfway mark of the work area.
-  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 50), 1.f);
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 50), 0.f, 1.f);
   EXPECT_TRUE(GetGestureHandler()->GetActiveWindow());
   EXPECT_FALSE(WindowState::Get(window.get())->IsMinimized());
 

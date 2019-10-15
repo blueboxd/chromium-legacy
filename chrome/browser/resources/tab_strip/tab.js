@@ -73,8 +73,8 @@ export class TabElement extends CustomElement {
         'loading_',
         !tab.shouldHideThrobber &&
             tab.networkState === TabNetworkState.LOADING);
-
     this.toggleAttribute('pinned_', tab.pinned);
+    this.toggleAttribute('blocked_', tab.blocked);
     this.setAttribute('draggable', tab.pinned);
     this.toggleAttribute('crashed', tab.crashed);
 

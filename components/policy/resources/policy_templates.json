@@ -655,6 +655,7 @@
         'DeviceLoginScreenAutoclickEnabled',
         'DeviceLoginScreenStickyKeysEnabled',
         'DeviceLoginScreenKeyboardFocusHighlightEnabled',
+        'DeviceLoginScreenScreenMagnifierType',
       ],
     },
     {
@@ -10610,6 +10611,53 @@
           If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.''',
     },
     {
+      'name': 'DeviceLoginScreenScreenMagnifierType',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'None',
+          'value': 0,
+          'caption': '''Screen magnifier disabled''',
+        },
+        {
+          'name': 'Full-screen',
+          'value': 1,
+          'caption': '''Full-screen magnifier enabled''',
+        },
+        {
+          'name': 'Docked',
+          'value': 2,
+          'caption': '''Docked magnifier enabled''',
+        },
+      ],
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 628,
+      'caption': '''Set the screen magnifier type on the login screen''',
+      'tags': [],
+      'desc': '''If this policy is set, it controls the type of screen magnifier that is enabled.
+
+          If this policy is set to "Full-screen", the screen magnifier will always be enabled in full-screen magnifier mode on the login screen.
+
+          If this policy is set to "Docked", the screen magnifier will always be enabled in docked magnifier mode on the login screen.
+
+          If this policy is set to "None", the screen magnifier will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the dictation is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
       'name': 'DeviceLoginScreenDictationEnabled',
       'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
       'type': 'main',
@@ -18675,6 +18723,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDefaultHighContrastEnabled': 'accessibility_settings.login_screen_default_high_contrast_enabled',
     'DeviceLoginScreenHighContrastEnabled': 'accessibility_settings.login_screen_high_contrast_enabled',
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
+    'DeviceLoginScreenScreenMagnifierType': 'accessibility_settings.login_screen_screen_magnifier_type',
     'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
     'DeviceLoginScreenVirtualKeyboardEnabled': 'accessibility_settings.login_screen_virtual_keyboard_enabled',
     'DeviceLoginScreenDictationEnabled': 'accessibility_settings.login_screen_dictation_enabled',
@@ -19194,6 +19243,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 627,
+  'highest_id_currently_used': 628,
   'highest_atomic_group_id_currently_used': 38
 }

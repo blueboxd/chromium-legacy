@@ -1037,6 +1037,10 @@ class AutofillMetrics {
   // GetDetailsForGetRealPan).
   static void LogCardUnmaskPreflightCalled();
 
+  // Logs the duration of the PaymentsClient::GetUnmaskDetails() call (aka
+  // GetDetailsForGetRealPan).
+  static void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration);
+
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
 

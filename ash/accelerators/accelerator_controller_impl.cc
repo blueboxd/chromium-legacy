@@ -596,7 +596,7 @@ void HandleTakeScreenshot() {
   Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
 }
 
-void HandleToggleSystemTrayBubbleInternal() {
+void HandleToggleSystemTrayBubbleInternal(bool focus_message_center) {
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   UnifiedSystemTray* tray = RootWindowController::ForWindow(target_root)
                                 ->GetStatusAreaWidget()
@@ -606,17 +606,20 @@ void HandleToggleSystemTrayBubbleInternal() {
   } else {
     tray->ShowBubble(false /* show_by_click */);
     tray->ActivateBubble();
+
+    if (focus_message_center)
+      tray->FocusFirstNotification();
   }
 }
 
 void HandleToggleSystemTrayBubble() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_System_Tray_Bubble"));
-  HandleToggleSystemTrayBubbleInternal();
+  HandleToggleSystemTrayBubbleInternal(false /*focus_message_center*/);
 }
 
 void HandleToggleMessageCenterBubble() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Message_Center_Bubble"));
-  HandleToggleSystemTrayBubbleInternal();
+  HandleToggleSystemTrayBubbleInternal(true /*focus_message_center*/);
 }
 
 void HandleShowTaskManager() {

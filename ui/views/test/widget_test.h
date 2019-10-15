@@ -112,6 +112,12 @@ class WidgetTest : public ViewsTestBase {
   // Returns the set of all Widgets that currently have a NativeWindow.
   static Widget::Widgets GetAllWidgets();
 
+  // Waits for system app activation events, if any, to have happened. This is
+  // necessary on macOS 10.15+, where the system will attempt to find and
+  // activate a window owned by the app shortly after app startup, if there is
+  // one. See https://crbug.com/998868 for details.
+  static void WaitForSystemAppActivation();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WidgetTest);
 };

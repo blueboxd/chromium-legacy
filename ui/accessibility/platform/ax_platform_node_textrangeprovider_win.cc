@@ -598,6 +598,14 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
                                 &end_units_moved);
         succeeded_move = SUCCEEDED(hr) && end_units_moved == 1;
       }
+
+      // Because Windows ATs behave undesirably when the start and end endpoints
+      // are not in the same anchor (for character and word navigation), make
+      // sure to bring back the end endpoint to the end of the start's anchor.
+      if (start_->anchor_id() != end_->anchor_id() &&
+          (unit == TextUnit_Character || unit == TextUnit_Word)) {
+        ExpandToEnclosingUnit(unit);
+      }
     }
   }
 

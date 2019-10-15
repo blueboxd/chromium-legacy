@@ -48,6 +48,10 @@ bool IsIncludedInHoldbackFieldTrial();
 // not included in a group.
 std::string HoldbackFieldTrialGroup();
 
+// Returns true if DRP config service should always be fetched even if DRP
+// holdback is enabled.
+bool ForceEnableClientConfigServiceForAllDataSaverUsers();
+
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();

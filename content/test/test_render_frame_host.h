@@ -207,9 +207,18 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
     return navigation_requests_;
   }
 
+  enum class LoadingScenario {
+    NewDocumentNavigation,
+    kSameDocumentNavigation,
+
+    // TODO(altimin): Improve handling for the scenarios where navigation or
+    // page load have failed.
+    kOther
+  };
+
   // Simulates RenderFrameHost finishing loading and dispatching all relevant
   // callbacks.
-  void SimulateLoadingCompleted();
+  void SimulateLoadingCompleted(LoadingScenario loading_scenario);
 
  protected:
   void SendCommitNavigation(

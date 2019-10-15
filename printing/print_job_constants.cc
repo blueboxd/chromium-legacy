@@ -60,14 +60,6 @@ const char kSettingFitToPageScaling[] = "fitToPageScaling";
 // Print job duplex mode. Value is an int from DuplexMode enum.
 const char kSettingDuplexMode[] = "duplex";
 
-// Option to fit source page contents to printer paper size: true if
-// selected else false.
-const char kSettingFitToPageEnabled[] = "fitToPageEnabled";
-
-// Option to fit source page contents to paper size: true if
-// selected else false.
-const char kSettingFitToPaperEnabled[] = "fitToPaperEnabled";
-
 // Option to print headers and Footers: true if selected, false if not.
 const char kSettingHeaderFooterEnabled[] = "headerFooterEnabled";
 
@@ -176,6 +168,9 @@ const char kSettingPrintToGoogleDrive[] = "printToGoogleDrive";
 
 // Scaling factor
 const char kSettingScaleFactor[] = "scaleFactor";
+
+// Scaling type
+const char kSettingScalingType[] = "scalingType";
 
 // Number of pages per sheet.
 const char kSettingPagesPerSheet[] = "pagesPerSheet";

@@ -14,13 +14,12 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [345, 2018],
-      "scrollPosition": [0, 35],
-      "transform": 5
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow (sticky positioned) DIV id='sticky'",
       "bounds": [345, 18],
-      "transform": 9
+      "transform": 4
     }
   ],
   "transforms": [
@@ -47,71 +46,18 @@
     },
     {
       "id": 3,
+      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.1],
-        [0, 0, 0, 1]
+        [0, 0, 1, 0],
+        [0, -35, 0, 1]
       ],
-      "origin": [188, 328]
+      "flattenInheritedTransform": false
     },
     {
       "id": 4,
       "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 5,
-      "parent": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -35, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, -0.1],
-        [0, 0, 0, 1]
-      ],
-      "origin": [188, 328]
-    },
-    {
-      "id": 7,
-      "parent": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 8,
-      "parent": 7,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, -35, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 9,
-      "parent": 8,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

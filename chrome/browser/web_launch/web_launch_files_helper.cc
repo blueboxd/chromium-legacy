@@ -23,30 +23,6 @@
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
 #include "url/origin.h"
 
-namespace {
-
-// Converts |paths| to |NativeFileSystemEntries|, which can be manipulated by
-// |context|. Must be called on IO thread.
-std::vector<blink::mojom::NativeFileSystemEntryPtr> GetEntries(
-    scoped_refptr<content::NativeFileSystemEntryFactory> entry_factory,
-    content::NativeFileSystemEntryFactory::BindingContext context,
-    std::vector<base::FilePath> paths) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(entry_factory);
-
-  std::vector<blink::mojom::NativeFileSystemEntryPtr> launch_entries;
-  launch_entries.reserve(paths.size());
-
-  for (const auto& path : paths) {
-    launch_entries.push_back(
-        entry_factory->CreateFileEntryFromPath(context, path));
-  }
-
-  return launch_entries;
-}
-
-}  // namespace
-
 namespace web_launch {
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(WebLaunchFilesHelper)
@@ -93,22 +69,19 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
       web_contents->GetMainFrame()->GetProcess()->GetID(),
       web_contents->GetMainFrame()->GetRoutingID());
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&GetEntries, std::move(entry_factory), std::move(context),
-                     std::move(launch_paths)),
-      base::BindOnce(&WebLaunchFilesHelper::SetLaunchEntries,
-                     weak_ptr_factory.GetWeakPtr()));
+  launch_entries_.reserve(launch_paths.size());
+  for (const auto& path : launch_paths) {
+    launch_entries_.push_back(
+        entry_factory->CreateFileEntryFromPath(context, path));
+  }
+
+  // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
+                                weak_ptr_factory.GetWeakPtr()));
 }
+
 WebLaunchFilesHelper::~WebLaunchFilesHelper() = default;
-
-void WebLaunchFilesHelper::SetLaunchEntries(
-    std::vector<blink::mojom::NativeFileSystemEntryPtr> launch_entries) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  launch_entries_ = std::move(launch_entries);
-  MaybeSendLaunchEntries();
-}
 
 void WebLaunchFilesHelper::MaybeSendLaunchEntries() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

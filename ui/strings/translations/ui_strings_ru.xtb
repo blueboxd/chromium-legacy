@@ -81,7 +81,6 @@
 <translation id="3295886253693811851">Позвонить:</translation>
 <translation id="335581015389089642">Озвучивание</translation>
 <translation id="3389286852084373014">Сообщение слишком длинное</translation>
-<translation id="3443810440409579745">Вкладка получена.</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="348799646910989694">Временное хранилище автоматически скрыто</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Остался 1 день}one{Остался # день}few{Осталось # дня}many{Осталось # дней}other{Осталось # дня}}</translation>
@@ -111,7 +110,6 @@
 <translation id="4724120544754982507">Центр уведомлений. Непрочитанных: <ph name="UNREAD_NOTIFICATION_COUNT" />.</translation>
 <translation id="4730374152663651037">ЧАСТО ИСПОЛЬЗУЕМЫЕ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{остался 1 месяц}one{остался # месяц}few{осталось # месяца}many{осталось # месяцев}other{осталось # месяца}}</translation>
-<translation id="4881695831933465202">Открыть</translation>
 <translation id="4888938634149558681">Позвонить</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунды}many{# секунд}other{# секунды}}</translation>
 <translation id="4971687151119236543">Предыдущий трек</translation>

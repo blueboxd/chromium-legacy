@@ -522,7 +522,7 @@ TYPED_TEST(ClipboardTest, Bitmap_N32_Premul_2x7) {
 
 }  // namespace
 
-TYPED_TEST(ClipboardTest, DataTest) {
+TYPED_TEST(ClipboardTest, PickleTest) {
   const ui::ClipboardFormatType kFormat =
       ui::ClipboardFormatType::GetType("chromium/x-test-format");
   std::string payload("test string");
@@ -547,7 +547,7 @@ TYPED_TEST(ClipboardTest, DataTest) {
   EXPECT_EQ(payload, unpickled_string);
 }
 
-TYPED_TEST(ClipboardTest, MultipleDataTest) {
+TYPED_TEST(ClipboardTest, MultiplePickleTest) {
   const ui::ClipboardFormatType kFormat1 =
       ui::ClipboardFormatType::GetType("chromium/x-test-format1");
   std::string payload1("test string1");
@@ -567,6 +567,8 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
     clipboard_writer.WritePickledData(write_pickle2, kFormat2);
   }
 
+  ASSERT_FALSE(this->clipboard().IsFormatAvailable(
+      kFormat1, ClipboardBuffer::kCopyPaste));
   ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat2,
                                                   ClipboardBuffer::kCopyPaste));
 
@@ -590,6 +592,8 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
 
   ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat1,
                                                   ClipboardBuffer::kCopyPaste));
+  ASSERT_FALSE(this->clipboard().IsFormatAvailable(
+      kFormat2, ClipboardBuffer::kCopyPaste));
 
   // Check string 1.
   std::string output1;
@@ -602,6 +606,74 @@ TYPED_TEST(ClipboardTest, MultipleDataTest) {
   ASSERT_TRUE(iter1.ReadString(&unpickled_string1));
   EXPECT_EQ(payload1, unpickled_string1);
 }
+
+TYPED_TEST(ClipboardTest, DataTest) {
+  const std::string kFormatString = "chromium/x-test-format";
+  const ui::ClipboardFormatType kFormat =
+      ui::ClipboardFormatType::GetType(kFormatString);
+  const std::string payload = "test string";
+  base::span<const uint8_t> payload_span(
+      reinterpret_cast<const uint8_t*>(payload.data()), payload.size());
+
+  {
+    ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
+    clipboard_writer.WriteData(UTF8ToUTF16(kFormatString),
+                               mojo_base::BigBuffer(payload_span));
+  }
+
+  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat,
+                                                  ClipboardBuffer::kCopyPaste));
+  std::string output;
+  this->clipboard().ReadData(kFormat, &output);
+
+  EXPECT_EQ(payload, output);
+}
+
+// TODO(huangdarwin): Implement multiple raw types for AuraClipboard. This test
+// currently doesn't run on AuraClipboard because AuraClipboard only supports
+// one raw type.
+#if (!defined(USE_AURA) || defined(OS_WIN) || defined(USE_OZONE) || \
+     defined(USE_X11)) &&                                           \
+    !defined(OS_CHROMEOS)
+TYPED_TEST(ClipboardTest, MultipleDataTest) {
+  const std::string kFormatString1 = "chromium/x-test-format1";
+  const ui::ClipboardFormatType kFormat1 =
+      ui::ClipboardFormatType::GetType(kFormatString1);
+  const std::string payload1("test string1");
+  base::span<const uint8_t> payload_span1(
+      reinterpret_cast<const uint8_t*>(payload1.data()), payload1.size());
+
+  const std::string kFormatString2 = "chromium/x-test-format2";
+  const ui::ClipboardFormatType kFormat2 =
+      ui::ClipboardFormatType::GetType(kFormatString2);
+  const std::string payload2("test string2");
+  base::span<const uint8_t> payload_span2(
+      reinterpret_cast<const uint8_t*>(payload2.data()), payload2.size());
+
+  {
+    ScopedClipboardWriter clipboard_writer(ClipboardBuffer::kCopyPaste);
+    // Both payloads should write successfully and not overwrite one another.
+    clipboard_writer.WriteData(UTF8ToUTF16(kFormatString1),
+                               mojo_base::BigBuffer(payload_span1));
+    clipboard_writer.WriteData(UTF8ToUTF16(kFormatString2),
+                               mojo_base::BigBuffer(payload_span2));
+  }
+
+  // Check format 1.
+  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat1,
+                                                  ClipboardBuffer::kCopyPaste));
+  std::string output1;
+  this->clipboard().ReadData(kFormat1, &output1);
+  EXPECT_EQ(payload1, output1);
+
+  // Check format 2.
+  ASSERT_TRUE(this->clipboard().IsFormatAvailable(kFormat2,
+                                                  ClipboardBuffer::kCopyPaste));
+  std::string output2;
+  this->clipboard().ReadData(kFormat2, &output2);
+  EXPECT_EQ(payload2, output2);
+}
+#endif
 
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 TYPED_TEST(ClipboardTest, HyperlinkTest) {

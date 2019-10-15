@@ -68,6 +68,16 @@
                     atIndex:(int)atIndex
                      reason:(int)reason;
 
+// Invoked before all the WebStates are closed in the WebStateList. If the
+// WebState is closed due to user action, |userAction| will be true.
+- (void)webStateList:(WebStateList*)webStateList
+    willCloseAllWebStatesUserAction:(BOOL)userAction;
+
+// Invoked after all the WebStates are closed in the WebStateList. If the
+// WebState is closed due to user action, |userAction| will be true.
+- (void)webStateList:(WebStateList*)webStateList
+    didCloseAllWebStatesUserAction:(BOOL)userAction;
+
 @end
 
 // Observer that bridges WebStateList events to an Objective-C observer that
@@ -106,6 +116,10 @@ class WebStateListObserverBridge : public WebStateListObserver {
                            web::WebState* new_web_state,
                            int active_index,
                            int reason) override;
+  void WillCloseAllWebStates(WebStateList* web_state_list,
+                             bool user_action) override;
+  void DidCloseAllWebStates(WebStateList* web_state_list,
+                            bool user_action) override;
 
   __weak id<WebStateListObserving> observer_ = nil;
 

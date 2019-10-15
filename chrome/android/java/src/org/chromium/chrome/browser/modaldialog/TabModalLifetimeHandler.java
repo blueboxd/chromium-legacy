@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
+import org.chromium.ui.util.TokenHolder;
 
 /**
  * Class responsible for handling dismissal of a tab modal dialog on user actions outside the tab
@@ -44,6 +45,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     private TabModalPresenter mPresenter;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private Tab mActiveTab;
+    private int mTabModalSuspendedToken;
 
     /**
      * @param activity The {@link ChromeActivity} that this handler is attached to.
@@ -53,6 +55,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
         mActivity = activity;
         mManager = manager;
         activity.getLifecycleDispatcher().register(this);
+        mTabModalSuspendedToken = TokenHolder.INVALID_TOKEN;
     }
 
     /**
@@ -114,9 +117,10 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     private void updateSuspensionState() {
         assert mActiveTab != null;
         if (mActiveTab.isUserInteractable()) {
-            mManager.resumeType(ModalDialogType.TAB);
-        } else {
-            mManager.suspendType(ModalDialogType.TAB);
+            mManager.resumeType(ModalDialogType.TAB, mTabModalSuspendedToken);
+            mTabModalSuspendedToken = TokenHolder.INVALID_TOKEN;
+        } else if (mTabModalSuspendedToken == TokenHolder.INVALID_TOKEN) {
+            mTabModalSuspendedToken = mManager.suspendType(ModalDialogType.TAB);
         }
     }
 }

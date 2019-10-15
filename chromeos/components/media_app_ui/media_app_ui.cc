@@ -18,6 +18,9 @@ content::WebUIDataSource* CreateHostDataSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIMediaAppHost);
   source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
+  source->AddResourcePath("pwa.html", IDR_MEDIA_APP_PWA_HTML);
+  source->AddResourcePath("manifest.json", IDR_MEDIA_APP_MANIFEST);
+  source->AddResourcePath("assets/app_icon_256.png", IDR_MEDIA_APP_ICON_256);
   return source;
 }
 

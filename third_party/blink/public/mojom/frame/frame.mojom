@@ -20,4 +20,10 @@ import "mojo/public/mojom/base/string16.mojom";
   GetTextSurroundingSelection(uint32 max_length)
       => (mojo_base.mojom.String16 content, uint32 start_offset,
           uint32 end_offset);
+
+  // Creates an intervention report in the frame with contents |id| and
+  // |message|, returns once the report has been queued. |id| identifies the
+  // intervention that occurred. |message| is a human-readable string that
+  // can provide additional context to the cause of the intervention.
+  SendInterventionReport(string id, string message);
 };

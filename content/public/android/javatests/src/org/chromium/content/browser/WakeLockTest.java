@@ -44,7 +44,7 @@ public class WakeLockTest {
     }
 
     private void getWakeLock(String type) throws TimeoutException {
-        final String code = "WakeLock.request('" + type + "');";
+        final String code = "navigator.wakeLock.request('" + type + "');";
         JavaScriptUtils.executeJavaScriptAndWaitForResult(mActivityTestRule.getWebContents(), code);
     }
 

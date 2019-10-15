@@ -107,6 +107,7 @@ int InitSocketHandleForHttpRequest(
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
     const NetworkIsolationKey& network_isolation_key,
+    bool disable_secure_dns,
     const SocketTag& socket_tag,
     const NetLogWithSource& net_log,
     ClientSocketHandle* socket_handle,
@@ -151,6 +152,7 @@ int PreconnectSocketsForHttpRequest(
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
     const NetworkIsolationKey& network_isolation_key,
+    bool disable_secure_dns,
     const NetLogWithSource& net_log,
     int num_preconnect_streams);
 

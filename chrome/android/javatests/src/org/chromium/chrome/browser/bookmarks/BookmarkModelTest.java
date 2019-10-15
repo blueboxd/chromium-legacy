@@ -128,6 +128,24 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
+    public void testMoveBookmarksToSameFolder() {
+        BookmarkId folder = mBookmarkModel.addFolder(mMobileNode, 0, "fc");
+        BookmarkId bookmarkA = addBookmark(folder, 0, "a", "http://a.com");
+        BookmarkId bookmarkB = addBookmark(folder, 1, "b", "http://b.com");
+
+        HashSet<BookmarkId> movedBookmarks = new HashSet<BookmarkId>(2);
+        movedBookmarks.add(bookmarkA);
+        movedBookmarks.add(bookmarkB);
+        mBookmarkModel.moveBookmarks(new ArrayList<BookmarkId>(movedBookmarks), folder);
+
+        // Order of the moved bookmarks is not tested.
+        verifyBookmarkListNoOrder(mBookmarkModel.getChildIDs(folder, true, true), movedBookmarks);
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Bookmark"})
     public void testDeleteBookmarks() {
         BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
         BookmarkId bookmarkB = addBookmark(mOtherNode, 0, "b", "http://b.com");

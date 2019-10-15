@@ -170,6 +170,7 @@
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
 <translation id="3371831930909698441">Je k dispozici Překladač. Možnosti jsou k dispozici ve spodní části obrazovky.</translation>
 <translation id="3393920035788932672">Vyskakovací okna povolena</translation>
+<translation id="3443810440409579745">Byla přijata karta.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
 <translation id="3448016392200048164">Režim Split View</translation>
 <translation id="345565170154308620">Spravovat hesla...</translation>
@@ -232,6 +233,7 @@
 <translation id="4281844954008187215">Smluvní podmínky</translation>
 <translation id="430793432425771671">Synchronizovat vše</translation>
 <translation id="430967081421617822">Od počátku věků</translation>
+<translation id="4334428914252001502">1 nepřečtený článek.</translation>
 <translation id="4338650699862464074">Odesílá do Googlu adresy URL navštívených stránek.</translation>
 <translation id="4359125752503270327">Tato stránka se otevře v jiné aplikaci.</translation>
 <translation id="4375040482473363939">Hledání QR kódu</translation>
@@ -266,7 +268,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4805759445554688327">Neplatné číslo karty</translation>
 <translation id="4818522717893377262">Přidat jazyk...</translation>
 <translation id="481968316161811770">Soubory cookie a data webů</translation>
-<translation id="4833786495304741580">Automaticky odesílá statistiky využití a zprávy o selhání do Googlu</translation>
+<translation id="4833786495304741580">Automaticky odesílá statistiky o využívání a zprávy o selhání do Googlu</translation>
 <translation id="4840495572919996524">Vaše záložky, historie, hesla a další nastavení již nebudou synchronizovány do účtu Google.</translation>
 <translation id="4854345657858711387">Nastavte heslo</translation>
 <translation id="4860895144060829044">Volat</translation>
@@ -298,6 +300,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Jméno</translation>
+<translation id="5365716706805792666">Google může kontrolovat, zda vaše hesla nebyla součástí úniku dat. Když se přihlásíte pomocí účtu Google, tato funkce se zapne.</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5407969256130905701">Zahodit změny</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
@@ -448,6 +451,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7348502496356775519">Záložka</translation>
 <translation id="7383797227493018512">Seznam četby</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
+<translation id="7409985198648820906">Nepřečtené články: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="7425346204213733349">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do vašeho účtu Google. Vaše existující data však v účtu Google uložena zůstanou.</translation>
 <translation id="7454057999980797137">Stát / země</translation>
 <translation id="7456847797759667638">Otevřít umístění...</translation>

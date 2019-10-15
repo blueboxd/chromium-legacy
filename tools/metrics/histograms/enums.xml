@@ -2123,6 +2123,7 @@ Unknown properties are collapsed to zero. -->
   <int value="20" label="LAUNCH_SOURCE_INSTALLED_NOTIFICATION"/>
   <int value="21" label="LAUNCH_SOURCE_CONTEXT_MENU"/>
   <int value="22" label="LAUNCH_SOURCE_ARC"/>
+  <int value="23" label="LAUNCH_SOURCE_INTENT_URL"/>
 </enum>
 
 <enum name="AppleScriptCommandEvents">
@@ -10194,6 +10195,7 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Activity Not Accessible"/>
   <int value="3" label="Out of Date"/>
   <int value="4" label="Search by Image Unavailable"/>
+  <int value="5" label="OS Below Android O"/>
 </enum>
 
 <enum name="ContextMenuOption">
@@ -18292,6 +18294,7 @@ Called by update_net_error_codes.py.-->
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
   <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
   <int value="627" label="ForceDisableAudioSandbox"/>
+  <int value="628" label="DeviceLoginScreenScreenMagnifierType"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -20854,6 +20857,8 @@ Called by update_net_error_codes.py.-->
   <int value="1389" label="AUTOTESTPRIVATE_SETCLIPBOARDTEXTDATA"/>
   <int value="1390" label="AUTOTESTPRIVATE_INITIALIZEEVENTS"/>
   <int value="1391" label="AUTOTESTPRIVATE_WAITFORDISPLAYROTATION"/>
+  <int value="1392" label="AUTOTESTPRIVATE_ARCAPPTRACINGSTART"/>
+  <int value="1393" label="AUTOTESTPRIVATE_ARCAPPTRACINGSTOPANDANALYZE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -32278,6 +32283,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Cache write failed"/>
 </enum>
 
+<enum name="InstallDateBackfill">
+  <int value="0"
+      label="Valid install date was already persisted (no backfill)"/>
+  <int value="1"
+      label="Unable to get a valid install date from Android PackageManager
+             (no backfill)"/>
+  <int value="2"
+      label="Backfilled the install date by looking up a value in
+             PackageManager"/>
+</enum>
+
 <enum name="InstallStatus">
   <int value="0" label="FIRST_INSTALL_SUCCESS"/>
   <int value="1" label="INSTALL_REPAIRED"/>
@@ -35726,6 +35742,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1230610048" label="SyncWifiConfigurations:disabled"/>
   <int value="-1228035246" label="PasswordEditingAndroid:enabled"/>
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
+  <int value="-1225772151" label="OfflineHome:disabled"/>
   <int value="-1225629234" label="SyncPseudoUSSFavicons:enabled"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
   <int value="-1224962996" label="PwaImprovedSplashScreen:disabled"/>
@@ -35738,6 +35755,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains:disabled"/>
   <int value="-1217425153" label="ChromeHomeClearUrlOnOpen:enabled"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
+  <int value="-1216570731" label="OfflineHome:enabled"/>
   <int value="-1214870820" label="EnableNewStyleLauncher:enabled"/>
   <int value="-1212855900" label="enable-all-bookmarks-view"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
@@ -36002,6 +36020,7 @@ from previous Chrome versions.
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-884864731" label="WebPaymentsSingleAppUiSkip:enabled"/>
   <int value="-883694393" label="SyncPseudoUSSSupervisedUsers:disabled"/>
+  <int value="-882434910" label="EnableAggregatedMlSearchRanking:enabled"/>
   <int value="-881447505" label="ash-disable-shelf-model-synchronization"/>
   <int value="-881054479" label="WebAssemblyStreaming:disabled"/>
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
@@ -36081,6 +36100,7 @@ from previous Chrome versions.
   <int value="-787238455" label="OmniboxZeroSuggestionsOnSERP:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
+  <int value="-778098896" label="EnableAggregatedMlSearchRanking:disabled"/>
   <int value="-777126951" label="FontSrcLocalMatching:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>
@@ -36581,6 +36601,7 @@ from previous Chrome versions.
   <int value="-99781021" label="disable-roboto-font-ui"/>
   <int value="-97145978" label="DesktopPWAsStayInWindow:enabled"/>
   <int value="-92116820" label="InlineUpdateFlow:enabled"/>
+  <int value="-91767554" label="enable-de-jelly"/>
   <int value="-90032223" label="BuiltInModuleInfra:disabled"/>
   <int value="-89690053" label="MaterialDesignUserManager:enabled"/>
   <int value="-89567017" label="ChromeColorsCustomColorPicker:enabled"/>

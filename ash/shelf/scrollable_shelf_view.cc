@@ -1193,25 +1193,30 @@ void ScrollableShelfView::UpdateTappableIconIndices() {
     return;
   }
 
-  int actual_scroll_distance = GetActualScrollOffset();
-  const gfx::Insets ripple_insets = CalculateRipplePaddingInsets();
-  const int ripple_padding_sum = GetShelf()->IsHorizontalAlignment()
-                                     ? ripple_insets.width()
-                                     : ripple_insets.height();
-  int shelf_container_available_space =
-      (GetShelf()->IsHorizontalAlignment() ? visible_space_.width()
-                                           : visible_space_.height()) -
-      ripple_padding_sum;
+  const int scroll_distance_on_main_axis = GetShelf()->IsHorizontalAlignment()
+                                               ? scroll_offset_.x()
+                                               : scroll_offset_.y();
+  const int visible_size = GetShelf()->IsHorizontalAlignment()
+                               ? visible_space_.width()
+                               : visible_space_.height();
+
   if (layout_strategy_ == kShowRightArrowButton ||
       layout_strategy_ == kShowButtons) {
-    first_tappable_app_index_ = actual_scroll_distance / GetUnit();
+    first_tappable_app_index_ = scroll_distance_on_main_axis / GetUnit() +
+                                (layout_strategy_ == kShowButtons ? 1 : 0);
     last_tappable_app_index_ =
-        first_tappable_app_index_ + shelf_container_available_space / GetUnit();
+        first_tappable_app_index_ + visible_size / GetUnit();
+
+    const int end_of_last_tappable_app = last_tappable_app_index_ * GetUnit() +
+                                         ShelfConfig::Get()->button_size() -
+                                         scroll_distance_on_main_axis;
+    if (end_of_last_tappable_app > visible_size)
+      last_tappable_app_index_--;
   } else {
     DCHECK_EQ(layout_strategy_, kShowLeftArrowButton);
     last_tappable_app_index_ = shelf_view_->last_visible_index();
     first_tappable_app_index_ =
-        last_tappable_app_index_ - shelf_container_available_space / GetUnit();
+        last_tappable_app_index_ - visible_size / GetUnit() + 1;
   }
 }
 

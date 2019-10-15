@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_switches.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -256,7 +257,7 @@ void BaseWebUIBrowserTest::PreLoadJavascriptLibraries(
   libraries_preloaded_ = true;
 
   bool should_wait_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::content::kWaitForDebuggerWebUI);
+      ::switches::kWaitForDebuggerWebUI);
 
   if (should_wait_flag)
     RunJavascriptUsingHandler("setWaitUser", {}, false, false, preload_host);

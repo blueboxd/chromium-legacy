@@ -98,8 +98,8 @@ class LoginPromptVisibleObserver : public SessionManagerClient::Observer {
  private:
   bool signal_emitted_ = false;
 
-  ScopedObserver<SessionManagerClient, LoginPromptVisibleObserver> observer_{
-      this};
+  ScopedObserver<SessionManagerClient, SessionManagerClient::Observer>
+      observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginPromptVisibleObserver);
 };

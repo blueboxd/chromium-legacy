@@ -955,7 +955,6 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [4000, 20060],
-      "scrollPosition": [50, 9950],
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='target4'",

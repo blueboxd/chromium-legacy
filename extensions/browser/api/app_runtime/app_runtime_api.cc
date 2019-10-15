@@ -108,6 +108,7 @@ app_runtime::LaunchSource GetLaunchSourceEnum(
                     SOURCE_INSTALLED_NOTIFICATION);
   ASSERT_ENUM_EQUAL(kSourceContextMenu, SOURCE_CONTEXT_MENU);
   ASSERT_ENUM_EQUAL(kSourceArc, SOURCE_ARC);
+  ASSERT_ENUM_EQUAL(kSourceIntentUrl, SOURCE_INTENT_URL);
   static_assert(static_cast<int>(extensions::AppLaunchSource::kMaxValue) ==
                     app_runtime::LaunchSource::LAUNCH_SOURCE_LAST,
                 "");

@@ -25,7 +25,7 @@ namespace content {
 //
 // NativeFileSystemPermissionGrant instances are not thread safe, and should
 // only be used (and referenced) on the same sequence as the PermssionContext
-// that created them.
+// that created them, i.e. the UI thread.
 class CONTENT_EXPORT NativeFileSystemPermissionGrant
     : public base::RefCounted<NativeFileSystemPermissionGrant> {
  public:

@@ -14,8 +14,9 @@
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/display/display.h"
 
 namespace device {
@@ -50,7 +51,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
   mojom::VRDisplayInfoPtr GetVRDisplayInfo();
 
   // Used by providers to bind devices.
-  mojom::XRRuntimePtr BindXRRuntimePtr();
+  mojo::PendingRemote<mojom::XRRuntime> BindXRRuntime();
 
   // TODO(mthiesse): The browser should handle browser-side exiting of
   // presentation before device/ is even aware presentation is being exited.
@@ -83,7 +84,7 @@ class DEVICE_VR_EXPORT VRDeviceBase : public mojom::XRRuntime {
 
   device::mojom::XRDeviceId id_;
 
-  mojo::Binding<mojom::XRRuntime> runtime_binding_;
+  mojo::Receiver<mojom::XRRuntime> runtime_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VRDeviceBase);
 };

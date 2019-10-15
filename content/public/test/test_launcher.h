@@ -21,17 +21,6 @@ namespace content {
 class ContentMainDelegate;
 struct ContentMainParams;
 
-extern const char kEmptyTestName[];
-extern const char kHelpFlag[];
-extern const char kLaunchAsBrowser[];
-extern const char kSingleProcessTestsFlag[];
-
-// Flag that causes only the kEmptyTestName test to be run.
-extern const char kWarmupFlag[];
-
-// Flag used by WebUI test runners to wait for debugger to be attached.
-extern const char kWaitForDebuggerWebUI[];
-
 class TestLauncherDelegate {
  public:
   virtual int RunTestSuite(int argc, char** argv) = 0;
@@ -46,13 +35,13 @@ class TestLauncherDelegate {
 
   // Called prior to running each test.
   //
-  // NOTE: this is not called if --single_process is supplied.
+  // NOTE: this is not called if --single-process-tests is supplied.
   virtual void PreRunTest() {}
 
   // Called after running each test. Can modify test result.
   //
-  // NOTE: Just like PreRunTest, this is not called when --single_process is
-  // supplied.
+  // NOTE: Just like PreRunTest, this is not called when --single-process-tests
+  // is supplied.
   virtual void PostRunTest(base::TestResult* result) {}
 
   // Allows a TestLauncherDelegate to do work before the launcher shards test

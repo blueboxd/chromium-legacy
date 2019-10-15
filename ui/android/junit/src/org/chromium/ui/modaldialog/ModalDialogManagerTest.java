@@ -369,12 +369,12 @@ public class ModalDialogManagerTest {
         mModalDialogManager.showDialog(mDialogModels.get(2), ModalDialogType.TAB);
 
         // Suspend all tab modal dialogs.
-        mModalDialogManager.suspendType(ModalDialogType.TAB);
+        int token = mModalDialogManager.suspendType(ModalDialogType.TAB);
         assertFalse(mModalDialogManager.isShowing());
         assertEquals(3, mModalDialogManager.getPendingDialogsForTest(ModalDialogType.TAB).size());
 
         // Resume tab modal dialogs.
-        mModalDialogManager.resumeType(ModalDialogType.TAB);
+        mModalDialogManager.resumeType(ModalDialogType.TAB, token);
         assertEquals(mDialogModels.get(0), mModalDialogManager.getCurrentDialogForTest());
         assertEquals(2, mModalDialogManager.getPendingDialogsForTest(ModalDialogType.TAB).size());
     }

@@ -8,11 +8,10 @@
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited'",
-      "position": [1, 11],
       "bounds": [80, 10],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 1
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow DIV class='container'",
@@ -33,6 +32,16 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [28, 20, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [1, 11, 0, 1]
       ]
     }
   ]

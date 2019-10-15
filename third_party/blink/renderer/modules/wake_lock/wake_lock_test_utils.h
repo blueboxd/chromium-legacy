@@ -22,7 +22,9 @@
 
 namespace blink {
 
+class DOMException;
 class Document;
+class WakeLockSentinel;
 
 // Mock WakeLock implementation that tracks whether it's bound or acquired, and
 // provides a few helper methods to synchronously wait for RequestWakeLock()
@@ -175,15 +177,16 @@ class ScriptPromiseUtils final {
   static v8::Promise::PromiseState GetPromiseState(
       const ScriptPromise& promise);
 
-  // Shorthand for getting a String out of a ScriptPromise. This assumes the
-  // promise has been resolved with a string. If anything wrong happens during
-  // the conversion, an empty string is returned.
-  static String GetPromiseResolutionAsString(const ScriptPromise&);
-
   // Shorthand for getting a DOMException* out of a ScriptPromise. This assumes
   // the promise has been resolved with a DOMException. If the conversion fails,
   // nullptr is returned.
   static DOMException* GetPromiseResolutionAsDOMException(const ScriptPromise&);
+
+  // Shorthand for getting a WakeLockSentinel* out of a ScriptPromise. This
+  // assumes the promise has been resolved with a WakeLockSentinel. If the
+  // conversion fails, nullptr is returned.
+  static WakeLockSentinel* GetPromiseResolutionAsWakeLockSentinel(
+      const ScriptPromise&);
 };
 
 }  // namespace blink

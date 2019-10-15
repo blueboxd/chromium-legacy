@@ -65,8 +65,8 @@ void WebComponent::StartComponent() {
   // Create the underlying Frame and get its NavigationController.
   fuchsia::web::CreateFrameParams create_params;
   create_params.set_enable_remote_debugging(enable_remote_debugging_);
-  runner_->context()->CreateFrameWithParams(std::move(create_params),
-                                            frame_.NewRequest());
+  runner_->GetContext()->CreateFrameWithParams(std::move(create_params),
+                                               frame_.NewRequest());
 
   // If the Frame unexpectedly disconnect us then tear-down this Component.
   frame_.set_error_handler([this](zx_status_t status) {
@@ -93,7 +93,6 @@ void WebComponent::StartComponent() {
 void WebComponent::LoadUrl(
     const GURL& url,
     std::vector<fuchsia::net::http::Header> extra_headers) {
-  DCHECK(component_started_);
   DCHECK(url.is_valid());
   fuchsia::web::NavigationControllerPtr navigation_controller;
   frame()->GetNavigationController(navigation_controller.NewRequest());

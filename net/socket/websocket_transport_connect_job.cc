@@ -109,6 +109,7 @@ int WebSocketTransportConnectJob::DoResolveHost() {
 
   HostResolver::ResolveHostParameters parameters;
   parameters.initial_priority = priority();
+  DCHECK(!params_->disable_secure_dns());
   request_ = host_resolver()->CreateRequest(params_->destination(), net_log(),
                                             parameters);
 

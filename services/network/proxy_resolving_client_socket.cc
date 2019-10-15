@@ -293,7 +293,7 @@ int ProxyResolvingClientSocket::DoInitConnection() {
       proxy_annotation_tag, &ssl_config, &ssl_config, true /* force_tunnel */,
       net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
       net::MAXIMUM_PRIORITY, net::SocketTag(), net::NetworkIsolationKey(),
-      common_connect_job_params_, this);
+      false /* disable_secure_dns */, common_connect_job_params_, this);
   return connect_job_->Connect();
 }
 

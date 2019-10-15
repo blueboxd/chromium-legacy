@@ -16,12 +16,15 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.UiSwitches;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.TokenHolder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,7 +52,7 @@ public class ModalDialogManager {
     /**
      * Present a {@link PropertyModel} in a container.
      */
-    public static abstract class Presenter {
+    public abstract static class Presenter {
         private Callback<Integer> mDismissCallback;
         private PropertyModel mDialogModel;
 
@@ -160,6 +163,9 @@ public class ModalDialogManager {
     /** Observers of this manager. */
     private final ObserverList<ModalDialogManagerObserver> mObserverList = new ObserverList<>();
 
+    /** Tokens for features temporarily suppressing dialogs. */
+    private final Map<Integer, TokenHolder> mTokenHolders = new HashMap<>();
+
     /**
      * Constructor for initializing default {@link Presenter}.
      * @param defaultPresenter The default presenter to be used when no presenter specified.
@@ -169,6 +175,11 @@ public class ModalDialogManager {
             @NonNull Presenter defaultPresenter, @ModalDialogType int defaultType) {
         mDefaultPresenter = defaultPresenter;
         registerPresenter(defaultPresenter, defaultType);
+
+        mTokenHolders.put(ModalDialogType.APP,
+                new TokenHolder(() -> resumeTypeInternal(ModalDialogType.APP)));
+        mTokenHolders.put(ModalDialogType.TAB,
+                new TokenHolder(() -> resumeTypeInternal(ModalDialogType.TAB)));
     }
 
     /** Clears any dependencies on the showing or pending dialogs. */
@@ -336,24 +347,37 @@ public class ModalDialogManager {
 
     /**
      * Suspend all dialogs of the specified type, including the one currently shown. These dialogs
-     * will be prevented from showing unless {@link #resumeType(int)} is called after the
+     * will be prevented from showing unless {@link #resumeType(int, int)} is called after the
      * suspension. If the current dialog is suspended, it will be moved back to the first dialog
      * in the pending list. Any dialogs of the specified type in the pending list will be skipped.
      * @param dialogType The specified type of dialogs to be suspended.
+     * @return A token to use when resuming the suspended type.
      */
-    public void suspendType(@ModalDialogType int dialogType) {
+    public int suspendType(@ModalDialogType int dialogType) {
         mSuspendedTypes.add(dialogType);
         if (isShowing() && dialogType == mCurrentType) {
             suspendCurrentDialog();
             showNextDialog();
         }
+        return mTokenHolders.get(dialogType).acquireToken();
     }
 
     /**
-     * Resume the specified type of dialogs after suspension.
+     * Resume the specified type of dialogs after suspension. This method does not resume showing
+     * the dialog until after all held tokens are released.
+     * @param dialogType The specified type of dialogs to be resumed.
+     * @param token The token generated from suspending the dialog type.
+     */
+    public void resumeType(@ModalDialogType int dialogType, int token) {
+        mTokenHolders.get(dialogType).releaseToken(token);
+    }
+
+    /**
+     * Actually resumes showing the type of dialog after all tokens are released.
      * @param dialogType The specified type of dialogs to be resumed.
      */
-    public void resumeType(@ModalDialogType int dialogType) {
+    private void resumeTypeInternal(@ModalDialogType int dialogType) {
+        if (mTokenHolders.get(dialogType).hasTokens()) return;
         mSuspendedTypes.remove(dialogType);
         if (!isShowing()) showNextDialog();
     }

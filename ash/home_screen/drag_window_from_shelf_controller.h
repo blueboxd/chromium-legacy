@@ -12,6 +12,7 @@
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
@@ -32,7 +33,7 @@ class DragWindowFromShelfController {
 
   // The deceleration threshold to show overview during window dragging when
   // dragging a window up from the shelf.
-  static constexpr float kShowOverviewThreshold = 4.f;
+  static constexpr float kShowOverviewThreshold = 50.f;
 
   // The upward velocity threshold to take the user to the home launcher screen
   // when swiping up from the shelf. Can happen anytime during dragging.
@@ -48,7 +49,9 @@ class DragWindowFromShelfController {
   ~DragWindowFromShelfController();
 
   // Called during swiping up on the shelf.
-  void Drag(const gfx::Point& location_in_screen, float scroll_y);
+  void Drag(const gfx::Point& location_in_screen,
+            float scroll_x,
+            float scroll_y);
   void EndDrag(const gfx::Point& location_in_screen,
                base::Optional<float> velocity_y);
   void CancelDrag();
@@ -94,6 +97,10 @@ class DragWindowFromShelfController {
   // Reshows the windows that were hidden before drag starts.
   void ReshowHiddenWindowsOnDragEnd();
 
+  // Calls when the user resumes or ends window dragging. Overview should show
+  // up and split view indicators should be updated.
+  void ShowOverviewDuringOrAfterDrag();
+
   aura::Window* const window_;
   gfx::Point initial_location_in_screen_;
   gfx::Point previous_location_in_screen_;
@@ -103,6 +110,9 @@ class DragWindowFromShelfController {
   // The windows that are hidden during window dragging. Depends on different
   // scenarios, we may or may not reshow there windows when drag ends.
   std::vector<aura::Window*> hidden_windows_;
+
+  // Timer to show and update overview.
+  base::OneShotTimer show_overview_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowFromShelfController);
 };

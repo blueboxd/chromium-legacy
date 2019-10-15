@@ -16,6 +16,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/test/test_render_frame_host.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/host_port_pair.h"
@@ -274,6 +275,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool was_initiated_by_link_click_ = false;
   bool browser_initiated_;
   bool same_document_ = false;
+  TestRenderFrameHost::LoadingScenario loading_scenario_ =
+      TestRenderFrameHost::LoadingScenario::kOther;
   blink::mojom::ReferrerPtr referrer_;
   ui::PageTransition transition_;
   ReloadType reload_type_ = ReloadType::NONE;

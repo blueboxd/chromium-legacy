@@ -181,6 +181,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -1486,14 +1487,37 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 this, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
 
         mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            /** A token for suppressing app modal dialogs. */
+            private int mAppModalToken = TokenHolder.INVALID_TOKEN;
+            /** A token for suppressing tab modal dialogs. */
+            private int mTabModalToken = TokenHolder.INVALID_TOKEN;
+
             @Override
             public void onSheetOpened(int reason) {
                 addViewObscuringAllTabs(mBottomSheet);
+
+                assert mAppModalToken == TokenHolder.INVALID_TOKEN;
+                assert mTabModalToken == TokenHolder.INVALID_TOKEN;
+                if (getModalDialogManager() != null) {
+                    mAppModalToken = getModalDialogManager().suspendType(
+                            ModalDialogManager.ModalDialogType.APP);
+                    mTabModalToken = getModalDialogManager().suspendType(
+                            ModalDialogManager.ModalDialogType.TAB);
+                }
             }
 
             @Override
             public void onSheetClosed(int reason) {
                 removeViewObscuringAllTabs(mBottomSheet);
+
+                if (getModalDialogManager() != null) {
+                    getModalDialogManager().resumeType(
+                            ModalDialogManager.ModalDialogType.APP, mAppModalToken);
+                    getModalDialogManager().resumeType(
+                            ModalDialogManager.ModalDialogType.TAB, mTabModalToken);
+                }
+                mAppModalToken = TokenHolder.INVALID_TOKEN;
+                mTabModalToken = TokenHolder.INVALID_TOKEN;
             }
 
             @Override

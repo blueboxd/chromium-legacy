@@ -1868,3 +1868,4 @@ sike_mpmul:
 	.byte	0xf3,0xc3
 .cfi_endproc	
 #endif
+.section	.note.GNU-stack,"",@progbits

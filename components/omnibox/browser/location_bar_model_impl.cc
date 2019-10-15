@@ -18,8 +18,10 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/common/origin_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -179,6 +181,18 @@ LocationBarModelImpl::GetPageClassification(OmniboxFocusSource focus_source) {
 const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   auto* const icon_override = delegate_->GetVectorIconOverride();
+  GURL url = GetURL();
+  bool http_danger_warning_enabled = false;
+  if (base::FeatureList::IsEnabled(
+          security_state::features::kMarkHttpAsFeature)) {
+    std::string parameter = base::GetFieldTrialParamValueByFeature(
+        security_state::features::kMarkHttpAsFeature,
+        security_state::features::kMarkHttpAsFeatureParameterName);
+    if (parameter ==
+        security_state::features::kMarkHttpAsParameterDangerWarning) {
+      http_danger_warning_enabled = true;
+    }
+  }
   if (icon_override)
     return *icon_override;
 
@@ -187,7 +201,18 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 
   switch (GetSecurityLevel()) {
     case security_state::NONE:
+      // Show a danger triangle icon on HTTPS pages with passive mixed content
+      // when kMarkHttpAsParameterDangerWarning is enabled.
+      if (http_danger_warning_enabled && url.SchemeIsCryptographic()) {
+        return omnibox::kNotSecureWarningIcon;
+      }
+      return omnibox::kHttpIcon;
     case security_state::WARNING:
+      // When kMarkHttpAsParameterDangerWarning is enabled, show a danger
+      // triangle icon unless the page has a non-HTTPS secure origin.
+      if (http_danger_warning_enabled && !content::IsOriginSecure(url)) {
+        return omnibox::kNotSecureWarningIcon;
+      }
       return omnibox::kHttpIcon;
     case security_state::EV_SECURE:
     case security_state::SECURE:

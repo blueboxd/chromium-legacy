@@ -19,7 +19,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -34,7 +33,6 @@ import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
@@ -148,16 +146,6 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         if (mTab.isFrozen()) return buildUrlBarData(url, formattedUrl);
 
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
-            DomDistillerService domDistillerService =
-                    DomDistillerServiceFactory.getForProfile(getProfile());
-            String entryIdFromUrl = DomDistillerUrlUtils.getValueForKeyInUrl(url, "entry_id");
-            if (!TextUtils.isEmpty(entryIdFromUrl)
-                    && domDistillerService.hasEntry(entryIdFromUrl)) {
-                String originalUrl = domDistillerService.getUrlForEntry(entryIdFromUrl);
-                return buildUrlBarData(
-                        DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
-            }
-
             String originalUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
             if (originalUrl != null) {
                 return buildUrlBarData(

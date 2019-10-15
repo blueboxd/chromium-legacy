@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/optional.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
+#include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -20,6 +22,7 @@ namespace extensions {
 struct WebRequestInfo;
 
 namespace declarative_net_request {
+struct RequestAction;
 class RulesetSource;
 
 namespace flat {
@@ -93,33 +96,38 @@ class RulesetMatcher {
 
   ~RulesetMatcher();
 
-  // Returns whether the ruleset has a matching blocking rule.
-  bool HasMatchingBlockRule(const RequestParams& params) const {
-    return GetMatchingRule(params, flat::ActionIndex_block);
-  }
+  // Returns the ruleset's matching RequestAction with type |BLOCK| or
+  // |COLLAPSE|, or base::nullopt if the ruleset has no matching blocking rule.
+  base::Optional<RequestAction> GetBlockOrCollapseAction(
+      const RequestParams& params) const;
 
   // Returns whether the ruleset has a matching allow rule.
   bool HasMatchingAllowRule(const RequestParams& params) const {
     return GetMatchingRule(params, flat::ActionIndex_allow);
   }
 
+  // Returns the ruleset's matching redirect RequestAction if there is a
+  // matching redirect rule, otherwise returns base::nullopt.
+  base::Optional<RequestAction> GetRedirectAction(
+      const RequestParams& params) const;
+
+  // Returns the ruleset's matching RequestAction with |params.url| upgraded to
+  // HTTPS as the redirect url, or base::nullopt if no matching rule is found or
+  // if the request's scheme is not upgradeable.
+  base::Optional<RequestAction> GetUpgradeAction(
+      const RequestParams& params) const;
+
+  // Returns a RedirectAction constructed from the matching redirect or upgrade
+  // rule with the highest priority, or base::nullopt if no matching redirect or
+  // upgrade rules are found for this request.
+  base::Optional<RequestAction> GetRedirectOrUpgradeActionByPriority(
+      const RequestParams& params) const;
+
   // Returns the bitmask of headers to remove from the request. The bitmask
   // corresponds to RemoveHeadersMask type. |ignored_mask| denotes the mask of
   // headers to be skipped for evaluation and is excluded in the return value.
   uint8_t GetRemoveHeadersMask(const RequestParams& params,
                                uint8_t ignored_mask) const;
-
-  // Returns the ruleset's matching redirect rule and populates
-  // |redirect_url| if there is a matching redirect rule, otherwise returns
-  // nullptr.
-  const url_pattern_index::flat::UrlRule* GetRedirectRule(
-      const RequestParams& params,
-      GURL* redirect_url) const;
-
-  // Returns the ruleset's matching upgrade scheme rule or nullptr if no
-  // matching rule is found or if the request's scheme is not upgradeable.
-  const url_pattern_index::flat::UrlRule* GetUpgradeRule(
-      const RequestParams& params) const;
 
   // Returns whether this modifies "extraHeaders".
   bool IsExtraHeadersMatcher() const { return is_extra_headers_matcher_; }
@@ -137,7 +145,22 @@ class RulesetMatcher {
   using ExtensionMetadataList =
       flatbuffers::Vector<flatbuffers::Offset<flat::UrlRuleMetadata>>;
 
-  explicit RulesetMatcher(std::string ruleset_data, size_t id, size_t priority);
+  explicit RulesetMatcher(std::string ruleset_data,
+                          size_t id,
+                          size_t priority,
+                          const ExtensionId& extension_id);
+
+  // Returns the ruleset's matching redirect rule and populates
+  // |redirect_url| if there is a matching redirect rule, otherwise returns
+  // nullptr.
+  const url_pattern_index::flat::UrlRule* GetRedirectRule(
+      const RequestParams& params,
+      GURL* redirect_url) const;
+
+  // Returns the ruleset's matching upgrade scheme rule or nullptr if no
+  // matching rule is found or if the request's scheme is not upgradeable.
+  const url_pattern_index::flat::UrlRule* GetUpgradeRule(
+      const RequestParams& params) const;
 
   const url_pattern_index::flat::UrlRule* GetMatchingRule(
       const RequestParams& params,
@@ -154,8 +177,11 @@ class RulesetMatcher {
 
   const ExtensionMetadataList* const metadata_list_;
 
-  size_t id_;
-  size_t priority_;
+  const size_t id_;
+  const size_t priority_;
+
+  // The ID of the extension from which this matcher's ruleset originates from.
+  const ExtensionId extension_id_;
 
   const bool is_extra_headers_matcher_;
 

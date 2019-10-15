@@ -77,8 +77,6 @@
 <translation id="4230135487732243613">Να συνδεθούν τα δεδομένα σας στο Chromium με αυτόν το λογαριασμό;</translation>
 <translation id="4271805377592243930">Λήψη βοήθειας σχετικά με το Chromium</translation>
 <translation id="4285930937574705105">Η εγκατάσταση απέτυχε λόγω απροσδιόριστου σφάλματος. Εάν το Chromium εκτελείται αυτήν τη στιγμή, κλείστε το και δοκιμάστε ξανά.</translation>
-<translation id="4371648796594901282">Για λεπτομέρειες σχετικά με το Chromium OS, ανατρέξτε στην ενότητα <ph name="LINK_BEGIN" />
-      Σχετικά με το Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Να γίνει έξοδος από το Chromium ούτως ή άλλως;</translation>
 <translation id="4415566066719264597">Να επιτρέπεται στο Chromium να εκτελείται στο παρασκήνιο</translation>
 <translation id="4423735387467980091">Προσαρμογή και έλεγχος του Chromium</translation>
@@ -191,6 +189,7 @@
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7827169012280634081">Διαγραφή cookie και δεδομένων ιστοτόπου κατά τον τερματισμό του Chromium.</translation>
 <translation id="7867198900892795913">Δεν ήταν δυνατή η ενημέρωση του Chromium στην τελευταία έκδοση και έτσι δεν θα έχετε πρόσβαση στις νέες λειτουργίες και στις επιδιορθώσεις ασφαλείας.</translation>
+<translation id="7898472181347242998">Για να διαπιστώσετε εάν η συσκευή σας είναι ενημερωμένη, μεταβείτε στις <ph name="LINK_BEGIN" />Ρυθμίσεις του Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">Υπάρχει νέα διαθέσιμη ενημέρωση για το Chromium και θα εφαρμοστεί μόλις κάνετε επανεκκίνηση.</translation>
 <translation id="7937630085815544518">Συνδεθήκατε στο Chromium ως <ph name="USER_EMAIL_ADDRESS" />. Χρησιμοποιήστε τον ίδιο λογαριασμό για να συνδεθείτε ξανά.</translation>
 <translation id="7975919845073681630">Αυτή είναι μια δευτερεύουσα εγκατάσταση του Chromium και δεν μπορεί να γίνει το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>

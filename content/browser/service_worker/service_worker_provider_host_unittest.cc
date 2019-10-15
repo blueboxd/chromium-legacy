@@ -947,7 +947,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     host_receiver =
         provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
     base::WeakPtr<ServiceWorkerProviderHost> host =
-        ServiceWorkerProviderHost::PreCreateForWebWorker(
+        ServiceWorkerProviderHost::CreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             provider_type, std::move(host_receiver), std::move(client_remote));
     host->UpdateUrls(url, url, url::Origin::Create(url));
@@ -1030,7 +1030,7 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   host_receiver =
       provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateForWebWorker(
+      ServiceWorkerProviderHost::CreateForWebWorker(
           helper_->context()->AsWeakPtr(), helper_->mock_render_process_id(),
           provider_type, std::move(host_receiver), std::move(client_remote));
   EXPECT_FALSE(host->is_response_committed());

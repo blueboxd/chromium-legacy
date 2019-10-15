@@ -11,8 +11,7 @@
 
 namespace device {
 
-VRDeviceBase::VRDeviceBase(mojom::XRDeviceId id)
-    : id_(id), runtime_binding_(this) {}
+VRDeviceBase::VRDeviceBase(mojom::XRDeviceId id) : id_(id) {}
 
 VRDeviceBase::~VRDeviceBase() = default;
 
@@ -70,10 +69,8 @@ void VRDeviceBase::OnVisibilityStateChanged(
     listener_->OnVisibilityStateChanged(visibility_state);
 }
 
-mojom::XRRuntimePtr VRDeviceBase::BindXRRuntimePtr() {
-  mojom::XRRuntimePtr runtime;
-  runtime_binding_.Bind(mojo::MakeRequest(&runtime));
-  return runtime;
+mojo::PendingRemote<mojom::XRRuntime> VRDeviceBase::BindXRRuntime() {
+  return runtime_receiver_.BindNewPipeAndPassRemote();
 }
 
 void VRDeviceBase::OnListeningForActivate(bool listening) {}

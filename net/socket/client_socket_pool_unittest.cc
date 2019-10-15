@@ -53,6 +53,8 @@ TEST(ClientSocketPool, GroupIdOperators) {
       NetworkIsolationKey(kOriginB, kOriginB),
   };
 
+  const bool kDisableSecureDnsValues[] = {false, true};
+
   // All previously created |group_ids|. They should all be less than the
   // current group under consideration.
   std::vector<ClientSocketPool::GroupId> group_ids;
@@ -64,26 +66,27 @@ TEST(ClientSocketPool, GroupIdOperators) {
       SCOPED_TRACE(static_cast<int>(socket_type));
       for (const auto& privacy_mode : kPrivacyModes) {
         SCOPED_TRACE(privacy_mode);
-
         for (const auto& network_isolation_key : kNetworkIsolationKeys) {
           SCOPED_TRACE(network_isolation_key.ToString());
+          for (const auto& disable_secure_dns : kDisableSecureDnsValues) {
+            ClientSocketPool::GroupId group_id(
+                host_port_pair, socket_type, privacy_mode,
+                network_isolation_key, disable_secure_dns);
+            for (const auto& lower_group_id : group_ids) {
+              EXPECT_FALSE(lower_group_id == group_id);
+              EXPECT_TRUE(lower_group_id < group_id);
+              EXPECT_FALSE(group_id < lower_group_id);
+            }
 
-          ClientSocketPool::GroupId group_id(
-              host_port_pair, socket_type, privacy_mode, network_isolation_key);
-          for (const auto& lower_group_id : group_ids) {
-            EXPECT_FALSE(lower_group_id == group_id);
-            EXPECT_TRUE(lower_group_id < group_id);
-            EXPECT_FALSE(group_id < lower_group_id);
+            group_ids.push_back(group_id);
+
+            // Compare |group_id| to itself. Use two different copies of
+            // |group_id|'s value, since to protect against bugs where an object
+            // only equals itself.
+            EXPECT_TRUE(group_ids.back() == group_id);
+            EXPECT_FALSE(group_ids.back() < group_id);
+            EXPECT_FALSE(group_id < group_ids.back());
           }
-
-          group_ids.push_back(group_id);
-
-          // Compare |group_id| to itself. Use two different copies of
-          // |group_id|'s value, since to protect against bugs where an object
-          // only equals itself.
-          EXPECT_TRUE(group_ids.back() == group_id);
-          EXPECT_FALSE(group_ids.back() < group_id);
-          EXPECT_FALSE(group_id < group_ids.back());
         }
       }
     }
@@ -98,33 +101,39 @@ TEST(ClientSocketPool, GroupIdToString) {
   EXPECT_EQ("foo:80 <null>",
             ClientSocketPool::GroupId(
                 HostPortPair("foo", 80), ClientSocketPool::SocketType::kHttp,
-                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey())
+                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                false /* disable_secure_dns */)
                 .ToString());
   EXPECT_EQ("bar:443 <null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 443), ClientSocketPool::SocketType::kHttp,
-                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey())
+                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                false /* disable_secure_dns */)
                 .ToString());
   EXPECT_EQ("pm/bar:80 <null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 80), ClientSocketPool::SocketType::kHttp,
-                PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey())
+                PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
+                false /* disable_secure_dns */)
                 .ToString());
 
   EXPECT_EQ("ssl/foo:80 <null>",
             ClientSocketPool::GroupId(
                 HostPortPair("foo", 80), ClientSocketPool::SocketType::kSsl,
-                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey())
+                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                false /* disable_secure_dns */)
                 .ToString());
   EXPECT_EQ("ssl/bar:443 <null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 443), ClientSocketPool::SocketType::kSsl,
-                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey())
+                PrivacyMode::PRIVACY_MODE_DISABLED, NetworkIsolationKey(),
+                false /* disable_secure_dns */)
                 .ToString());
   EXPECT_EQ("pm/ssl/bar:80 <null>",
             ClientSocketPool::GroupId(
                 HostPortPair("bar", 80), ClientSocketPool::SocketType::kSsl,
-                PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey())
+                PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
+                false /* disable_secure_dns */)
                 .ToString());
 
   EXPECT_EQ(
@@ -133,8 +142,16 @@ TEST(ClientSocketPool, GroupIdToString) {
           HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
           PrivacyMode::PRIVACY_MODE_DISABLED,
           NetworkIsolationKey(url::Origin::Create(GURL("https://foo.com")),
-                              url::Origin::Create(GURL("https://foo.com"))))
+                              url::Origin::Create(GURL("https://foo.com"))),
+          false /* disable_secure_dns */)
           .ToString());
+
+  EXPECT_EQ("dsd/pm/ssl/bar:80 <null>",
+            ClientSocketPool::GroupId(
+                HostPortPair("bar", 80), ClientSocketPool::SocketType::kSsl,
+                PrivacyMode::PRIVACY_MODE_ENABLED, NetworkIsolationKey(),
+                true /* disable_secure_dns */)
+                .ToString());
 }
 
 TEST(ClientSocketPool, PartitionConnectionsByNetworkIsolationKeyDisabled) {

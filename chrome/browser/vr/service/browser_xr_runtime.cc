@@ -219,9 +219,10 @@ bool ContainsFeature(
 }
 }  // anonymous namespace
 
-BrowserXRRuntime::BrowserXRRuntime(device::mojom::XRDeviceId id,
-                                   device::mojom::XRRuntimePtr runtime,
-                                   device::mojom::VRDisplayInfoPtr display_info)
+BrowserXRRuntime::BrowserXRRuntime(
+    device::mojom::XRDeviceId id,
+    mojo::PendingRemote<device::mojom::XRRuntime> runtime,
+    device::mojom::VRDisplayInfoPtr display_info)
     : id_(id),
       runtime_(std::move(runtime)),
       display_info_(ValidateVRDisplayInfo(display_info.get(), id)) {

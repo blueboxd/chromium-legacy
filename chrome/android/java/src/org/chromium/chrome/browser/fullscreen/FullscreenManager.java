@@ -21,8 +21,6 @@ import org.chromium.content_public.browser.WebContents;
 // TODO(tedchoc): Remove Tab's requirement on the fullscreen tokens to slim down the API of this
 //                class.
 public abstract class FullscreenManager {
-    public static final int INVALID_TOKEN = -1;
-
     private final FullscreenHtmlApiHandler mHtmlApiHandler;
     private boolean mOverlayVideoMode;
     @Nullable private Tab mTab;

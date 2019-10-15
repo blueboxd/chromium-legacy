@@ -1540,6 +1540,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kDeviceLoginScreenDefaultScreenMagnifierType, nullptr,
       chromeos::MAGNIFIER_DISABLED, chromeos::MAGNIFIER_DOCKED, false));
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kDeviceLoginScreenScreenMagnifierType, nullptr,
+      chromeos::MAGNIFIER_DISABLED, chromeos::MAGNIFIER_DOCKED, false));
   // TODO(binjin): Remove LegacyPoliciesDeprecatingPolicyHandler for these two
   // policies once deprecation of legacy power management policies is done.
   // http://crbug.com/346229

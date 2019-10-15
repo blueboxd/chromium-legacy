@@ -7,7 +7,9 @@
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_custom_session.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_session.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_uma_session.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
@@ -99,6 +101,13 @@ ArcAppPerformanceTracing* ArcAppPerformanceTracing::GetForBrowserContext(
   return ArcAppPerformanceTracingFactory::GetForBrowserContext(context);
 }
 
+ArcAppPerformanceTracing*
+ArcAppPerformanceTracing::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcAppPerformanceTracingFactory::GetForBrowserContextForTesting(
+      context);
+}
+
 // static
 void ArcAppPerformanceTracing::SetFocusAppForTesting(
     const std::string& package_name,
@@ -106,6 +115,11 @@ void ArcAppPerformanceTracing::SetFocusAppForTesting(
     const std::string& category) {
   AppToCategoryMapper::GetInstance().Add(
       ArcAppListPrefs::GetAppId(package_name, activity), category);
+}
+
+void ArcAppPerformanceTracing::SetCustomSessionReadyCallbackForTesting(
+    CustomSessionReadyCallback callback) {
+  custom_session_ready_callback_ = std::move(callback);
 }
 
 void ArcAppPerformanceTracing::Shutdown() {
@@ -117,6 +131,26 @@ void ArcAppPerformanceTracing::Shutdown() {
   ArcAppListPrefs::Get(context_)->RemoveObserver(this);
   if (exo::WMHelper::HasInstance())
     exo::WMHelper::GetInstance()->RemoveActivationObserver(this);
+}
+
+bool ArcAppPerformanceTracing::StartCustomTracing() {
+  if (!arc_active_window_)
+    return false;
+
+  session_ = std::make_unique<ArcAppPerformanceTracingCustomSession>(this);
+  session_->Schedule();
+  if (custom_session_ready_callback_)
+    custom_session_ready_callback_.Run();
+
+  return true;
+}
+
+void ArcAppPerformanceTracing::StopCustomTracing(
+    ResultCallback result_callback) {
+  if (!session_ || !session_->AsCustomSession())
+    std::move(result_callback).Run(false /* success */, 0, 0, 0);
+
+  session_->AsCustomSession()->StopAndAnalyze(std::move(result_callback));
 }
 
 void ArcAppPerformanceTracing::OnWindowActivated(ActivationReason reason,
@@ -170,11 +204,6 @@ void ArcAppPerformanceTracing::SetReported(const std::string& category) {
   reported_categories_.insert(category);
 }
 
-void ArcAppPerformanceTracing::SetTracingPeriodForTesting(
-    const base::TimeDelta& period) {
-  tracing_period_ = period;
-}
-
 void ArcAppPerformanceTracing::MaybeStartTracing() {
   if (session_) {
     // We are already tracing, ignore.
@@ -205,8 +234,8 @@ void ArcAppPerformanceTracing::MaybeStartTracing() {
   }
 
   // Start tracing for |arc_active_window_|.
-  session_ = std::make_unique<ArcAppPerformanceTracingSession>(
-      this, arc_active_window_, category, tracing_period_);
+  session_ =
+      std::make_unique<ArcAppPerformanceTracingUmaSession>(this, category);
   session_->Schedule();
 }
 

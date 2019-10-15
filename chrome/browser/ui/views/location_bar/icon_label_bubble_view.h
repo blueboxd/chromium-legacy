@@ -155,7 +155,12 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
-  // Set up for icons that animate their labels in and then out.
+  // Set up for icons that animate their labels in. Animating out is initiated
+  // manually.
+  void SetUpForAnimation();
+
+  // Set up for icons that animate their labels in and then automatically out
+  // after a period of time.
   void SetUpForInOutAnimation();
 
   // Animates the view in and disables highlighting for hover and focus. If a
@@ -190,10 +195,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // override this method. This may be used when we want to align the label text
   // to the suggestion text, like in the SelectedKeywordView.
   virtual int GetExtraInternalSpacing() const;
-
-  // Subclasses that want a different duration for the slide animation can
-  // override this method.
-  virtual base::TimeDelta GetSlideDurationTime() const;
 
   // Returns the width after the icon and before the separator. If the
   // separator is not shown, and ShouldShowExtraEndSpace() is false, this

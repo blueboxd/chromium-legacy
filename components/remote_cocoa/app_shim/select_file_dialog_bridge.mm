@@ -234,7 +234,9 @@ void SelectFileDialogBridge::Show(
       [dialog setCanSelectHiddenExtension:YES];
     }
   } else {
-    NSOpenPanel* open_dialog = base::mac::ObjCCastStrict<NSOpenPanel>(dialog);
+    // This does not use ObjCCast because the underlying object could be a
+    // non-exported AppKit type (https://crbug.com/995476).
+    NSOpenPanel* open_dialog = static_cast<NSOpenPanel*>(dialog);
 
     if (type_ == SelectFileDialogType::kOpenMultiFile)
       [open_dialog setAllowsMultipleSelection:YES];
@@ -394,7 +396,6 @@ void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
         index = 1;
       }
     } else {
-      CHECK([panel_ isKindOfClass:[NSOpenPanel class]]);
       NSArray* urls = [static_cast<NSOpenPanel*>(panel_) URLs];
       for (NSURL* url in urls)
         if ([url isFileURL])

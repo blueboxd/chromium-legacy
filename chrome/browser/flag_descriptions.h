@@ -912,6 +912,9 @@ extern const char kOnTheFlyMhtmlHashComputationDescription[];
 extern const char kOopRasterizationName[];
 extern const char kOopRasterizationDescription[];
 
+extern const char kEnableDeJellyName[];
+extern const char kEnableDeJellyDescription[];
+
 extern const char kOverlayNewLayoutName[];
 extern const char kOverlayNewLayoutDescription[];
 
@@ -1529,6 +1532,9 @@ extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
 extern const char kOfflineIndicatorChoiceName[];
 extern const char kOfflineIndicatorChoiceDescription[];
 
+extern const char kOfflineHomeName[];
+extern const char kOfflineHomeDescription[];
+
 extern const char kOfflineIndicatorV2Name[];
 extern const char kOfflineIndicatorV2Description[];
 
@@ -1845,6 +1851,9 @@ extern const char kAcceleratedMjpegDecodeDescription[];
 extern const char kAggregatedMlAppRankingName[];
 extern const char kAggregatedMlAppRankingDescription[];
 
+extern const char kAggregatedMlSearchRankingName[];
+extern const char kAggregatedMlSearchRankingDescription[];
+
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];
 
@@ -2066,9 +2075,6 @@ extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
 extern const char kFileManagerFeedbackPanelDescription[];
 extern const char kFileManagerFeedbackPanelName[];
-
-extern const char kFileManagerFormatDialogDescription[];
-extern const char kFileManagerFormatDialogName[];
 
 extern const char kFileManagerPiexWasmName[];
 extern const char kFileManagerPiexWasmDescription[];

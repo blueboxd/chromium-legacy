@@ -4,6 +4,8 @@
 
 library chromium.cast;
 
+using fuchsia.web;
+
 /// Describes the configuration under which a Cast application should run.
 table ApplicationConfig {
   /// Cast application Id.
@@ -21,6 +23,11 @@ table ApplicationConfig {
   // If true, enable remote debugging for this application.
   // if false or unset, remote debugging is disabled for this application.
   5: bool enable_remote_debugging;
+
+  /// List of directories whose contents are served via `fuchsia-dir://`
+  /// URLs. Networking will be disabled if any directories are set.
+  6: vector<fuchsia.web.ContentDirectoryProvider>
+      content_directories_for_isolated_application;
 };
 
 /// Service interface for working with application configurations.

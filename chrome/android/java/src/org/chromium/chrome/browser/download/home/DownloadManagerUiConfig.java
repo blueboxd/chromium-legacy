@@ -19,6 +19,9 @@ public class DownloadManagerUiConfig {
     /** Whether or not the UI should be shown as part of a separate activity. */
     public final boolean isSeparateActivity;
 
+    /** Whether or not to show the Offline Home UI. */
+    public final boolean showOfflineHome;
+
     /** Whether generic view types should be used wherever possible. Used for low end devices. */
     public final boolean useGenericViewTypes;
 
@@ -58,6 +61,7 @@ public class DownloadManagerUiConfig {
     private DownloadManagerUiConfig(Builder builder) {
         isOffTheRecord = builder.mIsOffTheRecord;
         isSeparateActivity = builder.mIsSeparateActivity;
+        showOfflineHome = builder.mShowOfflineHome;
         useGenericViewTypes = builder.mUseGenericViewTypes;
         supportFullWidthImages = builder.mSupportFullWidthImages;
         useNewDownloadPath = builder.mUseNewDownloadPath;
@@ -77,6 +81,7 @@ public class DownloadManagerUiConfig {
 
         private boolean mIsOffTheRecord;
         private boolean mIsSeparateActivity;
+        private boolean mShowOfflineHome;
         private boolean mUseGenericViewTypes;
         private boolean mSupportFullWidthImages;
         private boolean mUseNewDownloadPath;
@@ -102,6 +107,11 @@ public class DownloadManagerUiConfig {
 
         public Builder setIsSeparateActivity(boolean isSeparateActivity) {
             mIsSeparateActivity = isSeparateActivity;
+            return this;
+        }
+
+        public Builder setShowOfflineHome(boolean showOfflineHome) {
+            mShowOfflineHome = showOfflineHome;
             return this;
         }
 

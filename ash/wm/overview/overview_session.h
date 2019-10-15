@@ -169,7 +169,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void ResetDraggedWindowGesture();
 
   // Called when a window (either it's browser window or an app window)
-  // start/continue/end being dragged in tablet mode.
+  // start/continue/end being dragged in tablet mode by swiping from the top
+  // of the screen to drag from top or by swiping from the shelf to drag from
+  // bottom .
   // TODO(xdai): Currently it doesn't work for multi-display scenario.
   void OnWindowDragStarted(aura::Window* dragged_window, bool animate);
   void OnWindowDragContinued(aura::Window* dragged_window,
@@ -179,6 +181,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                          const gfx::PointF& location_in_screen,
                          bool should_drop_window_into_overview,
                          bool snap);
+  // Shows or Hides all windows (including drop target window & desk widget) in
+  // overview. It's used when dragging a window from bottom, when the user slows
+  // down or stops dragging the window, shows overview windows and when the user
+  // resumes dragging, hides overview windows.
+  void SetVisibleDuringWindowDragging(bool visible);
 
   // Positions all overview items except those in |ignored_items|.
   void PositionWindows(bool animate,

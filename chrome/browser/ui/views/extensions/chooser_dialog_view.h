@@ -29,7 +29,6 @@ class ChooserDialogView : public views::DialogDelegateView,
   ui::ModalType GetModalType() const override;
 
   // views::DialogDelegate:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
   std::unique_ptr<views::View> CreateExtraView() override;

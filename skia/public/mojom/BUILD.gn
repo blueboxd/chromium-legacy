@@ -9,6 +9,7 @@ mojom("mojom") {
     "bitmap.mojom",
     "blur_image_filter_tile_mode.mojom",
     "image_info.mojom",
+    "skcolor.mojom",
   ]
 
   public_deps = [

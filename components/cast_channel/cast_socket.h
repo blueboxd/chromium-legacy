@@ -22,6 +22,7 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_transport.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -347,8 +348,8 @@ class CastSocketImpl : public CastSocket {
 
   NetworkContextGetter network_context_getter_;
 
-  // Owned ptr to the underlying TCP socket.
-  network::mojom::TCPConnectedSocketPtr tcp_socket_;
+  // Owned remote to the underlying TCP socket.
+  mojo::Remote<network::mojom::TCPConnectedSocket> tcp_socket_;
 
   // Owned ptr to the underlying SSL socket.
   network::mojom::TLSClientSocketPtr socket_;

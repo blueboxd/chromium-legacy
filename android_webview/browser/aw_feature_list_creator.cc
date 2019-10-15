@@ -52,6 +52,7 @@ const char* const kPersistentPrefsWhitelist[] = {
     // experiment groups.
     metrics::prefs::kMetricsLowEntropySource,
     // Logged directly in the ChromeUserMetricsExtension proto.
+    metrics::prefs::kInstallDate,
     metrics::prefs::kMetricsSessionID,
     // Current and past country codes, to filter variations studies by country.
     variations::prefs::kVariationsCountry,

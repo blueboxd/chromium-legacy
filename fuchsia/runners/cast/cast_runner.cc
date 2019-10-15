@@ -4,19 +4,71 @@
 
 #include "fuchsia/runners/cast/cast_runner.h"
 
+#include <fuchsia/sys/cpp/fidl.h>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "url/gurl.h"
 
+namespace {
+
+bool AreCastComponentParamsValid(
+    const CastComponent::CastComponentParams& params) {
+  if (params.app_config.IsEmpty())
+    return false;
+  if (!params.api_bindings_client->HasBindings())
+    return false;
+  if (!params.rewrite_rules.has_value())
+    return false;
+  return true;
+}
+
+// Creates a CreateContextParams object which can be used as a basis
+// for starting isolated Runners.
+fuchsia::web::CreateContextParams BuildCreateContextParamsForIsolatedRunners(
+    const fuchsia::web::CreateContextParams& create_context_params) {
+  fuchsia::web::CreateContextParams output;
+  if (create_context_params.has_features()) {
+    output.set_features(create_context_params.features());
+  }
+  if (create_context_params.has_user_agent_product()) {
+    output.set_user_agent_product(create_context_params.user_agent_product());
+  }
+  if (create_context_params.has_user_agent_version()) {
+    output.set_user_agent_version(create_context_params.user_agent_version());
+  }
+  if (create_context_params.has_remote_debugging_port()) {
+    output.set_remote_debugging_port(
+        create_context_params.remote_debugging_port());
+  }
+  return output;
+}
+
+}  // namespace
+
 CastRunner::CastRunner(sys::OutgoingDirectory* outgoing_directory,
+                       fuchsia::web::CreateContextParams create_context_params)
+    : WebContentRunner(outgoing_directory,
+                       base::BindOnce(&CastRunner::CreateCastRunnerWebContext,
+                                      base::Unretained(this))),
+      create_context_params_(std::move(create_context_params)),
+      common_create_context_params_(
+          BuildCreateContextParamsForIsolatedRunners(create_context_params_)) {}
+
+CastRunner::CastRunner(OnDestructionCallback on_destruction_callback,
                        fuchsia::web::ContextPtr context)
-    : WebContentRunner(outgoing_directory, std::move(context)) {}
+    : WebContentRunner(std::move(context)),
+      on_destruction_callback_(std::move(on_destruction_callback)) {}
 
 CastRunner::~CastRunner() = default;
+
+fuchsia::web::ContextPtr CastRunner::CreateCastRunnerWebContext() {
+  return WebContentRunner::CreateWebContext(std::move(create_context_params_));
+}
 
 void CastRunner::StartComponent(
     fuchsia::sys::Package package,
@@ -99,6 +151,16 @@ void CastRunner::StartComponent(
   pending_components_.emplace(std::move(pending_component));
 }
 
+void CastRunner::DestroyComponent(WebComponent* component) {
+  WebContentRunner::DestroyComponent(component);
+
+  if (on_destruction_callback_) {
+    // |this| may be deleted and should not be used after this line.
+    std::move(on_destruction_callback_).Run(this);
+    return;
+  }
+}
+
 const char CastRunner::kAgentComponentUrl[] =
     "fuchsia-pkg://fuchsia.com/cast_agent#meta/cast_agent.cmx";
 
@@ -121,23 +183,75 @@ void CastRunner::GetConfigCallback(
 }
 
 void CastRunner::MaybeStartComponent(
-    CastComponent::CastComponentParams* pending_component) {
-  if (pending_component->app_config.IsEmpty())
-    return;
-  if (!pending_component->api_bindings_client->HasBindings())
-    return;
-  if (!pending_component->rewrite_rules.has_value())
+    CastComponent::CastComponentParams* pending_component_params) {
+  if (!AreCastComponentParamsValid(*pending_component_params))
     return;
 
-  // Create a component based on the returned configuration, and pass it the
-  // |pending_component|.
-  GURL cast_app_url(pending_component->app_config.web_url());
-  auto component =
-      std::make_unique<CastComponent>(this, std::move(*pending_component));
-  pending_components_.erase(pending_component);
+  // The runner which will host the newly created CastComponent.
+  CastRunner* component_owner = this;
+  if (pending_component_params->app_config
+          .has_content_directories_for_isolated_application()) {
+    // Create a isolated, isolated CastRunner instance which will own the
+    // CastComponent.
+    component_owner =
+        CreateChildRunnerForIsolatedComponent(pending_component_params);
+  }
 
-  component->StartComponent();
-  component->LoadUrl(std::move(cast_app_url),
-                     std::vector<fuchsia::net::http::Header>());
-  RegisterComponent(std::move(component));
+  component_owner->CreateAndRegisterCastComponent(
+      std::move(*pending_component_params));
+  pending_components_.erase(pending_component_params);
+}
+
+void CastRunner::CreateAndRegisterCastComponent(
+    CastComponent::CastComponentParams params) {
+  GURL app_url = GURL(params.app_config.web_url());
+  auto cast_component =
+      std::make_unique<CastComponent>(this, std::move(params));
+  cast_component->StartComponent();
+  cast_component->LoadUrl(std::move(app_url),
+                          std::vector<fuchsia::net::http::Header>());
+  RegisterComponent(std::move(cast_component));
+}
+
+CastRunner* CastRunner::CreateChildRunnerForIsolatedComponent(
+    CastComponent::CastComponentParams* params) {
+  // Construct the CreateContextParams in order to create a new Context.
+  // Some common parameters must be inherited from
+  // |common_create_context_params_|.
+  fuchsia::web::CreateContextParams isolated_context_params;
+  zx_status_t status =
+      common_create_context_params_.Clone(&isolated_context_params);
+  ZX_CHECK(status == ZX_OK, status) << "clone";
+  isolated_context_params.set_service_directory(base::fuchsia::OpenDirectory(
+      base::FilePath(base::fuchsia::kServiceDirectoryPath)));
+  isolated_context_params.set_content_directories(
+      std::move(*params->app_config
+                     .mutable_content_directories_for_isolated_application()));
+
+  std::unique_ptr<CastRunner> cast_runner(
+      new CastRunner(base::BindOnce(&CastRunner::OnChildRunnerDestroyed,
+                                    base::Unretained(this)),
+                     CreateWebContext(std::move(isolated_context_params))));
+
+  // If test code is listening for Component creation events, then wire up the
+  // isolated CastRunner to signal component creation events.
+  if (web_component_created_callback_for_test()) {
+    cast_runner->SetWebComponentCreatedCallbackForTest(
+        web_component_created_callback_for_test());
+  }
+
+  CastRunner* cast_runner_ptr = cast_runner.get();
+  isolated_runners_.insert(std::move(cast_runner));
+  return cast_runner_ptr;
+}
+
+void CastRunner::OnChildRunnerDestroyed(CastRunner* runner) {
+  auto runner_iterator = isolated_runners_.find(runner);
+  DCHECK(runner_iterator != isolated_runners_.end());
+
+  isolated_runners_.erase(runner_iterator);
+}
+
+size_t CastRunner::GetChildCastRunnerCountForTest() {
+  return isolated_runners_.size();
 }

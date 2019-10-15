@@ -164,7 +164,8 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                                           origin_url_,
                                           request_info_.privacy_mode,
                                           request_info_.socket_tag,
-                                          request_info_.network_isolation_key)),
+                                          request_info_.network_isolation_key,
+                                          request_info_.disable_secure_dns)),
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
       init_connection_already_resumed_(false) {
   // QUIC can only be spoken to servers, never to proxies.
@@ -373,18 +374,19 @@ SpdySessionKey HttpStreamFactory::Job::GetSpdySessionKey(
     const GURL& origin_url,
     PrivacyMode privacy_mode,
     const SocketTag& socket_tag,
-    const NetworkIsolationKey& network_isolation_key) {
+    const NetworkIsolationKey& network_isolation_key,
+    bool disable_secure_dns) {
   // In the case that we're using an HTTPS proxy for an HTTP url, look for a
   // HTTP/2 proxy session *to* the proxy, instead of to the  origin server.
   if (!spdy_session_direct) {
     return SpdySessionKey(proxy_server.host_port_pair(), ProxyServer::Direct(),
                           PRIVACY_MODE_DISABLED,
                           SpdySessionKey::IsProxySession::kTrue, socket_tag,
-                          network_isolation_key);
+                          network_isolation_key, disable_secure_dns);
   }
   return SpdySessionKey(HostPortPair::FromURL(origin_url), proxy_server,
                         privacy_mode, SpdySessionKey::IsProxySession::kFalse,
-                        socket_tag, network_isolation_key);
+                        socket_tag, network_isolation_key, disable_secure_dns);
 }
 
 bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
@@ -756,7 +758,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     int rv = quic_request_.Request(
         destination, quic_version_, request_info_.privacy_mode, priority_,
         request_info_.socket_tag, request_info_.network_isolation_key,
-        ssl_config->GetCertVerifyFlags(), url, net_log_, &net_error_details_,
+        request_info_.disable_secure_dns, ssl_config->GetCertVerifyFlags(), url,
+        net_log_, &net_error_details_,
         base::BindOnce(&Job::OnFailedOnDefaultNetwork,
                        ptr_factory_.GetWeakPtr()),
         io_callback_);
@@ -862,7 +865,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
         GetSocketGroup(), destination_, request_info_.load_flags, priority_,
         session_, proxy_info_, server_ssl_config_, proxy_ssl_config_,
         request_info_.privacy_mode, request_info_.network_isolation_key,
-        net_log_, num_streams_);
+        request_info_.disable_secure_dns, net_log_, num_streams_);
   }
 
   ClientSocketPool::ProxyAuthCallback proxy_auth_callback =
@@ -870,6 +873,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
                           base::Unretained(this));
   if (is_websocket_) {
     DCHECK(request_info_.socket_tag == SocketTag());
+    DCHECK(!request_info_.disable_secure_dns);
     SSLConfig websocket_server_ssl_config = server_ssl_config_;
     websocket_server_ssl_config.alpn_protos.clear();
     return InitSocketHandleForWebSocketRequest(
@@ -883,8 +887,8 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       GetSocketGroup(), destination_, request_info_.load_flags, priority_,
       session_, proxy_info_, server_ssl_config_, proxy_ssl_config_,
       request_info_.privacy_mode, request_info_.network_isolation_key,
-      request_info_.socket_tag, net_log_, connection_.get(), io_callback_,
-      proxy_auth_callback);
+      request_info_.disable_secure_dns, request_info_.socket_tag, net_log_,
+      connection_.get(), io_callback_, proxy_auth_callback);
 }
 
 void HttpStreamFactory::Job::OnQuicHostResolution(int result) {

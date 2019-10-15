@@ -28,12 +28,8 @@ bool g_allow_showing_popup_menus = true;
 PopupMenuHelper::PopupMenuHelper(Delegate* delegate,
                                  RenderFrameHost* render_frame_host)
     : delegate_(delegate),
-      observer_(this),
       render_frame_host_(
-          static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()),
-      menu_runner_(nil),
-      popup_was_hidden_(false),
-      weak_ptr_factory_(this) {
+          static_cast<RenderFrameHostImpl*>(render_frame_host)->GetWeakPtr()) {
   RenderWidgetHost* widget_host =
       render_frame_host->GetRenderViewHost()->GetWidget();
   observer_.Add(widget_host);

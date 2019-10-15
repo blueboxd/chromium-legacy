@@ -30,7 +30,7 @@
       "position": [-30, -30],
       "bounds": [290, 230],
       "backgroundColor": "#FFFFFF",
-      "transform": 4
+      "transform": 2
     },
     {
       "name": "Scrolling Contents Layer",
@@ -68,16 +68,6 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [17, 17, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [41, 41, 0, 1]
       ]
     }
   ]

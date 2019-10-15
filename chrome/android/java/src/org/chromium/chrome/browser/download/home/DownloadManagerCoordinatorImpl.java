@@ -64,7 +64,7 @@ class DownloadManagerCoordinatorImpl
                 mSelectionDelegate, this::notifyFilterChanged, createDateOrderedListObserver(),
                 modalDialogManager);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
-                mSelectionDelegate, config.isSeparateActivity, profile);
+                mSelectionDelegate, config.showOfflineHome, config.isSeparateActivity, profile);
 
         initializeView();
         RecordUserAction.record("Android.DownloadManager.Open");

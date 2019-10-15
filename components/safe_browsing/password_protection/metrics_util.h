@@ -185,6 +185,9 @@ void LogPasswordProtectionNetworkResponseAndDuration(
     int response_code,
     const base::TimeTicks& request_start_time);
 
+// Logs when a sample ping of allowlist URLs is sent to Safe Browsing.
+void LogPasswordProtectionSampleReportSent();
+
 // Records user action on warnings to corresponding UMA histograms.
 void LogWarningAction(WarningUIType ui_type,
                       WarningAction action,

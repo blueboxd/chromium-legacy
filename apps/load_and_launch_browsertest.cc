@@ -10,6 +10,7 @@
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -65,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   new_cmdline.AppendSwitchNative(apps::kLoadAndLaunchApp,
                                  app_path.value());
 
-  new_cmdline.AppendSwitch(content::kLaunchAsBrowser);
+  new_cmdline.AppendSwitch(switches::kLaunchAsBrowser);
   base::Process process =
       base::LaunchProcess(new_cmdline, base::LaunchOptionsForTest());
   ASSERT_TRUE(process.IsValid());
@@ -105,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
   new_cmdline.AppendSwitchNative(apps::kLoadAndLaunchApp,
                                  app_path.value());
-  new_cmdline.AppendSwitch(content::kLaunchAsBrowser);
+  new_cmdline.AppendSwitch(switches::kLaunchAsBrowser);
   new_cmdline.AppendArgPath(test_file_path);
 
   base::Process process =

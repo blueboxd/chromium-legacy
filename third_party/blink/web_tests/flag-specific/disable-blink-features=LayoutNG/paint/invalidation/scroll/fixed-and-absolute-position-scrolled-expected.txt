@@ -5,7 +5,6 @@
       "bounds": [800, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "scrollPosition": [0, 500],
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",

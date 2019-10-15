@@ -14,7 +14,6 @@ namespace features {
 
 extern const base::Feature kChromeColors;
 extern const base::Feature kChromeColorsCustomColorPicker;
-extern const base::Feature kGridLayoutForNtpShortcuts;
 extern const base::Feature kNtpCustomizationMenuV2;
 
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.

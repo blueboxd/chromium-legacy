@@ -17,6 +17,7 @@
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
@@ -121,6 +122,39 @@ std::unique_ptr<metrics::MetricsService> CreateMetricsService(
   return service;
 }
 
+// Queries the system for the app's first install time and uses this in the
+// kInstallDate pref. Must be called before created a MetricsStateManager.
+// TODO(https://crbug.com/1012025): remove this when the kInstallDate pref has
+// been persisted for one or two milestones.
+void PopulateSystemInstallDateIfNecessary(PrefService* prefs) {
+  int64_t install_date = prefs->GetInt64(metrics::prefs::kInstallDate);
+  if (install_date > 0) {
+    // kInstallDate appears to be valid (common case). Finish early as an
+    // optimization to avoid a JNI call below.
+    base::UmaHistogramEnumeration("Android.WebView.Metrics.BackfillInstallDate",
+                                  BackfillInstallDate::kValidInstallDatePref);
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  int64_t system_install_date =
+      Java_AwMetricsServiceClient_getAppInstallTime(env);
+  if (system_install_date < 0) {
+    // Could not figure out install date from the system. Let the
+    // MetricsStateManager set this pref to its best guess for a reasonable
+    // time.
+    base::UmaHistogramEnumeration(
+        "Android.WebView.Metrics.BackfillInstallDate",
+        BackfillInstallDate::kCouldNotGetPackageManagerInstallDate);
+    return;
+  }
+
+  base::UmaHistogramEnumeration(
+      "Android.WebView.Metrics.BackfillInstallDate",
+      BackfillInstallDate::kPersistedPackageManagerInstallDate);
+  prefs->SetInt64(metrics::prefs::kInstallDate, system_install_date);
+}
+
 }  // namespace
 
 // static
@@ -139,6 +173,7 @@ void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
 
   pref_service_ = pref_service;
 
+  PopulateSystemInstallDateIfNecessary(pref_service_);
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
       pref_service_, this, base::string16(),
       base::BindRepeating(&StoreClientInfo),

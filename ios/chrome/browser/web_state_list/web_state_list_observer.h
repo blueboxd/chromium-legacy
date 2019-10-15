@@ -85,6 +85,16 @@ class WebStateListObserver {
                                    int active_index,
                                    int reason);
 
+  // Invoked before all WebStates are closed in the WebStateList. If the
+  // WebState is closed due to user action, |user_action| will be true.
+  virtual void WillCloseAllWebStates(WebStateList* web_state_list,
+                                     bool user_action);
+
+  // Invoked after all WebStates are closed in the WebStateList. If the WebState
+  // is closed due to user action, |user_action| will be true.
+  virtual void DidCloseAllWebStates(WebStateList* web_state_list,
+                                    bool user_action);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebStateListObserver);
 };

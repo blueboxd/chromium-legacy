@@ -898,6 +898,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         reinterpret_cast<glDepthRangefProc>(GetGLProcAddress("glDepthRangef"));
   }
 
+  if (ext.b_GL_ANGLE_request_extension) {
+    fn.glDisableExtensionANGLEFn =
+        reinterpret_cast<glDisableExtensionANGLEProc>(
+            GetGLProcAddress("glDisableExtensionANGLE"));
+  }
+
   if (ext.b_GL_EXT_discard_framebuffer) {
     fn.glDiscardFramebufferEXTFn =
         reinterpret_cast<glDiscardFramebufferEXTProc>(
@@ -3468,6 +3474,10 @@ void GLApiBase::glDetachShaderFn(GLuint program, GLuint shader) {
 
 void GLApiBase::glDisableFn(GLenum cap) {
   driver_->fn.glDisableFn(cap);
+}
+
+void GLApiBase::glDisableExtensionANGLEFn(const char* name) {
+  driver_->fn.glDisableExtensionANGLEFn(name);
 }
 
 void GLApiBase::glDisableVertexAttribArrayFn(GLuint index) {
@@ -6780,6 +6790,11 @@ void TraceGLApi::glDetachShaderFn(GLuint program, GLuint shader) {
 void TraceGLApi::glDisableFn(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisable")
   gl_api_->glDisableFn(cap);
+}
+
+void TraceGLApi::glDisableExtensionANGLEFn(const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisableExtensionANGLE")
+  gl_api_->glDisableExtensionANGLEFn(name);
 }
 
 void TraceGLApi::glDisableVertexAttribArrayFn(GLuint index) {
@@ -10773,6 +10788,12 @@ void DebugGLApi::glDisableFn(GLenum cap) {
   GL_SERVICE_LOG("glDisable"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
   gl_api_->glDisableFn(cap);
+}
+
+void DebugGLApi::glDisableExtensionANGLEFn(const char* name) {
+  GL_SERVICE_LOG("glDisableExtensionANGLE"
+                 << "(" << name << ")");
+  gl_api_->glDisableExtensionANGLEFn(name);
 }
 
 void DebugGLApi::glDisableVertexAttribArrayFn(GLuint index) {
@@ -15397,6 +15418,10 @@ void NoContextGLApi::glDetachShaderFn(GLuint program, GLuint shader) {
 
 void NoContextGLApi::glDisableFn(GLenum cap) {
   NoContextHelper("glDisable");
+}
+
+void NoContextGLApi::glDisableExtensionANGLEFn(const char* name) {
+  NoContextHelper("glDisableExtensionANGLE");
 }
 
 void NoContextGLApi::glDisableVertexAttribArrayFn(GLuint index) {

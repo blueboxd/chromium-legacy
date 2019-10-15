@@ -147,10 +147,9 @@ LayoutTextFragment* LayoutObjectFactory::CreateTextFragment(
   return layout_text_fragment;
 }
 
-LayoutProgress* LayoutObjectFactory::CreateLayoutProgress(
-    Node* node,
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
+LayoutProgress* LayoutObjectFactory::CreateProgress(Node* node,
+                                                    const ComputedStyle& style,
+                                                    LegacyLayout legacy) {
   return CreateObject<LayoutProgress, LayoutNGProgress>(*node, style, legacy);
 }
 

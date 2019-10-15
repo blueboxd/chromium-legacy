@@ -444,14 +444,10 @@ gfx::Size GetPdfPageSize(const gfx::Size& page_size, int dpi) {
                    ConvertUnit(page_size.height(), dpi, kPointsPerInch));
 }
 
-bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
-  return job_settings.FindBoolKey(kSettingFitToPageEnabled).value();
-}
-
-bool FitToPaperEnabled(const base::DictionaryValue& job_settings) {
-  // TODO(dhoss): Bug 989978: Should have a value. Will fix when
-  // |job_settings| contains a "fitToPaperEnabled" boolean field.
-  return job_settings.FindBoolKey(kSettingFitToPaperEnabled).value_or(false);
+ScalingType ScalingTypeFromJobSettings(
+    const base::DictionaryValue& job_settings) {
+  int scaling_type = job_settings.FindIntKey(kSettingScalingType).value();
+  return static_cast<ScalingType>(scaling_type);
 }
 
 // Returns the print scaling option to retain/scale/crop the source page size
@@ -478,19 +474,16 @@ blink::WebPrintScalingOption GetPrintScalingOption(
     return blink::kWebPrintScalingOptionSourceSize;
 
   if (!source_is_html) {
-    bool fit_to_page = FitToPageEnabled(job_settings);
-    bool fit_to_paper = FitToPaperEnabled(job_settings);
-
+    ScalingType scaling_type = ScalingTypeFromJobSettings(job_settings);
     // The following conditions are ordered for an optimization that avoids
     // calling PDFShouldDisableScaling(), which has to make a call using PPAPI.
-    if (!fit_to_page && !fit_to_paper)
+    if (scaling_type == DEFAULT || scaling_type == CUSTOM)
       return blink::kWebPrintScalingOptionNone;
-
-    bool no_plugin_scaling = PDFShouldDisableScaling(frame, node, params, true);
-    if (params.is_first_request && no_plugin_scaling)
+    if (params.is_first_request &&
+        PDFShouldDisableScaling(frame, node, params, true)) {
       return blink::kWebPrintScalingOptionNone;
-
-    if (fit_to_paper)
+    }
+    if (scaling_type == FIT_TO_PAPER)
       return blink::kWebPrintScalingOptionFitToPaper;
   }
   return blink::kWebPrintScalingOptionFitToPrintableArea;
@@ -1162,12 +1155,9 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintRenderFrameHelper, message)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPages, OnPrintPages)
-    IPC_MESSAGE_HANDLER(PrintMsg_PrintForSystemDialog, OnPrintForSystemDialog)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
-    IPC_MESSAGE_HANDLER(PrintMsg_ClosePrintPreviewDialog,
-                        OnClosePrintPreviewDialog)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintFrameContent, OnPrintFrameContent)
     IPC_MESSAGE_HANDLER(PrintMsg_SetPrintingEnabled, OnSetPrintingEnabled)
@@ -1187,15 +1177,32 @@ void PrintRenderFrameHelper::OnDestruct() {
 
 void PrintRenderFrameHelper::BindPrintRenderFrameReceiver(
     mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame> receiver) {
-  print_render_frame_receiver_.Bind(std::move(receiver));
+  receivers_.Add(this, std::move(receiver));
 }
 
+void PrintRenderFrameHelper::PrintForSystemDialog() {
+  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
+  if (ipc_nesting_level_ > 1)
+    return;
+  blink::WebLocalFrame* frame = print_preview_context_.source_frame();
+  if (!frame) {
+    NOTREACHED();
+    return;
+  }
+  auto weak_this = weak_ptr_factory_.GetWeakPtr();
+  Print(frame, print_preview_context_.source_node(),
+        PrintRequestType::kRegular);
+  if (weak_this)
+    frame->DispatchAfterPrintEvent();
+  // WARNING: |this| may be gone at this point. Do not do any more work here and
+  // just return.
+}
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintRenderFrameHelper::InitiatePrintPreview(
     mojom::PrintRendererAssociatedPtrInfo print_renderer,
     bool has_selection) {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
-
   if (ipc_nesting_level_ > 1)
     return;
 
@@ -1215,8 +1222,13 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
   RequestPrintPreview(has_selection
                           ? PRINT_PREVIEW_USER_INITIATED_SELECTION
                           : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
+
+void PrintRenderFrameHelper::OnPrintPreviewDialogClosed() {
+  ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
+  print_preview_context_.source_frame()->DispatchAfterPrintEvent();
+}
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 void PrintRenderFrameHelper::OnPrintPages() {
   if (ipc_nesting_level_ > 1)
@@ -1232,23 +1244,6 @@ void PrintRenderFrameHelper::OnPrintPages() {
   // that instead.
   auto plugin = delegate_->GetPdfElement(frame);
   Print(frame, plugin, PrintRequestType::kRegular);
-  if (weak_this)
-    frame->DispatchAfterPrintEvent();
-  // WARNING: |this| may be gone at this point. Do not do any more work here and
-  // just return.
-}
-
-void PrintRenderFrameHelper::OnPrintForSystemDialog() {
-  if (ipc_nesting_level_ > 1)
-    return;
-  blink::WebLocalFrame* frame = print_preview_context_.source_frame();
-  if (!frame) {
-    NOTREACHED();
-    return;
-  }
-  auto weak_this = weak_ptr_factory_.GetWeakPtr();
-  Print(frame, print_preview_context_.source_node(),
-        PrintRequestType::kRegular);
   if (weak_this)
     frame->DispatchAfterPrintEvent();
   // WARNING: |this| may be gone at this point. Do not do any more work here and
@@ -1555,12 +1550,6 @@ void PrintRenderFrameHelper::OnPrintingDone(bool success) {
 void PrintRenderFrameHelper::OnSetPrintingEnabled(bool enabled) {
   is_printing_enabled_ = enabled;
 }
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void PrintRenderFrameHelper::OnClosePrintPreviewDialog() {
-  print_preview_context_.source_frame()->DispatchAfterPrintEvent();
-}
-#endif
 
 void PrintRenderFrameHelper::OnPrintFrameContent(
     const PrintMsg_PrintFrame_Params& params) {

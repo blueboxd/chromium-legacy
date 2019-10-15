@@ -80,32 +80,13 @@ class BaseDialogContainer : public views::DialogDelegateView {
   BaseDialogContainer(std::unique_ptr<views::View> dialog_body,
                       const base::Closure& close_callback)
       : dialog_body_(AddChildView(std::move(dialog_body))),
-        close_callback_(close_callback) {
-    // Since we are using a ClientView instead of a DialogClientView, we need to
-    // manually bind the escape key to close the dialog.
-    ui::Accelerator escape(ui::VKEY_ESCAPE, ui::EF_NONE);
-    AddAccelerator(escape);
-  }
+        close_callback_(close_callback) {}
   ~BaseDialogContainer() override {}
 
  protected:
   views::View* dialog_body() { return dialog_body_; }
 
  private:
-  // Overridden from views::View:
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override {
-    views::DialogDelegateView::ViewHierarchyChanged(details);
-    if (details.is_add && details.child == this)
-      GetFocusManager()->AdvanceFocus(false);
-  }
-
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
-    DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
-    GetWidget()->CloseWithReason(views::Widget::ClosedReason::kEscKeyPressed);
-    return true;
-  }
-
   // Overridden from views::DialogDelegate:
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
@@ -114,9 +95,6 @@ class BaseDialogContainer : public views::DialogDelegateView {
   void WindowClosing() override {
     if (!close_callback_.is_null())
       close_callback_.Run();
-  }
-  views::ClientView* CreateClientView(views::Widget* widget) override {
-    return new views::ClientView(widget, GetContentsView());
   }
 
   views::View* dialog_body_;

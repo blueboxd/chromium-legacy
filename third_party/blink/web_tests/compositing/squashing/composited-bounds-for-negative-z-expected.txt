@@ -23,7 +23,7 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV)",
       "bounds": [285, 1000],
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -38,15 +38,6 @@
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [108, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

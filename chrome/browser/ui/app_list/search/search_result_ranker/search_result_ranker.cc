@@ -210,7 +210,8 @@ void SearchResultRanker::InitializeRankers(
           config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
     } else if (GetFieldTrialParamByFeatureAsBool(
                    app_list_features::kEnableQueryBasedMixedTypesRanker,
-                   "use_aggregated_model", false)) {
+                   "use_aggregated_model", false) ||
+               app_list_features::IsAggregatedMlSearchRankingEnabled()) {
       use_aggregated_search_ranking_inference_ = true;
     } else {
       // Item ranker model.

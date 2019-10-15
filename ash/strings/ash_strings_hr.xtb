@@ -397,6 +397,7 @@
 <translation id="6820676911989879663">Odmorite se!</translation>
 <translation id="683971173229319003">Pretraživanje + L</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">Prečac je isključen</translation>
 <translation id="6910714959251846841">Ovo ažuriranje zahtijeva powerwashing uređaja. Saznajte više o najnovijem ažuriranju za <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Pridruži se drugoj...</translation>
 <translation id="6919251195245069855">Nismo prepoznali vašu pametnu karticu. Pokušajte ponovo.</translation>
@@ -427,7 +428,6 @@
 <translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
 <translation id="7377169924702866686">Uključena je opcija Caps Lock.</translation>
 <translation id="7378594059915113390">Medijske kontrole</translation>
-<translation id="7384299914270925461"><ph name="SIGN" /><ph name="MINUTES_REMAINING" />:<ph name="SECONDS_REMAINING" />s</translation>
 <translation id="7398254312354928459">Promijenjena je mrežna veza</translation>
 <translation id="7405710164030118432">Da biste otključali uređaj, unesite kôd za roditeljski pristup Family Linka</translation>
 <translation id="742594950370306541">Fotoaparat je aktivan.</translation>

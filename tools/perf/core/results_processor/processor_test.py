@@ -24,6 +24,7 @@ from core.results_processor import compute_metrics
 from core.results_processor import processor
 from core.results_processor import testing
 
+from tracing.value.diagnostics import generic_set
 from tracing.value import histogram
 from tracing.value import histogram_set
 from tracing_build import render_histograms_viewer
@@ -268,12 +269,45 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
-    self.assertEqual(len(out_histograms), 4)
-    self.assertIsNotNone(out_histograms.GetHistogramNamed('foo'))
 
-    diag_values = [list(v) for v in  out_histograms.shared_diagnostics]
-    self.assertEqual(len(diag_values), 1)
-    self.assertIn(['gs://trace.html'], diag_values)
+    # sampleMetric records a histogram with the name 'foo'.
+    hist = out_histograms.GetHistogramNamed('foo')
+    self.assertIsNotNone(hist)
+    self.assertEqual(hist.diagnostics['traceUrls'],
+                     generic_set.GenericSet(['gs://trace.html']))
+
+  def testHistogramsOutputNoAggregatedTrace(self):
+    json_trace = os.path.join(self.output_dir, 'trace.json')
+    with open(json_trace, 'w') as f:
+      json.dump({'traceEvents': []}, f)
+
+    self.SerializeIntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                output_artifacts={'trace/json': testing.Artifact(json_trace)},
+                tags=['tbmv2:sampleMetric'],
+            ),
+        ],
+    )
+
+    processor.main([
+        '--output-format', 'histograms',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+    ])
+
+    with open(os.path.join(
+        self.output_dir, histograms_output.OUTPUT_FILENAME)) as f:
+      results = json.load(f)
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+
+    # sampleMetric records a histogram with the name 'foo'.
+    hist = out_histograms.GetHistogramNamed('foo')
+    self.assertIsNotNone(hist)
+    self.assertIn('traceUrls', hist.diagnostics)
 
   def testHtmlOutput(self):
     hist_file = os.path.join(self.output_dir,

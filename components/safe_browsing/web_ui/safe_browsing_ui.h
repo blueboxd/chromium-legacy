@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/safe_browsing/proto/realtimeapi.pb.h"
 #include "components/safe_browsing/proto/webui.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -83,6 +84,14 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // currently open chrome://safe-browsing tab was opened.
   void GetPGResponses(const base::ListValue* args);
 
+  // Get the real time lookup pings that have been sent since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetRTLookupPings(const base::ListValue* args);
+
+  // Get the real time lookup responses that have been received since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetRTLookupResponses(const base::ListValue* args);
+
   // Get the current referrer chain for a given URL.
   void GetReferrerChain(const base::ListValue* args);
 
@@ -131,6 +140,15 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   void NotifyPGResponseJsListener(
       int token,
       const LoginReputationClientResponse& response);
+
+  // Called when any new real time lookup pings are sent while one or more
+  // WebUI tabs are open.
+  void NotifyRTLookupPingJsListener(int token, const RTLookupRequest& request);
+
+  // Called when any new real time lookup responses are received while one or
+  // more WebUI tabs are open.
+  void NotifyRTLookupResponseJsListener(int token,
+                                        const RTLookupResponse& response);
 
   // Called when any new log messages are received while one or more WebUI tabs
   // are open.
@@ -218,6 +236,17 @@ class WebUIInfoSingleton {
   // Clear the list of sent PhishGuard pings and responses.
   void ClearPGPings();
 
+  // Add the new ping to |rt_lookup_pings_|. Returns a token that can be used in
+  // |AddToRTLookupResponses| to correlate a ping and response.
+  int AddToRTLookupPings(const RTLookupRequest request);
+
+  // Add the new response to |rt_lookup_responses_| and send it to all the open
+  // chrome://safe-browsing tabs.
+  void AddToRTLookupResponses(int token, const RTLookupResponse response);
+
+  // Clear the list of sent RT Lookup pings and responses.
+  void ClearRTLookupPings();
+
   // Log an arbitrary message. Frequently used for debugging.
   void LogMessage(const std::string& message);
 
@@ -286,6 +315,18 @@ class WebUIInfoSingleton {
     return pg_responses_;
   }
 
+  // Get the list of real time lookup pings since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  const std::vector<RTLookupRequest>& rt_lookup_pings() const {
+    return rt_lookup_pings_;
+  }
+
+  // Get the list of real time lookup pings since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  const std::map<int, RTLookupResponse>& rt_lookup_responses() const {
+    return rt_lookup_responses_;
+  }
+
   ReferrerChainProvider* referrer_chain_provider() {
     return referrer_chain_provider_;
   }
@@ -349,6 +390,14 @@ class WebUIInfoSingleton {
   // List of PhishGuard responses received since the oldest currently open
   // chrome://safe-browsing tab was opened.
   std::map<int, LoginReputationClientResponse> pg_responses_;
+
+  // List of real time lookup pings sent since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::vector<RTLookupRequest> rt_lookup_pings_;
+
+  // List of real time lookup responses received since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::map<int, RTLookupResponse> rt_lookup_responses_;
 
   // List of WebUI listener objects. "SafeBrowsingUIHandler*" cannot be const,
   // due to being used by functions that call AllowJavascript(), which is not

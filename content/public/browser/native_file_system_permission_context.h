@@ -14,7 +14,7 @@ namespace content {
 
 // Entry point to an embedder implemented permission context for the Native File
 // System API. Instances of this class can be retrieved via a BrowserContext.
-// All these methods should always be called on the same sequence.
+// All these methods must always be called on the UI thread.
 class NativeFileSystemPermissionContext {
  public:
   // The type of action a user took that resulted in needing a permission grant

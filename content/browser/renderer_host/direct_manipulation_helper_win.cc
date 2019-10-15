@@ -268,7 +268,9 @@ void DirectManipulationHelper::Destroy() {
   if (has_animation_observer_)
     RemoveAnimationObserver();
   compositor_ = nullptr;
-  event_handler_->SetDirectManipulationHelper(nullptr);
+
+  if (event_handler_)
+    event_handler_->SetDirectManipulationHelper(nullptr);
 
   HRESULT hr;
   if (viewport_) {

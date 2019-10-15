@@ -98,8 +98,8 @@ class BrowserDesktopWindowTreeHostWin
 
   // This is used to monitor when the window icon needs to be updated because
   // the icon badge has changed (e.g., avatar icon changed).
-  ScopedObserver<ProfileAttributesStorage, BrowserDesktopWindowTreeHostWin>
-      profile_observer_;
+  ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
+      profile_observer_{this};
 
   base::win::ScopedHICON icon_handle_;
 

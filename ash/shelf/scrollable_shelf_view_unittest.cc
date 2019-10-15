@@ -62,10 +62,41 @@ class ScrollableShelfViewTest : public AshTestBase {
     return item.id;
   }
 
-  void AddAppShortcutUntilOverflow() {
+  void AddAppShortcutsUntilOverflow() {
     while (scrollable_shelf_view_->layout_strategy_for_test() ==
            ScrollableShelfView::kNotShowArrowButtons)
       AddAppShortcut();
+  }
+
+  void AddAppShortcutsUntilRightArrowIsShown() {
+    ASSERT_FALSE(scrollable_shelf_view_->right_arrow()->GetVisible());
+
+    while (!scrollable_shelf_view_->right_arrow()->GetVisible())
+      AddAppShortcut();
+  }
+
+  void CheckFirstAndLastTappableIconsBounds() {
+    views::ViewModel* view_model = shelf_view_->view_model();
+
+    gfx::Rect visible_space_in_screen = scrollable_shelf_view_->visible_space();
+    views::View::ConvertRectToScreen(scrollable_shelf_view_,
+                                     &visible_space_in_screen);
+
+    views::View* last_tappable_icon =
+        view_model->view_at(scrollable_shelf_view_->last_tappable_app_index());
+    const gfx::Rect last_tappable_icon_bounds =
+        last_tappable_icon->GetBoundsInScreen();
+
+    // Expects that the last tappable icon is fully shown.
+    EXPECT_TRUE(visible_space_in_screen.Contains(last_tappable_icon_bounds));
+
+    views::View* first_tappable_icon =
+        view_model->view_at(scrollable_shelf_view_->first_tappable_app_index());
+    const gfx::Rect first_tappable_icon_bounds =
+        first_tappable_icon->GetBoundsInScreen();
+
+    // Expects that the first tappable icon is fully shown.
+    EXPECT_TRUE(visible_space_in_screen.Contains(first_tappable_icon_bounds));
   }
 
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
@@ -142,7 +173,7 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationLongToShort) {
   UpdateDisplay("600x300");
 
   display::Display display = GetPrimaryDisplay();
-  AddAppShortcutUntilOverflow();
+  AddAppShortcutsUntilOverflow();
 
   // Presses the right arrow until reaching the last page of shelf icons.
   const views::View* right_arrow = scrollable_shelf_view_->right_arrow();
@@ -171,7 +202,7 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationLongToShort) {
 // When hovering mouse on a shelf icon, the tooltip only shows for the visible
 // icon (see https://crbug.com/997807).
 TEST_F(ScrollableShelfViewTest, NotShowTooltipForHiddenIcons) {
-  AddAppShortcutUntilOverflow();
+  AddAppShortcutsUntilOverflow();
 
   ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
@@ -208,7 +239,7 @@ TEST_F(ScrollableShelfViewTest, NotShowTooltipForHiddenIcons) {
 // Test that tapping near the scroll arrow button triggers scrolling. (see
 // https://crbug.com/1004998)
 TEST_F(ScrollableShelfViewTest, ScrollAfterTappingNearScrollArrow) {
-  AddAppShortcutUntilOverflow();
+  AddAppShortcutsUntilOverflow();
 
   ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
@@ -245,6 +276,35 @@ TEST_F(ScrollableShelfViewTest, ScrollAfterTappingNearScrollArrow) {
       gfx::Point(left_arrow.top_right().x(), left_arrow.top_right().y()));
   EXPECT_EQ(ScrollableShelfView::kShowRightArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
+}
+
+// Verifies that in overflow mode, the app icons indexed by
+// |first_tappable_app_index_| and |last_tappable_app_index_| are completely
+// shown (https://crbug.com/1013811).
+TEST_F(ScrollableShelfViewTest, VerifyTappableAppIndices) {
+  AddAppShortcutsUntilOverflow();
+
+  // Checks bounds when the layout strategy is kShowRightArrowButton.
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  CheckFirstAndLastTappableIconsBounds();
+
+  GetEventGenerator()->GestureTapAt(
+      scrollable_shelf_view_->right_arrow()->GetBoundsInScreen().CenterPoint());
+  AddAppShortcutsUntilRightArrowIsShown();
+
+  // Checks bounds when the layout strategy is kShowButtons.
+  ASSERT_EQ(ScrollableShelfView::kShowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  CheckFirstAndLastTappableIconsBounds();
+
+  GetEventGenerator()->GestureTapAt(
+      scrollable_shelf_view_->right_arrow()->GetBoundsInScreen().CenterPoint());
+
+  // Checks bounds when the layout strategy is kShowLeftArrowButton.
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  CheckFirstAndLastTappableIconsBounds();
 }
 
 }  // namespace ash

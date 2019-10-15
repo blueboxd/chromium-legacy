@@ -177,6 +177,10 @@ void UnifiedHeapController::ResetHandleInNonTracingGC(
       class_id != WrapperTypeInfo::kObjectClassId)
     return;
 
+  // Clearing the wrapper below adjusts the DOM wrapper store which may
+  // re-allocate its backing. We have to avoid report memory to V8 as that may
+  // trigger GC during GC.
+  ThreadState::GCForbiddenScope gc_forbidden(thread_state());
   const v8::TracedReference<v8::Object>& traced = handle.As<v8::Object>();
   bool success = DOMWrapperWorld::UnsetSpecificWrapperIfSet(
       ToScriptWrappable(traced), traced);

@@ -255,6 +255,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
               RequestPriority priority,
               const SocketTag& socket_tag,
               const NetworkIsolationKey& network_isolation_key,
+              bool disable_secure_dns,
               int cert_verify_flags,
               const GURL& url,
               const NetLogWithSource& net_log,

@@ -20,21 +20,12 @@ Case 1, original layer tree:
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [80, 80],
       "bounds": [260, 260],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -72,7 +63,7 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle2')",
       "position": [80, 80],
       "bounds": [180, 180],
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -87,15 +78,6 @@ Case 2: hovering over the "middle" element (causes that div to become its own co
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [180, 180, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -126,20 +108,20 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [80, 80],
       "bounds": [100, 100],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='box middle2'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box top')",
       "position": [80, 80],
       "bounds": [100, 100],
-      "transform": 4
+      "transform": 2
     }
   ],
   "transforms": [
@@ -154,24 +136,6 @@ Case 3: hovering over the "middle2" element (causes that div to become its own c
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [260, 260, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -202,14 +166,14 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [80, 80],
       "bounds": [180, 180],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='box top'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -224,15 +188,6 @@ Case 4: hovering over the "top" element (causes that div to become its own compo
     },
     {
       "id": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -263,21 +218,12 @@ Case 5: back to situation in case 1
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [80, 80],
       "bounds": [260, 260],
-      "transform": 2
+      "transform": 1
     }
   ],
   "transforms": [
     {
       "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

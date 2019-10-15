@@ -17,7 +17,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='box middle')",
       "position": [-80, -80],
       "bounds": [260, 260],
-      "transform": 3
+      "transform": 1
     }
   ],
   "transforms": [
@@ -40,15 +40,6 @@
         [0, 0, 0, 1]
       ],
       "origin": [50, 50]
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [100, 100, 0, 1]
-      ]
     }
   ]
 }

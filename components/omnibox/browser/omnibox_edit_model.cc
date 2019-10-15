@@ -1077,7 +1077,9 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   // off).
   // TODO(hfung): Remove this when crbug/271590 is fixed.
   if (client_->CurrentPageExists() && !user_input_in_progress_) {
-    input_ = AutocompleteInput(url_for_editing_, GetPageClassification(),
+    // Send the textfield contents exactly as-is, as otherwise the verbatim
+    // match can be wrong. The full page URL is anyways in set_current_url().
+    input_ = AutocompleteInput(view_->GetText(), GetPageClassification(),
                                client_->GetSchemeClassifier());
     input_.set_current_url(client_->GetURL());
     input_.set_current_title(client_->GetTitle());
@@ -1513,16 +1515,9 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
         (!popup_model() || !popup_model()->has_selected_match()))
       *alternate_nav_url = result().alternate_nav_url();
   } else {
-    LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
-    base::string16 text_for_match_generation =
-        (user_input_in_progress() ||
-         location_bar_model->GetDisplaySearchTerms(nullptr))
-            ? view_->GetText()
-            : url_for_editing_;
-
     client_->GetAutocompleteClassifier()->Classify(
-        MaybePrependKeyword(text_for_match_generation), is_keyword_selected(),
-        true, GetPageClassification(), match, alternate_nav_url);
+        MaybePrependKeyword(view_->GetText()), is_keyword_selected(), true,
+        GetPageClassification(), match, alternate_nav_url);
   }
 }
 

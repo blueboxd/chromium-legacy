@@ -30,7 +30,6 @@ class AccessibilityFeatureDisableDialog : public views::DialogDelegateView {
   bool Accept() override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   base::WeakPtr<AccessibilityFeatureDisableDialog> GetWeakPtr();
 

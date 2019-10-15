@@ -170,6 +170,7 @@
 <translation id="3335947283844343239">மூடப்பட்ட தாவலை மீண்டும் திற</translation>
 <translation id="3371831930909698441">மொழியாக்கம் கிடைக்கிறது திரையின் கீழ்ப்பகுதிக்கு அருகில் விருப்பத்தேர்வுகள் உள்ளன.</translation>
 <translation id="3393920035788932672">பாப்-அப்கள் அனுமதிக்கப்பட்டன</translation>
+<translation id="3443810440409579745">தாவல் பகிரப்பட்டுள்ளது.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> நி.</translation>
 <translation id="3448016392200048164">காட்சிப் பிரிப்பு</translation>
 <translation id="345565170154308620">கடவுச்சொற்களை நிர்வகி...</translation>
@@ -232,6 +233,7 @@
 <translation id="4281844954008187215">சேவை விதிமுறைகள்</translation>
 <translation id="430793432425771671">எல்லாவற்றையும் ஒத்திசை</translation>
 <translation id="430967081421617822">முழுமையும்</translation>
+<translation id="4334428914252001502">படிக்காத கட்டுரை 1 உள்ளது.</translation>
 <translation id="4338650699862464074">நீங்கள் பார்வையிடும் பக்கங்களின் URLகளை Googleளுக்கு அனுப்பும்.</translation>
 <translation id="4359125752503270327">இந்தப் பக்கம் மற்றொரு பயன்பாட்டில் திறக்கப்படும்.</translation>
 <translation id="4375040482473363939">QR குறியீட்டுத் தேடல்</translation>
@@ -298,6 +300,7 @@
 <translation id="5300589172476337783">காண்பி</translation>
 <translation id="5317780077021120954">சேமி</translation>
 <translation id="5327248766486351172">பெயர்</translation>
+<translation id="5365716706805792666">உங்கள் கடவுச்சொற்கள் தரவு மீறலில் பாதிக்கப்பட்டுள்ளதா என்று Google சரிபார்க்கும். உங்கள் Google கணக்கின் மூலம் உள்நுழைந்தால் இது ஆன் ஆகும்.</translation>
 <translation id="5388358297987318779">படத்தைத் திற</translation>
 <translation id="5407969256130905701">மாற்றங்களை நிராகரி</translation>
 <translation id="5409365236829784218">இந்தக் கோப்பைத் திறக்கக்கூடிய ஆப்ஸ் எதுவும் நிறுவப்படவில்லை.</translation>
@@ -448,6 +451,7 @@
 <translation id="7348502496356775519">புத்தகக்குறி</translation>
 <translation id="7383797227493018512">வாசிப்புப் பட்டியல்</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7409985198648820906">படிக்காத கட்டுரைகள் <ph name="UNREAD_COUNT" /> உள்ளன.</translation>
 <translation id="7425346204213733349">புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் ஆகியவற்றிலும் பிற அமைப்புகளிலும் செய்யும் மாற்றங்கள், இனி உங்கள் Google கணக்குடன் ஒத்திசைக்கப்படாது. எனினும், ஏற்கனவே சேமிக்கப்பட்ட உங்கள் தரவு Google கணக்கில் அப்படியே இருக்கும்.</translation>
 <translation id="7454057999980797137">மாநிலம் / மாகாணம்</translation>
 <translation id="7456847797759667638">இருப்பிடத்தைத் திற...</translation>

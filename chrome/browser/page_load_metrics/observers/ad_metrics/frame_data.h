@@ -118,7 +118,9 @@ class FrameData {
   static ResourceMimeType GetResourceMimeType(
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
-  explicit FrameData(FrameTreeNodeId frame_tree_node_id,
+  // |root_frame_tree_node_id| is the root frame of the subtree that FrameData
+  // stores information for.
+  explicit FrameData(FrameTreeNodeId root_frame_tree_node_id,
                      int heavy_ad_network_threshold_noise);
   ~FrameData();
 
@@ -191,7 +193,9 @@ class FrameData {
     return peak_window_start_time_;
   }
 
-  FrameTreeNodeId frame_tree_node_id() const { return frame_tree_node_id_; }
+  FrameTreeNodeId root_frame_tree_node_id() const {
+    return root_frame_tree_node_id_;
+  }
 
   OriginStatus origin_status() const { return origin_status_; }
 
@@ -253,6 +257,10 @@ class FrameData {
   // computing the status.
   HeavyAdStatus ComputeHeavyAdStatus(bool use_network_threshold_noise) const;
 
+  // The frame tree node id of root frame of the subtree that |this| is
+  // tracking information for.
+  const FrameTreeNodeId root_frame_tree_node_id_;
+
   // The most recently updated timing received for this frame.
   page_load_metrics::mojom::PageLoadTimingPtr timing_;
 
@@ -310,7 +318,6 @@ class FrameData {
 
   // The number of bytes that are same origin to the root ad frame.
   size_t same_origin_bytes_;
-  const FrameTreeNodeId frame_tree_node_id_;
   OriginStatus origin_status_;
   bool frame_navigated_;
   UserActivationStatus user_activation_status_;

@@ -15,6 +15,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/history/core/browser/android/android_history_types.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 
 class AndroidHistoryProviderService;
@@ -229,7 +230,7 @@ class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
   base::CancelableTaskTracker cancelable_task_tracker_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   bool handling_extensive_changes_;
 

@@ -24,7 +24,7 @@
           "reason": "background"
         }
       ],
-      "transform": 5
+      "transform": 2
     }
   ],
   "transforms": [
@@ -47,22 +47,6 @@
     {
       "id": 3,
       "parent": 2,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 4,
-      "renderingContext": 1
-    },
-    {
-      "id": 5,
-      "parent": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
-      ],
       "flattenInheritedTransform": false,
       "renderingContext": 1
     }

@@ -118,12 +118,21 @@ void HeadlessClipboard::ReadData(const ui::ClipboardFormatType& format,
     *result = it->second;
 }
 
-void HeadlessClipboard::WriteObjects(ui::ClipboardBuffer buffer,
-                                     const ObjectMap& objects) {
+void HeadlessClipboard::WritePortableRepresentations(ui::ClipboardBuffer buffer,
+                                                     const ObjectMap& objects) {
   Clear(buffer);
   default_store_buffer_ = buffer;
   for (const auto& kv : objects)
-    DispatchObject(kv.first, kv.second);
+    DispatchPortableRepresentation(kv.first, kv.second);
+  default_store_buffer_ = ui::ClipboardBuffer::kCopyPaste;
+}
+
+void HeadlessClipboard::WritePlatformRepresentations(
+    ui::ClipboardBuffer buffer,
+    std::vector<Clipboard::PlatformRepresentation> platform_representations) {
+  Clear(buffer);
+  default_store_buffer_ = buffer;
+  DispatchPlatformRepresentations(std::move(platform_representations));
   default_store_buffer_ = ui::ClipboardBuffer::kCopyPaste;
 }
 

@@ -106,6 +106,7 @@
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -135,7 +136,7 @@ class AssociatedInterfaceProvider;
 class AssociatedInterfaceRegistry;
 struct FramePolicy;
 struct TransferableMessage;
-struct WebFullscreenOptions;
+struct FullScreenOptions;
 struct WebScrollIntoViewParams;
 
 namespace mojom {
@@ -242,6 +243,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   RenderProcessHost* GetProcess() override;
   RenderWidgetHostView* GetView() override;
   RenderFrameHostImpl* GetParent() override;
+  std::vector<RenderFrameHost*> GetFramesInSubtree() override;
   bool IsDescendantOf(RenderFrameHost*) override;
   int GetFrameTreeNodeId() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
@@ -281,8 +283,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   size_t GetProxyCount() override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
-      TextSurroundingSelectionCallback callback,
+      blink::mojom::Frame::GetTextSurroundingSelectionCallback callback,
       int max_length) override;
+  void SendInterventionReport(const std::string& id,
+                              const std::string& message) override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() override;
   void DisableBeforeUnloadHangMonitorForTesting() override;
@@ -1011,6 +1015,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // mojom::FrameHost:
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
+  void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
 
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
 
@@ -1382,7 +1387,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       ax::mojom::Event event_to_fire);
   void OnAccessibilitySnapshotResponse(int callback_id,
                                        const AXContentTreeUpdate& snapshot);
-  void OnEnterFullscreen(const blink::WebFullscreenOptions& options);
+  void OnEnterFullscreen(const blink::FullScreenOptions& options);
   void OnExitFullscreen();
   void OnSuddenTerminationDisablerChanged(
       bool present,

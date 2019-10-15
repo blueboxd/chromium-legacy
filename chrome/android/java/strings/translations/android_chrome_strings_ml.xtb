@@ -69,12 +69,10 @@
 <translation id="1414981605391750300">Google-നെ ബന്ധപ്പെടുന്നു. ഇതിന് ഒരു മിനിറ്റ് എടുത്തേക്കാം…</translation>
 <translation id="1416550906796893042">ആപ്പ് പതിപ്പ്</translation>
 <translation id="1430915738399379752">അച്ചടിക്കുക</translation>
-<translation id="1445680696957526815">Chrome-ന്റെ ഘടകങ്ങൾ മറ്റൊന്നുമായി പൊരുത്തപ്പെടുന്നില്ല. Chrome അപ്‌ഗ്രേഡുചെയ്യുകയാവാം, അൽപ്പസമയത്തിനുശേഷം വീണ്ടും ശ്രമിക്കുക. പ്രശ്‌നം തുടരുന്നുവെങ്കിൽ, Chrome അൺഇൻസ്റ്റാളുചെയ്‌തതിനുശേഷം വീണ്ടും ഇൻസ്റ്റാളുചെയ്യുന്നത് പരീക്ഷിക്കുക.</translation>
 <translation id="1446450296470737166">MIDI ഉപകരണങ്ങളുടെ പൂർണ്ണ നിയന്ത്രണം അനുവദിക്കുക</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> പങ്കിടാനാവുന്നില്ല</translation>
 <translation id="145097072038377568">Android ക്രമീകരണത്തിൽ ഓഫാക്കിയിരിക്കുന്നു</translation>
 <translation id="1477626028522505441">സെർവർ പ്രശ്‌നങ്ങൾ കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
-<translation id="1501480321619201731">ഗ്രൂപ്പ് ഇല്ലാതാക്കൂ</translation>
 <translation id="1506061864768559482">തിരയൽ യന്ത്രം</translation>
 <translation id="1513352483775369820">ബുക്ക്‌മാർക്കുകളും വെബ് ചരിത്രവും</translation>
 <translation id="1513858653616922153">പാസ്‌വേഡ് ഇല്ലാതാക്കുക</translation>
@@ -230,7 +228,6 @@
 <translation id="2650751991977523696">ഫയൽ വീണ്ടും ഡൗൺലോഡ് ചെയ്യണോ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ഓഡിയോ ഫയൽ}other{# ഓഡിയോ ഫയലുകള്‍}}</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
-<translation id="2671423594960767771">ഗ്രൂപ്പ് പങ്കിടുക</translation>
 <translation id="2677748264148917807">ഉപേക്ഷിക്കുക</translation>
 <translation id="2704606927547763573">പകർത്തി</translation>
 <translation id="2707726405694321444">പേജ് പുതുക്കുക</translation>
@@ -260,7 +257,6 @@
 <translation id="2893180576842394309">തിരയലും മറ്റ് Google സേവനങ്ങളും വ്യക്തിപരമാക്കാൻ Google നിങ്ങളുടെ ചരിത്രം ഉപയോഗിച്ചേക്കാം</translation>
 <translation id="2898264748040935573">സംഭരിച്ചിരിക്കുന്ന പാസ്‌വേഡ് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="2900528713135656174">ഇവന്റ് സൃഷ്‌ടിക്കുക</translation>
-<translation id="2902702728133930130">ആരംഭിക്കുന്ന സമയത്ത് ഒരു അപ്രതീക്ഷിത പിശക് കാരണം Chrome പരാജയപ്പെട്ടു.</translation>
 <translation id="290376772003165898">പേജ് <ph name="LANGUAGE" /> ഭാഷയിലല്ലേ?</translation>
 <translation id="2904414404539560095">പൂർണ്ണ ഉയരത്തിൽ ടാബ് പങ്കിടാനാകുന്ന ഉപകരണങ്ങളുടെ ലിസ്‌റ്റ്.</translation>
 <translation id="2910701580606108292">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക</translation>
@@ -459,7 +455,7 @@
 തിരയലുകൾ, പ്രവൃത്തി എന്നിവ പോലെ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിലെ മറ്റ് Google സേവനങ്ങളിൽ നിന്നുള്ള മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രവും നിങ്ങളുടെ Google അക്കൗണ്ടിൽ ഉണ്ടായേക്കാം.</translation>
 <translation id="4532845899244822526">ഫോൾഡർ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4538018662093857852">ലൈറ്റ് മോഡ് ഓണാക്കുക</translation>
-<translation id="4550003330909367850">ഇവിടെ ‌നിങ്ങളുടെ ‌പാസ്‌വേഡ് കാണാനും പകർത്താനും കഴിയും, ഈ ഉപകരണത്തിൽ സ്‌ക്രീൻ ലോക്ക് ‌സജ്ജമാക്കുക.</translation>
+<translation id="4550003330909367850">ഇവിടെ ‌നിങ്ങളുടെ ‌പാസ്‌വേഡ് കാണാനും പകർത്താനും, ഈ ഉപകരണത്തിൽ സ്‌ക്രീൻ ലോക്ക് ‌സജ്ജമാക്കുക.</translation>
 <translation id="4558311620361989323">വെബ്‌പേജ് കുറുക്കുവഴികൾ</translation>
 <translation id="4561979708150884304">കണക്ഷൻ ഇല്ല</translation>
 <translation id="4565377596337484307">പാസ്‌വേഡ് മറയ്ക്കുക</translation>
@@ -479,7 +475,6 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>
 <translation id="4696983787092045100">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് ടെക്‌സ്‌റ്റ് അയയ്‌ക്കുക</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" /> ആപ്പിൽ ഓഫ്‌ലൈനായി കാണുക</translation>
-<translation id="4698413471314543145">Chrome പ്രവർത്തിപ്പിക്കുന്നതിന് ആവശ്യമായ സുപ്രധാന ഫംഗ്ഷൻ കാണുന്നില്ല; ഒന്നുകിൽ നിങ്ങളുടെ Chrome ഇൻസ്റ്റലേഷൻ പൂർത്തിയായിട്ടില്ല, അല്ലെങ്കിൽ Android-ന്റെ ഈ പതിപ്പിന് അനുയോജ്യമായതല്ല.</translation>
 <translation id="4699172675775169585">കാഷെ ചെയ്‌ത ചിത്രങ്ങളും ഫയലുകളും</translation>
 <translation id="4714588616299687897">നിങ്ങളുടെ ഡാറ്റ 60% വരെ ലാഭിക്കൂ</translation>
 <translation id="4719927025381752090">വിവർത്തനം ചെയ്യാനുള്ള ഓഫർ</translation>

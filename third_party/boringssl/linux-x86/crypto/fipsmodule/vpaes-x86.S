@@ -705,3 +705,4 @@ vpaes_cbc_encrypt:
 	ret
 .size	vpaes_cbc_encrypt,.-.L_vpaes_cbc_encrypt_begin
 #endif
+.section	.note.GNU-stack,"",@progbits

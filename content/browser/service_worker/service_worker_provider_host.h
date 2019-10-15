@@ -104,8 +104,8 @@ class WebContents;
 // pre-created by the browser process and the provider info is sent in the
 // navigation commit IPC.
 //
-// 2) For shared workers and for service workers, the provider host is
-// pre-created by the browser process and the provider info is sent in the start
+// 2) For web workers and for service workers, the provider host is
+// created by the browser process and the provider info is sent in the start
 // worker IPC message.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
@@ -141,7 +141,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |out_provider_info->host_remote| stays alive).
   // CompleteStartWorkerPreparation() must be called later to get a full info to
   // send to the renderer.
-  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForController(
+  static base::WeakPtr<ServiceWorkerProviderHost> CreateForServiceWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       scoped_refptr<ServiceWorkerVersion> version,
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr*
@@ -150,7 +150,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Used for starting a web worker (dedicated worker or shared worker). Returns
   // a provider host for the worker. The host stays alive as long as the
   // corresponding host for |host_receiver| stays alive.
-  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForWebWorker(
+  static base::WeakPtr<ServiceWorkerProviderHost> CreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
@@ -373,17 +373,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // This is subtle: it doesn't keep all registrations (e.g., from storage) in
   // memory, but just the ones that are possibly the longest-matching one. The
   // best match from storage is added at load time. That match can't uninstall
-  // while this host is a controllee, but it can be unregistered and newly
-  // installed registations can override the entry if they have the same scope
-  // as an existing match. Since it is possible that multiple service workers
-  // for the same scope exist at any given time, e.g. when a worker is
-  // registered while an unregistered worker for the same scope is controlling
-  // clients, it's the callers responsibility to remove the matching
-  // registration when they no longer need it.
-  //
-  // Note: Chrome's implementation of .ready differs from the spec s.t. the
-  // ready promise is only resolved once it has been accessed by the user.
-  // https://github.com/w3c/ServiceWorker/issues/1477
+  // while this host is a controllee, so all the other stored registrations can
+  // be ignored. Only a newly installed registration can claim it, and new
+  // installing registrations are added as matches.
   void AddMatchingRegistration(ServiceWorkerRegistration* registration);
   void RemoveMatchingRegistration(ServiceWorkerRegistration* registration);
 
@@ -523,8 +515,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
 #if DCHECK_IS_ON()
   bool IsMatchingRegistration(ServiceWorkerRegistration* registration) const;
-  bool IsMatchingUninstalledRegistration(
-      ServiceWorkerRegistration* registration);
 #endif  // DCHECK_IS_ON()
 
   // Discards all references to matching registrations.
@@ -683,14 +673,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // IsContextSecureForServiceWorker() is false. See also
   // AddMatchingRegistration().
   ServiceWorkerRegistrationMap matching_registrations_;
-
-  // Similar to ServiceWorkerRegistrationMap, but with multiple registrations.
-  using ServiceWorkerRegistrationMultiSet =
-      std::map<size_t, std::set<scoped_refptr<ServiceWorkerRegistration>>>;
-  // Contains registrations that have been uninstalled, e.g., by
-  // |registration.unregister()|, but are still alive, e.g., because they are
-  // controlling clients.
-  ServiceWorkerRegistrationMultiSet uninstalled_matching_registrations_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

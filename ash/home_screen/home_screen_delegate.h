@@ -61,6 +61,9 @@ class HomeScreenDelegate {
   // the transition animation if provided.
   virtual base::Optional<base::TimeDelta> GetOptionalAnimationDuration() = 0;
 
+  // True if home screen is visible.
+  virtual bool IsHomeScreenVisible() = 0;
+
   // Triggered when dragging launcher in tablet mode starts/proceeds/ends. They
   // cover both dragging launcher to show and hide.
   virtual void OnHomeLauncherDragStart() {}

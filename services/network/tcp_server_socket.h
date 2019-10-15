@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -36,9 +37,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPServerSocket
     ~Delegate() {}
 
     // Invoked when a new connection is accepted. The delegate should take
-    // ownership of |socket| and set up binding for |request|.
-    virtual void OnAccept(std::unique_ptr<TCPConnectedSocket> socket,
-                          mojom::TCPConnectedSocketRequest request) = 0;
+    // ownership of |socket| and set up binding for |receiver|.
+    virtual void OnAccept(
+        std::unique_ptr<TCPConnectedSocket> socket,
+        mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver) = 0;
   };
 
   // Constructs a TCPServerSocket. |delegate| must outlive |this|. When a new

@@ -8,7 +8,6 @@
     },
     {
       "name": "LayoutNGBlockFlow DIV id='resizing'",
-      "position": [8, 8],
       "bounds": [402, 207],
       "paintInvalidations": [
         {
@@ -26,6 +25,18 @@
           "rect": [2, 104, 398, 50],
           "reason": "appeared"
         }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
       ]
     }
   ]

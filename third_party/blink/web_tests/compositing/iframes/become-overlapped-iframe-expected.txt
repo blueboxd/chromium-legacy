@@ -15,20 +15,20 @@
       "name": "Scrolling Contents Layer",
       "bounds": [305, 230],
       "backgroundColor": "#C0C0C0",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
       "bounds": [210, 210],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 4
+      "transform": 3
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='overlay'",
       "bounds": [150, 150],
       "backgroundColor": "#00000099",
-      "transform": 5
+      "transform": 4
     }
   ],
   "transforms": [
@@ -43,11 +43,12 @@
     },
     {
       "id": 2,
+      "parent": 1,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [58, 58, 0, 1]
+        [15, 15, 0, 1]
       ]
     },
     {
@@ -57,21 +58,11 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [15, 15, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
         [18, 10, 0, 1]
       ]
     },
     {
-      "id": 5,
+      "id": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

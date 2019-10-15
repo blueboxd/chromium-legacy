@@ -746,7 +746,10 @@ void BookmarkBridge::MoveBookmark(
   bookmark_id = JavaBookmarkIdGetId(env, j_parent_id_obj);
   type = JavaBookmarkIdGetType(env, j_parent_id_obj);
   const BookmarkNode* new_parent_node = GetNodeByID(bookmark_id, type);
-  bookmark_model_->Move(node, new_parent_node, size_t{index});
+  // Bookmark should not be moved to its own parent folder
+  if (node->parent() != new_parent_node) {
+    bookmark_model_->Move(node, new_parent_node, size_t{index});
+  }
 }
 
 ScopedJavaLocalRef<jobject> BookmarkBridge::AddBookmark(

@@ -43,6 +43,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing_session.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
@@ -2485,6 +2487,67 @@ AutotestPrivateGetArcAppWindowInfoFunction::Run() {
   result->SetBoolean("is_visible", arc_window->IsVisible());
 
   return RespondNow(OneArgument(std::move(result)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateArcAppTracingStartFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateArcAppTracingStartFunction::
+    AutotestPrivateArcAppTracingStartFunction() = default;
+AutotestPrivateArcAppTracingStartFunction::
+    ~AutotestPrivateArcAppTracingStartFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateArcAppTracingStartFunction::Run() {
+  DVLOG(1) << "AutotestPrivateArcAppTracingStartFunction";
+
+  arc::ArcAppPerformanceTracing* const tracing =
+      arc::ArcAppPerformanceTracing::GetForBrowserContext(browser_context());
+  if (!tracing)
+    return RespondNow(Error("No ARC performance tracing is available."));
+
+  if (!tracing->StartCustomTracing())
+    return RespondNow(Error("Failed to start custom tracing."));
+
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateArcAppTracingStopAndAnalyzeFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateArcAppTracingStopAndAnalyzeFunction::
+    AutotestPrivateArcAppTracingStopAndAnalyzeFunction() = default;
+AutotestPrivateArcAppTracingStopAndAnalyzeFunction::
+    ~AutotestPrivateArcAppTracingStopAndAnalyzeFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateArcAppTracingStopAndAnalyzeFunction::Run() {
+  DVLOG(1) << "AutotestPrivateArcAppTracingStopAndAnalyzeFunction";
+
+  arc::ArcAppPerformanceTracing* const tracing =
+      arc::ArcAppPerformanceTracing::GetForBrowserContext(browser_context());
+  if (!tracing)
+    return RespondNow(Error("No ARC performance tracing is available."));
+
+  tracing->StopCustomTracing(base::BindOnce(
+      &AutotestPrivateArcAppTracingStopAndAnalyzeFunction::OnTracingResult,
+      this));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void AutotestPrivateArcAppTracingStopAndAnalyzeFunction::OnTracingResult(
+    bool success,
+    double fps,
+    double commit_deviation,
+    double render_quality) {
+  auto result = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  result->SetBoolKey("success", success);
+  result->SetDoubleKey("fps", fps);
+  result->SetDoubleKey("commitDeviation", commit_deviation);
+  result->SetDoubleKey("renderQuality", render_quality);
+  Respond(OneArgument(std::move(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

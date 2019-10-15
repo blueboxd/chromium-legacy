@@ -492,6 +492,15 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   EXPECT_FALSE(TryCreateAliasedSpdySession(spdy_session_pool_, proxy_key,
                                            test_hosts[1].iplist));
 
+  // Verify that the second host, with a different disable_secure_dns value,
+  // won't share the IP, even if the IP list matches.
+  SpdySessionKey disable_secure_dns_key(
+      test_hosts[1].key.host_port_pair(), ProxyServer::Direct(),
+      PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
+      SocketTag(), NetworkIsolationKey(), true /* disable_secure_dns */);
+  EXPECT_FALSE(TryCreateAliasedSpdySession(
+      spdy_session_pool_, disable_secure_dns_key, test_hosts[1].iplist));
+
   // Overlap between 2 and 3 is not transitive to 1.
   EXPECT_FALSE(TryCreateAliasedSpdySession(
       spdy_session_pool_, test_hosts[2].key, test_hosts[2].iplist));

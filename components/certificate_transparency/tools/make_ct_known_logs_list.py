@@ -84,7 +84,7 @@ def _get_log_ids_for_operator(logs_by_operator, operator_name):
 def _is_log_disqualified(log):
   # Disqualified logs are denoted with state="retired"
   assert (len(log.get("state").keys()) == 1)
-  log_state = log.get("state").keys()[0]
+  log_state = list(log.get("state"))[0]
   return log_state == "retired"
 
 
@@ -158,7 +158,7 @@ def _write_qualifying_logs_loginfo(f, qualifying_logs):
 
 def _is_log_once_or_currently_qualified(log):
   assert (len(log.get("state").keys()) == 1)
-  return log.get("state").keys()[0] not in ("pending", "rejected")
+  return list(log.get("state"))[0] not in ("pending", "rejected")
 
 
 def generate_cpp_file(input_file, f):

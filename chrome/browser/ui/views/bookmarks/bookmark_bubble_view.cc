@@ -151,12 +151,6 @@ std::unique_ptr<views::View> BookmarkBubbleView::CreateExtraView() {
   return edit_button;
 }
 
-bool BookmarkBubbleView::GetExtraViewPadding(int* padding) {
-  *padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE);
-  return true;
-}
-
 std::unique_ptr<views::View> BookmarkBubbleView::CreateFootnoteView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.

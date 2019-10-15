@@ -171,6 +171,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                          const gfx::PointF& location_in_screen,
                          bool should_drop_window_into_overview,
                          bool snap);
+  // Shows/Hides windows during window dragging. Used when swiping up a window
+  // from shelf.
+  void SetVisibleDuringWindowDragging(bool visible);
 
   // Returns true if |window| is the placeholder window from the drop target.
   bool IsDropTargetWindow(aura::Window* window) const;

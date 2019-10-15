@@ -254,8 +254,9 @@ IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
   RunOriginTrialTestOnPMSequence(mojom::InterventionPolicy::kOptOut);
 }
 
+// Flaky. https://crbug.com/1014282
 IN_PROC_BROWSER_TEST_F(PageNodeImplBrowserTest,
-                       PageFreezeOriginTrialOptOutOptIn) {
+                       DISABLED_PageFreezeOriginTrialOptOutOptIn) {
   ui_test_utils::NavigateToURL(
       browser(), GURL(base::JoinString({kOriginTrialTestHostname, k2iFramesPath,
                                         kOriginTrialOptOutOptIn},

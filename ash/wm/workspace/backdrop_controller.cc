@@ -446,14 +446,12 @@ gfx::Rect BackdropController::GetBackdropBounds() {
   SplitViewController::State state = split_view_controller->state();
   DCHECK(state == SplitViewController::State::kLeftSnapped ||
          state == SplitViewController::State::kRightSnapped);
-  aura::Window* snapped_window =
-      split_view_controller->GetDefaultSnappedWindow();
   SplitViewController::SnapPosition snap_position =
       (state == SplitViewController::State::kLeftSnapped)
           ? SplitViewController::LEFT
           : SplitViewController::RIGHT;
   return split_view_controller->GetSnappedWindowBoundsInScreenUnadjusted(
-      snapped_window, snap_position);
+      snap_position);
 }
 
 void BackdropController::Layout() {

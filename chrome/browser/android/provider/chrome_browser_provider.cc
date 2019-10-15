@@ -39,7 +39,6 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/android/android_history_types.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -793,9 +792,7 @@ static jlong JNI_ChromeBrowserProvider_Init(JNIEnv* env,
 }
 
 ChromeBrowserProvider::ChromeBrowserProvider(JNIEnv* env, jobject obj)
-    : weak_java_provider_(env, obj),
-      history_service_observer_(this),
-      handling_extensive_changes_(false) {
+    : weak_java_provider_(env, obj), handling_extensive_changes_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   profile_ = g_browser_process->profile_manager()->GetLastUsedProfile();
   bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(profile_);

@@ -858,9 +858,13 @@ LogMessage::~LogMessage() {
 
     fx_logger_t* logger = fx_log_get_logger();
     if (logger) {
-      // Temporarily pop the trailing newline, since fx_logger will add one.
+      // Temporarily remove the trailing newline from |str_newline|'s C-string
+      // representation, since fx_logger will add a newline of its own.
       str_newline.pop_back();
-      fx_logger_log(logger, severity, nullptr, str_newline.c_str());
+      std::string message =
+          base::StringPrintf("%s(%d) %s", file_basename_, line_,
+                             str_newline.c_str() + message_start_);
+      fx_logger_log(logger, severity, nullptr, message.data());
       str_newline.push_back('\n');
     }
 #endif  // OS_FUCHSIA
@@ -961,6 +965,9 @@ void LogMessage::Init(const char* file, int line) {
   size_t last_slash_pos = filename.find_last_of("\\/");
   if (last_slash_pos != base::StringPiece::npos)
     filename.remove_prefix(last_slash_pos + 1);
+
+  // Stores the base name as the null-terminated suffix substring of |filename|.
+  file_basename_ = filename.data();
 
   // TODO(darin): It might be nice if the columns were fixed width.
 

@@ -128,6 +128,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kARIAAnnotationRoles;
 
+BLINK_COMMON_EXPORT extern const base::Feature kDisableDirectlyCompositedImages;
+
 }  // namespace features
 }  // namespace blink
 

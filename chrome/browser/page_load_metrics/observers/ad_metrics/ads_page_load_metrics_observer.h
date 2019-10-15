@@ -30,7 +30,6 @@ class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver,
       public subresource_filter::SubresourceFilterObserver {
  public:
-
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.
   static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded(
@@ -164,12 +163,10 @@ class AdsPageLoadMetricsObserver
   // |ad_frames_data_storage_|.
   FrameData* FindFrameData(FrameTreeNodeId id);
 
-  // Loads the heavy ad intervention page in the target frame if it is safe to
-  // do so on this origin, and the frame meets the criteria to be considered a
-  // heavy ad.
-  // TODO(johnidel): Ads may only automatically be unloaded 5 times per-origin
-  // per day and to prevent a side channel leak of cross-origin resource size /
-  // CPU usage.
+  // Triggers the heavy ad intervention page in the target frame if it is safe
+  // to do so on this origin, and the frame meets the criteria to be considered
+  // a heavy ad. This first sends an intervention report to every affected
+  // frame then loads an error page in the root ad frame.
   void MaybeTriggerHeavyAdIntervention(
       content::RenderFrameHost* render_frame_host,
       FrameData* frame_data);

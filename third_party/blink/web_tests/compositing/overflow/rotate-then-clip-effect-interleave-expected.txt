@@ -23,14 +23,14 @@
       "bounds": [400, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 6
+      "transform": 4
     },
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV",
       "bounds": [100, 400],
       "contentsOpaque": true,
       "backgroundColor": "#FF00FF",
-      "transform": 7
+      "transform": 5
     }
   ],
   "transforms": [
@@ -66,27 +66,7 @@
     },
     {
       "id": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [108, 100, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
-      "transform": [
-        [0.707106781186548, 0.707106781186548, 0, 0],
-        [-0.707106781186548, 0.707106781186548, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-      ],
-      "origin": [120, 120]
-    },
-    {
-      "id": 6,
-      "parent": 5,
+      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -95,7 +75,7 @@
       ]
     },
     {
-      "id": 7,
+      "id": 5,
       "parent": 2,
       "transform": [
         [1, 0, 0, 0],

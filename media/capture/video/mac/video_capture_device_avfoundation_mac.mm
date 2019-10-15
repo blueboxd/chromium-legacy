@@ -375,9 +375,9 @@ void ExtractBaseAddressAndLength(char** base_address,
   // yes/no and preserve aspect ratio yes/no when scaling. Currently we set
   // cropping and preservation.
   NSDictionary* videoSettingsDictionary = @{
-    (id)kCVPixelBufferWidthKey : @(width),
-    (id)kCVPixelBufferHeightKey : @(height),
-    (id)kCVPixelBufferPixelFormatTypeKey : @(best_fourcc),
+    (NSString*)kCVPixelBufferWidthKey : @(width),
+    (NSString*)kCVPixelBufferHeightKey : @(height),
+    (NSString*)kCVPixelBufferPixelFormatTypeKey : @(best_fourcc),
     AVVideoScalingModeKey : AVVideoScalingModeResizeAspectFill
   };
   [captureVideoDataOutput_ setVideoSettings:videoSettingsDictionary];

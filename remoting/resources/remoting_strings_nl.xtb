@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Je <ph name="APPLICATION_NAME" />-sessie is al enige tijd inactief. Binnenkort wordt de verbinding verbroken.</translation>
 <translation id="2317666076142640974">Bekijk een voorproefje van de nieuwe <ph name="LINK_BEGIN" />Chrome Remote Desktop-webapp<ph name="LINK_END" />. We horen graag wat je ervan vindt.</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
-<translation id="2332192922827071008">Voorkeuren openen</translation>
 <translation id="2353140552984634198">Je kunt beveiligd toegang krijgen tot deze computer via Chromoting.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat je gebruikt.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Verbonden met <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Opmerking: als je er zeker van wilt zijn dat alle sneltoetsen beschikbaar zijn, kun je Chrome Remote Desktop configureren om de modus 'Openen als venster' te gebruiken.</translation>
 <translation id="2540992418118313681">Wil je deze computer delen zodat een andere gebruiker deze kan bekijken en bedienen?</translation>
-<translation id="254771646005658629">Externe gebruikers toestaan om deze Mac te beheren</translation>
 <translation id="2579271889603567289">De host is gecrasht of kan niet worden gestart.</translation>
 <translation id="2599300881200251572">Met deze service worden inkomende verbindingen van Chrome Remote Desktop-clients ingeschakeld.</translation>
 <translation id="2647232381348739934">Chromoting-service</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Kan de app niet opnieuw instellen. Je kunt nog steeds een foutmelding verzenden.</translation>
 <translation id="5419418238395129586">Laatst online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host is afgesloten.</translation>
-<translation id="5463789431147491241">Volg deze stappen om <ph name="PRODUCT_NAME" /> te gebruiken op deze Mac:
-
-Selecteer '<ph name="BUTTON_NAME" />' hieronder. Vink het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan in je voorkeuren voor beveiliging en privacy.
-
-Als '<ph name="SERVICE_SCRIPT_NAME" />' al is aangevinkt, vink je dit eerst uit en opnieuw aan.</translation>
 <translation id="5510035215749041527">Nu verbinding verbreken</translation>
 <translation id="5593560073513909978">De service is tijdelijk niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="5601503069213153581">Pincode</translation>

@@ -80,6 +80,10 @@ class OverviewGridTest : public AshTestBase {
     }
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   std::unique_ptr<OverviewGrid> grid_;
 
@@ -226,12 +230,11 @@ TEST_F(OverviewGridTest, DISABLED_SnappedWindow) {
   wm::ActivateWindow(window1.get());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  SplitViewController::Get()->SnapWindow(window1.get(),
-                                         SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
 
   // Snap |window2| and check that |window3| is maximized.
-  SplitViewController::Get()->SnapWindow(window2.get(),
-                                         SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
   EXPECT_TRUE(WindowState::Get(window3.get())->IsMaximized());
 
   // Tests that |window3| is not animated even though its bounds are larger than

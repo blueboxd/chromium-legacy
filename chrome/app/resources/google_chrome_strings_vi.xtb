@@ -41,7 +41,6 @@
 <translation id="1877026089748256423">Chrome đã lỗi thời</translation>
 <translation id="1900795423379050516">Nếu một tùy chọn cài đặt không hiển thị trên trang này, hãy tìm trong phần <ph name="LINK_BEGIN" />
       cài đặt trên trình duyệt Chrome<ph name="LINK_END" /></translation>
-<translation id="1915828456209461693">Đã có bản cập nhật Chrome mới và bản cập nhật này sẽ áp dụng ngay khi bạn chạy lại.</translation>
 <translation id="1919130412786645364">Cho phép đăng nhập vào Chrome</translation>
 <translation id="2063848847527508675">Chrome OS cần được khởi động lại để áp dụng bản cập nhật.</translation>
 <translation id="2094919256425865063">Bạn vẫn muốn thoát khỏi Chrome?</translation>
@@ -57,7 +56,6 @@
 <translation id="2467438592969358367">Google Chrome muốn xuất các mật khẩu của bạn. Hãy nhập mật khẩu Windows để cho phép thực hiện việc này.</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
 <translation id="2534507159460261402">Google Pay (đã sao chép vào Chrome)</translation>
-<translation id="2535429035253759792">Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật này</translation>
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="2586406160782125153">Thao tác này sẽ xóa dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Biểu trưng Chrome</translation>
@@ -213,7 +211,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7855730255114109580">Google Chrome đã được cập nhật</translation>
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
 <translation id="7896673875602241923">Ai đó trước đây đã đăng nhập vào Chrome trên máy tính này bằng <ph name="ACCOUNT_EMAIL_LAST" />. Vui lòng tạo người dùng Chrome mới để giữ riêng biệt thông tin của bạn.</translation>
-<translation id="7908168227788431038">Gần được cập nhật! Hãy khởi chạy lại Google Chrome để hoàn tất cập nhật.</translation>
 <translation id="7962410387636238736">Máy tính này sẽ không còn nhận được bản cập nhật Google Chrome do Windows XP và Windows Vista không còn được hỗ trợ</translation>
 <translation id="8008534537613507642">Cài đặt lại Chrome</translation>
 <translation id="8013993649590906847">Chrome sẽ cố gắng mô tả cho bạn những hình ảnh không có nội dung mô tả hữu ích. Để tạo nội dung mô tả, các hình ảnh sẽ được gửi đến Google.</translation>
@@ -236,7 +233,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8679801911857917785">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome.</translation>
 <translation id="870251953148363156">Cập nhật &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome không thể xác định hoặc đặt trình duyệt mặc định</translation>
-<translation id="8736674169840206667">Quản trị viên của bạn yêu cầu bạn chạy lại Chrome để áp dụng bản cập nhật</translation>
 <translation id="8823341990149967727">Chrome đã lỗi thời</translation>
 <translation id="884296878221830158">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc nhấp vào nút Trang chủ.</translation>
 <translation id="8862326446509486874">Bạn không có quyền thích hợp để cài đặt cấp hệ thống. Thử chạy lại trình cài đặt với vai trò Quản trị viên.</translation>

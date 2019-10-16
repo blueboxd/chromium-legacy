@@ -2363,6 +2363,7 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"printerModel", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_MODEL},
     {"printerQueue", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_QUEUE},
     {"savedPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE},
+    {"showMorePrinters", IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE},
     {"addPrintersNearbyTitle",
      IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE},
     {"addPrintersManuallyTitle",

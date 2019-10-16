@@ -67,6 +67,7 @@
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/common/verifier_formats.h"
 #include "extensions/test/background_page_watcher.h"
@@ -226,13 +227,7 @@ class ServiceWorkerTest : public ExtensionApiTest {
 
 class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
  public:
-  ServiceWorkerBasedBackgroundTest()
-      : ServiceWorkerTest(
-            // Extensions APIs from SW are only enabled on trunk.
-            // It is important to set the channel early so that this change is
-            // visible in renderers running with service workers (and no
-            // extension).
-            version_info::Channel::UNKNOWN) {}
+  ServiceWorkerBasedBackgroundTest() = default;
   ~ServiceWorkerBasedBackgroundTest() override {}
 
   void SetUpOnMainThread() override {
@@ -274,6 +269,8 @@ class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
   }
 
  private:
+  ScopedWorkerBasedExtensionsChannel channel_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBasedBackgroundTest);
 };
 
@@ -758,13 +755,7 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
 
 class ServiceWorkerLazyBackgroundTest : public ServiceWorkerTest {
  public:
-  ServiceWorkerLazyBackgroundTest()
-      : ServiceWorkerTest(
-            // Extensions APIs from SW are only enabled on trunk.
-            // It is important to set the channel early so that this change is
-            // visible in renderers running with service workers (and no
-            // extension).
-            version_info::Channel::UNKNOWN) {}
+  ServiceWorkerLazyBackgroundTest() = default;
   ~ServiceWorkerLazyBackgroundTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -783,6 +774,8 @@ class ServiceWorkerLazyBackgroundTest : public ServiceWorkerTest {
   }
 
  private:
+  ScopedWorkerBasedExtensionsChannel channel_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerLazyBackgroundTest);
 };
 
@@ -1197,9 +1190,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MAYBE_WebAccessibleResourcesFetch) {
 // Tests that updating a packed extension with modified scripts works
 // properly -- we expect that the new script will execute, rather than the
 // previous one.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       UpdatePackedExtension) {
   constexpr char kManifest1[] =
       R"({
            "name": "Test Extension",
@@ -1286,9 +1278,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdatePackedExtension) {
 // Tests that updating an unpacked extension with modified scripts works
 // properly -- we expect that the new script will execute, rather than the
 // previous one.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateUnpackedExtension) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       UpdateUnpackedExtension) {
   constexpr char kManifest1[] =
       R"({
            "name": "Test Extension",
@@ -1465,9 +1456,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
 
 // Verifies that service workers that aren't specified as the background script
 // for the extension do not have extension API bindings.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, VerifyNoApiBindings) {
-  // Extensions APIs from SW are only enabled on trunk.
-  ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, VerifyNoApiBindings) {
   const Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("service_worker/verify_no_api_bindings"),
       kFlagNone);

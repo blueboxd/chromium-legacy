@@ -92,15 +92,11 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   };
 
   V4L2ImageProcessor(scoped_refptr<V4L2Device> device,
-                     VideoFrame::StorageType input_storage_type,
-                     VideoFrame::StorageType output_storage_type,
+                     const ImageProcessor::PortConfig& input_config,
+                     const ImageProcessor::PortConfig& output_config,
                      v4l2_memory input_memory_type,
                      v4l2_memory output_memory_type,
                      OutputMode output_mode,
-                     const VideoFrameLayout& input_layout,
-                     const VideoFrameLayout& output_layout,
-                     gfx::Size input_visible_size,
-                     gfx::Size output_visible_size,
                      size_t num_buffers,
                      ErrorCB error_cb);
 
@@ -143,12 +139,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   // callbacks will be invoked.
   void Destroy();
 
-  // Stores input frame's visible size and v4l2_memory type.
-  const gfx::Size input_visible_size_;
   const v4l2_memory input_memory_type_;
-
-  // Stores output frame's visible size and v4l2_memory type.
-  const gfx::Size output_visible_size_;
   const v4l2_memory output_memory_type_;
 
   // V4L2 device in use.

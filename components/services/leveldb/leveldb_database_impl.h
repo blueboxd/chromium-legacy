@@ -79,25 +79,9 @@ class LevelDBDatabaseImpl {
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
                    GetPrefixedCallback callback);
 
-  using GetManyCallback =
-      base::OnceCallback<void(std::vector<mojom::GetManyResultPtr>)>;
-  void GetMany(std::vector<mojom::GetManyRequestPtr> keys_or_prefixes,
-               GetManyCallback callback);
-
   void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
                     const std::vector<uint8_t>& destination_key_prefix,
                     StatusCallback callback);
-
- private:
-  using StatusAndKeyValues =
-      std::tuple<Status, std::vector<mojom::KeyValuePtr>>;
-
-  void OnDatabaseOpened(
-      StatusCallback callback,
-      base::SequenceBound<storage::DomStorageDatabase> database,
-      leveldb::Status status);
-
-  explicit LevelDBDatabaseImpl();
 
   template <typename ResultType>
   void RunDatabaseTask(
@@ -121,6 +105,17 @@ class LevelDBDatabaseImpl {
       tasks_to_run_on_open_.push_back(std::move(wrapped_task));
     }
   }
+
+ private:
+  using StatusAndKeyValues =
+      std::tuple<Status, std::vector<mojom::KeyValuePtr>>;
+
+  void OnDatabaseOpened(
+      StatusCallback callback,
+      base::SequenceBound<storage::DomStorageDatabase> database,
+      leveldb::Status status);
+
+  explicit LevelDBDatabaseImpl();
 
   base::SequenceBound<storage::DomStorageDatabase> database_;
 

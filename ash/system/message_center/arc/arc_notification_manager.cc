@@ -376,6 +376,31 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
       key, ArcNotificationEvent::BODY_CLICKED);
 }
 
+void ArcNotificationManager::SendNotificationActivatedInChrome(
+    const std::string& key,
+    bool activated) {
+  if (items_.find(key) == items_.end()) {
+    VLOG(3)
+        << "Chrome requests to fire an activation event on notification (key: "
+        << key << "), but it is gone.";
+    return;
+  }
+
+  auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      instance_owner_->holder(), SendNotificationEventToAndroid);
+
+  // On shutdown, the ARC channel may quit earlier than notifications.
+  if (!notifications_instance) {
+    VLOG(2) << "ARC Notification (key: " << key
+            << ") is (de)activated, but the ARC channel has already gone.";
+    return;
+  }
+
+  notifications_instance->SendNotificationEventToAndroid(
+      key, activated ? ArcNotificationEvent::ACTIVATED
+                     : ArcNotificationEvent::DEACTIVATED);
+}
+
 void ArcNotificationManager::CreateNotificationWindow(const std::string& key) {
   if (items_.find(key) == items_.end()) {
     VLOG(3) << "Chrome requests to create window on notification (key: " << key

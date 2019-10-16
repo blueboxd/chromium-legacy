@@ -1,6 +1,6 @@
-# Mac Sandbox profiles.
-per-file *.sb=set noparent
-per-file *.sb=rsesek@chromium.org
+# For security review.
+per-file services.*=set noparent
+per-file services.*=file://ipc/SECURITY_OWNERS
 
 # For service-related code
 per-file utility_service_factory.*=rockot@google.com

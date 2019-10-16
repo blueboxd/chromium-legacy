@@ -705,3 +705,14 @@ std::string DownloadItemModel::GetMimeType() const {
 bool DownloadItemModel::IsExtensionDownload() const {
   return download_crx_util::IsExtensionDownload(*download_);
 }
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+void DownloadItemModel::CompleteSafeBrowsingScan() {
+  ChromeDownloadManagerDelegate::SafeBrowsingState* state =
+      static_cast<ChromeDownloadManagerDelegate::SafeBrowsingState*>(
+          download_->GetUserData(
+              &ChromeDownloadManagerDelegate::SafeBrowsingState::
+                  kSafeBrowsingUserDataKey));
+  state->CompleteDownload();
+}
+#endif

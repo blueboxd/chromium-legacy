@@ -21,6 +21,7 @@
       /** @type {!WebAudio.AudioContextSelector} */ selector) {
     TestRunner.addResult(`
 Number of contexts (items): ${selector._items.length}
+Title: ${selector.toolbarItem()._title}}
 Selected Context: ${JSON.stringify(selector.selectedContext(), null, 3)}
 `);
   }

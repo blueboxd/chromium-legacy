@@ -44,12 +44,10 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
 
   bool Equals(const CSSPaintValue&) const;
 
-  const Vector<CSSPropertyID>* NativeInvalidationProperties() const {
-    return generator_ ? &generator_->NativeInvalidationProperties() : nullptr;
-  }
-  const Vector<AtomicString>* CustomInvalidationProperties() const {
-    return generator_ ? &generator_->CustomInvalidationProperties() : nullptr;
-  }
+  const Vector<CSSPropertyID>* NativeInvalidationProperties(
+      const Document&) const;
+  const Vector<AtomicString>* CustomInvalidationProperties(
+      const Document&) const;
 
   const CSSStyleValueVector* GetParsedInputArgumentsForTesting() {
     return parsed_input_arguments_;
@@ -64,9 +62,11 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     return this;
   }
 
-  bool IsUsingCustomProperty(const AtomicString& custom_property_name) const;
+  bool IsUsingCustomProperty(const AtomicString& custom_property_name,
+                             const Document&) const;
 
   void CreateGeneratorForTesting(const Document& document);
+  unsigned NumberOfGeneratorsForTesting() const { return generators_.size(); }
 
   void TraceAfterDispatch(blink::Visitor*);
 
@@ -98,7 +98,12 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   bool input_arguments_invalid_ = false;
 
   Member<CSSCustomIdentValue> name_;
-  Member<CSSPaintImageGenerator> generator_;
+  // CSSValues may be shared between Documents. This map stores the
+  // CSSPaintImageGenerator for each Document using this CSSPaintValue. We use a
+  // WeakMember to ensure that entries are removed when Documents are destroyed
+  // (since the CSSValue may outlive any given Document).
+  HeapHashMap<WeakMember<const Document>, Member<CSSPaintImageGenerator>>
+      generators_;
   Member<Observer> paint_image_generator_observer_;
   Member<CSSStyleValueVector> parsed_input_arguments_;
   Vector<scoped_refptr<CSSVariableData>> argument_variable_data_;

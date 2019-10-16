@@ -1823,18 +1823,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   DCHECK_EQ(filter->last_rect().y(), 0);
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-// Flaky timeout. https://crbug.com/1014155
-#define MAYBE_KeyboardScrollBubblingFromOOPIF \
-  DISABLED_KeyboardScrollBubblingFromOOPIF
-#else
-#define MAYBE_KeyboardScrollBubblingFromOOPIF KeyboardScrollBubblingFromOOPIF
-#endif
-
 // Tests that scrolling with the keyboard will bubble unused scroll to the
 // OOPIF's parent.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_KeyboardScrollBubblingFromOOPIF) {
+                       KeyboardScrollBubblingFromOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_iframe_in_scrollable_div.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1856,6 +1848,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       iframe_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // This test does not involve hit testing, but input events could be dropped
+  // by the renderer before the first compositor commit, so we wait here anyway
+  // to avoid that.
+  WaitForHitTestData(iframe_node->current_frame_host());
 
   double initial_y = 0.0;
   ASSERT_TRUE(content::ExecuteScriptAndExtractDouble(

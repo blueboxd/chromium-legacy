@@ -1153,14 +1153,6 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
 }
 
 // static
-uint32_t V4L2Device::VideoFrameLayoutToV4L2PixFmt(
-    const VideoFrameLayout& layout) {
-  return Fourcc::FromVideoPixelFormat(layout.format(),
-                                      !layout.is_multi_planar())
-      .ToV4L2PixFmt();
-}
-
-// static
 uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
                                                    bool slice_based) {
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {

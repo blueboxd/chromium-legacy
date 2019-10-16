@@ -373,6 +373,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     return need_update_gpu_rasterization_status_;
   }
 
+  void UnregisterScrollbarLayer(ElementId element_id) const;
+
   // MutatorHostClient implementation.
   bool IsElementInPropertyTrees(ElementId element_id,
                                 ElementListType list_type) const override;

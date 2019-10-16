@@ -797,6 +797,13 @@ void ArcNotificationContentView::OnWidgetClosing(views::Widget* widget) {
   }
 }
 
+void ArcNotificationContentView::OnWidgetActivationChanged(
+    views::Widget* widget,
+    bool active) {
+  if (item_)
+    item_->OnWindowActivated(active);
+}
+
 void ArcNotificationContentView::OnItemDestroying() {
   item_->RemoveObserver(this);
   item_ = nullptr;

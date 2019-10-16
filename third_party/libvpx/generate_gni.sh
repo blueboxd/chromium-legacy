@@ -284,6 +284,10 @@ function gen_config_files {
   # Disable HAVE_UNISTD_H as it causes vp8 to try to detect how many cpus
   # available, which doesn't work from inside a sandbox on linux.
   sed -i.bak -e 's/\(HAVE_UNISTD_H[[:space:]]*\)1/\10/' vpx_config.h
+  # Maintain old ARCH_ defines to avoid build errors because assembly file
+  # dependencies are incorrect.
+  sed -i.bak -e 's/\(#define \)VPX_\(ARCH_[_0-9A-Z]\+ [01]\)/&\n\1\2/' vpx_config.h
+
   rm vpx_config.h.bak
 
   # Use the correct ads2gas script.

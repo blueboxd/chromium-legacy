@@ -289,7 +289,7 @@ bool CheckClientDownloadRequest::ShouldReturnAsynchronousVerdict(
   if (!profile)
     return false;
 
-  return ShouldDelayVerdicts();
+  return true;
 }
 
 bool CheckClientDownloadRequest::ShouldDelayVerdicts() {
@@ -311,7 +311,7 @@ void CheckClientDownloadRequest::MaybeUploadBinary(
     return;
 
   auto request = std::make_unique<DownloadItemRequest>(
-      item_, ShouldDelayVerdicts(),
+      item_, /*read_immediately=*/true,
       base::BindOnce(&CheckClientDownloadRequest::OnDeepScanningComplete,
                      weakptr_factory_.GetWeakPtr()));
 
@@ -421,9 +421,6 @@ void CheckClientDownloadRequest::OnDeepScanningComplete(
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
         item_->GetTotalBytes(), result, response);
   }
-
-  if (!ShouldDelayVerdicts())
-    return;
 
   DownloadCheckResult download_result = DownloadCheckResult::SAFE;
   DownloadCheckResultReason download_reason =

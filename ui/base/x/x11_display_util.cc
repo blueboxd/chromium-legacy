@@ -101,8 +101,6 @@ void ClipWorkArea(std::vector<display::Display>* displays,
     primary.set_work_area(work_area);
 }
 
-}  // namespace
-
 float GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
                                     int num_of_mode,
                                     RRMode current_mode_id) {
@@ -119,6 +117,8 @@ float GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
   }
   return 0;
 }
+
+}  // namespace
 
 int GetXrandrVersion(XDisplay* xdisplay) {
   int xrandr_version = 0;
@@ -272,6 +272,55 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
 
   ClipWorkArea(&displays, *primary_display_index_out, scale);
   return displays;
+}
+
+base::TimeDelta GetPrimaryDisplayRefreshIntervalFromXrandr(Display* display) {
+  constexpr base::TimeDelta kDefaultInterval =
+      base::TimeDelta::FromSecondsD(1. / 60);
+  GLXWindow root = DefaultRootWindow(display);
+  gfx::XScopedPtr<
+      XRRScreenResources,
+      gfx::XObjectDeleter<XRRScreenResources, void, XRRFreeScreenResources>>
+      resources(XRRGetScreenResourcesCurrent(display, root));
+  if (!resources)
+    return kDefaultInterval;
+  // TODO(crbug.com/726842): It might make sense here to pick the output that
+  // the window is on. On the other hand, if compositing is enabled, all drawing
+  // might be synced to the primary output anyway. Needs investigation.
+  RROutput primary_output = XRRGetOutputPrimary(display, root);
+  bool disconnected_primary = false;
+  for (int i = 0; i < resources->noutput; i++) {
+    if (!disconnected_primary && resources->outputs[i] != primary_output)
+      continue;
+
+    gfx::XScopedPtr<XRROutputInfo,
+                    gfx::XObjectDeleter<XRROutputInfo, void, XRRFreeOutputInfo>>
+        output_info(XRRGetOutputInfo(display, resources.get(), primary_output));
+    if (!output_info)
+      continue;
+
+    if (output_info->connection != RR_Connected) {
+      // If the primary monitor is disconnected, then start over and choose the
+      // first connected monitor instead.
+      if (!disconnected_primary) {
+        disconnected_primary = true;
+        i = -1;
+      }
+      continue;
+    }
+    gfx::XScopedPtr<XRRCrtcInfo,
+                    gfx::XObjectDeleter<XRRCrtcInfo, void, XRRFreeCrtcInfo>>
+        crtc(XRRGetCrtcInfo(display, resources.get(), output_info->crtc));
+    if (!crtc)
+      continue;
+    float refresh_rate = GetRefreshRateFromXRRModeInfo(
+        resources->modes, resources->nmode, crtc->mode);
+    if (refresh_rate == 0)
+      continue;
+
+    return base::TimeDelta::FromSecondsD(1. / refresh_rate);
+  }
+  return kDefaultInterval;
 }
 
 }  // namespace ui

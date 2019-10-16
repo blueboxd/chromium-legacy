@@ -606,7 +606,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   if (DiffNeedsPaintInvalidationSubtree(other))
     diff.SetNeedsPaintInvalidationSubtree();
   else
-    AdjustDiffForNeedsPaintInvalidationObject(other, diff);
+    AdjustDiffForNeedsPaintInvalidationObject(other, diff, document);
 
   if (DiffNeedsVisualRectUpdate(other))
     diff.SetNeedsVisualRectUpdate();
@@ -770,7 +770,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationSubtree(
 
 void ComputedStyle::AdjustDiffForNeedsPaintInvalidationObject(
     const ComputedStyle& other,
-    StyleDifference& diff) const {
+    StyleDifference& diff,
+    const Document& document) const {
   if (ComputedStyleBase::DiffNeedsPaintInvalidationObject(*this, other) ||
       !BorderVisuallyEqual(other) || !RadiiEqual(other))
     diff.SetNeedsPaintInvalidationObject();
@@ -783,7 +784,8 @@ void ComputedStyle::AdjustDiffForNeedsPaintInvalidationObject(
   if (PaintImagesInternal()) {
     for (const auto& image : *PaintImagesInternal()) {
       DCHECK(image);
-      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other)) {
+      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other,
+                                                        document)) {
         diff.SetNeedsPaintInvalidationObject();
         return;
       }
@@ -812,7 +814,8 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
     const StyleImage& image,
-    const ComputedStyle& other) const {
+    const ComputedStyle& other,
+    const Document& document) const {
   // https://crbug.com/835589: early exit when paint target is associated with
   // a link.
   if (InsideLink() != EInsideLink::kNotInsideLink)
@@ -823,14 +826,15 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
   // NOTE: If the invalidation properties vectors are null, we are invalid as
   // we haven't yet been painted (and can't provide the invalidation
   // properties yet).
-  if (!value->NativeInvalidationProperties() ||
-      !value->CustomInvalidationProperties())
+  if (!value->NativeInvalidationProperties(document) ||
+      !value->CustomInvalidationProperties(document))
     return true;
 
-  if (!PropertiesEqual(*value->NativeInvalidationProperties(), other))
+  if (!PropertiesEqual(*value->NativeInvalidationProperties(document), other))
     return true;
 
-  if (!CustomPropertiesEqual(*value->CustomInvalidationProperties(), other))
+  if (!CustomPropertiesEqual(*value->CustomInvalidationProperties(document),
+                             other))
     return true;
 
   return false;
@@ -945,7 +949,8 @@ void ComputedStyle::AddPaintImage(StyleImage* image) {
 }
 
 bool ComputedStyle::HasCSSPaintImagesUsingCustomProperty(
-    const AtomicString& custom_property_name) const {
+    const AtomicString& custom_property_name,
+    const Document& document) const {
   if (PaintImagesInternal()) {
     for (const auto& image : *PaintImagesInternal()) {
       DCHECK(image);
@@ -953,7 +958,7 @@ bool ComputedStyle::HasCSSPaintImagesUsingCustomProperty(
       // constructor of StyleGeneratedImage.
       if (image->IsPaintImage()) {
         return To<StyleGeneratedImage>(image.Get())
-            ->IsUsingCustomProperty(custom_property_name);
+            ->IsUsingCustomProperty(custom_property_name, document);
       }
     }
   }

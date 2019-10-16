@@ -68,97 +68,77 @@ def _RunArgs(args, input_api):
   out, _ = p.communicate()
   return (out, p.returncode)
 
+def _RunValidationScript(
+    input_api,
+    output_api,
+    script_path,
+    extra_args = None,
+    block_on_failure = None):
+  results = []
+  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
+  perf_dir = input_api.PresubmitLocalPath()
+  script_abs_path = input_api.os_path.join(perf_dir, script_path)
+  extra_args = extra_args if extra_args else []
+  args = [vpython, script_abs_path] + extra_args
+  out, return_code = _RunArgs(args, input_api)
+  if return_code:
+    error_msg = 'Script ' + script_path + ' failed.'
+    if block_on_failure is None or block_on_failure:
+      results.append(output_api.PresubmitError(
+          error_msg, long_text=out))
+    else:
+      results.append(output_api.PresubmitPromptWarning(
+          error_msg, long_text=out))
+  return results
 
 def _CheckExpectations(input_api, output_api):
-  results = []
-  perf_dir = input_api.PresubmitLocalPath()
-  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
-  out, return_code = _RunArgs([
-      vpython,
-      input_api.os_path.join(perf_dir, 'validate_story_expectation_data')],
-      input_api)
-  if return_code:
-    results.append(output_api.PresubmitError(
-        'Validating story expectation data failed.', long_text=out))
-  return results
-
+  return _RunValidationScript(
+      input_api,
+      output_api,
+      'validate_story_expectation_data',
+  )
 
 def _CheckPerfDataCurrentness(input_api, output_api, block_on_failure):
-  results = []
-  perf_dir = input_api.PresubmitLocalPath()
-  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
-  out, return_code = _RunArgs([
-      vpython,
-      input_api.os_path.join(perf_dir, 'generate_perf_data'),
-      '--validate-only'], input_api)
-  if return_code:
-    if block_on_failure:
-      results.append(output_api.PresubmitError(
-          'Validating perf data currentness failed', long_text=out))
-    else:
-      results.append(output_api.PresubmitPromptWarning(
-          'Validating perf data currentness failed', long_text=out))
-  return results
-
+  return _RunValidationScript(
+      input_api,
+      output_api,
+      'generate_perf_data',
+      ['--validate-only'],
+      block_on_failure
+  )
 
 def _CheckPerfJsonConfigs(input_api, output_api, block_on_failure):
-  results = []
-  perf_dir = input_api.PresubmitLocalPath()
-  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
-  out, return_code = _RunArgs([
-      vpython,
-      input_api.os_path.join(perf_dir, 'validate_perf_json_config')], input_api)
-  if return_code:
-    if block_on_failure:
-      results.append(output_api.PresubmitError(
-          'Validating perf data correctness failed', long_text=out))
-    else:
-      results.append(output_api.PresubmitPromptWarning(
-          'Validating perf data correctness failed', long_text=out))
-  return results
-
+  return _RunValidationScript(
+      input_api,
+      output_api,
+      'validate_perf_json_config',
+      ['--validate-only'],
+      block_on_failure
+  )
 
 def _CheckWprShaFiles(input_api, output_api):
   """Check whether the wpr sha files have matching URLs."""
-  perf_dir = input_api.PresubmitLocalPath()
-
-  results = []
   wpr_archive_shas = []
   for affected_file in input_api.AffectedFiles(include_deletes=False):
     filename = affected_file.AbsoluteLocalPath()
     if not filename.endswith('.sha1'):
       continue
     wpr_archive_shas.append(filename)
-
-  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
-  out, return_code = _RunArgs([
-      vpython,
-      input_api.os_path.join(perf_dir, 'validate_wpr_archives')] +
-      wpr_archive_shas,
-      input_api)
-  if return_code:
-    results.append(output_api.PresubmitError(
-        'Validating WPR archives failed:', long_text=out))
-  return results
-
+  return _RunValidationScript(
+      input_api,
+      output_api,
+      'validate_wpr_archives',
+      wpr_archive_shas
+  )
 
 def _CheckShardMaps(input_api, output_api, block_on_failure):
-  results = []
-  perf_dir = input_api.PresubmitLocalPath()
-  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
-  out, return_code = _RunArgs([
-      vpython,
-      input_api.os_path.join(perf_dir, 'generate_perf_sharding'),
-      'validate'], input_api)
-  if return_code:
-    if block_on_failure:
-      results.append(output_api.PresubmitError(
-          'Validating shard maps failed', long_text=out))
-    else:
-      results.append(output_api.PresubmitPromptWarning(
-          'Validating shard maps failed', long_text=out))
-  return results
-
+  return _RunValidationScript(
+      input_api,
+      output_api,
+      'generate_perf_sharding',
+      ['validate'],
+      block_on_failure
+  )
 
 def _CheckJson(input_api, output_api):
   """Checks whether JSON files in this change can be parsed."""
@@ -173,19 +153,12 @@ def _CheckJson(input_api, output_api):
   return []
 
 def _CheckVersionsInSmokeTests(input_api, output_api):
-  results = []
-  perf_dir = input_api.PresubmitLocalPath()
-  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
-  out, return_code = _RunArgs([
-      vpython,
+  return _RunValidationScript(
+      input_api,
+      output_api,
       input_api.os_path.join(
-          perf_dir, 'benchmarks', 'system_health_load_tests_smoke_test.py')],
-      input_api)
-  if return_code:
-    results.append(output_api.PresubmitError(
-        'Validating story versions failed', long_text=out))
-
-  return results
+          'benchmarks', 'system_health_load_tests_smoke_test.py'),
+  )
 
 def CheckChangeOnUpload(input_api, output_api):
   report = []

@@ -188,7 +188,7 @@ void OverviewSession::Init(const WindowList& windows,
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
-  SplitViewController::Get()->AddObserver(this);
+  SplitViewController::Get(Shell::GetPrimaryRootWindow())->AddObserver(this);
 
   display::Screen::GetScreen()->AddObserver(this);
   base::RecordAction(base::UserMetricsAction("WindowSelector_Overview"));
@@ -217,7 +217,7 @@ void OverviewSession::Shutdown() {
   // Stop observing split view state changes before restoring window focus.
   // Otherwise the activation of the window triggers OnSplitViewStateChanged()
   // that will call into this function again.
-  SplitViewController::Get()->RemoveObserver(this);
+  SplitViewController::Get(Shell::GetPrimaryRootWindow())->RemoveObserver(this);
 
   size_t remaining_items = 0;
   for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
@@ -274,10 +274,12 @@ void OverviewSession::OnGridEmpty() {
   if (!IsEmpty())
     return;
 
-  if (SplitViewController::Get()->InTabletSplitViewMode())
+  if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
+          ->InTabletSplitViewMode()) {
     UpdateNoWindowsWidget();
-  else
+  } else {
     EndOverview();
+  }
 }
 
 void OverviewSession::IncrementSelection(bool forward) {
@@ -393,7 +395,8 @@ void OverviewSession::InitiateDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen,
                                    bool is_touch_dragging) {
   if (Shell::Get()->overview_controller()->IsInStartAnimation() ||
-      SplitViewController::Get()->IsDividerAnimating()) {
+      SplitViewController::Get(Shell::GetPrimaryRootWindow())
+          ->IsDividerAnimating()) {
     return;
   }
   highlight_controller_->SetFocusHighlightVisibility(false);
@@ -589,7 +592,8 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled,
         // We do not want an active window in overview. It will cause blatantly
         // broken behavior as in the video linked in crbug.com/992223.
         wm::ActivateWindow(
-            SplitViewController::Get()->GetDefaultSnappedWindow());
+            SplitViewController::Get(Shell::GetPrimaryRootWindow())
+                ->GetDefaultSnappedWindow());
       }
     }
   }
@@ -633,7 +637,7 @@ void OverviewSession::OnWindowActivating(
   // Do not cancel overview mode if the window activation happens when split
   // view mode is also active. SplitViewController will do the right thing to
   // handle the window activation change.
-  if (SplitViewController::Get()->InSplitViewMode())
+  if (SplitViewController::Get(gained_active)->InSplitViewMode())
     return;
 
   // Do not cancel overview mode if the window activation was caused while
@@ -768,8 +772,10 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
   }
   // In case of split view mode, the no windows widget bounds will be updated in
   // |OnSplitViewDividerPositionChanged|.
-  if (SplitViewController::Get()->InSplitViewMode())
+  if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
+          ->InSplitViewMode()) {
     return;
+  }
   RefreshNoWindowsWidgetBounds(/*animate=*/false);
 }
 
@@ -797,12 +803,8 @@ void OverviewSession::OnWindowHierarchyChanged(
   // If the new window is added when splitscreen is active, do nothing.
   // SplitViewController will do the right thing to snap the window or end
   // overview mode.
-  if (SplitViewController::Get()->InSplitViewMode() &&
-      new_window->GetRootWindow() == SplitViewController::Get()
-                                         ->GetDefaultSnappedWindow()
-                                         ->GetRootWindow()) {
+  if (SplitViewController::Get(new_window)->InSplitViewMode())
     return;
-  }
 
   if (IsSwitchableContainer(new_window->parent()) &&
       !::wm::GetTransientParent(new_window)) {

@@ -4,8 +4,8 @@
 
 """An interface to git-cl.
 
-The git-cl tool is responsible for communicating with Rietveld, Gerrit,
-and Buildbucket to manage changelists and try jobs associated with them.
+The git-cl tool is responsible for communicating with Gerrit and Buildbucket to
+manage changelists and try jobs associated with them.
 """
 
 import collections

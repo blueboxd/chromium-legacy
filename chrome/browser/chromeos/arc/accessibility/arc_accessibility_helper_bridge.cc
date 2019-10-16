@@ -110,6 +110,9 @@ class ArcAccessibilityHelperBridgeFactory
     return base::Singleton<ArcAccessibilityHelperBridgeFactory>::get();
   }
 
+ protected:
+  bool ServiceIsCreatedWithBrowserContext() const override { return true; }
+
  private:
   friend struct base::DefaultSingletonTraits<
       ArcAccessibilityHelperBridgeFactory>;
@@ -180,6 +183,11 @@ arc::mojom::CaptionStylePtr GetCaptionStyleFromPrefs(PrefService* prefs) {
   }
 
   return style;
+}
+
+// static
+void ArcAccessibilityHelperBridge::CreateFactory() {
+  ArcAccessibilityHelperBridgeFactory::GetInstance();
 }
 
 // static

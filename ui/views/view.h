@@ -49,10 +49,6 @@
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
 
-#if defined(OS_WIN)
-#include <wrl/client.h>
-#endif
-
 using ui::OSExchangeData;
 
 namespace gfx {

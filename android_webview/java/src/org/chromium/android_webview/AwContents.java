@@ -6,7 +6,6 @@ package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.Intent;
@@ -1171,7 +1170,7 @@ public class AwContents implements SmartClipProvider {
         if (wrapper != null) return wrapper;
 
         try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped("AwContents.getWindowAndroid")) {
-            boolean contextWrapsActivity = activityFromContext(context) != null;
+            boolean contextWrapsActivity = ContextUtils.activityFromContext(context) != null;
             if (contextWrapsActivity) {
                 ActivityWindowAndroid activityWindow;
                 try (ScopedSysTraceEvent e2 =
@@ -1529,11 +1528,6 @@ public class AwContents implements SmartClipProvider {
         AwContentsJni.get().setShouldDownloadFavicons();
     }
 
-    public static Activity activityFromContext(Context context) {
-        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped("AwContents.activityFromContext")) {
-            return ContextUtils.activityFromContext(context);
-        }
-    }
     /**
      * Disables contents of JS-to-Java bridge objects to be inspectable using
      * Object.keys() method and "for .. in" loops. This is intended for applications

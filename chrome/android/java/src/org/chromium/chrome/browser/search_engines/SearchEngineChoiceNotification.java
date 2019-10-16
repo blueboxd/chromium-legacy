@@ -92,7 +92,10 @@ public final class SearchEngineChoiceNotification {
             updateSearchEngineChoicePresented();
             SearchEngineChoiceMetrics.recordEvent(SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN);
         } else {
-            SearchEngineChoiceMetrics.recordSearchEngineTypeAfterChoice();
+            if (SearchEngineChoiceMetrics.recordSearchEngineTypeAfterChoice()) {
+                SearchEngineChoiceMetrics.recordEvent(
+                        SearchEngineChoiceMetrics.Events.SEARCH_ENGINE_CHANGED);
+            }
         }
     }
 

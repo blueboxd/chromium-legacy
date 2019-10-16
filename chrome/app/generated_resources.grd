@@ -1642,6 +1642,10 @@ are declared in tools/grit/grit_rule.gni.
                desc="Text for the button used to stop a dangerous download.">
         Discard
       </message>
+      <message name="IDS_OPEN_DOWNLOAD_NOW"
+               desc="Text shown to open a download now.">
+        Open now
+      </message>
 
       <!-- Download Tab Items -->
       <message name="IDS_DOWNLOAD_LINK_PAUSE"
@@ -3782,6 +3786,9 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE" desc="Permission string for Networking Private API.">
           Manage network connections
+        </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_PRINTING_METRICS" desc="Permission string for access to printing metrics.">
+          See your printing history
         </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE" desc="Permission string for search settings override.">
           Change your search settings to: <ph name="SEARCH_HOST">$1<ex>url.search.com</ex></ph>
@@ -10188,6 +10195,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of data to see if complies with enterprise policies">
       Scanning files for sensitive data...
+    </message>
+
+    <!-- Deep scanning open now dialog strings -->
+    <message name="IDS_DEEP_SCANNING_DIALOG_OPEN_NOW_TITLE" desc="Title shown in tab modal dialog when the user attempts to open a download while deep scanning is in progress">
+      Scan in progress, open now?
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_OPEN_NOW_MESSAGE" desc="Message shown in tab modal dialog when the user attempts to open a download while deep scanning is in progress">
+      An unknown file is being scanned for dangerous content.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_OPEN_NOW_ACCEPT_BUTTON" desc="The text on the accept button in tab modal dialog when the user attempts to open a download while deep scanning is in progress">
+      Open now
     </message>
 
     <!-- SMS strings -->

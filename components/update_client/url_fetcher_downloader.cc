@@ -135,10 +135,11 @@ void UrlFetcherDownloader::OnNetworkFetcherComplete(base::FilePath file_path,
           << " to " << result.response.value();
 
   // Delete the download directory in the error cases.
-  if (error && !download_dir_.empty())
-    base::PostTask(
-        FROM_HERE, kTaskTraits,
-        base::BindOnce(IgnoreResult(&base::DeleteFile), download_dir_, true));
+  if (error && !download_dir_.empty()) {
+    base::PostTask(FROM_HERE, kTaskTraits,
+                   base::BindOnce(IgnoreResult(&base::DeleteFileRecursively),
+                                  download_dir_));
+  }
 
   main_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&UrlFetcherDownloader::OnDownloadComplete,

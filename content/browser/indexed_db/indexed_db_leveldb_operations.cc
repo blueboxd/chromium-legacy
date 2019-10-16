@@ -6,7 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/values.h"
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
@@ -126,7 +126,7 @@ bool IsPathTooLong(const base::FilePath& leveldb_dir) {
     const int min = 140;
     const int max = 300;
     const int num_buckets = 12;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
+    base::UmaHistogramCustomCounts(
         "WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength",
         component_length, min, max, num_buckets);
     return true;

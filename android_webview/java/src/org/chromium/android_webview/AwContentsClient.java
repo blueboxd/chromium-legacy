@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingResponse;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -242,7 +243,7 @@ public abstract class AwContentsClient {
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
 
         // Check whether the context is activity context.
-        if (AwContents.activityFromContext(context) == null) {
+        if (ContextUtils.activityFromContext(context) == null) {
             Log.w(TAG, "Cannot call startActivity on non-activity context.");
             return false;
         }

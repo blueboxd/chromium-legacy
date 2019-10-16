@@ -13,7 +13,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -382,9 +382,8 @@ void IndexedDBContextImpl::CopyOriginData(const Origin& origin,
 void IndexedDBContextImpl::ForceClose(const Origin origin,
                                       ForceCloseReason reason) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
-  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.Context.ForceCloseReason",
-                            reason, FORCE_CLOSE_REASON_MAX);
-
+  base::UmaHistogramEnumeration("WebCore.IndexedDB.Context.ForceCloseReason",
+                                reason, FORCE_CLOSE_REASON_MAX);
   if (!HasOrigin(origin))
     return;
 

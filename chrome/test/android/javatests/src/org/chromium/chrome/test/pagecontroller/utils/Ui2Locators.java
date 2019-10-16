@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.test.pagecontroller.utils;
 
+import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
+
+import org.chromium.base.VisibleForTesting;
 
 import java.util.regex.Pattern;
 
@@ -16,6 +19,93 @@ import java.util.regex.Pattern;
  * Locators that find UIObject2 nodes.
  */
 public final class Ui2Locators {
+    private static Resources sMockResources;
+
+    @VisibleForTesting
+    static void setResources(Resources mockResources) {
+        sMockResources = mockResources;
+    }
+
+    /**
+     * Returns a locator that find node(s) matching any one of R.id.* entry names (ignoring the
+     * package name).
+     *
+     * This is the preferred way to locate nodes if the R.id.* is available.
+     *
+     * @param id             The layout resource id of the corresponding view node.
+     * @param additionalIds  Optional additional layout resource ids to match.
+     * @return               A locator that will match against the any of the ids.
+     */
+    public static IUi2Locator withAnyResEntry(@IdRes int id, @IdRes int... additionalIds) {
+        return withAnyResId(getResourceEntryName(id), getResourceEntryNames(additionalIds));
+    }
+
+    /**
+     * Locates the node(s) having a resource id name among a list of names (excluding the
+     * package:id/ part).
+     *
+     * @param firstId       The first id to match against.
+     * @param additionalIds Optional ids to match against.
+     * @return              A locator that will find node(s) if they match any of the ids.
+     */
+    public static IUi2Locator withAnyResId(String firstId, String... additionalIds) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("(");
+        stringBuilder.append(firstId);
+        for (int i = 0; i < additionalIds.length; i++) {
+            stringBuilder.append("|" + additionalIds[i]);
+        }
+        stringBuilder.append(")");
+        return withResIdRegex(stringBuilder.toString());
+    }
+
+    /**
+     * Locates the node(s) having a resource id name that matches a regex (excluding the package:id/
+     * part).  Prefer using {@link #withAnyResIdEntry(int, int...)}
+     *
+     * @param idRegex Regular expression to match ids against.
+     * @return        A locator that will find node(s) whose ids match the given regular
+     *                expression.
+     */
+    public static IUi2Locator withResIdRegex(@NonNull String idRegex) {
+        return withResNameRegex("^.*:id/" + idRegex + "$");
+    }
+
+    /**
+     * Locates the node(s) having an exact resource name (including the package:id/ part).
+     *
+     * @param resourceName The resource name to find.
+     * @return             A locator that will find node(s) whose resource name matches.
+     */
+    public static IUi2Locator withResName(@NonNull String resourceName) {
+        return new BySelectorUi2Locator(By.res(resourceName));
+    }
+
+    /**
+     * Locates the node(s) having a resource name that match the regex (including the package:id/
+     * part).
+     *
+     * @param resourceNameRegex The resource name to find.
+     * @return                  A locator that will find node(s) whose resource name matches.
+     */
+    public static IUi2Locator withResNameRegex(@NonNull String resourceNameRegex) {
+        return new BySelectorUi2Locator(By.res(Pattern.compile(resourceNameRegex)));
+    }
+
+    /**
+     * Locates the node(s) having a text string from resource id.
+     *
+     * This is the preferred way to locate nodes by text content if the string
+     * resource id is available.
+     *
+     * @param idString  The id of the string.
+     * @return          A locator that will find the node(s) with text that matches the
+     *                  string identified by the given id.
+     */
+    public static IUi2Locator withTextString(int idString) {
+        return new BySelectorUi2Locator(By.text(getResourceStringName(idString)));
+    }
+
     /**
      * Locates the node(s) by position in the siblings list, recursively if more indices are
      * specified.
@@ -43,119 +133,17 @@ public final class Ui2Locators {
     }
 
     /**
-     * Locates the node(s) having a resource id name that matches a regex (excluding the package:id/
-     * part).
+     * Locates the node(s) having content description from string resource id.
      *
-     * @param idRegex Regular expression to match ids against.
-     * @return        A locator that will find node(s) whose ids match the given regular
-     *                expression.
+     * @param stringId The string resource id.
+     * @return         A locator that will find the node(s) with the given content
+     *                 description string id.
+     *
+     * @see <a
+     *         href="https://developer.android.com/reference/android/view/View.html#getContentDescription()">getContentDescription</a>
      */
-    public static IUi2Locator withResIdRegex(@NonNull String idRegex) {
-        return withResNameRegex("^.*:id/" + idRegex + "$");
-    }
-
-    /**
-     * Locates the node(s) having a resource id name among a list of names (excluding the
-     * package:id/ part).
-     *
-     * @param firstId       The first id to match against.
-     * @param additionalIds Optional ids to match against.
-     * @return              A locator that will find node(s) if they match any of the ids.
-     */
-    public static IUi2Locator withResIds(String firstId, String... additionalIds) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("(");
-        stringBuilder.append(firstId);
-        for (int i = 0; i < additionalIds.length; i++) {
-            stringBuilder.append("|" + additionalIds[i]);
-        }
-        stringBuilder.append(")");
-        return withResIdRegex(stringBuilder.toString());
-    }
-
-    /**
-     * Locates the node(s) having a resource id name among a list of names (excluding the
-     * package:id/ part).
-     *
-     * @param index         The value of n.
-     * @param firstId       The first id to match against.
-     * @param additionalIds Optional ids to match against.
-     * @return       A locator that will find the nth node whose id matches.
-     */
-    public static IUi2Locator withResIdsByIndex(
-            int index, String firstId, String... additionalIds) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("(");
-        stringBuilder.append(firstId);
-        for (int i = 0; i < additionalIds.length; i++) {
-            stringBuilder.append("|" + additionalIds[i]);
-        }
-        stringBuilder.append(")");
-        return withResNameRegexByIndex("^.*:id/" + stringBuilder.toString() + "$", index);
-    }
-
-    /**
-     * Returns a locator that find node(s) matching any one of R.id.* entry names (ignoring the
-     * package name).
-     *
-     * @param id             The layout resource id of the corresponding view node.
-     * @param additionalIds  Optional additional layout resource ids to match.
-     * @return               A locator that will match against the any of the ids.
-     */
-    public static IUi2Locator withResEntries(@IdRes int id, @IdRes int... additionalIds) {
-        return withResIds(getResourceEntryName(id), getResourceEntryNames(additionalIds));
-    }
-
-    /**
-     * Returns a locator that find the nth node matching any one of R.id.* entry names (ignoring
-     * the package name).
-     *
-     * @param index          The index into the list of matching nodes.
-     * @param id             The layout resource id of the corresponding view node.
-     * @param additionalIds  Optional additional layout resource ids to match.
-     * @return               A locator that will find the nth node whose id matches.
-     */
-    public static IUi2Locator withResEntriesByIndex(
-            int index, @IdRes int id, @IdRes int... additionalIds) {
-        return withResIdsByIndex(
-                index, getResourceEntryName(id), getResourceEntryNames(additionalIds));
-    }
-
-    /**
-     * Locates the node(s) having an exact resource name (including the package:id/ part).
-     *
-     * @param resourceName The resource name to find.
-     * @return             A locator that will find node(s) whose resource name matches.
-     */
-    public static IUi2Locator withResName(@NonNull String resourceName) {
-        return new BySelectorUi2Locator(By.res(resourceName));
-    }
-
-    /**
-     * Locates the node(s) having a resource name that match the regex (including the package:id/
-     * part).
-     *
-     * @param resourceNameRegex The resource name to find.
-     * @return                  A locator that will find node(s) whose resource name matches.
-     */
-    public static IUi2Locator withResNameRegex(@NonNull String resourceNameRegex) {
-        return new BySelectorUi2Locator(By.res(Pattern.compile(resourceNameRegex)));
-    }
-
-    /**
-     * Locates the nth node having a resource name matching the regex (including the package:id/
-     * part).
-     *
-     * The order of the nodes is determined by the implementation of UiObject2.findObjects,
-     * but not documented, at present it's pre-order.
-     *
-     * @param resourceNameRegex The resource name to find.
-     * @param index             The value of n.
-     * @return                  A locator that will find the nth node whose resource name matches.
-     */
-    public static IUi2Locator withResNameRegexByIndex(
-            @NonNull String resourceNameRegex, int index) {
-        return new BySelectorIndexUi2Locator(By.res(Pattern.compile(resourceNameRegex)), index);
+    public static IUi2Locator withContentDescString(int stringId) {
+        return new BySelectorUi2Locator(By.desc(getResourceStringName(stringId)));
     }
 
     /**
@@ -223,6 +211,17 @@ public final class Ui2Locators {
     }
 
     /**
+     * Locates the ith node(s) found by another locator.
+     *
+     * @param index   The value of i.
+     * @param locator First locator in the chain.
+     * @return        A locator that will find ith node in the results of locator.
+     */
+    public static IUi2Locator withIndex(int index, @NonNull IUi2Locator locator) {
+        return new IndexUi2Locator(index, locator);
+    }
+
+    /**
      * Locates the node(s) matching the chain of locators.
      *
      * @param locator            First locator in the chain.
@@ -253,7 +252,7 @@ public final class Ui2Locators {
      * @return   String resource entry name for id.
      */
     private static String getResourceEntryName(@IdRes int id) {
-        return InstrumentationRegistry.getTargetContext().getResources().getResourceEntryName(id);
+        return getTargetResources().getResourceEntryName(id);
     }
 
     /**
@@ -269,5 +268,23 @@ public final class Ui2Locators {
             names[i] = getResourceEntryName(ids[i]);
         }
         return names;
+    }
+
+    /**
+     * This converts the integer string id to the localized string.
+     *
+     * @param idString The string id.
+     * @return         String value of idString.
+     */
+    private static String getResourceStringName(int idString) {
+        return getTargetResources().getString(idString);
+    }
+
+    private static Resources getTargetResources() {
+        if (sMockResources == null) {
+            return InstrumentationRegistry.getTargetContext().getResources();
+        } else {
+            return sMockResources;
+        }
     }
 }

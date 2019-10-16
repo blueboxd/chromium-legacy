@@ -82,8 +82,10 @@ void TestSharedWorkerServiceImpl::OnRemoteSharedWorkerConnectionLost(
     mojo::RemoteSetElementId id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (worker_hosts_.empty() && workers_awaiting_disconnection_.empty())
+  if (worker_hosts_.empty() && workers_awaiting_disconnection_.empty() &&
+      terminate_all_workers_callback_) {
     std::move(terminate_all_workers_callback_).Run();
+  }
 }
 
 }  // namespace content

@@ -345,7 +345,6 @@
 <translation id="6062360702481658777">A sessão será terminada automaticamente dentro de <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Lamentamos, mas não foi possível validar a sua palavra-passe. Tente novamente.</translation>
 <translation id="607652042414456612">O seu computador é detetável para os dispositivos Bluetooth nas proximidades e aparecerá como "<ph name="NAME" />" com o endereço <ph name="ADDRESS" /></translation>
-<translation id="6106745654298855237">A carregar <ph name="POWER_SOURCE" /></translation>
 <translation id="612734058257491180">O Assistente Google não está disponível em sessões de convidado.</translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6164005077879661055">Todos os ficheiros e dados locais associados ao utilizador supervisionado serão definitivamente eliminados depois de este utilizador supervisionado ser removido. Os Sites visitados e as definições deste utilizador supervisionado poderão continuar visíveis para o gestor em <ph name="MANAGEMENT_URL" />.</translation>
@@ -447,7 +446,6 @@
 <translation id="7647488630410863958">Desbloquear o dispositivo para ver as notificações</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7654687942625752712">Prima sem soltar ambas as teclas de volume durante cinco segundos para desativar os comentários de voz.</translation>
-<translation id="7692480393933218409">A carregar os dispositivos USB-C ligados</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notificação}other{# notificações}}</translation>
 <translation id="7749443890790263709">Atingiu o número máximo de espaços de trabalho.</translation>

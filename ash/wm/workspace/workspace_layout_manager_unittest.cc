@@ -1142,6 +1142,10 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
   // Return the default container.
   aura::Window* default_container() { return default_container_; }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
   // Return the order of windows (top most first) as they are in the default
   // container. If the window is visible it will be a big letter, otherwise a
   // small one. The backdrop will be an X and unknown windows will be shown as
@@ -1814,8 +1818,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
     return window;
   };
 
-  SplitViewController* split_view_controller = SplitViewController::Get();
-
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   window1->Show();
@@ -1832,7 +1834,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
   // Snap the window to left. Test that the backdrop window is still visible
   // and is the second child in the container. Its bounds should be the same
   // as the snapped window's bounds.
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_EQ(2U, default_container()->children().size());
   for (auto* child : default_container()->children())
     EXPECT_TRUE(child->IsVisible());
@@ -1843,7 +1845,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropForSplitScreenTest) {
   // visible but is now the third window in the container. Its bounds should
   // still be the same as the container bounds.
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
 
   EXPECT_EQ(3U, default_container()->children().size());
   for (auto* child : default_container()->children())

@@ -202,9 +202,10 @@ void DownloadFileImpl::Initialize(
   }
 
   if (IsSparseFile()) {
-    for (const auto& received_slice : received_slices_) {
+    for (const auto& received_slice : received_slices_)
       bytes_so_far += received_slice.received_bytes;
-    }
+    slice_to_download_ = FindSlicesToDownload(received_slices_);
+
   } else {
     bytes_so_far = save_info_->GetStartingFileWriteOffset();
   }
@@ -712,6 +713,11 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
           base::BindOnce(&DownloadDestinationObserver::DestinationCompleted,
                          observer_, TotalBytesReceived(),
                          std::move(hash_state)));
+    } else {
+      // If all the stream completes and we still not able to complete, trigger
+      // a content length mismatch error so auto resumption will be performed.
+      SendErrorUpdateIfFinished(
+          DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH);
     }
   }
 }
@@ -836,18 +842,36 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
 
   SendUpdate();  // Make info up to date before error.
 
-  if (!can_recover_from_error) {
-    // Error case for both upstream source and file write.
-    // Shut down processing and signal an error to our observer.
-    // Our observer will clean us up.
-    weak_factory_.InvalidateWeakPtrs();
-    std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&DownloadDestinationObserver::DestinationError,
-                       observer_, reason, TotalBytesReceived(),
-                       std::move(hash_state)));
+  if (!can_recover_from_error)
+    SendErrorUpdateIfFinished(reason);
+}
+
+void DownloadFileImpl::SendErrorUpdateIfFinished(
+    DownloadInterruptReason reason) {
+  // If there are still active streams, let them finish before
+  // sending out the error to the observer.
+  if (num_active_streams_ > 0)
+    return;
+
+  if (IsSparseFile()) {
+    for (const auto& slice : slice_to_download_) {
+      // Ignore last slice beyond file length.
+      if (slice.offset > 0 && slice.offset == potential_file_length_)
+        continue;
+      if (source_streams_.find(slice.offset) == source_streams_.end())
+        return;
+    }
   }
+
+  // Error case for both upstream source and file write.
+  // Shut down processing and signal an error to our observer.
+  // Our observer will clean us up.
+  weak_factory_.InvalidateWeakPtrs();
+  std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DownloadDestinationObserver::DestinationError, observer_,
+                     reason, TotalBytesReceived(), std::move(hash_state)));
 }
 
 bool DownloadFileImpl::IsSparseFile() const {

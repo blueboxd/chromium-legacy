@@ -37,7 +37,7 @@ void AssistantAshTestBase::SetUp() {
   DCHECK(controller_);
 
   // At this point our Assistant service is ready for use.
-  // Indicate this by changing status from NOT_READY to STOPPED.
+  // Indicate this by changing status from NOT_READY to READY.
   AssistantState::Get()->NotifyStatusChanged(mojom::AssistantState::READY);
 
   DisableAnimations();

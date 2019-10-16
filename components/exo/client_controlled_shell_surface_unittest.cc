@@ -1025,7 +1025,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
 
   // Snap window to left.
   ash::SplitViewController* split_view_controller =
-      ash::SplitViewController::Get();
+      ash::SplitViewController::Get(ash::Shell::GetPrimaryRootWindow());
   split_view_controller->SnapWindow(window1, ash::SplitViewController::LEFT);
   state1->set_bounds_locally(true);
   window1->SetBounds(split_view_controller->GetSnappedWindowBoundsInScreen(
@@ -2016,7 +2016,8 @@ TEST_F(ClientControlledShellSurfaceTest,
        ExpandingPipInTabletModeEndsSplitView) {
   EnableTabletMode(true);
 
-  auto* split_view_controller = ash::SplitViewController::Get();
+  ash::SplitViewController* split_view_controller =
+      ash::SplitViewController::Get(ash::Shell::GetPrimaryRootWindow());
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   // Create a PIP window:
@@ -2052,7 +2053,8 @@ TEST_F(ClientControlledShellSurfaceTest,
        DismissingPipInTabletModeDoesNotEndSplitView) {
   EnableTabletMode(true);
 
-  auto* split_view_controller = ash::SplitViewController::Get();
+  ash::SplitViewController* split_view_controller =
+      ash::SplitViewController::Get(ash::Shell::GetPrimaryRootWindow());
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
 
   // Create a PIP window:

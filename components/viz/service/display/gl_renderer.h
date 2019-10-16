@@ -230,7 +230,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
       const gfx::Transform& backdrop_filter_bounds_transform);
 
-  const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
+  // gl_renderer can bypass TileDrawQuads that fill the RenderPass
+  const DrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
   void DrawRenderPassQuad(const RenderPassDrawQuad* quadi,
                           const gfx::QuadF* clip_region);

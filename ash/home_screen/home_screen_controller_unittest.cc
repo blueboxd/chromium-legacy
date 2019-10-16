@@ -6,11 +6,16 @@
 
 #include <memory>
 
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/home_screen/home_screen_delegate.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace {
@@ -47,6 +52,26 @@ TEST_F(HomeScreenControllerTest, OnlyMinimizeCycleListWindows) {
   home_screen_controller()->GoHome(GetPrimaryDisplay().id());
   ASSERT_TRUE(WindowState::Get(w1.get())->IsMinimized());
   ASSERT_FALSE(WindowState::Get(w2.get())->IsMinimized());
+}
+
+// Tests that the home screen is visible after rotating the screen in overview
+// mode.
+TEST_F(HomeScreenControllerTest,
+       HomeScreenVisibleAfterDisplayUpdateInOverview) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+
+  // Trigger a display configuration change, this simulates screen rotation.
+  Shell::Get()->app_list_controller()->OnDisplayConfigurationChanged();
+
+  // End overview mode, the home launcher should be visible.
+  overview_controller->EndOverview();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kExitAnimationComplete);
+
+  EXPECT_TRUE(
+      home_screen_controller()->delegate()->GetHomeScreenWindow()->IsVisible());
 }
 
 }  // namespace

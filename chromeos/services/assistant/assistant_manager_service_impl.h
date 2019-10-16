@@ -16,7 +16,6 @@
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/cros_display_connection.h"
 #include "chromeos/assistant/internal/internal_util.h"
-#include "chromeos/services/assistant/assistant_communication_error_observer.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/chromium_api_delegate.h"
@@ -109,8 +108,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   // assistant::AssistantManagerService overrides
   void Start(const base::Optional<std::string>& access_token,
-             bool enable_hotword,
-             base::OnceClosure callback) override;
+             bool enable_hotword) override;
   void Stop() override;
   State GetState() const override;
   void SetAccessToken(const std::string& access_token) override;
@@ -119,9 +117,11 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void SetArcPlayStoreEnabled(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
   void AddCommunicationErrorObserver(
-      AssistantCommunicationErrorObserver* observer) override;
+      CommunicationErrorObserver* observer) override;
   void RemoveCommunicationErrorObserver(
-      AssistantCommunicationErrorObserver* observer) override;
+      const CommunicationErrorObserver* observer) override;
+  void AddAndFireStateObserver(StateObserver* observer) override;
+  void RemoveStateObserver(const StateObserver* observer) override;
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
@@ -228,7 +228,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
  private:
   void StartAssistantInternal(const base::Optional<std::string>& access_token);
-  void PostInitAssistant(base::OnceClosure post_init_callback);
+  void PostInitAssistant();
 
   // Update device id, type and locale
   void UpdateDeviceSettings();
@@ -313,8 +313,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   mojom::DeviceActions* device_actions();
   scoped_refptr<base::SequencedTaskRunner> main_task_runner();
 
-  bool HasStartFinished() const;
-  void SetStartFinished();
+  void SetStateAndInformObservers(State new_state);
 
   mojom::Client* const client_;
   State state_ = State::STOPPED;
@@ -386,7 +385,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
 
   mojo::Binding<mojom::AppListEventSubscriber> app_list_subscriber_binding_;
 
-  base::ObserverList<AssistantCommunicationErrorObserver> error_observers_;
+  base::ObserverList<CommunicationErrorObserver> error_observers_;
+  base::ObserverList<StateObserver> state_observers_;
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 

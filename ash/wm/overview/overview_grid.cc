@@ -249,7 +249,8 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
     }
   }
 
-  SplitViewController* split_view_controller = SplitViewController::Get();
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(root_window);
   if (!split_view_controller->InSplitViewMode())
     return work_area;
 
@@ -301,7 +302,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
 gfx::Rect GetGridBoundsInScreenForSplitview(
     aura::Window* window,
     base::Optional<IndicatorState> indicator_state = base::nullopt) {
-  auto* split_view_controller = SplitViewController::Get();
+  SplitViewController* split_view_controller = SplitViewController::Get(window);
   auto state = split_view_controller->state();
 
   // If we are in splitview mode already just use the given state, otherwise
@@ -357,7 +358,7 @@ gfx::Rect GetDesksWidgetBounds(aura::Window* root,
       split_view_drag_indicators->current_indicator_state() ==
           IndicatorState::kDragArea &&
       !IsCurrentScreenOrientationLandscape() &&
-      !SplitViewController::Get()->InSplitViewMode()) {
+      !SplitViewController::Get(root)->InSplitViewMode()) {
     desks_widget_root_bounds.Offset(0,
                                     overview_grid_screen_bounds.height() *
                                             kHighlightScreenPrimaryAxisRatio +
@@ -472,7 +473,7 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
-  SplitViewController::Get()->RemoveObserver(this);
+  SplitViewController::Get(root_window_)->RemoveObserver(this);
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   grid_event_handler_.reset();
@@ -493,7 +494,8 @@ void OverviewGrid::Shutdown() {
       !Shell::Get()->tablet_mode_controller()->InTabletMode();
 
   // OverviewGrid in splitscreen does not include the window to be activated.
-  if (!window_list_.empty() || SplitViewController::Get()->InSplitViewMode()) {
+  if (!window_list_.empty() ||
+      SplitViewController::Get(root_window_)->InSplitViewMode()) {
     // The following instance self-destructs when shutdown animation ends.
     new ShutdownAnimationFpsCounterObserver(
         root_window_->layer()->GetCompositor(), single_animation_in_clamshell);
@@ -512,7 +514,7 @@ void OverviewGrid::PrepareForOverview() {
 
   for (const auto& window : window_list_)
     window->PrepareForOverview();
-  SplitViewController::Get()->AddObserver(this);
+  SplitViewController::Get(root_window_)->AddObserver(this);
   if (Shell::Get()->tablet_mode_controller()->InTabletMode())
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
 
@@ -921,7 +923,7 @@ OverviewItem* OverviewGrid::GetDropTarget() {
 void OverviewGrid::OnDisplayMetricsChanged() {
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
-  if (SplitViewController::Get()->InSplitViewMode())
+  if (SplitViewController::Get(root_window_)->InSplitViewMode())
     return;
   SetBoundsAndUpdatePositions(
       GetGridBoundsInScreen(root_window_, /*divider_changed=*/false),
@@ -936,7 +938,8 @@ void OverviewGrid::OnSplitViewStateChanged(
   if (!overview_controller->InOverviewSession())
     return;
 
-  SplitViewController* split_view_controller = SplitViewController::Get();
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(root_window_);
   const bool unsnappable_window_activated =
       state == SplitViewController::State::kNoSnap &&
       split_view_controller->end_reason() ==
@@ -1089,7 +1092,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
             });
 
   SkRegion occluded_region;
-  auto* split_view_controller = SplitViewController::Get();
+  auto* split_view_controller = SplitViewController::Get(root_window_);
   if (split_view_controller->InSplitViewMode()) {
     // Snapped windows and the split view divider are not included in
     // |target_bounds| or |window_list_|, but can occlude other windows, so add
@@ -1631,23 +1634,22 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   // Windows occupy vertically centered area with additional vertical insets.
   total_bounds.Inset(GetGridInsets(total_bounds));
 
-  // When the dragged item becomes an |ignored_item|, move the other windows
-  // accordingly. |window_position| matches the positions of the windows'
-  // indexes from |window_list_|. However, if a window turns out to be an
-  // ignored item, |window_position| remains where the item was as to then
-  // reposition the other window's bounds in place of that item.
-
-  // This function may be called as the result of closing an overview item. If
-  // the closed item is the last item in the list, adjust |scroll_offset_| so
-  // that the grid is right aligned.
-  float right_most = 0.f;
-  for (const auto& window : window_list_) {
-    if (window->animating_to_close() || ignored_items.contains(window.get()))
+  // |scroll_offset_min_| may be changed on positioning (either by closing
+  // windows or display changes). Recalculate it and clamp |scroll_offset_|, so
+  // that the items are always aligned left or right.
+  float rightmost_window_right = 0;
+  for (const auto& item : window_list_) {
+    if (item->animating_to_close() || ignored_items.contains(item.get()))
       continue;
-    right_most = std::max(right_most, window->target_bounds().right());
+    rightmost_window_right =
+        std::max(rightmost_window_right, item->target_bounds().right());
   }
-  if (right_most != 0.f && right_most < total_bounds.right())
-    scroll_offset_ = -(right_most - scroll_offset_ - total_bounds.right());
+
+  // |rightmost_window_right| may have been modified by an earlier scroll.
+  // |scroll_offset_| is added to adjust for that.
+  rightmost_window_right -= scroll_offset_;
+  scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
+  scroll_offset_ = base::ClampToRange(scroll_offset_, scroll_offset_min_, 0.f);
 
   // Map which contains up to |kTabletLayoutRow| entries with information on the
   // last items right bound per row. Used so we can place the next item directly
@@ -1656,7 +1658,12 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   base::flat_map<float, float> right_edge_map;
 
   // Since the number of rows is limited, windows are laid out column-wise so
-  // that the most recently used windows are displayed first.
+  // that the most recently used windows are displayed first. When the dragged
+  // item becomes an |ignored_item|, move the other windows accordingly.
+  // |window_position| matches the positions of the windows' indexes from
+  // |window_list_|. However, if a window turns out to be an ignored item,
+  // |window_position| remains where the item was as to then reposition the
+  // other window's bounds in place of that item.
   const int height = total_bounds.height() / kTabletLayoutRow;
   int window_position = 0;
   std::vector<gfx::RectF> rects;

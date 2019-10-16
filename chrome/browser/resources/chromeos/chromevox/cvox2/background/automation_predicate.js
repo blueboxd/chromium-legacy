@@ -385,13 +385,15 @@ AutomationPredicate.root = function(node) {
     case Role.WINDOW:
       return true;
     case Role.DIALOG:
+      if (node.root.role != Role.DESKTOP)
+        return !!node.modal;
+
       // The below logic handles nested dialogs properly in the desktop tree
       // like that found in a bubble view.
-      return node.root.role != Role.DESKTOP ||
-          (!!node.parent && node.parent.role == Role.WINDOW &&
-           node.parent.children.every(function(child) {
-             return node.role == Role.WINDOW || node.role == Role.DIALOG;
-           }));
+      return !!node.parent && node.parent.role == Role.WINDOW &&
+          node.parent.children.every(function(child) {
+            return node.role == Role.WINDOW || node.role == Role.DIALOG;
+          });
     case Role.TOOLBAR:
       return node.root.role == Role.DESKTOP &&
           !(node.nextFocus || !node.previousFocus);

@@ -176,51 +176,6 @@ void LevelDBDatabaseImpl::Get(const std::vector<uint8_t>& key,
                       std::move(callback)));
 }
 
-void LevelDBDatabaseImpl::GetMany(
-    std::vector<mojom::GetManyRequestPtr> keys_or_prefixes,
-    GetManyCallback callback) {
-  RunDatabaseTask(
-      base::BindOnce(
-          [](std::vector<mojom::GetManyRequestPtr> keys_or_prefixes,
-             const storage::DomStorageDatabase& db) {
-            std::vector<mojom::GetManyResultPtr> data;
-            for (const auto& request : keys_or_prefixes) {
-              mojom::GetManyResultPtr result = mojom::GetManyResult::New();
-              Status status;
-
-              if (request->is_key()) {
-                const std::vector<uint8_t>& key = request->get_key();
-                storage::DomStorageDatabase::Value value;
-                status = db.Get(key, &value);
-                if (status.ok())
-                  result->set_key_value(value);
-                else
-                  result->set_status(LeveldbStatusToError(status));
-              } else {
-                const std::vector<uint8_t>& key_prefix =
-                    request->get_key_prefix();
-                std::vector<storage::DomStorageDatabase::KeyValuePair> entries;
-                status = db.GetPrefixed(key_prefix, &entries);
-                if (status.ok()) {
-                  std::vector<mojom::KeyValuePtr> out_entries;
-                  for (auto& entry : entries) {
-                    out_entries.push_back(
-                        mojom::KeyValue::New(entry.key, entry.value));
-                  }
-                  result->set_key_prefix_values(std::move(out_entries));
-                } else {
-                  result->set_status(LeveldbStatusToError(status));
-                }
-              }
-
-              data.push_back(std::move(result));
-            }
-            return data;
-          },
-          std::move(keys_or_prefixes)),
-      std::move(callback));
-}
-
 void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
                                       GetPrefixedCallback callback) {
   struct GetPrefixedResult {

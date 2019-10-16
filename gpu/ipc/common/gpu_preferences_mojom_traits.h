@@ -28,6 +28,8 @@ struct EnumTraits<gpu::mojom::VulkanImplementationName,
         return gpu::mojom::VulkanImplementationName::kNone;
       case gpu::VulkanImplementationName::kNative:
         return gpu::mojom::VulkanImplementationName::kNative;
+      case gpu::VulkanImplementationName::kForcedNative:
+        return gpu::mojom::VulkanImplementationName::kForcedNative;
       case gpu::VulkanImplementationName::kSwiftshader:
         return gpu::mojom::VulkanImplementationName::kSwiftshader;
     }
@@ -42,6 +44,9 @@ struct EnumTraits<gpu::mojom::VulkanImplementationName,
         return true;
       case gpu::mojom::VulkanImplementationName::kNative:
         *out = gpu::VulkanImplementationName::kNative;
+        return true;
+      case gpu::mojom::VulkanImplementationName::kForcedNative:
+        *out = gpu::VulkanImplementationName::kForcedNative;
         return true;
       case gpu::mojom::VulkanImplementationName::kSwiftshader:
         *out = gpu::VulkanImplementationName::kSwiftshader;

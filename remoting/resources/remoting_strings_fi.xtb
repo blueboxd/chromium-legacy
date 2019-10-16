@@ -48,7 +48,6 @@
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> -istuntosi on ollut epäaktiivinen jonkin aikaa, ja se katkaistaan pian.</translation>
 <translation id="2317666076142640974">Tutustu uuteen <ph name="LINK_BEGIN" />Chrome-etäkäyttö-verkkosovellukseen<ph name="LINK_END" />. Kuulisimme mielellämme palautetta.</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
-<translation id="2332192922827071008">Siirry valintoihin</translation>
 <translation id="2353140552984634198">Tähän tietokoneeseen voi muodostaa suojatun yhteyden Chromotingin avulla.</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2366718077645204424">Isäntään ei saatu yhteyttä. Tämä johtuu luultavasti käyttämäsi verkon määrityksistä.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Yhdistetty isäntään <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Huomaa: voit varmistaa kaikkien pikanäppäinten käytettävyyden, kun määrität Chrome-etäkäytön avautumaan ikkunassa.</translation>
 <translation id="2540992418118313681">Haluatko jakaa tämän tietokoneen niin, että toinen käyttäjä voi käyttää ja valvoa sitä?</translation>
-<translation id="254771646005658629">Anna etäkäyttäjien hallita tätä Macia</translation>
 <translation id="2579271889603567289">Isäntä kaatui tai sen käynnistäminen epäonnistui.</translation>
 <translation id="2599300881200251572">Tämä palvelu mahdollistaa Chrome-etäkäytön asiakkaiden muodostamat yhteydet.</translation>
 <translation id="2647232381348739934">Chromoting-palvelu</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Sovelluksen nollaus epäonnistui. Voit silti lähettää vikailmoituksen.</translation>
 <translation id="5419418238395129586">Yhdistetty verkkoon viimeksi: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Isäntä on offline-tilassa.</translation>
-<translation id="5463789431147491241">Jotta <ph name="PRODUCT_NAME" /> olisi käytettävissä tällä Macilla, tee nämä vaiheet:
-
-Valitse alta <ph name="BUTTON_NAME" />. Valitse tietosuoja- ja yksityisyysvalinnoista ruutu <ph name="SERVICE_SCRIPT_NAME" />.
-
-Jos <ph name="SERVICE_SCRIPT_NAME" /> on jo valittu, poista valinta ja valitse se uudelleen.</translation>
 <translation id="5510035215749041527">Katkaise yhteys nyt</translation>
 <translation id="5593560073513909978">Palvelu ei ole tällä hetkellä käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="5601503069213153581">PIN-koodi</translation>

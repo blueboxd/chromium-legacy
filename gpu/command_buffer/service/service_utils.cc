@@ -160,7 +160,7 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
         << "--enabled-features=Vulkan is overrided by --use-vulkan.";
     auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
     if (value.empty() || value == switches::kVulkanImplementationNameNative) {
-      gpu_preferences.use_vulkan = VulkanImplementationName::kNative;
+      gpu_preferences.use_vulkan = VulkanImplementationName::kForcedNative;
     } else if (value == switches::kVulkanImplementationNameSwiftshader) {
       gpu_preferences.use_vulkan = VulkanImplementationName::kSwiftshader;
     } else {

@@ -359,6 +359,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // E.g. 2x2 for the U-plane in PIXEL_FORMAT_I420.
   static gfx::Size SampleSize(VideoPixelFormat format, size_t plane);
 
+  // Returns a human readable string of StorageType.
+  static std::string StorageTypeToString(VideoFrame::StorageType storage_type);
+
   // A video frame wrapping external data may be backed by an unsafe shared
   // memory region. These methods are used to appropriately transform a
   // VideoFrame created with WrapExternalData, WrapExternalYuvaData, etc. The

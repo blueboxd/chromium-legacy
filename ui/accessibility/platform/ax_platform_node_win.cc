@@ -636,6 +636,18 @@ int AXPlatformNodeWin::GetIndexInParent() {
   LONG child_count = 0;
   if (S_OK != parent_accessible->get_accChildCount(&child_count))
     return -1;
+
+  // Ask the delegate for the index in parent, and return it if it's plausible.
+  //
+  // Delegates are allowed to not implement this (AXPlatformNodeDelegateBase
+  // returns -1). Also, delegates may not know the correct answer if this
+  // node is the root of a tree that's embedded in another tree, in which
+  // case the delegate should return -1 and we'll compute it.
+  int index_in_parent = GetDelegate()->GetIndexInParent();
+  if (index_in_parent >= 0 && index_in_parent < child_count)
+    return index_in_parent;
+
+  // Otherwise, search the parent's children.
   for (LONG index = 1; index <= child_count; ++index) {
     base::win::ScopedVariant childid_index(index);
     Microsoft::WRL::ComPtr<IDispatch> child_dispatch;

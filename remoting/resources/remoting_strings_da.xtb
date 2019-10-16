@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Din <ph name="APPLICATION_NAME" />-session har været inaktiv i et stykke tid og vil snart blive afbrudt.</translation>
 <translation id="2317666076142640974">Få et smugkig på den nye <ph name="LINK_BEGIN" />webapp Chrome Fjernskrivebord<ph name="LINK_END" />. Vi vil meget gerne have feedback fra dig.</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
-<translation id="2332192922827071008">Åbn præferencer</translation>
 <translation id="2353140552984634198">Du kan få sikker adgang til denne computer via Chromoting.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2366718077645204424">Værten kunne ikke nås. Dette skyldes sandsynligvis konfigurationen af det netværk, du bruger.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Der er oprettet forbindelse til <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">BEMÆRK! Du kan sikre, at alle tastaturgenveje er tilgængelige ved at konfigurere Chrome Fjernskrivebord til "Åbn som vindue".</translation>
 <translation id="2540992418118313681">Vil du dele denne computer, så en anden bruger kan se og styre den?</translation>
-<translation id="254771646005658629">Giv eksterne brugere tilladelse til at styre denne Mac</translation>
 <translation id="2579271889603567289">Hosten gik ned eller kunne ikke starte.</translation>
 <translation id="2599300881200251572">Denne tjeneste muliggør indgående forbindelse fra klienter i Chrome Fjernskrivebord.</translation>
 <translation id="2647232381348739934">Tjenesten Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Applikationen kunne ikke nulstilles. Du kan stadig sende en fejlrapport.</translation>
 <translation id="5419418238395129586">Sidst online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hosten har lukket ned.</translation>
-<translation id="5463789431147491241">Hvis du vil bruge <ph name="PRODUCT_NAME" /> på denne Mac, skal du gennemføre disse trin:
-
-Vælg "<ph name="BUTTON_NAME" />" nedenfor. I præferencerne for Sikkerhed &amp; anonymitet skal du markere feltet ud for "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne markeringen og markere det igen.</translation>
 <translation id="5510035215749041527">Afbryd nu</translation>
 <translation id="5593560073513909978">Tjenesten er midlertidigt utilgængelig. Prøv igen senere.</translation>
 <translation id="5601503069213153581">Pinkode</translation>

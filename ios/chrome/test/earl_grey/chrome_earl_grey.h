@@ -246,6 +246,12 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns the tab title of the next tab. Assumes that next tab exists.
 - (NSString*)nextTabTitle;
 
+// Returns a unique identifier for the current Tab.
+- (NSString*)currentTabID;
+
+// Returns a unique identifier for the next Tab.
+- (NSString*)nextTabID;
+
 #pragma mark - SignIn Utilities (EG2)
 
 // Signs the user out, clears the known accounts entirely and checks whether the

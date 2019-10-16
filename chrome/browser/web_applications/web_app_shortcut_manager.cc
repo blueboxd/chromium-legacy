@@ -4,11 +4,19 @@
 
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 
+#include "base/callback.h"
+
 namespace web_app {
 
 WebAppShortcutManager::WebAppShortcutManager(Profile* profile)
     : AppShortcutManager(profile) {}
 
 WebAppShortcutManager::~WebAppShortcutManager() = default;
+
+void WebAppShortcutManager::GetShortcutInfoForApp(
+    const AppId& app_id,
+    GetShortcutInfoCallback callback) {
+  NOTIMPLEMENTED();
+}
 
 }  // namespace web_app

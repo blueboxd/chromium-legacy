@@ -444,6 +444,8 @@ class ColorPicker extends HTMLElement {
 
     this.addEventListener('visual-color-change', this.onVisualColorChange_);
 
+    this.addEventListener('format-change', this.updateFocusableElements_);
+
     document.documentElement.addEventListener('keydown', this.onKeyDown_);
   }
 
@@ -509,7 +511,33 @@ class ColorPicker extends HTMLElement {
       case 'Escape':
         this.submissionControls_.cancelButton.click();
         break;
+      case 'Tab':
+        event.preventDefault();
+        if (this.focusableElements_ === undefined) {
+          this.updateFocusableElements_();
+        }
+        const length = this.focusableElements_.length;
+        if (length > 0) {
+          const currentFocusIndex =
+              this.focusableElements_.indexOf(document.activeElement);
+          let nextFocusIndex;
+          if (event.shiftKey) {
+            nextFocusIndex = (currentFocusIndex > 0) ?
+                currentFocusIndex - 1 :
+                length - 1;
+          } else {
+            nextFocusIndex = (currentFocusIndex + 1) % length;
+          }
+          this.focusableElements_[nextFocusIndex].focus({preventScroll: true});
+        }
+        break;
     }
+  }
+
+  updateFocusableElements_ = () => {
+    this.focusableElements_ = Array.from(this.querySelectorAll(
+        'color-value-container:not(.hidden-color-value-container) > input,' +
+        '[tabindex]:not([tabindex=\'-1\'])'));
   }
 
   static get COMMIT_DELAY_MS() {
@@ -739,7 +767,7 @@ class ColorSelectionArea extends HTMLElement {
    * @param {!Point} point
    */
   mouseDown(point) {
-    this.focused_ = true;
+    this.colorSelectionRing_.focus({preventScroll: true});
     this.colorSelectionRing_.drag = true;
     this.moveColorSelectionRingTo_(point);
   }
@@ -1702,7 +1730,8 @@ class FormatToggler extends HTMLElement {
     this.adjustFormatLabelVisibility_();
 
     this.dispatchEvent(new CustomEvent(
-        'format-change', {detail: {colorFormat: this.currentColorFormat_}}));
+        'format-change',
+        {bubbles: true, detail: {colorFormat: this.currentColorFormat_}}));
   }
 
   adjustFormatLabelVisibility_() {

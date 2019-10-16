@@ -43,7 +43,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1877026089748256423">Den här versionen av Chrome är inaktuell</translation>
 <translation id="1900795423379050516">Om en inställning saknas på den här sidan tittar du i <ph name="LINK_BEGIN" />
       inställningarna för webbläsaren Chrome<ph name="LINK_END" /></translation>
-<translation id="1915828456209461693">Det finns en ny Chrome-uppdatering som tillämpas så snart du startar om.</translation>
 <translation id="1919130412786645364">Tillåt inloggning i Chrome</translation>
 <translation id="2063848847527508675">Chrome OS måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="2094919256425865063">Vill du avsluta Chrome ändå?</translation>
@@ -59,7 +58,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2467438592969358367">Lösenorden exporteras från Google Chrome. Skriv ditt Windows-lösenord om du tillåter detta.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2534507159460261402">Google Pay (har kopierats till Chrome)</translation>
-<translation id="2535429035253759792">Administratören meddelar att du bör starta om Chrome så att uppdateringen tillämpas</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
 <translation id="2586406160782125153">Webbinformationen raderas från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2588322182880276190">Logotypen för Chrome</translation>
@@ -217,7 +215,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7855730255114109580">Google Chrome behöver inte uppdateras</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
 <translation id="7896673875602241923">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chrome-användare så att dina uppgifter hålls separat.</translation>
-<translation id="7908168227788431038">Nästan klart! Slutför uppdateringen genom att starta om Google Chrome.</translation>
 <translation id="7962410387636238736">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Windows XP och Windows Vista inte längre stöds.</translation>
 <translation id="8008534537613507642">Installera om Chrome</translation>
 <translation id="8013993649590906847">Om en bild inte har någon användbar beskrivning görs ett försök att beskriva den åt dig i Chrome. Bilderna skickas till Google så att beskrivningen kan genereras.</translation>
@@ -240,7 +237,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="8679801911857917785">Det styr också vilken sida som visas när du startar Chrome.</translation>
 <translation id="870251953148363156">Uppdatera &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome kan inte fastställa eller ange standardwebbläsaren</translation>
-<translation id="8736674169840206667">Administratören meddelar att du måste starta om Chrome så att en uppdatering tillämpas</translation>
 <translation id="8823341990149967727">Den här versionen av Chrome är inaktuell</translation>
 <translation id="884296878221830158">Det styr också vilken sida som visas när du startar Chrome eller klickar på hemknappen.</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>

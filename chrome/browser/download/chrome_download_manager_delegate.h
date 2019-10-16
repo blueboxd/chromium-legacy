@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
+#include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -132,6 +133,22 @@ class ChromeDownloadManagerDelegate
   void OpenDownloadUsingPlatformHandler(download::DownloadItem* download);
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  // The state of a safebrowsing check.
+  class SafeBrowsingState : public DownloadCompletionBlocker {
+   public:
+    SafeBrowsingState() = default;
+    ~SafeBrowsingState() override;
+
+    // String pointer used for identifying safebrowing data associated with
+    // a download item.
+    static const char kSafeBrowsingUserDataKey[];
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SafeBrowsingState);
+  };
+#endif  // FULL_SAFE_BROWSING
 
  protected:
   virtual safe_browsing::DownloadProtectionService*

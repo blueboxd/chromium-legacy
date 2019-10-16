@@ -166,6 +166,15 @@ cr.define('settings.printing', function() {
     return printer.printerName.toLowerCase().includes(searchTerm.toLowerCase());
   }
 
+  /**
+   * @param {!PrinterListEntry} first
+   * @param {!PrinterListEntry} second
+   * @return {boolean}
+   */
+  function arePrinterIdsEqual(first, second) {
+    return first.printerInfo.printerId == second.printerInfo.printerId;
+  }
+
   return {
     isNetworkProtocol: isNetworkProtocol,
     isNameAndAddressValid: isNameAndAddressValid,
@@ -175,5 +184,6 @@ cr.define('settings.printing', function() {
     getErrorText: getErrorText,
     sortPrinters: sortPrinters,
     matchesSearchTerm: matchesSearchTerm,
+    arePrinterIdsEqual: arePrinterIdsEqual,
   };
 });

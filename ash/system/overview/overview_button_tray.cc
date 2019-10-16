@@ -104,12 +104,14 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
             OverviewSession::EnterExitOverviewType::kSlideInEnter) {
       aura::Window* new_active_window = mru_window_list[1];
 
-      // In splitview mode, quick switch will only affect the windows on the non
-      // default side. The window which was dragged to either side to begin
-      // splitview will remain untouched. Skip that window if it appears in the
-      // mru list.
-      SplitViewController* split_view_controller = SplitViewController::Get();
-      if (split_view_controller->InSplitViewMode() &&
+      // In tablet split view mode, quick switch will only affect the windows on
+      // the non default side. The window which was dragged to either side to
+      // begin split view will remain untouched. Skip that window if it appears
+      // in the mru list. Clamshell split view mode is impossible here, as it
+      // implies overview mode, and you cannot quick switch in overview mode.
+      SplitViewController* split_view_controller =
+          SplitViewController::Get(Shell::GetPrimaryRootWindow());
+      if (split_view_controller->InTabletSplitViewMode() &&
           mru_window_list.size() > 2u) {
         if (mru_window_list[0] ==
                 split_view_controller->GetDefaultSnappedWindow() ||

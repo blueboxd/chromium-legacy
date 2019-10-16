@@ -94,7 +94,7 @@ constexpr base::TimeDelta kDefaultIdleSessionMigrationPeriod =
 // |migrate_session_early_v2_| is true. PING frames will be sent as needed to
 // enforce this.
 constexpr base::TimeDelta kDefaultRetransmittableOnWireTimeout =
-    base::TimeDelta::FromMilliseconds(100);
+    base::TimeDelta::FromMilliseconds(200);
 
 // The default maximum time QUIC session could be on non-default network before
 // migrate back to default network.

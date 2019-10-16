@@ -12,12 +12,12 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
@@ -73,6 +72,7 @@ constexpr TimeDelta kSixAm = TimeDelta::FromHours(6);
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
 
 constexpr int64_t kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
+
 const char kArcStatus[] = R"(
 {
    "applications":[
@@ -187,9 +187,9 @@ namespace policy {
 // Though it is a unit test, this test is linked with browser_tests so that it
 // runs in a separate process. The intention is to avoid overriding the timezone
 // environment variable for other tests.
-class BaseChildStatusCollectorTest : public testing::Test {
+class ChildStatusCollectorTest : public testing::Test {
  public:
-  BaseChildStatusCollectorTest()
+  ChildStatusCollectorTest()
       : user_manager_(new chromeos::MockUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         user_data_dir_override_(chrome::DIR_USER_DATA),
@@ -229,9 +229,11 @@ class BaseChildStatusCollectorTest : public testing::Test {
 
     chromeos::PowerManagerClient::InitializeFake();
     chromeos::LoginState::Initialize();
+
+    MockChildUser(AccountId::FromUserEmail("user0@gmail.com"));
   }
 
-  ~BaseChildStatusCollectorTest() override {
+  ~ChildStatusCollectorTest() override {
     chromeos::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
@@ -306,17 +308,16 @@ class BaseChildStatusCollectorTest : public testing::Test {
           android_status_fetcher,
       const TimeDelta activity_day_start = kMidnight) {
     status_collector_ = std::make_unique<TestingChildStatusCollector>(
-        &local_state_, &fake_statistics_provider_, android_status_fetcher,
-        activity_day_start);
+        &profile_pref_service_, &fake_statistics_provider_,
+        android_status_fetcher, activity_day_start);
   }
 
   void GetStatus() {
     device_status_.Clear();
     session_status_.Clear();
     run_loop_.reset(new base::RunLoop());
-    status_collector_->GetStatusAsync(
-        base::BindRepeating(&BaseChildStatusCollectorTest::OnStatusReceived,
-                            base::Unretained(this)));
+    status_collector_->GetStatusAsync(base::BindRepeating(
+        &ChildStatusCollectorTest::OnStatusReceived, base::Unretained(this)));
     run_loop_->Run();
     run_loop_.reset();
   }
@@ -353,12 +354,6 @@ class BaseChildStatusCollectorTest : public testing::Test {
         .WillRepeatedly(Return(false));
   }
 
-  void MockRegularUserWithAffiliation(const AccountId& account_id,
-                                      bool is_affiliated) {
-    MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_REGULAR,
-                                   is_affiliated);
-  }
-
   void MockChildUser(const AccountId& account_id) {
     MockUserWithTypeAndAffiliation(account_id, user_manager::USER_TYPE_CHILD,
                                    false);
@@ -376,6 +371,29 @@ class BaseChildStatusCollectorTest : public testing::Test {
   // Convenience method.
   int64_t ActivePeriodMilliseconds() {
     return policy::ChildStatusCollector::kIdlePollIntervalSeconds * 1000;
+  }
+
+  void ExpectChildScreenTimeMilliseconds(int64_t duration) {
+    profile_pref_service_.CommitPendingWrite(
+        base::OnceClosure(),
+        base::BindOnce(
+            [](int64_t duration,
+               TestingPrefServiceSimple* profile_pref_service_) {
+              EXPECT_EQ(duration, profile_pref_service_->GetInteger(
+                                      prefs::kChildScreenTimeMilliseconds));
+            },
+            duration, &profile_pref_service_));
+  }
+
+  void ExpectLastChildScreenTimeReset(Time time) {
+    profile_pref_service_.CommitPendingWrite(
+        base::OnceClosure(),
+        base::BindOnce(
+            [](Time time, TestingPrefServiceSimple* profile_pref_service_) {
+              EXPECT_EQ(time, profile_pref_service_->GetTime(
+                                  prefs::kLastChildScreenTimeReset));
+            },
+            time, &profile_pref_service_));
   }
 
   // Since this is a unit test running in browser_tests we must do additional
@@ -408,59 +426,10 @@ class BaseChildStatusCollectorTest : public testing::Test {
   session_manager::SessionManager session_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BaseChildStatusCollectorTest);
+  DISALLOW_COPY_AND_ASSIGN(ChildStatusCollectorTest);
 };
 
-// Tests collecting device status for registered consumer device.
-class ChildStatusCollectorTimeLimitDisabledTest
-    : public BaseChildStatusCollectorTest {
- public:
-  ChildStatusCollectorTimeLimitDisabledTest() {
-    user_account_id_ = AccountId::FromUserEmail("user0@gmail.com");
-    MockChildUser(user_account_id_);
-    scoped_feature_list_.InitAndDisableFeature(features::kUsageTimeLimitPolicy);
-  }
-
-  ~ChildStatusCollectorTimeLimitDisabledTest() override = default;
-
- protected:
-  void RestartStatusCollector(
-      const policy::ChildStatusCollector::AndroidStatusFetcher&
-          android_status_fetcher,
-      const TimeDelta activity_day_start = kMidnight) override {
-    status_collector_ = std::make_unique<TestingChildStatusCollector>(
-        &profile_pref_service_, &fake_statistics_provider_,
-        android_status_fetcher, activity_day_start);
-  }
-
-  void ExpectChildScreenTimeMilliseconds(int64_t duration) {
-    profile_pref_service_.CommitPendingWrite(
-        base::OnceClosure(),
-        base::BindOnce(
-            [](int64_t duration,
-               TestingPrefServiceSimple* profile_pref_service_) {
-              EXPECT_EQ(duration, profile_pref_service_->GetInteger(
-                                      prefs::kChildScreenTimeMilliseconds));
-            },
-            duration, &profile_pref_service_));
-  }
-
-  void ExpectLastChildScreenTimeReset(Time time) {
-    profile_pref_service_.CommitPendingWrite(
-        base::OnceClosure(),
-        base::BindOnce(
-            [](Time time, TestingPrefServiceSimple* profile_pref_service_) {
-              EXPECT_EQ(time, profile_pref_service_->GetTime(
-                                  prefs::kLastChildScreenTimeReset));
-            },
-            time, &profile_pref_service_));
-  }
-
-  AccountId user_account_id_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, ReportingBootMode) {
+TEST_F(ChildStatusCollectorTest, ReportingBootMode) {
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey,
       chromeos::system::kDevSwitchBootValueVerified);
@@ -477,8 +446,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest, ReportingBootMode) {
 }
 
 // TODO(crbug.com/827386): remove after migration.
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest,
-       NotReportingWriteProtectSwitch) {
+TEST_F(ChildStatusCollectorTest, NotReportingWriteProtectSwitch) {
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kFirmwareWriteProtectBootKey,
       chromeos::system::kFirmwareWriteProtectBootValueOn);
@@ -489,7 +457,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest,
 }
 // END.
 
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, ReportingArcStatus) {
+TEST_F(ChildStatusCollectorTest, ReportingArcStatus) {
   RestartStatusCollector(
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
   testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
@@ -509,7 +477,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest, ReportingArcStatus) {
   EXPECT_EQ(kFakeDmToken, child_status_.user_dm_token());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, ReportingPartialVersionInfo) {
+TEST_F(ChildStatusCollectorTest, ReportingPartialVersionInfo) {
   GetStatus();
 
   // TODO(crbug.com/827386): remove after migration.
@@ -525,7 +493,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest, ReportingPartialVersionInfo) {
 }
 
 // TODO(crbug.com/827386): remove after migration.
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, NotReportingVolumeInfo) {
+TEST_F(ChildStatusCollectorTest, NotReportingVolumeInfo) {
   RestartStatusCollector(base::BindRepeating(&GetEmptyAndroidStatus));
   content::RunAllTasksUntilIdle();
 
@@ -534,7 +502,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest, NotReportingVolumeInfo) {
   EXPECT_EQ(0, device_status_.volume_infos_size());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, NotReportingUsers) {
+TEST_F(ChildStatusCollectorTest, NotReportingUsers) {
   const AccountId account_id0(AccountId::FromUserEmail("user0@gmail.com"));
   const AccountId account_id1(AccountId::FromUserEmail("user1@gmail.com"));
   user_manager_->AddUserWithAffiliationAndType(account_id0, true,
@@ -547,7 +515,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest, NotReportingUsers) {
   EXPECT_EQ(0, device_status_.users_size());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, NotReportingOSUpdateStatus) {
+TEST_F(ChildStatusCollectorTest, NotReportingOSUpdateStatus) {
   MockPlatformVersion("1234.0.0");
 
   GetStatus();
@@ -555,8 +523,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest, NotReportingOSUpdateStatus) {
   EXPECT_FALSE(device_status_.has_os_update_status());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest,
-       NotReportingDeviceHardwareStatus) {
+TEST_F(ChildStatusCollectorTest, NotReportingDeviceHardwareStatus) {
   EXPECT_FALSE(device_status_.has_sound_volume());
   EXPECT_EQ(0, device_status_.cpu_utilization_pct_samples().size());
   EXPECT_EQ(0, device_status_.cpu_temp_infos_size());
@@ -564,9 +531,8 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest,
   EXPECT_FALSE(device_status_.has_system_ram_total());
   EXPECT_FALSE(device_status_.has_tpm_status_info());
 }
-// END.
 
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, TimeZoneReporting) {
+TEST_F(ChildStatusCollectorTest, TimeZoneReporting) {
   const std::string timezone =
       base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                             ->GetCurrentTimezoneID());
@@ -582,48 +548,7 @@ TEST_F(ChildStatusCollectorTimeLimitDisabledTest, TimeZoneReporting) {
   EXPECT_EQ(timezone, child_status_.time_zone());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitDisabledTest, ActivityTimesFeatureDisable) {
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceActivityTimes, true);
-  scoped_testing_cros_settings_.device_settings()->SetBoolean(
-      chromeos::kReportDeviceUsers, true);
-  DeviceStateTransitions test_states[] = {
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,  // Check while inactive
-      DeviceStateTransitions::kEnterSessionActive,
-      DeviceStateTransitions::kPeriodicCheckTriggered,
-      DeviceStateTransitions::kLeaveSessionActive};
-  SimulateStateChanges(test_states,
-                       sizeof(test_states) / sizeof(DeviceStateTransitions));
-
-  GetStatus();
-
-  // TODO(crbug.com/827386): remove after migration.
-  EXPECT_EQ(0, device_status_.active_periods_size());
-  // END.
-
-  EXPECT_EQ(0, child_status_.screen_time_span_size());
-}
-
-// Tests collecting device status for registered consumer device when time
-// limit feature is enabled.
-class ChildStatusCollectorTimeLimitEnabledTest
-    : public ChildStatusCollectorTimeLimitDisabledTest {
- public:
-  ChildStatusCollectorTimeLimitEnabledTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kUsageTimeLimitPolicy);
-  }
-  ~ChildStatusCollectorTimeLimitEnabledTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesSessionTransistions) {
+TEST_F(ChildStatusCollectorTest, ReportingActivityTimesSessionTransistions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kPeriodicCheckTriggered,
@@ -652,8 +577,7 @@ TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
   ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesSleepTransistions) {
+TEST_F(ChildStatusCollectorTest, ReportingActivityTimesSleepTransistions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kPeriodicCheckTriggered,
@@ -684,8 +608,7 @@ TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
   ExpectChildScreenTimeMilliseconds(4 * ActivePeriodMilliseconds());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
-       ReportingActivityTimesIdleTransitions) {
+TEST_F(ChildStatusCollectorTest, ReportingActivityTimesIdleTransitions) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kPeriodicCheckTriggered,
@@ -715,7 +638,7 @@ TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
   ExpectChildScreenTimeMilliseconds(5 * ActivePeriodMilliseconds());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
+TEST_F(ChildStatusCollectorTest, ActivityKeptInPref) {
   EXPECT_TRUE(
       profile_pref_service_.GetDictionary(prefs::kUserActivityTimes)->empty());
   base::Time initial_time = base::Time::Now() + kHour;
@@ -757,8 +680,7 @@ TEST_F(ChildStatusCollectorTimeLimitEnabledTest, ActivityKeptInPref) {
             GetActiveMilliseconds(child_status_));
 }
 
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
-       ActivityNotWrittenToLocalState) {
+TEST_F(ChildStatusCollectorTest, ActivityNotWrittenToLocalState) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kPeriodicCheckTriggered,
@@ -789,7 +711,7 @@ TEST_F(ChildStatusCollectorTimeLimitEnabledTest,
   // enterprise reporting.
 }
 
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest, BeforeDayStart) {
+TEST_F(ChildStatusCollectorTest, BeforeDayStart) {
   RestartStatusCollector(base::BindRepeating(&GetEmptyAndroidStatus), kSixAm);
   // 04:00 AM
   Time initial_time = Time::Now().LocalMidnight() + TimeDelta::FromHours(4);
@@ -819,7 +741,7 @@ TEST_F(ChildStatusCollectorTimeLimitEnabledTest, BeforeDayStart) {
   ExpectLastChildScreenTimeReset(initial_time);
 }
 
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest, ActivityCrossingMidnight) {
+TEST_F(ChildStatusCollectorTest, ActivityCrossingMidnight) {
   DeviceStateTransitions test_states[] = {
       DeviceStateTransitions::kEnterSessionActive,
       DeviceStateTransitions::kLeaveSessionActive};
@@ -872,7 +794,7 @@ TEST_F(ChildStatusCollectorTimeLimitEnabledTest, ActivityCrossingMidnight) {
   ExpectChildScreenTimeMilliseconds(0.5 * ActivePeriodMilliseconds());
 }
 
-TEST_F(ChildStatusCollectorTimeLimitEnabledTest, ClockChanged) {
+TEST_F(ChildStatusCollectorTest, ClockChanged) {
   DeviceStateTransitions test_states[1] = {
       DeviceStateTransitions::kEnterSessionActive};
   base::Time initial_time =

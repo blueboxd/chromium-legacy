@@ -550,7 +550,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
   }
 
   // Destroying the directory should have released the backing database file.
-  ASSERT_TRUE(base::DeleteFile(path, true));
+  ASSERT_TRUE(base::DeleteFileRecursively(path));
 }
 
 class SyncableClientTagTest : public SyncableDirectoryTest {

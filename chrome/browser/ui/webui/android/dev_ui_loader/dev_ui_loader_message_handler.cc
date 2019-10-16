@@ -28,9 +28,10 @@ void DevUiLoaderMessageHandler::HandleGetDevUiDfmState(
     const base::ListValue* args) {
   const base::Value* callback_id = nullptr;
   CHECK(args->Get(0, &callback_id));
-  const char* response = dev_ui::DevUiModuleProvider::ModuleInstalled()
-                             ? "installed"
-                             : "not-installed";
+  const char* response =
+      dev_ui::DevUiModuleProvider::GetInstance()->ModuleInstalled()
+          ? "installed"
+          : "not-installed";
   AllowJavascript();
   ResolveJavascriptCallback(*callback_id, base::Value(response));
 }
@@ -49,8 +50,8 @@ void DevUiLoaderMessageHandler::HandleInstallDevUiDfm(
   const base::Value* callback_id = nullptr;
   CHECK(args->Get(0, &callback_id));
 
-  if (!dev_ui::DevUiModuleProvider::ModuleInstalled()) {
-    dev_ui::DevUiModuleProvider::InstallModule(base::BindOnce(
+  if (!dev_ui::DevUiModuleProvider::GetInstance()->ModuleInstalled()) {
+    dev_ui::DevUiModuleProvider::GetInstance()->InstallModule(base::BindOnce(
         &DevUiLoaderMessageHandler::OnDevUiDfmInstallWithStatus,
         weak_ptr_factory_.GetWeakPtr(), callback_id->GetString()));
   } else {

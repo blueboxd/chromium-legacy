@@ -157,25 +157,13 @@ bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
     DLOG(ERROR) << "Specifics contains empty encryption_keybag.";
     return false;
   }
-  // TODO(mmoskvitin): Revisit this because of IMPLICIT_PASSPHRASE, which also
-  // contradicts a later comment.
-  if (!specifics.has_passphrase_type()) {
-    DLOG(ERROR) << "Specifics has no passphrase_type.";
-    return false;
-  }
   switch (ProtoPassphraseInt32ToProtoEnum(specifics.passphrase_type())) {
     case NigoriSpecifics::UNKNOWN:
       DLOG(ERROR) << "Received unknown passphrase type with value: "
                   << specifics.passphrase_type();
       return false;
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-      // TODO(crbug.com/922900): we hope that IMPLICIT_PASSPHRASE support is not
-      // needed in new implementation. In case we need to continue migration to
-      // keystore we will need to support it.
-      // Note: in case passphrase_type is not set, we also end up here, because
-      // IMPLICIT_PASSPHRASE is a default value.
-      DLOG(ERROR) << "IMPLICIT_PASSPHRASE is not supported.";
-      return false;
+      return true;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
       if (specifics.keystore_decryptor_token().blob().empty()) {
         DLOG(ERROR) << "Keystore Nigori should have filled "
@@ -205,11 +193,8 @@ bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
 bool IsValidPassphraseTransition(
     NigoriSpecifics::PassphraseType old_passphrase_type,
     NigoriSpecifics::PassphraseType new_passphrase_type) {
-  // We never allow setting IMPLICIT_PASSPHRASE as current passphrase type.
-  DCHECK_NE(old_passphrase_type, NigoriSpecifics::IMPLICIT_PASSPHRASE);
   // We assume that |new_passphrase_type| is valid.
   DCHECK_NE(new_passphrase_type, NigoriSpecifics::UNKNOWN);
-  DCHECK_NE(new_passphrase_type, NigoriSpecifics::IMPLICIT_PASSPHRASE);
 
   if (old_passphrase_type == new_passphrase_type) {
     return true;
@@ -218,10 +203,8 @@ bool IsValidPassphraseTransition(
     case NigoriSpecifics::UNKNOWN:
       // This can happen iff we have not synced local state yet, so we accept
       // any valid passphrase type (invalid filtered before).
-      return true;
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-      NOTREACHED();
-      return false;
+      return true;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
       return new_passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE ||
              new_passphrase_type == NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE;
@@ -450,7 +433,6 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state_.passphrase_type) {
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::UNKNOWN:
       NOTREACHED();
       return;
@@ -464,6 +446,7 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
       // TODO(crbug.com/922900): investigate whether we need to call
       // OnPassphraseRequired() to prompt for decryption passphrase.
       return;
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       if (state_.pending_keys.has_value()) {
@@ -785,10 +768,9 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
       specifics.encryption_keybag();
   switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-      // NigoriSpecifics with UNKNOWN or IMPLICIT_PASSPHRASE type is not valid
-      // and shouldn't reach this codepath. We just updated |passphrase_type_|
-      // from specifics, so it can't be in these states as well.
+      // NigoriSpecifics with UNKNOWN type is not valid and shouldn't reach
+      // this codepath. We just updated |passphrase_type_| from specifics, so
+      // it can't be in this state as well.
       NOTREACHED();
       break;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE: {
@@ -803,6 +785,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
       state_.custom_passphrase_key_derivation_params =
           GetKeyDerivationParamsFromSpecifics(specifics);
       FALLTHROUGH;
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
       UpdateCryptographerFromNonKeystoreNigori(encryption_keybag);
@@ -1025,10 +1008,6 @@ std::string NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
 base::Time NigoriSyncBridgeImpl::GetExplicitPassphraseTime() const {
   switch (state_.passphrase_type) {
     case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-      // IMPLICIT_PASSPHRASE type isn't supported and should be never set as
-      // |passphrase_type_|;
-      NOTREACHED();
-      return base::Time();
     case NigoriSpecifics::UNKNOWN:
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
@@ -1046,9 +1025,9 @@ KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
     const {
   switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       NOTREACHED();
       return KeyDerivationParams::CreateWithUnsupportedMethod();
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
@@ -1066,8 +1045,8 @@ void NigoriSyncBridgeImpl::MaybeNotifyOfPendingKeys() const {
 
   switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       return;
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
@@ -1088,7 +1067,6 @@ void NigoriSyncBridgeImpl::MaybeNotifyOfPendingKeys() const {
 void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
   switch (state_.passphrase_type) {
     case NigoriSpecifics::UNKNOWN:
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
       NOTREACHED();
       return;
     case NigoriSpecifics::KEYSTORE_PASSPHRASE:
@@ -1101,6 +1079,7 @@ void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
       // prefs.
       NOTIMPLEMENTED();
       return;
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
       // |packed_custom_passphrase_key| will be empty in case serialization or

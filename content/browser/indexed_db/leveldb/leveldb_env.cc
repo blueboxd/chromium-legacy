@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"

@@ -506,21 +506,22 @@ class OptChangeRequest : public PaymentsRequest {
     }
     request_dict.SetKey("reason", base::Value(reason));
 
-    base::Value fido_authentication_info(base::Value::Type::DICTIONARY);
     if (request_details_.fido_authenticator_response.is_dict()) {
+      base::Value fido_authentication_info(base::Value::Type::DICTIONARY);
+
       fido_authentication_info.SetKey(
           "fido_authenticator_response",
           std::move(request_details_.fido_authenticator_response));
-    }
 
-    if (!request_details_.card_authorization_token.empty()) {
-      fido_authentication_info.SetKey(
-          "card_authorization_token",
-          base::Value(request_details_.card_authorization_token));
-    }
+      if (!request_details_.card_authorization_token.empty()) {
+        fido_authentication_info.SetKey(
+            "card_authorization_token",
+            base::Value(request_details_.card_authorization_token));
+      }
 
-    request_dict.SetKey("fido_authentication_info",
-                        std::move(fido_authentication_info));
+      request_dict.SetKey("fido_authentication_info",
+                          std::move(fido_authentication_info));
+    }
 
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);

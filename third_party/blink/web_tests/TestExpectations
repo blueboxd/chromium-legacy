@@ -60,7 +60,6 @@ crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 # Tests temporarily disabled with Site Isolation - test issues or test harness
 # issues (e.g. missing OOPIF support in the test harness).
 # TODO(lukasza, alexmos): Burn down this list.
-crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash Timeout ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 
@@ -2538,13 +2537,7 @@ crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scroll-chain
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-
-# Compositor threaded scrollbar scrolls parent of subscroller.
-# Note: even when fixed will still fail on Mac until crbug.com/953847
-# is addressed. Uncomment below line when fixing crbug.com/965829.
-#crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/987115 [ Win ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure Crash ]
-crbug.com/965829 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -5626,9 +5619,6 @@ crbug.com/1001936 external/wpt/css/css-masking/clip-path/clip-path-inline-001.ht
 crbug.com/1002527 [ Debug ] fast/text/large-text-composed-char.html [ Pass Crash ]
 crbug.com/1002686 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure ]
 
-# Sheriff 2019-09-11
-crbug.com/1002828 [ Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Pass Failure Crash ]
-
 # Tests fail because of scrollbar-width property
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-001.html [ Failure ]
 crbug.com/1003055 external/wpt/css/css-scroll-snap/scroll-target-align-002.html [ Failure ]
@@ -5669,10 +5659,6 @@ crbug.com/630695 virtual/scalefactor200/css3/filters/effect-drop-shadow-hw.html 
 
 # Sheriff 2019-09-20
 crbug.com/1005128 crypto/subtle/abandon-crypto-operation2.html [ Pass Crash ]
-
-# Sheriff 2019-09-26
-crbug.com/1008257 external/wpt/service-workers/service-worker/claim-shared-worker-fetch.https.html [ Pass Crash ]
-crbug.com/1008257 external/wpt/service-workers/service-worker/worker-interception-redirect.https.html [ Pass Crash ]
 
 # Sheriff 2019-09-27
 crbug.com/1008826 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Pass Failure Timeout ]

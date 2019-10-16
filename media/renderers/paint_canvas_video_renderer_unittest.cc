@@ -926,7 +926,7 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
       gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
   auto video_frame = VideoFrame::WrapNativeTextures(
-      PIXEL_FORMAT_NV12, holders, base::Bind(MailboxHoldersReleased), size,
+      PIXEL_FORMAT_NV12, holders, base::BindOnce(MailboxHoldersReleased), size,
       gfx::Rect(size), size, kNoTimestamp);
 
   cc::PaintFlags flags;
@@ -983,9 +983,9 @@ TEST_F(PaintCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
   TestGLES2Interface gles2;
   // Bind the texImage2D callback to verify the uint16 to float32 conversion.
   gles2.teximage2d_callback_ =
-      base::Bind([](GLenum target, GLint level, GLint internalformat,
-                    GLsizei width, GLsizei height, GLint border, GLenum format,
-                    GLenum type, const void* pixels) {
+      base::BindRepeating([](GLenum target, GLint level, GLint internalformat,
+                             GLsizei width, GLsizei height, GLint border,
+                             GLenum format, GLenum type, const void* pixels) {
         EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
         EXPECT_EQ(static_cast<unsigned>(GL_RGBA), format);
         EXPECT_EQ(GL_RGBA, internalformat);
@@ -1031,9 +1031,9 @@ TEST_F(PaintCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
   TestGLES2Interface gles2;
   // Bind the texImage2D callback to verify the uint16 to float32 conversion.
   gles2.texsubimage2d_callback_ =
-      base::Bind([](GLenum target, GLint level, GLint xoffset, GLint yoffset,
-                    GLsizei width, GLsizei height, GLenum format, GLenum type,
-                    const void* pixels) {
+      base::BindRepeating([](GLenum target, GLint level, GLint xoffset,
+                             GLint yoffset, GLsizei width, GLsizei height,
+                             GLenum format, GLenum type, const void* pixels) {
         EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
         EXPECT_EQ(static_cast<unsigned>(GL_RED), format);
         EXPECT_EQ(2, xoffset);

@@ -121,10 +121,9 @@ void AssistantClient::BindAssistant(
       std::move(receiver));
 }
 
-void AssistantClient::OnAssistantStatusChanged(bool running) {
-  ash::AssistantState::Get()->NotifyStatusChanged(
-      running ? ash::mojom::AssistantState::READY
-              : ash::mojom::AssistantState::NOT_READY);
+void AssistantClient::OnAssistantStatusChanged(
+    ash::mojom::AssistantState new_state) {
+  ash::AssistantState::Get()->NotifyStatusChanged(new_state);
 }
 
 void AssistantClient::RequestAssistantStructure(

@@ -1744,7 +1744,7 @@ Unknown properties are collapsed to zero. -->
 
 <enum name="AndroidSearchEngineChoiceEventsV2">
   <summary>Events related to Search Engine Choice V2 feature.</summary>
-  <int value="0" label="Request recieved from play"/>
+  <int value="0" label="Request received from play"/>
   <int value="1"
       label="User skipped (didn't complete) Search Engine Choice flow"/>
   <int value="2" label="Play API returned empty list of providers"/>
@@ -2812,6 +2812,7 @@ Unknown properties are collapsed to zero. -->
   <int value="17" label="App started from Smart Text Selection context menu"/>
   <int value="18" label="App started from Kiosk Next Home"/>
   <int value="19" label="Interaction with gamepad"/>
+  <int value="20" label="App started from URL in the Omnibox"/>
 </enum>
 
 <enum name="ArcVideoDecodeAcceleratorResult">
@@ -16161,6 +16162,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="ANGLE D3D11"/>
   <int value="5" label="ANGLE OpenGL"/>
   <int value="6" label="ANGLE OpenGL ES"/>
+  <int value="13" label="Angle D3D11on12"/>
 </enum>
 
 <enum name="EmbeddedWorkerStartingPhase">
@@ -52052,6 +52054,687 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="NTP shown"/>
   <int value="1" label="Foregrounded"/>
   <int value="2" label="Fixed timer"/>
+</enum>
+
+<enum name="RegulatoryDomain">
+  <int value="1" label="00"/>
+  <int value="2" label="AA (unused)"/>
+  <int value="3" label="AB (unused)"/>
+  <int value="4" label="AC (unused)"/>
+  <int value="5" label="Andorra"/>
+  <int value="6" label="United Arab Emirates"/>
+  <int value="7" label="Afghanistan"/>
+  <int value="8" label="AG (unused)"/>
+  <int value="9" label="AH (unused)"/>
+  <int value="10" label="Anguilla"/>
+  <int value="11" label="AJ (unused)"/>
+  <int value="12" label="AK (unused)"/>
+  <int value="13" label="Albania"/>
+  <int value="14" label="Armenia"/>
+  <int value="15" label="Netherlands Antilles"/>
+  <int value="16" label="AO (unused)"/>
+  <int value="17" label="AP (unused)"/>
+  <int value="18" label="AQ (unused)"/>
+  <int value="19" label="Argentina"/>
+  <int value="20" label="American Samoa"/>
+  <int value="21" label="Austria"/>
+  <int value="22" label="Australia"/>
+  <int value="23" label="AV (unused)"/>
+  <int value="24" label="Aruba"/>
+  <int value="25" label="AX (unused)"/>
+  <int value="26" label="AY (unused)"/>
+  <int value="27" label="Azerbaijan"/>
+  <int value="28" label="Bosnia and Herzegovina"/>
+  <int value="29" label="Barbados"/>
+  <int value="30" label="BC (unused)"/>
+  <int value="31" label="Bangladesh"/>
+  <int value="32" label="Belgium"/>
+  <int value="33" label="Burkina Faso"/>
+  <int value="34" label="Bulgaria"/>
+  <int value="35" label="Bahrain"/>
+  <int value="36" label="BI (unused)"/>
+  <int value="37" label="BJ (unused)"/>
+  <int value="38" label="BK (unused)"/>
+  <int value="39" label="Saint Barthelemy"/>
+  <int value="40" label="Bermuda"/>
+  <int value="41" label="Brunei Darussalam"/>
+  <int value="42" label="Bolivia"/>
+  <int value="43" label="BP (unused)"/>
+  <int value="44" label="BQ (unused)"/>
+  <int value="45" label="Brazil"/>
+  <int value="46" label="Bahamas"/>
+  <int value="47" label="Bhutan"/>
+  <int value="48" label="BU (unused)"/>
+  <int value="49" label="BV (unused)"/>
+  <int value="50" label="BW (unused)"/>
+  <int value="51" label="BX (unused)"/>
+  <int value="52" label="Belarus"/>
+  <int value="53" label="Belize"/>
+  <int value="54" label="Canada"/>
+  <int value="55" label="CB (unused)"/>
+  <int value="56" label="CC (unused)"/>
+  <int value="57" label="CD (unused)"/>
+  <int value="58" label="CE (unused)"/>
+  <int value="59" label="Central African Republic"/>
+  <int value="60" label="CG (unused)"/>
+  <int value="61" label="Switzerland"/>
+  <int value="62" label="Cote d'Ivoire"/>
+  <int value="63" label="CJ (unused)"/>
+  <int value="64" label="CK (unused)"/>
+  <int value="65" label="Chile"/>
+  <int value="66" label="CM (unused)"/>
+  <int value="67" label="China"/>
+  <int value="68" label="Colombia"/>
+  <int value="69" label="CP (unused)"/>
+  <int value="70" label="CQ (unused)"/>
+  <int value="71" label="Costa Rica"/>
+  <int value="72" label="CS (unused)"/>
+  <int value="73" label="CT (unused)"/>
+  <int value="74" label="Cuba"/>
+  <int value="75" label="CV (unused)"/>
+  <int value="76" label="CW (unused)"/>
+  <int value="77" label="Christmas Island"/>
+  <int value="78" label="Cyprus"/>
+  <int value="79" label="Czech Republic"/>
+  <int value="80" label="DA (unused)"/>
+  <int value="81" label="DB (unused)"/>
+  <int value="82" label="DC (unused)"/>
+  <int value="83" label="DD (unused)"/>
+  <int value="84" label="Germany"/>
+  <int value="85" label="DF (unused)"/>
+  <int value="86" label="DG (unused)"/>
+  <int value="87" label="DH (unused)"/>
+  <int value="88" label="DI (unused)"/>
+  <int value="89" label="DJ (unused)"/>
+  <int value="90" label="Denmark"/>
+  <int value="91" label="DL (unused)"/>
+  <int value="92" label="Dominica"/>
+  <int value="93" label="DN (unused)"/>
+  <int value="94" label="Dominican Republic"/>
+  <int value="95" label="DP (unused)"/>
+  <int value="96" label="DQ (unused)"/>
+  <int value="97" label="DR (unused)"/>
+  <int value="98" label="DS (unused)"/>
+  <int value="99" label="DT (unused)"/>
+  <int value="100" label="DU (unused)"/>
+  <int value="101" label="DV (unused)"/>
+  <int value="102" label="DW (unused)"/>
+  <int value="103" label="DX (unused)"/>
+  <int value="104" label="DY (unused)"/>
+  <int value="105" label="Algeria"/>
+  <int value="106" label="EA (unused)"/>
+  <int value="107" label="EB (unused)"/>
+  <int value="108" label="Ecuador"/>
+  <int value="109" label="ED (unused)"/>
+  <int value="110" label="Estonia"/>
+  <int value="111" label="EF (unused)"/>
+  <int value="112" label="Egypt"/>
+  <int value="113" label="EH (unused)"/>
+  <int value="114" label="EI (unused)"/>
+  <int value="115" label="EJ (unused)"/>
+  <int value="116" label="EK (unused)"/>
+  <int value="117" label="EL (unused)"/>
+  <int value="118" label="EM (unused)"/>
+  <int value="119" label="EN (unused)"/>
+  <int value="120" label="EO (unused)"/>
+  <int value="121" label="EP (unused)"/>
+  <int value="122" label="EQ (unused)"/>
+  <int value="123" label="ER (unused)"/>
+  <int value="124" label="Spain"/>
+  <int value="125" label="Ethiopia"/>
+  <int value="126" label="EU (unused)"/>
+  <int value="127" label="EV (unused)"/>
+  <int value="128" label="EW (unused)"/>
+  <int value="129" label="EX (unused)"/>
+  <int value="130" label="EY (unused)"/>
+  <int value="131" label="EZ (unused)"/>
+  <int value="132" label="FA (unused)"/>
+  <int value="133" label="FB (unused)"/>
+  <int value="134" label="FC (unused)"/>
+  <int value="135" label="FD (unused)"/>
+  <int value="136" label="FE (unused)"/>
+  <int value="137" label="FF (unused)"/>
+  <int value="138" label="FG (unused)"/>
+  <int value="139" label="FH (unused)"/>
+  <int value="140" label="Finland"/>
+  <int value="141" label="FJ (unused)"/>
+  <int value="142" label="FK (unused)"/>
+  <int value="143" label="FL (unused)"/>
+  <int value="144" label="Federated States of Micronesia"/>
+  <int value="145" label="FN (unused)"/>
+  <int value="146" label="FO (unused)"/>
+  <int value="147" label="FP (unused)"/>
+  <int value="148" label="FQ (unused)"/>
+  <int value="149" label="France"/>
+  <int value="150" label="FS (unused)"/>
+  <int value="151" label="FT (unused)"/>
+  <int value="152" label="FU (unused)"/>
+  <int value="153" label="FV (unused)"/>
+  <int value="154" label="FW (unused)"/>
+  <int value="155" label="FX (unused)"/>
+  <int value="156" label="FY (unused)"/>
+  <int value="157" label="FZ (unused)"/>
+  <int value="158" label="GA (unused)"/>
+  <int value="159" label="United Kingdom"/>
+  <int value="160" label="GC (unused)"/>
+  <int value="161" label="Grenada"/>
+  <int value="162" label="Georgia"/>
+  <int value="163" label="French Guiana"/>
+  <int value="164" label="GG (unused)"/>
+  <int value="165" label="Ghana"/>
+  <int value="166" label="GI (unused)"/>
+  <int value="167" label="GJ (unused)"/>
+  <int value="168" label="GK (unused)"/>
+  <int value="169" label="Greenland"/>
+  <int value="170" label="GM (unused)"/>
+  <int value="171" label="GN (unused)"/>
+  <int value="172" label="GO (unused)"/>
+  <int value="173" label="Guadeloupe"/>
+  <int value="174" label="GQ (unused)"/>
+  <int value="175" label="Greece"/>
+  <int value="176" label="GS (unused)"/>
+  <int value="177" label="Guatemala"/>
+  <int value="178" label="Guam"/>
+  <int value="179" label="GV (unused)"/>
+  <int value="180" label="GW (unused)"/>
+  <int value="181" label="GX (unused)"/>
+  <int value="182" label="Guyana"/>
+  <int value="183" label="GZ (unused)"/>
+  <int value="184" label="HA (unused)"/>
+  <int value="185" label="HB (unused)"/>
+  <int value="186" label="HC (unused)"/>
+  <int value="187" label="HD (unused)"/>
+  <int value="188" label="HE (unused)"/>
+  <int value="189" label="HF (unused)"/>
+  <int value="190" label="HG (unused)"/>
+  <int value="191" label="HH (unused)"/>
+  <int value="192" label="HI (unused)"/>
+  <int value="193" label="HJ (unused)"/>
+  <int value="194" label="Hong Kong"/>
+  <int value="195" label="HL (unused)"/>
+  <int value="196" label="HM (unused)"/>
+  <int value="197" label="Honduras"/>
+  <int value="198" label="HO (unused)"/>
+  <int value="199" label="HP (unused)"/>
+  <int value="200" label="HQ (unused)"/>
+  <int value="201" label="Croatia (Hrvatska)"/>
+  <int value="202" label="HS (unused)"/>
+  <int value="203" label="Haiti"/>
+  <int value="204" label="Hungary"/>
+  <int value="205" label="HV (unused)"/>
+  <int value="206" label="HW (unused)"/>
+  <int value="207" label="HX (unused)"/>
+  <int value="208" label="HY (unused)"/>
+  <int value="209" label="HZ (unused)"/>
+  <int value="210" label="IA (unused)"/>
+  <int value="211" label="IB (unused)"/>
+  <int value="212" label="IC (unused)"/>
+  <int value="213" label="Indonesia"/>
+  <int value="214" label="Ireland"/>
+  <int value="215" label="IF (unused)"/>
+  <int value="216" label="IG (unused)"/>
+  <int value="217" label="IH (unused)"/>
+  <int value="218" label="II (unused)"/>
+  <int value="219" label="IJ (unused)"/>
+  <int value="220" label="IK (unused)"/>
+  <int value="221" label="Israel"/>
+  <int value="222" label="IM (unused)"/>
+  <int value="223" label="India"/>
+  <int value="224" label="IO (unused)"/>
+  <int value="225" label="IP (unused)"/>
+  <int value="226" label="IQ (unused)"/>
+  <int value="227" label="Islamic Republic of Iran"/>
+  <int value="228" label="Iceland"/>
+  <int value="229" label="Italy"/>
+  <int value="230" label="IU (unused)"/>
+  <int value="231" label="IV (unused)"/>
+  <int value="232" label="IW (unused)"/>
+  <int value="233" label="IX (unused)"/>
+  <int value="234" label="IY (unused)"/>
+  <int value="235" label="IZ (unused)"/>
+  <int value="236" label="JA (unused)"/>
+  <int value="237" label="JB (unused)"/>
+  <int value="238" label="JC (unused)"/>
+  <int value="239" label="JD (unused)"/>
+  <int value="240" label="JE (unused)"/>
+  <int value="241" label="JF (unused)"/>
+  <int value="242" label="JG (unused)"/>
+  <int value="243" label="JH (unused)"/>
+  <int value="244" label="JI (unused)"/>
+  <int value="245" label="JJ (unused)"/>
+  <int value="246" label="JK (unused)"/>
+  <int value="247" label="JL (unused)"/>
+  <int value="248" label="Jamaica"/>
+  <int value="249" label="JN (unused)"/>
+  <int value="250" label="Jordan"/>
+  <int value="251" label="Japan"/>
+  <int value="252" label="JQ (unused)"/>
+  <int value="253" label="JR (unused)"/>
+  <int value="254" label="JS (unused)"/>
+  <int value="255" label="JT (unused)"/>
+  <int value="256" label="JU (unused)"/>
+  <int value="257" label="JV (unused)"/>
+  <int value="258" label="JW (unused)"/>
+  <int value="259" label="JX (unused)"/>
+  <int value="260" label="JY (unused)"/>
+  <int value="261" label="JZ (unused)"/>
+  <int value="262" label="KA (unused)"/>
+  <int value="263" label="KB (unused)"/>
+  <int value="264" label="KC (unused)"/>
+  <int value="265" label="KD (unused)"/>
+  <int value="266" label="Kenya"/>
+  <int value="267" label="KF (unused)"/>
+  <int value="268" label="KG (unused)"/>
+  <int value="269" label="Cambodia"/>
+  <int value="270" label="KI (unused)"/>
+  <int value="271" label="KJ (unused)"/>
+  <int value="272" label="KK (unused)"/>
+  <int value="273" label="KL (unused)"/>
+  <int value="274" label="KM (unused)"/>
+  <int value="275" label="Saint Kitts and Nevis"/>
+  <int value="276" label="KO (unused)"/>
+  <int value="277" label="Democratic People's Republic of Korea"/>
+  <int value="278" label="KQ (unused)"/>
+  <int value="279" label="Republic of Korea"/>
+  <int value="280" label="KS (unused)"/>
+  <int value="281" label="KT (unused)"/>
+  <int value="282" label="KU (unused)"/>
+  <int value="283" label="KV (unused)"/>
+  <int value="284" label="Kuwait"/>
+  <int value="285" label="KX (unused)"/>
+  <int value="286" label="Cayman Islands"/>
+  <int value="287" label="Kazakhstan"/>
+  <int value="288" label="LA (unused)"/>
+  <int value="289" label="Lebanon"/>
+  <int value="290" label="Saint Lucia"/>
+  <int value="291" label="LD (unused)"/>
+  <int value="292" label="LE (unused)"/>
+  <int value="293" label="LF (unused)"/>
+  <int value="294" label="LG (unused)"/>
+  <int value="295" label="LH (unused)"/>
+  <int value="296" label="Liechtenstein"/>
+  <int value="297" label="LJ (unused)"/>
+  <int value="298" label="Sri Lanka"/>
+  <int value="299" label="LL (unused)"/>
+  <int value="300" label="LM (unused)"/>
+  <int value="301" label="LN (unused)"/>
+  <int value="302" label="LO (unused)"/>
+  <int value="303" label="LP (unused)"/>
+  <int value="304" label="LQ (unused)"/>
+  <int value="305" label="LR (unused)"/>
+  <int value="306" label="Lesotho"/>
+  <int value="307" label="Lithuania"/>
+  <int value="308" label="Luxembourg"/>
+  <int value="309" label="Latvia"/>
+  <int value="310" label="LW (unused)"/>
+  <int value="311" label="LX (unused)"/>
+  <int value="312" label="LY (unused)"/>
+  <int value="313" label="LZ (unused)"/>
+  <int value="314" label="Morocco"/>
+  <int value="315" label="MB (unused)"/>
+  <int value="316" label="Monaco"/>
+  <int value="317" label="Republic of Moldova"/>
+  <int value="318" label="Montenegro"/>
+  <int value="319" label="Saint Martin"/>
+  <int value="320" label="MG (unused)"/>
+  <int value="321" label="Marshall Islands"/>
+  <int value="322" label="MI (unused)"/>
+  <int value="323" label="MJ (unused)"/>
+  <int value="324" label="The Former Yugoslav Republic of Macedonia"/>
+  <int value="325" label="ML (unused)"/>
+  <int value="326" label="MM (unused)"/>
+  <int value="327" label="Mongolia"/>
+  <int value="328" label="Macau"/>
+  <int value="329" label="Northern Mariana Islands"/>
+  <int value="330" label="Martinique"/>
+  <int value="331" label="Mauritania"/>
+  <int value="332" label="MS (unused)"/>
+  <int value="333" label="Malta"/>
+  <int value="334" label="Mauritius"/>
+  <int value="335" label="Maldives"/>
+  <int value="336" label="Malawi"/>
+  <int value="337" label="Mexico"/>
+  <int value="338" label="Malaysia"/>
+  <int value="339" label="MZ (unused)"/>
+  <int value="340" label="NA (unused)"/>
+  <int value="341" label="NB (unused)"/>
+  <int value="342" label="NC (unused)"/>
+  <int value="343" label="ND (unused)"/>
+  <int value="344" label="NE (unused)"/>
+  <int value="345" label="NF (unused)"/>
+  <int value="346" label="Nigeria"/>
+  <int value="347" label="NH (unused)"/>
+  <int value="348" label="Nicaragua"/>
+  <int value="349" label="NJ (unused)"/>
+  <int value="350" label="NK (unused)"/>
+  <int value="351" label="Netherlands"/>
+  <int value="352" label="NM (unused)"/>
+  <int value="353" label="NN (unused)"/>
+  <int value="354" label="Norway"/>
+  <int value="355" label="Nepal"/>
+  <int value="356" label="NQ (unused)"/>
+  <int value="357" label="NR (unused)"/>
+  <int value="358" label="NS (unused)"/>
+  <int value="359" label="NT (unused)"/>
+  <int value="360" label="NU (unused)"/>
+  <int value="361" label="NV (unused)"/>
+  <int value="362" label="NW (unused)"/>
+  <int value="363" label="NX (unused)"/>
+  <int value="364" label="NY (unused)"/>
+  <int value="365" label="New Zealand"/>
+  <int value="366" label="OA (unused)"/>
+  <int value="367" label="OB (unused)"/>
+  <int value="368" label="OC (unused)"/>
+  <int value="369" label="OD (unused)"/>
+  <int value="370" label="OE (unused)"/>
+  <int value="371" label="OF (unused)"/>
+  <int value="372" label="OG (unused)"/>
+  <int value="373" label="OH (unused)"/>
+  <int value="374" label="OI (unused)"/>
+  <int value="375" label="OJ (unused)"/>
+  <int value="376" label="OK (unused)"/>
+  <int value="377" label="OL (unused)"/>
+  <int value="378" label="Oman"/>
+  <int value="379" label="ON (unused)"/>
+  <int value="380" label="OO (unused)"/>
+  <int value="381" label="OP (unused)"/>
+  <int value="382" label="OQ (unused)"/>
+  <int value="383" label="OR (unused)"/>
+  <int value="384" label="OS (unused)"/>
+  <int value="385" label="OT (unused)"/>
+  <int value="386" label="OU (unused)"/>
+  <int value="387" label="OV (unused)"/>
+  <int value="388" label="OW (unused)"/>
+  <int value="389" label="OX (unused)"/>
+  <int value="390" label="OY (unused)"/>
+  <int value="391" label="OZ (unused)"/>
+  <int value="392" label="Panama"/>
+  <int value="393" label="PB (unused)"/>
+  <int value="394" label="PC (unused)"/>
+  <int value="395" label="PD (unused)"/>
+  <int value="396" label="Peru"/>
+  <int value="397" label="French Polynesia"/>
+  <int value="398" label="Papua New Guinea"/>
+  <int value="399" label="Philippines"/>
+  <int value="400" label="PI (unused)"/>
+  <int value="401" label="PJ (unused)"/>
+  <int value="402" label="Pakistan"/>
+  <int value="403" label="Poland"/>
+  <int value="404" label="St. Pierre and Miquelon"/>
+  <int value="405" label="PN (unused)"/>
+  <int value="406" label="PO (unused)"/>
+  <int value="407" label="PP (unused)"/>
+  <int value="408" label="PQ (unused)"/>
+  <int value="409" label="Puerto Rico"/>
+  <int value="410" label="PS (unused)"/>
+  <int value="411" label="Portugal"/>
+  <int value="412" label="PU (unused)"/>
+  <int value="413" label="PV (unused)"/>
+  <int value="414" label="Palau"/>
+  <int value="415" label="PX (unused)"/>
+  <int value="416" label="Paraguay"/>
+  <int value="417" label="PZ (unused)"/>
+  <int value="418" label="Qatar"/>
+  <int value="419" label="QB (unused)"/>
+  <int value="420" label="QC (unused)"/>
+  <int value="421" label="QD (unused)"/>
+  <int value="422" label="QE (unused)"/>
+  <int value="423" label="QF (unused)"/>
+  <int value="424" label="QG (unused)"/>
+  <int value="425" label="QH (unused)"/>
+  <int value="426" label="QI (unused)"/>
+  <int value="427" label="QJ (unused)"/>
+  <int value="428" label="QK (unused)"/>
+  <int value="429" label="QL (unused)"/>
+  <int value="430" label="QM (unused)"/>
+  <int value="431" label="QN (unused)"/>
+  <int value="432" label="QO (unused)"/>
+  <int value="433" label="QP (unused)"/>
+  <int value="434" label="QQ (unused)"/>
+  <int value="435" label="QR (unused)"/>
+  <int value="436" label="QS (unused)"/>
+  <int value="437" label="QT (unused)"/>
+  <int value="438" label="QU (unused)"/>
+  <int value="439" label="QV (unused)"/>
+  <int value="440" label="QW (unused)"/>
+  <int value="441" label="QX (unused)"/>
+  <int value="442" label="QY (unused)"/>
+  <int value="443" label="QZ (unused)"/>
+  <int value="444" label="RA (unused)"/>
+  <int value="445" label="RB (unused)"/>
+  <int value="446" label="RC (unused)"/>
+  <int value="447" label="RD (unused)"/>
+  <int value="448" label="Reunion"/>
+  <int value="449" label="RF (unused)"/>
+  <int value="450" label="RG (unused)"/>
+  <int value="451" label="RH (unused)"/>
+  <int value="452" label="RI (unused)"/>
+  <int value="453" label="RJ (unused)"/>
+  <int value="454" label="RK (unused)"/>
+  <int value="455" label="RL (unused)"/>
+  <int value="456" label="RM (unused)"/>
+  <int value="457" label="RN (unused)"/>
+  <int value="458" label="Romania"/>
+  <int value="459" label="RP (unused)"/>
+  <int value="460" label="RQ (unused)"/>
+  <int value="461" label="RR (unused)"/>
+  <int value="462" label="Serbia"/>
+  <int value="463" label="RT (unused)"/>
+  <int value="464" label="Russian Federation"/>
+  <int value="465" label="RV (unused)"/>
+  <int value="466" label="Rwanda"/>
+  <int value="467" label="RX (unused)"/>
+  <int value="468" label="RY (unused)"/>
+  <int value="469" label="RZ (unused)"/>
+  <int value="470" label="Saudi Arabia"/>
+  <int value="471" label="SB (unused)"/>
+  <int value="472" label="SC (unused)"/>
+  <int value="473" label="SD (unused)"/>
+  <int value="474" label="Sweden"/>
+  <int value="475" label="SF (unused)"/>
+  <int value="476" label="Singapore"/>
+  <int value="477" label="SH (unused)"/>
+  <int value="478" label="Slovenia"/>
+  <int value="479" label="SJ (unused)"/>
+  <int value="480" label="Slovakia"/>
+  <int value="481" label="SL (unused)"/>
+  <int value="482" label="SM (unused)"/>
+  <int value="483" label="Senegal"/>
+  <int value="484" label="SO (unused)"/>
+  <int value="485" label="SP (unused)"/>
+  <int value="486" label="SQ (unused)"/>
+  <int value="487" label="Suriname"/>
+  <int value="488" label="SS (unused)"/>
+  <int value="489" label="ST (unused)"/>
+  <int value="490" label="SU (unused)"/>
+  <int value="491" label="El Salvador"/>
+  <int value="492" label="SW (unused)"/>
+  <int value="493" label="SX (unused)"/>
+  <int value="494" label="Syrian Arab Republic"/>
+  <int value="495" label="SZ (unused)"/>
+  <int value="496" label="TA (unused)"/>
+  <int value="497" label="TB (unused)"/>
+  <int value="498" label="Turks and Caicos Islands"/>
+  <int value="499" label="Chad"/>
+  <int value="500" label="TE (unused)"/>
+  <int value="501" label="TF (unused)"/>
+  <int value="502" label="Togo"/>
+  <int value="503" label="Thailand"/>
+  <int value="504" label="TI (unused)"/>
+  <int value="505" label="TJ (unused)"/>
+  <int value="506" label="TK (unused)"/>
+  <int value="507" label="TL (unused)"/>
+  <int value="508" label="TM (unused)"/>
+  <int value="509" label="Tunisia"/>
+  <int value="510" label="TO (unused)"/>
+  <int value="511" label="TP (unused)"/>
+  <int value="512" label="TQ (unused)"/>
+  <int value="513" label="Turkey"/>
+  <int value="514" label="TS (unused)"/>
+  <int value="515" label="Trinidad and Tobago"/>
+  <int value="516" label="TU (unused)"/>
+  <int value="517" label="TV (unused)"/>
+  <int value="518" label="Taiwan"/>
+  <int value="519" label="TX (unused)"/>
+  <int value="520" label="TY (unused)"/>
+  <int value="521" label="United Republic of Tanzania"/>
+  <int value="522" label="Ukraine"/>
+  <int value="523" label="UB (unused)"/>
+  <int value="524" label="UC (unused)"/>
+  <int value="525" label="UD (unused)"/>
+  <int value="526" label="UE (unused)"/>
+  <int value="527" label="UF (unused)"/>
+  <int value="528" label="Uganda"/>
+  <int value="529" label="UH (unused)"/>
+  <int value="530" label="UI (unused)"/>
+  <int value="531" label="UJ (unused)"/>
+  <int value="532" label="UK (unused)"/>
+  <int value="533" label="UL (unused)"/>
+  <int value="534" label="UM (unused)"/>
+  <int value="535" label="UN (unused)"/>
+  <int value="536" label="UO (unused)"/>
+  <int value="537" label="UP (unused)"/>
+  <int value="538" label="UQ (unused)"/>
+  <int value="539" label="UR (unused)"/>
+  <int value="540" label="United States of America"/>
+  <int value="541" label="UT (unused)"/>
+  <int value="542" label="UU (unused)"/>
+  <int value="543" label="UV (unused)"/>
+  <int value="544" label="UW (unused)"/>
+  <int value="545" label="UX (unused)"/>
+  <int value="546" label="Uruguay"/>
+  <int value="547" label="Uzbekistan"/>
+  <int value="548" label="VA (unused)"/>
+  <int value="549" label="VB (unused)"/>
+  <int value="550" label="Saint Vincent and the Grenadines"/>
+  <int value="551" label="VD (unused)"/>
+  <int value="552" label="Venezuela"/>
+  <int value="553" label="VF (unused)"/>
+  <int value="554" label="VG (unused)"/>
+  <int value="555" label="VH (unused)"/>
+  <int value="556" label="Virgin Islands (U.S.A.)"/>
+  <int value="557" label="VJ (unused)"/>
+  <int value="558" label="VK (unused)"/>
+  <int value="559" label="VL (unused)"/>
+  <int value="560" label="VM (unused)"/>
+  <int value="561" label="Viet Nam"/>
+  <int value="562" label="VO (unused)"/>
+  <int value="563" label="VP (unused)"/>
+  <int value="564" label="VQ (unused)"/>
+  <int value="565" label="VR (unused)"/>
+  <int value="566" label="VS (unused)"/>
+  <int value="567" label="VT (unused)"/>
+  <int value="568" label="Vanuatu"/>
+  <int value="569" label="VV (unused)"/>
+  <int value="570" label="VW (unused)"/>
+  <int value="571" label="VX (unused)"/>
+  <int value="572" label="VY (unused)"/>
+  <int value="573" label="VZ (unused)"/>
+  <int value="574" label="WA (unused)"/>
+  <int value="575" label="WB (unused)"/>
+  <int value="576" label="WC (unused)"/>
+  <int value="577" label="WD (unused)"/>
+  <int value="578" label="WE (unused)"/>
+  <int value="579" label="Wallis and Futuna"/>
+  <int value="580" label="WG (unused)"/>
+  <int value="581" label="WH (unused)"/>
+  <int value="582" label="WI (unused)"/>
+  <int value="583" label="WJ (unused)"/>
+  <int value="584" label="WK (unused)"/>
+  <int value="585" label="WL (unused)"/>
+  <int value="586" label="WM (unused)"/>
+  <int value="587" label="WN (unused)"/>
+  <int value="588" label="WO (unused)"/>
+  <int value="589" label="WP (unused)"/>
+  <int value="590" label="WQ (unused)"/>
+  <int value="591" label="WR (unused)"/>
+  <int value="592" label="Samoa"/>
+  <int value="593" label="WT (unused)"/>
+  <int value="594" label="WU (unused)"/>
+  <int value="595" label="WV (unused)"/>
+  <int value="596" label="WW (unused)"/>
+  <int value="597" label="WX (unused)"/>
+  <int value="598" label="WY (unused)"/>
+  <int value="599" label="WZ (unused)"/>
+  <int value="600" label="XA (unused)"/>
+  <int value="601" label="XB (unused)"/>
+  <int value="602" label="XC (unused)"/>
+  <int value="603" label="XD (unused)"/>
+  <int value="604" label="XE (unused)"/>
+  <int value="605" label="XF (unused)"/>
+  <int value="606" label="XG (unused)"/>
+  <int value="607" label="XH (unused)"/>
+  <int value="608" label="XI (unused)"/>
+  <int value="609" label="XJ (unused)"/>
+  <int value="610" label="XK (unused)"/>
+  <int value="611" label="XL (unused)"/>
+  <int value="612" label="XM (unused)"/>
+  <int value="613" label="XN (unused)"/>
+  <int value="614" label="XO (unused)"/>
+  <int value="615" label="XP (unused)"/>
+  <int value="616" label="XQ (unused)"/>
+  <int value="617" label="XR (unused)"/>
+  <int value="618" label="XS (unused)"/>
+  <int value="619" label="XT (unused)"/>
+  <int value="620" label="XU (unused)"/>
+  <int value="621" label="XV (unused)"/>
+  <int value="622" label="XW (unused)"/>
+  <int value="623" label="XX (unused)"/>
+  <int value="624" label="XY (unused)"/>
+  <int value="625" label="XZ (unused)"/>
+  <int value="626" label="YA (unused)"/>
+  <int value="627" label="YB (unused)"/>
+  <int value="628" label="YC (unused)"/>
+  <int value="629" label="YD (unused)"/>
+  <int value="630" label="Yemen"/>
+  <int value="631" label="YF (unused)"/>
+  <int value="632" label="YG (unused)"/>
+  <int value="633" label="YH (unused)"/>
+  <int value="634" label="YI (unused)"/>
+  <int value="635" label="YJ (unused)"/>
+  <int value="636" label="YK (unused)"/>
+  <int value="637" label="YL (unused)"/>
+  <int value="638" label="YM (unused)"/>
+  <int value="639" label="YN (unused)"/>
+  <int value="640" label="YO (unused)"/>
+  <int value="641" label="YP (unused)"/>
+  <int value="642" label="YQ (unused)"/>
+  <int value="643" label="YR (unused)"/>
+  <int value="644" label="YS (unused)"/>
+  <int value="645" label="Mayotte"/>
+  <int value="646" label="YU (unused)"/>
+  <int value="647" label="YV (unused)"/>
+  <int value="648" label="YW (unused)"/>
+  <int value="649" label="YX (unused)"/>
+  <int value="650" label="YY (unused)"/>
+  <int value="651" label="YZ (unused)"/>
+  <int value="652" label="South Africa"/>
+  <int value="653" label="ZB (unused)"/>
+  <int value="654" label="ZC (unused)"/>
+  <int value="655" label="ZD (unused)"/>
+  <int value="656" label="ZE (unused)"/>
+  <int value="657" label="ZF (unused)"/>
+  <int value="658" label="ZG (unused)"/>
+  <int value="659" label="ZH (unused)"/>
+  <int value="660" label="ZI (unused)"/>
+  <int value="661" label="ZJ (unused)"/>
+  <int value="662" label="ZK (unused)"/>
+  <int value="663" label="ZL (unused)"/>
+  <int value="664" label="ZM (unused)"/>
+  <int value="665" label="ZN (unused)"/>
+  <int value="666" label="ZO (unused)"/>
+  <int value="667" label="ZP (unused)"/>
+  <int value="668" label="ZQ (unused)"/>
+  <int value="669" label="ZR (unused)"/>
+  <int value="670" label="ZS (unused)"/>
+  <int value="671" label="ZT (unused)"/>
+  <int value="672" label="ZU (unused)"/>
+  <int value="673" label="ZV (unused)"/>
+  <int value="674" label="Zimbabwe"/>
+  <int value="675" label="ZX (unused)"/>
+  <int value="676" label="ZY (unused)"/>
+  <int value="677" label="ZZ (unused)"/>
+  <int value="678" label="countryCodeInvalid"/>
 </enum>
 
 <enum name="ReinstallResponseParseResult">

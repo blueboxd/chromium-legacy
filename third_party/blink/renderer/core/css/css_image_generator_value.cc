@@ -160,9 +160,12 @@ scoped_refptr<Image> CSSImageGeneratorValue::GetImage(
 }
 
 bool CSSImageGeneratorValue::IsUsingCustomProperty(
-    const AtomicString& custom_property_name) const {
-  if (GetClassType() == kPaintClass)
-    return To<CSSPaintValue>(this)->IsUsingCustomProperty(custom_property_name);
+    const AtomicString& custom_property_name,
+    const Document& document) const {
+  if (GetClassType() == kPaintClass) {
+    return To<CSSPaintValue>(this)->IsUsingCustomProperty(custom_property_name,
+                                                          document);
+  }
   return false;
 }
 

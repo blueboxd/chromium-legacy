@@ -67,6 +67,10 @@ void RecordDefaultAppLaunch(DefaultAppName default_app_name,
       UMA_HISTOGRAM_ENUMERATION("Apps.DefaultAppLaunch.FromFileManager",
                                 default_app_name);
       break;
+    // TODO(crbug.com/853604): Add metrics.
+    case apps::mojom::LaunchSource::kFromLink:
+    case apps::mojom::LaunchSource::kFromOmnibox:
+      return;
   }
 }
 
@@ -89,6 +93,8 @@ void RecordBuiltInAppLaunch(apps::BuiltInAppName built_in_app_name,
       break;
     case apps::mojom::LaunchSource::kFromShelf:
     case apps::mojom::LaunchSource::kFromFileManager:
+    case apps::mojom::LaunchSource::kFromLink:
+    case apps::mojom::LaunchSource::kFromOmnibox:
       break;
   }
 }

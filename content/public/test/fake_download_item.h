@@ -114,6 +114,8 @@ class FakeDownloadItem : public download::DownloadItem {
                               const AcquireFileCallback& callback) override;
   void Rename(const base::FilePath& name,
               RenameDownloadCallback callback) override;
+  void OnAsyncScanningCompleted(
+      download::DownloadDangerType danger_type) override;
 
   bool removed() const { return removed_; }
   void NotifyDownloadDestroyed();

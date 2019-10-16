@@ -871,12 +871,12 @@
   {
     "name": "enable-app-data-search",
     "owners": [ "jennyz", "kaznacheev" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 86
   },
   {
     "name": "enable-app-grid-ghost",
     "owners": [ "mmourgos" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "enable-app-list-search-autocomplete",
@@ -1493,7 +1493,7 @@
   {
     "name": "enable-notification-indicator",
     "owners": [ "newcomer" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 83
   },
   {
     "name": "enable-ntp-remote-suggestions",
@@ -1543,7 +1543,7 @@
   {
     "name": "enable-play-store-search",
     "owners": [ "jennyz", "kaznacheev" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 83
   },
   {
     "name" : "enable-pointer-lock-options",
@@ -3042,7 +3042,7 @@
   {
     "name": "shelf-hover-previews",
     "owners": [ "manucornet" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 84
   },
   {
     "name": "shelf-scrollable",

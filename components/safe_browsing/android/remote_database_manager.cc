@@ -239,8 +239,14 @@ RemoteSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
     const GURL& url,
     Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(crbug.com/1014202): Add local high confidence allowlist.
-  return AsyncMatch::NO_MATCH;
+
+  if (!enabled_ || !CanCheckUrl(url))
+    return AsyncMatch::NO_MATCH;
+
+  // TODO(crbug.com/1014202): Make this call async.
+  SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
+  bool is_match = api_handler->StartHighConfidenceAllowlistCheck(url);
+  return is_match ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH;
 }
 
 bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(

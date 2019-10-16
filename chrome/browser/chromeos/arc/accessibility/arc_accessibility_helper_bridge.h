@@ -53,6 +53,9 @@ class ArcAccessibilityHelperBridge
       public arc::ArcInputMethodManagerService::Observer,
       public ash::ArcNotificationSurfaceManager::Observer {
  public:
+  // Builds the ArcAccessibilityHelperBridgeFactory.
+  static void CreateFactory();
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcAccessibilityHelperBridge* GetForBrowserContext(

@@ -119,6 +119,10 @@ public final class SearchEngineChoiceMetricsTest {
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         HISTOGRAM_AFTER_CHOICE, SearchEngineType.SEARCH_ENGINE_GOOGLE));
+        assertEquals(0,
+                ShadowRecordHistogram.getHistogramValueCountForTesting(
+                        "Android.SearchEngineChoice.EventsV2",
+                        SearchEngineChoiceMetrics.Events.SEARCH_ENGINE_CHANGED));
     }
 
     @Test

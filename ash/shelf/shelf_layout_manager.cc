@@ -330,12 +330,11 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     Shell::Get()->app_list_controller()->RemoveObserver(this);
   if (Shell::Get()->overview_controller())
     Shell::Get()->overview_controller()->RemoveObserver(this);
-  SplitViewController::Get()->RemoveObserver(this);
 }
 
 void ShelfLayoutManager::InitObservers() {
   Shell::Get()->AddShellObserver(this);
-  SplitViewController::Get()->AddObserver(this);
+  SplitViewController::Get(shelf_widget_->GetNativeWindow())->AddObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()
@@ -364,6 +363,9 @@ void ShelfLayoutManager::PrepareForShutdown() {
   // DesksController could be null when virtual desks feature is not enabled.
   if (DesksController::Get())
     DesksController::Get()->RemoveObserver(this);
+
+  SplitViewController::Get(shelf_widget_->GetNativeWindow())
+      ->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -628,8 +630,9 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_LOGIN;
   }
 
-  const bool in_split_view_mode = SplitViewController::Get() &&
-                                  SplitViewController::Get()->InSplitViewMode();
+  const bool in_split_view_mode =
+      SplitViewController::Get(shelf_widget_->GetNativeWindow())
+          ->InSplitViewMode();
   const bool maximized =
       in_split_view_mode ||
       state_.window_state == WorkspaceWindowState::kFullscreen ||

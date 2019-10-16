@@ -30,31 +30,32 @@ public class NewTabPageController extends PageController {
     private static final String REGEX_TEXT_HEADER_STATUS = "^Hide|Show$";
 
     private static final IUi2Locator LOCATOR_SEARCH_BOX_TEXT =
-            Ui2Locators.withResEntries(R.id.search_box_text);
-    private static final IUi2Locator LOCATOR_URL_BAR = Ui2Locators.withResEntries(R.id.url_bar);
+            Ui2Locators.withAnyResEntry(R.id.search_box_text);
+    private static final IUi2Locator LOCATOR_URL_BAR = Ui2Locators.withAnyResEntry(R.id.url_bar);
     private static final IUi2Locator LOCATOR_SEARCH_PROVIDER_LOGO =
-            Ui2Locators.withResEntries(R.id.search_provider_logo);
+            Ui2Locators.withAnyResEntry(R.id.search_provider_logo);
     private static final IUi2Locator LOCATOR_MORE_BUTTON =
-            Ui2Locators.withResEntries(R.id.action_button);
+            Ui2Locators.withAnyResEntry(R.id.action_button);
     private static final IUi2Locator LOCATOR_MENU_BUTTON =
-            Ui2Locators.withResEntries(R.id.menu_button);
+            Ui2Locators.withAnyResEntry(R.id.menu_button);
     private static final IUi2Locator LOCATOR_BOTTOM_OF_PAGE =
-            Ui2Locators.withResEntries(R.id.progress_indicator, R.id.action_button);
-    private static final IUi2Locator LOCATOR_FEED_STREAM_RECYCLER_VIEW = Ui2Locators.withResEntries(
-            com.google.android.libraries.feed.basicstream.R.id.feed_stream_recycler_view);
+            Ui2Locators.withAnyResEntry(R.id.progress_indicator, R.id.action_button);
+    private static final IUi2Locator LOCATOR_FEED_STREAM_RECYCLER_VIEW =
+            Ui2Locators.withAnyResEntry(
+                    com.google.android.libraries.feed.basicstream.R.id.feed_stream_recycler_view);
     private static final IUi2Locator LOCATOR_HEADER_STATUS =
-            Ui2Locators.withPath(Ui2Locators.withResEntries(R.id.header_status),
+            Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.header_status),
                     Ui2Locators.withTextRegex(REGEX_TEXT_HEADER_STATUS));
     private static final IUi2Locator LOCATOR_INFO_BAR_MESSAGE =
-            Ui2Locators.withResEntries(R.id.infobar_message, R.id.snackbar_message);
+            Ui2Locators.withAnyResEntry(R.id.infobar_message, R.id.snackbar_message);
     private static final IUi2Locator LOCATOR_INFO_BAR_CLOSE =
-            Ui2Locators.withResEntries(R.id.infobar_close_button);
+            Ui2Locators.withAnyResEntry(R.id.infobar_close_button);
 
     private static final IUi2Locator LOCATOR_TAB_SWITCHER =
-            Ui2Locators.withResEntries(R.id.tab_switcher_button);
+            Ui2Locators.withAnyResEntry(R.id.tab_switcher_button);
 
     private static final IUi2Locator LOCATOR_NEW_TAB_PAGE =
-            Ui2Locators.withResEntries(R.id.ntp_content,
+            Ui2Locators.withAnyResEntry(R.id.ntp_content,
                     com.google.android.libraries.feed.basicstream.R.id.feed_stream_recycler_view,
                     R.id.card_contents);
 

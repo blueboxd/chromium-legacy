@@ -48,7 +48,8 @@ enum DisplayType {
   ANGLE_OPENGLES_NULL = 10,
   ANGLE_VULKAN = 11,
   ANGLE_VULKAN_NULL = 12,
-  DISPLAY_TYPE_MAX = 13,
+  ANGLE_D3D11on12 = 13,
+  DISPLAY_TYPE_MAX = 14,
 };
 
 GL_EXPORT void GetEGLInitDisplays(bool supports_angle_d3d,

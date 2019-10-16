@@ -33,15 +33,3 @@ struct KeyValue {
   array<uint8> key;
   array<uint8> value;
 };
-
-union GetManyRequest {
-  array<uint8> key_prefix;
-  array<uint8> key;
-};
-
-union GetManyResult {
-  DatabaseError status;
-  array<KeyValue> key_prefix_values;
-  array<uint8> key_value;
-};
-

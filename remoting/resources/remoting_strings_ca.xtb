@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">La vostra sessió de <ph name="APPLICATION_NAME" /> ha estat inactiva durant una estona i es desconnectarà aviat.</translation>
 <translation id="2317666076142640974">Dona un cop d'ull a la nova <ph name="LINK_BEGIN" />aplicació web Escriptori remot de Chrome<ph name="LINK_END" />. Ens agradaria saber la teva opinió.</translation>
 <translation id="2320166752086256636">Amaga el teclat</translation>
-<translation id="2332192922827071008">Obre les preferències</translation>
 <translation id="2353140552984634198">Podeu accedir de manera segura a aquest ordinador mitjançant Chromoting.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Connectat a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
 <translation id="2540992418118313681">Voleu compartir aquest ordinador perquè un altre usuari el pugui veure i controlar?</translation>
-<translation id="254771646005658629">Permet que els usuaris remots controlin aquest Mac</translation>
 <translation id="2579271889603567289">L'amfitrió s'ha bloquejat o no s'ha pogut iniciar.</translation>
 <translation id="2599300881200251572">Aquest servei permet les connexions entrants de clients de l'escriptori remot de Chrome.</translation>
 <translation id="2647232381348739934">Servei de Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">No es pot restablir l'aplicació. Podeu enviar un informe d'errors.</translation>
 <translation id="5419418238395129586">Última connexió: <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'amfitrió s'ha tancat.</translation>
-<translation id="5463789431147491241">Per fer servir <ph name="PRODUCT_NAME" /> en aquest Mac, segueix aquests passos:
-
-Selecciona <ph name="BUTTON_NAME" /> més avall. A les preferències de Seguretat i privadesa, marca la casella corresponent a <ph name="SERVICE_SCRIPT_NAME" />.
-
-Si l'opció <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i torna-la a marcar.</translation>
 <translation id="5510035215749041527">Desconnecta ara</translation>
 <translation id="5593560073513909978">El servei està temporalment no disponible. Torneu-ho a provar més tard.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -295,7 +288,7 @@ Si l'opció <ph name="SERVICE_SCRIPT_NAME" /> ja està marcada, desmarca-la i to
 <translation id="80739703311984697">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a Chromoting per accedir a aquesta adreça:</translation>
 <translation id="809687642899217504">Els meus ordinadors</translation>
 <translation id="811307782653349804">Accediu al vostre ordinador des de qualsevol lloc.</translation>
-<translation id="8116630183974937060">S'ha produït un error de xarxa. Comproveu que el dispositiu estigui en línia i torneu-ho a provar.</translation>
+<translation id="8116630183974937060">S'ha produït un error de la xarxa. Comproveu que el dispositiu estigui en línia i torneu-ho a provar.</translation>
 <translation id="8178433417677596899">Compartició de pantalla entre usuaris, una opció perfecta per a l'assistència tècnica remota.</translation>
 <translation id="8187079423890319756">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8196755618196986400">La vostra adreça electrònica s'inclourà en tots els suggeriments que envieu perquè us puguem escriure i proporcionar-vos més informació.</translation>

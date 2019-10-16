@@ -6,6 +6,7 @@
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -16,8 +17,12 @@ bool InTabletMode() {
 }
 
 bool IsInSplitView() {
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  return split_view_controller && split_view_controller->InSplitViewMode();
+  const aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  return std::any_of(
+      root_windows.cbegin(), root_windows.cend(),
+      [](const aura::Window* root_window) {
+        return SplitViewController::Get(root_window)->InSplitViewMode();
+      });
 }
 
 }  // namespace ash

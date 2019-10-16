@@ -129,10 +129,18 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
 class FakeAssistantClient : public FakeClient {
  public:
   explicit FakeAssistantClient(ash::AssistantState* assistant_state)
-      : assistant_state_(assistant_state) {}
+      : assistant_state_(assistant_state),
+        status_(ash::mojom::AssistantState::NOT_READY) {}
+
+  ash::mojom::AssistantState status() { return status_; }
 
  private:
   // FakeClient:
+
+  void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override {
+    status_ = new_state;
+  }
+
   void RequestAssistantStateController(
       mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver)
       override {
@@ -140,6 +148,7 @@ class FakeAssistantClient : public FakeClient {
   }
 
   ash::AssistantState* const assistant_state_;
+  ash::mojom::AssistantState status_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantClient);
 };
@@ -233,8 +242,10 @@ class AssistantServiceTest : public testing::Test {
   Service* service() { return service_.get(); }
 
   FakeAssistantManagerServiceImpl* assistant_manager() {
-    return static_cast<FakeAssistantManagerServiceImpl*>(
+    auto* result = static_cast<FakeAssistantManagerServiceImpl*>(
         service_->assistant_manager_service_.get());
+    DCHECK(result);
+    return result;
   }
 
   FakeIdentityAccessor* identity_accessor() { return &fake_identity_accessor_; }
@@ -242,6 +253,8 @@ class AssistantServiceTest : public testing::Test {
   ash::AssistantState* assistant_state() { return &assistant_state_; }
 
   PrefService* pref_service() { return pref_service_; }
+
+  FakeAssistantClient* client() { return &fake_assistant_client_; }
 
   base::TestMockTimeTaskRunner* mock_task_runner() {
     return mock_task_runner_.get();
@@ -351,6 +364,41 @@ TEST_F(AssistantServiceTest, StopDelayedIfAssistantNotFinishedStarting) {
 
   EXPECT_EQ(assistant_manager()->GetState(),
             AssistantManagerService::State::STOPPED);
+}
+
+TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStarting) {
+  assistant_manager()->SetStateAndInformObservers(
+      AssistantManagerService::State::STARTING);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(client()->status(), ash::mojom::AssistantState::NOT_READY);
+}
+
+TEST_F(AssistantServiceTest, ShouldSetClientStatusToReadyWhenStarted) {
+  assistant_manager()->SetStateAndInformObservers(
+      AssistantManagerService::State::STARTED);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(client()->status(), ash::mojom::AssistantState::READY);
+}
+
+TEST_F(AssistantServiceTest, ShouldSetClientStatusToNewReadyWhenRunning) {
+  assistant_manager()->SetStateAndInformObservers(
+      AssistantManagerService::State::RUNNING);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(client()->status(), ash::mojom::AssistantState::NEW_READY);
+}
+
+TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStopped) {
+  assistant_manager()->SetStateAndInformObservers(
+      AssistantManagerService::State::RUNNING);
+  base::RunLoop().RunUntilIdle();
+
+  pref_service()->SetBoolean(prefs::kAssistantEnabled, false);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(client()->status(), ash::mojom::AssistantState::NOT_READY);
 }
 
 }  // namespace assistant

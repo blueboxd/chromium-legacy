@@ -128,9 +128,7 @@ StackedNotificationBar::StackedNotificationBar(
   SetVisible(false);
 
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(0, kStackingNotificationClearAllButtonPadding.left(), 0, 0),
-      0));
+      views::BoxLayout::Orientation::kHorizontal));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
@@ -139,7 +137,8 @@ StackedNotificationBar::StackedNotificationBar(
     notification_icons_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
-            kStackedNotificationIconsContainerPadding));
+            kStackedNotificationIconsContainerPadding,
+            kStackedNotificationBarIconSpacing));
     AddChildView(notification_icons_container_);
   }
 

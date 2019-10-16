@@ -345,7 +345,6 @@
 <translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Din adgangskode blev ikke bekræftet. Prøv igen.</translation>
 <translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som "<ph name="NAME" />" med adressen <ph name="ADDRESS" /></translation>
-<translation id="6106745654298855237">Oplader <ph name="POWER_SOURCE" /></translation>
 <translation id="612734058257491180">Google Assistent er ikke tilgængelig i en gæstesession.</translation>
 <translation id="615957422585914272">Vis skærmtastatur</translation>
 <translation id="6164005077879661055">Alle filer og lokale data, der er knyttet til den administrerede bruger, 
@@ -448,7 +447,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7647488630410863958">Lås enheden op for at se dine notifikationer</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7654687942625752712">Tryk på begge lydstyrketaster, og hold dem nede i fem sekunder for at deaktivere oplæsning.</translation>
-<translation id="7692480393933218409">Oplader tilsluttede USB-C-enheder</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifikation}one{# notifikation}other{# notifikationer}}</translation>
 <translation id="7749443890790263709">Det maksimale antal skriveborde er nået.</translation>

@@ -19,12 +19,12 @@
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
-#include "chromeos/services/device_sync/device_sync_service.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
 #include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,8 +61,7 @@ class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
   std::unique_ptr<DeviceSyncBase> BuildInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
-      mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
-          pref_store_connector,
+      PrefService* profile_prefs,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
       ClientAppMetadataProvider* client_app_metadata_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -169,33 +168,26 @@ class DeviceSyncClientImplTest : public testing::Test {
               return nullptr;
             }));
 
-    mojo::Remote<mojom::DeviceSyncServiceInitializer> initializer;
-    service_ = std::make_unique<DeviceSyncService>(
-        identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
-        fake_gcm_device_info_provider_.get(),
-        fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
-        initializer.BindNewPipeAndPassReceiver());
+    test_pref_service_ = std::make_unique<TestingPrefServiceSimple>();
 
-    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector;
-    ignore_result(pref_store_connector.InitWithNewPipeAndPassReceiver());
-    initializer->Initialize(remote_service_.BindNewPipeAndPassReceiver(),
-                            std::move(pref_store_connector));
+    device_sync_ = DeviceSyncImpl::Factory::Get()->BuildInstance(
+        identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
+        test_pref_service_.get(), fake_gcm_device_info_provider_.get(),
+        fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
+        std::make_unique<base::OneShotTimer>());
 
     test_observer_ = std::make_unique<TestDeviceSyncClientObserver>();
 
-    CreateClient();
-  }
-
-  void CreateClient() {
-    // DeviceSyncClient's constructor posts two tasks to the TaskRunner. Idle
+    // DeviceSyncClient initialization posts two tasks to the TaskRunner. Idle
     // the TaskRunner so that the tasks can be run via a RunLoop later on.
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
-    client_ = base::WrapUnique(
-        new DeviceSyncClientImpl(remote_service_.get(), test_task_runner));
+    client_ = std::make_unique<DeviceSyncClientImpl>();
+    device_sync_->BindRequest(mojo::MakeRequest(client_->GetDeviceSyncPtr()));
+    client_->Initialize(test_task_runner);
     test_task_runner->RunUntilIdle();
   }
 
-  void InitializeClient(bool complete_enrollment_before_sync = true) {
+  void SetupClient(bool complete_enrollment_before_sync = true) {
     client_->AddObserver(test_observer_.get());
 
     SendPendingMojoMessages();
@@ -435,8 +427,8 @@ class DeviceSyncClientImplTest : public testing::Test {
       fake_client_app_metadata_provider_;
   FakeDeviceSync* fake_device_sync_;
   std::unique_ptr<FakeDeviceSyncImplFactory> fake_device_sync_impl_factory_;
-  std::unique_ptr<DeviceSyncService> service_;
-  mojo::Remote<mojom::DeviceSyncService> remote_service_;
+  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  std::unique_ptr<DeviceSyncBase> device_sync_;
   std::unique_ptr<TestDeviceSyncClientObserver> test_observer_;
 
   std::unique_ptr<DeviceSyncClientImpl> client_;
@@ -494,7 +486,7 @@ class DeviceSyncClientImplTest : public testing::Test {
 
 TEST_F(DeviceSyncClientImplTest,
        TestCompleteInitialSyncBeforeInitialEnrollment) {
-  InitializeClient(false /* complete_enrollment_before_sync */);
+  SetupClient(false /* complete_enrollment_before_sync */);
 }
 
 TEST_F(
@@ -549,7 +541,7 @@ TEST_F(
 TEST_F(DeviceSyncClientImplTest, TestOnEnrollmentFinished) {
   EXPECT_EQ(0u, test_observer_->enrollment_finished_count());
 
-  InitializeClient();
+  SetupClient();
 
   EXPECT_EQ(test_remote_device_list_[0].public_key,
             client_->GetLocalDeviceMetadata()->public_key());
@@ -586,7 +578,7 @@ TEST_F(DeviceSyncClientImplTest, TestOnEnrollmentFinished) {
 TEST_F(DeviceSyncClientImplTest, TestOnNewDevicesSynced) {
   EXPECT_EQ(0u, test_observer_->new_devices_synced_count());
 
-  InitializeClient();
+  SetupClient();
 
   VerifyRemoteDeviceRefListAndRemoteDeviceListAreEqual(
       client_->GetSyncedDevices(), test_remote_device_list_);
@@ -615,31 +607,31 @@ TEST_F(DeviceSyncClientImplTest, TestOnNewDevicesSynced) {
 }
 
 TEST_F(DeviceSyncClientImplTest, TestForceEnrollmentNow_ExpectSuccess) {
-  InitializeClient();
+  SetupClient();
 
   CallForceEnrollmentNow(true /* expected_success */);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestForceEnrollmentNow_ExpectFailure) {
-  InitializeClient();
+  SetupClient();
 
   CallForceEnrollmentNow(false /* expected_success */);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestSyncNow_ExpectSuccess) {
-  InitializeClient();
+  SetupClient();
 
   CallSyncNow(true /* expected_success */);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestSyncNow_ExpectFailure) {
-  InitializeClient();
+  SetupClient();
 
   CallSyncNow(false /* expected_success */);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestGetSyncedDevices_DeviceRemovedFromCache) {
-  InitializeClient();
+  SetupClient();
 
   VerifyRemoteDeviceRefListAndRemoteDeviceListAreEqual(
       client_->GetSyncedDevices(), test_remote_device_list_);
@@ -662,13 +654,13 @@ TEST_F(DeviceSyncClientImplTest, TestGetSyncedDevices_DeviceRemovedFromCache) {
 }
 
 TEST_F(DeviceSyncClientImplTest, TestSetSoftwareFeatureState) {
-  InitializeClient();
+  SetupClient();
 
   CallSetSoftwareFeatureState(mojom::NetworkRequestResult::kSuccess);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_NoErrorCode) {
-  InitializeClient();
+  SetupClient();
 
   multidevice::RemoteDeviceList expected_eligible_devices(
       {test_remote_device_list_[0], test_remote_device_list_[1]});
@@ -682,7 +674,7 @@ TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_NoErrorCode) {
 }
 
 TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_ErrorCode) {
-  InitializeClient();
+  SetupClient();
 
   CallFindEligibleDevices(mojom::NetworkRequestResult::kEndpointNotFound,
                           multidevice::RemoteDeviceList(),
@@ -690,7 +682,7 @@ TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_ErrorCode) {
 }
 
 TEST_F(DeviceSyncClientImplTest, TestGetDebugInfo) {
-  InitializeClient();
+  SetupClient();
 
   CallGetDebugInfo();
 }

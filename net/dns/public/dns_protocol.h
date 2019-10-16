@@ -151,6 +151,13 @@ static const uint16_t kTypeOPT = 41;
 static const uint16_t kTypeNSEC = 47;
 static const uint16_t kTypeANY = 255;
 
+// Experimental DNS record types pending IANA assignment.
+//
+// Record type proposed for TLS Encrypted Server Name Indication
+// (ESNI, draft 4) records:
+// https://tools.ietf.org/html/draft-ietf-tls-esni-04#section-8.3
+static const uint16_t kExperimentalTypeEsniDraft4 = 65439;
+
 // DNS reply codes (RCODEs).
 //
 // https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-6

@@ -163,7 +163,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // Schedule overlay candidates for presentation at next SwapBuffers().
   void ScheduleDCLayers();
 
-  const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
+  // skia_renderer can draw most single-quad passes directly, regardless of
+  // blend mode or image filtering.
+  const DrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
   // Get corresponding GrContext. Returns nullptr when there is no GrContext.
   // TODO(weiliangc): This currently only returns nullptr. If SKPRecord isn't

@@ -345,7 +345,6 @@
 <translation id="6062360702481658777">你將於 <ph name="LOGOUT_TIME_LEFT" />後自動登出。</translation>
 <translation id="6064337552080329342">很抱歉！系統無法驗證你的密碼，請再試一次。</translation>
 <translation id="607652042414456612">你的電腦已開放附近的藍牙裝置搜尋，顯示名稱為「<ph name="NAME" />」，位址則是 <ph name="ADDRESS" /></translation>
-<translation id="6106745654298855237">正在為「<ph name="POWER_SOURCE" />」充電</translation>
 <translation id="612734058257491180">Google 助理不支援訪客工作階段。</translation>
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6164005077879661055">將這位受監管的使用者移除後，系統即會永久刪除所有與該使用者相關的檔案和本機資料。管理員仍可前往 <ph name="MANAGEMENT_URL" /> 查看這位受監管使用者的網頁瀏覽記錄和設定。</translation>
@@ -447,7 +446,6 @@
 <translation id="7647488630410863958">解鎖裝置即可查看通知</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7654687942625752712">同時按住音量調高和調低鍵五秒，即可停用互動朗讀。</translation>
-<translation id="7692480393933218409">正在為連接的 USB-C 裝置充電</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 則通知}other{# 則通知}}</translation>
 <translation id="7749443890790263709">桌面數量已達上限。</translation>

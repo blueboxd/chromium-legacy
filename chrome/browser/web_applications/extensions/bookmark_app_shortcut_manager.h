@@ -17,6 +17,9 @@ class BookmarkAppShortcutManager : public web_app::AppShortcutManager {
   explicit BookmarkAppShortcutManager(Profile* profile);
   ~BookmarkAppShortcutManager() override;
 
+  void GetShortcutInfoForApp(const web_app::AppId& app_id,
+                             GetShortcutInfoCallback callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppShortcutManager);
 };

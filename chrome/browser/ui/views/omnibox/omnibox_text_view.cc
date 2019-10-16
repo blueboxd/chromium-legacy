@@ -113,17 +113,12 @@ void ApplyTextStyleForType(SuggestionAnswer::TextStyle text_style,
 }  // namespace
 
 OmniboxTextView::OmniboxTextView(OmniboxResultView* result_view)
-    : result_view_(result_view),
-      font_height_(0),
-      use_deemphasized_font_(false),
-      wrap_text_lines_(false) {}
+    : result_view_(result_view) {}
 
-OmniboxTextView::~OmniboxTextView() {}
+OmniboxTextView::~OmniboxTextView() = default;
 
 gfx::Size OmniboxTextView::CalculatePreferredSize() const {
-  if (!render_text_)
-    return gfx::Size();
-  return render_text_->GetStringSize();
+  return render_text_ ? render_text_->GetStringSize() : gfx::Size();
 }
 
 bool OmniboxTextView::CanProcessEventsWithinSubtree() const {
@@ -138,9 +133,8 @@ int OmniboxTextView::GetHeightForWidth(int width) const {
   if (!render_text_)
     return 0;
   // If text wrapping is not called for we can simply return the font height.
-  if (!wrap_text_lines_) {
+  if (!wrap_text_lines_)
     return GetLineHeight();
-  }
   render_text_->SetDisplayRect(gfx::Rect(width, 0));
   gfx::Size string_size = render_text_->GetStringSize();
   return string_size.height() + kVerticalPadding;
@@ -149,44 +143,41 @@ int OmniboxTextView::GetHeightForWidth(int width) const {
 void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (!render_text_) {
+  if (!render_text_)
     return;
-  }
   render_text_->SetDisplayRect(GetContentsBounds());
   render_text_->Draw(canvas);
 }
 
 void OmniboxTextView::ApplyTextColor(OmniboxPart part) {
   render_text_->SetColor(result_view_->GetColor(part));
+  SchedulePaint();
 }
 
 const base::string16& OmniboxTextView::text() const {
-  if (!render_text_)
-    return base::EmptyString16();
-  return render_text_->text();
+  return render_text_ ? render_text_->text() : base::EmptyString16();
 }
 
-void OmniboxTextView::SetText(const base::string16& text, bool deemphasize) {
+void OmniboxTextView::SetText(const base::string16& new_text,
+                              bool deemphasize) {
   if (cached_classifications_) {
     cached_classifications_.reset();
-  } else if (render_text_ && render_text_->text() == text &&
-             deemphasize == use_deemphasized_font_) {
+  } else if (text() == new_text && deemphasize == use_deemphasized_font_) {
     // Only exit early if |cached_classifications_| was empty,
     // i.e. the last time text was set was through this method.
     return;
   }
 
   use_deemphasized_font_ = deemphasize;
-  render_text_ = CreateRenderText(text);
-  UpdateLineHeight();
-  SetPreferredSize(CalculatePreferredSize());
-  SchedulePaint();
+  render_text_ = CreateRenderText(new_text);
+
+  OnStyleChanged();
 }
 
-void OmniboxTextView::SetText(const base::string16& text,
+void OmniboxTextView::SetText(const base::string16& new_text,
                               const ACMatchClassifications& classifications,
                               bool deemphasize) {
-  if (render_text_ && render_text_->text() == text && cached_classifications_ &&
+  if (text() == new_text && cached_classifications_ &&
       classifications == *cached_classifications_ &&
       deemphasize == use_deemphasized_font_)
     return;
@@ -195,7 +186,7 @@ void OmniboxTextView::SetText(const base::string16& text,
 
   cached_classifications_ =
       std::make_unique<ACMatchClassifications>(classifications);
-  render_text_ = CreateRenderText(text);
+  render_text_ = CreateRenderText(new_text);
 
   // ReapplyStyling will update the preferred size and request a repaint.
   ReapplyStyling();
@@ -224,9 +215,7 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
   // Add the "additional" and "status" text from |line|, if any.
   AppendExtraText(line);
 
-  UpdateLineHeight();
-  SetPreferredSize(CalculatePreferredSize());
-  SchedulePaint();
+  OnStyleChanged();
 }
 
 void OmniboxTextView::AppendExtraText(const SuggestionAnswer::ImageLine& line) {
@@ -247,36 +236,34 @@ int OmniboxTextView::GetLineHeight() const {
 }
 
 void OmniboxTextView::ReapplyStyling() {
-  const ACMatchClassifications& classifications = *cached_classifications_;
-  const size_t text_length = render_text_->text().length();
-  for (size_t i = 0; i < classifications.size(); ++i) {
-    const size_t text_start = classifications[i].offset;
+  const size_t text_length = text().length();
+  for (size_t i = 0; i < cached_classifications_->size(); ++i) {
+    const size_t text_start = (*cached_classifications_)[i].offset;
     if (text_start >= text_length)
       break;
 
     const size_t text_end =
-        (i < (classifications.size() - 1))
-            ? std::min(classifications[i + 1].offset, text_length)
+        (i < (cached_classifications_->size() - 1))
+            ? std::min((*cached_classifications_)[i + 1].offset, text_length)
             : text_length;
     const gfx::Range current_range(text_start, text_end);
 
     // Calculate style-related data.
-    if (classifications[i].style & ACMatchClassification::MATCH)
+    if ((*cached_classifications_)[i].style & ACMatchClassification::MATCH)
       render_text_->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
 
     OmniboxPart part = OmniboxPart::RESULTS_TEXT_DEFAULT;
-    if (classifications[i].style & ACMatchClassification::URL) {
+    if ((*cached_classifications_)[i].style & ACMatchClassification::URL) {
       part = OmniboxPart::RESULTS_TEXT_URL;
       render_text_->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
-    } else if (classifications[i].style & ACMatchClassification::DIM) {
+    } else if ((*cached_classifications_)[i].style &
+               ACMatchClassification::DIM) {
       part = OmniboxPart::RESULTS_TEXT_DIMMED;
     }
     render_text_->ApplyColor(result_view_->GetColor(part), current_range);
   }
 
-  UpdateLineHeight();
-  SetPreferredSize(CalculatePreferredSize());
-  SchedulePaint();
+  OnStyleChanged();
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
@@ -296,17 +283,17 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
 
 void OmniboxTextView::AppendText(const SuggestionAnswer::TextField& field,
                                  const base::string16& prefix) {
-  const base::string16& text =
+  const base::string16& append_text =
       prefix.empty() ? field.text() : (prefix + field.text());
-  if (text.empty())
+  if (append_text.empty())
     return;
-  int offset = render_text_->text().length();
-  gfx::Range range(offset, offset + text.length());
-  render_text_->AppendText(text);
+  int offset = text().length();
+  gfx::Range range(offset, offset + append_text.length());
+  render_text_->AppendText(append_text);
   ApplyTextStyleForType(field.style(), result_view_, render_text_.get(), range);
 }
 
-void OmniboxTextView::UpdateLineHeight() {
+void OmniboxTextView::OnStyleChanged() {
   const int height_normal = render_text_->font_list().GetHeight();
   const int height_bold =
       ui::ResourceBundle::GetSharedInstance()
@@ -316,4 +303,7 @@ void OmniboxTextView::UpdateLineHeight() {
           .GetHeight();
   font_height_ = std::max(height_normal, height_bold);
   font_height_ += kVerticalPadding;
+
+  SetPreferredSize(CalculatePreferredSize());
+  SchedulePaint();
 }

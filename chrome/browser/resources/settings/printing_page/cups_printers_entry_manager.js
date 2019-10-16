@@ -23,16 +23,6 @@ let PrintersListCallback;
 
 cr.define('settings.printing', function() {
   /**
-   * @param {!PrinterListEntry} first
-   * @param {!PrinterListEntry} second
-   * @return {boolean}
-   * @private
-   */
-  function arePrinterIdsEqual_(first, second) {
-    return first.printerInfo.printerId == second.printerInfo.printerId;
-  }
-
-  /**
    * Finds the printers that are in |firstArr| but not in |secondArr|.
    * @param {!Array<!PrinterListEntry>} firstArr
    * @param {!Array<!PrinterListEntry>} secondArr
@@ -41,7 +31,8 @@ cr.define('settings.printing', function() {
    */
   function findDifference_(firstArr, secondArr) {
     return firstArr.filter((firstArrEntry) => {
-      return !secondArr.some(arePrinterIdsEqual_.bind(this, firstArrEntry));
+      return !secondArr.some(
+          p => p.printerInfo.printerId == firstArrEntry.printerInfo.printerId);
     });
   }
 

@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">לא הייתה פעילות ב-<ph name="APPLICATION_NAME" /> במשך זמן-מה. אתה תנותק בקרוב.</translation>
 <translation id="2317666076142640974">‏יש לך הזדמנות לקבל הצצה מקדימה אל <ph name="LINK_BEGIN" />אפליקציית האינטרנט Chrome Remote Desktop<ph name="LINK_END" />. נשמח לקבל ממך משוב.</translation>
 <translation id="2320166752086256636">הסתר מקלדת</translation>
-<translation id="2332192922827071008">פתיחת ההעדפות</translation>
 <translation id="2353140552984634198">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות Chromoting.</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">בוצעה התחברות אל <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">‏הערה: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את Chrome Remote Desktop ל'פתח כחלון'.</translation>
 <translation id="2540992418118313681">האם ברצונך לשתף מחשב זה כך שמשתמש אחר יראה אותו וישלוט בו?</translation>
-<translation id="254771646005658629">‏הענקת שליטה במחשב ה-Mac הזה למשתמשים מרוחקים</translation>
 <translation id="2579271889603567289">המארח קרס או שלא הופעל.</translation>
 <translation id="2599300881200251572">‏שירות זה מאפשר חיבורים נכנסים מלקוחות Chrome Remote Desktop.</translation>
 <translation id="2647232381348739934">‏שירות Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
 <translation id="5419418238395129586">חיבור אחרון לרשת: <ph name="DATE" /></translation>
 <translation id="544077782045763683">המארח כבה.</translation>
-<translation id="5463789431147491241">‏כדי להשתמש ב-<ph name="PRODUCT_NAME" /> במחשב ה-Mac הזה:
-
-לוחצים למטה על '<ph name="BUTTON_NAME" />'. בהעדפות של 'אבטחה ופרטיות' מסמנים את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-אם האפשרות '<ph name="SERVICE_SCRIPT_NAME" />' כבר מסומנת, מבטלים את הסימון ואז מסמנים שוב.</translation>
 <translation id="5510035215749041527">נתק עכשיו</translation>
 <translation id="5593560073513909978">באופן זמני, השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="5601503069213153581">PIN</translation>

@@ -483,14 +483,6 @@ void ServiceUtilityProcessHost::BindInterface(
       interface_name, std::move(interface_pipe));
 }
 
-void ServiceUtilityProcessHost::BindHostReceiver(
-    mojo::GenericPendingReceiver receiver) {
-  if (auto r = receiver.As<content::mojom::FontCacheWin>()) {
-    content::FontCacheDispatcher::Create(std::move(r));
-    return;
-  }
-}
-
 void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {
   if (!success || pdf_to_emf_state_->OnPageProcessed())
     OnPDFToEmfFinished(success);

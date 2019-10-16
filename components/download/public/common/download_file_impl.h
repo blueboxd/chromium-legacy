@@ -297,6 +297,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   // Otherwise, return the current file size.
   int64_t TotalBytesReceived() const;
 
+  // Sends an error update to the observer.
+  void SendErrorUpdateIfFinished(DownloadInterruptReason reason);
+
   // Helper method to handle stream error
   void HandleStreamError(SourceStream* source_stream,
                          DownloadInterruptReason reason);
@@ -354,7 +357,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta download_time_with_parallel_streams_;
   base::TimeDelta download_time_without_parallel_streams_;
 
+  // The slices received, this is being updated when new data are written.
   std::vector<DownloadItem::ReceivedSlice> received_slices_;
+
+  // Slices to download, calculated during the initialization and are not
+  // updated when new data are written.
+  std::vector<DownloadItem::ReceivedSlice> slice_to_download_;
 
   // Used to track whether the download is paused or not. This value is ignored
   // when network service is disabled as download pause/resumption is handled

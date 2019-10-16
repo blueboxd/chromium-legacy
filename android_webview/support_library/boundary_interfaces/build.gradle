@@ -5,27 +5,21 @@
 // This file is to build WebView boundary interfaces as part of the AndroidX webkit library.
 // It is not meant to be used or build any targets in chromium project.
 
+import androidx.build.SdkHelperKt
 import androidx.build.SupportConfig
 
 plugins {
-    id('AndroidXPlugin')
-    id('com.android.library')
+    id('java-library')
 }
 
 dependencies {
     api("androidx.annotation:annotation:1.1.0")
+    implementation fileTree(dir: "${SdkHelperKt.getSdkPath(project.rootDir)}/platforms/$SupportConfig.COMPILE_SDK_VERSION/",
+            include: "android.jar")
 }
 
-android {
-    // COMPILE_SDK_VERSION provided by AndroidX build scripts to build all AndroidX modules.
-    compileSdkVersion SupportConfig.COMPILE_SDK_VERSION
-
-    sourceSets {
-        main.manifest.srcFile 'AndroidManifest.xml'
-        main.java.srcDirs += ['src']
-    }
-
-    buildTypes.all {
-        consumerProguardFiles 'proguard.flags'
+sourceSets {
+    main {
+        java.srcDirs = ['src']
     }
 }

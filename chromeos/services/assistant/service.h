@@ -20,7 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/services/assistant/assistant_communication_error_observer.h"
+#include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
@@ -50,7 +50,6 @@ class PowerSupplyProperties;
 namespace chromeos {
 namespace assistant {
 
-class AssistantManagerService;
 class AssistantSettingsManager;
 class PrefConnectionDelegate;
 class ServiceContext;
@@ -65,9 +64,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       public chromeos::PowerManagerClient::Observer,
       public ash::SessionActivationObserver,
       public ash::AssistantStateObserver,
-      public AssistantCommunicationErrorObserver
-
-{
+      public AssistantManagerService::CommunicationErrorObserver,
+      public AssistantManagerService::StateObserver {
  public:
   Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
           std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -109,7 +107,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
-  // ash::AssistantStateObserver:
+  // ash::AssistantStateObserver overrides:
   void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantHotwordEnabled(bool enabled) override;
@@ -117,8 +115,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
-  // AssistantCommunicationErrorObserver
-  void OnCommunicationError(CommunicationErrorType error_type) override;
+  // AssistantManagerService::CommunicationErrorObserver overrides:
+  void OnCommunicationError(
+      AssistantManagerService::CommunicationErrorType error_type) override;
+
+  // AssistantManagerService::StateObserver overrides:
+  void OnStateChanged(AssistantManagerService::State new_state) override;
 
   void UpdateAssistantManagerState();
 
@@ -138,6 +140,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void RetryRefreshToken();
 
   void CreateAssistantManagerService();
+  std::unique_ptr<AssistantManagerService>
+  CreateAndReturnAssistantManagerService();
 
   void FinalizeAssistantManagerService();
 

@@ -4,6 +4,7 @@
 
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_NEURAL_STYLUS_PALM_DETECTION_FILTER_UTIL_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_FILTER_NEURAL_STYLUS_PALM_DETECTION_FILTER_UTIL_H_
+#include <cstdint>
 #include <deque>
 #include <vector>
 
@@ -58,13 +59,15 @@ class EVENTS_OZONE_EVDEV_EXPORT Stroke {
   void AddSample(const Sample& sample);
   gfx::PointF GetCentroid() const;
   float BiggestSize() const;
+  void SetTrackingId(int tracking_id);
   const std::deque<Sample>& samples() const;
+  uint64_t samples_seen() const;
   int tracking_id() const;
-
  private:
   std::deque<Sample> samples_;
   int tracking_id_ = 0;
-  unsigned long max_length_;
+  uint64_t samples_seen_ = 0;
+  uint64_t max_length_;
 };
 
 }  // namespace ui

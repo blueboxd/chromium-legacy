@@ -413,8 +413,8 @@ WebInputEventResult WebPagePopupImpl::HandleKeyEvent(
 
   if (WebInputEvent::kRawKeyDown == event.GetType()) {
     Element* focused_element = FocusedElement();
-    if (focused_element && focused_element->IsKeyboardFocusable() &&
-        event.windows_key_code == VKEY_TAB) {
+    if (event.windows_key_code == VKEY_TAB && focused_element &&
+        focused_element->IsKeyboardFocusable()) {
       // If the tab key is pressed while a keyboard focusable element is
       // focused, we should not send a corresponding keypress event.
       suppress_next_keypress_event_ = true;

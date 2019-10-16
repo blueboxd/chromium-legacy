@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 
 import org.chromium.autofill.mojom.SubmissionSource;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.concurrent.TimeUnit;
@@ -181,7 +182,7 @@ public class AwAutofillUMA {
 
     public AwAutofillUMA(Context context) {
         RecordHistogram.recordBooleanHistogram(UMA_AUTOFILL_WEBVIEW_CREATED_BY_ACTIVITY_CONTEXT,
-                AwContents.activityFromContext(context) != null);
+                ContextUtils.activityFromContext(context) != null);
     }
 
     public void onFormSubmitted(int submissionSource) {

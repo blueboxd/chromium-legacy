@@ -104,16 +104,6 @@ component("ipc") {
     "//base",
   ]
 
-  # TODO(https://crbug.com/916130): AFDO causes a substantial size increase in
-  # nacl_helper that originates from here. This is apparently due to some
-  # mixture of inlining, CFI, and (potentially) speculative devirtualization.
-  # Work around that by locally disabling AFDO.
-  #
-  # nacl_helper is only available on Linux.
-  if (is_linux) {
-    configs -= [ "//build/config/compiler:afdo" ]
-  }
-
   if (enable_ipc_fuzzer) {
     public_configs = [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }

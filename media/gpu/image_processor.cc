@@ -4,40 +4,69 @@
 
 #include "media/gpu/image_processor.h"
 
+#include <ostream>
+#include <sstream>
+
+#include "base/strings/stringprintf.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/video_frame.h"
 
 namespace media {
 
-ImageProcessor::PortConfig::PortConfig(
-    const VideoFrameLayout& layout,
-    const gfx::Size& visible_size,
-    const std::vector<VideoFrame::StorageType>& preferred_storage_types)
-    : PortConfig(layout,
-                 kUnassignedFourCC,
-                 visible_size,
-                 preferred_storage_types) {}
+namespace {
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const VideoFrame::StorageType& storage_type) {
+  ostream << VideoFrame::StorageTypeToString(storage_type);
+  return ostream;
+}
+
+template <class T>
+std::string VectorToString(const std::vector<T>& vec) {
+  std::ostringstream result;
+  std::string delim;
+  result << "[";
+  for (const T& v : vec) {
+    result << delim << v;
+    if (delim.size() == 0)
+      delim = ", ";
+  }
+  result << "]";
+  return result.str();
+}
+
+}  // namespace
+
+ImageProcessor::PortConfig::PortConfig(const PortConfig&) = default;
 
 ImageProcessor::PortConfig::PortConfig(
-    const VideoFrameLayout& layout,
-    uint32_t fourcc,
+    Fourcc fourcc,
+    const gfx::Size& size,
+    const std::vector<ColorPlaneLayout>& planes,
     const gfx::Size& visible_size,
     const std::vector<VideoFrame::StorageType>& preferred_storage_types)
-    : layout(layout),
-      fourcc(fourcc),
+    : fourcc(fourcc),
+      size(size),
+      planes(planes),
       visible_size(visible_size),
       preferred_storage_types(preferred_storage_types) {}
 
-ImageProcessor::PortConfig::~PortConfig() {}
+ImageProcessor::PortConfig::~PortConfig() = default;
 
-ImageProcessor::ImageProcessor(const VideoFrameLayout& input_layout,
-                               VideoFrame::StorageType input_storage_type,
-                               const VideoFrameLayout& output_layout,
-                               VideoFrame::StorageType output_storage_type,
+std::string ImageProcessor::PortConfig::ToString() const {
+  return base::StringPrintf(
+      "PortConfig(format:%s, size:%s, planes: %s, visible_size:%s, "
+      "storage_types:%s)",
+      fourcc.ToString().c_str(), size.ToString().c_str(),
+      VectorToString(planes).c_str(), visible_size.ToString().c_str(),
+      VectorToString(preferred_storage_types).c_str());
+}
+
+ImageProcessor::ImageProcessor(const ImageProcessor::PortConfig& input_config,
+                               const ImageProcessor::PortConfig& output_config,
                                OutputMode output_mode)
-    : input_layout_(input_layout),
-      input_storage_type_(input_storage_type),
-      output_layout_(output_layout),
-      output_storage_type_(output_storage_type),
+    : input_config_(input_config),
+      output_config_(output_config),
       output_mode_(output_mode) {}
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)

@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Jūsų „<ph name="APPLICATION_NAME" />“ sesija buvo neaktyvi ir netrukus bus atjungta.</translation>
 <translation id="2317666076142640974">Išbandykite naująją <ph name="LINK_BEGIN" />„Chrome“ nuotolinio kompiuterio valdymo žiniatinklio programą<ph name="LINK_END" /> pirmieji. Džiaugtumės, jeigu gautume jūsų atsiliepimus.</translation>
 <translation id="2320166752086256636">Slėpti klaviatūrą</translation>
-<translation id="2332192922827071008">Atidarykite nuostatas</translation>
 <translation id="2353140552984634198">Galite saugiai pasiekti kompiuterį naudodami „Chrome“ nuotolinį ryšį.</translation>
 <translation id="2359808026110333948">Tęskite</translation>
 <translation id="2366718077645204424">Neįmanoma pasiekti prieglobos. Taip greičiausiai nutiko dėl naudojamo tinklo konfigūracijos.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Prisijungta prie „<ph name="HOSTNAME" />“</translation>
 <translation id="2512228156274966424">PASTABA: jei norite užtikrinti, kad galimi visi spartieji klavišai, galite konfigūruoti „Chrome“ nuotolinio kompiuterio valdymą į „Atidaryti kaip langą“.</translation>
 <translation id="2540992418118313681">Ar norite bendrinti šį kompiuterį su kitu naudotoju, kuris galės matyti ir tvarkyti jo turinį?</translation>
-<translation id="254771646005658629">Leiskite nuotoliniams naudotojams valdyti šį „Mac“ įrenginį</translation>
 <translation id="2579271889603567289">Priegloba užstrigo arba jos nepavyko paleisti.</translation>
 <translation id="2599300881200251572">Naudojant šią paslaugą įgalinami „Chrome“ nuotolinio kompiuterio valdymo klientų prisijungimai.</translation>
 <translation id="2647232381348739934">„Chrome“ nuotolinio ryšio paslauga</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Nepavyko iš naujo nustatyti programos. Vis tiek galite išsiųsti rikto ataskaitą.</translation>
 <translation id="5419418238395129586">Paskutinį kartą prisijungta: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Priegloba išjungta.</translation>
-<translation id="5463789431147491241">Kad <ph name="PRODUCT_NAME" /> veiktų šiame „Mac“, atlikite nurodytus veiksmus.
-
-Toliau pasirinkite mygtuką „<ph name="BUTTON_NAME" />“. Saugos ir privatumo nuostatų skiltyje pažymėkite žymimąjį langelį šalia „<ph name="SERVICE_SCRIPT_NAME" />“.
-
-Jei parinktis „<ph name="SERVICE_SCRIPT_NAME" />“ jau pažymėta, atžymėkite ir pažymėkite ją iš naujo.</translation>
 <translation id="5510035215749041527">Atjungti dabar</translation>
 <translation id="5593560073513909978">Paslauga laikinai negalima. Bandykite dar kartą vėliau.</translation>
 <translation id="5601503069213153581">PIN kodas</translation>

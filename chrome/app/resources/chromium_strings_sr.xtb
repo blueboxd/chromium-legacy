@@ -13,7 +13,6 @@
 <translation id="151962892725702025">Chromium ОС не може да синхронизује податке јер Синхронизација није доступна за домен.</translation>
 <translation id="1524282610922162960">Делите Chromium картицу</translation>
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
-<translation id="1766096484055239003">Администратор захтева да поново покренете Chromium да бисте применили ажурирање</translation>
 <translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
 <translation id="1779356040007214683">Да бисмо учинили Chromium безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
 <translation id="1808667845054772817">Поново инсталирај Chromium</translation>
@@ -22,7 +21,6 @@
 <translation id="1929939181775079593">Chromium не реагује. Желите ли да га одмах поново покренете?</translation>
 <translation id="1966382378801805537">Chromium не може да одреди ни да подеси подразумевани прегледач</translation>
 <translation id="2008474315282236005">Овим ћете избрисати 1 ставку са овог уређаја. Да бисте касније вратили податке, пријавите се у Chromium као <ph name="USER_EMAIL" />.</translation>
-<translation id="2117378023188580026">Администратор тражи да поново покренете Chromium да бисте применили ово ажурирање</translation>
 <translation id="2119636228670142020">О &amp;Chromium ОС-у</translation>
 <translation id="2241627712206172106">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chromium баш онако како желе.</translation>
 <translation id="2347108572062610441">Овај додатак је променио страницу која се приказује када покренете Chromium.</translation>
@@ -192,7 +190,6 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7827169012280634081">Обриши колачиће и податке о сајтовима кад изађем из Chromium-а</translation>
 <translation id="7867198900892795913">Chromium није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке.</translation>
 <translation id="7898472181347242998">Да бисте проверили да ли је уређај ажуриран, идите у <ph name="LINK_BEGIN" />Подешавања Chromium ОС-а<ph name="LINK_END" /></translation>
-<translation id="7901117350626490574">Ново ажурирање за Chromium је доступно и примениће се чим га поново покренете.</translation>
 <translation id="7937630085815544518">Били сте пријављени на Chromium као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="7975919845073681630">Ово је секундарна инсталација Chromium-а па не можете да га подесите као подразумевани прегледач.</translation>
 <translation id="7979877361127045932">Сакриј у Chromium менију</translation>

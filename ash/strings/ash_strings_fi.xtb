@@ -345,7 +345,6 @@
 <translation id="6062360702481658777">Sinut kirjataan ulos automaattisesti, aikaa jäljellä <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Salasanasi vahvistaminen epäonnistui. Yritä uudelleen.</translation>
 <translation id="607652042414456612">Lähellä olevat Bluetooth-laitteet voivat löytää tietokoneesi. Tietokoneesi nimi on <ph name="NAME" /> ja osoite <ph name="ADDRESS" /></translation>
-<translation id="6106745654298855237">Ladataan laitetta <ph name="POWER_SOURCE" /></translation>
 <translation id="612734058257491180">Google Assistantia ei voi käyttää Vierailija-käyttökerralla.</translation>
 <translation id="615957422585914272">Näytä ruutunäppäimistö</translation>
 <translation id="6164005077879661055">Kaikki valvottuun käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan
@@ -449,7 +448,6 @@
 <translation id="7647488630410863958">Katso ilmoitukset avaamalla laitteesi lukitus.</translation>
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7654687942625752712">Poista äänipalaute käytöstä painamalla molempia äänenvoimakkuuspainikkeita viiden sekunnin ajan.</translation>
-<translation id="7692480393933218409">Ladataan yhdistettyjä C-tyypin USB-laitteita</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 ilmoitus}other{# ilmoitusta}}</translation>
 <translation id="7749443890790263709">Työpöytiä on enimmäismäärä.</translation>

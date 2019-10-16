@@ -1146,7 +1146,8 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, DonotStartGoingBack) {
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
   // Should not go back while in overview mode but splitview is not active.
-  ASSERT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  ASSERT_FALSE(SplitViewController::Get(Shell::GetPrimaryRootWindow())
+                   ->InSplitViewMode());
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
   ASSERT_EQ(session_manager::SessionState::ACTIVE,

@@ -124,6 +124,8 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   // Sets the animtion type of |backdrop_window_| to |type|.
   void SetBackdropAnimationType(int type);
 
+  aura::Window* root_window_;
+
   // The backdrop which covers the rest of the screen.
   std::unique_ptr<views::Widget> backdrop_;
 

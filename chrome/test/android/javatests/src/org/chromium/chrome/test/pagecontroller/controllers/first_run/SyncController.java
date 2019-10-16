@@ -13,10 +13,10 @@ import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
  * Sync Dialog (part of First Run Experience) Page Controller.
  */
 public class SyncController extends PageController {
-    private final static IUi2Locator LOCATOR_SYNC_CONTROLLER =
-            Ui2Locators.withResEntries(R.id.signin_sync_title);
-    private final static IUi2Locator LOCATOR_NO_THANKS =
-            Ui2Locators.withResEntries(R.id.negative_button);
+    private static final IUi2Locator LOCATOR_SYNC_CONTROLLER =
+            Ui2Locators.withAnyResEntry(R.id.signin_sync_title);
+    private static final IUi2Locator LOCATOR_NO_THANKS =
+            Ui2Locators.withAnyResEntry(R.id.negative_button);
 
     private static final SyncController sInstance = new SyncController();
     private SyncController() {}

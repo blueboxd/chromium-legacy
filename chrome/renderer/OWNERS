@@ -7,6 +7,10 @@ per-file loadtimes_extension_bindings*=file://components/page_load_metrics/OWNER
 # Instant/Search files.
 per-file instant_restricted_id_cache*=file://chrome/browser/search/OWNERS
 
+# For security review.
+per-file chrome_content_renderer_client_receiver_bindings.cc=set noparent
+per-file chrome_content_renderer_client_receiver_bindings.cc=file://ipc/SECURITY_OWNERS
+
 # Content client.
 per-file chrome_content_renderer_client_browsertest.cc=*
 per-file chrome_content_renderer_client.cc=*

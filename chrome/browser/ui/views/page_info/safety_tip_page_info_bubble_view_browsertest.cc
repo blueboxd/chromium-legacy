@@ -232,26 +232,22 @@ class SafetyTipPageInfoBubbleViewBrowserTest
     }
 
     OpenPageInfoBubble(browser);
-    auto* page_info = static_cast<SafetyTipPageInfoBubbleView*>(
-        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting());
+    views::BubbleDialogDelegateView* page_info =
+        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
     ASSERT_TRUE(page_info);
     EXPECT_EQ(page_info->GetWindowTitle(),
               l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
-    EXPECT_EQ(page_info->GetSecurityDetails().type,
-              PageInfoUI::SecurityDescriptionType::SAFETY_TIP);
   }
 
   void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
     OpenPageInfoBubble(browser);
-    auto* page_info = static_cast<SafetyTipPageInfoBubbleView*>(
-        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting());
+    views::BubbleDialogDelegateView* page_info =
+        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
     ASSERT_TRUE(page_info);
     EXPECT_NE(page_info->GetWindowTitle(),
               l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
-    EXPECT_NE(page_info->GetSecurityDetails().type,
-              PageInfoUI::SecurityDescriptionType::SAFETY_TIP);
   }
 
  private:

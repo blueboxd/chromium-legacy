@@ -92,7 +92,10 @@ enum class UserInteractionType {
   // User interacted with an app using a gamepad.
   GAMEPAD_INTERACTION = 19,
 
-  kMaxValue = GAMEPAD_INTERACTION,
+  // User started an app from entering URL in the Omnibox in the browser.
+  APP_STARTED_FROM_OMNIBOX = 20,
+
+  kMaxValue = APP_STARTED_FROM_OMNIBOX,
 };
 
 }  // namespace arc

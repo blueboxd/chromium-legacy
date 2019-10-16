@@ -43,7 +43,8 @@ gfx::Rect Intersection(gfx::Rect a, const gfx::Rect& b) {
 // Static constexpr class for generating unique identifiers for each VideoFrame.
 static base::AtomicSequenceNumber g_unique_id_generator;
 
-static std::string StorageTypeToString(
+// static
+std::string VideoFrame::StorageTypeToString(
     const VideoFrame::StorageType storage_type) {
   switch (storage_type) {
     case VideoFrame::STORAGE_UNKNOWN:

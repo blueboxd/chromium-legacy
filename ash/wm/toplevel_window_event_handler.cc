@@ -122,7 +122,8 @@ bool CanStartGoingBack() {
   // Do not enable back gesture while overview mode is active but splitview is
   // not active.
   if (shell->overview_controller()->InOverviewSession() &&
-      !SplitViewController::Get()->InSplitViewMode()) {
+      !SplitViewController::Get(Shell::GetPrimaryRootWindow())
+           ->InSplitViewMode()) {
     return false;
   }
 

@@ -255,6 +255,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface nextTabTitle];
 }
 
+- (NSString*)currentTabID {
+  return [ChromeEarlGreyAppInterface currentTabID];
+}
+
+- (NSString*)nextTabID {
+  return [ChromeEarlGreyAppInterface nextTabID];
+}
+
 #pragma mark - Cookie Utilities (EG2)
 
 - (NSDictionary*)cookies {

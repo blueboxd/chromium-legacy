@@ -988,7 +988,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
     ClearRulesetService();
     RunBlockingUntilIdle();
 
-    EXPECT_TRUE(base::DeleteFile(base_dir(), true));
+    EXPECT_TRUE(base::DeleteFileRecursively(base_dir()));
     ResetRulesetService();
   }
 
@@ -1035,7 +1035,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
     ClearRulesetService();
     RunBlockingUntilIdle();
 
-    EXPECT_TRUE(base::DeleteFile(base_dir(), true));
+    EXPECT_TRUE(base::DeleteFileRecursively(base_dir()));
     IndexedRulesetVersion().SaveToPrefs(prefs());
     ResetRulesetService();
   }

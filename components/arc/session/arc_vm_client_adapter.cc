@@ -392,6 +392,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     }
     VLOG(1) << "Concierge service started for arcvm.";
 
+    // TODO(pliard): Export host-side /data to the VM, and remove the call. Note
+    // that ArcSessionImpl checks low disk conditions before calling UpgradeArc.
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(),
@@ -410,7 +412,6 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       std::move(callback).Run(false);
       return;
     }
-    // TODO(yusukes): Don't start the VM when |free_disk_bytes| is too small.
     // TODO(pliard): Export host-side /data to the VM, and remove the call.
     GetConciergeClient()->CreateDiskImage(
         CreateArcDiskRequest(user_id_hash_, free_disk_bytes),

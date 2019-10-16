@@ -660,3 +660,7 @@ base::string16 DownloadUIModel::GetInProgressStatusString() const {
   // Instead of displaying "0 B" we say "Starting..."
   return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING);
 }
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+void DownloadUIModel::CompleteSafeBrowsingScan() {}
+#endif

@@ -64,7 +64,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
   }
 
   SplitViewController* split_view_controller() {
-    return SplitViewController::Get();
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
   }
 
   IndicatorState indicator_state() {

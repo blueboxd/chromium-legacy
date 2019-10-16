@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -123,6 +124,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
   MOCK_METHOD1(SimulateErrorForTesting, void(DownloadInterruptReason));
   MOCK_METHOD2(Rename, void(const base::FilePath&, RenameDownloadCallback));
+  MOCK_METHOD1(OnAsyncScanningCompleted, void(DownloadDangerType));
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;

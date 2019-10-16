@@ -827,8 +827,12 @@ void RTCVideoEncoder::Impl::EncodeOneFrameWithNativeInput() {
                 next_frame->video_frame_buffer().get())
                 ->getMediaVideoFrame();
   }
-  DCHECK_EQ(frame->storage_type(),
-            media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+
+  if (frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    LogAndNotifyError(FROM_HERE, "frame isn't GpuMemoryBuffer based VideoFrame",
+                      media::VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
 
   constexpr int kDummyIndex = -1;
   frame->AddDestructionObserver(media::BindToCurrentLoop(base::BindOnce(

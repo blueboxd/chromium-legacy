@@ -45,6 +45,14 @@ bool CupsProxyServiceDelegateImpl::IsPrinterInstalled(const Printer& printer) {
   return printers_manager_->IsPrinterInstalled(printer);
 }
 
+// Expects |printer| is known by the printers_manager_.
+void CupsProxyServiceDelegateImpl::PrinterInstalled(const Printer& printer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(GetPrinter(printer.id()));
+  printers_manager_->PrinterInstalled(
+      printer, false /* unused */, PrinterSetupSource::kMaxValue /* unused */);
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 CupsProxyServiceDelegateImpl::GetIOTaskRunner() {
   return base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});

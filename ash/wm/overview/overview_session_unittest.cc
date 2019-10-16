@@ -17,6 +17,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
@@ -193,6 +194,10 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
 
   OverviewSession* overview_session() {
     return overview_controller()->overview_session_.get();
+  }
+
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
   }
 
   gfx::Rect GetTransformedBounds(aura::Window* window) {
@@ -1504,8 +1509,7 @@ TEST_P(OverviewSessionTest, ExitOverviewWithKey) {
   EnterTabletMode();
   ToggleOverview();
   ASSERT_TRUE(overview_controller()->InOverviewSession());
-  SplitViewController::Get()->SnapWindow(window.get(),
-                                         SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   ASSERT_TRUE(overview_controller()->InOverviewSession());
   SendKey(ui::VKEY_ESCAPE);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
@@ -1638,8 +1642,7 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
 
   // Tests that when snapping a window to the left in splitview, the no windows
   // indicator shows up in the middle of the right side of the screen.
-  auto* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   no_windows_widget = overview_session()->no_windows_widget_for_testing();
   ASSERT_TRUE(no_windows_widget);
 
@@ -1653,7 +1656,7 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
 
   // Tests that when snapping a window to the right in splitview, the no windows
   // indicator shows up in the middle of the left side of the screen.
-  split_view_controller->SnapWindow(window.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::RIGHT);
   expected_x = /*bounds_right=*/(200 - 4) / 2;
   EXPECT_EQ(gfx::Point(expected_x, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
@@ -1665,8 +1668,7 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorAddItem) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   ToggleOverview();
-  auto* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(overview_session()->no_windows_widget_for_testing());
 
   overview_session()->AddItem(window.get(), /*reposition=*/true,
@@ -2802,7 +2804,7 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
   }
 
   SplitViewController* split_view_controller() {
-    return SplitViewController::Get();
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
   }
 
  protected:
@@ -3121,6 +3123,58 @@ TEST_P(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 }
 
+TEST_P(OverviewSessionNewLayoutTest, LayoutValidAfterRotation) {
+  UpdateDisplay("1366x768");
+  display::test::ScopedSetInternalDisplayId set_internal(
+      Shell::Get()->display_manager(),
+      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  auto windows = CreateTestWindows(7);
+
+  // Helper to determine whether a grid layout is valid. It is considered valid
+  // if the left edge of the first item is close enough to the left edge of the
+  // grid bounds and if the right edge of the last item is close enough to the
+  // right edge of the grid bounds. Either of these being false would mean there
+  // is a large padding which shouldn't be there.
+  auto layout_valid = [&windows, this](int expected_padding) {
+    OverviewItem* first_item = GetOverviewItemForWindow(windows.front().get());
+    OverviewItem* last_item = GetOverviewItemForWindow(windows.back().get());
+
+    const gfx::Rect first_bounds =
+        gfx::ToEnclosedRect(first_item->target_bounds());
+    const gfx::Rect last_bounds =
+        gfx::ToEnclosedRect(last_item->target_bounds());
+
+    const gfx::Rect grid_bounds = GetGridBounds();
+    const bool first_bounds_valid =
+        first_bounds.x() <= (grid_bounds.x() + expected_padding);
+    const bool last_bounds_valid =
+        last_bounds.right() >= (grid_bounds.right() - expected_padding);
+    return first_bounds_valid && last_bounds_valid;
+  };
+
+  // Enter overview and scroll to the edge of the grid. The layout should remain
+  // valid.
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+  // The expected padding should be the x position of the first item, before the
+  // grid gets shifted.
+  const int expected_padding =
+      GetOverviewItemForWindow(windows.front().get())->target_bounds().x();
+  GenerateScrollSequence(gfx::Point(1300, 10), gfx::Point(100, 10));
+  EXPECT_TRUE(layout_valid(expected_padding));
+
+  // Tests that the layout is still valid after a couple rotations.
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_TRUE(layout_valid(expected_padding));
+
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_TRUE(layout_valid(expected_padding));
+}
+
 // Tests that windows snap through long press and drag to left or right side of
 // the screen.
 TEST_P(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
@@ -3193,7 +3247,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
   }
 
   SplitViewController* split_view_controller() {
-    return SplitViewController::Get();
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
   }
 
   bool IsDividerAnimating() {
@@ -3297,7 +3351,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
   // Creates a window which cannot be snapped by splitview.
   std::unique_ptr<aura::Window> CreateUnsnappableWindow(
       const gfx::Rect& bounds = gfx::Rect()) {
-    std::unique_ptr<aura::Window> window = CreateTestWindow();
+    std::unique_ptr<aura::Window> window = CreateTestWindow(bounds);
     window->SetProperty(aura::client::kResizeBehaviorKey,
                         aura::client::kResizeBehaviorNone);
     return window;
@@ -3772,7 +3826,7 @@ TEST_P(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   EXPECT_TRUE(overview_controller()->InOverviewSession());
 
   EndSplitView();
-  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->InOverviewSession());
 
   // Test that ToggleOverview() can end overview if we're not in split view
@@ -3785,10 +3839,10 @@ TEST_P(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   ToggleOverview();
   overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
 
   // Test that closing all windows in overview can end overview if we're not in
@@ -4394,8 +4448,7 @@ TEST_P(SplitViewOverviewSessionTest,
   ToggleOverview();
   // Snap a window to the left and test dragging the divider towards the right
   // edge of the screen.
-  SplitViewController::Get()->SnapWindow(window1.get(),
-                                         SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   OverviewGrid* grid = overview_session()->grid_list()[0].get();
   ASSERT_TRUE(grid);
 
@@ -4419,8 +4472,8 @@ TEST_P(SplitViewOverviewSessionTest,
   ToggleOverview();
   // Snap a window to the right and test dragging the divider towards the left
   // edge of the screen.
-  SplitViewController::Get()->SnapWindow(window1.get(),
-                                         SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window1.get(),
+                                      SplitViewController::RIGHT);
   grid = overview_session()->grid_list()[0].get();
   ASSERT_TRUE(grid);
 
@@ -4989,6 +5042,204 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
+using SplitViewOverviewSessionInClamshellTestMultiDisplayOnly =
+    SplitViewOverviewSessionInClamshellTest;
+
+// Test |SplitViewController::Get|.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       GetSplitViewController) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root2);
+  EXPECT_EQ(root_windows[0],
+            SplitViewController::Get(window1.get())->root_window());
+  EXPECT_EQ(root_windows[1],
+            SplitViewController::Get(window2.get())->root_window());
+}
+
+// Test |SplitViewController::GetSnappedWindowBoundsInScreen|.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       GetSnappedBounds) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  // This unit test assumes a shelf height of 56, as currently hard coded in
+  // |AppListTestViewDelegate::GetShelfHeight|. There is a TODO to change that
+  // value to 48, and the code below will just have to be updated then. The
+  // |EXPECT_EQ| calls produce better failure output if they compare string
+  // representations of bounds rects rather than individual components of
+  // origins and sizes. Those string representations of bounds rects are most
+  // readable when hard-coded.
+  ASSERT_EQ("0,0 800x544",
+            screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+                root_windows[0])
+                .ToString());
+  ASSERT_EQ("800,0 800x544",
+            screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+                root_windows[1])
+                .ToString());
+
+  EXPECT_EQ("0,0 400x544",
+            SplitViewController::Get(root_windows[0])
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
+                .ToString());
+  EXPECT_EQ("400,0 400x544",
+            SplitViewController::Get(root_windows[0])
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
+                .ToString());
+  EXPECT_EQ("800,0 400x544",
+            SplitViewController::Get(root_windows[1])
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::LEFT)
+                .ToString());
+  EXPECT_EQ("1200,0 400x544",
+            SplitViewController::Get(root_windows[1])
+                ->GetSnappedWindowBoundsInScreen(SplitViewController::RIGHT)
+                .ToString());
+}
+
+// Test that if clamshell split view is started by snapping a window that is the
+// only overview window, then split view ends as soon as it starts, and overview
+// ends along with it.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       SplitViewEndsImmediatelyIfOverviewIsEmpty) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window = CreateTestWindow(bounds_within_root1);
+  ToggleOverview();
+  SplitViewController::Get(root_windows[0])
+      ->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_FALSE(InOverviewSession());
+  EXPECT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+}
+
+// Test that if clamshell split view is started by snapping a window on one
+// display while there is an overview window on another display, then split view
+// stays active (instead of ending as soon as it starts), and overview also
+// stays active. Then close the overview window and verify that split view and
+// overview are ended.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       SplitViewViableWithOverviewWindowOnOtherDisplay) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root2);
+  ToggleOverview();
+  SplitViewController::Get(root_windows[0])
+      ->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  EXPECT_TRUE(InOverviewSession());
+  window2.reset();
+  EXPECT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  EXPECT_FALSE(InOverviewSession());
+}
+
+// Verify that when in overview mode, the selector items unsnappable indicator
+// shows up when expected.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       OverviewUnsnappableIndicatorVisibility) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window3 =
+      CreateUnsnappableWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window5 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window6 =
+      CreateUnsnappableWindow(bounds_within_root2);
+  ToggleOverview();
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+  OverviewItem* item5 = GetOverviewItemForWindow(window5.get());
+  OverviewItem* item6 = GetOverviewItemForWindow(window6.get());
+
+  // Note: |cannot_snap_label_view_| and its parent will be created on demand.
+  ASSERT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  ASSERT_FALSE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+  EXPECT_FALSE(item2->cannot_snap_widget_for_testing());
+  EXPECT_FALSE(item3->cannot_snap_widget_for_testing());
+  EXPECT_FALSE(item5->cannot_snap_widget_for_testing());
+  EXPECT_FALSE(item6->cannot_snap_widget_for_testing());
+
+  SplitViewController::Get(root_windows[0])
+      ->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ASSERT_TRUE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  ASSERT_FALSE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+  EXPECT_FALSE(item2->cannot_snap_widget_for_testing());
+  ASSERT_TRUE(item3->cannot_snap_widget_for_testing());
+  ui::Layer* item3_unsnappable_layer =
+      item3->cannot_snap_widget_for_testing()->GetNativeWindow()->layer();
+  EXPECT_EQ(1.f, item3_unsnappable_layer->opacity());
+  EXPECT_FALSE(item5->cannot_snap_widget_for_testing());
+  EXPECT_FALSE(item6->cannot_snap_widget_for_testing());
+
+  SplitViewController::Get(root_windows[1])
+      ->SnapWindow(window4.get(), SplitViewController::LEFT);
+  ASSERT_TRUE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  ASSERT_TRUE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+  EXPECT_FALSE(item2->cannot_snap_widget_for_testing());
+  EXPECT_EQ(1.f, item3_unsnappable_layer->opacity());
+  EXPECT_FALSE(item5->cannot_snap_widget_for_testing());
+  ASSERT_TRUE(item6->cannot_snap_widget_for_testing());
+  ui::Layer* item6_unsnappable_layer =
+      item6->cannot_snap_widget_for_testing()->GetNativeWindow()->layer();
+  EXPECT_EQ(1.f, item6_unsnappable_layer->opacity());
+
+  SplitViewController::Get(root_windows[0])->EndSplitView();
+  ASSERT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  ASSERT_TRUE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+  EXPECT_FALSE(item2->cannot_snap_widget_for_testing());
+  EXPECT_EQ(0.f, item3_unsnappable_layer->opacity());
+  EXPECT_FALSE(item5->cannot_snap_widget_for_testing());
+  EXPECT_EQ(1.f, item6_unsnappable_layer->opacity());
+
+  SplitViewController::Get(root_windows[1])->EndSplitView();
+  ASSERT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  ASSERT_FALSE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+  EXPECT_FALSE(item2->cannot_snap_widget_for_testing());
+  EXPECT_EQ(0.f, item3_unsnappable_layer->opacity());
+  EXPECT_FALSE(item5->cannot_snap_widget_for_testing());
+  EXPECT_EQ(0.f, item6_unsnappable_layer->opacity());
+}
+
+// Test that enabling the docked magnifier ends clamshell split view on all
+// displays.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       DockedMagnifierEndsClamshellSplitView) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds_within_root2);
+  ToggleOverview();
+  SplitViewController::Get(root_windows[0])
+      ->SnapWindow(window1.get(), SplitViewController::LEFT);
+  SplitViewController::Get(root_windows[1])
+      ->SnapWindow(window3.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(InOverviewSession());
+  EXPECT_TRUE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  EXPECT_TRUE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+  Shell::Get()->docked_magnifier_controller()->SetEnabled(true);
+  EXPECT_FALSE(InOverviewSession());
+  EXPECT_FALSE(SplitViewController::Get(root_windows[0])->InSplitViewMode());
+  EXPECT_FALSE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
+}
+
 INSTANTIATE_TEST_SUITE_P(, OverviewSessionTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(, OverviewSessionRoundedCornerTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(, OverviewSessionNewLayoutTest, testing::Bool());
@@ -4996,5 +5247,9 @@ INSTANTIATE_TEST_SUITE_P(, SplitViewOverviewSessionTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(,
                          SplitViewOverviewSessionInClamshellTest,
                          testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+    testing::Values(true));
 
 }  // namespace ash

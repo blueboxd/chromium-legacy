@@ -160,7 +160,7 @@ static void StartClientCertificateRequest(
         key_types.push_back("RSA");
         break;
       case net::CLIENT_CERT_ECDSA_SIGN:
-        key_types.push_back("ECDSA");
+        key_types.push_back("EC");
         break;
       default:
         // Ignore unknown types.

@@ -48,7 +48,6 @@
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> 세션이 일정 시간 비활성화 상태였으므로 곧 연결 해제됩니다.</translation>
 <translation id="2317666076142640974">새로운 <ph name="LINK_BEGIN" />Chrome 원격 데스크톱 웹 앱<ph name="LINK_END" />을 미리 체험해 보시고 의견을 들려주세요.</translation>
 <translation id="2320166752086256636">키보드 숨기기</translation>
-<translation id="2332192922827071008">환경설정 열기</translation>
 <translation id="2353140552984634198">Chromoting을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2366718077645204424">호스트에 연결할 수 없습니다. 사용 중인 네트워크의 구성 때문일 수 있습니다.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" />에 연결되었습니다</translation>
 <translation id="2512228156274966424">참고: 모든 단축키를 사용하려면 Chrome 원격 데스크톱을 '창으로 열기'로 설정합니다.</translation>
 <translation id="2540992418118313681">이 컴퓨터를 다른 사용자가 보고 제어하도록 공유하시겠습니까?</translation>
-<translation id="254771646005658629">원격 사용자가 이 Mac 기기를 제어하도록 허용</translation>
 <translation id="2579271889603567289">호스트가 다운되었거나 시작되지 못했습니다.</translation>
 <translation id="2599300881200251572">이 서비스를 이용하면 Chrome 원격 데스크톱 클라이언트로부터의 연결을 수신할 수 있습니다.</translation>
 <translation id="2647232381348739934">Chromoting 서비스</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">애플리케이션을 재설정할 수 없지만 버그 보고서를 보낼 수는 있습니다.</translation>
 <translation id="5419418238395129586">최근 온라인 접속일: <ph name="DATE" /></translation>
 <translation id="544077782045763683">호스트가 꺼져 있습니다.</translation>
-<translation id="5463789431147491241">이 Mac 기기에서 <ph name="PRODUCT_NAME" />을(를) 사용하려면 다음 단계를 따르세요.
-
-아래의 ‘<ph name="BUTTON_NAME" />’ 버튼을 선택합니다. 보안 및 개인정보 보호 환경설정에서 ‘<ph name="SERVICE_SCRIPT_NAME" />’ 옆에 있는 체크박스를 선택합니다.
-
-‘<ph name="SERVICE_SCRIPT_NAME" />’이(가) 이미 선택되어 있다면 이를 선택 해제하고 다시 선택해야 할 수도 있습니다.</translation>
 <translation id="5510035215749041527">지금 연결 해제</translation>
 <translation id="5593560073513909978">서비스를 일시적으로 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="5601503069213153581">PIN</translation>

@@ -39,6 +39,11 @@
 #include "base/system/sys_info.h"
 #include "components/version_info/version_info.h"
 
+#if defined(OS_CHROMEOS)
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -153,6 +158,13 @@ std::string GetOSUsername() {
   }
 
   return base::WideToUTF8(username);
+#elif defined(OS_CHROMEOS)
+  if (!user_manager::UserManager::IsInitialized())
+    return std::string();
+  auto* user = user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user)
+    return std::string();
+  return user->GetAccountName(/*use_display_email=*/false);
 #else
   NOTREACHED();
   return std::string();

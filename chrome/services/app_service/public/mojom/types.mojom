@@ -163,6 +163,8 @@ enum LaunchSource {
   kFromParentalControls,         // Parental Controls Settings Section.
   kFromShelf,                    // Shelf.
   kFromFileManager,              // FileManager.
+  kFromLink,                     // Left-licking on links in the browser.
+  kFromOmnibox,                  // Enter URL in the Omnibox in the browser.
 };
 
 enum TriState {

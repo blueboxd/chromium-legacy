@@ -51,6 +51,13 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
                             IDR_SYNC_CONFIRMATION_APP_JS);
     source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
 
+    source->AddResourcePath(
+        "images/sync_confirmation_illustration.svg",
+        IDR_SYNC_CONFIRMATION_IMAGES_SYNC_CONFIRMATION_ILLUSTRATION_SVG);
+    source->AddResourcePath(
+        "images/sync_confirmation_illustration_dark.svg",
+        IDR_SYNC_CONFIRMATION_IMAGES_SYNC_CONFIRMATION_ILLUSTRATION_DARK_SVG);
+
     AddStringResource(source, "syncConfirmationTitle",
                       IDS_SYNC_CONFIRMATION_TITLE);
     AddStringResource(source, "syncConfirmationSyncInfoTitle",

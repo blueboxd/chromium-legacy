@@ -169,8 +169,10 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
   void OnIndicatorTypeChanged(IndicatorState indicator_state,
                               IndicatorState previous_indicator_state) {
     // In split view, the labels never show, and they do not need to be updated.
-    if (SplitViewController::Get()->InSplitViewMode())
+    if (SplitViewController::Get(GetWidget()->GetNativeWindow())
+            ->InSplitViewMode()) {
       return;
+    }
 
     // On transition to a state with no indicators, any label that is showing
     // shall fade out with the corresponding indicator. The following call to
@@ -377,10 +379,11 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     if (IsPreviewAreaState(indicator_state_) || nix_preview_inset) {
       // Get the preview area bounds from the split view controller.
       preview_area_bounds =
-          SplitViewController::Get()->GetSnappedWindowBoundsInScreen(
-              preview_state == IndicatorState::kPreviewAreaLeft
-                  ? SplitViewController::LEFT
-                  : SplitViewController::RIGHT);
+          SplitViewController::Get(GetWidget()->GetNativeWindow())
+              ->GetSnappedWindowBoundsInScreen(
+                  preview_state == IndicatorState::kPreviewAreaLeft
+                      ? SplitViewController::LEFT
+                      : SplitViewController::RIGHT);
 
       aura::Window* root_window =
           GetWidget()->GetNativeWindow()->GetRootWindow();

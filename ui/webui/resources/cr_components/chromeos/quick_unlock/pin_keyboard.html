@@ -176,7 +176,7 @@
         @apply --pin-keyboard-pin-input-style;
       }
 
-      #pinInput[has-content] {
+      #pinInput[make-contrast] {
         --cr-disabled-opacity: var(--dark-primary-opacity);
         opacity: var(--dark-primary-opacity);
       }
@@ -196,10 +196,10 @@
       <div id="pinInputDiv">
         <cr-input id="pinInput" type="password" value="{{value}}"
             is-input-rtl$="[[isInputRtl_(value)]]" aria-label="[[ariaLabel]]"
-            has-content$="[[hasInput_(value)]]" invalid="[[hasError]]"
+            make-contrast$="[[hasInputOrFocus_(value, focused_)]]" invalid="[[hasError]]"
             placeholder="[[getInputPlaceholder_(enablePassword,
                 enablePlaceholder)]]"
-            on-keydown="onInputKeyDown_" force-underline$="[[forceUnderline_]]"
+            on-keydown="onInputKeyDown_" force-underline="true"
             disabled="[[isIncognitoUi]]">
         </cr-input>
       </div>

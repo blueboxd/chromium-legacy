@@ -126,12 +126,16 @@ void DownloadWorker::OnUrlDownloadStarted(
     return;
   }
 
+  if (offset_ != create_info->offset)
+    create_info->result = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+
   if (create_info->result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     RecordParallelRequestCreationFailure(create_info->result);
     VLOG(kWorkerVerboseLevel)
         << "Parallel download sub-request failed. reason = "
         << create_info->result;
     input_stream.reset(new CompletedInputStream(create_info->result));
+    url_download_handler_.reset();
   }
 
   // Pause the stream if user paused, still push the stream reader to the sink.

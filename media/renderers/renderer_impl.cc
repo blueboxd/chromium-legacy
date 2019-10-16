@@ -360,8 +360,8 @@ void RendererImpl::InitializeAudioRenderer() {
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(init_cb_);
 
-  PipelineStatusCB done_cb =
-      base::Bind(&RendererImpl::OnAudioRendererInitializeDone, weak_this_);
+  PipelineStatusCB done_cb = base::BindRepeating(
+      &RendererImpl::OnAudioRendererInitializeDone, weak_this_);
 
   // TODO(servolk): Implement proper support for multiple streams. But for now
   // pick the first enabled stream to preserve the existing behavior.
@@ -411,8 +411,8 @@ void RendererImpl::InitializeVideoRenderer() {
   DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(init_cb_);
 
-  PipelineStatusCB done_cb =
-      base::Bind(&RendererImpl::OnVideoRendererInitializeDone, weak_this_);
+  PipelineStatusCB done_cb = base::BindRepeating(
+      &RendererImpl::OnVideoRendererInitializeDone, weak_this_);
 
   // TODO(servolk): Implement proper support for multiple streams. But for now
   // pick the first enabled stream to preserve the existing behavior.
@@ -431,7 +431,8 @@ void RendererImpl::InitializeVideoRenderer() {
       new RendererClientInternal(DemuxerStream::VIDEO, this, media_resource_));
   video_renderer_->Initialize(
       video_stream, cdm_context_, video_renderer_client_.get(),
-      base::Bind(&RendererImpl::GetWallClockTimes, base::Unretained(this)),
+      base::BindRepeating(&RendererImpl::GetWallClockTimes,
+                          base::Unretained(this)),
       done_cb);
 }
 
@@ -716,8 +717,8 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
         deferred_video_underflow_cb_.IsCancelled()) {
       DVLOG(4) << __func__ << " Deferring HAVE_NOTHING for video stream.";
       deferred_video_underflow_cb_.Reset(
-          base::Bind(&RendererImpl::OnBufferingStateChange, weak_this_, type,
-                     new_buffering_state, reason));
+          base::BindRepeating(&RendererImpl::OnBufferingStateChange, weak_this_,
+                              type, new_buffering_state, reason));
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_video_underflow_cb_.callback(),
                                     video_underflow_threshold_);

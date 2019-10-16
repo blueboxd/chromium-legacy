@@ -13,6 +13,7 @@
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/common/user_script.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -110,11 +111,9 @@ TEST(ExtensionBuilderTest, Background) {
     EXPECT_FALSE(BackgroundInfo::IsServiceWorkerBased(extension.get()));
   }
   {
-    // Service Worker features are only available on the trunk.
     // TODO(crbug.com/853378): Remove this when we open up support for
     // service workers.
-    ScopedCurrentChannel current_channel_override(
-        version_info::Channel::UNKNOWN);
+    ScopedWorkerBasedExtensionsChannel current_channel_override;
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("service worker")
             .SetBackgroundContext(

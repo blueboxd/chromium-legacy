@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -166,9 +167,9 @@ leveldb::Status IndexedDBTransaction::Abort(
   if (state_ == FINISHED)
     return leveldb::Status::OK();
 
-  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.TransactionAbortReason",
-                            ExceptionCodeToUmaEnum(error.code()),
-                            UmaIDBExceptionExclusiveMaxValue);
+  base::UmaHistogramEnumeration("WebCore.IndexedDB.TransactionAbortReason",
+                                ExceptionCodeToUmaEnum(error.code()),
+                                UmaIDBExceptionExclusiveMaxValue);
 
   aborted_ = true;
   timeout_timer_.Stop();

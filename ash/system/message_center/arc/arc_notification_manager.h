@@ -62,6 +62,8 @@ class ArcNotificationManager
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
   void SendNotificationClickedOnChrome(const std::string& key);
+  void SendNotificationActivatedInChrome(const std::string& key,
+                                         bool activated);
   void CreateNotificationWindow(const std::string& key);
   void CloseNotificationWindow(const std::string& key);
   void OpenNotificationSettings(const std::string& key);

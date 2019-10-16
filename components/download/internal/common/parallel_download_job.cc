@@ -125,12 +125,8 @@ void ParallelDownloadJob::OnInputStreamReady(
     DownloadWorker* worker,
     std::unique_ptr<InputStream> input_stream,
     std::unique_ptr<DownloadCreateInfo> download_create_info) {
-  // If server returns a wrong range, abort the parallel request.
-  bool success = download_create_info->offset == worker->offset();
-  if (success) {
-    success =
-        DownloadJob::AddInputStream(std::move(input_stream), worker->offset());
-  }
+  bool success =
+      DownloadJob::AddInputStream(std::move(input_stream), worker->offset());
 
   RecordParallelDownloadAddStreamSuccess(
       success, range_support_ == RangeRequestSupportType::kSupport);

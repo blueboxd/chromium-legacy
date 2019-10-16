@@ -2426,6 +2426,22 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ClickInput" singular="True">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Metrics associated with user click input. In particular, captures when user
+    has a burst of clicks at the same location which may be a signal of user
+    unhappiness for an experiment if it differs from the baseline data for the
+    site.
+  </summary>
+  <metric name="Experimental.ClickInputBurst">
+    <summary>
+      The count of the largest burst of click inputs for a page load. Only
+      recorded if it meets a minimum threshold to be considered a burst.
+    </summary>
+  </metric>
+</event>
+
 <event name="Compositor.Rendering">
   <owner>khushalsagar@chromium.org</owner>
   <summary>

@@ -90,7 +90,10 @@ void ExplainSafeBrowsingSecurity(
   content::SecurityStyleExplanation explanation(
       l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING_SUMMARY),
       l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING_DESCRIPTION));
-  security_style_explanations->insecure_explanations.push_back(explanation);
+
+  // Always insert SafeBrowsing explanation at the front.
+  security_style_explanations->insecure_explanations.insert(
+      security_style_explanations->insecure_explanations.begin(), explanation);
 }
 
 void ExplainCertificateSecurity(
@@ -279,6 +282,51 @@ void ExplainConnectionSecurity(
       std::move(recommendations));
 }
 
+void ExplainSafetyTipSecurity(
+    const security_state::VisibleSecurityState& visible_security_state,
+    content::SecurityStyleExplanations* security_style_explanations) {
+  std::vector<content::SecurityStyleExplanation> explanations;
+
+  switch (visible_security_state.safety_tip_status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      explanations.emplace_back(
+          l10n_util::GetStringUTF8(
+              IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE),
+          l10n_util::GetStringUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION));
+      break;
+
+    case security_state::SafetyTipStatus::kLookalike:
+      explanations.emplace_back(
+          l10n_util::GetStringUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_SUMMARY),
+          l10n_util::GetStringUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_DESCRIPTION));
+      break;
+
+    case security_state::SafetyTipStatus::kBadKeyword:
+      NOTREACHED();
+      return;
+
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+      return;
+  }
+
+  if (!explanations.empty()) {
+    // To avoid overwriting SafeBrowsing's title, set the main summary only if
+    // it's empty. The title set here can be overridden by later checks (e.g.
+    // bad HTTP).
+    if (security_style_explanations->summary.empty()) {
+      security_style_explanations->summary = l10n_util::GetStringUTF8(
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE);
+    }
+    DCHECK_EQ(1u, explanations.size());
+    security_style_explanations->insecure_explanations.push_back(
+        explanations[0]);
+  }
+}
+
 void ExplainContentSecurity(
     const security_state::VisibleSecurityState& visible_security_state,
     content::SecurityStyleExplanations* security_style_explanations) {
@@ -414,6 +462,11 @@ blink::SecurityStyle GetSecurityStyle(
     content::SecurityStyleExplanations* security_style_explanations) {
   const blink::SecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_level);
+
+  // Safety tips come after SafeBrowsing but before HTTP warnings.
+  // ExplainSafeBrowsingSecurity always inserts warnings to the front, so
+  // doing safety tips check here works.
+  ExplainSafetyTipSecurity(visible_security_state, security_style_explanations);
 
   if (visible_security_state.malicious_content_status !=
       security_state::MALICIOUS_CONTENT_STATUS_NONE) {

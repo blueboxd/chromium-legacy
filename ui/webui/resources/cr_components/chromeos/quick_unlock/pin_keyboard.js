@@ -132,7 +132,7 @@ Polymer({
     /**
      * @private
      */
-    forceUnderline_: {
+    focused_: {
       type: Boolean,
       value: false,
     },
@@ -246,12 +246,12 @@ Polymer({
 
   /** @private */
   onFocus_: function() {
-    this.forceUnderline_ = true;
+    this.focused_ = true;
   },
 
   /** @private */
   onBlur_: function() {
-    this.forceUnderline_ = false;
+    this.focused_ = false;
   },
 
   /**
@@ -452,11 +452,19 @@ Polymer({
   },
 
   /**
-   * Disables the backspace button if nothing is entered.
+   * Indicates if something is entered.
    * @private
    */
-  hasInput_: function() {
-    return this.value.length > 0;
+  hasInput_: function(value) {
+    return value.length > 0;
+  },
+
+  /**
+   * Determines if the pin input should be contrasted.
+   * @private
+   */
+  hasInputOrFocus_: function(value, focused) {
+    return this.hasInput_(value) || focused;
   },
 
   /**

@@ -52,6 +52,8 @@ namespace assistant {
 
 namespace {
 
+using CommunicationErrorType = AssistantManagerService::CommunicationErrorType;
+
 constexpr char kScopeAuthGcm[] = "https://www.googleapis.com/auth/gcm";
 constexpr char kScopeAssistant[] =
     "https://www.googleapis.com/auth/assistant-sdk-prototype";
@@ -64,6 +66,22 @@ constexpr base::TimeDelta kMaxTokenRefreshDelay =
 
 // Testing override for the AssistantSettingsManager implementation.
 AssistantSettingsManager* g_settings_manager_override = nullptr;
+
+ash::mojom::AssistantState ToAssistantStatus(
+    AssistantManagerService::State state) {
+  using State = AssistantManagerService::State;
+  using ash::mojom::AssistantState;
+
+  switch (state) {
+    case State::STOPPED:
+    case State::STARTING:
+      return AssistantState::NOT_READY;
+    case State::STARTED:
+      return AssistantState::READY;
+    case State::RUNNING:
+      return AssistantState::NEW_READY;
+  }
+}
 
 }  // namespace
 
@@ -233,19 +251,8 @@ void Service::OnSessionActivated(bool activated) {
   DCHECK(client_);
   session_active_ = activated;
 
-  bool is_assistant_running;
-  switch (assistant_manager_service_->GetState()) {
-    case AssistantManagerService::State::STOPPED:
-    case AssistantManagerService::State::STARTING:
-      is_assistant_running = false;
-      break;
-    case AssistantManagerService::State::STARTED:
-    case AssistantManagerService::State::RUNNING:
-      is_assistant_running = true;
-      break;
-  }
-  client_->OnAssistantStatusChanged(is_assistant_running &&
-                                    activated /* running */);
+  client_->OnAssistantStatusChanged(
+      ToAssistantStatus(assistant_manager_service_->GetState()));
   UpdateListeningState();
 }
 
@@ -289,6 +296,18 @@ void Service::OnCommunicationError(CommunicationErrorType error_type) {
     RequestAccessToken();
 }
 
+void Service::OnStateChanged(AssistantManagerService::State new_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (new_state == AssistantManagerService::State::STARTED)
+    FinalizeAssistantManagerService();
+  if (new_state == AssistantManagerService::State::RUNNING)
+    DVLOG(1) << "Assistant is running";
+
+  client_->OnAssistantStatusChanged(ToAssistantStatus(new_state));
+  UpdateListeningState();
+}
+
 void Service::UpdateAssistantManagerState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -310,15 +329,7 @@ void Service::UpdateAssistantManagerState() {
       if (assistant_state_.settings_enabled().value()) {
         assistant_manager_service_->Start(
             is_signed_out_mode_ ? base::nullopt : access_token_,
-            ShouldEnableHotword(),
-            base::BindOnce(
-                [](scoped_refptr<base::SequencedTaskRunner> task_runner,
-                   base::OnceCallback<void()> callback) {
-                  task_runner->PostTask(FROM_HERE, std::move(callback));
-                },
-                main_task_runner_,
-                base::BindOnce(&Service::FinalizeAssistantManagerService,
-                               weak_ptr_factory_.GetWeakPtr())));
+            ShouldEnableHotword());
         DVLOG(1) << "Request Assistant start";
       }
       break;
@@ -430,12 +441,17 @@ void Service::RetryRefreshToken() {
 void Service::CreateAssistantManagerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  assistant_manager_service_ = CreateAndReturnAssistantManagerService();
+  assistant_manager_service_->AddCommunicationErrorObserver(this);
+  assistant_manager_service_->AddAndFireStateObserver(this);
+}
+
+std::unique_ptr<AssistantManagerService>
+Service::CreateAndReturnAssistantManagerService() {
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (is_test_) {
     // Use fake service in browser tests.
-    assistant_manager_service_ =
-        std::make_unique<FakeAssistantManagerServiceImpl>();
-    return;
+    return std::make_unique<FakeAssistantManagerServiceImpl>();
   }
 
   DCHECK(client_);
@@ -449,15 +465,12 @@ void Service::CreateAssistantManagerService() {
 
   // |assistant_manager_service_| is only created once.
   DCHECK(url_loader_factory_info_);
-  assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
+  return std::make_unique<AssistantManagerServiceImpl>(
       client_.get(), context(), std::move(delegate),
       std::move(url_loader_factory_info_), is_signed_out_mode_);
 #else
-  assistant_manager_service_ =
-      std::make_unique<FakeAssistantManagerServiceImpl>();
+  return std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif
-
-  assistant_manager_service_->AddCommunicationErrorObserver(this);
 }
 
 void Service::FinalizeAssistantManagerService() {
@@ -490,10 +503,6 @@ void Service::FinalizeAssistantManagerService() {
 
     AddAshSessionObserver();
   }
-
-  client_->OnAssistantStatusChanged(true /* running */);
-  UpdateListeningState();
-  DVLOG(1) << "Assistant is running";
 }
 
 void Service::StopAssistantManagerService() {
@@ -501,7 +510,7 @@ void Service::StopAssistantManagerService() {
 
   assistant_manager_service_->Stop();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  client_->OnAssistantStatusChanged(false /* running */);
+  client_->OnAssistantStatusChanged(ash::mojom::AssistantState::NOT_READY);
 }
 
 void Service::AddAshSessionObserver() {

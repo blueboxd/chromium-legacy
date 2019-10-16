@@ -19,7 +19,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -466,7 +466,7 @@ void IndexedDBFactoryImpl::HandleBackingStoreCorruption(
       path_base.Append(indexed_db::GetLevelDBFileName(saved_origin));
   leveldb::Status s = leveldb_factory_->DestroyLevelDB(file_path);
   DLOG_IF(ERROR, !s.ok()) << "Unable to delete backing store: " << s.ToString();
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       "WebCore.IndexedDB.DestroyCorruptBackingStoreStatus",
       leveldb_env::GetLevelDBStatusUMAValue(s),
       leveldb_env::LEVELDB_STATUS_MAX);
@@ -827,7 +827,7 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
       // This is a special case where we want to make sure the database is
       // deleted, so we try to delete again.
       status = leveldb_factory_->DestroyLevelDB(database_path);
-      UMA_HISTOGRAM_ENUMERATION(
+      base::UmaHistogramEnumeration(
           "WebCore.IndexedDB.DestroyCorruptBackingStoreStatus",
           leveldb_env::GetLevelDBStatusUMAValue(status),
           leveldb_env::LEVELDB_STATUS_MAX);

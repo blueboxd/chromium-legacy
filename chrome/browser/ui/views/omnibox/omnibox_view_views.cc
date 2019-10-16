@@ -1106,6 +1106,13 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
     filter_drag_events_for_unelision_ = true;
   }
 
+  // This is intended to cover the NTP case where the omnibox starts focused.
+  // The user can explicitly request on-focus suggestions by clicking or tapping
+  // the omnibox. Restricted to empty textfield to avoid disrupting selections.
+  if (HasFocus() && GetText().empty() && event.IsOnlyLeftMouseButton()) {
+    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+  }
+
   return handled;
 }
 
@@ -1170,6 +1177,13 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
       event->type() == ui::ET_GESTURE_LONG_PRESS ||
       event->type() == ui::ET_GESTURE_LONG_TAP) {
     select_all_on_gesture_tap_ = false;
+  }
+
+  // This is intended to cover the NTP case where the omnibox starts focused.
+  // The user can explicitly request on-focus suggestions by clicking or tapping
+  // the omnibox. Restricted to empty textfield to avoid disrupting selections.
+  if (HasFocus() && GetText().empty() && event->type() == ui::ET_GESTURE_TAP) {
+    model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
   }
 }
 

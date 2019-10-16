@@ -209,6 +209,10 @@ void ArcNotificationItemImpl::ToggleExpansion() {
   manager_->SendNotificationToggleExpansionOnChrome(notification_key_);
 }
 
+void ArcNotificationItemImpl::OnWindowActivated(bool activated) {
+  manager_->SendNotificationActivatedInChrome(notification_key_, activated);
+}
+
 void ArcNotificationItemImpl::OnRemoteInputActivationChanged(bool activated) {
   for (auto& observer : observers_)
     observer.OnRemoteInputActivationChanged(activated);

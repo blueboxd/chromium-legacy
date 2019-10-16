@@ -30,6 +30,7 @@
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/models/menu_model.h"
@@ -46,11 +47,11 @@ class ExtensionContextMenuBrowserTest
  public:
   void SetUp() override {
     extensions::ExtensionBrowserTest::SetUp();
-    // Service Workers are currently only available on the trunk, so set
+    // Service Workers are currently only available on certain channels, so set
     // the channel for those tests.
     if (GetParam() == ContextType::kServiceWorker) {
-      current_channel_ = std::make_unique<extensions::ScopedCurrentChannel>(
-          version_info::Channel::UNKNOWN);
+      current_channel_ =
+          std::make_unique<extensions::ScopedWorkerBasedExtensionsChannel>();
     }
   }
 
@@ -273,7 +274,8 @@ class ExtensionContextMenuBrowserTest
     EXPECT_EQ(should_be_checked, menu->IsCommandIdChecked(command_id));
   }
 
-  std::unique_ptr<extensions::ScopedCurrentChannel> current_channel_;
+  std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
+      current_channel_;
 };
 
 // Tests adding a simple context menu item.

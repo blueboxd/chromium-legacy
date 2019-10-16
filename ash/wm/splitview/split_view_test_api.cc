@@ -4,9 +4,18 @@
 
 #include "ash/public/cpp/split_view_test_api.h"
 
+#include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 
 namespace ash {
+
+namespace {
+
+SplitViewController* split_view_controller() {
+  return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+}
+
+}  // namespace
 
 SplitViewTestApi::SplitViewTestApi() = default;
 
@@ -27,11 +36,11 @@ void SplitViewTestApi::SnapWindow(
       position = SplitViewController::RIGHT;
       break;
   }
-  SplitViewController::Get()->SnapWindow(window, position);
+  split_view_controller()->SnapWindow(window, position);
 }
 
 void SplitViewTestApi::SwapWindows() {
-  SplitViewController::Get()->SwapWindows();
+  split_view_controller()->SwapWindows();
 }
 
 }  // namespace ash

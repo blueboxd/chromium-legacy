@@ -14,8 +14,8 @@ import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
  */
 public class DataSaverController extends PageController {
     private static final IUi2Locator LOCATOR_DATA_SAVER =
-            Ui2Locators.withResEntries(R.id.enable_data_saver_switch);
-    private static final IUi2Locator LOCATOR_NEXT = Ui2Locators.withResEntries(R.id.next_button);
+            Ui2Locators.withAnyResEntry(R.id.enable_data_saver_switch);
+    private static final IUi2Locator LOCATOR_NEXT = Ui2Locators.withAnyResEntry(R.id.next_button);
 
     private static final DataSaverController sInstance = new DataSaverController();
     private DataSaverController() {}

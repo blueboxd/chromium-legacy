@@ -2315,7 +2315,8 @@ class ComputedStyle : public ComputedStyleBase,
   // Returns true if any property has an <image> value that is a CSS paint
   // function that is using a given custom property.
   bool HasCSSPaintImagesUsingCustomProperty(
-      const AtomicString& custom_property_name) const;
+      const AtomicString& custom_property_name,
+      const Document&) const;
 
   // FIXME: reflections should belong to this helper function but they are
   // currently handled through their self-painting layers. So the layout code
@@ -2771,10 +2772,11 @@ class ComputedStyle : public ComputedStyleBase,
       const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
   void AdjustDiffForNeedsPaintInvalidationObject(const ComputedStyle& other,
-                                                 StyleDifference&) const;
-  bool DiffNeedsPaintInvalidationObjectForPaintImage(
-      const StyleImage&,
-      const ComputedStyle& other) const;
+                                                 StyleDifference&,
+                                                 const Document&) const;
+  bool DiffNeedsPaintInvalidationObjectForPaintImage(const StyleImage&,
+                                                     const ComputedStyle& other,
+                                                     const Document&) const;
   bool DiffNeedsVisualRectUpdate(const ComputedStyle& other) const;
   CORE_EXPORT void UpdatePropertySpecificDifferences(const ComputedStyle& other,
                                                      StyleDifference&) const;

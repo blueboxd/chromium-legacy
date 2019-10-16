@@ -37,7 +37,6 @@ import android.webkit.WebViewClient;
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwConsoleMessage;
-import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsClientBridge;
 import org.chromium.android_webview.AwGeolocationPermissions;
@@ -50,6 +49,7 @@ import org.chromium.android_webview.JsResultReceiver;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.permission.Resource;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -720,7 +720,7 @@ class WebViewContentsClientAdapter extends SharedWebViewContentsClientAdapter {
             String message, String url) {
         // Note we must unwrap the Context here due to JsDialogHelper only using instanceof to
         // check if a Context is an Activity.
-        Context activityContext = AwContents.activityFromContext(mContext);
+        Context activityContext = ContextUtils.activityFromContext(mContext);
         if (activityContext == null) {
             Log.w(TAG, "Unable to create JsDialog without an Activity");
             return false;

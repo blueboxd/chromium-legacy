@@ -336,6 +336,10 @@ ChromePermissionMessageRule::GetAllRules() {
   // system should allow us to design a system that is simple enough to explain
   // yet powerful enough to encapsulate all the messages we want to display.
   ChromePermissionMessageRule rules_arr[] = {
+      // BEGIN POWERFUL PERMISSIONS:
+      // The following permissions are shown in the chrome://management page.
+      // See also GetPowerfulPermissionMessages().
+
       // Full access permission messages.
       {IDS_EXTENSION_PROMPT_WARNING_DEBUGGER, {APIPermission::kDebugger}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
@@ -429,6 +433,11 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kFavicon, APIPermission::kTopSites}},
       {IDS_EXTENSION_PROMPT_WARNING_FAVICON, {APIPermission::kFavicon}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_TOPSITES, {APIPermission::kTopSites}, {}},
+      {IDS_EXTENSION_PROMPT_WARNING_PRINTING_METRICS,
+       {APIPermission::kPrintingMetrics},
+       {}},
+
+      // END POWERFUL PERMISSIONS
 
       {IDS_EXTENSION_PROMPT_WARNING_DECLARATIVE_WEB_REQUEST,
        {APIPermission::kDeclarativeWebRequest},

@@ -802,7 +802,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="216169395504480358">Tambah Wi-Fi...</translation>
 <translation id="2162155940152307086">Penyegerakan akan bermula selepas anda meninggalkan tetapan penyegerakan</translation>
 <translation id="2163470535490402084">Sila sambung ke Internet untuk melog masuk ke <ph name="DEVICE_TYPE" /> anda.</translation>
-<translation id="2165421703844373933">Akses Assistant anda apabila anda menyebut "Ok Google." Untuk menjimatkan bateri, pilih “Hidup (Disyorkan.)” Assistant anda hanya akan memberi respons apabila peranti anda dipasang palam atau mengecas.</translation>
+<translation id="2165421703844373933">Akses Assistant anda apabila anda menyebut "Ok Google". Untuk menjimatkan bateri, pilih “Hidup (Disyorkan)”. Assistant anda hanya akan memberikan respons apabila peranti anda dipasang palam atau mengecas.</translation>
 <translation id="2166369534954157698">The quick brown fox jumps over the lazy dog</translation>
 <translation id="2169062631698640254">Log masuk juga</translation>
 <translation id="2170088579611075216">Benarkan &amp; masuk ke VR</translation>
@@ -1558,7 +1558,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3280237271814976245">Simpan &amp;sebagai...</translation>
 <translation id="3280243678470289153">Kekal dalam Chrome</translation>
 <translation id="3281892622610078515">Fail dan program yang akan dikuarantin:</translation>
-<translation id="3282210178675490297">Berkongsi tab ke <ph name="APP_NAME" /></translation>
+<translation id="3282210178675490297">Berkongsi tab kepada <ph name="APP_NAME" /></translation>
 <translation id="3282568296779691940">Log masuk ke Chrome</translation>
 <translation id="3285322247471302225">&amp;Tab Baharu</translation>
 <translation id="328571385944182268">Simpan kata laluan anda?</translation>
@@ -2807,7 +2807,7 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="5127881134400491887">Urus sambungan rangkaian</translation>
 <translation id="512903556749061217">dipasang</translation>
 <translation id="5133483819862530305">Matahari Terbenam hingga Terbit</translation>
-<translation id="5135085122826131075">Akses Assistant anda apabila anda menyebut "Ok Google."</translation>
+<translation id="5135085122826131075">Akses Assistant anda apabila anda menyebut "Ok Google".</translation>
 <translation id="5135533361271311778">Tidak dapat mencipta item penanda halaman.</translation>
 <translation id="5137501176474113045">Padam item ini</translation>
 <translation id="5138227688689900538">Tunjukkan kurang</translation>
@@ -4252,7 +4252,7 @@ Pastikan anda mempercayai tapak ini sebelum memasuki VR.</translation>
 <translation id="7257173066616499747">Rangkaian Wi-Fi</translation>
 <translation id="725758059478686223">Perkhidmatan Cetak</translation>
 <translation id="7257666756905341374">Baca data yang anda salin dan tampal</translation>
-<translation id="7258225044283673131">Aplikasi tidak memberi respons. Pilih "Paksa tutup" untuk menutup apl.</translation>
+<translation id="7258225044283673131">Aplikasi tidak memberikan respons. Pilih "Paksa tutup" untuk menutup apl.</translation>
 <translation id="7258697411818564379">PIN anda telah ditambahkan</translation>
 <translation id="7262004276116528033">Perkhidmatan log masuk ini dihoskan oleh <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268127947535186412">Tetapan ini diurus oleh pemilik peranti.</translation>

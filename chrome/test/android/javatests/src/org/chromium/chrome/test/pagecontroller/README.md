@@ -33,9 +33,9 @@ class CoolNewPageController extends PageController {
     // Locators allow the controller to find UI elements on the page
     // It is preferred to use Resource Ids to find elements since they are
     // stable across minor UI changes.
-    private static final IUi2Locator LOCATOR_COOL_PAGE = Ui2Locators.withResIds("cool_page");
+    private static final IUi2Locator LOCATOR_COOL_PAGE = Ui2Locators.withAnyResEntry(R.id.cool_page);
     // Any of the resource ids in the list will result in a match.
-    private static final IUi2Locator LOCATOR_COOL_BUTTON = Ui2Locators.withResIds("cool_button_v1", "cool_button_v2");
+    private static final IUi2Locator LOCATOR_COOL_BUTTON = Ui2Locators.withAnyResEntry(R.id.cool_button_v1, R.id.cool_button_v2);
 
     public CoolerPageController clickButton() {
         // [UiAutomatorUtils.click](https://cs.chromium.org/chromium/src/chrome/test/android/javatests/src/org/chromium/chrome/test/pagecontroller/utils/UiAutomatorUtils.java?q=click) operates on UI elements via IUi2Locators.

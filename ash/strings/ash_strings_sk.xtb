@@ -345,7 +345,6 @@
 <translation id="6062360702481658777">Odhlásenie prebehne automaticky o <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Vaše heslo sa nepodarilo overiť. Skúste to znova.</translation>
 <translation id="607652042414456612">Váš počítač je viditeľný pre zariadenia Bluetooth v blízkosti a zobrazí sa ako <ph name="NAME" /> s adresou <ph name="ADDRESS" /></translation>
-<translation id="6106745654298855237">Nabíja sa zariadenie <ph name="POWER_SOURCE" /></translation>
 <translation id="612734058257491180">Asistent Google nie je k dispozícii v relácii hosťa.</translation>
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
 <translation id="6164005077879661055">Všetky súbory a miestne údaje spojené s týmto kontrolovaným používateľom budú po jeho odstránení natrvalo odstránené. Správca bude môcť naďalej zobraziť navštívené webové stránky a nastavenia tohto používateľa na adrese <ph name="MANAGEMENT_URL" />.</translation>
@@ -447,7 +446,6 @@
 <translation id="7647488630410863958">Ak si chcete zobraziť upozornenia, odomknite zariadenie</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7654687942625752712">Ak chcete deaktivovať hovorenú spätnú väzbu, pridržte päť sekúnd obidva klávesy hlasitosti.</translation>
-<translation id="7692480393933218409">Nabíjajú sa pripojené zariadenia USB-C</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 upozornenie}few{# upozornenia}many{# notifications}other{# upozornení}}</translation>
 <translation id="7749443890790263709">Dosiahli ste maximálny počet pracovných prostredí.</translation>

@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
@@ -106,7 +107,7 @@ class CONTENT_EXPORT SessionStorageMetadata {
   // will be populated in |upgrade_operations|. This call is not necessary on
   // new databases.
   bool ParseNamespaces(
-      std::vector<leveldb::mojom::KeyValuePtr> values,
+      std::vector<storage::DomStorageDatabase::KeyValuePair> values,
       std::vector<leveldb::mojom::BatchedOperationPtr>* upgrade_operations);
 
   // Parses the next map id from the given bytes. If that fails, then it uses

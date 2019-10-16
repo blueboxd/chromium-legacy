@@ -93,7 +93,7 @@ void ActionRunner::RunRecoveryCRXElevated(const base::FilePath& crx_path) {
 }
 
 void ActionRunner::RunCommand(const base::CommandLine& cmdline) {
-  base::DeleteFile(unpack_path_, true);
+  base::DeleteFileRecursively(unpack_path_);
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(run_complete_), false, -1, 0));
 }

@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">તમારું <ph name="APPLICATION_NAME" /> સત્ર થોડીવાર માટે નિષ્ક્રિય થઈ ગયું છે અને ટૂંક સમયમાં ડિસ્કનેક્ટ થઈ જશે.</translation>
 <translation id="2317666076142640974">નવી <ph name="LINK_BEGIN" />Chrome રીમોટ ડેસ્કટૉપ વેબ ઍપ<ph name="LINK_END" />ની એક ઝલક જુઓ. અમને તમારો પ્રતિસાદ સાંભળવો ગમશે.</translation>
 <translation id="2320166752086256636">કીબોર્ડ છુપાવો</translation>
-<translation id="2332192922827071008">પસંદગીઓ ખોલો</translation>
 <translation id="2353140552984634198">તમે Chromoting નો ઉપયોગ કરીને આ કમ્પ્યુટરને સુરક્ષિત રીતે ઍક્સેસ કરી શકો છો.</translation>
 <translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2366718077645204424">હોસ્ટ સુધી પહોંચવામાં અક્ષમ. આ કદાચ તમે ઉપયોગ કરી રહ્યાં છો એ નેટવર્કની ગોઠવણીનાં કારણે છે.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> સાથે કનેક્ટ કર્યું</translation>
 <translation id="2512228156274966424">નોંધ: બધા કીબોર્ડ શોર્ટકટ્સ ઉપલબ્ધ છે તેની ખાતરી કરવા, તમે Chrome રીમોટ ડેસ્કટૉપને 'વિંડો તરીકે ખોલો' પર ગોઠવી શકો છો.</translation>
 <translation id="2540992418118313681">શું તમે આ કમ્પ્યુટર બીજા વપરાશકર્તા માટે જોવા અને નિયંત્રિત કરવા માટે શેર કરવા માંગો છો?</translation>
-<translation id="254771646005658629">રીમોટ વપરાશકર્તાઓને આ Macનું નિયંત્રણ કરવાની મંજૂરી આપો</translation>
 <translation id="2579271889603567289">હોસ્ટ ક્રૅશ થયું અથવા શરૂ કરવામાં નિષ્ફળ થયું.</translation>
 <translation id="2599300881200251572">આ સેવા Chrome રીમોટ ડેસ્કટૉપ ક્લાઇન્ટ્સ પાસેથી આવતા કનેક્શન્સ સક્ષમ કરે છે.</translation>
 <translation id="2647232381348739934">Chromoting સેવા</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">ઍપ્લિકેશન ફરીથી સેટ કરી શકાઈ નથી. તમે હજી પણ બગ રિપોર્ટ મોકલી શકો છો.</translation>
 <translation id="5419418238395129586">છેલ્લે ઑનલાઇન: <ph name="DATE" /></translation>
 <translation id="544077782045763683">હોસ્ટ શટ ડાઉન થયું છે.</translation>
-<translation id="5463789431147491241">આ Mac પર <ph name="PRODUCT_NAME" />નો ઉપયોગ કરવા માટે, આ પગલાંને ફૉલો કરો:
-
-નીચે '<ph name="BUTTON_NAME" />' પસંદ કરો. તમારી સુરક્ષા અને પ્રાઇવસી પસંદગીઓમાં, '<ph name="SERVICE_SCRIPT_NAME" />'ની પાસેના બૉક્સને ચેક કરો.
-
-જો '<ph name="SERVICE_SCRIPT_NAME" />' પહેલાંથી ચેક કરેલું હોય, તો તેને અનચેક કરો અને પછી તેને ફરી ચેક કરો.</translation>
 <translation id="5510035215749041527">હવે ડિસ્કનેક્ટ કરો</translation>
 <translation id="5593560073513909978">અમારી સેવા અસ્થાયી રીતે અનુપલબ્ધ છે. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="5601503069213153581">PIN</translation>

@@ -101,6 +101,8 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromShelf:
       return ash::LAUNCH_FROM_SHELF;
     case apps::mojom::LaunchSource::kFromFileManager:
+    case apps::mojom::LaunchSource::kFromLink:
+    case apps::mojom::LaunchSource::kFromOmnibox:
       return ash::LAUNCH_FROM_UNKNOWN;
   }
 }
@@ -321,6 +323,8 @@ void ExtensionApps::Launch(const std::string& app_id,
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
     case apps::mojom::LaunchSource::kFromShelf:
     case apps::mojom::LaunchSource::kFromFileManager:
+    case apps::mojom::LaunchSource::kFromLink:
+    case apps::mojom::LaunchSource::kFromOmnibox:
       break;
   }
 

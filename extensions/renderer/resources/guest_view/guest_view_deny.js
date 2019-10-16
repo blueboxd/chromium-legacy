@@ -40,11 +40,19 @@ function registerGuestViewElement(viewType) {
   });
 }
 
-for (var viewType of VIEW_TYPES) {
-  // Register the error-providing custom element only for those view types
-  // that have not already been registered. Since this module is always loaded
-  // last, all the view types that are available (i.e. have the proper
-  // permissions) will have already been registered on |window|.
-  if (!$Object.hasOwnProperty(window, viewType))
-    registerGuestViewElement(viewType);
-}
+var useCapture = true;
+window.addEventListener('readystatechange', function listener(event) {
+  if (document.readyState == 'loading')
+    return;
+
+  for (var viewType of VIEW_TYPES) {
+    // Register the error-providing custom element only for those view types
+    // that have not already been registered. Since this module is always loaded
+    // last, all the view types that are available (i.e. have the proper
+    // permissions) will have already been registered on |window|.
+    if (!$Object.hasOwnProperty(window, viewType))
+      registerGuestViewElement(viewType);
+  }
+
+  $EventTarget.removeEventListener(window, event.type, listener, useCapture);
+}, useCapture);

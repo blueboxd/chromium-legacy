@@ -7,9 +7,6 @@
 
 #include "base/test/task_environment.h"
 
-// TODO(crbug.com/992483): Rename this header to web_task_environment.h and
-// migrate all users.
-//
 // WebTaskEnvironment is the iOS equivalent of content::BrowserTaskEnvironment.
 //
 // It's is a convenience class for creating a set of TestWebThreads and a thread

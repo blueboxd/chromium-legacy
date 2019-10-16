@@ -600,9 +600,8 @@ class ErrorStreamCountingObserver : download::DownloadItem::Observer {
   void OnDownloadUpdated(download::DownloadItem* download) override {
     std::unique_ptr<base::HistogramSamples> samples =
         histogram_tester_.GetHistogramSamplesSinceCreation(
-            "Download.ParallelDownloadAddStreamSuccess");
-    if (samples->GetCount(0 /* failure */) == count_ &&
-        !completion_closure_.is_null())
+            "Download.ParallelDownload.CreationFailureReason");
+    if (samples->TotalCount() == count_ && !completion_closure_.is_null())
       std::move(completion_closure_).Run();
   }
 
@@ -1126,7 +1125,7 @@ class ParallelDownloadTest : public DownloadContentTest {
       const base::FilePath& path,
       const std::vector<GURL>& url_chain,
       const download::DownloadItem::ReceivedSlices& slices,
-      TestDownloadHttpResponse::Parameters& parameters) {
+      const TestDownloadHttpResponse::Parameters& parameters) {
     std::string output;
     int64_t total_bytes = 0u;
     const int64_t kBufferSize = 64 * 1024;
@@ -1173,10 +1172,6 @@ class ParallelDownloadTest : public DownloadContentTest {
       int64_t total_length,
       size_t expected_request_count,
       bool support_partial_response) {
-    EXPECT_TRUE(
-        base::FeatureList::IsEnabled(download::features::kParallelDownloading));
-    GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
-    GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
     TestDownloadHttpResponse::Parameters parameters;
     parameters.etag = "ABC";
     parameters.size = total_length;
@@ -1184,6 +1179,19 @@ class ParallelDownloadTest : public DownloadContentTest {
     parameters.support_partial_response = support_partial_response;
     // Needed to specify HTTP connection type to create parallel download.
     parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+    RunResumptionTestWithParameters(received_slices, expected_request_count,
+                                    parameters);
+  }
+
+  // Similar to the above method, but with given http response parameters.
+  void RunResumptionTestWithParameters(
+      const download::DownloadItem::ReceivedSlices& received_slices,
+      size_t expected_request_count,
+      const TestDownloadHttpResponse::Parameters& parameters) {
+    EXPECT_TRUE(
+        base::FeatureList::IsEnabled(download::features::kParallelDownloading));
+    GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+    GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
     TestDownloadHttpResponse::StartServing(parameters, server_url);
 
     base::FilePath intermediate_file_path =
@@ -1201,7 +1209,7 @@ class ParallelDownloadTest : public DownloadContentTest {
     // TODO(qinmin): count the failed partial responses in DownloadJob when
     // support_partial_response is false. EmbeddedTestServer doesn't know
     // whether completing or canceling the response will come first.
-    if (support_partial_response) {
+    if (parameters.support_partial_response) {
       test_response_handler()->WaitUntilCompletion(expected_request_count);
 
       // Verify number of requests sent to the server.
@@ -3934,6 +3942,31 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionNoPartialResponse) {
                     false /* support_partial_response */);
 }
 
+// Verify that if a temporary error happens to one of the parallel request,
+// resuming a parallel download should still complete.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
+                       ResumptionMiddleSliceTemporaryError) {
+  // Create the received slices data.
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
+      download::DownloadItem::ReceivedSlice(0, 1000),
+      download::DownloadItem::ReceivedSlice(1000000, 1000),
+      download::DownloadItem::ReceivedSlice(2000000, 1000,
+                                            false /* finished */)};
+
+  TestDownloadHttpResponse::Parameters parameters;
+  parameters.etag = "ABC";
+  parameters.size = 3000000;
+  parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+  // The 2nd slice will fail. Once the first and the third slices
+  // complete, download will resume on the 2nd slice.
+  parameters.SetResponseForRangeRequest(1000000, 1010000, k404Response,
+                                        true /* is_transient */);
+
+  // A total of 4 requests will be sent, 3 during the initial attempt, and 1
+  // for the retry attempt on the 2nd slice.
+  RunResumptionTestWithParameters(received_slices, kTestRequestCount + 1,
+                                  parameters);
+}
 // Test to verify that the browser-side enforcement of X-Frame-Options does
 // not impact downloads. Since XFO is only checked for subframes, this test
 // initiates a download in an iframe and expects it to succeed.

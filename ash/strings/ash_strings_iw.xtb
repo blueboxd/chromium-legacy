@@ -344,7 +344,6 @@
 <translation id="6062360702481658777">תצא באופן אוטומטי בעוד <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">מצטערים, אי אפשר לאמת את הסיסמה שלך. צריך לנסות שוב.</translation>
 <translation id="607652042414456612">‏מכשירי Bluetooth קרובים יכולים לאתר את המחשב שלך, והוא יופיע כ-"<ph name="NAME" />" עם הכתובת <ph name="ADDRESS" /></translation>
-<translation id="6106745654298855237">טעינה של <ph name="POWER_SOURCE" /></translation>
 <translation id="612734058257491180">‏Google Assistant אינו זמין בגלישה כאורח.</translation>
 <translation id="615957422585914272">הצג מקלדת במסך</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
@@ -396,6 +395,7 @@
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
+<translation id="6878400149835617132">קיצור הדרך מושבת</translation>
 <translation id="6910714959251846841">‏כדי להתקין את העדכון הזה צריך לבצע Powerwash של המכשיר. אפשר לקרוא מידע נוסף על העדכון האחרון של <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
 <translation id="6919251195245069855">לא ניתן היה לזהות את הכרטיס החכם שלך. יש לנסות שוב.</translation>
@@ -446,7 +446,6 @@
 <translation id="7647488630410863958">בטל את נעילת המכשיר כדי להציג את ההודעות</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7654687942625752712">כדי להשבית את קורא המסך הקולי, צריך ללחוץ על שני לחצני עוצמת הקול למשך חמש שניות.</translation>
-<translation id="7692480393933218409">‏טעינת מכשירים מחוברים עם יציאת USB-C</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{הודעה אחת}two{2 הודעות}many{# הודעות}other{# הודעות}}</translation>
 <translation id="7749443890790263709">הגעת למספר המקסימלי של שולחנות עבודה.</translation>

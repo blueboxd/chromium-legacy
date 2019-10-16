@@ -9,15 +9,16 @@
 HELPERTOOLS=/Library/PrivilegedHelperTools
 SERVICE_NAME=org.chromium.chromoting
 CONFIG_FILE="$HELPERTOOLS/$SERVICE_NAME.json"
-SCRIPT_FILE="$HELPERTOOLS/$SERVICE_NAME.me2me.sh"
-USERS_TMP_FILE="$SCRIPT_FILE.users"
+OLD_SCRIPT_FILE="$HELPERTOOLS/$SERVICE_NAME.me2me.sh"
 PLIST=/Library/LaunchAgents/org.chromium.chromoting.plist
 PAM_CONFIG=/etc/pam.d/chrome-remote-desktop
 ENABLED_FILE="$HELPERTOOLS/$SERVICE_NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
 HOST_BUNDLE_NAME=@@HOST_BUNDLE_NAME@@
+HOST_SERVICE_BINARY="$HELPERTOOLS/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host_service"
 HOST_LEGACY_BUNDLE_NAME=@@HOST_LEGACY_BUNDLE_NAME@@
 HOST_EXE="$HELPERTOOLS/$HOST_BUNDLE_NAME/Contents/MacOS/remoting_me2me_host"
+USERS_TMP_FILE="$HOST_SERVICE_BINARY.users"
 
 KSADMIN=/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin
 KSUPDATE=https://tools.google.com/service/update2
@@ -67,12 +68,10 @@ if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
   mv "$ENABLED_FILE_BACKUP" "$ENABLED_FILE"
 fi
 
-# If there is a backup plist, restore it in order to use the old launchd
-# service script instead of the new one.
-if [[ -f "$INSTALLER_TEMP/plist_backup" ]]; then
-  logger Restoring original launchd agent
-  mv "$INSTALLER_TEMP/plist_backup" "$PLIST"
-  mv "$INSTALLER_TEMP/script_backup" "$SCRIPT_FILE"
+# If there is a backup script, restore it.
+if [[ -f "$INSTALLER_TEMP/script_backup" ]]; then
+  logger Restoring original launchd script
+  mv "$INSTALLER_TEMP/script_backup" "$OLD_SCRIPT_FILE"
 fi
 
 # Create the PAM configuration unless it already exists and has been edited.

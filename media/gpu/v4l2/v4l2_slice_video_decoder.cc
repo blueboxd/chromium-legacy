@@ -4,6 +4,10 @@
 
 #include "media/gpu/v4l2/v4l2_slice_video_decoder.h"
 
+#include <fcntl.h>
+#include <linux/media.h>
+#include <sys/ioctl.h>
+
 #include <algorithm>
 
 #include "base/bind.h"
@@ -11,12 +15,18 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
+#include "media/base/scopedfd_helper.h"
 #include "media/base/video_util.h"
+#include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/v4l2_video_decoder_backend_stateless.h"
+#include "media/gpu/v4l2/v4l2_h264_accelerator.h"
+#include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
+#include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
+#include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
+#include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
 
 namespace media {
 
@@ -30,6 +40,9 @@ constexpr size_t kInputBufferMaxSizeFor1080p = 1024 * 1024;
 constexpr size_t kInputBufferMaxSizeFor4k = 4 * kInputBufferMaxSizeFor1080p;
 constexpr size_t kNumInputBuffers = 16;
 
+// Size of the timestamp cache, needs to be large enough for frame-reordering.
+constexpr size_t kTimestampCacheSize = 128;
+
 // Input format V4L2 fourccs this class supports.
 constexpr uint32_t kSupportedInputFourccs[] = {
     V4L2_PIX_FMT_H264_SLICE,
@@ -38,6 +51,63 @@ constexpr uint32_t kSupportedInputFourccs[] = {
 };
 
 }  // namespace
+
+V4L2SliceVideoDecoder::DecodeRequest::DecodeRequest(
+    scoped_refptr<DecoderBuffer> buf,
+    DecodeCB cb,
+    int32_t id)
+    : buffer(std::move(buf)), decode_cb(std::move(cb)), bitstream_id(id) {}
+
+V4L2SliceVideoDecoder::DecodeRequest::DecodeRequest(DecodeRequest&&) = default;
+V4L2SliceVideoDecoder::DecodeRequest& V4L2SliceVideoDecoder::DecodeRequest::
+operator=(DecodeRequest&&) = default;
+
+V4L2SliceVideoDecoder::DecodeRequest::~DecodeRequest() = default;
+
+struct V4L2SliceVideoDecoder::OutputRequest {
+  enum OutputRequestType {
+    // The surface to be outputted.
+    kSurface,
+    // The fence to indicate the flush request.
+    kFlushFence,
+    // The fence to indicate resolution change request.
+    kChangeResolutionFence,
+  };
+
+  // The type of the request.
+  const OutputRequestType type;
+  // The surface to be outputted.
+  scoped_refptr<V4L2DecodeSurface> surface;
+  // The timestamp of the output frame. Because a surface might be outputted
+  // multiple times with different timestamp, we need to store timestamp out of
+  // surface.
+  base::TimeDelta timestamp;
+
+  static OutputRequest Surface(scoped_refptr<V4L2DecodeSurface> s,
+                               base::TimeDelta t) {
+    return OutputRequest(std::move(s), t);
+  }
+
+  static OutputRequest FlushFence() { return OutputRequest(kFlushFence); }
+
+  static OutputRequest ChangeResolutionFence() {
+    return OutputRequest(kChangeResolutionFence);
+  }
+
+  bool IsReady() const {
+    return (type != OutputRequestType::kSurface) || surface->decoded();
+  }
+
+  // Allow move, but not copy.
+  OutputRequest(OutputRequest&&) = default;
+
+ private:
+  OutputRequest(scoped_refptr<V4L2DecodeSurface> s, base::TimeDelta t)
+      : type(kSurface), surface(std::move(s)), timestamp(t) {}
+  explicit OutputRequest(OutputRequestType t) : type(t) {}
+
+  DISALLOW_COPY_AND_ASSIGN(OutputRequest);
+};
 
 // static
 std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
@@ -79,6 +149,7 @@ V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
       get_pool_cb_(std::move(get_pool_cb)),
       client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(std::move(decoder_task_runner)),
+      bitstream_id_to_timestamp_(kTimestampCacheSize),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
@@ -90,6 +161,7 @@ V4L2SliceVideoDecoder::~V4L2SliceVideoDecoder() {
   // We might be called from either the client or the decoder sequence.
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
+  DCHECK(requests_.empty());
   VLOGF(2);
 }
 
@@ -137,7 +209,9 @@ void V4L2SliceVideoDecoder::DestroyTask() {
   DVLOGF(2);
 
   // Call all pending decode callback.
-  backend_->ClearPendingRequests(DecodeStatus::ABORTED);
+  ClearPendingRequests(DecodeStatus::ABORTED);
+
+  avd_ = nullptr;
 
   // Stop and Destroy device.
   StopStreamV4L2Queue();
@@ -148,6 +222,12 @@ void V4L2SliceVideoDecoder::DestroyTask() {
   if (output_queue_) {
     output_queue_->DeallocateBuffers();
     output_queue_ = nullptr;
+  }
+  DCHECK(surfaces_at_device_.empty());
+
+  if (supports_requests_) {
+    requests_ = {};
+    media_fd_.reset();
   }
 
   weak_this_factory_.InvalidateWeakPtrs();
@@ -189,6 +269,14 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   DCHECK(state_ == State::kUninitialized || state_ == State::kDecoding);
   DVLOGF(3);
 
+  if (!output_request_queue_.empty() || flush_cb_ || current_decode_request_ ||
+      !decode_request_queue_.empty()) {
+    VLOGF(1) << "Should not call Initialize() during pending decode";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   // Reset V4L2 device and queue if reinitializing decoder.
   if (state_ != State::kUninitialized) {
     if (!StopStreamV4L2Queue()) {
@@ -210,9 +298,10 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
       return;
     }
 
-    if (backend_)
-      backend_ = nullptr;
-
+    if (avd_) {
+      avd_->Reset();
+      avd_ = nullptr;
+    }
     SetState(State::kUninitialized);
   }
 
@@ -243,6 +332,41 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
+  if (!CheckRequestAPISupport()) {
+    VPLOGF(1) << "Failed to check request api support.";
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
+  // Create codec-specific AcceleratedVideoDecoder.
+  // TODO(akahuang): Check the profile is supported.
+  if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
+    if (supports_requests_) {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2H264Accelerator>(this, device_.get())));
+    } else {
+      avd_.reset(new H264Decoder(
+          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
+    }
+  } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
+    if (supports_requests_) {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2VP8Accelerator>(this, device_.get())));
+    } else {
+      avd_.reset(new VP8Decoder(
+          std::make_unique<V4L2LegacyVP8Accelerator>(this, device_.get())));
+    }
+  } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
+    avd_.reset(new VP9Decoder(
+        std::make_unique<V4L2VP9Accelerator>(this, device_.get())));
+  } else {
+    VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
@@ -251,15 +375,6 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
   if (!input_queue_ || !output_queue_) {
     VLOGF(1) << "Failed to create V4L2 queue.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
-    return;
-  }
-
-  // Create the backend (only stateless API supported as of now).
-  backend_ = std::make_unique<V4L2StatelessVideoDecoderBackend>(
-      this, device_, frame_pool_, profile, decoder_task_runner_);
-  if (!backend_->Initialize()) {
     client_task_runner_->PostTask(FROM_HERE,
                                   base::BindOnce(std::move(init_cb), false));
     return;
@@ -295,11 +410,73 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
+  if (supports_requests_ && !AllocateRequests()) {
+    client_task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(std::move(init_cb), false));
+    return;
+  }
+
   // Call init_cb
   output_cb_ = output_cb;
   SetState(State::kDecoding);
   client_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(std::move(init_cb), true));
+}
+
+bool V4L2SliceVideoDecoder::CheckRequestAPISupport() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  struct v4l2_requestbuffers reqbufs;
+  memset(&reqbufs, 0, sizeof(reqbufs));
+  reqbufs.count = 0;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  reqbufs.memory = V4L2_MEMORY_MMAP;
+  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0) {
+    VPLOGF(1) << "VIDIOC_REQBUFS ioctl failed.";
+    return false;
+  }
+  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
+    supports_requests_ = true;
+    VLOGF(1) << "Using request API.";
+    DCHECK(!media_fd_.is_valid());
+    // Let's try to open the media device
+    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
+    // integration.
+    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
+    if (media_fd < 0) {
+      VPLOGF(1) << "Failed to open media device.";
+      return false;
+    }
+    media_fd_ = base::ScopedFD(media_fd);
+  } else {
+    VLOGF(1) << "Using config store.";
+  }
+
+  return true;
+}
+
+bool V4L2SliceVideoDecoder::AllocateRequests() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  DCHECK(requests_.empty());
+
+  for (size_t i = 0; i < input_queue_->AllocatedBuffersCount(); i++) {
+    int request_fd;
+
+    int ret = HANDLE_EINTR(
+        ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
+    if (ret < 0) {
+      VPLOGF(1) << "Failed to create request: ";
+      return false;
+     }
+
+    requests_.push(base::ScopedFD(request_fd));
+  }
+  DCHECK_EQ(requests_.size(), input_queue_->AllocatedBuffersCount());
+
+  return true;
 }
 
 bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
@@ -433,7 +610,7 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
   DVLOGF(3);
 
   // Call all pending decode callback.
-  backend_->ClearPendingRequests(DecodeStatus::ABORTED);
+  ClearPendingRequests(DecodeStatus::ABORTED);
 
   // Streamoff V4L2 queues to drop input and output buffers.
   // If the queues are streaming before reset, then we need to start streaming
@@ -448,6 +625,33 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
   }
 
   client_task_runner_->PostTask(FROM_HERE, std::move(closure));
+}
+
+void V4L2SliceVideoDecoder::ClearPendingRequests(DecodeStatus status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  if (avd_)
+    avd_->Reset();
+
+  // Clear output_request_queue_.
+  while (!output_request_queue_.empty())
+    output_request_queue_.pop();
+
+  if (flush_cb_)
+    RunDecodeCB(std::move(flush_cb_), status);
+
+  // Clear current_decode_request_ and decode_request_queue_.
+  if (current_decode_request_) {
+    RunDecodeCB(std::move(current_decode_request_->decode_cb), status);
+    current_decode_request_ = base::nullopt;
+  }
+
+  while (!decode_request_queue_.empty()) {
+    auto request = std::move(decode_request_queue_.front());
+    decode_request_queue_.pop();
+    RunDecodeCB(std::move(request.decode_cb), status);
+  }
 }
 
 void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -472,8 +676,345 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(
   }
 
   const int32_t bitstream_id = bitstream_id_generator_.GetNextBitstreamId();
-  backend_->EnqueueDecodeTask(std::move(buffer), std::move(decode_cb),
-                              bitstream_id);
+
+  if (!buffer->end_of_stream()) {
+    bitstream_id_to_timestamp_.Put(bitstream_id, buffer->timestamp());
+  }
+
+  decode_request_queue_.push(
+      DecodeRequest(std::move(buffer), std::move(decode_cb), bitstream_id));
+
+  // If we are already decoding, then we don't need to pump again.
+  if (!current_decode_request_)
+    PumpDecodeTask();
+}
+
+void V4L2SliceVideoDecoder::PumpDecodeTask() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3) << "state_:" << static_cast<int>(state_)
+            << " Number of Decode requests: " << decode_request_queue_.size();
+
+  if (state_ != State::kDecoding)
+    return;
+
+  pause_reason_ = PauseReason::kNone;
+  while (true) {
+    switch (avd_->Decode()) {
+      case AcceleratedVideoDecoder::kAllocateNewSurfaces:
+        DVLOGF(3) << "Need to change resolution. Pause decoding.";
+        SetState(State::kFlushing);
+
+        output_request_queue_.push(OutputRequest::ChangeResolutionFence());
+        PumpOutputSurfaces();
+        return;
+
+      case AcceleratedVideoDecoder::kRanOutOfStreamData:
+        // Current decode request is finished processing.
+        if (current_decode_request_) {
+          DCHECK(current_decode_request_->decode_cb);
+          RunDecodeCB(std::move(current_decode_request_->decode_cb),
+                      DecodeStatus::OK);
+          current_decode_request_ = base::nullopt;
+        }
+
+        // Process next decodee request.
+        if (decode_request_queue_.empty())
+          return;
+        current_decode_request_ = std::move(decode_request_queue_.front());
+        decode_request_queue_.pop();
+
+        if (current_decode_request_->buffer->end_of_stream()) {
+          if (!avd_->Flush()) {
+            VLOGF(1) << "Failed flushing the decoder.";
+            SetState(State::kError);
+            return;
+          }
+          // Put the decoder in an idle state, ready to resume.
+          avd_->Reset();
+
+          SetState(State::kFlushing);
+          DCHECK(!flush_cb_);
+          flush_cb_ = std::move(current_decode_request_->decode_cb);
+
+          output_request_queue_.push(OutputRequest::FlushFence());
+          PumpOutputSurfaces();
+          current_decode_request_ = base::nullopt;
+          return;
+        }
+
+        avd_->SetStream(current_decode_request_->bitstream_id,
+                        *current_decode_request_->buffer);
+        break;
+
+      case AcceleratedVideoDecoder::kRanOutOfSurfaces:
+        DVLOGF(3) << "Ran out of surfaces. Resume when buffer is returned.";
+        pause_reason_ = PauseReason::kRanOutOfSurfaces;
+        return;
+
+      case AcceleratedVideoDecoder::kNeedContextUpdate:
+        DVLOGF(3) << "Awaiting context update";
+        pause_reason_ = PauseReason::kWaitSubFrameDecoded;
+        return;
+
+      case AcceleratedVideoDecoder::kDecodeError:
+        DVLOGF(3) << "Error decoding stream";
+        SetState(State::kError);
+        return;
+
+      case AcceleratedVideoDecoder::kTryAgain:
+        NOTREACHED() << "Should not reach here unless this class accepts "
+                        "encrypted streams.";
+        DVLOGF(4) << "No key for decoding stream.";
+        SetState(State::kError);
+        return;
+    }
+  }
+}
+
+void V4L2SliceVideoDecoder::PumpOutputSurfaces() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3) << "state_: " << static_cast<int>(state_)
+            << " Number of display surfaces: " << output_request_queue_.size();
+
+  bool resume_decode = false;
+  while (!output_request_queue_.empty()) {
+    if (!output_request_queue_.front().IsReady()) {
+      DVLOGF(3) << "The first surface is not ready yet.";
+      break;
+    }
+
+    OutputRequest request = std::move(output_request_queue_.front());
+    output_request_queue_.pop();
+    switch (request.type) {
+      case OutputRequest::kFlushFence:
+        DCHECK(output_request_queue_.empty());
+        DVLOGF(2) << "Flush finished.";
+        RunDecodeCB(std::move(flush_cb_), DecodeStatus::OK);
+        resume_decode = true;
+        break;
+
+      case OutputRequest::kChangeResolutionFence:
+        DCHECK(output_request_queue_.empty());
+        if (!ChangeResolution()) {
+          SetState(State::kError);
+          return;
+        }
+        resume_decode = true;
+        break;
+
+      case OutputRequest::kSurface:
+        scoped_refptr<V4L2DecodeSurface> surface = std::move(request.surface);
+
+        DCHECK(surface->video_frame());
+        RunOutputCB(surface->video_frame(), surface->visible_rect(),
+                    request.timestamp);
+        break;
+    }
+  }
+
+  if (resume_decode) {
+    SetState(State::kDecoding);
+    decoder_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_));
+  }
+}
+
+bool V4L2SliceVideoDecoder::ChangeResolution() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DCHECK_EQ(state_, State::kFlushing);
+  // We change resolution after outputting all pending surfaces, there should
+  // be no V4L2DecodeSurface left.
+  DCHECK(surfaces_at_device_.empty());
+  DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
+  DCHECK_EQ(output_queue_->QueuedBuffersCount(), 0u);
+
+  DCHECK(output_request_queue_.empty());
+  if (!StopStreamV4L2Queue())
+    return false;
+
+  // Set output format with the new resolution.
+  gfx::Size pic_size = avd_->GetPicSize();
+  DCHECK(!pic_size.IsEmpty());
+  DVLOGF(3) << "Change resolution to " << pic_size.width() << "x"
+            << pic_size.height();
+
+  if (!SetCodedSizeOnInputQueue(pic_size)) {
+    VLOGF(1) << "Failed to set coded size on input queue";
+    return false;
+  }
+
+  auto frame_layout = SetupOutputFormat(pic_size, avd_->GetVisibleRect());
+  if (!frame_layout) {
+    VLOGF(1) << "No format is available with thew new resolution";
+    return false;
+  }
+
+  auto coded_size = frame_layout->coded_size();
+  DCHECK_EQ(coded_size.width() % 16, 0);
+  DCHECK_EQ(coded_size.height() % 16, 0);
+  if (!gfx::Rect(coded_size).Contains(gfx::Rect(pic_size))) {
+    VLOGF(1) << "Got invalid adjusted coded size: " << coded_size.ToString();
+    return false;
+  }
+
+  // Allocate new output buffers.
+  if (!output_queue_->DeallocateBuffers())
+    return false;
+  size_t num_output_frames = avd_->GetRequiredNumOfPictures();
+  DCHECK_GT(num_output_frames, 0u);
+  if (output_queue_->AllocateBuffers(num_output_frames, V4L2_MEMORY_DMABUF) ==
+      0) {
+    VLOGF(1) << "Failed to request output buffers.";
+    return false;
+  }
+  if (output_queue_->AllocatedBuffersCount() != num_output_frames) {
+    VLOGF(1) << "Could not allocate requested number of output buffers.";
+    return false;
+  }
+  frame_pool_->SetMaxNumFrames(num_output_frames);
+
+  if (!StartStreamV4L2Queue())
+    return false;
+
+  SetState(State::kDecoding);
+  return true;
+}
+
+scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(4);
+
+  // Request VideoFrame.
+  scoped_refptr<VideoFrame> frame = frame_pool_->GetFrame();
+  if (!frame) {
+    // We allocate the same number of output buffer slot in V4L2 device and the
+    // output VideoFrame. If there is free output buffer slot but no free
+    // VideoFrame, surface_it means the VideoFrame is not released at client
+    // side. Post PumpDecodeTask when the pool has available frames.
+    DVLOGF(3) << "There is no available VideoFrame.";
+    frame_pool_->NotifyWhenFrameAvailable(base::BindOnce(
+        base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
+        decoder_task_runner_, FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_)));
+    return nullptr;
+  }
+
+  // Request V4L2 input and output buffers.
+  V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
+  V4L2WritableBufferRef output_buf = output_queue_->GetFreeBuffer();
+  if (!input_buf.IsValid() || !output_buf.IsValid()) {
+    DVLOGF(3) << "There is no free V4L2 buffer.";
+    return nullptr;
+  }
+
+  scoped_refptr<V4L2DecodeSurface> dec_surface;
+  if (supports_requests_) {
+    DCHECK(!requests_.empty());
+    base::ScopedFD request = std::move(requests_.front());
+    requests_.pop();
+    auto ret = V4L2RequestDecodeSurface::Create(
+        std::move(input_buf), std::move(output_buf), std::move(frame),
+        request.get());
+    requests_.push(std::move(request));
+    if (!ret) {
+      DVLOGF(3) << "Could not create surface.";
+      return nullptr;
+    }
+    dec_surface = std::move(*ret);
+  } else {
+    dec_surface = new V4L2ConfigStoreDecodeSurface(
+        std::move(input_buf), std::move(output_buf), std::move(frame));
+  }
+
+  return dec_surface;
+}
+
+void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3) << "Reuse output surface #" << buffer->BufferId();
+
+  // Resume decoding in case of ran out of surface.
+  if (pause_reason_ == PauseReason::kRanOutOfSurfaces) {
+    decoder_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_));
+  }
+}
+
+bool V4L2SliceVideoDecoder::SubmitSlice(
+    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    const uint8_t* data,
+    size_t size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  size_t plane_size = dec_surface->input_buffer().GetPlaneSize(0);
+  size_t bytes_used = dec_surface->input_buffer().GetPlaneBytesUsed(0);
+  if (size > plane_size - bytes_used) {
+    VLOGF(1) << "The size of submitted slice(" << size
+             << ") is larger than the remaining buffer size("
+             << plane_size - bytes_used << "). Plane size is " << plane_size;
+    SetState(State::kError);
+    return false;
+  }
+
+  void* mapping = dec_surface->input_buffer().GetPlaneMapping(0);
+  memcpy(reinterpret_cast<uint8_t*>(mapping) + bytes_used, data, size);
+  dec_surface->input_buffer().SetPlaneBytesUsed(0, bytes_used + size);
+  return true;
+}
+
+void V4L2SliceVideoDecoder::DecodeSurface(
+    const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  // Enqueue input_buf and output_buf
+  dec_surface->input_buffer().PrepareQueueBuffer(*dec_surface);
+  if (!std::move(dec_surface->input_buffer()).QueueMMap()) {
+    SetState(State::kError);
+    return;
+  }
+
+  if (!std::move(dec_surface->output_buffer())
+           .QueueDMABuf(dec_surface->video_frame()->DmabufFds())) {
+    SetState(State::kError);
+    return;
+  }
+
+  if (!dec_surface->Submit()) {
+    VLOGF(1) << "Error while submitting frame for decoding!";
+    SetState(State::kError);
+    return;
+  }
+
+  surfaces_at_device_.push(std::move(dec_surface));
+}
+
+void V4L2SliceVideoDecoder::SurfaceReady(
+    const scoped_refptr<V4L2DecodeSurface>& dec_surface,
+    int32_t bitstream_id,
+    const gfx::Rect& visible_rect,
+    const VideoColorSpace& /* color_space */) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  // Find the timestamp associated with |bitstream_id|. It's possible that a
+  // surface is output multiple times for different |bitstream_id|s (e.g. VP9
+  // show_existing_frame feature). This means we need to output the same frame
+  // again with a different timestamp.
+  // On some rare occasions it's also possible that a single DecoderBuffer
+  // produces multiple surfaces with the same |bitstream_id|, so we shouldn't
+  // remove the timestamp from the cache.
+  const auto it = bitstream_id_to_timestamp_.Peek(bitstream_id);
+  DCHECK(it != bitstream_id_to_timestamp_.end());
+  base::TimeDelta timestamp = it->second;
+
+  dec_surface->SetVisibleRect(visible_rect);
+  output_request_queue_.push(
+      OutputRequest::Surface(std::move(dec_surface), timestamp));
+  PumpOutputSurfaces();
 }
 
 bool V4L2SliceVideoDecoder::StartStreamV4L2Queue() {
@@ -513,81 +1054,8 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   if (output_queue_)
     output_queue_->Streamoff();
 
-  backend_->OnStreamStopped();
-
-  return true;
-}
-
-void V4L2SliceVideoDecoder::InitiateFlush() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
-
-  SetState(State::kFlushing);
-}
-
-void V4L2SliceVideoDecoder::CompleteFlush() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
-
-  SetState(State::kDecoding);
-}
-
-bool V4L2SliceVideoDecoder::ChangeResolution(gfx::Size pic_size,
-                                             gfx::Rect visible_rect,
-                                             size_t num_output_frames) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
-  DCHECK_EQ(state_, State::kFlushing);
-  DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
-  DCHECK_EQ(output_queue_->QueuedBuffersCount(), 0u);
-
-  if (!StopStreamV4L2Queue())
-    return false;
-
-  if (!SetCodedSizeOnInputQueue(pic_size)) {
-    VLOGF(1) << "Failed to set coded size on input queue";
-    return false;
-  }
-
-  auto frame_layout = SetupOutputFormat(pic_size, visible_rect);
-  if (!frame_layout) {
-    VLOGF(1) << "No format is available with thew new resolution";
-    SetState(State::kError);
-    return false;
-  }
-
-  auto coded_size = frame_layout->coded_size();
-  DCHECK_EQ(coded_size.width() % 16, 0);
-  DCHECK_EQ(coded_size.height() % 16, 0);
-  if (!gfx::Rect(coded_size).Contains(gfx::Rect(pic_size))) {
-    VLOGF(1) << "Got invalid adjusted coded size: " << coded_size.ToString();
-    SetState(State::kError);
-    return false;
-  }
-
-  // Allocate new output buffers.
-  if (!output_queue_->DeallocateBuffers()) {
-    SetState(State::kError);
-    return false;
-  }
-  DCHECK_GT(num_output_frames, 0u);
-  if (output_queue_->AllocateBuffers(num_output_frames, V4L2_MEMORY_DMABUF) ==
-      0) {
-    VLOGF(1) << "Failed to request output buffers.";
-    SetState(State::kError);
-    return false;
-  }
-  if (output_queue_->AllocatedBuffersCount() != num_output_frames) {
-    VLOGF(1) << "Could not allocate requested number of output buffers.";
-    SetState(State::kError);
-    return false;
-  }
-  frame_pool_->SetMaxNumFrames(num_output_frames);
-
-  if (!StartStreamV4L2Queue()) {
-    SetState(State::kError);
-    return false;
-  }
+  while (!surfaces_at_device_.empty())
+    surfaces_at_device_.pop();
 
   return true;
 }
@@ -599,6 +1067,7 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
             << ", Number of queued output buffers: "
             << output_queue_->QueuedBuffersCount();
 
+  bool resume_decode = false;
   // Dequeue V4L2 output buffer first to reduce output latency.
   bool success;
   V4L2ReadableBufferRef dequeued_buffer;
@@ -611,7 +1080,29 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
     if (!dequeued_buffer)
       break;
 
-    backend_->OnOutputBufferDequeued(std::move(dequeued_buffer));
+    // Mark the output buffer decoded, and try to output surface.
+    DCHECK(!surfaces_at_device_.empty());
+    auto surface = std::move(surfaces_at_device_.front());
+    DCHECK_EQ(static_cast<size_t>(surface->output_record()),
+              dequeued_buffer->BufferId());
+    surfaces_at_device_.pop();
+
+    surface->SetDecoded();
+    // VP9Decoder update context after surface is decoded. Resume decoding for
+    // previous pause of AVD::kWaitSubFrameDecoded.
+    resume_decode = true;
+
+    // Keep a reference to the V4L2 buffer until the buffer is reused. The
+    // reason for this is that the config store uses V4L2 buffer IDs to
+    // reference frames, therefore we cannot reuse the same V4L2 buffer ID for
+    // another decode operation until all references to that frame are gone.
+    // Request API does not have this limitation, so we can probably remove this
+    // after config store is gone.
+    surface->SetReleaseCallback(
+        base::BindOnce(&V4L2SliceVideoDecoder::ReuseOutputBuffer, weak_this_,
+                       std::move(dequeued_buffer)));
+
+    PumpOutputSurfaces();
   }
 
   // Dequeue V4L2 input buffer.
@@ -624,6 +1115,12 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
     if (!dequeued_buffer)
       break;
   }
+
+  if (resume_decode && pause_reason_ == PauseReason::kWaitSubFrameDecoded) {
+    decoder_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_));
+  }
 }
 
 void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {
@@ -633,7 +1130,7 @@ void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {
                                 base::BindOnce(std::move(cb), status));
 }
 
-void V4L2SliceVideoDecoder::OutputFrame(scoped_refptr<VideoFrame> frame,
+void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
                                         const gfx::Rect& visible_rect,
                                         base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
@@ -702,25 +1199,11 @@ void V4L2SliceVideoDecoder::SetState(State new_state) {
 
   if (new_state == State::kError) {
     VLOGF(1) << "Error occurred.";
-    backend_->ClearPendingRequests(DecodeStatus::DECODE_ERROR);
+    ClearPendingRequests(DecodeStatus::DECODE_ERROR);
     return;
   }
   state_ = new_state;
   return;
-}
-
-void V4L2SliceVideoDecoder::OnBackendError() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(2);
-
-  SetState(State::kError);
-}
-
-bool V4L2SliceVideoDecoder::IsDecoding() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3);
-
-  return state_ == State::kDecoding;
 }
 
 }  // namespace media

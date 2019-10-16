@@ -402,6 +402,15 @@ float ScrollbarController::GetScrollerToScrollbarRatio() {
   return scaled_scroller_to_scrollbar_ratio;
 }
 
+void ScrollbarController::DidUnregisterScrollbar(ElementId element_id) {
+  if (currently_captured_scrollbar_ &&
+      currently_captured_scrollbar_->scroll_element_id() == element_id)
+    currently_captured_scrollbar_ = nullptr;
+    drag_processed_for_current_frame_ = false;
+    drag_state_ = base::nullopt;
+    autoscroll_state_ = base::nullopt;
+}
+
 void ScrollbarController::RecomputeAutoscrollStateIfNeeded() {
   if (!autoscroll_state_.has_value())
     return;

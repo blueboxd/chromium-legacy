@@ -25,7 +25,6 @@
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/services/assistant/assistant_communication_error_observer.h"
 #include "chromeos/services/assistant/assistant_manager_service_delegate.h"
 #include "chromeos/services/assistant/constants.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
@@ -58,6 +57,8 @@
 using ActionModule = assistant_client::ActionModule;
 using Resolution = assistant_client::ConversationStateListener::Resolution;
 using MediaStatus = assistant_client::MediaStatus;
+using CommunicationErrorType =
+    chromeos::assistant::AssistantManagerService::CommunicationErrorType;
 
 namespace api = ::assistant::api;
 
@@ -180,13 +181,12 @@ AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {
 
 void AssistantManagerServiceImpl::Start(
     const base::Optional<std::string>& access_token,
-    bool enable_hotword,
-    base::OnceClosure post_init_callback) {
+    bool enable_hotword) {
   DCHECK(!assistant_manager_);
-  DCHECK_EQ(state_, State::STOPPED);
+  DCHECK_EQ(GetState(), State::STOPPED);
 
   // Set the flag to avoid starting the service multiple times.
-  state_ = State::STARTING;
+  SetStateAndInformObservers(State::STARTING);
 
   started_time_ = base::TimeTicks::Now();
 
@@ -199,15 +199,14 @@ void AssistantManagerServiceImpl::Start(
       base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
                      base::Unretained(this), access_token),
       base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
-                     weak_factory_.GetWeakPtr(),
-                     std::move(post_init_callback)));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AssistantManagerServiceImpl::Stop() {
   // We cannot cleanly stop the service if it is in the process of starting up.
-  DCHECK_NE(state_, State::STARTING);
+  DCHECK_NE(GetState(), State::STARTING);
 
-  state_ = State::STOPPED;
+  SetStateAndInformObservers(State::STOPPED);
 
   // When user disables the feature, we also deletes all data.
   if (!assistant_state()->settings_enabled().value() && assistant_manager_)
@@ -331,7 +330,7 @@ void AssistantManagerServiceImpl::EnableHotword(bool enable) {
 }
 
 void AssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enable) {
-  if (!HasStartFinished()) {
+  if (GetState() != State::RUNNING) {
     // Skip setting play store status if libassistant is not ready. The status
     // will be set when it is ready.
     return;
@@ -348,13 +347,24 @@ AssistantManagerServiceImpl::GetAssistantSettingsManager() {
 }
 
 void AssistantManagerServiceImpl::AddCommunicationErrorObserver(
-    AssistantCommunicationErrorObserver* observer) {
+    CommunicationErrorObserver* observer) {
   error_observers_.AddObserver(observer);
 }
 
 void AssistantManagerServiceImpl::RemoveCommunicationErrorObserver(
-    AssistantCommunicationErrorObserver* observer) {
+    const CommunicationErrorObserver* observer) {
   error_observers_.RemoveObserver(observer);
+}
+
+void AssistantManagerServiceImpl::AddAndFireStateObserver(
+    StateObserver* observer) {
+  state_observers_.AddObserver(observer);
+  observer->OnStateChanged(GetState());
+}
+
+void AssistantManagerServiceImpl::RemoveStateObserver(
+    const StateObserver* observer) {
+  state_observers_.RemoveObserver(observer);
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
@@ -1057,10 +1067,9 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   new_assistant_manager_->Start();
 }
 
-void AssistantManagerServiceImpl::PostInitAssistant(
-    base::OnceClosure post_init_callback) {
+void AssistantManagerServiceImpl::PostInitAssistant() {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-  DCHECK_EQ(state_, State::STARTING);
+  DCHECK_EQ(GetState(), State::STARTING);
 
   {
     base::AutoLock lock(new_assistant_manager_lock_);
@@ -1071,7 +1080,6 @@ void AssistantManagerServiceImpl::PostInitAssistant(
     // |new_assistant_manager_|, it is possible that |new_assistant_manager_| be
     // null if we moved it in previous |PostInitAssistant| runs.
     if (!new_assistant_manager_) {
-      std::move(post_init_callback).Run();
       return;
     }
 
@@ -1081,13 +1089,12 @@ void AssistantManagerServiceImpl::PostInitAssistant(
     new_assistant_manager_internal_ = nullptr;
   }
 
-  state_ = State::STARTED;
-
   const base::TimeDelta time_since_started =
       base::TimeTicks::Now() - started_time_;
   UMA_HISTOGRAM_TIMES("Assistant.ServiceStartTime", time_since_started);
 
-  std::move(post_init_callback).Run();
+  SetStateAndInformObservers(State::STARTED);
+
   assistant_settings_manager_->UpdateServerDeviceSettings();
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
@@ -1145,11 +1152,9 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 
   // It is possible the |assistant_manager_| was destructed before the
   // rescheduled main thread task got a chance to run. We check this and also
-  // try to avoid double run by check |HasStartFinished()|.
-  if (!assistant_manager_ || HasStartFinished())
+  // try to avoid double run by checking |GetState()|.
+  if (!assistant_manager_ || (GetState() == State::RUNNING))
     return;
-
-  SetStartFinished();
 
   if (is_first_init) {
     is_first_init = false;
@@ -1157,6 +1162,10 @@ void AssistantManagerServiceImpl::OnStartFinished() {
     if (assistant_state()->hotword_enabled().value())
       assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
   }
+
+  const base::TimeDelta time_since_started =
+      base::TimeTicks::Now() - started_time_;
+  UMA_HISTOGRAM_TIMES("Assistant.ServiceReadyTime", time_since_started);
 
   RegisterFallbackMediaHandler();
   AddMediaControllerObserver();
@@ -1169,6 +1178,8 @@ void AssistantManagerServiceImpl::OnStartFinished() {
     SetArcPlayStoreEnabled(assistant_state()->arc_play_store_enabled().value());
 
   RegisterAlarmsTimersListener();
+
+  SetStateAndInformObservers(State::RUNNING);
 }
 
 void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
@@ -1704,12 +1715,11 @@ AssistantManagerServiceImpl::main_task_runner() {
   return context_->main_task_runner();
 }
 
-bool AssistantManagerServiceImpl::HasStartFinished() const {
-  return state_ == State::RUNNING;
-}
+void AssistantManagerServiceImpl::SetStateAndInformObservers(State new_state) {
+  state_ = new_state;
 
-void AssistantManagerServiceImpl::SetStartFinished() {
-  state_ = State::RUNNING;
+  for (auto& observer : state_observers_)
+    observer.OnStateChanged(state_);
 }
 
 }  // namespace assistant

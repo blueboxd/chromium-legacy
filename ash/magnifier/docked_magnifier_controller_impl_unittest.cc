@@ -72,6 +72,10 @@ class DockedMagnifierTest : public NoSessionAshTestBase,
     return Shell::Get()->docked_magnifier_controller();
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
   PrefService* user1_pref_service() {
     return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
         AccountId::FromUserEmail(kUser1Email));
@@ -410,20 +414,19 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
   WindowState::Get(window.get())->Maximize();
 
-  auto* split_view_controller = SplitViewController::Get();
-  EXPECT_EQ(split_view_controller->state(),
+  EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kNoSnap);
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
 
   // Simulate going into split view, by enabling overview mode, and snapping
   // a window to the left.
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_EQ(split_view_controller->state(),
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kLeftSnapped);
-  EXPECT_EQ(split_view_controller->left_window(), window.get());
+  EXPECT_EQ(split_view_controller()->left_window(), window.get());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // Enable the docked magnifier and expect that both overview and split view
@@ -432,9 +435,9 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(split_view_controller->state(),
+  EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kNoSnap);
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();
@@ -460,12 +463,12 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  auto* split_view_controller = SplitViewController::Get();
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(),
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), false);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
+  EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
 
   // Snapping both windows should exit overview mode.
@@ -476,8 +479,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   // updated display's work area.
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
-  EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(),
+  EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
+  EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 24
+// Next MinVersion: 25
 
 module arc.mojom;
 
@@ -23,6 +23,11 @@ enum ArcNotificationEvent {
   DEPRECATED_BUTTON_5_CLICKED = 6,
   // expand/collapse the bundled notification
   [MinVersion=10] TOGGLE_EXPANSION = 7,
+  // The notification is activated/deactivated. Please note that they are sent
+  // only in limited instances e.g. when remote input opens, or when spoken
+  // feedback is enabled.
+  [MinVersion=24] ACTIVATED = 8,
+  [MinVersion=24] DEACTIVATED = 9,
 };
 
 [Extensible]

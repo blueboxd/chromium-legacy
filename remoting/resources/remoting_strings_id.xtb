@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME" /> Anda tidak aktif untuk sementara waktu dan akan diputuskan sementara.</translation>
 <translation id="2317666076142640974">Coba <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" /> yang baru. Kami ingin mendengar masukan Anda.</translation>
 <translation id="2320166752086256636">Sembunyikan keyboard</translation>
-<translation id="2332192922827071008">Buka Preferensi</translation>
 <translation id="2353140552984634198">Anda dapat mengakses komputer ini dengan aman menggunakan Chromoting.</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2366718077645204424">Tidak dapat menjangkau inang. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Terhubung ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chrome Desktop Jarak Jauh menjadi ‘Buka sebagai jendela’.</translation>
 <translation id="2540992418118313681">Ingin membagikan komputer ini agar dapat dilihat dan dikontrol oleh pengguna lain?</translation>
-<translation id="254771646005658629">Izinkan pengguna jarak jauh untuk mengontrol Mac ini</translation>
 <translation id="2579271889603567289">Host error atau gagal dimulai.</translation>
 <translation id="2599300881200251572">Layanan ini mengaktifkan sambungan masuk dari klien Chrome Desktop Jarak Jauh.</translation>
 <translation id="2647232381348739934">Layanan Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Tidak dapat menyetel ulang aplikasi. Anda masih dapat mengirim laporan bug.</translation>
 <translation id="5419418238395129586">Online terakhir: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hosting telah dimatikan.</translation>
-<translation id="5463789431147491241">Untuk menggunakan <ph name="PRODUCT_NAME" /> pada Mac ini, ikuti langkah-langkah berikut:
-
-Pilih '<ph name="BUTTON_NAME" />' di bawah. Dalam preferensi Keamanan dan Privasi, centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah tercentang, hapus centang lalu centang lagi.</translation>
 <translation id="5510035215749041527">Putuskan hubungan sekarang</translation>
 <translation id="5593560073513909978">Layanan kami tidak tersedia untuk sementara. Coba lagi nanti.</translation>
 <translation id="5601503069213153581">PIN</translation>

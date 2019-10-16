@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Vaša sesija u aplikaciji <ph name="APPLICATION_NAME" /> nije aktivna već neko vrijeme, pa će se uskoro prekinuti veza.</translation>
 <translation id="2317666076142640974">Isprobajte novu <ph name="LINK_BEGIN" />web-aplikaciju Udaljena radna površina Chrome<ph name="LINK_END" />. Zanimaju nas vaše povratne informacije.</translation>
 <translation id="2320166752086256636">Sakrij tipkovnicu</translation>
-<translation id="2332192922827071008">Otvori Postavke</translation>
 <translation id="2353140552984634198">Ovom računalu možete sigurno pristupiti pomoću aplikacije Chromoting.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2366718077645204424">Nije moguće pristupiti hostu. To je vjerojatno zbog konfiguracije mreže koju upotrebljavate.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Povezano s računalom <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
 <translation id="2540992418118313681">Želite li dijeliti ovo računalo tako da ga neki drugi korisnik može vidjeti i upravljati njime?</translation>
-<translation id="254771646005658629">Dopusti udaljenim korisnicima da upravljaju ovim Macom</translation>
 <translation id="2579271889603567289">Host se srušio ili se nije pokrenuo.</translation>
 <translation id="2599300881200251572">Ta usluga omogućuje dolazne veze s klijenata Udaljene radne površine Chrome.</translation>
 <translation id="2647232381348739934">Usluga Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Vraćanje aplikacije na zadano nije uspjelo. I dalje možete poslati izvješće o programskim pogreškama.</translation>
 <translation id="5419418238395129586">Zadnji put online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host je isključen.</translation>
-<translation id="5463789431147491241">Da biste na ovom Macu upotrebljavali <ph name="PRODUCT_NAME" />, slijedite ove korake:
-
-Odaberite „<ph name="BUTTON_NAME" />” u nastavku. U postavkama za sigurnost i privatnost potvrdite okvir opcije „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Ako je opcija „'<ph name="SERVICE_SCRIPT_NAME" />” već potvrđena, poništite odabir i potom ga ponovo potvrdite.</translation>
 <translation id="5510035215749041527">Prekini vezu odmah</translation>
 <translation id="5593560073513909978">Usluga je privremeno nedostupna. Pokušajte ponovo kasnije.</translation>
 <translation id="5601503069213153581">PIN</translation>

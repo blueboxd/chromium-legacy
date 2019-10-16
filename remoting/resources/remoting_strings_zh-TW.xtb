@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">您的「<ph name="APPLICATION_NAME" />」工作階段已閒置一段時間，且即將中斷連線。</translation>
 <translation id="2317666076142640974">歡迎搶先體驗最新 <ph name="LINK_BEGIN" />Chrome 遠端桌面網路應用程式<ph name="LINK_END" />，並提供意見給我們。</translation>
 <translation id="2320166752086256636">隱藏鍵盤</translation>
-<translation id="2332192922827071008">開啟偏好設定</translation>
 <translation id="2353140552984634198">你可以透過 Chromoting 安全地存取這台電腦。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2366718077645204424">無法連線到主機，原因可能與你使用的網路設定有關。</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">已連線至「<ph name="HOSTNAME" />」</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
 <translation id="2540992418118313681">您要與其他使用者分享這台電腦的瀏覽及控制權限嗎？</translation>
-<translation id="254771646005658629">允許遠端使用者控制這部 Mac</translation>
 <translation id="2579271889603567289">主機當機或無法啟動。</translation>
 <translation id="2599300881200251572">這項服務允許來自 Chrome 遠端桌面用戶端的連線。</translation>
 <translation id="2647232381348739934">Chromoting 服務</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">無法重設應用程式。您仍然可以傳送錯誤報告。</translation>
 <translation id="5419418238395129586">上次上線日期：<ph name="DATE" /></translation>
 <translation id="544077782045763683">主機已關閉。</translation>
-<translation id="5463789431147491241">如要在這部 Mac 上使用 <ph name="PRODUCT_NAME" />，請按照下列步驟操作：
-
-選取下方的 [<ph name="BUTTON_NAME" />]。在「安全性和隱私權」偏好設定中，勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。
-
-如果 [<ph name="SERVICE_SCRIPT_NAME" />] 已勾選，請先取消勾選，然後再次勾選。</translation>
 <translation id="5510035215749041527">立即中斷連線</translation>
 <translation id="5593560073513909978">服務暫時無法使用，請稍後再試。</translation>
 <translation id="5601503069213153581">PIN</translation>

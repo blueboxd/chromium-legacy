@@ -15,8 +15,10 @@ namespace remoting {
 namespace mac {
 
 // Prompts the user to add the current application to the set of trusted
-// Accessibility applications.  This is only required for input injection on
-// 10.14 and later OSes.  |task_runner| is used to run the dialog message loop.
+// Accessibility and Screen Recording applications.  The Accessibility
+// permission is required for input injection (10.14 and later) and Screen
+// Recording is required for screen capture (10.15 and later).  |task_runner|
+// is used to run the dialog message loop.
 void PromptUserToChangeTrustStateIfNeeded(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

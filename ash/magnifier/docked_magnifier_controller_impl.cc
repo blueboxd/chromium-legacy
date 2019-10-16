@@ -625,16 +625,15 @@ void DockedMagnifierControllerImpl::OnEnabledPrefChanged() {
   Shell* shell = Shell::Get();
   auto* overview_controller = shell->overview_controller();
   if (overview_controller->InOverviewSession()) {
-    auto* split_view_controller = SplitViewController::Get();
-    if (split_view_controller->InSplitViewMode()) {
-      // In this case, we're in a single-split-view mode, i.e. a window is
-      // snapped to one side of the split view, while the other side has
-      // overview active. We need to exit split view as well as exiting overview
-      // mode, otherwise we'll be in an invalid state.
+    // |OverviewController::EndOverview| fails (returning false) in certain
+    // cases involving tablet split view mode. We can guarantee success by
+    // ensuring that tablet split view mode is not in session.
+    auto* split_view_controller =
+        SplitViewController::Get(Shell::GetPrimaryRootWindow());
+    if (split_view_controller->InTabletSplitViewMode()) {
       split_view_controller->EndSplitView(
           SplitViewController::EndReason::kNormal);
     }
-
     overview_controller->EndOverview();
   }
 

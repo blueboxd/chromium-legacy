@@ -176,8 +176,8 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
                                     : separator_view_->GetPreferredSize());
 
   // Set up the small icon.
-  icon_view_->SetSize(
-      is_rich_suggestion_ ? gfx::Size() : icon_view_->CalculatePreferredSize());
+  icon_view_->SetSize(is_rich_suggestion_ ? gfx::Size()
+                                          : icon_view_->GetPreferredSize());
 
   const auto apply_vector_icon = [=](const gfx::VectorIcon& vector_icon) {
     const auto& icon = gfx::CreateVectorIcon(vector_icon, SK_ColorWHITE);
@@ -333,6 +333,7 @@ gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
 
 void OmniboxMatchCellView::SetTailSuggestCommonPrefixWidth(
     const base::string16& common_prefix) {
+  InvalidateLayout();
   if (common_prefix.empty()) {
     tail_suggest_common_prefix_width_ = 0;
     return;

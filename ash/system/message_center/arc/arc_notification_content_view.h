@@ -116,6 +116,7 @@ class ArcNotificationContentView
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // ArcNotificationItem::Observer
   void OnItemDestroying() override;

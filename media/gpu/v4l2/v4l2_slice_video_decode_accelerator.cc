@@ -585,7 +585,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateImageProcessor() {
     return false;
   }
 
-  DCHECK_EQ(gl_image_size_, image_processor_->output_layout().coded_size());
+  DCHECK_EQ(gl_image_size_, image_processor_->output_config().size);
 
   return true;
 }

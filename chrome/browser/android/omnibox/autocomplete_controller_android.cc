@@ -128,16 +128,18 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
   // Creating an arbitrary fake_request_source to avoid passing in an invalid
   // AutocompleteInput object. This source is ignored entirely when
   // kZeroSuggestionsOnNTP feature flag is enabled.
-  base::string16 fake_request_source =
-      base::ASCIIToUTF16("chrome-native://newtab");
-  auto context = metrics::OmniboxEventProto::NTP;
+  base::string16 fake_request_source = base::ASCIIToUTF16("chrome://newtab");
+  base::string16 fake_omnibox_content;
+  auto context =
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
 
   if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
     fake_request_source = base::ASCIIToUTF16("http://www.foobarbazblah.com");
+    fake_omnibox_content = fake_request_source;
     context = metrics::OmniboxEventProto::OTHER;
   }
 
-  AutocompleteInput input(fake_request_source, context,
+  AutocompleteInput input(fake_omnibox_content, context,
                           ChromeAutocompleteSchemeClassifier(profile));
   input.set_current_url(GURL(fake_request_source));
   input.set_from_omnibox_focus(true);

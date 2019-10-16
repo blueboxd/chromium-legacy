@@ -86,6 +86,7 @@ static_library("service") {
     sources += [
       "service_utility_process_host.cc",
       "service_utility_process_host.h",
+      "service_utility_process_host_receiver_bindings.cc",
     ]
   }
 }

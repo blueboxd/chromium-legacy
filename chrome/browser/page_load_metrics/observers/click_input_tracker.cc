@@ -6,10 +6,13 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 
 namespace page_load_metrics {
+
+const int kMaxCountForUkm = 50;
 
 ClickInputTracker::ClickInputTracker() {
   // Set thresholds per Feature parameters as appropriate.
@@ -68,13 +71,17 @@ void ClickInputTracker::OnUserInput(const blink::WebInputEvent& event) {
   last_click_position_ = position;
 }
 
-void ClickInputTracker::RecordClickBurst() {
+void ClickInputTracker::RecordClickBurst(ukm::SourceId source_id) {
   if (!base::FeatureList::IsEnabled(kClickInputTracker))
     return;
 
   if (max_click_input_burst_ >= burst_count_threshold_) {
     UMA_HISTOGRAM_COUNTS_100("PageLoad.Experimental.ClickInputBurst",
                              max_click_input_burst_);
+    ukm::builders::ClickInput(source_id)
+        .SetExperimental_ClickInputBurst(
+            std::min(max_click_input_burst_, kMaxCountForUkm))
+        .Record(ukm::UkmRecorder::Get());
   }
 }
 

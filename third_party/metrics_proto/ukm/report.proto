@@ -12,9 +12,10 @@ import "ukm/aggregate.proto";
 import "ukm/entry.proto";
 import "ukm/source.proto";
 import "system_profile.proto";
+import "user_demographics.proto";
 
 // This is the message type sent from Chrome to the UKM collector.
-// Next tag: 11
+// Next tag: 12
 message Report {
   // A unique identifier for a Chrome install. This ID should be used only
   // in UKM reports, and not linked to any other data sources.
@@ -44,6 +45,11 @@ message Report {
 
   // Information about the user's browser and system configuration.
   optional metrics.SystemProfileProto system_profile = 2;
+
+  // The user's demographic information that consists of their noised birth year
+  // and gender. This data is made available to Chrome via syncable priority
+  // pref, so is only available if the user is signed-in and syncing.
+  optional metrics.UserDemographicsProto user_demographics = 11;
 
   // A list of the top-level navigations that data was collected for.
   repeated Source sources = 3;

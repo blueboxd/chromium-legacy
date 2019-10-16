@@ -10,6 +10,8 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.view.LayoutInflater;
 
+import org.chromium.base.ContextUtils;
+
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
@@ -110,7 +112,7 @@ public class ResourcesContextWrapperFactory {
 
         @Override
         public void startActivity(Intent intent) {
-            if (AwContents.activityFromContext(this) == null) {
+            if (ContextUtils.activityFromContext(this) == null) {
                 // FLAG_ACTIVITY_NEW_TASK is needed to start activities from a non-activity
                 // context.
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

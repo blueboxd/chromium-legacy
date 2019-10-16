@@ -56,7 +56,7 @@ const CupsPrintersEntryListBehavior = {
   },
 
   /**
-   * Non-empty/null fields indicate the applicable change to be notified.
+   * Non-empty params indicate the applicable change to be notified.
    * @param {!Array<!PrinterListEntry>} savedPrinters
    * @param {!Array<!PrinterListEntry>} addedPrinters
    * @param {!Array<!PrinterListEntry>} removedPrinters
@@ -67,6 +67,14 @@ const CupsPrintersEntryListBehavior = {
     this.updateList(
         'savedPrinters', printer => printer.printerInfo.printerId,
         savedPrinters);
+
+    assert(!(addedPrinters.length && removedPrinters.length));
+
+    if (addedPrinters.length) {
+      this.onSavedPrintersAdded(addedPrinters);
+    } else if (removedPrinters.length) {
+      this.onSavedPrintersRemoved(removedPrinters);
+    }
   },
 
   /**
@@ -77,5 +85,14 @@ const CupsPrintersEntryListBehavior = {
     this.updateList(
         'nearbyPrinters', printer => printer.printerInfo.printerId,
         printerList);
-  }
+  },
+
+  // CupsPrintersEntryListBehavior methods. Override these in the
+  // implementations.
+
+  /** @param{!Array<!PrinterListEntry>} addedPrinters */
+  onSavedPrintersAdded: function(addedPrinters) {},
+
+  /** @param{!Array<!PrinterListEntry>} removedPrinters */
+  onSavedPrintersRemoved: function(removedPrinters) {},
 };

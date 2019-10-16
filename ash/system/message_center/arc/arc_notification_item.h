@@ -56,6 +56,9 @@ class ArcNotificationItem {
   // Called when the user wants to toggle expansio of notification. This is
   // called from ArcNotificationContentView.
   virtual void ToggleExpansion() = 0;
+  // Called when the notification is activated i.e. starts accepting input for
+  // inline reply. Called from ArcNotificationContentView.
+  virtual void OnWindowActivated(bool activated) = 0;
 
   // Called from ArcNotificationManager when the remote input textbox on
   // notification is activated or deactivated.

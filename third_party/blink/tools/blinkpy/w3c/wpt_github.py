@@ -348,16 +348,9 @@ class WPTGitHub(object):
 
     def pr_for_chromium_commit(self, chromium_commit):
         """Returns a PR corresponding to the given ChromiumCommit, or None."""
-        pull_request = self.pr_with_change_id(chromium_commit.change_id())
-        if pull_request:
-            return pull_request
-        # The Change ID can't be used for commits made via Rietveld,
-        # so we fall back to trying to use commit position here.
-        # Note that Gerrit returns ToT+1 as the commit positions for in-flight
-        # CLs, but they are scrubbed from the PR description and hence would
-        # not be mismatched to random Chromium commits in the fallback.
-        # TODO(robertma): Remove this fallback after Rietveld becomes read-only.
-        return self.pr_with_position(chromium_commit.position)
+        # We rely on Change-Id because Gerrit returns ToT+1 as the commit
+        # positions for in-flight CLs, whereas Change-Id is permanent.
+        return self.pr_with_change_id(chromium_commit.change_id())
 
     def pr_with_change_id(self, target_change_id):
         for pull_request in self.all_pull_requests():
@@ -365,14 +358,6 @@ class WPTGitHub(object):
             # CLs in one PR. (The exporter always creates one PR for each CL.)
             change_ids = self.extract_metadata('Change-Id: ', pull_request.body, all_matches=True)
             if target_change_id in change_ids:
-                return pull_request
-        return None
-
-    def pr_with_position(self, position):
-        for pull_request in self.all_pull_requests():
-            # Same as above, search all 'Cr-Commit-Position's.
-            pr_commit_positions = self.extract_metadata('Cr-Commit-Position: ', pull_request.body, all_matches=True)
-            if position in pr_commit_positions:
                 return pull_request
         return None
 

@@ -219,8 +219,7 @@ void ChildStatusCollector::UpdateReportingSettings() {
   }
 
   // Activity times.
-  report_activity_times_ =
-      base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy);
+  report_activity_times_ = true;
 
   // Settings related.
   report_version_info_ = true;

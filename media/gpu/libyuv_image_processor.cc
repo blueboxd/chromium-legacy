@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
@@ -25,25 +26,21 @@ enum class SupportResult {
   Unsupported,
 };
 
-SupportResult IsFormatSupported(VideoPixelFormat input_format,
-                                VideoPixelFormat output_format) {
-  constexpr struct {
-    VideoPixelFormat input;
-    VideoPixelFormat output;
+SupportResult IsFormatSupported(Fourcc input_fourcc, Fourcc output_fourcc) {
+  static constexpr struct {
+    uint32_t input;
+    uint32_t output;
     bool need_pivot;
   } kSupportFormatConversionArray[] = {
-      {PIXEL_FORMAT_ARGB, PIXEL_FORMAT_NV12, false},
-      {PIXEL_FORMAT_I420, PIXEL_FORMAT_NV12, false},
-      {PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12, false},
-      {PIXEL_FORMAT_ABGR, PIXEL_FORMAT_NV12, true},
-      {PIXEL_FORMAT_XBGR, PIXEL_FORMAT_NV12, true},
+      {Fourcc::AR24, Fourcc::NV12, false}, {Fourcc::YU12, Fourcc::NV12, false},
+      {Fourcc::YV12, Fourcc::NV12, false}, {Fourcc::AB24, Fourcc::NV12, true},
+      {Fourcc::XB24, Fourcc::NV12, true},
   };
 
-  for (auto* conv = std::cbegin(kSupportFormatConversionArray);
-       conv != std::cend(kSupportFormatConversionArray); conv++) {
-    if (conv->input == input_format && conv->output == output_format) {
-      return conv->need_pivot ? SupportResult::SupportedWithPivot
-                              : SupportResult::Supported;
+  for (const auto& conv : kSupportFormatConversionArray) {
+    if (conv.input == input_fourcc && conv.output == output_fourcc) {
+      return conv.need_pivot ? SupportResult::SupportedWithPivot
+                             : SupportResult::Supported;
     }
   }
 
@@ -53,21 +50,11 @@ SupportResult IsFormatSupported(VideoPixelFormat input_format,
 }  // namespace
 
 LibYUVImageProcessor::LibYUVImageProcessor(
-    const VideoFrameLayout& input_layout,
-    const gfx::Size& input_visible_size,
-    VideoFrame::StorageType input_storage_type,
-    const VideoFrameLayout& output_layout,
-    const gfx::Size& output_visible_size,
-    VideoFrame::StorageType output_storage_type,
+    const ImageProcessor::PortConfig& input_config,
+    const ImageProcessor::PortConfig& output_config,
     std::unique_ptr<VideoFrameMapper> video_frame_mapper,
     ErrorCB error_cb)
-    : ImageProcessor(input_layout,
-                     input_storage_type,
-                     output_layout,
-                     output_storage_type,
-                     OutputMode::IMPORT),
-      input_visible_rect_(input_visible_size),
-      output_visible_rect_(output_visible_size),
+    : ImageProcessor(input_config, output_config, OutputMode::IMPORT),
       video_frame_mapper_(std::move(video_frame_mapper)),
       error_cb_(error_cb),
       process_thread_("LibYUVImageProcessorThread") {}
@@ -83,7 +70,7 @@ LibYUVImageProcessor::~LibYUVImageProcessor() {
 std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
-    const ImageProcessor::OutputMode output_mode,
+    ImageProcessor::OutputMode output_mode,
     ErrorCB error_cb) {
   VLOGF(2);
 
@@ -94,7 +81,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
 #if defined(OS_LINUX)
     if (input_type == VideoFrame::STORAGE_DMABUFS) {
       video_frame_mapper = VideoFrameMapperFactory::CreateMapper(
-          input_config.layout.format(), true);
+          input_config.fourcc.ToVideoPixelFormat(), true);
       if (video_frame_mapper) {
         input_storage_type = input_type;
         break;
@@ -130,17 +117,21 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
     return nullptr;
   }
 
-  SupportResult res = IsFormatSupported(input_config.layout.format(),
-                                        output_config.layout.format());
+  SupportResult res =
+      IsFormatSupported(input_config.fourcc, output_config.fourcc);
   if (res == SupportResult::Unsupported) {
-    VLOGF(2) << "Conversion from " << input_config.layout.format() << " to "
-             << output_config.layout.format() << " is not supported";
+    VLOGF(2) << "Conversion from " << input_config.fourcc.ToString() << " to "
+             << output_config.fourcc.ToString() << " is not supported";
     return nullptr;
   }
 
   auto processor = base::WrapUnique(new LibYUVImageProcessor(
-      input_config.layout, input_config.visible_size, input_storage_type,
-      output_config.layout, output_config.visible_size, output_storage_type,
+      ImageProcessor::PortConfig(input_config.fourcc, input_config.size, {},
+                                 input_config.visible_size,
+                                 {input_storage_type}),
+      ImageProcessor::PortConfig(output_config.fourcc, output_config.size, {},
+                                 output_config.visible_size,
+                                 {output_storage_type}),
       std::move(video_frame_mapper),
       media::BindToCurrentLoop(std::move(error_cb))));
   if (res == SupportResult::SupportedWithPivot) {
@@ -160,7 +151,7 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   }
 
   VLOGF(2) << "LibYUVImageProcessor created for converting from "
-           << input_config.layout << " to " << output_config.layout;
+           << input_config.ToString() << " to " << output_config.ToString();
   return processor;
 }
 
@@ -170,11 +161,13 @@ bool LibYUVImageProcessor::ProcessInternal(
     FrameReadyCB cb) {
   DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
   DVLOGF(4);
-  DCHECK_EQ(input_frame->layout().format(), input_layout_.format());
-  DCHECK(input_frame->layout().coded_size() == input_layout_.coded_size());
-  DCHECK_EQ(output_frame->layout().format(), output_layout_.format());
-  DCHECK(output_frame->layout().coded_size() == output_layout_.coded_size());
-  DCHECK(input_storage_type_ == input_frame->storage_type() ||
+  DCHECK_EQ(input_frame->layout().format(),
+            input_config_.fourcc.ToVideoPixelFormat());
+  DCHECK(input_frame->layout().coded_size() == input_config_.size);
+  DCHECK_EQ(output_frame->layout().format(),
+            output_config_.fourcc.ToVideoPixelFormat());
+  DCHECK(output_frame->layout().coded_size() == output_config_.size);
+  DCHECK(input_config_.storage_type() == input_frame->storage_type() ||
          VideoFrame::IsStorageTypeMappable(input_frame->storage_type()));
   DCHECK(VideoFrame::IsStorageTypeMappable(output_frame->storage_type()));
 

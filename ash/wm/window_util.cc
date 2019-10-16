@@ -233,7 +233,8 @@ bool ShouldExcludeForOverview(const aura::Window* window) {
   // overview mode. The default snap position is the position where the window
   // was first snapped. See |default_snap_position_| in SplitViewController for
   // more detail.
-  auto* split_view_controller = SplitViewController::Get();
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
   if (split_view_controller->InTabletSplitViewMode() &&
       window == split_view_controller->GetDefaultSnappedWindow()) {
     return true;

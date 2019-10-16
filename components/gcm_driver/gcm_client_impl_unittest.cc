@@ -736,7 +736,7 @@ TEST_F(GCMClientImplTest, LoadingWithEmptyDirectory) {
 
   // Make the store directory empty, to simulate a previous destroy store
   // operation failing to delete the store directory.
-  ASSERT_TRUE(base::DeleteFile(gcm_store_path(), true /* recursive */));
+  ASSERT_TRUE(base::DeleteFileRecursively(gcm_store_path()));
   ASSERT_TRUE(base::CreateDirectory(gcm_store_path()));
 
   base::HistogramTester histogram_tester;

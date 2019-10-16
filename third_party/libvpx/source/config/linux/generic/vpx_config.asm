@@ -2,10 +2,15 @@
 @  using the ads2gas.pl script.
 	.syntax unified
 .equ VPX_ARCH_ARM ,  0
+.equ ARCH_ARM ,  0
 .equ VPX_ARCH_MIPS ,  0
+.equ ARCH_MIPS ,  0
 .equ VPX_ARCH_X86 ,  0
+.equ ARCH_X86 ,  0
 .equ VPX_ARCH_X86_64 ,  0
+.equ ARCH_X86_64 ,  0
 .equ VPX_ARCH_PPC ,  0
+.equ ARCH_PPC ,  0
 .equ HAVE_NEON ,  0
 .equ HAVE_NEON_ASM ,  0
 .equ HAVE_MIPS32 ,  0

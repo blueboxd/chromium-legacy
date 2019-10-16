@@ -26,33 +26,48 @@ const base::Feature kPreviews {
 const base::Feature kOfflinePreviews{"OfflinePreviews",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the NoScript previews for Android.
-const base::Feature kNoScriptPreviews {
-  "NoScriptPreviews",
+// Support for enabling NoScript previews which includes a base feature
+// and a UserConsistent-specific experiment feature.
+const base::FeatureState kNoScriptDefaultFeatureState =
 #if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
+    base::FEATURE_ENABLED_BY_DEFAULT;
 #else   // !defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
+    base::FEATURE_DISABLED_BY_DEFAULT;
 #endif  // defined(OS_ANDROID)
-};
+const base::Feature kNoScriptPreviews{"NoScriptPreviews",
+                                      kNoScriptDefaultFeatureState};
+const base::Feature kNoScriptPreviewsUserConsistentStudy{
+    "NoScriptPreviewsUserConsistentStudy", kNoScriptDefaultFeatureState};
 
 // Enables the Stale Previews timestamp on Previews infobars.
 const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the application of the resource loading hints when loading resources.
-const base::Feature kResourceLoadingHints {
-  "ResourceLoadingHints",
+// Support for enabling the application of the resource loading hints when
+// loading resources which includes a base feature and a UserConsistent-specific
+// experiment feature.
+const base::FeatureState kResourceLoadingHintsDefaultFeatureState =
 #if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
+    base::FEATURE_ENABLED_BY_DEFAULT;
 #else   // !defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
+    base::FEATURE_DISABLED_BY_DEFAULT;
 #endif  // defined(OS_ANDROID)
-};
+const base::Feature kResourceLoadingHints{
+    "ResourceLoadingHints", kResourceLoadingHintsDefaultFeatureState};
+const base::Feature kResourceLoadingHintsUserConsistentStudy{
+    "ResourceLoadingHintsUserConsistentStudy",
+    kResourceLoadingHintsDefaultFeatureState};
 
-// Enables client redirects to a server-rendered lite page preview.
-const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+// Support for enabling client redirects to a server-rendered lite page preview
+// which includes a base feature and a UserConsistent-specific experiment
+// feature.
+const base::FeatureState kLitePageServerPreviewsDefaultFeatureState =
+    base::FEATURE_DISABLED_BY_DEFAULT;
+const base::Feature kLitePageServerPreviews{
+    "LitePageServerPreviews", kLitePageServerPreviewsDefaultFeatureState};
+const base::Feature kLitePageServerPreviewsUserConsistentStudy{
+    "LitePageServerPreviewsUserConsistentStudy",
+    kLitePageServerPreviewsDefaultFeatureState};
 
 // Provides slow page triggering parameters.
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
@@ -74,9 +89,19 @@ const base::Feature kCoinFlipHoldback{"PreviewsCoinFlipHoldback_UKMOnly",
 const base::Feature kExcludedMediaSuffixes{"PreviewsExcludedMediaSuffixes",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables DeferAllScript previews.
+// Support for enabling DeferAllScript previews which includes a base feature
+// and a UserConsistent-specific experiment feature.
+const base::FeatureState kDeferAllScriptDefaultFeatureState =
+    base::FEATURE_DISABLED_BY_DEFAULT;
 const base::Feature kDeferAllScriptPreviews{"DeferAllScript",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            kDeferAllScriptDefaultFeatureState};
+const base::Feature kDeferAllScriptPreviewsUserConsistentStudy{
+    "DeferAllScriptUserConsistentStudy", kDeferAllScriptDefaultFeatureState};
+
+// Specifies whether the client is eligible to be part of a UserConsistent
+// study. That is, the UserConsistent-specific features should be considered.
+const base::Feature kEligibleForUserConsistentStudy{
+    "EligibleForUserConsistentStudy", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace previews

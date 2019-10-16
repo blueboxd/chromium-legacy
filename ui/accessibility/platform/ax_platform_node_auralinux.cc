@@ -1811,7 +1811,23 @@ gint GetIndexInParent(AtkObject* atk_object) {
   if (!parent)
     return -1;
 
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return -1;
+
   int n_children = atk_object_get_n_accessible_children(parent);
+
+  // Ask the delegate for the index in parent, and return it if it's plausible.
+  //
+  // Delegates are allowed to not implement this (AXPlatformNodeDelegateBase
+  // returns -1). Also, delegates may not know the correct answer if this
+  // node is the root of a tree that's embedded in another tree, in which
+  // case the delegate should return -1 and we'll compute it.
+  int index_in_parent = obj->GetDelegate()->GetIndexInParent();
+  if (index_in_parent >= 0 && index_in_parent < n_children)
+    return index_in_parent;
+
+  // Otherwise, search the parent's children.
   for (int i = 0; i < n_children; i++) {
     AtkObject* child = atk_object_ref_accessible_child(parent, i);
     g_object_unref(child);

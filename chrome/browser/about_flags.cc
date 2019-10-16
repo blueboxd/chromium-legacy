@@ -339,7 +339,9 @@ const FeatureEntry::Choice kUseAngleChoices[] = {
     {flag_descriptions::kUseAngleD3D11, switches::kUseANGLE,
      gl::kANGLEImplementationD3D11Name},
     {flag_descriptions::kUseAngleD3D9, switches::kUseANGLE,
-     gl::kANGLEImplementationD3D9Name}};
+     gl::kANGLEImplementationD3D9Name},
+    {flag_descriptions::kUseAngleD3D11on12, switches::kUseANGLE,
+     gl::kANGLEImplementationD3D11on12Name}};
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

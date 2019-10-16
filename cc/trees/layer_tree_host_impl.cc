@@ -5317,6 +5317,10 @@ void LayerTreeHostImpl::RegisterScrollbarAnimationController(
                                                        scrollbar_opacity);
 }
 
+void LayerTreeHostImpl::UnregisterScrollbarLayer(ElementId element_id) const {
+  scrollbar_controller_->DidUnregisterScrollbar(element_id);
+}
+
 void LayerTreeHostImpl::UnregisterScrollbarAnimationController(
     ElementId scroll_element_id) {
   scrollbar_animation_controllers_.erase(scroll_element_id);

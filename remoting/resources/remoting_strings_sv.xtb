@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Sessionen med <ph name="APPLICATION_NAME" /> har varit inaktiv en stund och kommer snart att kopplas från.</translation>
 <translation id="2317666076142640974">Få en förhandstitt på den nya <ph name="LINK_BEGIN" />webbappen Chrome Remote Desktop<ph name="LINK_END" />. Vi vill gärna höra vad du tycker!</translation>
 <translation id="2320166752086256636">Dölj tangentbordet</translation>
-<translation id="2332192922827071008">Öppna inställningarna</translation>
 <translation id="2353140552984634198">Du kan få säker åtkomst till den här datorn med Chromoting.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2366718077645204424">Det går inte att nå värden. Detta beror troligen på konfigurationen av nätverket som du använder.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Ansluten till <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chrome Remote Desktop på Öppna som fönster.</translation>
 <translation id="2540992418118313681">Vill du dela den här datorn så att en annan användare kan visa och styra den?</translation>
-<translation id="254771646005658629">Tillåt fjärranvändare att styra denna Mac</translation>
 <translation id="2579271889603567289">Värden kraschade eller gick inte att starta.</translation>
 <translation id="2599300881200251572">Med den här tjänsten aktiveras inkommande anslutningar från Chrome Remote Desktop-klienter.</translation>
 <translation id="2647232381348739934">Tjänsten Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Det gick inte att återställa programmet. Du kan fortfarande skicka en felrapport.</translation>
 <translation id="5419418238395129586">Senast online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Värdenheten har stängts av.</translation>
-<translation id="5463789431147491241">Om du vill använda <ph name="PRODUCT_NAME" /> på denna Mac följer du dessa steg:
-
-Välj <ph name="BUTTON_NAME" /> nedan. Markera kryssrutan bredvid <ph name="SERVICE_SCRIPT_NAME" /> på inställningspanelen Säkerhet och sekretess.
-
-Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och markerar den på nytt.</translation>
 <translation id="5510035215749041527">Koppla från nu</translation>
 <translation id="5593560073513909978">Tjänsten är inte tillgänglig för närvarande. Försök igen senare.</translation>
 <translation id="5601503069213153581">PIN-kod</translation>

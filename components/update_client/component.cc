@@ -83,7 +83,7 @@ void InstallComplete(
              InstallOnBlockingTaskRunnerCompleteCallback callback,
              const base::FilePath& unpack_path,
              const CrxInstaller::Result& result) {
-            base::DeleteFile(unpack_path, true);
+            base::DeleteFileRecursively(unpack_path);
             const ErrorCategory error_category =
                 result.error ? ErrorCategory::kInstall : ErrorCategory::kNone;
             main_task_runner->PostTask(

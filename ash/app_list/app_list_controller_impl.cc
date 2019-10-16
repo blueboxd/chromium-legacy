@@ -655,7 +655,7 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
   // expected if it's enabled and we're still in tablet mode.
   // https://crbug.com/900956.
   const bool should_be_shown = IsTabletMode();
-  if (should_be_shown == GetTargetVisibility())
+  if (should_be_shown == presenter_.GetTargetVisibility())
     return;
 
   if (should_be_shown)

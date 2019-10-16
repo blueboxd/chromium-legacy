@@ -28,6 +28,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/font_list.h"
@@ -301,6 +302,9 @@ class DownloadItemView : public views::InkDropHostView,
   // the text width.
   base::string16 ElidedFilename();
 
+  // Opens a file while async scanning is still pending.
+  void OpenDownloadDuringAsyncScanning();
+
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
 
@@ -410,7 +414,17 @@ class DownloadItemView : public views::InkDropHostView,
   base::FilePath last_download_item_path_;
 
   // Deep scanning mode label.
-  views::Label* deep_scanning_label_;
+  views::Label* deep_scanning_label_ = nullptr;
+
+  // Deep scanning open now button.
+  views::MdTextButton* open_now_button_ = nullptr;
+
+  // Whether the user has selected "open now" on a download pending asynchronous
+  // scanning.
+  bool should_open_while_scanning_ = false;
+
+  // Deep scanning modal dialog confirming choice to "open now".
+  TabModalConfirmDialog* open_now_modal_dialog_;
 
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.

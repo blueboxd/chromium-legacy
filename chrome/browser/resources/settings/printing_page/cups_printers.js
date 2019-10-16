@@ -156,7 +156,7 @@ Polymer({
    * }>} event
    * @private
    */
-   openResultToast_: function(event) {
+  openResultToast_: function(event) {
     const printerName = event.detail.printerName;
     switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:

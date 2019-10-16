@@ -37,6 +37,7 @@ target(link_target_type, "gpu_sources") {
   sources = [
     "gpu_child_thread.cc",
     "gpu_child_thread.h",
+    "gpu_child_thread_receiver_bindings.cc",
     "gpu_main.cc",
     "gpu_process.cc",
     "gpu_process.h",

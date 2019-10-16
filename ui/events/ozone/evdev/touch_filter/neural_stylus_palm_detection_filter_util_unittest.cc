@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util.h"
 
+#include <algorithm>
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -48,6 +50,18 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistilledNocturneTest) {
   EXPECT_TRUE(nocturne_distilled.minor_radius_supported);
   EXPECT_FLOAT_EQ(nocturne_distilled.minor_radius_res,
                   nocturne_touchscreen_.GetAbsResolution(ABS_MT_TOUCH_MINOR));
+}
+
+TEST_F(NeuralStylusPalmDetectionFilterUtilTest, NoMinorResTest) {
+  // Nocturne has minor resolution: but lets pretend it didnt. we should recover
+  // "1" as the resolution.
+  auto abs_info = nocturne_touchscreen_.GetAbsInfoByCode(ABS_MT_TOUCH_MINOR);
+  abs_info.resolution = 0;
+  nocturne_touchscreen_.SetAbsInfo(ABS_MT_TOUCH_MINOR, abs_info);
+  const DistilledDevInfo nocturne_distilled =
+      DistilledDevInfo::Create(nocturne_touchscreen_);
+  EXPECT_EQ(1, nocturne_distilled.minor_radius_res);
+  EXPECT_EQ(1, nocturne_distilled.major_radius_res);
 }
 
 TEST_F(NeuralStylusPalmDetectionFilterUtilTest, DistillerKohakuTest) {
@@ -134,6 +148,8 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeTest) {
     ASSERT_FLOAT_EQ(expected_centroid.x(), stroke.GetCentroid().x())
         << "failed at i " << i;
   }
+  stroke.SetTrackingId(55);
+  EXPECT_EQ(55, stroke.tracking_id());
 }
 
 TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeBiggestSizeTest) {
@@ -148,6 +164,7 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeBiggestSizeTest) {
     touch_.major = 2 + i;
     touch_.minor = 1 + i;
     Sample s(touch_, t, nocturne_distilled);
+    EXPECT_EQ(static_cast<uint64_t>(i), stroke.samples_seen());
     stroke.AddSample(std::move(s));
     EXPECT_FLOAT_EQ((1 + i) * (2 + i), stroke.BiggestSize());
 
@@ -155,6 +172,7 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeBiggestSizeTest) {
     second_s.minor_radius = 0;
     no_minor_stroke.AddSample(std::move(second_s));
     EXPECT_FLOAT_EQ((2 + i) * (2 + i), no_minor_stroke.BiggestSize());
+    EXPECT_EQ(std::min(3ul, 1ul + i), stroke.samples().size());
   }
 }
 

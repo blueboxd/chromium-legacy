@@ -57,8 +57,8 @@ public class SuggestionTileController extends ElementController {
     }
 
     private static final IUi2Locator LOCATOR_TILE_TITLES =
-            Ui2Locators.withPath(Ui2Locators.withResEntries(R.id.tile_grid_layout),
-                    Ui2Locators.withResEntries(R.id.tile_view_title));
+            Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.tile_grid_layout),
+                    Ui2Locators.withAnyResEntry(R.id.tile_view_title));
     private static final IUi2Locator LOCATOR_TILE_TITLE_TEXT = Ui2Locators.withTextRegex(".+");
 
     private static final SuggestionTileController sInstance = new SuggestionTileController();

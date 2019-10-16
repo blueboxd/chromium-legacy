@@ -209,6 +209,53 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
       paint_value->GetImage(*target, GetDocument(), style, target_size));
 }
 
+// Regression test for crbug.com/998439. The problem is that GetImage is called
+// on a new document. This test simulates the situation by having two different
+// documents and call GetImage on different ones.
+TEST_P(CSSPaintValueTest, GetImageCalledOnMultipleDocuments) {
+  const FloatSize target_size(100, 100);
+
+  SetBodyInnerHTML(R"HTML(<div id="target"></div>)HTML");
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  const ComputedStyle& style = *target->Style();
+
+  auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
+  CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
+
+  EXPECT_EQ(paint_value->NumberOfGeneratorsForTesting(), 0u);
+  paint_value->GetImage(*target, GetDocument(), style, target_size);
+  // A new generator should be created if there is no generator exists.
+  EXPECT_EQ(paint_value->NumberOfGeneratorsForTesting(), 1u);
+
+  auto new_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  // Call GetImage on a new Document should not crash.
+  paint_value->GetImage(*target, new_page_holder->GetDocument(), style,
+                        target_size);
+  EXPECT_EQ(paint_value->NumberOfGeneratorsForTesting(), 2u);
+}
+
+TEST_P(CSSPaintValueTest, NativeInvalidationPropertiesWithNoGenerator) {
+  SetBodyInnerHTML(R"HTML(<div id="target"></div>)HTML");
+
+  auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
+  CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
+
+  EXPECT_EQ(paint_value->NumberOfGeneratorsForTesting(), 0u);
+  // There is no generator, so returning a nullptr.
+  EXPECT_EQ(paint_value->NativeInvalidationProperties(GetDocument()), nullptr);
+}
+
+TEST_P(CSSPaintValueTest, CustomInvalidationPropertiesWithNoGenerator) {
+  SetBodyInnerHTML(R"HTML(<div id="target"></div>)HTML");
+
+  auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
+  CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
+
+  EXPECT_EQ(paint_value->NumberOfGeneratorsForTesting(), 0u);
+  // There is no generator, so returning a nullptr.
+  EXPECT_EQ(paint_value->CustomInvalidationProperties(GetDocument()), nullptr);
+}
+
 TEST_P(CSSPaintValueTest, PrintingMustFallbackToMainThread) {
   if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
     return;

@@ -32,7 +32,7 @@ public class ArticleCardController extends ElementController {
      * Represents a single article, can be used by the NewTabPageController
      * to perform actions.
      */
-    static public class Info {
+    public static class Info {
         private final String mHeadline, mPublisher, mAge;
         private final ImplementationType mImplType;
 
@@ -83,9 +83,9 @@ public class ArticleCardController extends ElementController {
         }
     }
 
-    private static abstract class ArticleImpl {
-        abstract public List<Info> parseScreenForArticles(UiLocatorHelper locatorHelper);
-        abstract public IUi2Locator getLocator(Info cardInfo);
+    private abstract static class ArticleImpl {
+        public abstract List<Info> parseScreenForArticles(UiLocatorHelper locatorHelper);
+        public abstract IUi2Locator getLocator(Info cardInfo);
         protected List<Info> parseScreenForArticles(final UiLocatorHelper locatorHelper,
                 final ImplementationType implementationType, final IUi2Locator cardsLocator,
                 final IUi2Locator headlineLocator, final IUi2Locator publisherLocator,
@@ -104,15 +104,16 @@ public class ArticleCardController extends ElementController {
                             } else if (isLastAttempt) {
                                 return null;
                             } else {
-                                if (headline == null)
+                                if (headline == null) {
                                     throw new UiLocationException(
                                             "Headline not found.", headlineLocator, articleCard);
-                                else if (publisher == null)
+                                } else if (publisher == null) {
                                     throw new UiLocationException(
                                             "Publisher not found.", publisherLocator, articleCard);
-                                else
+                                } else {
                                     throw new UiLocationException(
                                             "Age not found.", ageLocator, articleCard);
+                                }
                             }
                         }
                     });
@@ -122,11 +123,11 @@ public class ArticleCardController extends ElementController {
     private static class FeedArticleImpl extends ArticleImpl {
         private static final IUi2Locator LOCATOR_NON_EMPTY_STRING = withTextRegex(".+");
         private static final IUi2Locator LOCATOR_CARDS = Ui2Locators.withPath(
-                Ui2Locators.withResEntries(R.id.content),
-                Ui2Locators.withResEntries(com.google.android.libraries.feed.basicstream.R.id
-                                                   .feed_stream_recycler_view),
-                Ui2Locators.withResEntries(com.google.android.libraries.feed.basicstream.internal
-                                                   .viewholders.R.id.feed_content_card));
+                Ui2Locators.withAnyResEntry(R.id.content),
+                Ui2Locators.withAnyResEntry(com.google.android.libraries.feed.basicstream.R.id
+                                                    .feed_stream_recycler_view),
+                Ui2Locators.withAnyResEntry(com.google.android.libraries.feed.basicstream.internal
+                                                    .viewholders.R.id.feed_content_card));
         private static final IUi2Locator LOCATOR_HEADLINE =
                 Ui2Locators.withPath(Ui2Locators.withChildIndex(0, 6), LOCATOR_NON_EMPTY_STRING);
         private static final IUi2Locator LOCATOR_PUBLISHER =
@@ -148,13 +149,14 @@ public class ArticleCardController extends ElementController {
 
     private static class ZineArticleImpl extends ArticleImpl {
         private static final IUi2Locator LOCATOR_CARDS =
-                Ui2Locators.withPath(Ui2Locators.withResEntries(R.id.content),
-                        Ui2Locators.withResEntries(R.id.card_contents));
+                Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.content),
+                        Ui2Locators.withAnyResEntry(R.id.card_contents));
         private static final IUi2Locator LOCATOR_HEADLINE =
-                Ui2Locators.withResEntries(R.id.article_headline);
+                Ui2Locators.withAnyResEntry(R.id.article_headline);
         private static final IUi2Locator LOCATOR_PUBLISHER =
-                Ui2Locators.withResEntries(R.id.article_publisher);
-        private static final IUi2Locator LOCATOR_AGE = Ui2Locators.withResEntries(R.id.article_age);
+                Ui2Locators.withAnyResEntry(R.id.article_publisher);
+        private static final IUi2Locator LOCATOR_AGE =
+                Ui2Locators.withAnyResEntry(R.id.article_age);
         @Override
         public List<Info> parseScreenForArticles(UiLocatorHelper locatorHelper) {
             return parseScreenForArticles(locatorHelper, ImplementationType.ZINE, LOCATOR_CARDS,

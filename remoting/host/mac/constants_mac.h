@@ -21,7 +21,7 @@ extern const char kHostConfigFilePath[];
 // service.
 // It is also used (as non-root) to provide version information for the
 // installed host components.
-extern const char kHostHelperScriptPath[];
+extern const char kHostServiceBinaryPath[];
 
 // Path to the old host helper script, which is still used after user updates
 // their host on macOS 10.14.*.

@@ -2554,15 +2554,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
   SurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
+// TODO(crbug/1014602): NestedSurfaceHitTestTest is flaky.
+
 // Test that mouse events are being routed to the correct RenderWidgetHostView
 // when there are nested out-of-process iframes.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       NestedSurfaceHitTestTest) {
+                       DISABLED_NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
-                       NestedSurfaceHitTestTest) {
+                       DISABLED_NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
@@ -6279,7 +6281,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
-                       NestedSurfaceHitTestTest) {
+                       DISABLED_NestedSurfaceHitTestTest) {
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 

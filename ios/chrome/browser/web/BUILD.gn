@@ -384,6 +384,7 @@ source_set("eg2_tests") {
     "http_auth_egtest.mm",
     "js_print_egtest.mm",
     "navigation_egtest.mm",
+    "tab_order_egtest.mm",
     "visible_url_egtest.mm",
   ]
 

@@ -285,6 +285,7 @@ jumbo_split_static_library("browser") {
     "chrome_content_browser_client.cc",
     "chrome_content_browser_client.h",
     "chrome_content_browser_client_parts.h",
+    "chrome_content_browser_client_receiver_bindings.cc",
     "chrome_notification_types.h",
     "chrome_quota_permission_context.cc",
     "chrome_quota_permission_context.h",

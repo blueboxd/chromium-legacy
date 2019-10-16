@@ -63,6 +63,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGaiaActionButtons;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kGesturePropertiesDBusService;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kHelpAppV2;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kImeInputLogicHmm;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

@@ -347,9 +347,9 @@
 <translation id="1509281256533087115">Fikia <ph name="DEVICE_NAME_AND_VENDOR" /> yoyote kupitia USB</translation>
 <translation id="150962533380566081">PUK si sahihi.</translation>
 <translation id="1510030919967934016">Ukurasa huu umezuiwa kufuata mahali ulipo.</translation>
-<translation id="1510055949674985293">Tengeneza msimbo wa QR wa Picha hii</translation>
+<translation id="1510055949674985293">Pata msimbo wa QR wa Picha hii</translation>
 <translation id="1510238584712386396">Kizindua</translation>
-<translation id="1510581003097415337">Tengeneza msimbo wa QR wa ukurasa huu</translation>
+<translation id="1510581003097415337">Pata msimbo wa QR wa ukurasa huu</translation>
 <translation id="1510785804673676069">Ukitumia seva ya proksi, angalia mipangilio yako ya proksi au wasiliana na msimamizi wako wa mtandao ili kuhakikisha kuwa seva ya proksi inafanya kazi. Ikiwa huamini kuwa unafaa kuwa ukitumia seva ya proksi, rekebisha <ph name="LINK_START" />mipangilio yako ya proksi<ph name="LINK_END" />.</translation>
 <translation id="1511997356770098059">Ufunguo huu wa usalama hauwezi kuhifadhi data yoyote ya kuingia katika akaunti</translation>
 <translation id="1512210426710821809">Njia pekee ya kutendua hili ni kusakinisha tena <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
@@ -628,7 +628,7 @@
 <translation id="1895658205118569222">Funga</translation>
 <translation id="1895934970388272448">Lazima uthibitishe usajili kwenye printa yako ili umalize mchakato huu - angalia sasa.</translation>
 <translation id="1899826437968063457">Plugin VM inataka ruhusa ili itekeleze shughuli</translation>
-<translation id="1900305421498694955">Huenda programu kwenye Google Play zikahitaji ufikiaji kamili wa mfumo wa faili ili kusoma na kuandika faili kwenye vifaa vya hifadhi ya nje. Faili na folda zinazotengenezwa kwenye kifaa huonekana kwa mtu yeyote anayetumia hifadhi ya nje. <ph name="LINK_BEGIN" />Pata maelezo zaidi<ph name="LINK_END" /></translation>
+<translation id="1900305421498694955">Huenda programu kwenye Google Play zikahitaji ufikiaji kamili wa mfumo wa faili ili kusoma na kuandika faili kwenye vifaa vya hifadhi ya nje. Faili na folda mpya zinazoongezwa kwenye kifaa huonekana kwa mtu yeyote anayetumia hifadhi ya nje. <ph name="LINK_BEGIN" />Pata maelezo zaidi<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Chagua &amp;yote</translation>
 <translation id="1901984611178952431">Dhibiti data ya kuingia katika akaunti</translation>
 <translation id="1902576642799138955">Kipindi cha Uhalali</translation>
@@ -3554,7 +3554,7 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="6225475702458870625">Muunganisho wa data unapatikana kutoka kwenye <ph name="PHONE_NAME" /> yako</translation>
 <translation id="6226777517901268232">Faili ya ufunguo binafsi (hiari)</translation>
 <translation id="6228691855869374890">Tovuti hii ina udhibiti kamili wa vifaa vya MIDI.</translation>
-<translation id="6228720835160974792">Tengeneza msimbo wa QR wa picha hii</translation>
+<translation id="6228720835160974792">Pata msimbo wa QR wa picha hii</translation>
 <translation id="6229890768313448549">Sheria na Masharti ya Google Play hayawezi kupakiwa. Tafadhali jaribu tena.</translation>
 <translation id="6231881193380278751">Ongeza hoja katika URL ili kuonyesha upya ukurasa kiotomatiki: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">Betri</translation>
@@ -4150,7 +4150,7 @@ Hakikisha kwamba unaamini tovuti hii kabla ya kuingia katika VR.</translation>
 <translation id="7121728544325372695">Dashi Mahiri</translation>
 <translation id="7123360114020465152">Haitumiki tena</translation>
 <translation id="7127980134843952133">Historia ya upakuaji</translation>
-<translation id="7128239828194367697">Tengeneza msimbo wa QR wa Ukurasa huu</translation>
+<translation id="7128239828194367697">Pata msimbo wa QR wa ukurasa huu</translation>
 <translation id="7131040479572660648">Soma data yako kwenye <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, na <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Ongeza ukura&amp;sa...</translation>
 <translation id="7133578150266914903">Msimamizi wako anarejesha mipangilio ya awali ya kifaa hiki (<ph name="PROGRESS_PERCENT" />)</translation>

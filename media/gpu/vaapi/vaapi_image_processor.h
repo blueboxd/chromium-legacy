@@ -39,8 +39,8 @@ class VaapiImageProcessor : public ImageProcessor {
   bool Reset() override;
 
  private:
-  VaapiImageProcessor(const VideoFrameLayout& input_layout,
-                      const VideoFrameLayout& output_layout,
+  VaapiImageProcessor(const ImageProcessor::PortConfig& input_config,
+                      const ImageProcessor::PortConfig& output_config,
                       scoped_refptr<VaapiWrapper> vaapi_wrapper);
 
   // ImageProcessor implementation.

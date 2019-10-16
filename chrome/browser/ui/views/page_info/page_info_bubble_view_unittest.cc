@@ -88,9 +88,6 @@ class PageInfoBubbleViewTestApi {
   views::Widget::ClosedReason closed_reason() const { return *closed_reason_; }
 
   base::string16 GetWindowTitle() { return view_->GetWindowTitle(); }
-  PageInfoUI::SecurityDescription GetSecurityDetails() {
-    return view_->GetSecurityDetails();
-  }
 
   PermissionSelectorRow* GetPermissionSelectorAt(int index) {
     return view_->selector_rows_[index].get();
@@ -685,8 +682,6 @@ TEST_F(PageInfoBubbleViewTest, OpenPageInfoBubbleAfterNavigationStart) {
   api_->CreateView();
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_NOT_SECURE_SUMMARY),
             api_->GetWindowTitle());
-  EXPECT_EQ(PageInfoUI::SecurityDescriptionType::CONNECTION,
-            api_->GetSecurityDetails().type);
 
   // Set up a test SSLInfo so that Page Info sees the connection as secure.
   uint16_t cipher_suite = 0xc02f;  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
@@ -705,8 +700,6 @@ TEST_F(PageInfoBubbleViewTest, OpenPageInfoBubbleAfterNavigationStart) {
   navigation->Commit();
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_SUMMARY),
             api_->GetWindowTitle());
-  EXPECT_EQ(PageInfoUI::SecurityDescriptionType::CONNECTION,
-            api_->GetSecurityDetails().type);
 }
 
 TEST_F(PageInfoBubbleViewTest, EnsureCloseCallback) {

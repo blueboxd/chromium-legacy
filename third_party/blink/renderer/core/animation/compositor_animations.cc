@@ -270,7 +270,8 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             // If a custom property is not used by CSS Paint, then we should not
             // support that on the compositor thread.
             if (!layout_object->Style()->HasCSSPaintImagesUsingCustomProperty(
-                    property.CustomPropertyName()))
+                    property.CustomPropertyName(),
+                    layout_object->GetDocument()))
               reasons |= kUnsupportedCSSProperty;
             // TODO: Add support for keyframes containing different types
             if (keyframes.front()->GetCompositorKeyframeValue()->GetType() !=

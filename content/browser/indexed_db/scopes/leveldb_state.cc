@@ -5,7 +5,7 @@
 #include "content/browser/indexed_db/scopes/leveldb_state.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 
 namespace content {
@@ -65,8 +65,8 @@ LevelDBState::~LevelDBState() {
     return;
   base::TimeTicks begin_time = base::TimeTicks::Now();
   const_cast<std::unique_ptr<leveldb::DB>*>(&db_)->reset();
-  UMA_HISTOGRAM_MEDIUM_TIMES("WebCore.IndexedDB.LevelDB.CloseTime",
-                             base::TimeTicks::Now() - begin_time);
+  base::UmaHistogramMediumTimes("WebCore.IndexedDB.LevelDB.CloseTime",
+                                base::TimeTicks::Now() - begin_time);
 }
 
 }  // namespace content

@@ -137,8 +137,8 @@ class SingleTestRunner(object):
     def _run_compare_test(self):
         """Runs the signle test and returns test result."""
         driver_output = self._driver.run_test(self._driver_input())
-        baseline_output = self._expected_driver_output()
-        failures = self._compare_output(baseline_output, driver_output)
+        expected_driver_output = self._expected_driver_output()
+        failures = self._compare_output(expected_driver_output, driver_output)
 
         return build_test_result(
             driver_output, self._test_name, retry_attempt=self._retry_attempt,
@@ -151,10 +151,10 @@ class SingleTestRunner(object):
         --copy-baselines are specified in the command line. If --reset-results,
         in the returned result we treat baseline mismatch as success."""
         driver_output = self._driver.run_test(self._driver_input())
-        baseline_output = self._expected_driver_output()
+        expected_driver_output = self._expected_driver_output()
 
         all_failures = self._compare_output(
-            baseline_output, driver_output)
+            expected_driver_output, driver_output)
 
         if self._options.reset_results:
             # Only report leaks, timeouts and crashes and treat all other

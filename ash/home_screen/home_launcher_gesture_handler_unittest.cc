@@ -75,6 +75,10 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
     GetGestureHandler()->OnPressEvent(mode, press_location);
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherGestureHandlerTest);
 };
@@ -307,10 +311,9 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   // Snap one window and leave overview mode open with the other window.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   ASSERT_TRUE(overview_controller->InOverviewSession());
-  ASSERT_TRUE(split_view_controller->InSplitViewMode());
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
 
   const int window2_initial_translation =
       window2->transform().To2dTranslation().y();
@@ -331,7 +334,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   EXPECT_EQ(window2_initial_translation,
             window2->transform().To2dTranslation().y());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Tests that after releasing on the top half, overivew and splitview have
   // both been exited, and both windows are minimized to show the home launcher.
@@ -339,7 +342,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100),
                                       /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
 }
@@ -353,10 +356,10 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   auto window2 = CreateWindowForTesting();
 
   // Snap two windows to start.
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  ASSERT_TRUE(split_view_controller->InSplitViewMode());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Make |window1| the most recent used window. It should be the main window in
   // HomeLauncherGestureHandler.
@@ -376,14 +379,14 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
                                       /*velocity_y=*/base::nullopt);
   EXPECT_EQ(window1->transform(), gfx::Transform());
   EXPECT_EQ(window2->transform(), gfx::Transform());
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Tests that after releasing on the bottom half, splitview has been ended,
   // and the two windows have been minimized to show the home launcher.
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100),
                                       /*velocity_y=*/base::nullopt);
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
 }
@@ -466,9 +469,9 @@ TEST_F(HomeLauncherGestureHandlerTest, DraggedActiveWindow) {
   // Test in splitview, depends on the drag position, the active dragged window
   // might be different.
   auto window2 = CreateWindowForTesting();
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   EXPECT_EQ(GetGestureHandler()->GetActiveWindow(), window1.get());
@@ -481,7 +484,7 @@ TEST_F(HomeLauncherGestureHandlerTest, DraggedActiveWindow) {
   GetGestureHandler()->OnReleaseEvent(shelf_bounds.bottom_right(),
                                       /*velocity_y=*/base::nullopt);
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
-  split_view_controller->EndSplitView();
+  split_view_controller()->EndSplitView();
 
   // In overview, drag from shelf is a no-op.
   Shell::Get()->overview_controller()->StartOverview();
@@ -515,9 +518,9 @@ TEST_F(HomeLauncherGestureHandlerTest, HideWindowDuringWindowDragging) {
   EXPECT_TRUE(window3->IsVisible());
 
   // In splitview mode, the snapped windows will stay visible during dragging.
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   EXPECT_EQ(GetGestureHandler()->GetActiveWindow(), window1.get());
@@ -579,11 +582,11 @@ TEST_F(HomeLauncherGestureHandlerTest, NoOpInOverview) {
 
   // In splitview + overview case, drag from shelf in the overview side of the
   // screen also does nothing.
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
   overview_controller->StartOverview();
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_FALSE(GetGestureHandler()->OnPressEvent(
       Mode::kDragWindowToHomeOrOverview, shelf_bounds.bottom_right()));
@@ -648,9 +651,8 @@ TEST_F(HomeLauncherGestureHandlerTest, MayOrMayNotReShowHiddenWindows) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 200), base::nullopt);
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window1.get()));
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
   EXPECT_FALSE(window2->IsVisible());
 }
 
@@ -753,9 +755,9 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
 
   // The same thing should happen if splitview mode is active.
   auto window2 = CreateWindowForTesting();
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.f, 1.f);
@@ -764,7 +766,7 @@ TEST_F(HomeLauncherGestureHandlerTest, RestoreWindowToOriginalBounds) {
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 400), base::nullopt);
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(split_view_controller->left_window(), window.get());
+  EXPECT_EQ(split_view_controller()->left_window(), window.get());
 }
 
 // Test that in kDragWindowToHomeOrOverview mode, if overview is active and
@@ -813,59 +815,59 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
 
   auto window1 = CreateWindowForTesting();
   auto window2 = CreateWindowForTesting();
-  SplitViewController* split_view_controller = SplitViewController::Get();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // If the window is only dragged for a small distance:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(100, 350), base::nullopt);
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window1.get()));
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
 
   // If the window is dragged for a long distance:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(100, 200), base::nullopt);
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
       window1.get()));
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
-  EXPECT_FALSE(split_view_controller->IsWindowInSplitView(window1.get()));
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
   overview_controller->EndOverview();
 
   // If the window is flung with a small velocity:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(100, 350),
       base::make_optional(
           -DragWindowFromShelfController::kVelocityToOverviewThreshold + 10));
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window1.get()));
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
 
   // If the window is flung with a large velocity:
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.bottom_left());
   GetGestureHandler()->OnScrollEvent(gfx::Point(100, 200), 0.f, 1.f);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(
       gfx::Point(100, 350),
@@ -874,9 +876,9 @@ TEST_F(HomeLauncherGestureHandlerTest, DragOrFlingInSplitView) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
       window1.get()));
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
-  EXPECT_FALSE(split_view_controller->IsWindowInSplitView(window1.get()));
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
   overview_controller->EndOverview();
 }
 

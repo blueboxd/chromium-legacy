@@ -75,7 +75,7 @@ VersionedTestInstaller::VersionedTestInstaller() {
 }
 
 VersionedTestInstaller::~VersionedTestInstaller() {
-  base::DeleteFile(install_directory_, true);
+  base::DeleteFileRecursively(install_directory_);
 }
 
 void VersionedTestInstaller::Install(const base::FilePath& unpack_path,

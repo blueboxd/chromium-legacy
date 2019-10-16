@@ -39,7 +39,6 @@
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="1900795423379050516">このページに設定が表示されない場合は、<ph name="LINK_BEGIN" />
       Chrome ブラウザの設定<ph name="LINK_END" />を確認してください</translation>
-<translation id="1915828456209461693">Chrome の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="1919130412786645364">Chrome へのログインを許可する</translation>
 <translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
 <translation id="2094919256425865063">今すぐ Chrome を終了しますか？</translation>
@@ -55,7 +54,6 @@
 <translation id="2467438592969358367">Google Chrome からパスワードをエクスポートするための許可を求められています。許可するには Windows のパスワードを入力してください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="2534507159460261402">Google Pay（Chrome にコピー）</translation>
-<translation id="2535429035253759792">管理者が、このアップデートを適用するために Chrome を再起動するよう求めています</translation>
 <translation id="2580411288591421699">実行中の Google Chrome と同じバージョンをインストールすることはできません。Google Chrome を閉じてからもう一度お試しください。</translation>
 <translation id="2586406160782125153">このデバイスから閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="2588322182880276190">Chrome ロゴ</translation>
@@ -209,7 +207,6 @@
 <translation id="7855730255114109580">Google Chrome は最新版です</translation>
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="7896673875602241923">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chrome にログインしました。情報を個別に保持するには、新しい Chrome ユーザーを作成してください。</translation>
-<translation id="7908168227788431038">Google Chrome を再起動して更新を完了してください。</translation>
 <translation id="7962410387636238736">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません</translation>
 <translation id="8008534537613507642">Chrome を再インストール</translation>
 <translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
@@ -232,7 +229,6 @@
 <translation id="8679801911857917785">この拡張機能では、Chrome の起動時に表示されるページも制御されます。</translation>
 <translation id="870251953148363156">Google Chrome を更新(&amp;G)</translation>
 <translation id="873133009373065397">Google Chrome では既定のブラウザを判定または設定できません</translation>
-<translation id="8736674169840206667">管理者が、アップデートを適用するために Chrome を再起動するよう求めています</translation>
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>

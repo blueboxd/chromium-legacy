@@ -22,23 +22,37 @@ function openPickerCallback() {
     descriptionContainer.append('Popup opened.', document.createElement('br'));
     popupWindow.focus();
     const popupDocument = popupWindow.document;
-    const focusableElements = popupDocument
-        .querySelectorAll('color-value-container:not(.hidden-color-value-container) > input, ' +
-                          '[tabindex]:not([tabindex=\'-1\'])');
-    for(let i = 0; i < focusableElements.length; i++) {
-      eventSender.keyDown('Tab');
-      if (popupDocument.activeElement.hasAttribute('id')) {
-        descriptionContainer.append(popupDocument.activeElement.getAttribute('id').toUpperCase());
-      } else {
-        descriptionContainer.append(popupDocument.activeElement.tagName);
-      }
-      descriptionContainer.append(document.createElement('br'));
-    }
+    const formatToggler = popupDocument.querySelector('format-toggler');
+    tabNavigateAndLogFocusableElements(popupDocument);
+    changeActiveColorFormat(formatToggler);
+    tabNavigateAndLogFocusableElements(popupDocument);
+    changeActiveColorFormat(formatToggler);
+    tabNavigateAndLogFocusableElements(popupDocument);
   } else {
     descriptionContainer.append('Popup did not open.', document.createElement('br'));
   }
   descriptionContainer.append('TEST COMPLETE');
   testRunner.notifyDone();
+}
+
+function changeActiveColorFormat(formatToggler) {
+  formatToggler.click();  // first click changes format to HSL, second click changes format to Hex
+  descriptionContainer.append(formatToggler.tagName + ' clicked. Active color format changed.', document.createElement('br'));
+}
+
+function tabNavigateAndLogFocusableElements(popupDocument) {
+  const focusableElements = popupDocument
+      .querySelectorAll('color-value-container:not(.hidden-color-value-container) > input, ' +
+                        '[tabindex]:not([tabindex=\'-1\'])');
+  for(let i = 0; i < focusableElements.length; i++) {
+    eventSender.keyDown('Tab');
+    if (popupDocument.activeElement.hasAttribute('id')) {
+      descriptionContainer.append(popupDocument.activeElement.getAttribute('id').toUpperCase());
+    } else {
+      descriptionContainer.append(popupDocument.activeElement.tagName);
+    }
+    descriptionContainer.append(document.createElement('br'));
+  }
 }
 </script>
 </body>

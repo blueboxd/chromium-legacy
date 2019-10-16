@@ -65,9 +65,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
     kUnsnappableWindowActivated,
     kActiveUserChanged,
     kWindowDragStarted,
-    // TODO(edcourtney): Consider not ending Split-View on PIP expand.
-    // See crbug.com/950827.
-    kPipExpanded,
     kExitTabletMode,
     // Splitview is being ended due to a change in Virtual Desks, such as
     // switching desks or removing a desk.
@@ -94,12 +91,16 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
     kBothSnapped,
   };
 
-  // For now, there is only one |SplitViewController|, regardless of whether the
-  // |ash::features::kMultiDisplayOverviewAndSplitView| feature flag is enabled.
-  // TODO(crbug.com/970013): When the feature flag is enabled, there shall be a
-  // |SplitViewController| for each root window. Instead of Get, this function
-  // shall be ForWindow, similar to |RootWindowController::ForWindow|.
-  static SplitViewController* Get();
+  // Gets the |SplitViewController| for the root window of |window|. |window| is
+  // important in clamshell mode. In tablet mode, the working assumption for now
+  // is mirror mode (or just one display), and so |window| can be almost any
+  // window and it does not matter. For code that only applies to tablet mode,
+  // you may simply use the primary root (see |Shell::GetPrimaryRootWindow|).
+  // The user actually can go to the display settings while in tablet mode and
+  // choose extend; we just are not yet trying to support it really well. When
+  // the |ash::features::kMultiDisplayOverviewAndSplitView| feature flag is
+  // disabled, |window| is ignored as there is only one |SplitViewController|.
+  static SplitViewController* Get(const aura::Window* window);
 
   explicit SplitViewController(aura::Window* root_window);
   ~SplitViewController() override;

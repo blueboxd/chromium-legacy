@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">A(z) <ph name="APPLICATION_NAME" /> munkamenete egy ideje inaktív, ezért a rendszer rövidesen leválasztja.</translation>
 <translation id="2317666076142640974">Vessen egy pillantást az új <ph name="LINK_BEGIN" />Chrome távoliasztal-szolgáltatás internetes alkalmazásra<ph name="LINK_END" />. Szeretnénk megismerni a véleményét.</translation>
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
-<translation id="2332192922827071008">A beállítások megnyitása</translation>
 <translation id="2353140552984634198">A Chromoting használatával biztonságosan hozzáférhet a számítógéphez.</translation>
 <translation id="2359808026110333948">Tovább</translation>
 <translation id="2366718077645204424">A gazdagép nem érhető el. Ez valószínűleg az Ön által használt hálózat konfigurációja miatt van.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Csatlakozva a következőhöz: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
 <translation id="2540992418118313681">Meg szeretné osztani a számítógép megtekintését és vezérlését egy másik felhasználóval?</translation>
-<translation id="254771646005658629">Engedélyezze, hogy távoli felhasználók használhassák ezt a Mac számítógépet</translation>
 <translation id="2579271889603567289">A gazdagép rendszere összeomlott vagy nem tudott elindulni.</translation>
 <translation id="2599300881200251572">Ez a szolgáltatás engedélyezi a bejövő kapcsolatokat a Chrome távoliasztal-szolgáltatás klienseitől.</translation>
 <translation id="2647232381348739934">Chromoting szolgáltatás</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Nem sikerült az alkalmazás visszaállítása. Küldhet egy jelentést a programhibáról.</translation>
 <translation id="5419418238395129586">Utoljára online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">A gazdagép leállt.</translation>
-<translation id="5463789431147491241">A(z) <ph name="PRODUCT_NAME" /> ezen Mac számítógépen való használatához hajtsa végre ezeket a lépéseket:
-
-Kattintson az alábbi „<ph name="BUTTON_NAME" />” gombra. A biztonsági és adatvédelmi beállításokban jelölje be a következő jelölőnégyzetet: „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Ha a(z) „<ph name="SERVICE_SCRIPT_NAME" />” már be van jelölve, törölje a bejelölést, majd jelölje be újra a négyzetet.</translation>
 <translation id="5510035215749041527">Leválasztás most</translation>
 <translation id="5593560073513909978">A szolgáltatás átmenetileg nem érhető el. Kérjük, próbálkozzon újra később.</translation>
 <translation id="5601503069213153581">PIN-kód</translation>

@@ -275,9 +275,16 @@ class SplitViewController::DividerSnapAnimation
 };
 
 // static
-SplitViewController* SplitViewController::Get() {
-  DCHECK(Shell::GetPrimaryRootWindowController());
-  return Shell::GetPrimaryRootWindowController()->split_view_controller();
+SplitViewController* SplitViewController::Get(const aura::Window* window) {
+  DCHECK(window);
+  DCHECK(window->GetRootWindow());
+  DCHECK(RootWindowController::ForWindow(window));
+  DCHECK(RootWindowController::ForWindow(Shell::GetPrimaryRootWindow()));
+  return RootWindowController::ForWindow(
+             AreMultiDisplayOverviewAndSplitViewEnabled()
+                 ? window
+                 : Shell::GetPrimaryRootWindow())
+      ->split_view_controller();
 }
 
 SplitViewController::SplitViewController(aura::Window* root_window)

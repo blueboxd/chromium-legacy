@@ -47,7 +47,6 @@
 <translation id="2314101195544969792">Seja aplikacije <ph name="APPLICATION_NAME" /> je že nekaj časa nedejavna, zato bo povezava kmalu prekinjena.</translation>
 <translation id="2317666076142640974">Oglejte si novo <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" /> pred izdajo. Veseli bomo vaših povratnih informacij.</translation>
 <translation id="2320166752086256636">Skrij tipkovnico</translation>
-<translation id="2332192922827071008">Odpri nastavitve</translation>
 <translation id="2353140552984634198">Oddaljeno povezovanje s Chromom omogoča varen dostop do tega računalnika.</translation>
 <translation id="2359808026110333948">Naprej</translation>
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
@@ -56,7 +55,6 @@
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="2512228156274966424">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko Oddaljeno namizje za Chrome konfigurirate na »Odpri kot okno«.</translation>
 <translation id="2540992418118313681">Ali želite ta računalnik deliti z drugimi, tako da bo imel drug uporabnik do njega dostop in ga bo lahko nadziral?</translation>
-<translation id="254771646005658629">Oddaljenim uporabnikom dovoli upravljanje tega Maca</translation>
 <translation id="2579271889603567289">Gostitelj se je zrušil ali ga ni bilo mogoče zagnati.</translation>
 <translation id="2599300881200251572">Ta storitev omogoča dohodne povezave iz odjemalcev za Oddaljeno namizje za Chrome.</translation>
 <translation id="2647232381348739934">Storitev Oddaljeno povezovanje s Chromom</translation>
@@ -177,11 +175,6 @@
 <translation id="5397086374758643919">Odstranitveni program gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="5419185025274123272">Aplikacije ni bilo mogoče ponastaviti. Kljub temu lahko pošljete poročilo o napakah.</translation>
 <translation id="544077782045763683">Gostitelj se je zaustavil.</translation>
-<translation id="5463789431147491241">Če želite uporabljati izdelek <ph name="PRODUCT_NAME" /> v tem Macu, upoštevajte ta navodila:
-
-Spodaj izberite »<ph name="BUTTON_NAME" />«. V podoknu z nastavitvami za varnost in zasebnost izberite polje zraven »<ph name="SERVICE_SCRIPT_NAME" />«.
-
-Če je možnost »<ph name="SERVICE_SCRIPT_NAME" />« že označena, jo morate morda počistiti in nato znova označiti.</translation>
 <translation id="5510035215749041527">Prekini povezavo</translation>
 <translation id="5593560073513909978">Ta storitev začasno ni na voljo. Poskusite znova pozneje.</translation>
 <translation id="5601503069213153581">PIN</translation>

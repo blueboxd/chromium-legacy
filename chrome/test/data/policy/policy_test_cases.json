@@ -5036,7 +5036,13 @@
     ]
   },
 
-  "CloudExtensionRequestEnabled": {},
+  "CloudExtensionRequestEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "CloudExtensionRequestEnabled": false },
+    "pref_mappings": [
+      { "pref": "enterprise_reporting.extension_request.enabled"}
+    ]
+  },
 
   "CloudReportingEnabled": {
     "os": ["win", "linux", "mac"],

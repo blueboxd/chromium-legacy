@@ -11,7 +11,6 @@
 <translation id="151962892725702025">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="1524282610922162960">‏שיתוף כרטיסיית Chromium</translation>
 <translation id="1708666629004767631">‏גרסה חדשה ובטוחה יותר של Chromium זמינה כעת.</translation>
-<translation id="1766096484055239003">‏לפי דרישת מנהל המערכת, יש להפעיל מחדש את Chromium כדי להחיל עדכון</translation>
 <translation id="1774152462503052664">‏אפשר ל-Chromium לפעול ברקע</translation>
 <translation id="1779356040007214683">‏כדי לשפר את האבטחה של Chromium, השבתנו חלק מהתוספים שלא רשומים ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוספו ללא ידיעתך.</translation>
 <translation id="1808667845054772817">‏התקן מחדש את Chromium</translation>
@@ -20,7 +19,6 @@
 <translation id="1929939181775079593">‏Chromium אינו מגיב. להפעיל מחדש עכשיו?</translation>
 <translation id="1966382378801805537">‏ב-Chromium לא ניתן לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="2008474315282236005">‏הפעולה הזו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
-<translation id="2117378023188580026">‏לפי בקשת מנהל המערכת, יש להפעיל מחדש את Chromium כדי להחיל את העדכון הזה</translation>
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="2241627712206172106">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chromium בדיוק כפי שהם רוצים.</translation>
 <translation id="2347108572062610441">‏התוסף שינה את הדף שמוצג כשאתה מפעיל את Chromium.</translation>
@@ -187,7 +185,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7790626492778995050">‏<ph name="PAGE_TITLE" /> - Chromium בגירסת Canary</translation>
 <translation id="7827169012280634081">‏קובצי ה-Cookie ונתוני האתר ינוקו בכל יציאה מ-Chromium</translation>
 <translation id="7867198900892795913">‏עדכון Chromium לגירסה האחרונה לא הצליח, ולכן אין לך גישה אל תכונות חדשות ותיקוני אבטחה.</translation>
-<translation id="7901117350626490574">‏יש עדכון בשביל Chromium והמערכת תחיל אותו ברגע שתבוצע הפעלה מחדש.</translation>
+<translation id="7898472181347242998">‏כדי לראות אם המכשיר שלך מעודכן, יש לעבור אל <ph name="LINK_BEGIN" />הגדרות Chromium OS<ph name="LINK_END" /></translation>
 <translation id="7937630085815544518">‏נכנסת ל-Chromium כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="7975919845073681630">‏זוהי התקנה משנית של Chromium, ולא ניתן להפוך אותו לדפדפן ברירת המחדל שלך.</translation>
 <translation id="7979877361127045932">‏הסתר בתפריט Chromium</translation>

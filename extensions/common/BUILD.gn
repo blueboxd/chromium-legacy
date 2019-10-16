@@ -23,6 +23,7 @@ source_set("common_constants") {
   deps = [
     "//base",
     "//components/services/app_service/public/mojom",
+    "//components/version_info:channel",
     "//ui/base",
   ]
 
@@ -387,6 +388,8 @@ if (enable_extensions) {
       "api/declarative_net_request/test_utils.h",
       "file_test_util.cc",
       "file_test_util.h",
+      "scoped_worker_based_extensions_channel.cc",
+      "scoped_worker_based_extensions_channel.h",
     ]
 
     deps = [

@@ -8360,6 +8360,15 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
 // for retransmittable-on-wire timeout is specified, the ping alarm will not
 // send any retransmittable pings.
 TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
+  // Use non-default initial srtt so that if QPACK emits additional setting
+  // packet, it will not have the same retransmission timeout as the
+  // default value of retransmittable-on-wire-ping timeout.
+  ServerNetworkStats stats;
+  stats.srtt = base::TimeDelta::FromMilliseconds(200);
+  http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
+                                                 NetworkIsolationKey(), stats);
+  test_params_.quic_params.estimate_initial_rtt = true;
+
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -8628,8 +8637,17 @@ TEST_P(QuicStreamFactoryTest,
 // NOT send retransmittable pings to the peer with custom value.
 TEST_P(QuicStreamFactoryTest,
        NoRetransmittableOnWireTimeoutWithMigrationOnNetworkChangeOnly) {
+  // Use non-default initial srtt so that if QPACK emits additional setting
+  // packet, it will not have the same retransmission timeout as the
+  // default value of retransmittable-on-wire-ping timeout.
+  ServerNetworkStats stats;
+  stats.srtt = base::TimeDelta::FromMilliseconds(200);
+  http_server_properties_->SetServerNetworkStats(url::SchemeHostPort(url_),
+                                                 NetworkIsolationKey(), stats);
+  test_params_.quic_params.estimate_initial_rtt = true;
   test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
   Initialize();
+
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -8729,7 +8747,7 @@ TEST_P(QuicStreamFactoryTest,
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
-  // Verify ping alarm is not set with default value.
+  // Verify the ping alarm is not set with default value.
   base::TimeDelta wrong_delay = kDefaultRetransmittableOnWireTimeout - delay;
   delay = task_runner->NextPendingTaskDelay();
   EXPECT_NE(wrong_delay, delay);

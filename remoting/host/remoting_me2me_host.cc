@@ -1556,13 +1556,7 @@ void HostProcess::StartHost() {
   // Ensure we are not running as root (i.e. at the login screen).
   DCHECK_NE(getuid(), 0U);
 
-  // MacOs 10.14+ requires an addition, runtime permission for injecting input
-  // using CGEventPost (we use this in our input injector for Mac).  This method
-  // will request that the user enable this permission for us if they are on an
-  // affected platform and the permission has not already been approved.
-  if (base::mac::IsAtLeastOS10_14()) {
-    mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
-  }
+  mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
 #endif
 
   host_->Start(host_owner_);

@@ -133,6 +133,13 @@ base::Optional<arc::UserInteractionType> GetUserInterationType(
       user_interaction_type =
           arc::UserInteractionType::APP_STARTED_FROM_FILE_MANAGER;
       break;
+    case apps::mojom::LaunchSource::kFromLink:
+      user_interaction_type = arc::UserInteractionType::APP_STARTED_FROM_LINK;
+      break;
+    case apps::mojom::LaunchSource::kFromOmnibox:
+      user_interaction_type =
+          arc::UserInteractionType::APP_STARTED_FROM_OMNIBOX;
+      break;
     default:
       NOTREACHED();
       return base::nullopt;

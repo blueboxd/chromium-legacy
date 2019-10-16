@@ -218,11 +218,11 @@ ScreenOrientationController::ScreenOrientationController()
       user_rotation_(display::Display::ROTATE_0),
       current_rotation_(display::Display::ROTATE_0) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  SplitViewController::Get()->AddObserver(this);
+  SplitViewController::Get(Shell::GetPrimaryRootWindow())->AddObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
-  SplitViewController::Get()->RemoveObserver(this);
+  SplitViewController::Get(Shell::GetPrimaryRootWindow())->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
@@ -599,7 +599,8 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
   if (!ScreenOrientationProviderSupported())
     return;
 
-  if (SplitViewController::Get()->InTabletSplitViewMode()) {
+  if (SplitViewController::Get(Shell::GetPrimaryRootWindow())
+          ->InTabletSplitViewMode()) {
     // While split view is enabled, ignore rotation lock set by windows.
     LockRotationToOrientation(user_locked_orientation_);
     return;

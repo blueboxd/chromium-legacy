@@ -930,6 +930,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+  { key::kCloudExtensionRequestEnabled,
+    prefs::kCloudExtensionRequestEnabled,
+    base::Value::Type::BOOLEAN
+  },
+#endif
+
 #if defined(OS_WIN)
   { key::kChromeCleanupEnabled,
     prefs::kSwReporterEnabled,
@@ -1579,13 +1586,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       prefs::kNoteTakingAppsLockScreenWhitelist, false /*allow_wildcards*/));
   handlers->AddHandler(
       std::make_unique<SecondaryGoogleAccountSigninPolicyHandler>());
-  if (base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy)) {
-    handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-        key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
-        SCHEMA_ALLOW_UNKNOWN,
-        SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
-        SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
-  }
+  handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
+      key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
+      SCHEMA_ALLOW_UNKNOWN,
+      SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
       key::kArcBackupRestoreServiceEnabled,
       arc::prefs::kArcBackupRestoreEnabled));

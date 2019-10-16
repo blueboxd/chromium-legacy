@@ -293,6 +293,11 @@ class OmniboxEditModel {
   // control key is down (at the time we're gaining focus).
   void OnSetFocus(bool control_down);
 
+  // Shows On-Focus Suggestions (ZeroSuggest) if no query is currently running
+  // and the popup is closed. This can be called multiple times without harm,
+  // since it will early-exit if an earlier request is in progress (or done).
+  void ShowOnFocusSuggestionsIfAutocompleteIdle();
+
   // Sets the visibility of the caret in the omnibox, if it has focus. The
   // visibility of the caret is reset to visible if either
   //   - The user starts typing, or

@@ -94,7 +94,7 @@ bool RunHelperAsRoot(const std::string& command,
   FILE* pipe = nullptr;
   pid_t pid;
   OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
-      authorization.get(), remoting::kHostHelperScriptPath,
+      authorization.get(), remoting::kHostServiceBinaryPath,
       kAuthorizationFlagDefaults, arguments, &pipe, &pid);
   if (status != errAuthorizationSuccess) {
     LOG(ERROR) << "AuthorizationExecuteWithPrivileges: "
@@ -150,7 +150,7 @@ bool RunHelperAsRoot(const std::string& command,
     return true;
   }
 
-  LOG(ERROR) << remoting::kHostHelperScriptPath << " failed with exit status "
+  LOG(ERROR) << remoting::kHostServiceBinaryPath << " failed with exit status "
              << exit_status;
   return false;
 }

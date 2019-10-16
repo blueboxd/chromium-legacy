@@ -11,7 +11,6 @@
 <translation id="151962892725702025">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
 <translation id="1524282610922162960">Откройте доступ к вкладке Chromium</translation>
 <translation id="1708666629004767631">Доступна новая, еще более быстрая версия Chromium.</translation>
-<translation id="1766096484055239003">Администратор требует перезапустить Chromium для установки обновления</translation>
 <translation id="1774152462503052664">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="1779356040007214683">Чтобы обеспечить безопасность ваших данных, некоторые расширения Chromium были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них, то есть эти компоненты могли быть установлены без вашего ведома.</translation>
 <translation id="1808667845054772817">Переустановить Chromium</translation>
@@ -20,7 +19,6 @@
 <translation id="1929939181775079593">Chromium не отвечает. Перезапустить сейчас?</translation>
 <translation id="1966382378801805537">Chromium не удалось определить или задать браузер по умолчанию</translation>
 <translation id="2008474315282236005">С устройства будет удален 1 объект. Чтобы восстановить данные позже, войдите в Chromium как <ph name="USER_EMAIL" />.</translation>
-<translation id="2117378023188580026">Администратор просит перезапустить Chromium для установки обновления</translation>
 <translation id="2119636228670142020">О &amp;Chromium OS</translation>
 <translation id="2241627712206172106">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chromium на свой вкус.</translation>
 <translation id="2347108572062610441">Расширение изменило стартовую страницу Chromium.</translation>
@@ -185,7 +183,6 @@
 <translation id="7827169012280634081">Удалять файлы cookie и данные сайтов при выходе из Chromium</translation>
 <translation id="7867198900892795913">Не удалось установить последнюю версию Chromium, в которой добавлены новые функции и обновления системы безопасности.</translation>
 <translation id="7898472181347242998">Чтобы посмотреть, обновлена ли операционная система устройства, перейдите в <ph name="LINK_BEGIN" />настройки Chromium OS<ph name="LINK_END" />.</translation>
-<translation id="7901117350626490574">Для Chromium доступно обновление. Оно будет установлено при перезапуске браузера.</translation>
 <translation id="7937630085815544518">Ранее вы входили в Chromium как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7975919845073681630">Это дополнительная установка Chromium. Его нельзя сделать браузером по умолчанию.</translation>
 <translation id="7979877361127045932">Не показывать в меню Chromium</translation>

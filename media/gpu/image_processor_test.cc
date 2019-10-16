@@ -15,6 +15,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/image_processor.h"
 #include "media/gpu/test/image.h"
 #include "media/gpu/test/image_processor/image_processor_client.h"
@@ -84,18 +85,16 @@ class ImageProcessorParamTest
       const std::vector<VideoFrame::StorageType>& input_storage_types,
       const test::Image& output_image,
       const std::vector<VideoFrame::StorageType>& output_storage_types) {
-    const VideoPixelFormat input_format = input_image.PixelFormat();
-    const VideoPixelFormat output_format = output_image.PixelFormat();
-    auto input_config_layout =
-        test::CreateVideoFrameLayout(input_format, input_image.Size());
-    auto output_config_layout =
-        test::CreateVideoFrameLayout(output_format, output_image.Size());
-    LOG_ASSERT(input_config_layout);
-    LOG_ASSERT(output_config_layout);
-    ImageProcessor::PortConfig input_config(
-        *input_config_layout, input_image.Size(), input_storage_types);
-    ImageProcessor::PortConfig output_config(
-        *output_config_layout, output_image.Size(), output_storage_types);
+    Fourcc input_fourcc =
+        Fourcc::FromVideoPixelFormat(input_image.PixelFormat());
+    Fourcc output_fourcc =
+        Fourcc::FromVideoPixelFormat(output_image.PixelFormat());
+    ImageProcessor::PortConfig input_config(input_fourcc, input_image.Size(),
+                                            {}, input_image.Size(),
+                                            input_storage_types);
+    ImageProcessor::PortConfig output_config(output_fourcc, output_image.Size(),
+                                             {}, output_image.Size(),
+                                             output_storage_types);
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image.IsMetadataLoaded());
@@ -104,7 +103,8 @@ class ImageProcessorParamTest
     // TODO(crbug.com/917951): We should validate a scaled image with SSIM.
     // Validating processed frames is currently not supported when a format is
     // not YUV or when scaling images.
-    if (IsYuvPlanar(input_format) && IsYuvPlanar(output_format) &&
+    if (IsYuvPlanar(input_fourcc.ToVideoPixelFormat()) &&
+        IsYuvPlanar(output_fourcc.ToVideoPixelFormat()) &&
         input_image.Size() == output_image.Size()) {
       auto vf_validator = test::VideoFrameValidator::Create(
           {output_image.Checksum()}, output_image.PixelFormat());
@@ -116,7 +116,7 @@ class ImageProcessorParamTest
           base::FilePath(base::FilePath::kCurrentDirectory)
               .Append(g_env->GetTestOutputFilePath());
       test::VideoFrameFileWriter::OutputFormat saved_file_format =
-          IsYuvPlanar(output_format)
+          IsYuvPlanar(output_fourcc.ToVideoPixelFormat())
               ? test::VideoFrameFileWriter::OutputFormat::kYUV
               : test::VideoFrameFileWriter::OutputFormat::kPNG;
       frame_processors.push_back(

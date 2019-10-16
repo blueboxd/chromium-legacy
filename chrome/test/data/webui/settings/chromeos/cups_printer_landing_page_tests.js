@@ -319,20 +319,9 @@ suite('CupsSavedPrintersTests', function() {
 
   setup(function() {
     const mojom = chromeos.networkConfig.mojom;
-    printerList = [
-      createCupsPrinterInfo('google', '4', 'id4'),
-      createCupsPrinterInfo('test1', '1', 'id1'),
-      createCupsPrinterInfo('test2', '2', 'id2'),
-      createCupsPrinterInfo('test3', '3', 'id3'),
-    ];
 
     cupsPrintersBrowserProxy =
         new printerBrowserProxy.TestCupsPrintersBrowserProxy;
-    // |cupsPrinterBrowserProxy| needs to have a list of saved printers before
-    // initializing the landing page.
-    cupsPrintersBrowserProxy.printerList = {printerList: printerList};
-    settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
-
     // Simulate internet connection.
     mojoApi_.resetForTest();
     mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
@@ -343,15 +332,6 @@ suite('CupsSavedPrintersTests', function() {
 
     PolymerTest.clearBody();
     settings.navigateTo(settings.routes.CUPS_PRINTERS);
-
-    page = document.createElement('settings-cups-printers');
-    // Enable feature flag to show the new saved printers list.
-    // TODO(jimmyxgong): Remove this line when the feature flag is removed.
-    page.enableUpdatedUi_ = true;
-    document.body.appendChild(page);
-    assertTrue(!!page);
-
-    Polymer.dom.flush();
   });
 
   teardown(function() {
@@ -363,9 +343,38 @@ suite('CupsSavedPrintersTests', function() {
     page = null;
   });
 
-  /** @param {!CupsPrinterInfo} */
+  /** @param {!Array<!CupsPrinterInfo>} printerList */
+  function createCupsPrinterPage(printers) {
+    printerList = printers;
+    // |cupsPrinterBrowserProxy| needs to have a list of saved printers before
+    // initializing the landing page.
+    cupsPrintersBrowserProxy.printerList = {printerList: printerList};
+    settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
+
+    page = document.createElement('settings-cups-printers');
+    // Enable feature flag to show the new saved printers list.
+    // TODO(jimmyxgong): Remove this line when the feature flag is removed.
+    page.enableUpdatedUi_ = true;
+    document.body.appendChild(page);
+    assertTrue(!!page);
+
+    Polymer.dom.flush();
+  }
+
+  /** @param {!CupsPrinterInfo} printer*/
   function addNewSavedPrinter(printer) {
     printerList.push(printer);
+    updateSavedPrinters();
+  }
+
+  /** @param {number} id*/
+  function removeSavedPrinter(id) {
+    const idx = printerList.findIndex(p => p.printerId == id);
+    printerList.splice(idx, 1);
+    updateSavedPrinters();
+  }
+
+  function updateSavedPrinters() {
     cupsPrintersBrowserProxy.printerList = {printerList: printerList};
     cr.webUIListenerCallback(
         'on-printers-changed', cupsPrintersBrowserProxy.printerList);
@@ -373,6 +382,11 @@ suite('CupsSavedPrintersTests', function() {
   }
 
   test('SavedPrintersSuccessfullyPopulates', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
           // Wait for saved printers to populate.
@@ -388,17 +402,17 @@ suite('CupsSavedPrintersTests', function() {
           let printerListEntries = getPrinterEntries(savedPrintersElement);
 
           verifyPrintersList(printerListEntries, printerList);
-
-          addNewSavedPrinter(createCupsPrinterInfo('test5', '5', 'id5'));
-
-          printerListEntries = getPrinterEntries(savedPrintersElement);
-          verifyPrintersList(printerListEntries, printerList);
         });
   });
 
   test('SuccessfullyRemoveMultipleSavedPrinters', function() {
     let savedPrinterEntries = [];
 
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
           // Wait for saved printers to populate.
@@ -421,6 +435,11 @@ suite('CupsSavedPrintersTests', function() {
     let savedPrintersList = [];
     let savedPrinterEntries = [];
 
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
           // Wait for saved printers to populate.
@@ -451,6 +470,11 @@ suite('CupsSavedPrintersTests', function() {
     let editDialog = null;
     let savedPrinterEntries = null;
 
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
           // Wait for saved printers to populate.
@@ -498,6 +522,11 @@ suite('CupsSavedPrintersTests', function() {
     let savedPrinterEntries = null;
     let editDialog = null;
 
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
           // Wait for saved printers to populate.
@@ -546,6 +575,11 @@ suite('CupsSavedPrintersTests', function() {
   });
 
   test('SavedPrintersSearchTermFiltersCorrectPrinters', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
           // Wait for saved printers to populate.
@@ -580,27 +614,31 @@ suite('CupsSavedPrintersTests', function() {
               [
                 createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
                 createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED),
-                createPrinterListEntry('test3', '3', 'id3', PrinterType.SAVED)
               ],
               searchTerm);
 
           // Add more printers and assert that they are correctly filtered.
-          addNewSavedPrinter(createCupsPrinterInfo('test4', '5', 'id5'));
+          addNewSavedPrinter(createCupsPrinterInfo('test3', '3', 'id3'));
           addNewSavedPrinter(createCupsPrinterInfo('google2', '6', 'id6'));
+          Polymer.dom.flush();
 
           verifySearchQueryResults(
               savedPrintersElement,
               [
-                createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
-                createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED),
                 createPrinterListEntry('test3', '3', 'id3', PrinterType.SAVED),
-                createPrinterListEntry('test4', '5', 'id5', PrinterType.SAVED)
+                createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+                createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED)
               ],
               searchTerm);
         });
   });
 
   test('SavedPrintersNoSearchFound', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
     return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
         .then(() => {
           // Wait for saved printers to populate.
@@ -640,6 +678,344 @@ suite('CupsSavedPrintersTests', function() {
               savedPrintersElement,
               [createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED)],
               searchTerm);
+        });
+  });
+
+  test('ShowMoreButtonIsInitiallyHiddenAndANewPrinterIsAdded', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          let printerEntryListTestElement =
+              savedPrintersElement.$$('#printerEntryList');
+
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED)
+          ]);
+          // Assert that the Show more button is hidden because printer list
+          // length is <= 3.
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Newly added printers will always be visible and inserted to the
+          // top of the list.
+          addNewSavedPrinter(createCupsPrinterInfo('test3', '3', 'id3'));
+          expectedVisiblePrinters = [
+            createPrinterListEntry('test3', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED)
+          ];
+          verifyVisiblePrinters(
+              printerEntryListTestElement, expectedVisiblePrinters);
+          // Assert that the Show more button is still hidden because all newly
+          // added printers are visible.
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
+        });
+  });
+
+  test('PressShowMoreButton', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+      createCupsPrinterInfo('test3', '3', 'id3'),
+    ]);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          const printerEntryListTestElement =
+              savedPrintersElement.$$('#printerEntryList');
+
+          // There are 4 total printers but only 3 printers are visible and 1 is
+          // hidden underneath the Show more section.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED),
+          ]);
+          // Assert that the Show more button is shown since printer list length
+          // is > 3.
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Click on the Show more button.
+          savedPrintersElement.$$('#show-more-icon').click();
+          Polymer.dom.flush();
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
+          // Clicking on the Show more button reveals all hidden printers.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED),
+            createPrinterListEntry('test3', '3', 'id3', PrinterType.SAVED)
+          ]);
+        });
+  });
+
+  test('ShowMoreButtonIsInitiallyShownAndWithANewPrinterAdded', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+      createCupsPrinterInfo('test3', '3', 'id3'),
+    ]);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          const printerEntryListTestElement =
+              savedPrintersElement.$$('#printerEntryList');
+
+          // There are 4 total printers but only 3 printers are visible and 1 is
+          // hidden underneath the Show more section.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED),
+          ]);
+          // Assert that the Show more button is shown since printer list length
+          // is > 3.
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Newly added printers will always be visible.
+          addNewSavedPrinter(createCupsPrinterInfo('test5', '5', 'id5'));
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('test5', '5', 'id5', PrinterType.SAVED),
+            createPrinterListEntry('google', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED)
+          ]);
+          // Assert that the Show more button is still shown.
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+        });
+  });
+
+  test('ShowMoreButtonIsShownAndRemovePrinters', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '3', 'id3'),
+      createCupsPrinterInfo('google2', '4', 'id4'),
+      createCupsPrinterInfo('google3', '5', 'id5'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          const printerEntryListTestElement =
+              savedPrintersElement.$$('#printerEntryList');
+
+          // There are 5 total printers but only 3 printers are visible and 2
+          // are hidden underneath the Show more section.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('google2', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('google3', '5', 'id5', PrinterType.SAVED)
+          ]);
+          // Assert that the Show more button is shown since printer list length
+          // is > 3.
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Simulate removing 'google' printer.
+          removeSavedPrinter('id3');
+          // Printer list has 4 elements now, but since the list is still
+          // collapsed we should still expect only 3 elements to be visible.
+          // Since printers were initially alphabetically sorted, we should
+          // expect 'test1' to be the next visible printer.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google2', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('google3', '5', 'id5', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED)
+          ]);
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Simulate removing 'google2' printer.
+          removeSavedPrinter('id4');
+          // Printer list has 3 elements now, the Show more button should be
+          // hidden.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google3', '5', 'id5', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED)
+          ]);
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
+        });
+  });
+
+  test('ShowMoreButtonIsShownAndSearchQueryFiltersCorrectly', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '3', 'id3'),
+      createCupsPrinterInfo('google2', '4', 'id4'),
+      createCupsPrinterInfo('google3', '5', 'id5'),
+      createCupsPrinterInfo('google4', '6', 'id6'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          const printerEntryListTestElement =
+              savedPrintersElement.$$('#printerEntryList');
+
+          // There are 6 total printers but only 3 printers are visible and 3
+          // are hidden underneath the Show more section.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('google2', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('google3', '5', 'id5', PrinterType.SAVED)
+          ]);
+          // Assert that the Show more button is shown since printer list length
+          // is > 3.
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Set search term to 'google' and expect 4 visible printers.
+          searchTerm = 'google';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+          verifySearchQueryResults(
+              savedPrintersElement,
+              [
+                createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+                createPrinterListEntry(
+                    'google2', '4', 'id4', PrinterType.SAVED),
+                createPrinterListEntry(
+                    'google3', '5', 'id5', PrinterType.SAVED),
+                createPrinterListEntry('google4', '6', 'id6', PrinterType.SAVED)
+              ],
+              searchTerm);
+          // Having a search term should hide the Show more button.
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Search for a term with no matching printers. Expect Show more
+          // button to still be hidden.
+          searchTerm = 'noSearchFound';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+          verifySearchQueryResults(savedPrintersElement, [], searchTerm);
+
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Change search term and expect new set of visible printers.
+          searchTerm = 'test';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+          verifySearchQueryResults(
+              savedPrintersElement,
+              [
+                createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED),
+                createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED)
+              ],
+              searchTerm);
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Remove the search term and expect the collapsed list to appear
+          // again.
+          searchTerm = '';
+          savedPrintersElement.searchTerm = searchTerm;
+          Polymer.dom.flush();
+          const expectedVisiblePrinters = [
+            createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('google2', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('google3', '5', 'id5', PrinterType.SAVED)
+          ];
+          verifySearchQueryResults(
+              savedPrintersElement, expectedVisiblePrinters, searchTerm);
+          verifyVisiblePrinters(
+              printerEntryListTestElement, expectedVisiblePrinters);
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+        });
+  });
+
+  test('ShowMoreButtonAddAndRemovePrinters', function() {
+    createCupsPrinterPage([
+      createCupsPrinterInfo('google', '3', 'id3'),
+      createCupsPrinterInfo('google2', '4', 'id4'),
+      createCupsPrinterInfo('test1', '1', 'id1'),
+      createCupsPrinterInfo('test2', '2', 'id2'),
+    ]);
+    return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList')
+        .then(() => {
+          // Wait for saved printers to populate.
+          Polymer.dom.flush();
+
+          savedPrintersElement = page.$$('settings-cups-saved-printers');
+          assertTrue(!!savedPrintersElement);
+
+          const printerEntryListTestElement =
+              savedPrintersElement.$$('#printerEntryList');
+
+          // There are 4 total printers but only 3 printers are visible and 1 is
+          // hidden underneath the Show more section.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('google2', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED)
+          ]);
+          // Assert that the Show more button is shown since printer list length
+          // is > 3.
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Add a new printer and expect it to be at the top of the list.
+          addNewSavedPrinter(createCupsPrinterInfo('newPrinter', '5', 'id5'));
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('newPrinter', '5', 'id5', PrinterType.SAVED),
+            createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('google2', '4', 'id4', PrinterType.SAVED),
+            createPrinterListEntry('test1', '1', 'id1', PrinterType.SAVED)
+          ]);
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Now simulate removing printer 'test1'.
+          removeSavedPrinter('id1');
+          // If the number of visible printers is > 3, removing printers will
+          // decrease the number of visible printers until there are only 3
+          // visible printers. In this case, we remove 'test1' and now only
+          // have 3 visible printers and 1 hidden printer: 'test2'.
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('newPrinter', '5', 'id5', PrinterType.SAVED),
+            createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('google2', '4', 'id4', PrinterType.SAVED)
+          ]);
+          assertTrue(!!savedPrintersElement.$$('#show-more-container'));
+
+          // Remove another printer and assert that we still have 3 visible
+          // printers but now 'test2' is our third visible printer.
+          removeSavedPrinter('id4');
+          verifyVisiblePrinters(printerEntryListTestElement, [
+            createPrinterListEntry('newPrinter', '5', 'id5', PrinterType.SAVED),
+            createPrinterListEntry('google', '3', 'id3', PrinterType.SAVED),
+            createPrinterListEntry('test2', '2', 'id2', PrinterType.SAVED)
+          ]);
+          // Printer list length is <= 3, Show more button should be hidden.
+          assertFalse(!!savedPrintersElement.$$('#show-more-container'));
         });
   });
 });

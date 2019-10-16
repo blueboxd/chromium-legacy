@@ -2103,3 +2103,19 @@ TEST_F('ChromeVoxBackgroundTest', 'TableWithAriaRowCol', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'NonModalDialogHeadingJump', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <h2>Heading outside dialog</h2>
+    <div role="dialog">
+      <h2>Heading inside dialog</h2>
+    </div>
+  */}, function(root) {
+    mockFeedback.call(doCmd('nextHeading'))
+        .expectSpeech('Heading inside dialog')
+        .call(doCmd('previousHeading'))
+        .expectSpeech('Heading outside dialog')
+        .replay();
+  });
+});

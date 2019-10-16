@@ -7,11 +7,16 @@
 
 #include "components/prefs/pref_registry_simple.h"
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace enterprise_reporting {
 
 extern const char kLastUploadTimestamp[];
 
-void RegisterPrefs(PrefRegistrySimple* registry);
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
 }  // namespace enterprise_reporting
 

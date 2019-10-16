@@ -220,12 +220,13 @@ class DesksController::DeskActivationAnimation
 
   // DesksController::AbstractDeskSwitchAnimation:
   void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override {
-    // The order here matters. Overview must end before ending split view before
-    // switching desks. That's because we don't want TabletModeWindowManager
-    // maximizing all windows because we cleared the snapped ones in
-    // split_view_controller first. See:
-    // `TabletModeWindowManager::OnOverviewModeEndingAnimationComplete()`.
-    // See also test coverage for this case in:
+    // The order here matters. Overview must end before ending tablet split view
+    // before switching desks. (If clamshell split view is active on one or more
+    // displays, then it simply will end when we end overview.) That's because
+    // we don't want |TabletModeWindowManager| maximizing all windows because we
+    // cleared the snapped ones in |SplitViewController| first. See
+    // |TabletModeWindowManager::OnOverviewModeEndingAnimationComplete|.
+    // See also test coverage for this case in
     // `TabletModeDesksTest.SnappedStateRetainedOnSwitchingDesksFromOverview`.
     const bool in_overview =
         Shell::Get()->overview_controller()->InOverviewSession();
@@ -236,7 +237,8 @@ class DesksController::DeskActivationAnimation
       Shell::Get()->overview_controller()->EndOverview(
           OverviewSession::EnterExitOverviewType::kImmediateExit);
     }
-    SplitViewController* split_view_controller = SplitViewController::Get();
+    SplitViewController* split_view_controller =
+        SplitViewController::Get(Shell::GetPrimaryRootWindow());
     split_view_controller->EndSplitView(
         SplitViewController::EndReason::kDesksChange);
 
@@ -282,10 +284,12 @@ class DesksController::DeskRemovalAnimation
   // DesksController::AbstractDeskSwitchAnimation:
   void OnStartingDeskScreenshotTakenInternal(const Desk* ending_desk) override {
     DCHECK_EQ(controller_->active_desk(), desk_to_remove_);
-    // We are removing the active desk, which may have split view active.
+    // We are removing the active desk, which may have tablet split view active.
     // We will restore the split view state of the newly activated desk at the
-    // end of the animation.
-    SplitViewController* split_view_controller = SplitViewController::Get();
+    // end of the animation. Clamshell split view is impossible because
+    // |DeskRemovalAnimation| is not used in overview.
+    SplitViewController* split_view_controller =
+        SplitViewController::Get(Shell::GetPrimaryRootWindow());
     split_view_controller->EndSplitView(
         SplitViewController::EndReason::kDesksChange);
 
@@ -716,9 +720,10 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
 
     // Exit split view if active, before activating the new desk. We will
     // restore the split view state of the newly activated desk at the end.
-    SplitViewController* split_view_controller = SplitViewController::Get();
-    split_view_controller->EndSplitView(
-        SplitViewController::EndReason::kDesksChange);
+    for (aura::Window* root_window : Shell::GetAllRootWindows()) {
+      SplitViewController::Get(root_window)
+          ->EndSplitView(SplitViewController::EndReason::kDesksChange);
+    }
 
     // The removed desk is the active desk, so temporarily remove its windows
     // from the overview grid which will result in removing the

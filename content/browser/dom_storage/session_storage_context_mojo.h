@@ -208,18 +208,34 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void InitiateConnection(bool in_memory_only = false);
   void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
 
-  void OnGotDatabaseMetadata(
-      std::vector<leveldb::mojom::GetManyResultPtr> results);
+  struct DatabaseMetadataResult {
+    DatabaseMetadataResult();
+    DatabaseMetadataResult(DatabaseMetadataResult&&);
+    DatabaseMetadataResult(const DatabaseMetadataResult&) = delete;
+    ~DatabaseMetadataResult();
 
-  using OpenResultAndHistogramName = std::tuple<OpenResult, const char*>;
-  OpenResultAndHistogramName ParseDatabaseVersion(
-      const leveldb::mojom::GetManyResultPtr& result,
+    storage::DomStorageDatabase::Value version;
+    leveldb::Status version_status;
+
+    storage::DomStorageDatabase::Value next_map_id;
+    leveldb::Status next_map_id_status;
+
+    std::vector<storage::DomStorageDatabase::KeyValuePair> namespaces;
+    leveldb::Status namespaces_status;
+  };
+  void OnGotDatabaseMetadata(DatabaseMetadataResult result);
+
+  struct MetadataParseResult {
+    OpenResult open_result;
+    const char* histogram_name;
+  };
+  MetadataParseResult ParseDatabaseVersion(
+      DatabaseMetadataResult* result,
       std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations);
-  OpenResultAndHistogramName ParseNamespaces(
-      const leveldb::mojom::GetManyResultPtr& result,
+  MetadataParseResult ParseNamespaces(
+      DatabaseMetadataResult* result,
       std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations);
-  OpenResultAndHistogramName ParseNextMapId(
-      const leveldb::mojom::GetManyResultPtr& result);
+  MetadataParseResult ParseNextMapId(DatabaseMetadataResult* result);
 
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);

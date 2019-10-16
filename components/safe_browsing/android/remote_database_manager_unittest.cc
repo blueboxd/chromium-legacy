@@ -28,6 +28,9 @@ class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
                      const GURL& url,
                      const SBThreatTypeSet& threat_types) override {}
   bool StartCSDAllowlistCheck(const GURL& url) override { return false; }
+  bool StartHighConfidenceAllowlistCheck(const GURL& url) override {
+    return false;
+  }
 };
 
 }  // namespace

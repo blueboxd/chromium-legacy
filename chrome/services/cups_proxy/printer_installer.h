@@ -39,7 +39,9 @@ class PrinterInstaller {
   void InstallPrinter(std::string printer_id, InstallPrinterCallback cb);
 
  private:
-  void OnInstallPrinter(InstallPrinterCallback cb, bool success);
+  void OnInstallPrinter(InstallPrinterCallback cb,
+                        const chromeos::Printer& printer,
+                        bool success);
   void Finish(InstallPrinterCallback cb, InstallPrinterResult res);
 
   // Unowned delegate granting access to printing stack dependencies.

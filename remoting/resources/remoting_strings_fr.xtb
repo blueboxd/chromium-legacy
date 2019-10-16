@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Votre session <ph name="APPLICATION_NAME" /> est inactive depuis un certain temps et risque de se fermer bientôt.</translation>
 <translation id="2317666076142640974">Découvrez en avant-première la nouvelle <ph name="LINK_BEGIN" />application Web Bureau à distance Chrome<ph name="LINK_END" />. Faites-nous part de vos remarques !</translation>
 <translation id="2320166752086256636">Masquer le clavier</translation>
-<translation id="2332192922827071008">Ouvrir les préférences</translation>
 <translation id="2353140552984634198">Vous pouvez accéder à cet ordinateur en toute sécurité via Google Chromoting.</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2366718077645204424">Impossible de joindre l'hôte, probablement en raison de la configuration du réseau que vous utilisez.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Connecté à <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">REMARQUE : Pour vous assurer que tous les raccourcis clavier sont disponibles, vous pouvez configurer le bureau à distance Chrome pour qu'il s'ouvre dans une fenêtre.</translation>
 <translation id="2540992418118313681">Voulez-vous partager cet ordinateur pour qu'un autre utilisateur puisse consulter le contenu et en prendre le contrôle ?</translation>
-<translation id="254771646005658629">Autoriser les utilisateurs distants à contrôler ce Mac</translation>
 <translation id="2579271889603567289">Plantage de l'hôte ou échec lors de son démarrage.</translation>
 <translation id="2599300881200251572">Ce service permet la réception de connexions provenant des clients du Bureau à distance Google Chrome.</translation>
 <translation id="2647232381348739934">Service Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Impossible de réinitialiser l'application. Vous pouvez toujours envoyer un rapport de bug.</translation>
 <translation id="5419418238395129586">Dernière connexion : <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'hôte a été arrêté.</translation>
-<translation id="5463789431147491241">Pour utiliser <ph name="PRODUCT_NAME" /> avec ce Mac, procédez comme suit :
-
-Sélectionnez "<ph name="BUTTON_NAME" />" ci-dessous. Dans le volet des préférences de sécurité et de confidentialité, cochez la case à côté de "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Si "<ph name="SERVICE_SCRIPT_NAME" />" est déjà coché, décochez-le, puis cochez-le à nouveau.</translation>
 <translation id="5510035215749041527">Se déconnecter maintenant</translation>
 <translation id="5593560073513909978">Le service est momentanément indisponible. Veuillez réessayer ultérieurement.</translation>
 <translation id="5601503069213153581">Code d'accès</translation>

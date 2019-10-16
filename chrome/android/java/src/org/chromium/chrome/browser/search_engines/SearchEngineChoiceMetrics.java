@@ -50,13 +50,13 @@ public class SearchEngineChoiceMetrics {
     public @interface EventsV2 {
         int CHOICE_REQUEST_RECEIVED = 0;
         int CHOICE_SKIPPED = 1;
-        int CHOICE_REQUEST_NO_DATA = 1;
-        int CHOICE_REQUEST_VALID = 2;
-        int CHOICE_REQUEST_METADATA_NULL = 3;
-        int CHOICE_REQUEST_PARSE_FAILED = 4;
-        int PREVIOUS_CHOICE_REQUEST_FAILED = 5;
-        int CHOICE_REQUEST_SUCCESS = 6;
-        int MAX = 7;
+        int CHOICE_REQUEST_NO_DATA = 2;
+        int CHOICE_REQUEST_VALID = 3;
+        int CHOICE_REQUEST_METADATA_NULL = 4;
+        int CHOICE_REQUEST_PARSE_FAILED = 5;
+        int PREVIOUS_CHOICE_REQUEST_FAILED = 6;
+        int CHOICE_REQUEST_SUCCESS = 7;
+        int MAX = 8;
     }
 
     /**
@@ -89,21 +89,25 @@ public class SearchEngineChoiceMetrics {
         setPreviousSearchEngineType(currentSearchEngineType);
     }
 
-    /** Records the search engine type after the user made a choice about which engine to use. */
-    public static void recordSearchEngineTypeAfterChoice() {
-        if (!isSearchEnginePossiblyDifferent()) return;
+    /**
+     * Records the search engine type after the user chooses a different search engine.
+     * @return Whether the search engine was changed.
+     **/
+    public static boolean recordSearchEngineTypeAfterChoice() {
+        if (!isSearchEnginePossiblyDifferent()) return false;
 
         @SearchEngineType
         int previousSearchEngineType = getPreviousSearchEngineType();
         @SearchEngineType
         int currentSearchEngineType = getDefaultSearchEngineType();
-        if (previousSearchEngineType != currentSearchEngineType) {
-            recordEvent(Events.SEARCH_ENGINE_CHANGED);
+        boolean didChangeEngine = previousSearchEngineType != currentSearchEngineType;
+        if (didChangeEngine) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.SearchEngineChoice.ChosenSearchEngine", currentSearchEngineType,
                     SearchEngineType.SEARCH_ENGINE_MAX);
         }
         removePreviousSearchEngineType();
+        return didChangeEngine;
     }
 
     /** @return True if the current search engine is possibly different from the previous one. */

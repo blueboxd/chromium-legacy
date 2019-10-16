@@ -13,7 +13,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
 <translation id="1524282610922162960">Share a Chromium tab</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
-<translation id="1766096484055239003">Your administrator requires that you relaunch Chromium to apply an update</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="1808667845054772817">Reinstall Chromium</translation>
@@ -22,7 +21,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1966382378801805537">Chromium cannot determine or set the default browser</translation>
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
-<translation id="2117378023188580026">Your administrator asks that you relaunch Chromium to apply this update</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
 <translation id="2347108572062610441">This extension has changed the page that is shown when you start Chromium.</translation>
@@ -192,7 +190,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7827169012280634081">Clear cookies and site data when you quit Chromium</translation>
 <translation id="7867198900892795913">Chromium couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="7898472181347242998">To see if your device is up to date, go to <ph name="LINK_BEGIN" />Chromium OS Settings<ph name="LINK_END" /></translation>
-<translation id="7901117350626490574">A new update for Chromium is available and will be applied as soon as you relaunch.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="7975919845073681630">This is a secondary installation of Chromium, and cannot be made your default browser.</translation>
 <translation id="7979877361127045932">Hide in Chromium menu</translation>

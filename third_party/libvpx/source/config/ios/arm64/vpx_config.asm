@@ -3,10 +3,15 @@
 
 	.syntax unified
 .set VPX_ARCH_ARM ,  1
+.set ARCH_ARM ,  1
 .set VPX_ARCH_MIPS ,  0
+.set ARCH_MIPS ,  0
 .set VPX_ARCH_X86 ,  0
+.set ARCH_X86 ,  0
 .set VPX_ARCH_X86_64 ,  0
+.set ARCH_X86_64 ,  0
 .set VPX_ARCH_PPC ,  0
+.set ARCH_PPC ,  0
 .set HAVE_NEON ,  1
 .set HAVE_NEON_ASM ,  0
 .set HAVE_MIPS32 ,  0

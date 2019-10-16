@@ -325,7 +325,7 @@ public class UiLocatorHelper {
      * Delegate to be used with getCustomElements.
      * @param <T> The type of the element.
      */
-    static public interface CustomElementMaker<T> {
+    public static interface CustomElementMaker<T> {
         /**
          * Should construct an element given a node.
          * @param root          The input node.
@@ -403,10 +403,11 @@ public class UiLocatorHelper {
 
     private <T> T getOneElement(IUi2Locator locator, ElementConverter<T> converter) {
         List<T> all = getAllElements(locator, converter);
-        if (all.size() > 0)
+        if (all.size() > 0) {
             return all.get(0);
-        else
+        } else {
             return null;
+        }
     }
 
     private <T> T getOneElementImmediate(

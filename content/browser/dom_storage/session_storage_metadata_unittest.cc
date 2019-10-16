@@ -17,6 +17,7 @@
 #include "base/test/task_environment.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
@@ -92,12 +93,7 @@ class SessionStorageMetadataTest : public testing::Test {
 
     metadata->ParseNextMapId(next_map_id_value);
 
-    std::vector<leveldb::mojom::KeyValuePtr> namespace_values;
-    for (auto& entry : namespace_entries) {
-      namespace_values.push_back(
-          leveldb::mojom::KeyValue::New(entry.key, entry.value));
-    }
-    EXPECT_TRUE(metadata->ParseNamespaces(std::move(namespace_values),
+    EXPECT_TRUE(metadata->ParseNamespaces(std::move(namespace_entries),
                                           &migration_operations));
     EXPECT_TRUE(migration_operations.empty());
   }
@@ -487,7 +483,7 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   metadata.ParseNextMapId(leveldb::StdStringToUint8Vector(db_value));
 
   // Get all keys-value pairs with the given key prefix
-  std::vector<leveldb::mojom::KeyValuePtr> values;
+  std::vector<storage::DomStorageDatabase::KeyValuePair> values;
   {
     std::unique_ptr<leveldb::Iterator> it(db()->NewIterator(options));
     it->Seek(leveldb::Slice("namespace-"));
@@ -495,9 +491,8 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
       if (!it->key().starts_with(leveldb::Slice("namespace-")))
         break;
       leveldb::mojom::KeyValuePtr kv = leveldb::mojom::KeyValue::New();
-      kv->key = leveldb::GetVectorFor(it->key());
-      kv->value = leveldb::GetVectorFor(it->value());
-      values.push_back(std::move(kv));
+      values.emplace_back(leveldb::GetVectorFor(it->key()),
+                          leveldb::GetVectorFor(it->value()));
     }
     EXPECT_TRUE(it->status().ok());
   }

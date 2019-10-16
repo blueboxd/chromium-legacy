@@ -5,13 +5,31 @@
 #include "chrome/browser/page_load_metrics/observers/click_input_tracker.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 
 namespace page_load_metrics {
 
-TEST(ClickInputTrackerTest, OnUserInputGestureTapClickBurst) {
+class ClickInputTrackerTest : public testing::Test {
+ public:
+  ClickInputTrackerTest()
+      : task_runner_(new base::TestSimpleTaskRunner),
+        task_runner_handle_(task_runner_) {}
+
+ protected:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ClickInputTrackerTest);
+};
+
+TEST_F(ClickInputTrackerTest, OnUserInputGestureTapClickBurst) {
   ClickInputTracker click_tracker;
 
   base::TimeTicks timestamp = base::TimeTicks::Now();
@@ -54,12 +72,23 @@ TEST(ClickInputTrackerTest, OnUserInputGestureTapClickBurst) {
   EXPECT_EQ(4, click_tracker.GetMaxBurstCountForTesting());
 
   base::HistogramTester histogram_tester;
-  click_tracker.RecordClickBurst();
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  ukm::SourceId ukm_source_id = ukm::SourceId(1);
+  click_tracker.RecordClickBurst(ukm_source_id);
   histogram_tester.ExpectUniqueSample("PageLoad.Experimental.ClickInputBurst",
                                       4, 1);
+
+  // Verify UKM entry.
+  task_runner_->RunUntilIdle();
+  using UkmEntry = ukm::builders::ClickInput;
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmEntry::kExperimental_ClickInputBurstName, 4);
 }
 
-TEST(ClickInputTrackerTest, OnUserInputMouseUpClickBurst) {
+TEST_F(ClickInputTrackerTest, OnUserInputMouseUpClickBurst) {
   ClickInputTracker click_tracker;
 
   base::TimeTicks timestamp = base::TimeTicks::Now();
@@ -123,7 +152,8 @@ TEST(ClickInputTrackerTest, OnUserInputMouseUpClickBurst) {
   EXPECT_EQ(5, click_tracker.GetMaxBurstCountForTesting());
 
   base::HistogramTester histogram_tester;
-  click_tracker.RecordClickBurst();
+  ukm::SourceId ukm_source_id = ukm::SourceId(1);
+  click_tracker.RecordClickBurst(ukm_source_id);
   histogram_tester.ExpectUniqueSample("PageLoad.Experimental.ClickInputBurst",
                                       5, 1);
 }

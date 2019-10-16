@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Sesi <ph name="APPLICATION_NAME" /> anda tidak aktif untuk sementara waktu dan akan diputuskan sambungannya tidak lama lagi.</translation>
 <translation id="2317666076142640974">Intai sepintas lalu <ph name="LINK_BEGIN" />apl web Desktop Jauh Chrome<ph name="LINK_END" />. Kami ingin mendengar maklum balas anda.</translation>
 <translation id="2320166752086256636">Sembunyikan papan kekunci</translation>
-<translation id="2332192922827071008">Buka Pilihan</translation>
 <translation id="2353140552984634198">Anda boleh mengakses komputer ini dengan selamat menggunakan Chromoting.</translation>
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2366718077645204424">Tidak dapat mencapai hos. Hal ini mungkin disebabkan oleh konfigurasi rangkaian yang anda gunakan.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Disambungkan ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">PERHATIAN: Untuk memastikan semua pintasan papan kekunci tersedia, anda boleh mengkonfigurasi Desktop Jauh Chrome kepada ‘Buka sebagai tetingkap’.</translation>
 <translation id="2540992418118313681">Adakah anda ingin berkongsi komputer ini untuk dilihat dan dikawal oleh pengguna lain?</translation>
-<translation id="254771646005658629">Benarkan pengguna jauh mengawal Mac ini</translation>
 <translation id="2579271889603567289">Hos mengalami ranap sistem atau gagal bermula.</translation>
 <translation id="2599300881200251572">Perkhidmatan ini membolehkan sambungan masuk daripada klien Desktop Jauh Chrome.</translation>
 <translation id="2647232381348739934">Perkhidmatan Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Tidak dapat menetapkan semula aplikasi. Anda masih boleh menghantar laporan pepijat.</translation>
 <translation id="5419418238395129586">Terakhir dalam talian: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hos telah ditutup.</translation>
-<translation id="5463789431147491241">Untuk menggunakan <ph name="PRODUCT_NAME" /> pada Mac ini, ikut langkah berikut:
-
-Pilih '<ph name="BUTTON_NAME" />' di bawah. Dalam pilihan Keselamatan dan Privasi anda, tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
-
-Jika '<ph name="SERVICE_SCRIPT_NAME" />' telah pun ditandai, nyahtanda dan kemudian tandai semula.</translation>
 <translation id="5510035215749041527">Putuskan sambungan sekarang</translation>
 <translation id="5593560073513909978">Perkhidmatan ini tergendala buat sementara waktu. Sila cuba lagi kemudian.</translation>
 <translation id="5601503069213153581">PIN</translation>

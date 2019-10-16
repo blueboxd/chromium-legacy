@@ -20,6 +20,10 @@ per-file child_process_security_policy_unittest.cc=mkwst@chromium.org
 per-file child_process_security_policy_unittest.cc=tsepez@chromium.org
 per-file browser_interface_binders.cc=set noparent
 per-file browser_interface_binders.cc=file://ipc/SECURITY_OWNERS
+per-file ppapi_plugin_process_host_receiver_bindings.cc=set noparent
+per-file ppapi_plugin_process_host_receiver_bindings.cc=file://ipc/SECURITY_OWNERS
+per-file browser_child_process_host_impl_receiver_bindings.cc=set noparent
+per-file browser_child_process_host_impl_receiver_bindings.cc=file://ipc/SECURITY_OWNERS
 
 per-file host_zoom_*=wjmaclean@chromium.org
 per-file find_request_manager*=paulmeyer@chromium.org

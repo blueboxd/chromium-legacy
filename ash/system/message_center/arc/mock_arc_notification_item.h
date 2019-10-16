@@ -39,6 +39,7 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void OnClosedFromAndroid() override {}
   void Click() override {}
   void ToggleExpansion() override {}
+  void OnWindowActivated(bool activated) override {}
   void OpenSettings() override {}
   void OpenSnooze() override {}
   void IncrementWindowRefCount() override {}

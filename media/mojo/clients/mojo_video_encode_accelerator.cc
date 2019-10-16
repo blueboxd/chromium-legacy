@@ -144,9 +144,12 @@ void MojoVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
     return;
   }
 
-  DCHECK_EQ(PIXEL_FORMAT_I420, frame->format());
-  DCHECK_EQ(VideoFrame::STORAGE_SHMEM, frame->storage_type());
-  DCHECK(frame->shm_region()->IsValid());
+  if (frame->format() != PIXEL_FORMAT_I420 ||
+      VideoFrame::STORAGE_SHMEM != frame->storage_type() ||
+      !frame->shm_region()->IsValid()) {
+    DLOG(ERROR) << "Unexpected video frame buffer";
+    return;
+  }
 
   // Oftentimes |frame|'s underlying planes will be aligned and not tightly
   // packed, so don't use VideoFrame::AllocationSize().

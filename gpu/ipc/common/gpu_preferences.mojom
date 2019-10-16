@@ -14,7 +14,8 @@ import "ui/gfx/mojom/buffer_types.mojom";
 enum VulkanImplementationName {
   kNone = 0,
   kNative = 1,
-  kSwiftshader = 2,
+  kForcedNative = 2,
+  kSwiftshader = 3,
   kLast = kSwiftshader,
 };
 

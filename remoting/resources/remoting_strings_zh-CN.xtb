@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">您的<ph name="APPLICATION_NAME" />会话已经有一段时间没有活动了，连接即将断开。</translation>
 <translation id="2317666076142640974">快来试用一下新版<ph name="LINK_BEGIN" />“Chrome 远程桌面”网络应用<ph name="LINK_END" />吧。我们期待听到您的反馈。</translation>
 <translation id="2320166752086256636">隐藏键盘</translation>
-<translation id="2332192922827071008">打开偏好设置</translation>
 <translation id="2353140552984634198">您可使用 Chrome 远程访问安全地访问此计算机。</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">已连接到“<ph name="HOSTNAME" />”</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2540992418118313681">您要与其他用户共享此计算机的查看和控制权限吗？</translation>
-<translation id="254771646005658629">允许远程用户控制此 Mac</translation>
 <translation id="2579271889603567289">主机已崩溃或未能顺利启动。</translation>
 <translation id="2599300881200251572">此服务允许来自 Chrome 远程桌面客户端的连接。</translation>
 <translation id="2647232381348739934">Chrome 远程访问服务</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">无法重置该应用。您仍可以发送错误报告。</translation>
 <translation id="5419418238395129586">上次在线日期：<ph name="DATE" /></translation>
 <translation id="544077782045763683">主机已关机。</translation>
-<translation id="5463789431147491241">要在此 Mac 上使用 <ph name="PRODUCT_NAME" />，请按以下步骤操作：
-
-选择下方的“<ph name="BUTTON_NAME" />”。在“安全性与隐私”偏好设置中，勾选“<ph name="SERVICE_SCRIPT_NAME" />”旁边的复选框。
-
-如果“<ph name="SERVICE_SCRIPT_NAME" />”已处于选中状态，请先取消选中，然后再次勾选。</translation>
 <translation id="5510035215749041527">立即断开</translation>
 <translation id="5593560073513909978">此服务暂时无法使用。请稍后再试。</translation>
 <translation id="5601503069213153581">PIN</translation>

@@ -157,21 +157,24 @@ static_library("video_player_test_environment") {
   ]
 }
 
-static_library("image_processor") {
-  testonly = true
-  sources = [
-    "image_processor/image_processor_client.cc",
-    "image_processor/image_processor_client.h",
-  ]
-  deps = [
-    ":helpers",
-    ":render_helpers",
-    "//media:test_support",
-    "//media/gpu",
-    "//testing/gtest",
-    "//third_party/libyuv",
-  ]
-  data = [
-    "//media/test/data/",
-  ]
+if (use_vaapi || use_v4l2_codec) {
+  static_library("image_processor") {
+    testonly = true
+    sources = [
+      "image_processor/image_processor_client.cc",
+      "image_processor/image_processor_client.h",
+    ]
+    deps = [
+      ":helpers",
+      ":render_helpers",
+      "//media:test_support",
+      "//media/gpu",
+      "//media/gpu/chromeos:fourcc",
+      "//testing/gtest",
+      "//third_party/libyuv",
+    ]
+    data = [
+      "//media/test/data/",
+    ]
+  }
 }

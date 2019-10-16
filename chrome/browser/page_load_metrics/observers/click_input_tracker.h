@@ -7,6 +7,7 @@
 
 #include "base/feature_list.h"
 #include "base/time/time.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
@@ -28,7 +29,7 @@ class ClickInputTracker {
   void OnUserInput(const blink::WebInputEvent& event);
 
   // If this tracker identified a click burst, this will report metrics for it.
-  void RecordClickBurst();
+  void RecordClickBurst(ukm::SourceId source_id);
 
   int GetCurrentBurstCountForTesting() const {
     return current_click_input_burst_;

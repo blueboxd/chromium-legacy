@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">La tua sessione in <ph name="APPLICATION_NAME" /> non è attiva da un po' di tempo e verrà disconnessa a breve.</translation>
 <translation id="2317666076142640974">Dai un'occhiata alla nuova <ph name="LINK_BEGIN" />app web Chrome Remote Desktop<ph name="LINK_END" />. Ci piacerebbe sapere cosa ne pensi.</translation>
 <translation id="2320166752086256636">Nascondi tastiera</translation>
-<translation id="2332192922827071008">Apri Preferenze</translation>
 <translation id="2353140552984634198">Puoi accedere a questo computer in sicurezza utilizzando Chromoting.</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="2366718077645204424">Impossibile raggiungere l'host. Il problema potrebbe essere dovuto alla configurazione della rete in uso.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Connessione a <ph name="HOSTNAME" /> effettuata</translation>
 <translation id="2512228156274966424">NOTA. Per assicurarti che siano disponibili tutte le scorciatoie da tastiera, puoi configurare l'opzione "Apri in una finestra" per Chrome Remote Desktop.</translation>
 <translation id="2540992418118313681">Vuoi condividere questo computer con un altro utente che potrà accedervi e controllarlo?</translation>
-<translation id="254771646005658629">Consenti agli utenti remoti di controllare questo Mac</translation>
 <translation id="2579271889603567289">L'host si è arrestato in modo anomalo o non si è avviato.</translation>
 <translation id="2599300881200251572">Questo servizio consente connessioni in entrata da client Chrome Remote Desktop.</translation>
 <translation id="2647232381348739934">Servizio Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Impossibile ripristinare l'applicazione. Puoi comunque inviare una segnalazione di bug.</translation>
 <translation id="5419418238395129586">Ultimo collegamento online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'host è stato chiuso.</translation>
-<translation id="5463789431147491241">Per usare <ph name="PRODUCT_NAME" /> su questo Mac, svolgi i seguenti passaggi:
-
-Seleziona "<ph name="BUTTON_NAME" />" sotto. Nelle preferenze Sicurezza e Privacy, seleziona la casella "<ph name="SERVICE_SCRIPT_NAME" />".
-
-Se la casella "<ph name="SERVICE_SCRIPT_NAME" />" è già selezionata, deselezionala e selezionala di nuovo.</translation>
 <translation id="5510035215749041527">Scollegati ora</translation>
 <translation id="5593560073513909978">Il servizio non è al momento disponibile. Riprova più tardi.</translation>
 <translation id="5601503069213153581">PIN</translation>

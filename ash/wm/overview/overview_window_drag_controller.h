@@ -104,6 +104,7 @@ class ASH_EXPORT OverviewWindowDragController {
       const gfx::PointF& location_in_screen);
 
   gfx::Rect GetWorkAreaOfDisplayBeingDraggedIn() const;
+  SplitViewController* GetSplitViewControllerForDisplayBeingDraggedIn() const;
 
   // Dragged items should not attempt to update the indicators or snap if
   // the drag started in a snap region and has not been dragged pass the
@@ -116,8 +117,6 @@ class ASH_EXPORT OverviewWindowDragController {
   void SnapWindow(SplitViewController::SnapPosition snap_position);
 
   OverviewSession* overview_session_;
-
-  SplitViewController* split_view_controller_;
 
   // The drag target window in the overview mode.
   OverviewItem* item_ = nullptr;

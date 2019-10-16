@@ -83,9 +83,9 @@ bool HandleDfmifiedDevUiPageURL(
   }
 
   // If module is already installed, ensure that it is loaded.
-  if (dev_ui::DevUiModuleProvider::ModuleInstalled()) {
+  if (dev_ui::DevUiModuleProvider::GetInstance()->ModuleInstalled()) {
     // Synchronously load module (if not already loaded).
-    dev_ui::DevUiModuleProvider::LoadModule();
+    dev_ui::DevUiModuleProvider::GetInstance()->LoadModule();
     return false;
   }
   // Create URL to the DevUI loader with "?url=<escaped original URL>" so that

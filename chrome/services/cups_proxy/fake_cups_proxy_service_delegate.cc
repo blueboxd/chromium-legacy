@@ -21,6 +21,9 @@ bool FakeCupsProxyServiceDelegate::IsPrinterInstalled(
   return false;
 }
 
+void FakeCupsProxyServiceDelegate::PrinterInstalled(
+    const chromeos::Printer& printer) {}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 FakeCupsProxyServiceDelegate::GetIOTaskRunner() {
   return nullptr;

@@ -84,7 +84,8 @@ public class ExploreSitesPage extends BasicNativePage {
             new PropertyModel.ReadableIntPropertyKey();
     private static final int UNKNOWN_NAV_CATEGORY = -1;
 
-    @IntDef({CatalogLoadingState.LOADING, CatalogLoadingState.SUCCESS, CatalogLoadingState.ERROR})
+    @IntDef({CatalogLoadingState.LOADING, CatalogLoadingState.SUCCESS, CatalogLoadingState.ERROR,
+            CatalogLoadingState.LOADING_NET})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CatalogLoadingState {
         int LOADING = 1; // Loading catalog info from disk.

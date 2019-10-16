@@ -1078,6 +1078,17 @@ void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
   UpdateObservers();
 }
 
+void DownloadItemImpl::OnAsyncScanningCompleted(
+    DownloadDangerType danger_type) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(AllDataSaved());
+
+  DVLOG(20) << __func__ << "() danger_type=" << danger_type
+            << " download=" << DebugString(true);
+  SetDangerType(danger_type);
+  UpdateObservers();
+}
+
 void DownloadItemImpl::SetOpenWhenComplete(bool open) {
   open_when_complete_ = open;
 }

@@ -5,14 +5,13 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
 
+#include <linux/input.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <bitset>
 #include <memory>
 #include <queue>
-
-#include <linux/input.h>
 // See if we compile against new enough headers and add missing definition
 // if the headers are too old.
 #ifndef MT_TOOL_PALM
@@ -24,6 +23,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
+#include "base/metrics/field_trial_params.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -36,6 +36,8 @@ namespace ui {
 class DeviceEventDispatcherEvdev;
 class FalseTouchFinder;
 struct InProgressTouchEvdev;
+
+extern const EVENTS_OZONE_EVDEV_EXPORT base::Feature kEnableSingleCancelTouch;
 
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {

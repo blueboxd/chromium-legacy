@@ -20,16 +20,16 @@ import java.util.regex.Pattern;
 public class TabSwitcherController extends PageController {
     private static final Pattern PATTERN_NUMBER_OF_OPEN_TABS = Pattern.compile("^(\\d+) .*");
     private static final IUi2Locator LOCATOR_CLOSE_ALL_TABS =
-            Ui2Locators.withResEntries(R.id.close_all_tabs_button);
+            Ui2Locators.withAnyResEntry(R.id.close_all_tabs_button);
     private static final IUi2Locator LOCATOR_NEW_TAB =
-            Ui2Locators.withResEntries(R.id.tab_switcher_new_tab_button, R.id.new_tab_button);
-    private static final IUi2Locator LOCATOR_TAB_SWITCHER_BUTTON = Ui2Locators.withResEntries(
+            Ui2Locators.withAnyResEntry(R.id.tab_switcher_new_tab_button, R.id.new_tab_button);
+    private static final IUi2Locator LOCATOR_TAB_SWITCHER_BUTTON = Ui2Locators.withAnyResEntry(
             R.id.tab_switcher_button, R.id.tab_switcher_mode_tab_switcher_button);
-    private static final IUi2Locator LOCATOR_MENU = Ui2Locators.withResEntries(R.id.menu_button);
+    private static final IUi2Locator LOCATOR_MENU = Ui2Locators.withAnyResEntry(R.id.menu_button);
 
     private static final TabSwitcherController sInstance = new TabSwitcherController();
 
-    static public TabSwitcherController getInstance() {
+    public static TabSwitcherController getInstance() {
         return sInstance;
     }
 

@@ -21,6 +21,9 @@ class DeviceSyncBase : public mojom::DeviceSync {
  public:
   ~DeviceSyncBase() override;
 
+  // Informs the implementation that accounts and preferences are ready to use.
+  virtual void OnProfileInitialized() {}
+
   // mojom::DeviceSync:
   void AddObserver(mojom::DeviceSyncObserverPtr observer,
                    AddObserverCallback callback) override;

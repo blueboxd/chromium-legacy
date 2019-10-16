@@ -1896,7 +1896,7 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
   Initialize();
   CompleteCryptoHandshake();
 
-  EXPECT_EQ(quic::QuicTime::Delta::FromMilliseconds(100),
+  EXPECT_EQ(quic::QuicTime::Delta::FromMilliseconds(200),
             session_->connection()->retransmittable_on_wire_timeout());
 
   // Open a stream since the connection only sends PINGs to keep a
@@ -1914,12 +1914,12 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(alarm->IsSet());
   EXPECT_EQ(
-      clock_.ApproximateNow() + quic::QuicTime::Delta::FromMilliseconds(100),
+      clock_.ApproximateNow() + quic::QuicTime::Delta::FromMilliseconds(200),
       alarm->deadline());
 
   // Advance clock and simulate the alarm firing. This should cause a PING to be
   // sent.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(100));
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(200));
   alarm_factory_.FireAlarm(alarm);
   base::RunLoop().RunUntilIdle();
 

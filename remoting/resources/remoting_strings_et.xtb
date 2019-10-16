@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Teie rakenduse <ph name="APPLICATION_NAME" /> seanss on olnud mõnda aega passiivne ja ühendus katkestatakse peagi.</translation>
 <translation id="2317666076142640974">Vaadake uue <ph name="LINK_BEGIN" />veebirakenduse Chrome Remote Desktop<ph name="LINK_END" /> eelvaadet. Soovime kuulda teie tagasisidet.</translation>
 <translation id="2320166752086256636">Peida klaviatuur</translation>
-<translation id="2332192922827071008">Ava eelistused</translation>
 <translation id="2353140552984634198">Rakendus Chromoting võimaldab teil turvaliselt arvuti juurde pääseda.</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2366718077645204424">Hostiga ei saa ühendust. Seda põhjustab ilmselt kasutatava võrgu konfiguratsioon.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Ühendatud hostiga <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chrome Remote Desktop seadistada valikule „Ava aknana”.</translation>
 <translation id="2540992418118313681">Kas soovite jagada seda arvutit teise kasutajaga, nii et ta saab seda kasutada ja juhtida?</translation>
-<translation id="254771646005658629">Kaugkasutajatel selle Maci haldamise lubamine</translation>
 <translation id="2579271889603567289">Host jooksis kokku või selle käivitamine ebaõnnestus.</translation>
 <translation id="2599300881200251572">See teenus lubab sissetulevad ühendused Chrome Remote Desktopi klientidelt.</translation>
 <translation id="2647232381348739934">Chromootimise teenus</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Rakendust ei saanud lähtestada. Saate siiski saata veaaruande.</translation>
 <translation id="5419418238395129586">Viimati veebis: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host on välja lülitatud.</translation>
-<translation id="5463789431147491241">Teenuse <ph name="PRODUCT_NAME" /> kasutamiseks selles Macis toimige järgmiselt.
-
-Valige allpool nupp „<ph name="BUTTON_NAME" />”. Märkige turva- ja privaatsuseelistustes ruut „<ph name="SERVICE_SCRIPT_NAME" />”.
-
-Kui ruut „<ph name="SERVICE_SCRIPT_NAME" />” on juba märgitud, eemaldage märge ja märkige siis ruut uuesti.</translation>
 <translation id="5510035215749041527">Katkesta kohe ühendus</translation>
 <translation id="5593560073513909978">Teenus on ajutiselt kättesaamatu. Proovige hiljem uuesti.</translation>
 <translation id="5601503069213153581">PIN-kood</translation>

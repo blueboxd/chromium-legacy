@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
@@ -342,6 +341,13 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
   return PickerAction::INVALID;
 }
 
+std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindAppsForUrl(
+    content::WebContents* web_contents,
+    const GURL& url,
+    std::vector<IntentPickerAppInfo> apps) {
+  return FindPwaForUrl(web_contents, url, std::move(apps));
+}
+
 // static
 std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
     content::WebContents* web_contents,
@@ -508,7 +514,7 @@ AppsNavigationThrottle::HandleRequest() {
 
   // We didn't query ARC, so proceed with the navigation and query if we have an
   // installed desktop PWA to handle the URL.
-  std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
+  std::vector<IntentPickerAppInfo> apps = FindAppsForUrl(web_contents, url, {});
 
   if (!apps.empty())
     ui_displayed_ = true;

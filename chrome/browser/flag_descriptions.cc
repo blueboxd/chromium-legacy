@@ -3063,6 +3063,7 @@ const char kUseAngleDefault[] = "Default";
 const char kUseAngleGL[] = "OpenGL";
 const char kUseAngleD3D11[] = "D3D11";
 const char kUseAngleD3D9[] = "D3D9";
+const char kUseAngleD3D11on12[] = "D3D11on12";
 
 const char kUseWinrtMidiApiName[] = "Use Windows Runtime MIDI API";
 const char kUseWinrtMidiApiDescription[] =

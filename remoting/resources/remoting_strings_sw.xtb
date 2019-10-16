@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Kipindi chako cha <ph name="APPLICATION_NAME" /> hakijawa kikitumika kwa muda na kitaondolewa baada ya muda mfupi.</translation>
 <translation id="2317666076142640974">Ijaribu <ph name="LINK_BEGIN" />programu mpya ya wavuti ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali<ph name="LINK_END" />. Tungependa kupata maoni yako.</translation>
 <translation id="2320166752086256636">Ficha kibodi</translation>
-<translation id="2332192922827071008">Fungua Mapendeleo</translation>
 <translation id="2353140552984634198">Unaweza kufikia kwa usalama kompyuta hii kutumia Chromoting.</translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2366718077645204424">Haiwezi kufikia seva pangishi. Labda hii ni kwa sababu ya usanidi wa mtandao unaotumia.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Imeunganisha kwenye <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">KUMBUKA: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Kompyuta ya Mbali ya Chrome ili "Ifungue kama dirisha'’.</translation>
 <translation id="2540992418118313681">Ungependa kushiriki kompyuta hii kwa mtumiaji mwingine ili kuangalia na kudhibiti?</translation>
-<translation id="254771646005658629">Ruhusu watumiaji wadhibiti Mac hii kutoka mbali</translation>
 <translation id="2579271889603567289">Kompyuta pangishi imeacha kufanya kazi au imeshindwa kufunguka.</translation>
 <translation id="2599300881200251572">Huduma hii inawezesha miunganisho inayoingia kutoka kwa viteja vya Kompyuta za Mbali za Chrome</translation>
 <translation id="2647232381348739934">Huduma ya Chromoting</translation>
@@ -185,9 +183,6 @@
 <translation id="5419185025274123272">Haikuweza kuweka upya programu. Bado unaweza kutuma ripoti ya hitilafu.</translation>
 <translation id="5419418238395129586">Mara ya mwisho kuwa mtandaoni: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Pangishi imezima.</translation>
-<translation id="5463789431147491241">Ili utumie <ph name="PRODUCT_NAME" /> kwenye Mac hii, fuata hatua hizi:
-Chagua '<ph name="BUTTON_NAME" />' hapa chini. Katika sehemu ya mapendeleo yako ya Usalama na Faragha, chagua kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
-Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari imechaguliwa, batilisha uteuzi kisha uichague tena.</translation>
 <translation id="5510035215749041527">Ondoa sasa</translation>
 <translation id="5593560073513909978">Huduma haipatikani kwa muda. Tafadhali jaribu tena baadaye.</translation>
 <translation id="5601503069213153581">PIN</translation>

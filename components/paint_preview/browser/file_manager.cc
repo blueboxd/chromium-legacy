@@ -61,11 +61,11 @@ bool FileManager::CreateOrGetDirectoryFor(const GURL& url,
 
 void FileManager::DeleteArtifactsFor(const std::vector<GURL>& urls) {
   for (const auto& url : urls)
-    base::DeleteFile(root_directory_.AppendASCII(HashToHex(url)), true);
+    base::DeleteFileRecursively(root_directory_.AppendASCII(HashToHex(url)));
 }
 
 void FileManager::DeleteAll() {
-  base::DeleteFile(root_directory_, true);
+  base::DeleteFileRecursively(root_directory_);
 }
 
 void FileManager::DeleteAllOlderThan(base::Time deletion_time) {
@@ -81,7 +81,7 @@ void FileManager::DeleteAllOlderThan(base::Time deletion_time) {
       dirs_to_delete.push_back(dir);
   }
   for (const auto& dir : dirs_to_delete)
-    base::DeleteFile(dir, true);
+    base::DeleteFileRecursively(dir);
 }
 
 bool FileManager::LastAccessedTimeInternal(const base::FilePath& path,

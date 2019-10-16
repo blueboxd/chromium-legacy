@@ -145,6 +145,10 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
 
   views::NativeViewHost* content_view() { return content_view_; }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
   views::View* top_container() {
     return NonClientFrameViewAsh::Get(window())->GetHeaderView();
   }
@@ -727,9 +731,9 @@ TEST_F(ImmersiveFullscreenControllerTest, WindowsInTabletMode) {
 
   // Top-of-window views will not be revealed for snapped window in splitview
   // mode either.
-  SplitViewController::Get()->SnapWindow(window(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window(), SplitViewController::LEFT);
   EXPECT_TRUE(WindowState::Get(window())->IsSnapped());
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
 }

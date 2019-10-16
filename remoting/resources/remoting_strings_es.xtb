@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">La sesión de <ph name="APPLICATION_NAME" /> lleva un tiempo inactiva y se desconectará en breve.</translation>
 <translation id="2317666076142640974">Consigue un avance exclusivo de la nueva <ph name="LINK_BEGIN" />aplicación web Escritorio Remoto de Chrome<ph name="LINK_END" />. Nos gustaría conocer tu opinión.</translation>
 <translation id="2320166752086256636">Ocultar teclado</translation>
-<translation id="2332192922827071008">Abrir las preferencias</translation>
 <translation id="2353140552984634198">Puedes acceder de forma segura a este ordenador con Chromoting.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">No se puede establecer conexión con el host. Es probable que el error se deba a la configuración de la red que se está utilizando.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Conectado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que estén disponibles todas las combinaciones de teclas, puedes configurar la aplicación Escritorio Remoto de Chrome para que se abra como una ventana.</translation>
 <translation id="2540992418118313681">¿Quieres compartir este ordenador para que otro usuario pueda acceder a él y controlarlo?</translation>
-<translation id="254771646005658629">Permitir a usuarios remotos controlar este Mac</translation>
 <translation id="2579271889603567289">El host ha fallado o no se ha podido iniciar.</translation>
 <translation id="2599300881200251572">Este servicio permite las conexiones entrantes de los clientes de Escritorio Remoto de Chrome.</translation>
 <translation id="2647232381348739934">Servicio de Chromoting</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">No se ha podido restablecer la aplicación. Puedes seguir enviando un informe de errores.</translation>
 <translation id="5419418238395129586">Última conexión: <ph name="DATE" /></translation>
 <translation id="544077782045763683">El host se ha desconectado.</translation>
-<translation id="5463789431147491241">Si quieres usar <ph name="PRODUCT_NAME" /> en este Mac, sigue estos pasos:
-
-Selecciona <ph name="BUTTON_NAME" /> abajo. En el panel de preferencias Privacidad y seguridad, marca la casilla situada junto a <ph name="SERVICE_SCRIPT_NAME" />.
-
-Si la casilla de <ph name="SERVICE_SCRIPT_NAME" /> ya está marcada, desmárcala y márcala de nuevo.</translation>
 <translation id="5510035215749041527">Desconectar ahora</translation>
 <translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
 <translation id="5601503069213153581">PIN</translation>

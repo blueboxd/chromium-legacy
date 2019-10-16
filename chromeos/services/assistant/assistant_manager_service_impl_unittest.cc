@@ -10,7 +10,7 @@
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager.h"
 #include "chromeos/assistant/internal/test_support/fake_assistant_manager_internal.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
-#include "chromeos/services/assistant/assistant_communication_error_observer.h"
+#include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/constants.h"
 #include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -31,6 +31,8 @@ namespace chromeos {
 namespace assistant {
 
 using media_session::mojom::MediaSessionAction;
+using testing::StrictMock;
+using CommunicationErrorType = AssistantManagerService::CommunicationErrorType;
 
 namespace {
 // Return the list of all libassistant error codes that are considered to be
@@ -132,16 +134,29 @@ class FakeServiceContext : public ServiceContext {
   DISALLOW_COPY_AND_ASSIGN(FakeServiceContext);
 };
 
-class AssistantCommunicationErrorObserverMock
-    : public AssistantCommunicationErrorObserver {
+class CommunicationErrorObserverMock
+    : public AssistantManagerService::CommunicationErrorObserver {
  public:
-  AssistantCommunicationErrorObserverMock() = default;
-  ~AssistantCommunicationErrorObserverMock() override = default;
+  CommunicationErrorObserverMock() = default;
+  ~CommunicationErrorObserverMock() override = default;
 
-  MOCK_METHOD(void, OnCommunicationError, (CommunicationErrorType error));
+  MOCK_METHOD(void,
+              OnCommunicationError,
+              (AssistantManagerService::CommunicationErrorType error));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AssistantCommunicationErrorObserverMock);
+  DISALLOW_COPY_AND_ASSIGN(CommunicationErrorObserverMock);
+};
+
+class StateObserverMock : public AssistantManagerService::StateObserver {
+ public:
+  StateObserverMock() = default;
+  ~StateObserverMock() override = default;
+
+  MOCK_METHOD(void, OnStateChanged, (AssistantManagerService::State new_state));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StateObserverMock);
 };
 
 class AssistantManagerServiceImplTest : public testing::Test {
@@ -194,19 +209,20 @@ class AssistantManagerServiceImplTest : public testing::Test {
     return delegate_->assistant_manager_internal();
   }
 
-  base::OnceClosure GetDummyCallback() {
-    return base::BindOnce([] {});
-  }
-
-  void Start() { Start(GetDummyCallback()); }
-
-  void Start(base::OnceClosure callback) {
+  void Start() {
     assistant_manager_service()->Start("dummy-access-token",
-                                       /*enable_hotword=*/false,
-                                       std::move(callback));
+                                       /*enable_hotword=*/false);
   }
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }
+
+  // Adds a state observer mock, and add the expectation for the fact that it
+  // auto-fires the observer.
+  void AddStateObserver(StateObserverMock* observer) {
+    EXPECT_CALL(*observer,
+                OnStateChanged(assistant_manager_service()->GetState()));
+    assistant_manager_service()->AddAndFireStateObserver(observer);
+  }
 
   void WaitUntilStartIsFinished() {
     assistant_manager_service()->WaitUntilStartIsFinishedForTesting();
@@ -224,7 +240,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
         fake_assistant_manager_internal()->assistant_manager_delegate();
 
     for (int code : libassistant_error_codes) {
-      AssistantCommunicationErrorObserverMock observer;
+      CommunicationErrorObserverMock observer;
       assistant_manager_service()->AddCommunicationErrorObserver(&observer);
 
       EXPECT_CALL(observer, OnCommunicationError(expected_error));
@@ -299,25 +315,6 @@ TEST_F(AssistantManagerServiceImplTest,
             assistant_manager_service()->GetState());
 }
 
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldInvokeStartCallbackWhenLibassistantStartFinishes) {
-  bool callback_invoked = false;
-  base::OnceClosure callback = base::BindLambdaForTesting(
-      [&callback_invoked]() { callback_invoked = true; });
-
-  Start(std::move(callback));
-
-  fake_assistant_manager()->BlockStartCalls();
-  RunUntilIdle();
-
-  EXPECT_EQ(callback_invoked, false);
-
-  fake_assistant_manager()->UnblockStartCalls();
-  WaitUntilStartIsFinished();
-
-  EXPECT_EQ(callback_invoked, true);
-}
-
 TEST_F(AssistantManagerServiceImplTest, ShouldSetStateToStoppedAfterStopping) {
   Start();
   WaitUntilStartIsFinished();
@@ -376,7 +373,7 @@ TEST_F(AssistantManagerServiceImplTest,
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldPauseMediaManagerOnPause) {
-  testing::StrictMock<MockMediaManager> mock;
+  StrictMock<MockMediaManager> mock;
   fake_assistant_manager()->SetMediaManager(&mock);
 
   Start();
@@ -389,7 +386,7 @@ TEST_F(AssistantManagerServiceImplTest, ShouldPauseMediaManagerOnPause) {
 }
 
 TEST_F(AssistantManagerServiceImplTest, ShouldResumeMediaManagerOnPlay) {
-  testing::StrictMock<MockMediaManager> mock;
+  StrictMock<MockMediaManager> mock;
   fake_assistant_manager()->SetMediaManager(&mock);
 
   Start();
@@ -409,7 +406,7 @@ TEST_F(AssistantManagerServiceImplTest, ShouldIgnoreOtherMediaManagerActions) {
       MediaSessionAction::kSeekTo,        MediaSessionAction::kScrubTo,
   };
 
-  testing::StrictMock<MockMediaManager> mock;
+  StrictMock<MockMediaManager> mock;
   fake_assistant_manager()->SetMediaManager(&mock);
 
   Start();
@@ -428,6 +425,84 @@ TEST_F(AssistantManagerServiceImplTest,
 
   assistant_manager_service()->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPlay);
+}
+
+TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenAddingIt) {
+  StrictMock<StateObserverMock> observer;
+  EXPECT_CALL(observer,
+              OnStateChanged(AssistantManagerService::State::STOPPED));
+
+  assistant_manager_service()->AddAndFireStateObserver(&observer);
+
+  assistant_manager_service()->RemoveStateObserver(&observer);
+}
+
+TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStarting) {
+  StrictMock<StateObserverMock> observer;
+  AddStateObserver(&observer);
+
+  fake_assistant_manager()->BlockStartCalls();
+
+  EXPECT_CALL(observer,
+              OnStateChanged(AssistantManagerService::State::STARTING));
+  Start();
+
+  assistant_manager_service()->RemoveStateObserver(&observer);
+  fake_assistant_manager()->UnblockStartCalls();
+}
+
+TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStarted) {
+  StrictMock<StateObserverMock> observer;
+  AddStateObserver(&observer);
+
+  EXPECT_CALL(observer,
+              OnStateChanged(AssistantManagerService::State::STARTING));
+  EXPECT_CALL(observer,
+              OnStateChanged(AssistantManagerService::State::STARTED));
+  Start();
+  WaitUntilStartIsFinished();
+
+  assistant_manager_service()->RemoveStateObserver(&observer);
+}
+
+TEST_F(AssistantManagerServiceImplTest,
+       ShouldFireStateObserverWhenLibAssistantSignalsOnStartFinished) {
+  Start();
+  WaitUntilStartIsFinished();
+
+  StrictMock<StateObserverMock> observer;
+  AddStateObserver(&observer);
+  EXPECT_CALL(observer,
+              OnStateChanged(AssistantManagerService::State::RUNNING));
+
+  fake_assistant_manager()->device_state_listener()->OnStartFinished();
+
+  assistant_manager_service()->RemoveStateObserver(&observer);
+}
+
+TEST_F(AssistantManagerServiceImplTest, ShouldFireStateObserverWhenStopping) {
+  Start();
+  WaitUntilStartIsFinished();
+
+  StrictMock<StateObserverMock> observer;
+  AddStateObserver(&observer);
+  EXPECT_CALL(observer,
+              OnStateChanged(AssistantManagerService::State::STOPPED));
+
+  assistant_manager_service()->Stop();
+
+  assistant_manager_service()->RemoveStateObserver(&observer);
+}
+
+TEST_F(AssistantManagerServiceImplTest,
+       ShouldNotFireStateObserverAfterItIsRemoved) {
+  StrictMock<StateObserverMock> observer;
+  AddStateObserver(&observer);
+
+  assistant_manager_service()->RemoveStateObserver(&observer);
+  EXPECT_CALL(observer, OnStateChanged).Times(0);
+
+  Start();
 }
 
 }  // namespace assistant

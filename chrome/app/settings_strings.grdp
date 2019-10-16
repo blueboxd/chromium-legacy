@@ -1511,6 +1511,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE" desc="Text for the title of the user's saved printers list.">
       Your saved printers
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_SHOW_MORE" desc="Text for the button to show more printers when there are more printers than currently displayed to the user.">
+      Show more
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE" desc="Text for the title of the dialog that is used to add nearby printers.">
       Add a nearby printer
     </message>

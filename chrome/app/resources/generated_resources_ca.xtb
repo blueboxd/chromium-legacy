@@ -128,7 +128,7 @@
 <translation id="117916940443676133">La clau de seguretat no està protegida amb un PIN. Per gestionar les dades d'inici de sessió, primer crea un PIN.</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1183237619868651138">No es pot instal·lar <ph name="EXTERNAL_CRX_FILE" /> a la memòria cau local.</translation>
-<translation id="1185924365081634987">També podeu provar de <ph name="GUEST_SIGNIN_LINK_START" />navegar com a convidat<ph name="GUEST_SIGNIN_LINK_END" /> per corregir aquest error de xarxa.</translation>
+<translation id="1185924365081634987">També podeu provar de <ph name="GUEST_SIGNIN_LINK_START" />navegar com a convidat<ph name="GUEST_SIGNIN_LINK_END" /> per corregir aquest error de la xarxa.</translation>
 <translation id="1186771945450942097">Suprimeix el programari nociu</translation>
 <translation id="1187722533808055681">Activacions en estat de repòs</translation>
 <translation id="1188807932851744811">El registre no s'ha penjat.</translation>
@@ -1527,7 +1527,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="323803881985677942">Obre les opcions de l'extensió</translation>
 <translation id="3241680850019875542">Seleccioneu el directori arrel de l'extensió que voleu empaquetar. Per actualitzar una extensió, cal que seleccioneu també el fitxer de clau privada que s'utilitzarà.</translation>
 <translation id="3244294424315804309">Continua silenciant el so</translation>
-<translation id="324849028894344899"><ph name="WINDOW_TITLE" />: error de xarxa</translation>
+<translation id="324849028894344899"><ph name="WINDOW_TITLE" />: error de la xarxa</translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;No forma part del certificat&gt;</translation>
 <translation id="3253225298092156258">No disponible</translation>
@@ -2154,7 +2154,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4096824249111507322">S'està preparant el mòdul de seguretat; espera (el procés pot tardar una estona)...</translation>
 <translation id="4097560579602855702">Cerca a Google</translation>
 <translation id="4099060993766194518">Vols restablir el motor de cerca predeterminat?</translation>
-<translation id="4099874310852108874">S'ha produït un error de xarxa.</translation>
+<translation id="4099874310852108874">S'ha produït un error de la xarxa.</translation>
 <translation id="4100733287846229632">Queda molt poc espai al dispositiu</translation>
 <translation id="4100853287411968461">Nou límit de temps de connexió</translation>
 <translation id="4103091233824664032">Introdueix la contrasenya per configurar el bloqueig de pantalla i l'inici de sessió</translation>
@@ -2582,7 +2582,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4808667324955055115">S'han bloquejat les finestres emergents:</translation>
 <translation id="480990236307250886">Obre la pàgina d'inici</translation>
 <translation id="4813136279048157860">Les meves imatges</translation>
-<translation id="4813512666221746211">Error de xarxa</translation>
+<translation id="4813512666221746211">Error de la xarxa</translation>
 <translation id="4816492930507672669">Ajusta a la mida de la pàgina</translation>
 <translation id="4820236583224459650">Estableix com a tiquet actiu</translation>
 <translation id="4821935166599369261">Creació de &amp;perfils activada</translation>
@@ -3617,7 +3617,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6308937455967653460">Desa l'en&amp;llaç com a...</translation>
 <translation id="6309510305002439352">El micròfon està desactivat</translation>
 <translation id="6311220991371174222">Chrome no es pot iniciar perquè s'ha produït un error mentre obries el perfil. Prova de reiniciar Chrome.</translation>
-<translation id="6312403991423642364">Error de xarxa desconegut</translation>
+<translation id="6312403991423642364">Error de la xarxa desconegut</translation>
 <translation id="6313641880021325787">SURT DEL MODE RV</translation>
 <translation id="6314819609899340042">Heu activat correctament les funcions de depuració en aquest dispositiu <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315493146179903667">Porta-ho tot al davant</translation>
@@ -4354,7 +4354,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7412226954991670867">Memòria de la GPU</translation>
 <translation id="7414464185801331860">18x</translation>
 <translation id="7415454883318062233">Configuració completada</translation>
-<translation id="7416362041876611053">Error de xarxa desconegut.</translation>
+<translation id="7416362041876611053">Error de la xarxa desconegut.</translation>
 <translation id="741906494724992817">Aquesta aplicació no requereix cap permís especial.</translation>
 <translation id="742130257665691897">Les adreces d'interès s'han suprimit</translation>
 <translation id="7421925624202799674">&amp;Visualitza l'origen de la pàgina</translation>

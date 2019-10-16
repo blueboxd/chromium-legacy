@@ -1322,7 +1322,7 @@
           <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph> wants to make changes.
         </message>
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to grant 'Accessibility' permission to the Chrome Remote Desktop service. This permission is part of the 'Privacy and Security' preferences pane. Mac-only.">
-          Grant 'Accessibility' permission
+          Grant 'Accessibility' permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
         </message>
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_BODY_TEXT" desc="The body text of the prompt that asks the user to turn on the Chrome Remote Desktop service. This setting lives in the 'Accessibility' section of the 'Privacy and Security' preferences pane. Mac-only.">
 To use <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>, you need to grant the 'Accessibility' permission so that input from the remote machine can be injected on this Mac.
@@ -1338,7 +1338,7 @@ If '<ph name="SERVICE_SCRIPT_NAME">$3<ex>org.chromium.chromoting.me2me.sh</ex></
           Not Now
         </message>
         <message name="IDS_SCREEN_RECORDING_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to grant 'Screen Recording' permission to the Chrome Remote Desktop service. This permission is part of the 'Privacy and Security' preferences pane. Mac-only.">
-          Grant 'Screen Recording' permission
+          Grant 'Screen Recording' permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
         </message>
         <message name="IDS_SCREEN_RECORDING_PERMISSION_DIALOG_BODY_TEXT" desc="The body text that asks the user to grant the 'Screen Recording' permission to the Chrome Remote Desktop service. Mac-only, OS 10.15 and later.">
 To use <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>, you need to grant the 'Screen Recording' permission so that the screen contents on this Mac can be sent to the remote machine.

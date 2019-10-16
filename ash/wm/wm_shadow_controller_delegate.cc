@@ -4,6 +4,7 @@
 
 #include "ash/wm/wm_shadow_controller_delegate.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -23,10 +24,13 @@ WmShadowControllerDelegate::~WmShadowControllerDelegate() = default;
 bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
     const aura::Window* window) {
   // Hide the shadow if it is one of the splitscreen snapped windows.
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  if (split_view_controller &&
-      split_view_controller->IsWindowInSplitView(window)) {
-    return false;
+  if (window->GetRootWindow() && RootWindowController::ForWindow(window)) {
+    SplitViewController* split_view_controller =
+        SplitViewController::Get(window);
+    if (split_view_controller &&
+        split_view_controller->IsWindowInSplitView(window)) {
+      return false;
+    }
   }
 
   // Hide the shadow while we are in overview mode.

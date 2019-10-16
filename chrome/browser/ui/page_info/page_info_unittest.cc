@@ -116,7 +116,6 @@ class MockPageInfoUI : public PageInfoUI {
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
     security_description->details =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
-    security_description->type = SecurityDescriptionType::SAFE_BROWSING;
     return security_description;
   }
 #endif

@@ -506,14 +506,16 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   }
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Since this is a v2 app it has a background page.
-  AddWithNameAndDescription(
-      IDR_GENIUS_APP_MANIFEST,
-      base::FilePath(
-          FILE_PATH_LITERAL("/usr/share/chromeos-assets/genius_app")),
-      l10n_util::GetStringUTF8(IDS_GENIUS_APP_NAME),
-      l10n_util::GetStringFUTF8(IDS_GENIUS_APP_DESCRIPTION,
-                                ui::GetChromeOSDeviceName()));
+  if (!base::FeatureList::IsEnabled(chromeos::features::kHelpAppV2)) {
+    // Since this is a v2 Chrome app it has a background page.
+    AddWithNameAndDescription(
+        IDR_GENIUS_APP_MANIFEST,
+        base::FilePath(
+            FILE_PATH_LITERAL("/usr/share/chromeos-assets/genius_app")),
+        l10n_util::GetStringUTF8(IDS_GENIUS_APP_NAME),
+        l10n_util::GetStringFUTF8(IDS_GENIUS_APP_DESCRIPTION,
+                                  ui::GetChromeOSDeviceName()));
+  }
 #endif
 
   if (!skip_session_components) {

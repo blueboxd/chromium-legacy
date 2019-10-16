@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -120,26 +119,6 @@ using safe_browsing::DownloadFileType;
 using safe_browsing::DownloadProtectionService;
 
 namespace {
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-
-// String pointer used for identifying safebrowing data associated with
-// a download item.
-const char kSafeBrowsingUserDataKey[] = "Safe Browsing ID";
-
-// The state of a safebrowsing check.
-class SafeBrowsingState : public DownloadCompletionBlocker {
- public:
-  SafeBrowsingState() {}
-  ~SafeBrowsingState() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingState);
-};
-
-SafeBrowsingState::~SafeBrowsingState() {}
-
-#endif  // FULL_SAFE_BROWSING
 
 // Used with GetPlatformDownloadPath() to indicate which platform path to
 // return.
@@ -456,10 +435,12 @@ void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-      item->GetUserData(&kSafeBrowsingUserDataKey));
+      item->GetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey));
   if (!state) {
-    state = new SafeBrowsingState();
-    item->SetUserData(&kSafeBrowsingUserDataKey, base::WrapUnique(state));
+    auto new_state = std::make_unique<SafeBrowsingState>();
+    state = new_state.get();
+    item->SetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey,
+                      std::move(new_state));
   }
   state->CompleteDownload();
 #endif
@@ -476,7 +457,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
   }
 
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-      item->GetUserData(&kSafeBrowsingUserDataKey));
+      item->GetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey));
   if (!state) {
     // Begin the safe browsing download protection check.
     DownloadProtectionService* service = GetDownloadProtectionService();
@@ -485,7 +466,8 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
                << item->DebugString(false);
       state = new SafeBrowsingState();
       state->set_callback(internal_complete_callback);
-      item->SetUserData(&kSafeBrowsingUserDataKey, base::WrapUnique(state));
+      item->SetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey,
+                        base::WrapUnique(state));
       service->CheckClientDownload(
           item,
           base::Bind(&ChromeDownloadManagerDelegate::CheckClientDownloadDone,
@@ -1096,8 +1078,11 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     uint32_t download_id,
     safe_browsing::DownloadCheckResult result) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
-  if (!item || (item->GetState() != DownloadItem::IN_PROGRESS))
+  if (!item || (item->GetState() != DownloadItem::IN_PROGRESS &&
+                item->GetDangerType() !=
+                    download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING)) {
     return;
+  }
 
   DVLOG(2) << __func__ << "() download = " << item->DebugString(false)
            << " verdict = " << static_cast<int>(result);
@@ -1154,7 +1139,18 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
 
-    if (ShouldBlockFile(danger_type, item)) {
+    if (item->GetDangerType() ==
+        download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
+      // If the file was opened during async scanning, we override the danger
+      // type, since the user can no longer discard the download.
+      if (item->GetState() == DownloadItem::COMPLETE &&
+          danger_type != download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
+        item->OnAsyncScanningCompleted(
+            download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS);
+      } else {
+        item->OnAsyncScanningCompleted(danger_type);
+      }
+    } else if (ShouldBlockFile(danger_type, item)) {
       item->OnContentCheckCompleted(
           // Specifying a dangerous type here would take precedence over the
           // blocking of the file.
@@ -1168,7 +1164,7 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
 
   if (!is_pending_scanning) {
     SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-        item->GetUserData(&kSafeBrowsingUserDataKey));
+        item->GetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey));
     state->CompleteDownload();
   }
 }
@@ -1414,3 +1410,10 @@ void ChromeDownloadManagerDelegate::OnCheckDownloadAllowedComplete(
 
   std::move(check_download_allowed_cb).Run(allow);
 }
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+ChromeDownloadManagerDelegate::SafeBrowsingState::~SafeBrowsingState() {}
+
+const char ChromeDownloadManagerDelegate::SafeBrowsingState::
+    kSafeBrowsingUserDataKey[] = "Safe Browsing ID";
+#endif  // FULL_SAFE_BROWSING

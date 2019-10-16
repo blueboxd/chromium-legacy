@@ -205,7 +205,7 @@ interface AssistantInteractionSubscriber {
 // Interface for assistant to call into client.
 interface Client {
   // Notifies assistant client that assistant running status has changed.
-  OnAssistantStatusChanged(bool running);
+  OnAssistantStatusChanged(ash.mojom.AssistantState new_state);
 
   // Request context of current window from browser.
   RequestAssistantStructure() => (

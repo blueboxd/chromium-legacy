@@ -1793,6 +1793,7 @@ extern const char kUseAngleDefault[];
 extern const char kUseAngleGL[];
 extern const char kUseAngleD3D11[];
 extern const char kUseAngleD3D9[];
+extern const char kUseAngleD3D11on12[];
 
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];

@@ -292,6 +292,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   DownloadCreationType GetDownloadCreationType() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type,
                                DownloadInterruptReason reason) override;
+  void OnAsyncScanningCompleted(DownloadDangerType danger_type) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
   void SetLastAccessTime(base::Time last_access_time) override;

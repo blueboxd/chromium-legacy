@@ -411,7 +411,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
       active_contents->GetVisibleURL());
 }
 
-TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
+// TODO(https://crbug.com/1014790): This is flaky on several bots.
+TEST_F(DiceSigninUiUtilTest,
+       DISABLED_EnableSyncForNewAccountWithNoTabWithExisting) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 

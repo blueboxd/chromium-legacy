@@ -70,9 +70,9 @@ void InitializeStorageDirectory(const base::FilePath& dir) {
     return;
   }
   // Delete old directory recursively and create a new directory.
-  // base::DeleteFile returns true if the directory does not exist, so it is
-  // fine if there is nothing on disk.
-  if (!(base::DeleteFile(dir, true) && base::CreateDirectory(dir))) {
+  // base::DeleteFileRecursively() returns true if the directory does not exist,
+  // so it is fine if there is nothing on disk.
+  if (!(base::DeleteFileRecursively(dir) && base::CreateDirectory(dir))) {
     DLOG(WARNING) << "Cannot purge directory.";
     return;
   }

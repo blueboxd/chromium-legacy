@@ -8,8 +8,16 @@ import org.chromium.chrome.test.pagecontroller.utils.UiAutomatorUtils;
 import org.chromium.chrome.test.pagecontroller.utils.UiLocatorHelper;
 
 /**
- * Base class for a Page Controller or Page Element Controller.
- * Allows Controllers to perform UI actions and verify UI state.
+ * Base class for any controller that needs to perform UI actions and verify UI
+ * state.
+ *
+ * Could represent anything from buttons to a news snippet on the New Tab Page,
+ * although simple elements such as buttons can be controlled by
+ * helper methods such as {@link UiAutomatorUtils#click} so that implementing
+ * ElementControllers for them is usually not necessary.
+ *
+ * For modal UI such as the 3-dot menu, its controller should subclass
+ * PageController.
  */
 public class ElementController {
     protected final UiAutomatorUtils mUtils;

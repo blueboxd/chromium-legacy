@@ -13,38 +13,6 @@
 namespace media {
 namespace v4l2_vda_helpers {
 
-namespace {
-base::Optional<VideoFrameLayout> CreateLayout(uint32_t fourcc,
-                                              const gfx::Size& size) {
-  // V4L2 specific format hack:
-  // If VDA's output format is V4L2_PIX_FMT_MT21C, which is a platform specific
-  // format and now is only used for MT8173 VDA output and its image processor
-  // input, we set VideoFrameLayout for image processor's input with format
-  // PIXEL_FORMAT_NV12 as NV12's layout is the same as MT21.
-  size_t num_planes;
-  switch (fourcc) {
-    case V4L2_PIX_FMT_MT21C:
-    case V4L2_PIX_FMT_MM21:
-      num_planes = 2;
-      return VideoFrameLayout::CreateMultiPlanar(
-          PIXEL_FORMAT_NV12, size, std::vector<ColorPlaneLayout>(num_planes));
-
-    default:
-      VideoPixelFormat pixel_format =
-          Fourcc::FromV4L2PixFmt(fourcc).ToVideoPixelFormat();
-      if (pixel_format == PIXEL_FORMAT_UNKNOWN)
-        return base::nullopt;
-      num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(fourcc);
-      if (num_planes == 1)
-        return VideoFrameLayout::Create(pixel_format, size);
-      else
-        return VideoFrameLayout::CreateMultiPlanar(
-            pixel_format, size, std::vector<ColorPlaneLayout>(num_planes));
-      break;
-  }
-}
-}  // namespace
-
 uint32_t FindImageProcessorInputFormat(V4L2Device* vda_device) {
   std::vector<uint32_t> processor_input_formats =
       V4L2ImageProcessor::GetSupportedInputFormats();
@@ -103,45 +71,33 @@ std::unique_ptr<ImageProcessor> CreateImageProcessor(
     scoped_refptr<V4L2Device> image_processor_device,
     ImageProcessor::OutputMode image_processor_output_mode,
     ImageProcessor::ErrorCB error_cb) {
-  base::Optional<VideoFrameLayout> input_layout =
-      CreateLayout(vda_output_format, vda_output_coded_size);
-  if (!input_layout) {
-    VLOGF(1) << "Invalid input layout";
-    return nullptr;
-  }
-
-  base::Optional<VideoFrameLayout> output_layout =
-      CreateLayout(ip_output_format, ip_output_coded_size);
-  if (!output_layout) {
-    VLOGF(1) << "Invalid output layout";
-    return nullptr;
-  }
-
   // TODO(crbug.com/917798): Use ImageProcessorFactory::Create() once we remove
   //     |image_processor_device_| from V4L2VideoDecodeAccelerator.
   auto image_processor = V4L2ImageProcessor::Create(
       image_processor_device,
-      ImageProcessor::PortConfig(*input_layout, vda_output_format, visible_size,
+      ImageProcessor::PortConfig(Fourcc::FromV4L2PixFmt(vda_output_format),
+                                 vda_output_coded_size, {}, visible_size,
                                  {VideoFrame::STORAGE_DMABUFS}),
-      ImageProcessor::PortConfig(*output_layout, visible_size,
+      ImageProcessor::PortConfig(Fourcc::FromV4L2PixFmt(ip_output_format),
+                                 ip_output_coded_size, {}, visible_size,
                                  {VideoFrame::STORAGE_DMABUFS}),
       image_processor_output_mode, nb_buffers, std::move(error_cb));
   if (!image_processor)
     return nullptr;
 
-  if (image_processor->output_layout().coded_size() != ip_output_coded_size) {
+  if (image_processor->output_config().size != ip_output_coded_size) {
     VLOGF(1) << "Image processor should be able to use the requested output "
              << "coded size " << ip_output_coded_size.ToString()
              << " without adjusting to "
-             << image_processor->output_layout().coded_size().ToString();
+             << image_processor->output_config().size.ToString();
     return nullptr;
   }
 
-  if (image_processor->input_layout().coded_size() != vda_output_coded_size) {
+  if (image_processor->input_config().size != vda_output_coded_size) {
     VLOGF(1) << "Image processor should be able to take the output coded "
              << "size of decoder " << vda_output_coded_size.ToString()
              << " without adjusting to "
-             << image_processor->input_layout().coded_size().ToString();
+             << image_processor->input_config().size.ToString();
     return nullptr;
   }
 

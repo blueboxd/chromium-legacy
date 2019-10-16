@@ -17,10 +17,6 @@ var defaultTests = [
     chrome.autotestPrivate.shutdown(true);
     chrome.test.succeed();
   },
-  function lockScreen() {
-    chrome.autotestPrivate.lockScreen();
-    chrome.test.succeed();
-  },
   function simulateAsanMemoryBug() {
     chrome.autotestPrivate.simulateAsanMemoryBug();
     chrome.test.succeed();
@@ -501,6 +497,14 @@ var defaultTests = [
     chrome.autotestPrivate.arcAppTracingStart(chrome.test.callbackFail(
         'Failed to start custom tracing.'));
   },
+
+  // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
+  // CHANGE THE SESSION STATE TO LOCKED STATE.
+  function lockScreen() {
+    chrome.autotestPrivate.lockScreen();
+    chrome.test.succeed();
+  },
+  // ADD YOUR TEST BEFORE |lockScreen()| UNLESS YOU WANT TO RUN TEST IN LOCKED
 ];
 
 var arcEnabledTests = [

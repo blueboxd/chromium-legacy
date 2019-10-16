@@ -2,18 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:root {
-  color: #333;
-  font: 13px Roboto, sans-serif;
-  font-weight: 400; /* roboto-regular */
-  height: 640px;
-  width: 768px;
-}
-
-[slot='footer'] {
-  padding: 18px 64px 0;
-}
-
 #recommend-apps-skip-button {
   color: rgba(0, 0, 0, 0.54);
   padding-inline-end: 6px;

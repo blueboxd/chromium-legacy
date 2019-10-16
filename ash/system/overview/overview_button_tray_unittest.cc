@@ -97,6 +97,10 @@ class OverviewButtonTrayTest : public AshTestBase {
         Shell::Get()->session_controller()->GetSessionState());
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  protected:
   views::ImageView* GetImageView(OverviewButtonTray* tray) {
     return tray->icon_;
@@ -388,25 +392,25 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
   // Enter splitview mode. Snap |window1| to the left, this will be the default
   // splitview window.
   Shell::Get()->overview_controller()->StartOverview();
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
-  ASSERT_EQ(window1.get(), split_view_controller->GetDefaultSnappedWindow());
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  ASSERT_EQ(window1.get(), split_view_controller()->GetDefaultSnappedWindow());
 
   // Verify that after double tapping, we have switched to |window3|, even
   // though |window1| is more recently used.
   PerformDoubleTap();
-  EXPECT_EQ(window3.get(), split_view_controller->right_window());
+  EXPECT_EQ(window3.get(), split_view_controller()->right_window());
   EXPECT_EQ(window3.get(), window_util::GetActiveWindow());
 
   // Focus |window1|. Verify that after double tapping, |window2| is the on the
   // right side for splitview.
   wm::ActivateWindow(window1.get());
   PerformDoubleTap();
-  EXPECT_EQ(window2.get(), split_view_controller->right_window());
+  EXPECT_EQ(window2.get(), split_view_controller()->right_window());
   EXPECT_EQ(window2.get(), window_util::GetActiveWindow());
 
-  split_view_controller->EndSplitView();
+  split_view_controller()->EndSplitView();
 }
 
 // Tests that the tray remains visible when leaving tablet mode due to external

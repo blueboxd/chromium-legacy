@@ -14,18 +14,20 @@ import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
  */
 public class ChromeMenu extends PageController {
     private static final IUi2Locator LOCATOR_CHROME_MENU_BOX =
-            Ui2Locators.withResEntries(R.id.app_menu_list);
+            Ui2Locators.withAnyResEntry(R.id.app_menu_list);
     private static final IUi2Locator LOCATOR_CHROME_MENU = Ui2Locators.withPath(
-            LOCATOR_CHROME_MENU_BOX, Ui2Locators.withResEntries(R.id.button_five));
+            LOCATOR_CHROME_MENU_BOX, Ui2Locators.withAnyResEntry(R.id.button_five));
 
     private static final IUi2Locator LOCATOR_NEW_TAB =
-            Ui2Locators.withResEntriesByIndex(0, R.id.menu_item_text);
+            Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.menu_item_text),
+                    Ui2Locators.withTextString(R.string.menu_new_tab));
     private static final IUi2Locator LOCATOR_NEW_INCOGNITO_TAB =
-            Ui2Locators.withResEntriesByIndex(1, R.id.menu_item_text);
+            Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.menu_item_text),
+                    Ui2Locators.withTextString(R.string.menu_new_incognito_tab));
 
     private static final ChromeMenu sInstance = new ChromeMenu();
     private ChromeMenu() {}
-    static public ChromeMenu getInstance() {
+    public static ChromeMenu getInstance() {
         return sInstance;
     }
 

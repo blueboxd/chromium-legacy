@@ -14,7 +14,7 @@ import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
  */
 public class IncognitoNewTabPageController extends PageController {
     private static final IUi2Locator LOCATOR_INCOGNITO_PAGE =
-            Ui2Locators.withResEntries(R.id.new_tab_incognito_container);
+            Ui2Locators.withAnyResEntry(R.id.new_tab_incognito_container);
 
     private static final IncognitoNewTabPageController sInstance =
             new IncognitoNewTabPageController();

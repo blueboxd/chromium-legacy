@@ -44,7 +44,7 @@ void ActionRunner::WaitForCommand(base::Process process) {
   const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
   const bool succeeded =
       process.WaitForExitWithTimeout(kMaxWaitTime, &exit_code);
-  base::DeleteFile(unpack_path_, true);
+  base::DeleteFileRecursively(unpack_path_);
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(run_complete_), succeeded, exit_code, 0));

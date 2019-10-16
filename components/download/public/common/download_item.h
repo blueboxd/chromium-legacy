@@ -491,6 +491,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   virtual void OnContentCheckCompleted(DownloadDangerType danger_type,
                                        DownloadInterruptReason reason) = 0;
 
+  // Called when async scanning completes with the given |danger_type|.
+  virtual void OnAsyncScanningCompleted(DownloadDangerType danger_type) = 0;
+
   // Mark the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open) = 0;
 

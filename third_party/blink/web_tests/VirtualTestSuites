@@ -828,11 +828,6 @@
   },
   {
     "prefix": "not-site-per-process",
-    "base": "external/wpt/html/syntax/parsing/html5lib_tests19.html",
-    "args": ["--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-site-per-process",
     "base": "external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html",
     "args": ["--disable-site-isolation-trials"]
   },

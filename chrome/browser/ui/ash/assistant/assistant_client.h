@@ -40,7 +40,7 @@ class AssistantClient : chromeos::assistant::mojom::Client,
       mojo::PendingReceiver<chromeos::assistant::mojom::Assistant> receiver);
 
   // assistant::mojom::Client overrides:
-  void OnAssistantStatusChanged(bool running) override;
+  void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override;
   void RequestAssistantStructure(
       RequestAssistantStructureCallback callback) override;
   void RequestAssistantController(

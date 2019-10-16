@@ -38,8 +38,8 @@ from blinkpy.web_tests.models.test_failures import (
 class TestFailuresTest(unittest.TestCase):
 
     def setUp(self):
-        self._actual_output = DriverOutput(None, None, None, None)
-        self._expected_output = DriverOutput(None, None, None, None)
+        self._actual_output = DriverOutput(text=None, image=None, image_hash=None, audio=None)
+        self._expected_output = DriverOutput(text=None, image=None, image_hash=None, audio=None)
 
     def assert_loads(self, cls):
         failure_obj = cls(self._actual_output, self._expected_output)

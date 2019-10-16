@@ -76,6 +76,7 @@ Stroke::Stroke(int max_length) : max_length_(max_length) {}
 Stroke::~Stroke() {}
 
 void Stroke::AddSample(const Sample& samp) {
+  samples_seen_++;
   if (samples_.empty()) {
     tracking_id_ = samp.tracking_id;
   }
@@ -99,8 +100,20 @@ gfx::PointF Stroke::GetCentroid() const {
   return gfx::ScalePoint(unscaled_centroid, 1.f / samples_.size());
 }
 
+const std::deque<Sample>& Stroke::samples() const {
+  return samples_;
+}
+
 int Stroke::tracking_id() const {
   return tracking_id_;
+}
+
+uint64_t Stroke::samples_seen() const {
+  return samples_seen_;
+}
+
+void Stroke::SetTrackingId(int tracking_id) {
+  tracking_id_ = tracking_id;
 }
 
 float Stroke::BiggestSize() const {

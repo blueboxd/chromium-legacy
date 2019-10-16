@@ -123,6 +123,14 @@ CRYPTO_EXPORT void SetPrivateSoftwareSlotForChromeOSUserForTesting(
 
 #endif  // defined(OS_CHROMEOS)
 
+// Loads the given module for this NSS session.
+SECMODModule* LoadNSSModule(const char* name,
+                            const char* library_path,
+                            const char* params);
+
+// Returns the current NSS error message.
+std::string GetNSSErrorMessage();
+
 }  // namespace crypto
 
 #endif  // CRYPTO_NSS_UTIL_INTERNAL_H_

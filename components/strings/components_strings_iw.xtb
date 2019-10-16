@@ -5,6 +5,8 @@
 <translation id="1010200102790553230">לטעינת הדף מאוחר יותר</translation>
 <translation id="1015730422737071372">ספק פרטים נוספים</translation>
 <translation id="1021110881106174305">כרטיסים מאושרים</translation>
+<translation id="1023523064224774104">‏מערכת Chromium זיהתה שהזנת את הסיסמה שלך באתר
+          חשוד. יש לאפס את הסיסמה עכשיו!</translation>
 <translation id="1032854598605920125">סובב בכיוון השעון</translation>
 <translation id="1035334672863811645">‏היכנס ל-Chrome</translation>
 <translation id="1036348656032585052">כבה</translation>
@@ -546,6 +548,7 @@
 <translation id="3655670868607891010">אם נתקלת בזה לעתים קרובות, כדאי לנסות את ה<ph name="HELP_LINK" /> האלה.</translation>
 <translation id="3658742229777143148">גרסה קודמת</translation>
 <translation id="366077651725703012">עדכון כרטיס אשראי</translation>
+<translation id="3672525478985456967">שם הדומיין של האתר הזה דומה לדומיין <ph name="LOOKALIKE_DOMAIN" />. תוקפים שמחקים אתרים לפעמים משתמשים בשם הדומיין של האתר המקורי ועושים בו שינויים קלים ביותר כדי שיהיה קשה להבחין בהבדל.</translation>
 <translation id="3676592649209844519">מזהה מכשיר:</translation>
 <translation id="3677008721441257057">‏התכוונת לכתובת &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">לא ניתן היה לחתום על הבקשה</translation>
@@ -720,6 +723,7 @@
 <translation id="4477350412780666475">הטראק הבא</translation>
 <translation id="4482953324121162758">האתר הזה לא יתורגם.</translation>
 <translation id="4490717597759821841">A7</translation>
+<translation id="4492519888999857993">‏התכונות האלה מושבתות כברירת מחדל. הן לא יהיו זמינות בגרסאות עתידיות של Chrome.</translation>
 <translation id="4493480324863638523">‏כתובת URL לא חוקית. הסכימה של כתובת ה-URL צריכה להיות רגילה, כלומר: http://example.com או https://example.com.</translation>
 <translation id="4503882053543859973">Architecture-D</translation>
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR" /></translation>
@@ -797,6 +801,7 @@ Del</translation>
 <translation id="4880827082731008257">חיפוש בהיסטוריה</translation>
 <translation id="4881695831933465202">פתיחה</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4901778704868714008">שמירה...</translation>
 <translation id="4913987521957242411">ניקוב בפינה השמאלית העליונה</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ועוד דף אינטרנט אחד}two{ועוד # דפי אינטרנט}many{ועוד # דפי אינטרנט}other{ועוד # דפי אינטרנט}}</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -1156,6 +1161,7 @@ Del</translation>
 <translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות לטפסים?</translation>
 <translation id="6685834062052613830">צא והשלם את ההגדרה</translation>
 <translation id="6689271823431384964">‏מאחר שנכנסת לחשבון, Chrome מציע לשמור את הכרטיסים שלך בחשבון Google. אפשר לשנות את ההתנהגות הזאת בהגדרות. שם בעל הכרטיס מגיע מהחשבון שלך.</translation>
+<translation id="6704582573942289642">האם זה האתר הנכון?</translation>
 <translation id="6707256370811247129">‏סריקת התוכן של המטמון והקבצים שמעלים או מורידים ב-Chrome.</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6710594484020273272">&lt;הקלד מונח חיפוש&gt;</translation>
@@ -1449,6 +1455,7 @@ Del</translation>
 <translation id="8184538546369750125">השתמש בברירת המחדל הכללית (אפשר)</translation>
 <translation id="8194797478851900357">&amp;ביטול העברה</translation>
 <translation id="8197543752516192074">תרגום הדף</translation>
+<translation id="8197899142098070286">‏מערכת Chrome זיהתה שהזנת את הסיסמה שלך באתר חשוד. יש לאפס את הסיסמה עכשיו!</translation>
 <translation id="8201077131113104583">כתובת אתר לא חוקית לעדכון עבור תוסף עם המזהה "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">סיכום הזמנה</translation>
 <translation id="8202370299023114387">התנגשות</translation>

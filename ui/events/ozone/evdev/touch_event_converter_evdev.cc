@@ -117,6 +117,9 @@ const int kTrackingIdForUnusedSlot = -1;
 
 namespace ui {
 
+const base::Feature kEnableSingleCancelTouch{"EnableSingleTouchCancel",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 TouchEventConverterEvdev::TouchEventConverterEvdev(
     base::ScopedFD fd,
     base::FilePath path,
@@ -528,7 +531,8 @@ bool TouchEventConverterEvdev::MaybeCancelAllTouches() {
   // TODO(denniskempin): Remove once upper layers properly handle single
   // cancelled touches.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCancelAllTouches)) {
+          switches::kDisableCancelAllTouches) ||
+      base::FeatureList::IsEnabled(kEnableSingleCancelTouch)) {
     return false;
   }
   for (size_t i = 0; i < events_.size(); i++) {

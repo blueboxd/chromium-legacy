@@ -47,6 +47,7 @@ jumbo_static_library("renderer") {
     "benchmarking_extension.h",
     "chrome_content_renderer_client.cc",
     "chrome_content_renderer_client.h",
+    "chrome_content_renderer_client_receiver_bindings.cc",
     "chrome_render_frame_observer.cc",
     "chrome_render_frame_observer.h",
     "chrome_render_thread_observer.cc",

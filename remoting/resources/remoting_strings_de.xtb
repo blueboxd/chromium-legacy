@@ -48,7 +48,6 @@
 <translation id="2314101195544969792">Ihre Sitzung bei <ph name="APPLICATION_NAME" /> war längere Zeit inaktiv und wird in Kürze beendet.</translation>
 <translation id="2317666076142640974">Werfen Sie vorab einen Blick auf die Web-App <ph name="LINK_BEGIN" />Chrome Remote Desktop<ph name="LINK_END" />. Wir freuen uns über Feedback.</translation>
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
-<translation id="2332192922827071008">Einstellungen öffnen</translation>
 <translation id="2353140552984634198">Mit Chromoting erhalten Sie sicheren Zugriff auf diesen Computer.</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden. Das von Ihnen verwendete Netzwerk ist möglicherweise nicht korrekt konfiguriert.</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552">Verbunden mit <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
 <translation id="2540992418118313681">Möchten Sie diesen Computer für einen anderen Nutzer zur Ansicht und Steuerung freigeben?</translation>
-<translation id="254771646005658629">Zulassen, dass Remote-Nutzer auf diesen Mac zugreifen</translation>
 <translation id="2579271889603567289">Der Host ist abgestürzt oder konnte nicht gestartet werden.</translation>
 <translation id="2599300881200251572">Dieser Dienst ermöglicht eingehende Verbindungen von Chrome Remote Desktop-Clients.</translation>
 <translation id="2647232381348739934">Chromoting Service</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">Die App konnte nicht zurückgesetzt werden. Sie können einen Fehlerbericht senden.</translation>
 <translation id="5419418238395129586">Zuletzt online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Der Host wurde heruntergefahren.</translation>
-<translation id="5463789431147491241">Wenn Sie <ph name="PRODUCT_NAME" /> auf diesem Mac verwenden möchten, gehen Sie so vor:
-
-Wählen Sie unten "<ph name="BUTTON_NAME" />" aus. Wählen Sie im Sicherheits- und Datenschutzfenster das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" aus.
-
-Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits ausgewählt ist, entfernen Sie das Häkchen und wählen Sie das Kästchen noch einmal aus.</translation>
 <translation id="5510035215749041527">Verbindung jetzt aufheben</translation>
 <translation id="5593560073513909978">Der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="5601503069213153581">PIN</translation>

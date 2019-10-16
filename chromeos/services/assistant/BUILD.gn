@@ -17,7 +17,6 @@ component("lib") {
   defines = [ "IS_ASSISTANT_SERVICE_IMPL" ]
 
   sources = [
-    "assistant_communication_error_observer.h",
     "assistant_manager_service.h",
     "assistant_settings_manager.h",
     "assistant_state_proxy.cc",

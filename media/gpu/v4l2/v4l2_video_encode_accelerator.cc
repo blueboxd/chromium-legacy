@@ -96,6 +96,19 @@ static void CopyNALUPrependingStartCode(const uint8_t* src,
 
 namespace media {
 
+namespace {
+// Convert VideoFrameLayout to ImageProcessor::PortConfig.
+ImageProcessor::PortConfig VideoFrameLayoutToPortConfig(
+    const VideoFrameLayout& layout,
+    const gfx::Size& visible_size,
+    const std::vector<VideoFrame::StorageType>& preferred_storage_types) {
+  return ImageProcessor::PortConfig(
+      Fourcc::FromVideoPixelFormat(layout.format(), !layout.is_multi_planar()),
+      layout.coded_size(), layout.planes(), visible_size,
+      preferred_storage_types);
+}
+}  // namespace
+
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id, std::unique_ptr<UnalignedSharedMemory> shm)
       : id(id), shm(std::move(shm)) {}
@@ -267,12 +280,12 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
       config.initial_bitrate, config.initial_framerate.value_or(
                                   VideoEncodeAccelerator::kDefaultFramerate));
   child_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &Client::RequireBitstreamBuffers, client_, kInputBufferCount,
-          image_processor_.get() ? image_processor_->input_layout().coded_size()
-                                 : input_allocated_size_,
-          output_buffer_byte_size_));
+      FROM_HERE, base::BindOnce(&Client::RequireBitstreamBuffers, client_,
+                                kInputBufferCount,
+                                image_processor_.get()
+                                    ? image_processor_->input_config().size
+                                    : input_allocated_size_,
+                                output_buffer_byte_size_));
 
   // Finish initialization.
   *result = true;
@@ -294,9 +307,9 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   // for |input_storage_type| here, as long as VideoFrame on Process()'s data
   // can be accessed by VideoFrame::data().
   image_processor_ = ImageProcessorFactory::Create(
-      ImageProcessor::PortConfig(input_layout, visible_size,
-                                 {VideoFrame::STORAGE_OWNED_MEMORY}),
-      ImageProcessor::PortConfig(
+      VideoFrameLayoutToPortConfig(input_layout, visible_size,
+                                   {VideoFrame::STORAGE_OWNED_MEMORY}),
+      VideoFrameLayoutToPortConfig(
           output_layout, visible_size,
           {VideoFrame::STORAGE_DMABUFS, VideoFrame::STORAGE_OWNED_MEMORY}),
       // Try OutputMode::ALLOCATE first because we want v4l2IP chooses
@@ -319,7 +332,7 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
   // Output coded height of processor can be larger but not smaller than the
   // input coded height of encoder. For example, suppose input size of encoder
   // is 320x193. It is OK if the output of processor is 320x208.
-  const auto& ip_output_size = image_processor_->output_layout().coded_size();
+  const auto& ip_output_size = image_processor_->output_config().size;
   if (ip_output_size.width() != output_layout.coded_size().width() ||
       ip_output_size.height() < output_layout.coded_size().height()) {
     VLOGF(1) << "Invalid image processor output coded size "
@@ -347,7 +360,8 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
   }
 
   image_processor_output_buffers_.resize(count);
-  const auto output_storage_type = image_processor_->output_storage_type();
+  const auto output_storage_type =
+      image_processor_->output_config().storage_type();
   for (size_t i = 0; i < count; i++) {
     switch (output_storage_type) {
       case VideoFrame::STORAGE_OWNED_MEMORY:
@@ -372,7 +386,7 @@ bool V4L2VideoEncodeAccelerator::AllocateImageProcessorOutputBuffers(
 bool V4L2VideoEncodeAccelerator::InitInputMemoryType(const Config& config) {
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   if (image_processor_) {
-    const auto storage_type = image_processor_->output_storage_type();
+    const auto storage_type = image_processor_->output_config().storage_type();
     if (storage_type == VideoFrame::STORAGE_DMABUFS) {
       input_memory_type_ = V4L2_MEMORY_DMABUF;
     } else if (VideoFrame::IsStorageTypeMappable(storage_type)) {
@@ -640,7 +654,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
   // We should apply the frame size change to ImageProcessor if there is.
   if (image_processor_) {
     // Stride is the same. There is no need of executing S_FMT again.
-    if (image_processor_->input_layout().coded_size() == new_frame_size) {
+    if (image_processor_->input_config().size == new_frame_size) {
       return true;
     }
 
@@ -667,7 +681,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
       NOTIFY_ERROR(kPlatformFailureError);
       return false;
     }
-    if (image_processor_->input_layout().coded_size().width() !=
+    if (image_processor_->input_config().size.width() !=
         new_frame_size.width()) {
       NOTIFY_ERROR(kPlatformFailureError);
       return false;
@@ -1068,7 +1082,9 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
 
   DCHECK_EQ(device_input_layout_->format(), frame->format());
   size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
-      V4L2Device::VideoFrameLayoutToV4L2PixFmt(*device_input_layout_));
+      Fourcc::FromVideoPixelFormat(device_input_layout_->format(),
+                                   !device_input_layout_->is_multi_planar())
+          .ToV4L2PixFmt());
 
   // Create GpuMemoryBufferHandle for native_input_mode.
   gfx::GpuMemoryBufferHandle gmb_handle;

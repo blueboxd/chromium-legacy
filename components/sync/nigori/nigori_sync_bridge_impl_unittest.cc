@@ -391,6 +391,42 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldNotifyObserversOnInit) {
   bridge()->Init();
 }
 
+// Tests that bridge support Nigori with IMPLICIT_PASSPHRASE.
+TEST_F(NigoriSyncBridgeImplTest, ShouldAcceptKeysFromImplicitPassphraseNigori) {
+  const KeyParams kKeyParams = Pbkdf2KeyParams("password");
+  std::unique_ptr<CryptographerImpl> temp_cryptographer =
+      CryptographerImpl::FromSingleKeyForTesting(kKeyParams.password,
+                                                 kKeyParams.derivation_params);
+
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      sync_pb::NigoriSpecifics::default_instance();
+  ASSERT_TRUE(temp_cryptographer->Encrypt(
+      temp_cryptographer->ToProto().key_bag(),
+      entity_data.specifics.mutable_nigori()->mutable_encryption_keybag()));
+
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
+                               NotNull(), /*has_pending_keys=*/true));
+  EXPECT_CALL(
+      *observer(),
+      OnPassphraseRequired(
+          /*reason=*/REASON_DECRYPTION,
+          /*key_derivation_params=*/KeyDerivationParams::CreateForPbkdf2(),
+          /*pending_keys=*/
+          EncryptedDataEq(entity_data.specifics.nigori().encryption_keybag())));
+  EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
+                               NotNull(), /*has_pending_keys=*/false));
+  bridge()->SetDecryptionPassphrase(kKeyParams.password);
+
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeyParams));
+}
+
 // Simplest case of keystore Nigori: we have only one keystore key and no old
 // keys. This keystore key is encrypted in both encryption_keybag and
 // keystore_decryptor_token. Client receives such Nigori if initialization of

@@ -13,12 +13,30 @@
 namespace dev_ui {
 
 // static
+DevUiModuleProvider* DevUiModuleProvider::test_instance_ = nullptr;
+
+// Destructor is public to enable management by std::unique_ptr<>.
+DevUiModuleProvider::~DevUiModuleProvider() = default;
+
+// static
+DevUiModuleProvider* DevUiModuleProvider::GetInstance() {
+  if (test_instance_)
+    return test_instance_;
+
+  static DevUiModuleProvider instance;
+  return &instance;
+}
+
+// static
+void DevUiModuleProvider::SetTestInstance(DevUiModuleProvider* test_instance) {
+  test_instance_ = test_instance;
+}
+
 bool DevUiModuleProvider::ModuleInstalled() {
   return Java_DevUiModuleProvider_isModuleInstalled(
       base::android::AttachCurrentThread());
 }
 
-// static
 void DevUiModuleProvider::InstallModule(
     base::OnceCallback<void(bool)> on_complete) {
   auto* listener = DevUiInstallListener::Create(std::move(on_complete));
@@ -28,13 +46,10 @@ void DevUiModuleProvider::InstallModule(
                                          listener->j_listener());
 }
 
-// static
 void DevUiModuleProvider::LoadModule() {
   Java_DevUiModuleProvider_loadModule(base::android::AttachCurrentThread());
 }
 
 DevUiModuleProvider::DevUiModuleProvider() = default;
-
-DevUiModuleProvider::~DevUiModuleProvider() = default;
 
 }  // namespace dev_ui

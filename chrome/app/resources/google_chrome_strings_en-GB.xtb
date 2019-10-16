@@ -43,7 +43,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1877026089748256423">Chrome is out of date</translation>
 <translation id="1900795423379050516">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
       Chrome browser settings<ph name="LINK_END" /></translation>
-<translation id="1915828456209461693">A new update for Chrome is available and will be applied as soon as you relaunch.</translation>
 <translation id="1919130412786645364">Allow Chrome sign-in</translation>
 <translation id="2063848847527508675">Chrome OS needs to be restarted to apply the update.</translation>
 <translation id="2094919256425865063">Quit Chrome anyway?</translation>
@@ -59,7 +58,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2467438592969358367">Google Chrome wants to export your passwords. Type your Windows password to allow this.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="2534507159460261402">Google Pay (copied to Chrome)</translation>
-<translation id="2535429035253759792">Your administrator asks that you relaunch Chrome to apply this update</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="2586406160782125153">This will delete your browsing data from this device. To retrieve your data later, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Chrome logo</translation>
@@ -217,7 +215,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7855730255114109580">Google Chrome is up to date</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7896673875602241923">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chrome user to keep your information separate.</translation>
-<translation id="7908168227788431038">Nearly up to date! Relaunch Google Chrome to finish updating.</translation>
 <translation id="7962410387636238736">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="8013993649590906847">If an image doesn’t have a useful description, Chrome will try to provide one for you. To create descriptions, images are sent to Google.</translation>
@@ -240,7 +237,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8679801911857917785">It also controls what page is shown when you start Chrome.</translation>
 <translation id="870251953148363156">Update &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome cannot determine or set the default browser</translation>
-<translation id="8736674169840206667">Your administrator requires that you relaunch Chrome to apply an update</translation>
 <translation id="8823341990149967727">Chrome is Out of Date</translation>
 <translation id="884296878221830158">It also controls what page is shown when you start Chrome or click the Home button.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>

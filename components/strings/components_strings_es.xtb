@@ -551,7 +551,7 @@
 <translation id="3655670868607891010">Si este mensaje aparece con frecuencia, prueba a solucionarlo con estas <ph name="HELP_LINK" />.</translation>
 <translation id="3658742229777143148">Revisión</translation>
 <translation id="366077651725703012">Actualizar tarjeta de crédito</translation>
-<translation id="3672525478985456967">El nombre de este sitio web se parece al de <ph name="LOOKALIKE_DOMAIN" />. Los atacantes a veces imitan a otros sitios web haciendo pequeños cambios difíciles de ver en el nombre de dominio.</translation>
+<translation id="3672525478985456967">El nombre de este sitio web se parece al de <ph name="LOOKALIKE_DOMAIN" />. Los atacantes a veces imitan a otros sitios web haciendo pequeños cambios difíciles de ver en el nombre del dominio.</translation>
 <translation id="3676592649209844519">ID del dispositivo:</translation>
 <translation id="3677008721441257057">Quizás quisiste decir: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;</translation>
 <translation id="3678029195006412963">No se ha podido firmar la solicitud</translation>
@@ -726,7 +726,7 @@
 <translation id="4477350412780666475">Pista siguiente</translation>
 <translation id="4482953324121162758">Este sitio web no se traducirá.</translation>
 <translation id="4490717597759821841">A7</translation>
-<translation id="4492519888999857993">Estas funciones están inhabilitadas de forma predeterminada. No estarán disponibles en las próximas versiones de Chrome.</translation>
+<translation id="4492519888999857993">Estas funciones están inhabilitadas de forma predeterminada. No estarán disponibles en futuras versiones de Chrome.</translation>
 <translation id="4493480324863638523">La URL no es válida. Debe ser una URL con una estructura estándar, como "http://example.com" o "https://example.com".</translation>
 <translation id="4503882053543859973">Architecture-D</translation>
 <translation id="4506176782989081258">Error de validación: <ph name="VALIDATION_ERROR" /></translation>

@@ -1521,6 +1521,8 @@ void ShelfView::AnimateToIdealBounds() {
 
   for (int i = 0; i < view_model_->view_size(); ++i) {
     View* view = view_model_->view_at(i);
+    if (view->size() == gfx::Size())
+      continue;  // Do not animate a hidden item (see StartDrag)
     bounds_animator_->AnimateViewTo(view, view_model_->ideal_bounds(i));
     // Now that the item animation starts, we have to make sure that the
     // padding of the first gets properly transferred to the new first item.

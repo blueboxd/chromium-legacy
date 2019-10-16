@@ -509,6 +509,16 @@ class OncMojo {
   }
 
   /**
+   * @param {string} key
+   * @return {boolean}
+   */
+  static isTypeKey(key) {
+    return key.startsWith('cellular') || key.startsWith('ethernet') ||
+        key.startsWith('tether') || key.startsWith('vpn') ||
+        key.startsWith('wifi');
+  }
+
+  /**
    * This is a bit of a hack. To avoid adding 'typeProperties' to every type
    * specific field name and translated string, we check for type specific
    * key names and prepend 'typeProperties' for them.
@@ -516,9 +526,7 @@ class OncMojo {
    * @return {string}
    */
   static getManagedPropertyKey(key) {
-    if (key.startsWith('cellular') || key.startsWith('ethernet') ||
-        key.startsWith('tether') || key.startsWith('vpn') ||
-        key.startsWith('wifi')) {
+    if (OncMojo.isTypeKey(key)) {
       key = 'typeProperties.' + key;
     }
     return key;
@@ -763,6 +771,9 @@ class OncMojo {
    * @param {boolean|number|string|!Object} value The property value
    */
   static setConfigProperty(config, key, value) {
+    if (OncMojo.isTypeKey(key)) {
+      key = 'typeConfig.' + key;
+    }
     while (true) {
       const index = key.indexOf('.');
       if (index < 0) {

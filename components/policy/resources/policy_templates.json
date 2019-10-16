@@ -18334,13 +18334,13 @@
       'default_for_enterprise_users': True,
       'example_value': False,
       'id': 604,
-      'caption': '''Allows a page to perform synchronus XHR requests during page dismissal.''',
+      'caption': '''Allows a page to perform synchronous XHR requests during page dismissal.''',
       'tags': [],
-      'desc': '''This policy allows an admin to specify that a page may send synchronus XHR requests during page dismissal.
+      'desc': '''This policy allows an admin to specify that a page may send synchronous XHR requests during page dismissal.
 
-      When the policy is set to enabled, pages are allowed to send synchronus XHR reequests during page dismissal.
+      When the policy is set to enabled, pages are allowed to send synchronous XHR requests during page dismissal.
 
-      When the policy is set to disabled or not set, pages are not allowed to send synchronus XHR requests during page dismissal.
+      When the policy is set to disabled or not set, pages are not allowed to send synchronous XHR requests during page dismissal.
 
       This policy will be removed in Chrome 82.
 

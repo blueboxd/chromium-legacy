@@ -87,9 +87,11 @@ bool HomeScreenController::GoHome(int64_t display_id) {
     return true;
   }
 
-  if (SplitViewController::Get()->InSplitViewMode()) {
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  if (split_view_controller->InSplitViewMode()) {
     // End split view mode.
-    SplitViewController::Get()->EndSplitView(
+    split_view_controller->EndSplitView(
         SplitViewController::EndReason::kHomeLauncherPressed);
     return true;
   }

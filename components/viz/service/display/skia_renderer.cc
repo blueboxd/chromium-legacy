@@ -1737,9 +1737,48 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   return rpdq_params;
 }
 
-const TileDrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(
-    const RenderPass* pass) {
-  return DirectRenderer::CanPassBeDrawnDirectly(pass, resource_provider_);
+const DrawQuad* SkiaRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
+  // TODO(michaelludwig) - For now, this only supports layer-filling
+  // TileDrawQuads to match legacy bypass behavior. It will be updated to
+  // select more quad material types as their corresponding DrawXQuad()
+  // functions are updated to accept DrawRPDQParams as well.
+  // Can only collapse a single tile quad.
+  if (pass->quad_list.size() != 1)
+    return nullptr;
+  // If it there are supposed to be mipmaps, the renderpass must exist
+
+  if (pass->generate_mipmap)
+    return nullptr;
+
+  const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
+  // Hack: this could be supported by concatenating transforms, but
+  // in practice if there is one quad, it is at the origin of the render pass
+  // and has the same size as the pass.
+  if (!quad->shared_quad_state->quad_to_target_transform.IsIdentity() ||
+      quad->rect != pass->output_rect)
+    return nullptr;
+  // The quad is expected to be the entire layer so that AA edges are correct.
+  if (quad->shared_quad_state->quad_layer_rect != quad->rect)
+    return nullptr;
+  if (quad->material != DrawQuad::Material::kTiledContent)
+    return nullptr;
+
+  // TODO(chrishtr): support could be added for opacity, but care needs
+  // to be taken to make sure it is correct w.r.t. non-commutative filters etc.
+  if (quad->shared_quad_state->opacity != 1.0f)
+    return nullptr;
+
+  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+    return nullptr;
+
+  const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
+  // Hack: this could be supported by passing in a subrectangle to draw
+  // render pass, although in practice if there is only one quad there
+  // will be no border texels on the input.
+  if (tile_quad->tex_coord_rect != gfx::RectF(tile_quad->rect))
+    return nullptr;
+
+  return tile_quad;
 }
 
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
@@ -1747,7 +1786,8 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   auto bypass = render_pass_bypass_quads_.find(quad->render_pass_id);
   // When Render Pass has a single quad inside we would draw that directly.
   if (bypass != render_pass_bypass_quads_.end()) {
-    TileDrawQuad* tile_quad = &bypass->second;
+    DCHECK(bypass->second->material == DrawQuad::Material::kTiledContent);
+    const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(bypass->second);
     ScopedSkImageBuilder builder(this, tile_quad->resource_id(),
                                  tile_quad->is_premultiplied
                                      ? kPremul_SkAlphaType

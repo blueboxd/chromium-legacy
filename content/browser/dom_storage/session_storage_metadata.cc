@@ -121,7 +121,7 @@ bool SessionStorageMetadata::ParseDatabaseVersion(
 }
 
 bool SessionStorageMetadata::ParseNamespaces(
-    std::vector<leveldb::mojom::KeyValuePtr> values,
+    std::vector<storage::DomStorageDatabase::KeyValuePair> values,
     std::vector<leveldb::mojom::BatchedOperationPtr>* upgrade_operations) {
   namespace_origin_map_.clear();
   next_map_id_from_namespaces_ = 0;
@@ -131,11 +131,11 @@ bool SessionStorageMetadata::ParseNamespaces(
   std::map<url::Origin, scoped_refptr<MapData>>* last_namespace = nullptr;
   std::map<int64_t, scoped_refptr<MapData>> maps;
   bool error = false;
-  for (const leveldb::mojom::KeyValuePtr& key_value : values) {
-    size_t key_size = key_value->key.size();
+  for (const storage::DomStorageDatabase::KeyValuePair& key_value : values) {
+    size_t key_size = key_value.key.size();
 
     base::StringPiece key_as_string =
-        leveldb::Uint8VectorToStringPiece(key_value->key);
+        leveldb::Uint8VectorToStringPiece(key_value.key);
 
     if (key_size < kNamespacePrefixLength) {
       LOG(ERROR) << "Key size is less than prefix length: " << key_as_string;
@@ -176,10 +176,10 @@ bool SessionStorageMetadata::ParseNamespaces(
         key_as_string.substr(kPrefixBeforeOriginLength);
 
     int64_t map_number;
-    if (!ValueToNumber(key_value->value, &map_number)) {
+    if (!ValueToNumber(key_value.value, &map_number)) {
       error = true;
       LOG(ERROR) << "Could not parse map number "
-                 << leveldb::Uint8VectorToStringPiece(key_value->value);
+                 << leveldb::Uint8VectorToStringPiece(key_value.value);
       break;
     }
 

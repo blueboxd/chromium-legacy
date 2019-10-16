@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
@@ -178,6 +179,16 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (void)startGoingForward {
   [BrowserCommandDispatcherForMainBVC() goForward];
+}
+
++ (NSString*)currentTabID {
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  return TabIdTabHelper::FromWebState(web_state)->tab_id();
+}
+
++ (NSString*)nextTabID {
+  web::WebState* web_state = chrome_test_util::GetNextWebState();
+  return TabIdTabHelper::FromWebState(web_state)->tab_id();
 }
 
 #pragma mark - WebState Utilities (EG2)

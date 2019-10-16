@@ -112,6 +112,12 @@
 // Returns the title of the next tab. Assumes that there is a next tab.
 + (NSString*)nextTabTitle;
 
+// Returns a unique identifier for the current Tab.
++ (NSString*)currentTabID;
+
+// Returns a unique identifier for the next Tab.
++ (NSString*)nextTabID;
+
 #pragma mark - WebState Utilities (EG2)
 
 // Attempts to tap the element with |element_id| within window.frames[0] of the

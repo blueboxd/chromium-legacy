@@ -52,17 +52,27 @@ void LogFileError(FileError error) {
                             error);
 }
 
+void LogDriveFSMounted(bool mounted) {
+  UMA_HISTOGRAM_BOOLEAN("Apps.AppList.DriveQuickAccessProvider.DriveFSMounted",
+                        mounted);
+}
+
 // Given a vector of QuickAccessItems, return only those that exist on-disk.
 std::vector<drive::QuickAccessItem> FilterResults(
     const drive::DriveIntegrationService* drive_service,
     const std::vector<drive::QuickAccessItem>& drive_results) {
   std::vector<drive::QuickAccessItem> valid_results;
+  int num_filtered = 0;
   for (const auto& result : drive_results) {
     if (base::PathExists(
             drive_service->GetMountPointPath().Append(result.path))) {
       valid_results.emplace_back(result);
+      ++num_filtered;
     }
   }
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "Apps.AppList.DriveQuickAccessProvider.ValidResults", num_filtered,
+      2 * kMaxItems);
   return valid_results;
 }
 
@@ -77,27 +87,32 @@ DriveQuickAccessProvider::DriveQuickAccessProvider(Profile* profile)
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-
-  // Warm up the cache.
-  AppListShown();
 }
 
 DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;
 
 void DriveQuickAccessProvider::Start(const base::string16& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!query.empty())
+    return;
+
   query_start_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES(
       "Apps.AppList.DriveQuickAccessProvider.TimeFromFetchToZeroStateStart",
       base::TimeTicks::Now() - latest_fetch_start_time_);
+
   ClearResultsSilently();
   // Results are launched via DriveFS, so DriveFS must be mounted.
-  if (!query.empty() || !drive_service_ || !drive_service_->IsMounted())
+  bool drive_fs_mounted = drive_service_ && drive_service_->IsMounted();
+  LogDriveFSMounted(drive_fs_mounted);
+  if (!drive_fs_mounted)
     return;
 
   // If there are no items in the cache, the previous call may have failed so
   // retry. We return no results in this case, because waiting for the new
   // results would introduce too much latency.
+  UMA_HISTOGRAM_BOOLEAN("Apps.AppList.DriveQuickAccessProvider.CacheEmpty",
+                        results_cache_.empty());
   if (results_cache_.empty()) {
     GetQuickAccessItems();
     return;
@@ -116,12 +131,14 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
 
 void DriveQuickAccessProvider::AppListShown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!drive_service_)
-    return;
   GetQuickAccessItems();
 }
 
 void DriveQuickAccessProvider::GetQuickAccessItems() {
+  LogDriveFSMounted(drive_service_);
+  if (!drive_service_)
+    return;
+
   // Invalidate weak pointers for existing callbacks to the Quick Access API.
   weak_factory_.InvalidateWeakPtrs();
   latest_fetch_start_time_ = base::TimeTicks::Now();
@@ -137,11 +154,15 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
     std::vector<drive::QuickAccessItem> drive_results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  UMA_HISTOGRAM_TIMES(
-      "Apps.AppList.DriveQuickAccessProvider.GetQuickAccessItemsLatency",
-      base::TimeTicks::Now() - latest_fetch_start_time_);
-  UMA_HISTOGRAM_EXACT_LINEAR("Apps.AppList.DriveQuickAccessProvider.ApiResults",
-                             drive_results.size(), 2 * kMaxItems);
+  if (error == drive::FILE_ERROR_OK) {
+    UMA_HISTOGRAM_TIMES(
+        "Apps.AppList.DriveQuickAccessProvider.GetQuickAccessItemsLatency",
+        base::TimeTicks::Now() - latest_fetch_start_time_);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "Apps.AppList.DriveQuickAccessProvider.ApiResults",
+        drive_results.size(), 2 * kMaxItems);
+  }
+
   // Error codes are in the range [-18, 0], convert to the histogram enum values
   // in [1,19]. If the value is outside the expected range, log
   // FileError::kUnknown.

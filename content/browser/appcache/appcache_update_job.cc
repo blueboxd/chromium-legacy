@@ -116,11 +116,11 @@ bool CanUseExistingResource(const net::HttpResponseInfo* http_info) {
   //
   // The logic below is a workaround while a longer-term fix gets developed and
   // deployed. We'll consider all cache entries with invalid times to have been
-  // created on Tue, Jan 29 2019. This is the day when M72 was released to
-  // Chrome's Stable channel, and was chosen because M72 had the first large
-  // Network Service deployment.
+  // created on Sun, Jun 16 2019.
+  //
+  // TODO(cmp): Add timeline info here.
   static constexpr base::Time::Exploded kInvalidTimePlaceholderExploded = {
-      2019, 1, 2, 29, 0, 0, 0, 0};
+      2019, 7, 0, 7, 0, 0, 0, 0};
   constexpr base::Time default_initialized_time;
   if (request_time == default_initialized_time) {
     bool conversion_succeeded = base::Time::FromUTCExploded(

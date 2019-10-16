@@ -18,6 +18,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/buildflags.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/image_processor_factory.h"
 #include "media/gpu/test/image.h"
 #include "media/gpu/test/video_frame_helpers.h"
@@ -107,22 +108,45 @@ void ImageProcessorClient::CreateImageProcessorTask(
   done->Signal();
 }
 
+namespace {
+
+base::Optional<VideoFrameLayout> CreateLayout(
+    const ImageProcessor::PortConfig& config) {
+  // V4L2 specific format hack:
+  // If VDA's output format is V4L2_PIX_FMT_MT21C, which is a platform specific
+  // format and now is only used for MT8173 VDA output and its image processor
+  // input, we set VideoFrameLayout for image processor's input with format
+  // PIXEL_FORMAT_NV12 as NV12's layout is the same as MT21.
+  const VideoPixelFormat pixel_format = config.fourcc.ToVideoPixelFormat();
+  if (config.planes.size() <= 1) {
+    return VideoFrameLayout::Create(pixel_format, config.size);
+  }
+  return VideoFrameLayout::CreateMultiPlanar(pixel_format, config.size,
+                                             config.planes);
+}
+
+}  // namespace
+
 scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
     const Image& input_image) const {
   DCHECK_CALLED_ON_VALID_THREAD(test_main_thread_checker_);
   LOG_ASSERT(image_processor_);
   LOG_ASSERT(input_image.IsLoaded());
 
-  const auto& input_layout = image_processor_->input_layout();
-  if (VideoFrame::IsStorageTypeMappable(
-          image_processor_->input_storage_type())) {
+  const ImageProcessor::PortConfig& input_config =
+      image_processor_->input_config();
+  const VideoFrame::StorageType input_storage_type =
+      input_config.storage_type();
+  base::Optional<VideoFrameLayout> input_layout = CreateLayout(input_config);
+  LOG_ASSERT(input_layout);
+
+  if (VideoFrame::IsStorageTypeMappable(input_storage_type)) {
     return CloneVideoFrame(gpu_memory_buffer_factory_.get(),
                            CreateVideoFrameFromImage(input_image).get(),
-                           input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
+                           *input_layout, VideoFrame::STORAGE_OWNED_MEMORY);
   } else {
 #if defined(OS_CHROMEOS)
-    LOG_ASSERT(image_processor_->input_storage_type() ==
-               VideoFrame::STORAGE_DMABUFS);
+    LOG_ASSERT(input_storage_type == VideoFrame::STORAGE_DMABUFS);
     // NV12 and YV12 are the only formats that can be allocated with
     // gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE. So
     // gfx::BufferUsage::GPU_READ_CPU_READ_WRITE is specified for RGB formats.
@@ -132,7 +156,7 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
             : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
     return CloneVideoFrame(gpu_memory_buffer_factory_.get(),
                            CreateVideoFrameFromImage(input_image).get(),
-                           input_layout, VideoFrame::STORAGE_DMABUFS,
+                           *input_layout, VideoFrame::STORAGE_DMABUFS,
                            dst_buffer_usage);
 #endif
     return nullptr;
@@ -145,19 +169,22 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
   LOG_ASSERT(output_image.IsMetadataLoaded());
   LOG_ASSERT(image_processor_);
 
-  const auto& output_layout = image_processor_->output_layout();
-  if (VideoFrame::IsStorageTypeMappable(
-          image_processor_->output_storage_type())) {
+  const ImageProcessor::PortConfig& output_config =
+      image_processor_->output_config();
+  const VideoFrame::StorageType output_storage_type =
+      output_config.storage_type();
+  base::Optional<VideoFrameLayout> output_layout = CreateLayout(output_config);
+  LOG_ASSERT(output_layout);
+  if (VideoFrame::IsStorageTypeMappable(output_storage_type)) {
     return VideoFrame::CreateFrameWithLayout(
-        output_layout, gfx::Rect(output_image.Size()), output_image.Size(),
+        *output_layout, gfx::Rect(output_image.Size()), output_image.Size(),
         base::TimeDelta(), false /* zero_initialize_memory*/);
   } else {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    LOG_ASSERT(image_processor_->output_storage_type() ==
-               VideoFrame::STORAGE_DMABUFS);
+    LOG_ASSERT(output_storage_type == VideoFrame::STORAGE_DMABUFS);
     return CreatePlatformVideoFrame(
-        gpu_memory_buffer_factory_.get(), output_layout.format(),
-        output_layout.coded_size(), gfx::Rect(output_image.Size()),
+        gpu_memory_buffer_factory_.get(), output_layout->format(),
+        output_layout->coded_size(), gfx::Rect(output_image.Size()),
         output_image.Size(), base::TimeDelta(),
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)

@@ -48,7 +48,6 @@
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> のセッションでしばらく操作がありませんでした。セッションを間もなく切断します。</translation>
 <translation id="2317666076142640974">今回の新しい <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />の使用感について、ご意見やご感想をお聞かせください。</translation>
 <translation id="2320166752086256636">キーボードを非表示</translation>
-<translation id="2332192922827071008">設定を開く</translation>
 <translation id="2353140552984634198">Chromoting を使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
@@ -58,7 +57,6 @@
 <translation id="2509394361235492552"><ph name="HOSTNAME" /> に接続されました</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
 <translation id="2540992418118313681">このパソコンの閲覧と制御の権限を別のユーザーと共有しますか？</translation>
-<translation id="254771646005658629">リモート ユーザーがこの Mac を管理できるようにする</translation>
 <translation id="2579271889603567289">ホストがクラッシュしたか、ホストを起動できませんでした。</translation>
 <translation id="2599300881200251572">このサービスにより、Chrome リモート デスクトップ クライアントからの着信接続が有効になります。</translation>
 <translation id="2647232381348739934">Chromoting サービス</translation>
@@ -185,11 +183,6 @@
 <translation id="5419185025274123272">アプリケーションをリセットできませんでした。バグレポートの送信は可能です。</translation>
 <translation id="5419418238395129586">前回のインターネット接続日: <ph name="DATE" /></translation>
 <translation id="544077782045763683">ホストはシャットダウンしました。</translation>
-<translation id="5463789431147491241">この Mac で <ph name="PRODUCT_NAME" /> を使用するには、次の手順を行ってください。
-
-下の [<ph name="BUTTON_NAME" />] を選択します。[セキュリティとプライバシー] の設定で、[<ph name="SERVICE_SCRIPT_NAME" />] の横のチェックボックスをオンにします。
-
-[<ph name="SERVICE_SCRIPT_NAME" />] がすでにオンになっている場合は、一度オフにしてからオンにします。</translation>
 <translation id="5510035215749041527">切断</translation>
 <translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
 <translation id="5601503069213153581">PIN</translation>

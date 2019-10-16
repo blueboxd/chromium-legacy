@@ -81,11 +81,15 @@ class VIZ_COMMON_EXPORT DrawQuad {
 
   // Is the left edge of this tile aligned with the originating layer's
   // left edge?
-  bool IsLeftEdge() const { return !rect.x(); }
+  bool IsLeftEdge() const {
+    return rect.x() == shared_quad_state->quad_layer_rect.x();
+  }
 
   // Is the top edge of this tile aligned with the originating layer's
   // top edge?
-  bool IsTopEdge() const { return !rect.y(); }
+  bool IsTopEdge() const {
+    return rect.y() == shared_quad_state->quad_layer_rect.y();
+  }
 
   // Is the right edge of this tile aligned with the originating layer's
   // right edge?

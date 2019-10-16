@@ -28,6 +28,7 @@ android_library("chrome_java_test_pagecontroller") {
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorIndexUi2Locator.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorUi2Locator.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/ChildIndexUi2Locator.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/IndexUi2Locator.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/IUi2Locator.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/PathUi2Locator.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/Ui2Locators.java",
@@ -52,8 +53,6 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_tests") {
   apk_name = "ChromePageControllerTests"
   apk_under_test = "//chrome/android:chrome_public_apk"
   android_manifest = "javatests/src/org/chromium/chrome/test/pagecontroller/tests/AndroidManifest.xml"
-  target_sdk_version = 28
-  testonly = true
   java_files = [
     "javatests/src/org/chromium/chrome/test/pagecontroller/tests/ExampleTest.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/tests/FirstRunControllerTest.java",
@@ -77,6 +76,7 @@ junit_binary("chrome_java_test_pagecontroller_junit_tests") {
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorIndexUi2LocatorTest.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorUi2LocatorTest.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/ChildIndexUi2LocatorTest.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/utils/IndexUi2LocatorTest.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/PathUi2LocatorTest.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/TestUtils.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/Ui2LocatorsTest.java",

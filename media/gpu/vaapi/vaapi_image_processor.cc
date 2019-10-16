@@ -4,6 +4,8 @@
 
 #include "media/gpu/vaapi/vaapi_image_processor.h"
 
+#include <stdint.h>
+
 #include <va/va.h>
 
 #include "base/bind.h"
@@ -35,23 +37,19 @@ void ReportToUMA(base::RepeatingClosure error_cb, VaIPFailure failure) {
   error_cb.Run();
 }
 
-bool IsSupported(VideoPixelFormat input_format,
-                 VideoPixelFormat output_format,
-                 gfx::Size input_size,
-                 gfx::Size output_size) {
-  const uint32_t input_va_fourcc =
-      Fourcc::FromVideoPixelFormat(input_format).ToVAFourCC();
+bool IsSupported(uint32_t input_va_fourcc,
+                 uint32_t output_va_fourcc,
+                 const gfx::Size& input_size,
+                 const gfx::Size& output_size) {
   if (!VaapiWrapper::IsVppFormatSupported(input_va_fourcc)) {
-    VLOGF(2) << "Unsupported input format: " << input_format << " (VA_FOURCC_"
-             << FourccToString(input_va_fourcc) << ")";
+    VLOGF(2) << "Unsupported input format: VA_FOURCC_"
+             << FourccToString(input_va_fourcc);
     return false;
   }
 
-  const uint32_t output_va_fourcc =
-      Fourcc::FromVideoPixelFormat(output_format).ToVAFourCC();
   if (!VaapiWrapper::IsVppFormatSupported(output_va_fourcc)) {
-    VLOGF(2) << "Unsupported output format: " << output_format << " (VA_FOURCC_"
-             << FourccToString(output_va_fourcc) << ")";
+    VLOGF(2) << "Unsupported output format: VA_FOURCC_"
+             << FourccToString(output_va_fourcc);
     return false;
   }
 
@@ -101,11 +99,9 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
   return nullptr;
 #endif
 
-  const VideoFrameLayout& input_layout = input_config.layout;
-  const VideoFrameLayout& output_layout = output_config.layout;
-  if (!IsSupported(input_layout.format(), output_layout.format(),
-                   input_config.layout.coded_size(),
-                   output_config.layout.coded_size())) {
+  if (!IsSupported(input_config.fourcc.ToVAFourCC(),
+                   output_config.fourcc.ToVAFourCC(), input_config.size,
+                   output_config.size)) {
     return nullptr;
   }
 
@@ -131,27 +127,23 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
     return nullptr;
   }
 
-  // We should restrict the acceptable VideoFrameLayout for input and output
-  // both to the one returned by GetPlatformVideoFrameLayout(). However,
+  // We should restrict the acceptable PortConfig for input and output both to
+  // the one returned by GetPlatformVideoFrameLayout(). However,
   // ImageProcessorFactory interface doesn't provide information about what
   // ImageProcessor will be used for. (e.g. format conversion after decoding and
   // scaling before encoding). Thus we cannot execute
   // GetPlatformVideoFrameLayout() with a proper gfx::BufferUsage.
   // TODO(crbug.com/898423): Adjust layout once ImageProcessor provide the use
   // scenario.
-  return base::WrapUnique(new VaapiImageProcessor(input_layout, output_layout,
+  return base::WrapUnique(new VaapiImageProcessor(input_config, output_config,
                                                   std::move(vaapi_wrapper)));
 }
 
 VaapiImageProcessor::VaapiImageProcessor(
-    const VideoFrameLayout& input_layout,
-    const VideoFrameLayout& output_layout,
+    const ImageProcessor::PortConfig& input_config,
+    const ImageProcessor::PortConfig& output_config,
     scoped_refptr<VaapiWrapper> vaapi_wrapper)
-    : ImageProcessor(input_layout,
-                     VideoFrame::STORAGE_DMABUFS,
-                     output_layout,
-                     VideoFrame::STORAGE_DMABUFS,
-                     OutputMode::IMPORT),
+    : ImageProcessor(input_config, output_config, OutputMode::IMPORT),
       processor_task_runner_(base::CreateSequencedTaskRunner(
           base::TaskTraits{base::ThreadPool()})),
       vaapi_wrapper_(std::move(vaapi_wrapper)) {}
@@ -169,32 +161,46 @@ bool VaapiImageProcessor::ProcessInternal(
   DCHECK(input_frame);
   DCHECK(output_frame);
 
-  const VideoFrameLayout& input_frame_layout = input_frame->layout();
-  if (input_frame_layout.format() != input_layout_.format() ||
-      input_frame_layout.coded_size() != input_layout_.coded_size()) {
-    VLOGF(1) << "Invalid input_frame->layout=" << input_frame->layout()
-             << ", input_layout_=" << input_layout_;
+  const Fourcc input_frame_fourcc =
+      Fourcc::FromVideoPixelFormat(input_frame->layout().format());
+  if (input_frame_fourcc != input_config_.fourcc) {
+    VLOGF(1) << "Invalid input_frame format=" << input_frame_fourcc.ToString()
+             << ", expected=" << input_config_.fourcc.ToString();
     return false;
   }
 
-  const VideoFrameLayout& output_frame_layout = output_frame->layout();
-  if (output_frame_layout.format() != output_layout_.format() ||
-      output_frame_layout.coded_size() != output_layout_.coded_size()) {
-    VLOGF(1) << "Invalid output_frame->layout=" << output_frame->layout()
-             << ", output_layout_=" << output_layout_;
+  if (input_frame->layout().coded_size() != input_config_.size) {
+    VLOGF(1) << "Invalid input_frame size="
+             << input_frame->layout().coded_size().ToString()
+             << ", expected=" << input_config_.size.ToString();
     return false;
   }
 
-  if (input_frame->storage_type() != input_storage_type()) {
+  const Fourcc output_frame_fourcc =
+      Fourcc::FromVideoPixelFormat(output_frame->layout().format());
+  if (output_frame_fourcc != output_config_.fourcc) {
+    VLOGF(1) << "Invalid output_frame format=" << output_frame_fourcc.ToString()
+             << ", expected=" << output_config_.fourcc.ToString();
+    return false;
+  }
+
+  if (output_frame->layout().coded_size() != output_config_.size) {
+    VLOGF(1) << "Invalid output_frame size="
+             << output_frame->layout().coded_size().ToString()
+             << ", expected=" << output_config_.size.ToString();
+    return false;
+  }
+
+  if (input_frame->storage_type() != input_config_.storage_type()) {
     VLOGF(1) << "Invalid input_frame->storage_type="
              << input_frame->storage_type()
-             << ", input_storage_type=" << input_storage_type();
+             << ", input_storage_type=" << input_config_.storage_type();
     return false;
   }
-  if (output_frame->storage_type() != output_storage_type()) {
+  if (output_frame->storage_type() != output_config_.storage_type()) {
     VLOGF(1) << "Invalid output_frame->storage_type="
              << output_frame->storage_type()
-             << ", output_storage_type=" << output_storage_type();
+             << ", expected=" << output_config_.storage_type();
     return false;
   }
 

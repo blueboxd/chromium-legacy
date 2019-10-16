@@ -626,7 +626,7 @@
           Nếu bạn tắt tùy chọn cài đặt này, thì người dùng sẽ không được phép chuyển tệp. Nếu bạn bật hoặc không đặt tùy chọn cài đặt này, thì người dùng có thể chuyển tệp.</translation>
 <translation id="2057317273526988987">Cho phép truy cập vào một danh sách các URL</translation>
 <translation id="2061810934846663491">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
-<translation id="2063663607822994541">Định cấu hình dung lượng bộ nhớ mà một phiên bản <ph name="PRODUCT_NAME" /> có thể sử dụng trước khi tab bắt đầu bị hủy (nghĩa là dung lượng bộ nhớ mà tab sử dụng sẽ được giải phóng và tab sẽ phải tải lại khi chuyển đổi) để tiết kiệm bộ nhớ.
+<translation id="2063663607822994541">Định cấu hình dung lượng bộ nhớ mà một phiên bản <ph name="PRODUCT_NAME" /> có thể sử dụng trước khi các tab bắt đầu bị hủy (nghĩa là dung lượng bộ nhớ mà tab sử dụng sẽ được giải phóng và tab sẽ phải tải lại khi chuyển đổi) để tiết kiệm bộ nhớ.
 
       Nếu bạn đặt chính sách này, thì trình duyệt sẽ bắt đầu hủy các tab để tiết kiệm bộ nhớ sau khi vượt quá giới hạn. Tuy nhiên, không thể đảm bảo rằng trình duyệt sẽ luôn chạy trong mức giới hạn. Mọi giá trị chưa đầy 2048 sẽ được làm tròn thành 2048.
 
@@ -806,13 +806,13 @@
       Nếu cài đặt này được bật thì lịch sử duyệt web sẽ không được lưu. Cài đặt này cũng sẽ tắt đồng bộ hóa tab.
 
       Nếu cài đặt này bị tắt hoặc không được đặt thì lịch sử duyệt web sẽ được lưu.</translation>
-<translation id="2423038190900972331">Kiểm soát cách <ph name="PRODUCT_NAME" /> kiểm tra dữ liệu được tải lên, tải xuống, dán từ khay nhớ tạm hoặc kéo và thả xem có vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm hay không.
+<translation id="2423038190900972331">Kiểm soát cách <ph name="PRODUCT_NAME" /> kiểm tra dữ liệu được tải lên, tải xuống, dán từ khay nhớ tạm hoặc kéo và thả xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không.
 
-      Nếu bạn không đặt hoặc đặt chính sách này thành 'None', thì <ph name="PRODUCT_NAME" /> sẽ không kiểm tra bất kỳ dữ liệu nào để xem có vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm hay không.
+      Nếu bạn không đặt hoặc đặt chính sách này thành 'None', thì <ph name="PRODUCT_NAME" /> sẽ không kiểm tra bất kỳ dữ liệu nào để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không.
 
-      Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải xuống' và người dùng cố tải tệp xuống từ một URL trong chính sách <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />, thì <ph name="PRODUCT_NAME" /> sẽ kiểm tra dữ liệu tải xuống xem có tuân thủ các quy tắc của doanh nghiệp hay không.
+      Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải xuống' và người dùng cố tải tệp xuống từ một URL trong chính sách <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" />, thì <ph name="PRODUCT_NAME" /> sẽ kiểm tra dữ liệu được tải xuống xem có tuân thủ các quy tắc của doanh nghiệp hay không.
 
-      Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải lên' và người dùng cố tải tệp lên một miền không có trong <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />, thì <ph name="PRODUCT_NAME" /> sẽ kiểm tra tệp được tải lên, dữ liệu đã dán từ khay nhớ tạm hoặc dữ liệu đã kéo và thả xem có tuân thủ các quy tắc của doanh nghiệp hay không.
+      Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải lên' và người dùng cố tải tệp lên một miền không có trong <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" />, thì <ph name="PRODUCT_NAME" /> sẽ kiểm tra tệp được tải lên, dữ liệu được dán từ khay nhớ tạm hoặc dữ liệu được kéo và thả xem có tuân thủ các quy tắc của doanh nghiệp hay không.
 
       Nếu bạn đặt chính sách này thành 'Kiểm tra tệp đã tải lên và tệp đã tải xuống', thì <ph name="PRODUCT_NAME" /> sẽ hoạt động theo các quy tắc nêu trong phần 'Kiểm tra tệp đã tải xuống' và 'Kiểm tra tệp đã tải lên'.
       </translation>
@@ -1027,21 +1027,21 @@
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
 <translation id="2693108589792503178">Định cấu hình URL thay đổi mật khẩu.</translation>
 <translation id="2694143893026486692">Đã bật tùy chọn phóng to ở vị trí cố định</translation>
-<translation id="2694188263972877487">Định cấu hình loại tệp đã tải xuống mà <ph name="PRODUCT_NAME" /> sẽ chặn hoàn toàn, nhưng không cho phép người dùng ghi đè quyết định bảo mật.
+<translation id="2694188263972877487">Định cấu hình loại tệp đã tải xuống mà <ph name="PRODUCT_NAME" /> sẽ chặn hoàn toàn, mà không cho phép người dùng ghi đè quyết định bảo mật.
 
       Nếu bạn đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ ngăn một số loại tệp đã tải xuống nhất định và không cho phép người dùng bỏ qua cảnh báo bảo mật.
 
-      Khi bạn chọn tùy chọn 'Chặn các tệp đã tải xuống nguy hiểm', thì tất cả các tệp đã tải xuống đều được phép, trừ những tệp có cảnh báo của dịch vụ Duyệt web an toàn.
+      Khi bạn chọn tùy chọn 'Chặn các tệp nguy hiểm đã tải xuống', thì tất cả các tệp đã tải xuống đều được phép, trừ những tệp có cảnh báo của dịch vụ Duyệt web an toàn.
 
       Khi bạn chọn tùy chọn 'Chặn các tệp đã tải xuống có thể gây nguy hiểm', thì tất cả các tệp đã tải xuống đều được phép, trừ những tệp có cảnh báo của dịch vụ Duyệt web an toàn cho biết tệp đã tải xuống có thể gây nguy hiểm.
 
       Khi bạn chọn tùy chọn 'Chặn tất cả các tệp đã tải xuống', thì tất cả các tệp đã tải xuống đều sẽ bị chặn.
 
-      Khi bạn chọn tùy chọn 'Chặn tệp đã tải xuống độc hại', thì tất cả các tệp đã tải xuống đều được phép, trừ những tệp mà dịch vụ Duyệt web an toàn đánh giá có nhiều khả năng là độc hại. Khác với các tệp đã tải xuống nguy hiểm, chính sách này không xem xét loại tệp mà xem xét máy chủ.
+      Khi bạn chọn tùy chọn 'Chặn tệp độc hại đã tải xuống', thì tất cả các tệp đã tải xuống đều được phép, trừ những tệp mà dịch vụ Duyệt web an toàn đánh giá có nhiều khả năng là độc hại. Khác với các tệp nguy hiểm đã tải xuống, chính sách này không xem xét loại tệp mà xem xét máy chủ.
 
       Khi bạn không đặt chính sách này, (hoặc chọn tùy chọn 'Không có hạn chế đặc biệt'), thì các hạn chế bảo mật thông thường sẽ được áp dụng cho tệp đã tải xuống dựa trên kết quả phân tích của dịch vụ Duyệt web an toàn.
 
-      Lưu ý rằng những hạn chế này áp dụng cho các tệp đã tải xuống được kích hoạt từ nội dung trang web cũng như tùy chọn trình đơn ngữ cảnh 'đường liên kết tải xuống...'. Những hạn chế này không áp dụng cho việc lưu/tải xuống từ trang đang hiển thị cũng như không áp dụng cho việc lưu dưới dạng tệp PDF từ các tùy chọn in.
+      Lưu ý rằng những hạn chế này áp dụng cho các tệp đã tải xuống được kích hoạt từ nội dung trang web cũng như tùy chọn trình đơn theo ngữ cảnh 'đường liên kết tải xuống...'. Những hạn chế này không áp dụng cho việc lưu/tải trang đang hiển thị xuống cũng như không áp dụng cho việc lưu dưới dạng tệp PDF từ các tùy chọn in.
 
       Để biết thêm thông tin về dịch vụ Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.</translation>
 <translation id="2706708761587205154">Chỉ cho phép in khi có mã PIN</translation>
@@ -1491,7 +1491,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu chính sách này bị đặt thành Sai hoặc không được đặt, độ trễ quản lý nguồn và giới hạn thời lượng phiên sẽ bắt đầu chạy ngay lập tức khi bắt đầu phiên.</translation>
 <translation id="3478024346823118645">Xóa dữ liệu người dùng khi đăng xuất</translation>
 <translation id="3480961938508521469">Sạc đầy pin ở tốc độ tiêu chuẩn.</translation>
-<translation id="348110646151632565">Bật tính năng hỗ trợ tiếp cận chọn để nói trên màn hình đăng nhập.
+<translation id="348110646151632565">Bật tính năng hỗ trợ tiếp cận về chọn để nói trên màn hình đăng nhập.
 
           Nếu bạn đặt chính sách này thành true, thì tính năng chọn để nói sẽ luôn bật trên màn hình đăng nhập.
 
@@ -1588,7 +1588,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3591527072193107424">Bật tính năng Hỗ trợ trình duyệt cũ.</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
 <translation id="3617743504695003280">Cho phép một trang thực hiện các yêu cầu XHR đồng bộ trong khi đóng trang.</translation>
-<translation id="3624515566460517364">Kiểm tra tệp đã tải lên và tệp đã tải xuống để xem có vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm hay không</translation>
+<translation id="3624515566460517364">Kiểm tra tệp đã tải lên và tệp đã tải xuống để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3628480121685794414">Bật chế độ in một mặt</translation>
 <translation id="3631099945620529777">Nếu bạn đặt chính sách này thành false thì nút 'Kết thúc quá trình' sẽ bị tắt trong Trình quản lý tác vụ.
@@ -1763,7 +1763,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng làm nổi bật tiêu điểm bằng bàn phím sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="3874773863217952418">Bật tính năng Nhấn để tìm kiếm</translation>
 <translation id="3877517141460819966">Chế độ xác thực hai yếu tố tích hợp</translation>
-<translation id="3879196885908353077">Kiểm tra tệp đã tải xuống xem có vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm hay không</translation>
+<translation id="3879196885908353077">Kiểm tra tệp đã tải xuống xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="3879208481373875102">Định cấu hình danh sách Ứng dụng web buộc cài đặt</translation>
 <translation id="388237772682176890">Chính sách này không được dùng trong M53 nữa và bị xóa trong M54, vì hỗ trợ của SPDY/3.1 đã bị xóa.
 
@@ -2245,14 +2245,14 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu chính sách này được thiết lập thành true, các phím ở hàng trên cùng của bàn phím sẽ tạo các lệnh phím chức năng mỗi mặc định. Phải nhấn phím tìm kiếm để hoàn nguyên hoạt động của chúng về phím phương tiện.
 
           Nếu chính sách này được thiết lập thành false hoặc không được thiết lập, bàn phím sẽ tạo lệnh phím phương tiện mỗi mặc định và các lệnh phím chức năng khi giữ phím tìm kiếm.</translation>
-<translation id="4636613705027089602">Chính sách này kiểm soát các yêu cầu cài đặt tiện ích của <ph name="PRODUCT_NAME" />. Tiện ích này cho phép người dùng gửi yêu cầu đến Bảng điều khiển dành cho quản trị viên của Google để xin phê duyệt.
+<translation id="4636613705027089602">Chính sách này kiểm soát việc người dùng có thể gửi yêu cầu cài đặt tiện ích của <ph name="PRODUCT_NAME" /> đến Bảng điều khiển dành cho quản trị viên của Google để xin phê duyệt hay không.
 
       Khi bạn không đặt hoặc đặt chính sách này thành tắt, thì các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
       Khi bạn đặt chính sách này thành bật, thì các yêu cầu cài đặt tiện ích sẽ được tạo và tải lên Bảng điều khiển dành cho quản trị viên của Google.
 
       Các yêu cầu cài đặt tiện ích sẽ được tạo khi người dùng cố gắng cài đặt một tiện ích mà <ph name="EXTENSION_INSTALL_WHITELIST" /> hoặc <ph name="EXTENSION_SETTINGS" /> không đưa vào danh sách cho phép.
 
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CLOUD_REPORTING_ENABLED" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.</translation>
+      Chính sách này chỉ có hiệu lực khi <ph name="CLOUD_REPORTING_ENABLED" /> ở trạng thái bật và máy được đăng ký bằng <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.</translation>
 <translation id="4639407427807680016">Tên của các máy chủ nhắn tin gốc cần xóa khỏi danh sách cấm</translation>
 <translation id="4650759511838826572">Tắt lược đồ giao thức URL</translation>
 <translation id="465099050592230505">URL cửa hàng trực tuyến dành cho doanh nghiệp (không dùng nữa)</translation>
@@ -2369,7 +2369,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4874982543810021567">Chặn WebUSB trên các trang web này</translation>
 <translation id="4876805738539874299">Đã bật phiên bản SSL tối đa</translation>
 <translation id="4887274746092315609">Cho phép một trang để người dùng SAML có thể đổi mật khẩu ngay trong phiên đăng nhập</translation>
-<translation id="4887863670424903990">Khi bạn đặt chính sách này thành bật, thì <ph name="PRODUCT_NAME" /> sẽ báo cáo các sự kiện không an toàn, chẳng hạn như dùng lại mật khẩu, tệp đã tải xuống có phần mềm độc hại, quảng cáo xen kẽ, hành vi vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm, v.v. cho Google để phân tích.  Một số sự kiện không an toàn, chẳng hạn như hành vi vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm, sẽ phụ thuộc vào các chính sách khác cho phép các hoạt động kiểm tra liên quan.
+<translation id="4887863670424903990">Khi bạn đặt chính sách này thành bật, thì <ph name="PRODUCT_NAME" /> sẽ báo cáo các sự kiện không an toàn, chẳng hạn như dùng lại mật khẩu, tệp đã tải xuống có phần mềm độc hại, quảng cáo xen kẽ, hành vi vi phạm quy tắc bảo vệ dữ liệu nhạy cảm, v.v. cho Google để phân tích.  Một số sự kiện không an toàn, chẳng hạn như hành vi vi phạm quy tắc bảo vệ dữ liệu nhạy cảm, sẽ phụ thuộc vào các chính sách khác cho phép các hoạt động kiểm tra liên quan.
 
       Nếu bạn không đặt hoặc đặt chính sách này thành tắt, thì <ph name="PRODUCT_NAME" /> sẽ không báo cáo các sự kiện không an toàn.
       </translation>
@@ -2628,7 +2628,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Để cho phép chạy Crostini, bạn Cần đặt tất cả ba chính sách, VirtualMachinesAllowed, CrostiniAllowed và DeviceUnaffiliatedCrostiniAllowed thành true.
       Khi đổi chính sách này thành false, chính sách sẽ áp dụng cho quá trình khởi động các vùng chứa Crostini mới nhưng không tắt các vùng chứa đang chạy.</translation>
 <translation id="5283457834853986457">Tắt trình tìm kiếm plugin (không được dùng nữa)</translation>
-<translation id="5285315763984334157">Chặn tệp đã tải xuống độc hại</translation>
+<translation id="5285315763984334157">Chặn tệp độc hại đã tải xuống</translation>
 <translation id="5288772341821359899">Nếu đã đặt chính sách, phạm vi cổng UDP mà WebRTC sử dụng sẽ được hạn chế đến phạm vi cổng được chỉ định (đã bao gồm cả điểm cuối).
 
       Nếu chưa đặt chính sách hoặc nếu chính sách được đặt thành chuỗi trống hoặc phạm vi cổng không hợp lệ thì WebRTC được phép sử dụng bất kỳ cổng UDP cục bộ khả dụng nào.</translation>
@@ -2687,7 +2687,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn không đặt chính sách này, thì tính năng khay nhớ tạm dùng chung sẽ được bật theo mặc định.
 
-          Quản trị viên có quyền đặt chính sách trên tất cả các nền tảng mà họ quan tâm. Bạn nên đặt chính sách này thành một giá trị trên tất cả các nền tảng.</translation>
+          Quản trị viên có thể tùy ý đặt chính sách trên tất cả các nền tảng mà họ quan tâm. Bạn nên đặt một giá trị giống nhau cho chính sách này trên tất cả các nền tảng.</translation>
 <translation id="5391388690191341203">Tự động đăng nhập vào tài khoản trên thiết bị</translation>
 <translation id="5392172595902933844">Thông tin về trạng thái của Android được gửi lại cho
       máy chủ.
@@ -2980,7 +2980,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn đặt chính sách này thành true, thì thông tin hệ thống sẽ buộc phải hiển thị.
       Nếu bạn đặt chính sách này thành false, thì thông tin hệ thống sẽ buộc phải ẩn.
-      Nếu bạn không đặt chính sách này, thì hành vi mặc định (đang hiển thị cho kênh Canary/Dev)
+      Nếu bạn không đặt chính sách này, thì hành vi mặc định (là hiển thị đối với kênh Canary/Dev)
       sẽ có hiệu lực. Người dùng có thể bật/tắt chế độ hiển thị bằng các thao tác cụ thể (ví dụ: Alt-V).</translation>
 <translation id="5741810844420698449">Khi bạn đặt, chính sách này sẽ chỉ định hành động mà <ph name="PRODUCT_OS_NAME" /> sẽ thực hiện khi người dùng đóng nắp thiết bị.
 
@@ -3108,9 +3108,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6076099373507468537">Xác định danh sách thiết bị USB được phép tách khỏi trình điều khiển nhân hệ điều hành để sử dụng thông qua API chrome.usb ngay bên trong ứng dụng web. Mục nhập là các cặp Số nhận dạng nhà cung cấp USB và Số nhận dạng sản phẩm để xác định một phần cứng cụ thể.
 
       Nếu chính sách này chưa được định cấu hình, danh sách thiết bị USB có thể tách là trống.</translation>
-<translation id="607726879389885889">Chính sách này kiểm soát hành vi của <ph name="PRODUCT_NAME" /> khi người dùng cố tải lên hoặc tải xuống các tệp có kích thước quá lớn (50 MB trở lên), không gửi đi quét tìm phần mềm độc hại hoặc ngăn chặn dữ liệu nhạy cảm được.  Hạn chế này chỉ áp dụng với các tệp cần quét theo yêu cầu của <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> và các chính sách kiểm soát danh sách miền được phép thực hiện quá trình kiểm tra.
+<translation id="607726879389885889">Chính sách này kiểm soát hành vi của <ph name="PRODUCT_NAME" /> khi người dùng cố tải lên hoặc tải xuống các tệp có kích thước quá lớn (50 MB trở lên), không gửi đi để quét tìm phần mềm độc hại hoặc bảo vệ dữ liệu nhạy cảm được.  Hạn chế này chỉ áp dụng với các tệp cần quét theo yêu cầu của <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> và các chính sách kiểm soát danh sách miền được phép thực hiện quá trình kiểm tra.
 
-      Nếu bạn không đặt hoặc đặt chính sách này thành 'None', thì <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng tải lên hoặc tải xuống các tệp có kích thước bất kỳ.
+      Nếu bạn không đặt hoặc đặt chính sách này thành 'None', thì <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng tải lên hoặc tải xuống các tệp ở mọi kích thước.
 
       Nếu bạn đặt chính sách này thành 'Chặn tải tệp có kích thước lớn xuống', thì các tệp không quét được do kích thước quá lớn sẽ bị xóa trước khi hiển thị với người dùng.  Do không phải lúc nào cũng xác định được kích thước trước khi tải xuống nên <ph name="PRODUCT_NAME" /> có thể tải tệp xuống rồi mới xác định xem các tệp đó có vượt quá giới hạn kích thước cho phép hay không.
 
@@ -3274,7 +3274,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="637934607141010488">Danh sách báo cáo người dùng thiết bị đã đăng nhập gần đây.
 
       Nếu chính sách này được đặt thành sai, người dùng sẽ không được báo cáo.</translation>
-<translation id="638668187106406971">Kiểm tra tệp đã tải lên để xem có vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm hay không</translation>
+<translation id="638668187106406971">Kiểm tra tệp đã tải lên để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
 <translation id="6406448383934634215">Nếu chọn 'Mở một danh sách URL' làm thao tác khởi động, thì bạn có thể chỉ định danh sách URL sẽ được mở. Nếu bạn không đặt chính sách, thì sẽ không có URL nào mở khi khởi động.
@@ -4209,7 +4209,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Khi không đặt chính sách này trên thiết bị được quản lý, thiết bị sẽ không được phép sử dụng máy ảo.
       Các thiết bị chưa được quản lý được phép sử dụng máy ảo.</translation>
 <translation id="8001701200415781021">Hạn chế Tài khoản Google nào được phép đặt làm tài khoản chính của trình duyệt trong <ph name="PRODUCT_NAME" /></translation>
-<translation id="8003853057959146975">Gửi tệp để kiểm tra xem có vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm hay không</translation>
+<translation id="8003853057959146975">Gửi tệp để kiểm tra xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="8009554972280451023">Nếu bạn bật tùy chọn cài đặt này, thì các tùy chọn cài đặt lưu trữ trong cấu hình của <ph name="PRODUCT_NAME" /> như dấu trang, dữ liệu tự động điền, mật khẩu, v.v cũng sẽ được ghi vào một tệp được lưu trữ trong thư mục cấu hình Người dùng chuyển vùng hoặc một vị trí do Quản trị viên chỉ định thông qua chính sách <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Việc bật chính sách này sẽ tính năng tắt đồng bộ hóa trên đám mây.
 
       Nếu tắt hoặc không đặt chính sách này thì bạn chỉ có thể sử dụng các cấu hình cục bộ thông thường.
@@ -4744,7 +4744,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8942616385591203339">Chính sách này sẽ kiểm soát liệu màn hình Đồng ý đồng bộ hóa có hiển thị với người dùng trong lần đăng nhập đầu tiên hay không. Bạn nên đặt chính sách này thành false nếu không cần hiển thị màn hình Đồng ý đồng bộ hóa cho người dùng.
       Nếu đặt chính sách thành false, thì màn hình Đồng ý đồng bộ hóa sẽ không hiển thị.
       Nếu đặt thành true hoặc không đặt chính sách này, thì màn hình Đồng ý đồng bộ hóa có thể được hiển thị.</translation>
-<translation id="8943934315109955032">Không kiểm tra xem có vi phạm quy tắc ngăn chặn dữ liệu nhạy cảm hay không</translation>
+<translation id="8943934315109955032">Không kiểm tra xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="894510252300143386">Định cấu hình các tùy chọn cài đặt quản lý tiện ích cho <ph name="PRODUCT_NAME" />.
 
           Chính sách này kiểm soát nhiều tùy chọn cài đặt, bao gồm cả những tùy chọn cài đặt chịu sự kiểm soát của mọi chính sách hiện có liên quan đến tiện ích. Chính sách này sẽ ghi đè bất cứ chính sách cũ nào nếu bạn đặt cả hai.

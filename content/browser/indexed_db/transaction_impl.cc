@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
@@ -27,10 +27,6 @@ namespace content {
 namespace {
 const char kInvalidBlobUuid[] = "Blob does not exist";
 const char kInvalidBlobFilePath[] = "Blob file path is invalid";
-
-void LogUMAPutBlobCount(size_t blob_count) {
-  UMA_HISTOGRAM_COUNTS_1000("WebCore.IndexedDB.PutBlobsCount", blob_count);
-}
 
 IndexedDBDatabaseError CreateBackendAbortError() {
   return IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
@@ -171,7 +167,6 @@ void TransactionImpl::Put(
     result.code = IOHelper::LoadResultCode::kSuccess;
     result.value = std::move(value_ptr);
     result.blob_info = std::vector<IndexedDBBlobInfo>();
-    LogUMAPutBlobCount(result.blob_info.size());
   } else {
     // TODO(crbug.com/932869): Remove IO thread hop entirely.
     base::WaitableEvent signal_when_finished(
@@ -241,11 +236,6 @@ void TransactionImpl::Put(
                 blink::mojom::IDBError::New(error.code(), error.message())));
         return;
       }
-
-      // Value size recorded in IDBObjectStore before we can auto-wrap in a
-      // blob. 1KB to 10MB.
-      UMA_HISTOGRAM_COUNTS_10000("WebCore.IndexedDB.PutKeySize",
-                                 key.size_estimate() / 1024);
 
       uint64_t commit_size = result.value->bits.size() + key.size_estimate();
       IndexedDBValue value;
@@ -333,14 +323,11 @@ void TransactionImpl::IOHelper::LoadBlobsOnIOThread(
     // Due to known issue crbug.com/351753, blobs can die while being passed to
     // a different process. So this case must be handled gracefully.
     // TODO(dmurph): Revert back to using mojo::ReportBadMessage once fixed.
-    UMA_HISTOGRAM_BOOLEAN("Storage.IndexedDB.PutValidBlob",
-                          handle.get() != nullptr);
     if (!handle) {
       result->code = LoadResultCode::kAbort;
       return;
     }
     uint64_t size = handle->size();
-    UMA_HISTOGRAM_MEMORY_KB("Storage.IndexedDB.PutBlobSizeKB", size / 1024ull);
     total_blob_size += size;
 
     if (info->file) {
@@ -359,13 +346,6 @@ void TransactionImpl::IOHelper::LoadBlobsOnIOThread(
       blob_info[i] =
           IndexedDBBlobInfo(std::move(handle), info->mime_type, info->size);
     }
-  }
-  LogUMAPutBlobCount(blob_info.size());
-  uint64_t blob_size = total_blob_size.ValueOrDefault(0U);
-  if (blob_size != 0) {
-    // Bytes to kilobytes.
-    UMA_HISTOGRAM_COUNTS_1M("WebCore.IndexedDB.PutBlobsTotalSize",
-                            blob_size / 1024);
   }
   result->code = LoadResultCode::kSuccess;
   result->value = std::move(value);

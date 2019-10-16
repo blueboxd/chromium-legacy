@@ -11,23 +11,33 @@ namespace dev_ui {
 
 class DevUiModuleProvider {
  public:
+  // Returns the singleton, which can be overridden using SetTestInstance().
+  static DevUiModuleProvider* GetInstance();
+
+  // Overrides the singleton with caller-owned |test_instance|. Caller tests
+  // are responsible for resetting this to null on cleanup.
+  static void SetTestInstance(DevUiModuleProvider* test_instance);
+
   // Returns true if the DevUI module is installed.
-  static bool ModuleInstalled();
+  virtual bool ModuleInstalled();
 
   // Asynchronously requests to install the DevUI module. |on_complete| is
   // called after the module install is completed, and takes a bool to indicate
   // whether module install is successful.
-  static void InstallModule(base::OnceCallback<void(bool)> on_complete);
+  virtual void InstallModule(base::OnceCallback<void(bool)> on_complete);
 
   // Assuming that the DevUI module is installed, loads DevUI resources if not
   // already loaded.
-  static void LoadModule();
+  virtual void LoadModule();
 
- private:
+ protected:
   DevUiModuleProvider();
-  ~DevUiModuleProvider();
+  virtual ~DevUiModuleProvider();
   DevUiModuleProvider(const DevUiModuleProvider&) = delete;
   DevUiModuleProvider& operator=(const DevUiModuleProvider&) = delete;
+
+ private:
+  static DevUiModuleProvider* test_instance_;
 };
 
 }  // namespace dev_ui

@@ -26,7 +26,8 @@ class FakeClient : public mojom::Client {
 
  protected:
   // mojom::Client implementation:
-  void OnAssistantStatusChanged(bool running) override {}
+  void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override {
+  }
   void RequestAssistantStructure(
       RequestAssistantStructureCallback callback) override {}
   void RequestAssistantController(

@@ -345,7 +345,6 @@
 <translation id="6062360702481658777">Automatski ćete se odjaviti za <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Nije bilo moguće potvrditi zaporku. Pokušajte ponovo.</translation>
 <translation id="607652042414456612">Vaše računalo mogu otkriti Bluetooth uređaji u blizini i prikazivat će se kao "<ph name="NAME" />" s adresom <ph name="ADDRESS" />.</translation>
-<translation id="6106745654298855237">Puni se putem: <ph name="POWER_SOURCE" /></translation>
 <translation id="612734058257491180">Google asistent nije dostupan u gostujućoj sesiji.</translation>
 <translation id="615957422585914272">Prikaži tipkovnicu na zaslonu</translation>
 <translation id="6164005077879661055">Sve datoteke i lokalni podaci povezani sa zaštićenim korisnikom trajno će se izbrisati kada se taj korisnik ukloni. Web-lokacije koje je taj korisnik posjetio i njegove postavke mogu i dalje biti vidljive upravitelju na adresi <ph name="MANAGEMENT_URL" />.</translation>
@@ -447,7 +446,6 @@
 <translation id="7647488630410863958">Otključajte uređaj da biste vidjeli obavijesti</translation>
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7654687942625752712">Pritisnite i zadržite tipke za glasnoću pet sekundi da biste onemogućili govorne povratne informacije.</translation>
-<translation id="7692480393933218409">Punjenje povezanih USB-C uređaja</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 obavijest}one{# obavijest}few{# obavijesti}other{# obavijesti}}</translation>
 <translation id="7749443890790263709">Dosegnut je maksimalan broj radnih površina.</translation>

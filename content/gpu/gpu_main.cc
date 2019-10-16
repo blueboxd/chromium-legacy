@@ -99,14 +99,6 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif
 
-#if defined(OS_MACOSX)
-//extern "C" {
-//void _LSSetApplicationLaunchServicesServerConnectionStatus(
-//    uint64_t flags,
-//    bool (^connection_allowed)(CFDictionaryRef));
-//}
-#endif  // defined(OS_MACOSX)
-
 namespace content {
 
 namespace {
@@ -285,9 +277,6 @@ int GpuMain(const MainFunctionParams& parameters) {
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
             base::MessagePumpType::NS_RUNLOOP);
-
-    // Tell LaunchServices to continue without a connection to the daemon.
-//    _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
 #else
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(

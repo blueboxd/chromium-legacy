@@ -47,13 +47,14 @@
     <!-- Attach a file -->
     <div id="attach-file-container" class="text-field-container">
       <label id="attach-file-label" i18n-content="attach-file-label"></label>
-      <input id="attach-file" type="file" aria-labelledby="attach-file-label">
+      <input id="attach-file" type="file" aria-labelledby="attach-file-label"
+           aria-describedby="attach-file-note">
       <div id="custom-file-container" hidden>
         <label id="attached-filename-text"></label>
         <button id="remove-attached-file" class="remove-file-button"></button>
       </div>
       <div id="attach-error" class="attach-file-notification"
-          i18n-content="attach-file-to-big" hidden></div>
+          role="alert" i18n-content="attach-file-to-big" hidden></div>
     </div>
     <div id="attach-file-note" i18n-content="attach-file-note"></div>
     <!-- Screenshot -->

@@ -35,12 +35,15 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/safe_browsing/deep_scanning_modal_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -190,7 +193,9 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       accessible_alert_(accessible_alert),
-      announce_accessible_alert_soon_(false) {
+      announce_accessible_alert_soon_(false),
+      deep_scanning_label_(nullptr),
+      open_now_button_(nullptr) {
   views::InstallRectHighlightPathGenerator(this);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   model_->AddObserver(this);
@@ -294,10 +299,19 @@ void DownloadItemView::OnDownloadUpdated() {
   bool is_danger_type_async_scanning =
       (model_->GetDangerType() ==
        download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING);
-  if (model_->IsDangerous() && !IsShowingWarningDialog()) {
-    TransitionToWarningDialog();
-  } else if (is_danger_type_async_scanning && !IsShowingDeepScanning()) {
-    TransitionToDeepScanningDialog();
+  if (model_->IsDangerous()) {
+    if (!IsShowingWarningDialog())
+      TransitionToWarningDialog();
+  } else if (is_danger_type_async_scanning &&
+             model_->GetState() != DownloadItem::CANCELLED) {
+    if (!IsShowingDeepScanning())
+      TransitionToDeepScanningDialog();
+
+    if (should_open_while_scanning_ &&
+        model_->GetState() == DownloadItem::COMPLETE) {
+      should_open_while_scanning_ = false;
+      model_->OpenDownload();
+    }
   } else {
     TransitionToNormalMode();
   }
@@ -442,6 +456,14 @@ void DownloadItemView::Layout() {
     gfx::Point child_origin(kStartPadding + kWarningIconSize + kStartPadding,
                             (height() - deep_scanning_label_->height()) / 2);
     deep_scanning_label_->SetPosition(child_origin);
+
+    if (open_now_button_) {
+      child_origin.set_y(
+          (height() - open_now_button_->GetPreferredSize().height()) / 2);
+      child_origin.Offset(deep_scanning_label_->width() + kLabelPadding, 0);
+      open_now_button_->SetBoundsRect(
+          gfx::Rect(child_origin, open_now_button_->GetPreferredSize()));
+    }
   } else {
     int mirrored_x = GetMirroredXWithWidthInView(
         kStartPadding + DownloadShelf::kProgressIndicatorSize +
@@ -490,6 +512,18 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
     // Height: make sure the button fits and the warning icon fits.
     child_height =
         std::max({child_height, button_size.height(), kWarningIconSize});
+  } else if (IsShowingDeepScanning()) {
+    width = kStartPadding + kWarningIconSize + kStartPadding +
+            deep_scanning_label_->width() + kLabelPadding;
+    if (open_now_button_) {
+      width += open_now_button_->GetPreferredSize().width();
+      // Height: make sure the button fits and the warning icon fits.
+      child_height =
+          std::max({child_height, open_now_button_->GetPreferredSize().height(),
+                    kWarningIconSize});
+      width += kEndPadding;
+    }
+
   } else {
     width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
             kProgressTextPadding + kTextWidth + kEndPadding;
@@ -582,6 +616,23 @@ void DownloadItemView::ShowContextMenuForViewImpl(
 
 void DownloadItemView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
+  if (sender == open_now_button_) {
+    OpenDownloadDuringAsyncScanning();
+    return;
+  }
+
+  if (IsShowingDeepScanning() && sender == open_button_) {
+    content::WebContents* current_web_contents =
+        shelf_->browser()->tab_strip_model()->GetActiveWebContents();
+    open_now_modal_dialog_ = TabModalConfirmDialog::Create(
+        std::make_unique<safe_browsing::DeepScanningModalDialog>(
+            current_web_contents,
+            base::BindOnce(&DownloadItemView::OpenDownloadDuringAsyncScanning,
+                           weak_ptr_factory_.GetWeakPtr())),
+        current_web_contents);
+    return;
+  }
+
   if (sender == dropdown_button_) {
     // TODO(estade): this is copied from ToolbarActionView but should be shared
     // one way or another.
@@ -788,6 +839,10 @@ void DownloadItemView::UpdateColorsFromTheme() {
     shelf_->ConfigureButtonForTheme(save_button_);
   if (discard_button_)
     shelf_->ConfigureButtonForTheme(discard_button_);
+  if (deep_scanning_label_)
+    deep_scanning_label_->SetEnabledColor(GetTextColor());
+  if (open_now_button_)
+    shelf_->ConfigureButtonForTheme(open_now_button_);
 }
 
 void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
@@ -997,7 +1052,18 @@ void DownloadItemView::ShowDeepScanningDialog() {
   deep_scanning_label_ = AddChildView(std::move(deep_scanning_label));
   deep_scanning_label_->SetSize(AdjustTextAndGetSize(deep_scanning_label_));
 
-  open_button_->SetEnabled(false);
+  int delay_delivery = g_browser_process->local_state()->GetInteger(
+      prefs::kDelayDeliveryUntilVerdict);
+  if (delay_delivery != safe_browsing::DELAY_DOWNLOADS &&
+      delay_delivery != safe_browsing::DELAY_UPLOADS_AND_DOWNLOADS) {
+    auto open_now_button = views::MdTextButton::Create(
+        this, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW));
+    open_now_button_ = AddChildView(std::move(open_now_button));
+    open_button_->SetEnabled(true);
+  } else {
+    open_button_->SetEnabled(false);
+  }
+
   file_name_label_->SetVisible(false);
   status_label_->SetVisible(false);
 }
@@ -1010,6 +1076,9 @@ void DownloadItemView::ClearDeepScanningDialog() {
 
   delete deep_scanning_label_;
   deep_scanning_label_ = nullptr;
+
+  delete open_now_button_;
+  open_now_button_ = nullptr;
 
   LoadIcon();
 
@@ -1277,4 +1346,9 @@ base::string16 DownloadItemView::GetStatusText() const {
 base::string16 DownloadItemView::ElidedFilename() {
   return gfx::ElideFilename(model_->GetFileNameToReportUser(), font_list_,
                             kTextWidth);
+}
+
+void DownloadItemView::OpenDownloadDuringAsyncScanning() {
+  model_->CompleteSafeBrowsingScan();
+  should_open_while_scanning_ = true;
 }

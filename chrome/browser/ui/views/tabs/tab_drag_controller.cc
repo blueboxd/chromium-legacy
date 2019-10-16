@@ -1968,7 +1968,10 @@ Browser* TabDragController::CreateBrowserForDrag(
   *drag_offset = point_in_screen - new_bounds.origin();
 
   Browser::CreateParams create_params =
-      BrowserList::GetInstance()->GetLastActive()->create_params();
+      BrowserView::GetBrowserViewForNativeWindow(
+          GetAttachedBrowserWidget()->GetNativeWindow())
+          ->browser()
+          ->create_params();
   create_params.user_gesture = true;
   create_params.in_tab_dragging = true;
   create_params.initial_bounds = new_bounds;

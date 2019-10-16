@@ -77,7 +77,9 @@ GpuFeatureStatus GetVulkanFeatureStatus(
     const std::set<int>& blacklisted_features,
     const GpuPreferences& gpu_preferences) {
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_VULKAN))
+  // Only blacklist native vulkan.
+  if (gpu_preferences.use_vulkan == VulkanImplementationName::kNative &&
+      blacklisted_features.count(GPU_FEATURE_TYPE_VULKAN))
     return kGpuFeatureStatusBlacklisted;
 
   if (gpu_preferences.use_vulkan == VulkanImplementationName::kNone)

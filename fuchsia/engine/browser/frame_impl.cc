@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
+#include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -52,8 +53,12 @@ class PopupFrameCreationInfoUserData : public base::SupportsUserData::Data {
   fuchsia::web::PopupFrameCreationInfo info;
 };
 
-// Layout manager that allows only one child window and stretches it to fill the
-// parent.
+// Layout manager used for the root window that hosts the WebContents window.
+// The main WebContents window is stretched to occupy the whole parent. Note
+// that the root window may host other windows (particularly menus for drop-down
+// boxes). These windows get the location and size they request. The main
+// window for the web content is identified by window.type() ==
+// WINDOW_TYPE_CONTROL (set in WebContentsViewAura).
 class LayoutManagerImpl : public aura::LayoutManager {
  public:
   LayoutManagerImpl() = default;
@@ -61,31 +66,43 @@ class LayoutManagerImpl : public aura::LayoutManager {
 
   // aura::LayoutManager implementation.
   void OnWindowResized() override {
-    // Resize the child to match the size of the parent
-    if (child_) {
-      SetChildBoundsDirect(child_,
-                           gfx::Rect(child_->parent()->bounds().size()));
+    // Resize the child to match the size of the parent.
+    if (main_child_) {
+      SetChildBoundsDirect(main_child_,
+                           gfx::Rect(main_child_->parent()->bounds().size()));
     }
   }
+
   void OnWindowAddedToLayout(aura::Window* child) override {
-    DCHECK(!child_);
-    child_ = child;
-    SetChildBoundsDirect(child_, gfx::Rect(child_->parent()->bounds().size()));
+    if (child->type() == aura::client::WINDOW_TYPE_CONTROL) {
+      DCHECK(!main_child_);
+      main_child_ = child;
+      SetChildBoundsDirect(main_child_,
+                           gfx::Rect(main_child_->parent()->bounds().size()));
+    }
   }
 
   void OnWillRemoveWindowFromLayout(aura::Window* child) override {
-    DCHECK_EQ(child, child_);
-    child_ = nullptr;
+    if (child->type() == aura::client::WINDOW_TYPE_CONTROL) {
+      DCHECK_EQ(child, main_child_);
+      main_child_ = nullptr;
+    }
   }
 
   void OnWindowRemovedFromLayout(aura::Window* child) override {}
+
   void OnChildWindowVisibilityChanged(aura::Window* child,
                                       bool visible) override {}
+
   void SetChildBounds(aura::Window* child,
-                      const gfx::Rect& requested_bounds) override {}
+                      const gfx::Rect& requested_bounds) override {
+    if (child != main_child_)
+      SetChildBoundsDirect(child, requested_bounds);
+  }
 
  private:
-  aura::Window* child_ = nullptr;
+  // The main window used for the WebContents.
+  aura::Window* main_child_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
@@ -134,12 +151,36 @@ bool IsOriginWhitelisted(const GURL& url,
   return false;
 }
 
-class ScenicWindowTreeHost : public aura::WindowTreeHostPlatform {
+class WindowParentingClientImpl : public aura::client::WindowParentingClient {
  public:
-  explicit ScenicWindowTreeHost(ui::PlatformWindowInitProperties properties)
-      : aura::WindowTreeHostPlatform(std::move(properties)) {}
+  explicit WindowParentingClientImpl(aura::Window* root_window)
+      : root_window_(root_window) {
+    aura::client::SetWindowParentingClient(root_window_, this);
+  }
+  ~WindowParentingClientImpl() override {
+    aura::client::SetWindowParentingClient(root_window_, nullptr);
+  }
 
-  ~ScenicWindowTreeHost() override = default;
+  // WindowParentingClient implementation.
+  aura::Window* GetDefaultParent(aura::Window* window,
+                                 const gfx::Rect& bounds) override {
+    return root_window_;
+  }
+
+ private:
+  aura::Window* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowParentingClientImpl);
+};
+
+// WindowTreeHost that hosts web frames.
+class FrameWindowTreeHost : public aura::WindowTreeHostPlatform {
+ public:
+  explicit FrameWindowTreeHost(ui::PlatformWindowInitProperties properties)
+      : aura::WindowTreeHostPlatform(std::move(properties)),
+        window_parenting_client_(window()) {}
+
+  ~FrameWindowTreeHost() override = default;
 
   // Route focus & blur events to the window's focus observer and its
   // InputMethod.
@@ -154,7 +195,9 @@ class ScenicWindowTreeHost : public aura::WindowTreeHostPlatform {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ScenicWindowTreeHost);
+  WindowParentingClientImpl window_parenting_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameWindowTreeHost);
 };
 
 logging::LogSeverity ConsoleLogLevelToLoggingSeverity(
@@ -423,7 +466,7 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   properties.view_ref_pair = scenic::ViewRefPair::New();
 
   window_tree_host_ =
-      std::make_unique<ScenicWindowTreeHost>(std::move(properties));
+      std::make_unique<FrameWindowTreeHost>(std::move(properties));
   window_tree_host_->InitHost();
 
   window_tree_host_->window()->GetHost()->AddEventRewriter(

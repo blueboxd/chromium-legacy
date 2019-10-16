@@ -965,7 +965,7 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
   PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramTotalCompletedResources,
                                 num_cache_resources_ + num_network_resources_);
 
-  click_tracker_.RecordClickBurst();
+  click_tracker_.RecordClickBurst(GetDelegate().GetSourceId());
 }
 
 void CorePageLoadMetricsObserver::OnTimingUpdate(

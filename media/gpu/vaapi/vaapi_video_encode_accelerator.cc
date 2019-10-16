@@ -639,7 +639,7 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
       }
 
       // Allocate the same number of surfaces as reconstructed surfaces.
-      if (vpp_vaapi_wrapper_->CreateContextAndSurfaces(
+      if (!vpp_vaapi_wrapper_->CreateContextAndSurfaces(
               kVaSurfaceFormat, aligned_input_size_,
               VaapiWrapper::SurfaceUsageHint::kVideoProcessWrite,
               num_frames_in_flight_ + 1, &available_vpp_va_surface_ids_)) {

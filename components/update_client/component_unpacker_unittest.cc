@@ -130,7 +130,7 @@ TEST_F(ComponentUnpackerTest, UnpackFullCrx) {
       base::GetFileSize(unpack_path.AppendASCII("manifest.json"), &file_size));
   EXPECT_EQ(169, file_size);
 
-  EXPECT_TRUE(base::DeleteFile(unpack_path, true));
+  EXPECT_TRUE(base::DeleteFileRecursively(unpack_path));
 }
 
 TEST_F(ComponentUnpackerTest, UnpackFileNotFound) {

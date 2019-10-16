@@ -181,21 +181,13 @@ class TestFailure(object):
     def __init__(self, actual_driver_output, expected_driver_output):
         self.actual_driver_output = actual_driver_output
         self.expected_driver_output = expected_driver_output
-        self._has_stderr = False
-        self._repaint_overlay = False
+        self.has_stderr = False
+        self.has_repaint_overlay = False
         self.is_reftest = False
         if actual_driver_output:
-            self._has_stderr = actual_driver_output.has_stderr()
+            self.has_stderr = actual_driver_output.has_stderr()
         if expected_driver_output:
-            self._has_stderr |= expected_driver_output.has_stderr()
-
-    @property
-    def has_stderr(self):
-        return self._has_stderr
-
-    @property
-    def has_repaint_overlay(self):
-        return self._repaint_overlay
+            self.has_stderr |= expected_driver_output.has_stderr()
 
     def _write_to_artifacts(
             self, typ_artifacts, artifact_name, path, content, force_overwrite):
@@ -357,7 +349,7 @@ class FailureText(ActualAndBaselineArtifacts):
     def __init__(self, actual_driver_output, expected_driver_output):
         super(FailureText, self).__init__(
             actual_driver_output, expected_driver_output)
-        self._repaint_overlay = (
+        self.has_repaint_overlay = (
             repaint_overlay.result_contains_repaint_rects(
                 actual_driver_output.text) or
             repaint_overlay.result_contains_repaint_rects(

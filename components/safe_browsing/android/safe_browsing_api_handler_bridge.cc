@@ -65,6 +65,8 @@ int SBThreatTypeToJavaThreatType(const SBThreatType& sb_threat_type) {
       return safe_browsing::JAVA_THREAT_TYPE_UNWANTED_SOFTWARE;
     case SB_THREAT_TYPE_CSD_WHITELIST:
       return safe_browsing::JAVA_THREAT_TYPE_CSD_ALLOWLIST;
+    case SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
+      return safe_browsing::JAVA_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST;
     default:
       NOTREACHED();
       return 0;
@@ -214,6 +216,21 @@ bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
   return j_api_handler_.obj() != nullptr;
 }
 
+bool SafeBrowsingApiHandlerBridge::StartAllowlistCheck(
+    const GURL& url,
+    const SBThreatType& sb_threat_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!CheckApiIsSupported()) {
+    return false;
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
+  int j_threat_type = SBThreatTypeToJavaThreatType(sb_threat_type);
+  return Java_SafeBrowsingApiBridge_startAllowlistLookup(env, j_api_handler_,
+                                                         j_url, j_threat_type);
+}
+
 std::string SafeBrowsingApiHandlerBridge::GetSafetyNetId() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool feature_enabled = base::FeatureList::IsEnabled(kCaptureSafetyNetId);
@@ -261,18 +278,13 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
 }
 
 bool SafeBrowsingApiHandlerBridge::StartCSDAllowlistCheck(const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!CheckApiIsSupported()) {
-    return false;
-  }
+  return StartAllowlistCheck(url, safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST);
+}
 
-  // TODO(crbug.com/999344): Add UMA metrics
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
-  int j_threat_type =
-      SBThreatTypeToJavaThreatType(safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST);
-  return Java_SafeBrowsingApiBridge_startAllowlistLookup(env, j_api_handler_,
-                                                         j_url, j_threat_type);
+bool SafeBrowsingApiHandlerBridge::StartHighConfidenceAllowlistCheck(
+    const GURL& url) {
+  return StartAllowlistCheck(
+      url, safe_browsing::SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST);
 }
 
 }  // namespace safe_browsing

@@ -266,7 +266,7 @@ class HistoryBackendTestBase : public testing::Test {
       backend_->Closing();
     backend_ = nullptr;
     mem_backend_.reset();
-    base::DeleteFile(test_dir_, true);
+    base::DeleteFileRecursively(test_dir_);
     base::RunLoop().RunUntilIdle();
     history_client_.ClearAllBookmarks();
   }
@@ -1662,7 +1662,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
   base::FilePath new_history_path(test_dir());
-  base::DeleteFile(new_history_path, true);
+  base::DeleteFileRecursively(new_history_path);
   base::CreateDirectory(new_history_path);
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
@@ -3354,7 +3354,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
   base::FilePath new_history_path(test_dir());
-  base::DeleteFile(new_history_path, true);
+  base::DeleteFileRecursively(new_history_path);
   base::CreateDirectory(new_history_path);
   base::FilePath new_history_file = new_history_path.Append(kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history, new_history_file));

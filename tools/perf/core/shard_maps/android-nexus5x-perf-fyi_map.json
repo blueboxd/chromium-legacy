@@ -2,29 +2,19 @@
     "0": {
         "benchmarks": {
             "heap_profiling.mobile.disabled": {
-                "end": 1,
                 "abridged": false
             }
         }
     },
     "1": {
         "benchmarks": {
-            "heap_profiling.mobile.disabled": {
-                "begin": 1,
-                "end": 2,
+            "heap_profiling.mobile.native": {
                 "abridged": false
             }
         }
     },
     "2": {
         "benchmarks": {
-            "heap_profiling.mobile.disabled": {
-                "begin": 2,
-                "abridged": false
-            },
-            "heap_profiling.mobile.native": {
-                "abridged": false
-            },
             "heap_profiling.mobile.pseudo": {
                 "abridged": false
             }
@@ -32,12 +22,12 @@
     },
     "extra_infos": {
         "num_stories": 9,
-        "predicted_min_shard_time": 74.0,
-        "predicted_min_shard_index": 1,
-        "predicted_max_shard_time": 108.0,
-        "predicted_max_shard_index": 2,
-        "shard #0": 76.0,
-        "shard #1": 74.0,
-        "shard #2": 108.0
+        "predicted_min_shard_time": 170.0,
+        "predicted_min_shard_index": 2,
+        "predicted_max_shard_time": 180.0,
+        "predicted_max_shard_index": 0,
+        "shard #0": 180.0,
+        "shard #1": 172.0,
+        "shard #2": 170.0
     }
 }

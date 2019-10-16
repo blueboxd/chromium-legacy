@@ -17,6 +17,9 @@ class WebAppShortcutManager : public AppShortcutManager {
   explicit WebAppShortcutManager(Profile* profile);
   ~WebAppShortcutManager() override;
 
+  void GetShortcutInfoForApp(const AppId& app_id,
+                             GetShortcutInfoCallback callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutManager);
 };

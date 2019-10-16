@@ -1025,9 +1025,15 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   }
 
   if (wasPip && !window_state->IsMinimized()) {
-    // Expanding PIP should end split-view. See crbug.com/941788.
-    ash::SplitViewController::Get()->EndSplitView(
-        ash::SplitViewController::EndReason::kPipExpanded);
+    // Expanding PIP should end tablet split view (see crbug.com/941788).
+    // Clamshell split view does not require special handling. We activate the
+    // PIP window, and so overview ends, which means clamshell split view ends.
+    // TODO(edcourtney): Consider not ending tablet split view on PIP expand.
+    // See crbug.com/950827.
+    ash::SplitViewController* split_view_controller =
+        ash::SplitViewController::Get(ash::Shell::GetPrimaryRootWindow());
+    if (split_view_controller->InTabletSplitViewMode())
+      split_view_controller->EndSplitView();
     // As Android doesn't activate PIP tasks after they are expanded, we need
     // to do it here explicitly.
     // TODO(937738): Investigate if we can activate PIP windows inside commit.

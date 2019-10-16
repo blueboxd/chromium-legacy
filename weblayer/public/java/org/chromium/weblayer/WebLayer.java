@@ -79,8 +79,9 @@ public final class WebLayer {
             // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
             // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
             // WebViewFactory, so we have to fake it.
-            implPackageInfo = appContext.getPackageManager().getPackageInfo(
-                    getImplPackageName(appContext), PackageManager.GET_META_DATA);
+            implPackageInfo =
+                    appContext.getPackageManager().getPackageInfo(getImplPackageName(appContext),
+                            PackageManager.GET_SHARED_LIBRARY_FILES | PackageManager.GET_META_DATA);
             Field packageInfo = WebViewFactory.class.getDeclaredField("sPackageInfo");
             packageInfo.setAccessible(true);
             packageInfo.set(null, implPackageInfo);

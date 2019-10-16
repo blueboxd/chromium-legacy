@@ -33,7 +33,6 @@ class ScopedTimeClockOverrides;
 namespace test {
 
 // This header exposes SingleThreadTaskEnvironment and TaskEnvironment.
-// TODO(gab): Rename this header to task_environment.h and migrate all users.
 //
 // SingleThreadTaskEnvironment enables the following APIs within its scope:
 //  - (Thread|Sequenced)TaskRunnerHandle on the main thread

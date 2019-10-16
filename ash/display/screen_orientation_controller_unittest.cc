@@ -150,6 +150,10 @@ class ScreenOrientationControllerTest : public AshTestBase {
     return test_api.UserLockedOrientation();
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationControllerTest);
 };
@@ -343,13 +347,13 @@ TEST_F(ScreenOrientationControllerTest, SplitViewPreventsLock) {
   Lock(child_window2.get(), OrientationLockType::kPortrait);
   ASSERT_TRUE(RotationLocked());
 
-  SplitViewController::Get()->SnapWindow(focus_window1.get(),
-                                         SplitViewController::LEFT);
-  SplitViewController::Get()->SnapWindow(focus_window1.get(),
-                                         SplitViewController::RIGHT);
+  split_view_controller()->SnapWindow(focus_window1.get(),
+                                      SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(focus_window1.get(),
+                                      SplitViewController::RIGHT);
   EXPECT_FALSE(RotationLocked());
 
-  SplitViewController::Get()->EndSplitView();
+  split_view_controller()->EndSplitView();
   EXPECT_TRUE(RotationLocked());
 }
 

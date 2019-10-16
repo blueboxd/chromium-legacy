@@ -334,14 +334,11 @@ int ExtensionsToolbarContainer::OnDragUpdated(
   // Figure out where to display the icon during dragging transition.
 
   // First, since we want to update the dragged extension's position from before
-  // an icon to after it when the event passes the midpoint of another icon, add
-  // (icon width / 2) and divide by the icon width. This will convert the
-  // event coordinate into the index of the icon we want to display the
-  // dragged extension before. We also mirror the event.x() so that our
-  // calculations are consistent with left-to-right.
-  const auto size = GetToolbarActionSize();
-  const int offset_into_icon_area =
-      GetMirroredXInView(event.x()) + (size.width() / 2);
+  // an icon to after it when the event passes the midpoint between two icons.
+  // This will convert the event coordinate into the index of the icon we want
+  // to display the dragged extension before. We also mirror the event.x() so
+  // that our calculations are consistent with left-to-right.
+  const int offset_into_icon_area = GetMirroredXInView(event.x());
   const int before_icon_unclamped = WidthToIconCount(offset_into_icon_area);
 
   int visible_icons = model_->pinned_action_ids().size();
@@ -354,11 +351,7 @@ int ExtensionsToolbarContainer::OnDragUpdated(
   before_icon = base::ClampToRange(before_icon_unclamped, 0, visible_icons);
 
   if (!drop_info_.get() || drop_info_->index != before_icon) {
-    size_t current_index = drop_info_.get() ? drop_info_->index : data.index();
-    // If the target drop position is past the current index we must account for
-    // this later being removed.
-    drop_info_ = std::make_unique<DropInfo>(
-        data.id(), before_icon > current_index ? before_icon - 1 : before_icon);
+    drop_info_ = std::make_unique<DropInfo>(data.id(), before_icon);
     ReorderViews();
   }
 

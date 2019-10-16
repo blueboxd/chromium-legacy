@@ -1036,8 +1036,55 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   return FinalizeImage(surface);
 }
 
-const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-  return DirectRenderer::CanPassBeDrawnDirectly(pass, resource_provider_);
+const DrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
+#if defined(OS_MACOSX)
+  // On Macs, this path can sometimes lead to all black output.
+  // TODO(enne): investigate this and remove this hack.
+  return nullptr;
+#endif
+
+  // Can only collapse a single tile quad.
+  if (pass->quad_list.size() != 1)
+    return nullptr;
+
+  const DrawQuad* quad = *pass->quad_list.BackToFrontBegin();
+  // Hack: this could be supported by concatenating transforms, but
+  // in practice if there is one quad, it is at the origin of the render pass
+  // and has the same size as the pass.
+  if (!quad->shared_quad_state->quad_to_target_transform.IsIdentity() ||
+      quad->rect != pass->output_rect)
+    return nullptr;
+  // The quad is expected to be the entire layer so that AA edges are correct.
+  if (quad->shared_quad_state->quad_layer_rect != quad->rect)
+    return nullptr;
+  if (quad->material != DrawQuad::Material::kTiledContent)
+    return nullptr;
+
+  // TODO(chrishtr): support could be added for opacity, but care needs
+  // to be taken to make sure it is correct w.r.t. non-commutative filters etc.
+  if (quad->shared_quad_state->opacity != 1.0f)
+    return nullptr;
+
+  if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+    return nullptr;
+
+  const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(quad);
+  // Hack: this could be supported by passing in a subrectangle to draw
+  // render pass, although in practice if there is only one quad there
+  // will be no border texels on the input.
+  if (tile_quad->tex_coord_rect != gfx::RectF(tile_quad->rect))
+    return nullptr;
+  // Tile quad features not supported in render pass shaders.
+  if (tile_quad->nearest_neighbor)
+    return nullptr;
+  // BUG=skia:3868, Skia currently doesn't support texture rectangle inputs.
+  // See also the DCHECKs about GL_TEXTURE_2D in DrawRenderPassQuad.
+  GLenum target =
+      resource_provider_->GetResourceTextureTarget(tile_quad->resource_id());
+  if (target != GL_TEXTURE_2D)
+    return nullptr;
+
+  return tile_quad;
 }
 
 void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
@@ -1050,7 +1097,8 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
   if (bypass != render_pass_bypass_quads_.end()) {
-    TileDrawQuad* tile_quad = &bypass->second;
+    DCHECK(bypass->second->material == DrawQuad::Material::kTiledContent);
+    const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(bypass->second);
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.

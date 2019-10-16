@@ -1069,23 +1069,35 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   // example, if the user presses ctrl-l to focus the omnibox.
   control_key_state_ = control_down ? DOWN_AND_CONSUMED : UP;
 
-  // Try to get ZeroSuggest suggestions if a page is loaded and the user has
-  // not been typing in the omnibox.  The |user_input_in_progress_| check is
-  // used to prevent on-focus suggestions from appearing if the user already
-  // has a navigation or search query in mind.
-  if (client_->CurrentPageExists() && !user_input_in_progress_) {
-    // Send the textfield contents exactly as-is, as otherwise the verbatim
-    // match can be wrong. The full page URL is anyways in set_current_url().
-    input_ = AutocompleteInput(view_->GetText(), GetPageClassification(),
-                               client_->GetSchemeClassifier());
-    input_.set_current_url(client_->GetURL());
-    input_.set_current_title(client_->GetTitle());
-    input_.set_from_omnibox_focus(true);
-    autocomplete_controller()->Start(input_);
-  }
+  ShowOnFocusSuggestionsIfAutocompleteIdle();
 
   if (user_input_in_progress_ || !in_revert_)
     client_->OnInputStateChanged();
+}
+
+void OmniboxEditModel::ShowOnFocusSuggestionsIfAutocompleteIdle() {
+  // Early exit if a query is already in progress or the popup is already open.
+  // This is what allows this method to be called multiple times in multiple
+  // code locations without harm.
+  if (query_in_progress() || PopupIsOpen())
+    return;
+
+  // Early exit if the page has not loaded yet, so we don't annoy users.
+  if (!client_->CurrentPageExists())
+    return;
+
+  // Early exit if the user already has a navigation or search query in mind.
+  if (user_input_in_progress_)
+    return;
+
+  // Send the textfield contents exactly as-is, as otherwise the verbatim
+  // match can be wrong. The full page URL is anyways in set_current_url().
+  input_ = AutocompleteInput(view_->GetText(), GetPageClassification(),
+                             client_->GetSchemeClassifier());
+  input_.set_current_url(client_->GetURL());
+  input_.set_current_title(client_->GetTitle());
+  input_.set_from_omnibox_focus(true);
+  autocomplete_controller()->Start(input_);
 }
 
 void OmniboxEditModel::SetCaretVisibility(bool visible) {

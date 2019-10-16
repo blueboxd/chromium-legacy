@@ -18,12 +18,12 @@ import org.chromium.chrome.test.pagecontroller.utils.UiLocatorHelper;
 public class UrlPage extends PageController {
     private static final long PAGE_LOAD_TIMEOUT = 10000L;
     private static final IUi2Locator LOCATOR_WEB_VIEW =
-            Ui2Locators.withPath(Ui2Locators.withResEntries(R.id.content),
+            Ui2Locators.withPath(Ui2Locators.withAnyResEntry(R.id.content),
                     Ui2Locators.withClassRegex("android\\.webkit\\.WebView"));
-    private static final IUi2Locator LOCATOR_URL_BAR = Ui2Locators.withResEntries(R.id.url_bar);
+    private static final IUi2Locator LOCATOR_URL_BAR = Ui2Locators.withAnyResEntry(R.id.url_bar);
     private static final IUi2Locator LOCATOR_TAB_SWITCHER =
-            Ui2Locators.withResEntries(R.id.tab_switcher_button);
-    private static final IUi2Locator LOCATOR_MENU = Ui2Locators.withResEntries(R.id.menu_button);
+            Ui2Locators.withAnyResEntry(R.id.tab_switcher_button);
+    private static final IUi2Locator LOCATOR_MENU = Ui2Locators.withAnyResEntry(R.id.menu_button);
 
     private static final UrlPage sInstance = new UrlPage();
     private UrlPage() {}

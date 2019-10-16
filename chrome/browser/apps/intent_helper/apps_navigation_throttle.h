@@ -173,6 +173,16 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
                                       IntentPickerCloseReason close_reason,
                                       bool should_persist);
 
+  // This is a wrapper method for querying apps for a URL. Normally this
+  // method will simply querying PWAs that can handle the URL from. If we are
+  // using App Service Intent Handling to support intent picker (currently not
+  // feature complete), this method will query all types of apps that that could
+  // handle the URL from CommonAppsNavigationThrottle.
+  virtual std::vector<IntentPickerAppInfo> FindAppsForUrl(
+      content::WebContents* web_contents,
+      const GURL& url,
+      std::vector<IntentPickerAppInfo> apps);
+
   // If an installed PWA exists that can handle |url|, prepends it to |apps| and
   // returns the new list.
   static std::vector<IntentPickerAppInfo> FindPwaForUrl(

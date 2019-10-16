@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -327,7 +327,7 @@ bool IsPathTooLong(const FilePath& leveldb_dir) {
     const int min = 140;
     const int max = 300;
     const int num_buckets = 12;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
+    base::UmaHistogramCustomCounts(
         "WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength",
         component_length, min, max, num_buckets);
     return true;
@@ -1591,8 +1591,6 @@ bool IndexedDBBackingStore::WriteBlobFile(
     return false;
 
   bool use_copy_file = descriptor.is_file() && !descriptor.file_path().empty();
-  UMA_HISTOGRAM_BOOLEAN("Storage.IndexedDB.WriteBlobFileViaCopy",
-                        use_copy_file);
 
   FilePath path = GetBlobFileName(database_id, descriptor.key());
 

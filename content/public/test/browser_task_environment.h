@@ -29,8 +29,6 @@ class TestBrowserThread;
 // - Same APIs as base::test::TaskEnvironment.
 // - content::BrowserThread.
 // - Public APIs of base::test::TaskEnvironment.
-// TODO(gab): Rename this header to browser_task_environment.h and migrate all
-// users.
 //
 // Only tests that need the BrowserThread API should instantiate a
 // BrowserTaskEnvironment. Use base::test::SingleThhreadTaskEnvironment or

@@ -180,6 +180,10 @@ class TabletModeWindowManagerTest
     return window;
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManagerTest);
 };
@@ -1836,7 +1840,7 @@ TEST_P(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
   // After transition, we should be in single split screen.
   CreateTabletModeWindowManager();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 
   // 6. Tablet -> Clamshell. Since clamshell splitscreen is not enabled, oveview
@@ -1844,7 +1848,7 @@ TEST_P(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
   // state.
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 
   // Create another normal state window to test additional scenarios.
@@ -1860,13 +1864,12 @@ TEST_P(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
 
   // 8. Tablet -> Clamshell. If the two windows are in splitscreen in tablet
   // mode, after transition they will restore to their old window states.
-  SplitViewController::Get()->SnapWindow(window.get(),
-                                         SplitViewController::LEFT);
-  SplitViewController::Get()->SnapWindow(window2.get(),
-                                         SplitViewController::RIGHT);
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   DestroyTabletModeWindowManager();
-  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
   EXPECT_FALSE(WindowState::Get(window2.get())->IsSnapped());
 
@@ -1875,16 +1878,16 @@ TEST_P(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
   const WMEvent event2(WM_EVENT_SNAP_RIGHT);
   WindowState::Get(window2.get())->OnWMEvent(&event2);
   CreateTabletModeWindowManager();
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // 10. Tablet -> Clamshell. If overview and splitview are both active, they
   // will be both ended after the transition.
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
 
 // The class to test TabletModeWindowManagerTest related functionalities when
@@ -1951,14 +1954,14 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   // After transition, we should be in single split screen.
   CreateTabletModeWindowManager();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 
   // 6. Tablet -> Clamshell. Since there is only 1 window, splitview and
   // overview will be both ended. The window will be kept snapped.
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 
   // Create another normal state window to test additional scenarios.
@@ -1973,22 +1976,21 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
 
   // 8. Tablet -> Clamshell. If tablet splitscreen is active with two snapped
   // windows, the two windows will remain snapped in clamshell mode.
-  SplitViewController::Get()->SnapWindow(window.get(),
-                                         SplitViewController::LEFT);
-  SplitViewController::Get()->SnapWindow(window2.get(),
-                                         SplitViewController::RIGHT);
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   DestroyTabletModeWindowManager();
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsSnapped());
-  EXPECT_FALSE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // 9. Clamshell -> Tablet. If two window are snapped to two sides of the
   // screen, they will carry over to splitscreen in tablet mode.
   CreateTabletModeWindowManager();
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsSnapped());
@@ -1996,15 +1998,15 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   // 10. Tablet -> Clamshell. If overview and splitview are both active, after
   // transition, they will remain both active.
   overview_controller->StartOverview();
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   DestroyTabletModeWindowManager();
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
   // 11. Clamshell -> Tablet. The same as 10.
   CreateTabletModeWindowManager();
-  EXPECT_TRUE(SplitViewController::Get()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
@@ -2015,7 +2017,6 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   gfx::Rect rect(10, 10, 200, 50);
   std::unique_ptr<aura::Window> window(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
-  SplitViewController* split_view_controller = SplitViewController::Get();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
 
   // First test 1 window case.
@@ -2027,9 +2028,9 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   // Change its bounds horizontally a bit and then enter tablet mode.
   window->SetBounds(gfx::Rect(400, left_snapped_bounds.height()));
   CreateTabletModeWindowManager();
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window.get()));
   // Check the window is moved to 1/3 snapped position.
   EXPECT_EQ(window->bounds().width(),
             1200 * 0.33 - kSplitviewDividerShortSideLength / 2);
@@ -2048,10 +2049,10 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   window->SetBounds(gfx::Rect(400, left_snapped_bounds.height()));
   window2->SetBounds(gfx::Rect(400, 0, 800, left_snapped_bounds.height()));
   CreateTabletModeWindowManager();
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window.get()));
-  EXPECT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window.get()));
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
   // Check |window| and |window2| is moved to 1/3 snapped position.
   EXPECT_EQ(window->bounds().width(),
             1200 * 0.33 - kSplitviewDividerShortSideLength / 2);

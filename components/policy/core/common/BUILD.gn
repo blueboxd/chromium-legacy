@@ -156,6 +156,7 @@ jumbo_source_set("internal") {
     "//components/policy:generated",
     "//components/policy/proto",
   ]
+
   deps = [
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
@@ -163,6 +164,7 @@ jumbo_source_set("internal") {
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/strings",
+    "//components/user_manager",
     "//components/version_info",
     "//extensions/buildflags",
     "//google_apis",

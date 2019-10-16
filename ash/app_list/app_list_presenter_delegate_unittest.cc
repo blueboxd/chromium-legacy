@@ -2515,6 +2515,10 @@ class AppListPresenterDelegateHomeLauncherTest
     GetAppListTestHelper()->WaitUntilIdle();
   }
 
+  SplitViewController* split_view_controller() {
+    return SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -3075,13 +3079,12 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndSplitViewMode) {
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  SplitViewController* split_view_controller = SplitViewController::Get();
-  split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Press home button.
   PressHomeButton();
-  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 

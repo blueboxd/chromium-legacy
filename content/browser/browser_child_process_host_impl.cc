@@ -28,8 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/token.h"
 #include "build/build_config.h"
-#include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
-#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/bad_message.h"
@@ -58,8 +56,6 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_channel.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/tracing/public/cpp/trace_startup.h"
@@ -132,14 +128,6 @@ memory_instrumentation::mojom::ProcessType GetCoordinatorClientProcessType(
       NOTREACHED();
       return memory_instrumentation::mojom::ProcessType::OTHER;
   }
-}
-
-BrowserChildProcessHost::BindHostReceiverInterceptor&
-GetBindHostReceiverInterceptor() {
-  static base::NoDestructor<
-      BrowserChildProcessHost::BindHostReceiverInterceptor>
-      interceptor;
-  return *interceptor;
 }
 
 }  // namespace
@@ -391,69 +379,6 @@ void BrowserChildProcessHostImpl::BindInterface(
     return;
 
   child_connection_->BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void BrowserChildProcessHostImpl::BindHostReceiver(
-    mojo::GenericPendingReceiver receiver) {
-  const auto& interceptor = GetBindHostReceiverInterceptor();
-  if (interceptor) {
-    interceptor.Run(this, &receiver);
-    if (!receiver)
-      return;
-  }
-
-  if (auto r =
-          receiver.As<memory_instrumentation::mojom::CoordinatorConnector>()) {
-    // Well-behaved child processes do not bind this interface more than once.
-    if (!coordinator_connector_receiver_.is_bound())
-      coordinator_connector_receiver_.Bind(std::move(r));
-    return;
-  }
-
-#if defined(OS_MACOSX)
-  if (auto r = receiver.As<mojom::SandboxSupportMac>()) {
-    static base::NoDestructor<SandboxSupportMacImpl> sandbox_support;
-    sandbox_support->BindReceiver(std::move(r));
-    return;
-  }
-#endif
-
-#if defined(OS_WIN)
-  if (auto r = receiver.As<mojom::FontCacheWin>()) {
-    FontCacheDispatcher::Create(std::move(r));
-    return;
-  }
-
-  if (auto r = receiver.As<blink::mojom::DWriteFontProxy>()) {
-    base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                     base::TaskPriority::USER_BLOCKING,
-                                     base::MayBlock()})
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&DWriteFontProxyImpl::Create, std::move(r)));
-    return;
-  }
-#endif
-
-  if (auto r = receiver.As<
-               discardable_memory::mojom::DiscardableSharedMemoryManager>()) {
-    discardable_memory::DiscardableSharedMemoryManager::Get()->Bind(
-        std::move(r));
-    return;
-  }
-
-  if (auto r = receiver.As<device::mojom::PowerMonitor>()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            [](mojo::PendingReceiver<device::mojom::PowerMonitor> r) {
-              GetSystemConnector()->Connect(device::mojom::kServiceName,
-                                            std::move(r));
-            },
-            std::move(r)));
-    return;
-  }
-
-  delegate_->BindHostReceiver(std::move(receiver));
 }
 
 void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
@@ -802,11 +727,5 @@ void BrowserChildProcessHostImpl::OnObjectSignaled(HANDLE object) {
 }
 
 #endif
-
-// static
-void BrowserChildProcessHost::InterceptBindHostReceiverForTesting(
-    BindHostReceiverInterceptor callback) {
-  GetBindHostReceiverInterceptor() = std::move(callback);
-}
 
 }  // namespace content

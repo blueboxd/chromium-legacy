@@ -13,7 +13,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -36,8 +35,6 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
-#include "services/shape_detection/shape_detection_service.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 
@@ -292,16 +289,6 @@ void GpuChildThread::RunService(
 
   DVLOG(1) << "GPU: Handling RunService request for " << service_name;
   service_factory_->RunService(service_name, std::move(receiver));
-}
-
-void GpuChildThread::BindServiceInterface(
-    mojo::GenericPendingReceiver receiver) {
-  if (auto shape_detection_receiver =
-          receiver.As<shape_detection::mojom::ShapeDetectionService>()) {
-    static base::NoDestructor<shape_detection::ShapeDetectionService> service{
-        std::move(shape_detection_receiver)};
-    return;
-  }
 }
 
 void GpuChildThread::OnAssociatedInterfaceRequest(

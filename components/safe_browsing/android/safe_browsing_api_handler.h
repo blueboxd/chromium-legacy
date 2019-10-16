@@ -38,6 +38,8 @@ class SafeBrowsingApiHandler {
 
   virtual bool StartCSDAllowlistCheck(const GURL& url) = 0;
 
+  virtual bool StartHighConfidenceAllowlistCheck(const GURL& url) = 0;
+
   virtual ~SafeBrowsingApiHandler() {}
 
  private:

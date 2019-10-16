@@ -56,21 +56,21 @@
                 "abridged": false
             },
             "loading.desktop": {
-                "abridged": false
-            },
-            "media.desktop": {
-                "abridged": false
-            },
-            "memory.desktop": {
-                "end": 1,
+                "end": 60,
                 "abridged": false
             }
         }
     },
     "1": {
         "benchmarks": {
+            "loading.desktop": {
+                "begin": 60,
+                "abridged": false
+            },
+            "media.desktop": {
+                "abridged": false
+            },
             "memory.desktop": {
-                "begin": 1,
                 "abridged": false
             },
             "octane": {
@@ -98,7 +98,7 @@
                 "abridged": false
             },
             "system_health.common_desktop": {
-                "end": 25,
+                "end": 12,
                 "abridged": false
             }
         }
@@ -106,11 +106,11 @@
     "2": {
         "benchmarks": {
             "system_health.common_desktop": {
-                "begin": 25,
+                "begin": 12,
                 "abridged": false
             },
             "system_health.memory_desktop": {
-                "end": 57,
+                "end": 45,
                 "abridged": false
             }
         }
@@ -118,7 +118,7 @@
     "3": {
         "benchmarks": {
             "system_health.memory_desktop": {
-                "begin": 57,
+                "begin": 45,
                 "abridged": false
             },
             "tab_switching.typical_25": {
@@ -128,18 +128,18 @@
                 "abridged": false
             },
             "v8.browsing_desktop": {
-                "end": 23,
+                "abridged": false
+            },
+            "v8.browsing_desktop-future": {
+                "end": 15,
                 "abridged": false
             }
         }
     },
     "4": {
         "benchmarks": {
-            "v8.browsing_desktop": {
-                "begin": 23,
-                "abridged": false
-            },
             "v8.browsing_desktop-future": {
+                "begin": 15,
                 "abridged": false
             },
             "v8.runtime_stats.top_25": {
@@ -151,15 +151,15 @@
         }
     },
     "extra_infos": {
-        "num_stories": 1240,
-        "predicted_min_shard_time": 11786.0,
-        "predicted_min_shard_index": 0,
-        "predicted_max_shard_time": 11954.0,
+        "num_stories": 902,
+        "predicted_min_shard_time": 8348.0,
+        "predicted_min_shard_index": 2,
+        "predicted_max_shard_time": 8462.0,
         "predicted_max_shard_index": 1,
-        "shard #0": 11786.0,
-        "shard #1": 11954.0,
-        "shard #2": 11848.0,
-        "shard #3": 11868.0,
-        "shard #4": 11832.0
+        "shard #0": 8426.0,
+        "shard #1": 8462.0,
+        "shard #2": 8348.0,
+        "shard #3": 8454.0,
+        "shard #4": 8450.0
     }
 }

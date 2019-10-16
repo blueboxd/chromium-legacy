@@ -153,17 +153,6 @@ void CompositorFrameReporter::TerminateFrame(
   EndCurrentStage(frame_termination_time_);
 }
 
-void CompositorFrameReporter::OnFinishImplFrame(base::TimeTicks timestamp) {
-  DCHECK(!did_finish_impl_frame_);
-
-  did_finish_impl_frame_ = true;
-  impl_frame_finish_time_ = timestamp;
-}
-
-void CompositorFrameReporter::OnAbortBeginMainFrame() {
-  did_abort_main_frame_ = false;
-}
-
 void CompositorFrameReporter::SetVizBreakdown(
     const viz::FrameTimingDetails& viz_breakdown) {
   DCHECK(current_stage_.viz_breakdown.received_compositor_frame_timestamp

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_BASE_H_
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_BASE_H_
 
-#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -57,12 +56,7 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
   bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
-  PageInfoUI::SecurityDescription GetSecurityDetails() const;
   void set_window_title(const base::string16& title) { window_title_ = title; }
-  void set_security_description(
-      const PageInfoUI::SecurityDescription& description) {
-    security_description_ = description;
-  }
 
  private:
   // WebContentsObserver:
@@ -72,7 +66,6 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
   void DidChangeVisibleSecurityState() override;
 
   base::string16 window_title_;
-  PageInfoUI::SecurityDescription security_description_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBase);
 };

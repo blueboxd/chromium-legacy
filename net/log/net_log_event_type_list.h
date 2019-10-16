@@ -1768,12 +1768,14 @@ EVENT_TYPE(QUIC_SESSION_DUPLICATE_PACKET_RECEIVED)
 //   {
 //     "connection_id": <The 64-bit CONNECTION_ID for this connection, as a
 //                       base-10 string>,
-//     "reset_flag": <True if the reset flag is set for this packet>,
-//     "version_flag": <True if the version flag is set for this packet>,
-//     "packet_sequence_number": <The packet's full 64-bit sequence number,
-//                                as a base-10 string.>,
-//     "private_flags": <The private flags set for this packet>,
-//     "fec_group": <The FEC group of this packet>,
+//     "packet_number": <The packet's full 64-bit sequence number,
+//                       as a base-10 string.>,
+//     "header_format": <The format of the header in string>,
+//     If the header_format is long header:
+//      "long_header_type": <log the long header type>
+//     If Google QUIC is used:
+//      "reset_flag": <True if the reset flag is set for this packet>,
+//      "version_flag": <True if the version flag is set for this packet>
 //   }
 EVENT_TYPE(QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED)
 

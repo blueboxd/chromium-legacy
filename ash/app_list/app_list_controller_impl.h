@@ -260,6 +260,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // HomeLauncherGestureHandlerObserver:
   void OnHomeLauncherAnimationComplete(bool shown, int64_t display_id) override;
+  void OnHomeLauncherTargetPositionChanged(bool showing,
+                                           int64_t display_id) override;
 
   // HomeScreenDelegate:
   void ShowHomeScreenView() override;
@@ -374,6 +376,12 @@ class ASH_EXPORT AppListControllerImpl
 
   // Whether to immediately dismiss the AppListView.
   bool should_dismiss_immediately_ = false;
+
+  // Whether the home launcher is in the process of being animated into view.
+  // This becomes true at the start of the animation (or the drag), becomes
+  // false once it ends and stays false until the next animation or drag
+  // showing the home launcher.
+  bool animation_or_drag_to_visible_home_launcher_in_progress_ = false;
 
   // The last target visibility change and its display id.
   bool last_target_visible_ = false;

@@ -93,14 +93,23 @@ base::Value NetLogQuicDuplicatePacketParams(
   return dict;
 }
 
-base::Value NetLogQuicPacketHeaderParams(const quic::QuicPacketHeader* header) {
+base::Value NetLogQuicPacketHeaderParams(const quic::QuicPacketHeader* header,
+                                         bool is_ietf_quic) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("connection_id",
                     header->destination_connection_id.ToString());
-  dict.SetIntKey("reset_flag", header->reset_flag);
-  dict.SetIntKey("version_flag", header->version_flag);
   dict.SetKey("packet_number",
               NetLogNumberValue(header->packet_number.ToUint64()));
+  dict.SetStringKey("header_format",
+                    quic::PacketHeaderFormatToString(header->form));
+  if (header->form == quic::IETF_QUIC_LONG_HEADER_PACKET) {
+    dict.SetStringKey("long_header_type", quic::QuicLongHeaderTypeToString(
+                                              header->long_packet_type));
+  }
+  if (!is_ietf_quic) {
+    dict.SetIntKey("reset_flag", header->reset_flag);
+    dict.SetIntKey("version_flag", header->version_flag);
+  }
   return dict;
 }
 
@@ -613,7 +622,11 @@ void QuicConnectionLogger::OnUnauthenticatedHeader(
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_UNAUTHENTICATED_PACKET_HEADER_RECEIVED,
-      [&] { return NetLogQuicPacketHeaderParams(&header); });
+      [&] {
+        return NetLogQuicPacketHeaderParams(
+            &header,
+            quic::VersionHasIetfQuicFrames(session_->transport_version()));
+      });
 }
 
 void QuicConnectionLogger::OnIncorrectConnectionId(

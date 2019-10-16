@@ -734,8 +734,16 @@ void AppListControllerImpl::OnUiVisibilityChanged(
 void AppListControllerImpl::OnHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
+  animation_or_drag_to_visible_home_launcher_in_progress_ = false;
   CloseAssistantUi(shown ? AssistantExitPoint::kLauncherOpen
                          : AssistantExitPoint::kLauncherClose);
+}
+
+void AppListControllerImpl::OnHomeLauncherTargetPositionChanged(
+    bool showing,
+    int64_t display_id) {
+  animation_or_drag_to_visible_home_launcher_in_progress_ = showing;
+  OnVisibilityWillChange(showing, display_id);
 }
 
 void AppListControllerImpl::ShowHomeScreenView() {
@@ -1237,8 +1245,11 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
   const bool is_home_launcher = IsTabletMode();
 
   bool real_visibility = visible;
-  if (is_home_launcher) {
-    // HomeLauncher is only visible when no other app windows are visible.
+  // HomeLauncher is only visible when no other app windows are visible,
+  // unless we are in the process of animating to (or dragging) the home
+  // launcher.
+  if (is_home_launcher &&
+      !animation_or_drag_to_visible_home_launcher_in_progress_) {
     real_visibility &= !HasVisibleWindows();
   }
 
@@ -1277,8 +1288,11 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
   const bool is_home_launcher = IsTabletMode();
 
   bool real_target_visibility = visible;
-  if (is_home_launcher) {
-    // HomeLauncher is only visible when no other app windows are visible.
+  // HomeLauncher is only visible when no other app windows are visible,
+  // unless we are in the process of animating to (or dragging) the home
+  // launcher.
+  if (is_home_launcher &&
+      !animation_or_drag_to_visible_home_launcher_in_progress_) {
     real_target_visibility &= !HasVisibleWindows();
   }
 

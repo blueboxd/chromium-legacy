@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -27,9 +29,13 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForWorker::CreateURLLoader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   WrappedResourceRequest wrapped(request);
 
-  network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
+  mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+      url_loader_factory;
   if (options.url_loader_factory) {
-    options.url_loader_factory->data->Clone(MakeRequest(&url_loader_factory));
+    mojo::Remote<network::mojom::blink::URLLoaderFactory>
+        url_loader_factory_remote(std::move(options.url_loader_factory->data));
+    url_loader_factory_remote->Clone(
+        url_loader_factory.InitWithNewPipeAndPassReceiver());
   }
   // Resolve any blob: URLs that haven't been resolved yet. The XHR and
   // fetch() API implementations resolve blob URLs earlier because there can
@@ -39,12 +45,11 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForWorker::CreateURLLoader(
   // simplest.
   if (request.Url().ProtocolIs("blob") && !url_loader_factory) {
     global_scope_->GetPublicURLManager().Resolve(
-        request.Url(), MakeRequest(&url_loader_factory));
+        request.Url(), url_loader_factory.InitWithNewPipeAndPassReceiver());
   }
 
   if (url_loader_factory) {
-    return web_context_
-        ->WrapURLLoaderFactory(url_loader_factory.PassInterface().PassHandle())
+    return web_context_->WrapURLLoaderFactory(url_loader_factory.PassPipe())
         ->CreateURLLoader(wrapped, CreateTaskRunnerHandle(task_runner));
   }
 

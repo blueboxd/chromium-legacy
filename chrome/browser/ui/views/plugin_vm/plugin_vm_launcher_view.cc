@@ -170,6 +170,11 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   layout->SetFlexForView(lower_container_view, 1, true);
 }
 
+// static
+PluginVmLauncherView* PluginVmLauncherView::GetActiveViewForTesting() {
+  return g_plugin_vm_launcher_view;
+}
+
 int PluginVmLauncherView::GetDialogButtons() const {
   switch (state_) {
     case State::START_DOWNLOADING:
@@ -364,6 +369,11 @@ base::string16 PluginVmLauncherView::GetMessage() const {
   }
 }
 
+void PluginVmLauncherView::SetFinishedCallbackForTesting(
+    base::OnceCallback<void(bool success)> callback) {
+  finished_callback_for_testing_ = std::move(callback);
+}
+
 PluginVmLauncherView::~PluginVmLauncherView() {
   plugin_vm_image_manager_->RemoveObserver();
   g_plugin_vm_launcher_view = nullptr;
@@ -407,6 +417,12 @@ void PluginVmLauncherView::OnStateUpdated() {
 
   DialogModelChanged();
   GetWidget()->GetRootView()->Layout();
+
+  if (state_ == State::FINISHED || state_ == State::ERROR ||
+      state_ == State::NOT_ALLOWED) {
+    if (finished_callback_for_testing_)
+      std::move(finished_callback_for_testing_).Run(state_ == State::FINISHED);
+  }
 }
 
 base::string16 PluginVmLauncherView::GetDownloadProgressMessage(

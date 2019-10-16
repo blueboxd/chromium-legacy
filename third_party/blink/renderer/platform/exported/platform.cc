@@ -352,14 +352,4 @@ Platform::CreateWebRtcAsyncResolverFactory() {
   return nullptr;
 }
 
-std::unique_ptr<webrtc::RtpCapabilities> Platform::GetRtpSenderCapabilities(
-    const WebString& kind) {
-  return nullptr;
-}
-
-std::unique_ptr<webrtc::RtpCapabilities> Platform::GetRtpReceiverCapabilities(
-    const WebString& kind) {
-  return nullptr;
-}
-
 }  // namespace blink

@@ -19,7 +19,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.JNIUtils;
-import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
@@ -54,7 +53,6 @@ import org.chromium.ui.base.ResourceBundle;
  */
 public class ChromeApplication extends Application {
     private static final String COMMAND_LINE_FILE = "chrome-command-line";
-    private static final String TAG = "ChromiumApplication";
     // Public to allow use in ChromeBackupAgent
     public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
@@ -170,8 +168,7 @@ public class ChromeApplication extends Application {
         // out-of-date application. Kill old applications in this bad state. See
         // http://crbug.com/658130 for more context and http://b.android.com/56296 for the bug.
         if (ContextUtils.getApplicationAssets() == null) {
-            Log.e(TAG, "getResources() null, closing app.");
-            System.exit(0);
+            throw new RuntimeException("App out of date, getResources() null, closing app.");
         }
     }
 

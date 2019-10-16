@@ -16,7 +16,8 @@
 #include "media/mojo/mojom/mirror_service_remoting.mojom.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/mojom/remoting_common.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -100,8 +101,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   // call connects the CastRemotingConnector with the MediaRemoter. Remoting
   // sessions can only be started after this is called.
   void ConnectToService(
-      media::mojom::MirrorServiceRemotingSourceRequest source_request,
-      media::mojom::MirrorServiceRemoterPtr remoter);
+      mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
+          source_receiver,
+      mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter);
 
   // Called at the start of mirroring to reset the permission.
   void ResetRemotingPermission();
@@ -234,8 +236,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   RemotingBridge* active_bridge_;
 
   // TODO(xjz): Remove these after Mirroring Service is launched.
-  mojo::Binding<media::mojom::MirrorServiceRemotingSource> deprecated_binding_;
-  media::mojom::MirrorServiceRemoterPtr deprecated_remoter_;
+  mojo::Receiver<media::mojom::MirrorServiceRemotingSource>
+      deprecated_receiver_{this};
+  mojo::Remote<media::mojom::MirrorServiceRemoter> deprecated_remoter_;
 
   mojo::Receiver<media::mojom::RemotingSource> receiver_{this};
   mojo::Remote<media::mojom::Remoter> remoter_;

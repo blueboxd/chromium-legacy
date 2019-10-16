@@ -44,6 +44,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -711,7 +712,6 @@ void ExternalProviderImpl::CreateExternalProviders(
 #else
   check_admin_permissions_on_mac = ExternalPrefLoader::NONE;
 #endif
-
 #if !defined(OS_WIN)
   int bundled_extension_creation_flags = Extension::NO_FLAGS;
 #endif
@@ -760,45 +760,49 @@ void ExternalProviderImpl::CreateExternalProviders(
     chromeos::DemoSession::Get()->SetExtensionsExternalLoader(loader);
     provider_list->push_back(std::move(demo_apps_provider));
   }
-#elif defined(OS_LINUX)
-  provider_list->push_back(std::make_unique<ExternalProviderImpl>(
-      service,
-      base::MakeRefCounted<ExternalPrefLoader>(
-          chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-          ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER, profile),
-      profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
-      bundled_extension_creation_flags));
 #endif
-
-  if (!profile->IsLegacySupervised()) {
-#if defined(OS_WIN)
-    auto registry_provider = std::make_unique<ExternalProviderImpl>(
-        service, new ExternalRegistryLoader, profile,
-        Manifest::EXTERNAL_REGISTRY, Manifest::EXTERNAL_PREF_DOWNLOAD,
-        Extension::NO_FLAGS);
-    registry_provider->set_allow_updates(true);
-    provider_list->push_back(std::move(registry_provider));
-#else
+  if (!profile->GetPrefs()->GetBoolean(pref_names::kBlockExternalExtensions)) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
         base::MakeRefCounted<ExternalPrefLoader>(
-            chrome::DIR_EXTERNAL_EXTENSIONS, check_admin_permissions_on_mac,
-            nullptr),
+            chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+            ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER, profile),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         bundled_extension_creation_flags));
+#endif
+    if (!profile->IsLegacySupervised()) {
+#if defined(OS_WIN)
+      auto registry_provider = std::make_unique<ExternalProviderImpl>(
+          service, new ExternalRegistryLoader, profile,
+          Manifest::EXTERNAL_REGISTRY, Manifest::EXTERNAL_PREF_DOWNLOAD,
+          Extension::NO_FLAGS);
+      registry_provider->set_allow_updates(true);
+      provider_list->push_back(std::move(registry_provider));
+#else
+      provider_list->push_back(std::make_unique<ExternalProviderImpl>(
+          service,
+          base::MakeRefCounted<ExternalPrefLoader>(
+              chrome::DIR_EXTERNAL_EXTENSIONS, check_admin_permissions_on_mac,
+              nullptr),
+          profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+          bundled_extension_creation_flags));
 
-    // Define a per-user source of external extensions.
+      // Define a per-user source of external extensions.
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
-    provider_list->push_back(std::make_unique<ExternalProviderImpl>(
-        service,
-        base::MakeRefCounted<ExternalPrefLoader>(
-            chrome::DIR_USER_EXTERNAL_EXTENSIONS, ExternalPrefLoader::NONE,
-            nullptr),
-        profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
-        Extension::NO_FLAGS));
+      provider_list->push_back(std::make_unique<ExternalProviderImpl>(
+          service,
+          base::MakeRefCounted<ExternalPrefLoader>(
+              chrome::DIR_USER_EXTERNAL_EXTENSIONS, ExternalPrefLoader::NONE,
+              nullptr),
+          profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
+          Extension::NO_FLAGS));
 #endif
 #endif
+    }
+  }
 
+  if (!profile->IsLegacySupervised()) {
 #if !defined(OS_CHROMEOS)
     // The default apps are installed as INTERNAL but use the external
     // extension installer codeflow.

@@ -5295,5 +5295,21 @@
     "pref_mappings": [
       { "pref": "ssl.tls13_hardening_for_local_anchors", "local_state": true }
     ]
+  },
+
+  "CorsMitigationList": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "CorsMitigationList": ["x-googapps-allowed-domains", "youtube-restrict"] },
+    "pref_mappings": [
+      { "pref": "cors.mitigation.list" }
+    ]
+  },
+
+  "CorsLegacyModeEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "CorsLegacyModeEnabled": true },
+    "pref_mappings": [
+      { "pref": "cors.legacy_mode.enabled" }
+    ]
   }
 }

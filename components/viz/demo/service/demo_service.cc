@@ -12,13 +12,14 @@
 
 namespace demo {
 
-DemoService::DemoService(viz::mojom::FrameSinkManagerRequest request,
-                         viz::mojom::FrameSinkManagerClientPtr client) {
+DemoService::DemoService(
+    mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
+    viz::mojom::FrameSinkManagerClientPtr client) {
   auto params = viz::mojom::FrameSinkManagerParams::New();
   params->restart_id = viz::BeginFrameSource::kNotRestartableId;
   params->use_activation_deadline = false;
   params->activation_deadline_in_frames = 0u;
-  params->frame_sink_manager = std::move(request);
+  params->frame_sink_manager = std::move(receiver);
   params->frame_sink_manager_client = client.PassInterface();
   runner_ = std::make_unique<viz::VizCompositorThreadRunnerImpl>();
   runner_->CreateFrameSinkManager(std::move(params));

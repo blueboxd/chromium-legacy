@@ -24,6 +24,10 @@ const uint32 kURLLoadOptionUseHeaderClient = 16;
 const uint32 kURLLoadOptionBlockAllCookies = 32;
 // Similar to |kURLLoadOptionBlockAllCookies|, but only for third party cookies.
 const uint32 kURLLoadOptionBlockThirdPartyCookies = 64;
+// This request is for CORS preflight. This is used in the network service.
+// This is set and used only in the network service, no callsites outside the
+// service must set this.
+const uint32 kURLLoadOptionAsCorsPreflight = 128;
 
 interface URLLoaderFactory {
   // Creates a URLLoader and starts loading with the given |request|. |client|'s

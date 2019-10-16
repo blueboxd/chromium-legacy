@@ -17,7 +17,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori.h"
-#include "crypto/sha2.h"
+#include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
-                       ShouldExposeExperimentalAuthenticationId) {
+                       ShouldExposeExperimentalAuthenticationKey) {
   const std::vector<std::string>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
@@ -212,8 +212,8 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
 
   ASSERT_TRUE(SetupSync());
 
-  // WARNING: Do *NOT* change these values since the authentication ID should be
-  // stable across different browser versions.
+  // WARNING: Do *NOT* change these values since the authentication key should
+  // be stable across different browser versions.
 
   // Default birthday determined by LoopbackServer.
   const std::string kDefaultBirthday = "0";
@@ -224,8 +224,10 @@ IN_PROC_BROWSER_TEST_P(SingleClientNigoriSyncTestWithUssTests,
       std::string("gaia_id_for_user_gmail.com") + kSeparator +
       kDefaultBirthday + kSeparator + base64_encoded_keystore_key;
 
-  EXPECT_EQ(GetSyncService(/*index=*/0)->GetExperimentalAuthenticationId(),
-            crypto::SHA256HashString(authentication_id_before_hashing));
+  EXPECT_EQ(
+      GetSyncService(/*index=*/0)->GetExperimentalAuthenticationSecretForTest(),
+      authentication_id_before_hashing);
+  EXPECT_TRUE(GetSyncService(/*index=*/0)->GetExperimentalAuthenticationKey());
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,

@@ -24,7 +24,7 @@ namespace {
 bool ShouldAssignToCustomSlot(const Node& node) {
   if (IsA<HTMLDetailsElement>(node.parentElement()))
     return HTMLDetailsElement::IsFirstSummary(node);
-  if (IsHTMLSelectElement(node.parentElement()))
+  if (IsA<HTMLSelectElement>(node.parentElement()))
     return HTMLSelectElement::CanAssignToSelectSlot(node);
   if (IsA<HTMLOptGroupElement>(node.parentElement()))
     return HTMLOptGroupElement::CanAssignToOptGroupSlot(node);

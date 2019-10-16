@@ -618,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestCORSWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   std::string test = "test_cors.html";
-  if (network::features::ShouldEnableOutOfBlinkCors())
+  if (network::features::ShouldEnableOutOfBlinkCorsForTesting())
     test += "?cors_mode=network_service";
   else
     test += "?cors_mode=blink";

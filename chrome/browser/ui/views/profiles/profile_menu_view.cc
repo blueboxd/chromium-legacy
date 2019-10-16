@@ -410,6 +410,11 @@ void ProfileMenuView::OnAddNewProfileButtonClicked() {
                     profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
 }
 
+void ProfileMenuView::OnEditProfileButtonClicked() {
+  RecordClick(ActionableItem::kEditProfileButton);
+  chrome::ShowSettingsSubPage(browser(), chrome::kManageProfileSubPage);
+}
+
 void ProfileMenuView::BuildIdentity() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
@@ -422,8 +427,10 @@ void ProfileMenuView::BuildIdentity() {
   ProfileAttributesEntry* profile_attributes =
       GetProfileAttributesEntry(profile);
 
+  base::string16 heading;
+
   if (account_info.has_value()) {
-    SetHeading(profile_attributes->GetLocalProfileName());
+    heading = profile_attributes->GetLocalProfileName();
     SetIdentityInfo(account_info.value().account_image.AsImageSkia(),
                     GetSyncIcon(),
                     base::UTF8ToUTF16(account_info.value().full_name),
@@ -434,6 +441,12 @@ void ProfileMenuView::BuildIdentity() {
         profile_attributes->GetName(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
+
+  SetHeading(heading,
+             ImageForMenu(vector_icons::kEditIcon, kShortcutIconToImageRatio),
+             l10n_util::GetStringUTF16(IDS_SETTINGS_EDIT_PERSON),
+             base::BindRepeating(&ProfileMenuView::OnEditProfileButtonClicked,
+                                 base::Unretained(this)));
 }
 
 void ProfileMenuView::BuildGuestIdentity() {

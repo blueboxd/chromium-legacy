@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS NDEFMessage constructor without init dict
+PASS NDEFMessage constructor with null init dict
+FAIL NDEFMessage constructor with a text record assert_true: arrayBuffer() returns an ArrayBuffer expected true got false
+Harness: the test ran to completion.
+

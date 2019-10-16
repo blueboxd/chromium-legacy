@@ -292,6 +292,7 @@ class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
 
   MOCK_METHOD2(ModelReadyToSync, void(NigoriSyncBridge*, NigoriMetadataBatch));
   MOCK_METHOD1(Put, void(std::unique_ptr<EntityData>));
+  MOCK_METHOD0(IsEntityUnsynced, bool());
   MOCK_METHOD0(GetMetadata, NigoriMetadataBatch());
   MOCK_METHOD1(ReportError, void(const ModelError&));
   MOCK_METHOD0(GetControllerDelegate,

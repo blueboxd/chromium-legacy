@@ -51,6 +51,8 @@ const double kLoadingProgressDone = 1.0;
 
 }  // namespace
 
+const int FrameTreeNode::kFrameTreeNodeInvalidId = -1;
+
 // This observer watches the opener of its owner FrameTreeNode and clears the
 // owner's opener if the opener is destroyed.
 class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {

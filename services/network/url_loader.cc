@@ -378,8 +378,13 @@ URLLoader::URLLoader(
   DCHECK(factory_params_);
   if (url_loader_header_client &&
       (options_ & mojom::kURLLoadOptionUseHeaderClient)) {
-    url_loader_header_client->OnLoaderCreated(
-        request_id_, header_client_.BindNewPipeAndPassReceiver());
+    if (options_ & mojom::kURLLoadOptionAsCorsPreflight) {
+      url_loader_header_client->OnLoaderForCorsPreflightCreated(
+          request, header_client_.BindNewPipeAndPassReceiver());
+    } else {
+      url_loader_header_client->OnLoaderCreated(
+          request_id_, header_client_.BindNewPipeAndPassReceiver());
+    }
     // Make sure the loader dies if |header_client_| has an error, otherwise
     // requests can hang.
     header_client_.set_disconnect_handler(
@@ -1193,10 +1198,11 @@ int URLLoader::OnHeadersReceived(
     net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    const net::IPEndPoint& endpoint,
     GURL* allowed_unsafe_redirect_url) {
   if (header_client_) {
     header_client_->OnHeadersReceived(
-        original_response_headers->raw_headers(),
+        original_response_headers->raw_headers(), endpoint,
         base::BindOnce(&URLLoader::OnHeadersReceivedComplete,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        override_response_headers, allowed_unsafe_redirect_url));

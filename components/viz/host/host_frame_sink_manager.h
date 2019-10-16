@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace base {
@@ -68,10 +69,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   void BindAndSetManager(
       mojom::FrameSinkManagerClientRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      mojom::FrameSinkManagerPtr ptr);
+      mojo::PendingRemote<mojom::FrameSinkManager> remote);
 
   // Sets a callback to be notified when the connection to the FrameSinkManager
-  // on |frame_sink_manager_ptr_| is lost.
+  // on |frame_sink_manager_remote_| is lost.
   void SetConnectionLostCallback(base::RepeatingClosure callback);
 
   // Sets a callback to be notified after Viz sent bad message to Viz host.
@@ -256,7 +257,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
     DISALLOW_COPY_AND_ASSIGN(FrameSinkData);
   };
 
-  // Handles connection loss to |frame_sink_manager_ptr_|. This should only
+  // Handles connection loss to |frame_sink_manager_remote_|. This should only
   // happen when the GPU process crashes.
   void OnConnectionLost();
 
@@ -269,28 +270,28 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
       const FrameSinkId& frame_sink_id,
       const std::vector<AggregatedHitTestRegion>& hit_test_data) override;
 
-  // This will point to |frame_sink_manager_ptr_| if using Mojo or
+  // This will point to |frame_sink_manager_remote_| if using Mojo or
   // |frame_sink_manager_impl_| if directly connected. Use this to make function
   // calls.
   mojom::FrameSinkManager* frame_sink_manager_ = nullptr;
 
   // Mojo connection to the FrameSinkManager. If this is bound then
   // |frame_sink_manager_impl_| must be null.
-  mojom::FrameSinkManagerPtr frame_sink_manager_ptr_;
+  mojo::Remote<mojom::FrameSinkManager> frame_sink_manager_remote_;
 
   // Mojo connection back from the FrameSinkManager.
   mojo::Binding<mojom::FrameSinkManagerClient> binding_;
 
   // A direct connection to FrameSinkManagerImpl. If this is set then
-  // |frame_sink_manager_ptr_| must be unbound. For use in browser process only,
-  // viz process should not set this.
+  // |frame_sink_manager_remote_| must be unbound. For use in browser process
+  // only, viz process should not set this.
   FrameSinkManagerImpl* frame_sink_manager_impl_ = nullptr;
 
   // Per CompositorFrameSink data.
   std::unordered_map<FrameSinkId, FrameSinkData, FrameSinkIdHash>
       frame_sink_data_map_;
 
-  // If |frame_sink_manager_ptr_| connection was lost.
+  // If |frame_sink_manager_remote_| connection was lost.
   bool connection_was_lost_ = false;
 
   base::RepeatingClosure connection_lost_callback_;

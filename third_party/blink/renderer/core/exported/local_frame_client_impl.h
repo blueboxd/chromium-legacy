@@ -152,7 +152,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidChangePerformanceTiming() override;
   void DidChangeCpuTiming(base::TimeDelta) override;
   void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
-  void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
+  void DidObserveLoadingBehavior(LoadingBehaviorFlag) override;
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void DidObserveNewCssPropertyUsage(mojom::CSSSampleId, bool) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
@@ -231,9 +231,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   unsigned BackForwardLength() override;
 
-  void SuddenTerminationDisablerChanged(
-      bool present,
-      WebSuddenTerminationDisablerType) override;
+  void SuddenTerminationDisablerChanged(bool present,
+                                        SuddenTerminationDisablerType) override;
 
   BlameContext* GetFrameBlameContext() override;
 

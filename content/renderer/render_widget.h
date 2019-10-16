@@ -682,16 +682,14 @@ class CONTENT_EXPORT RenderWidget
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   virtual void RequestPresentation(PresentationTimeCallback callback);
 
-  // Handles widget VisualProperties updates that are coming from the RenderView
-  // [routing IPC from browser].
-  virtual void SynchronizeVisualPropertiesFromRenderView(
-      const VisualProperties& visual_properties);
-
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
+
+  // Notify subclasses that we handled OnUpdateVisualProperties.
+  virtual void AfterUpdateVisualProperties() {}
 
   // Destroy the RenderWidget. The |widget| is the owning pointer of |this|.
   virtual void Close(std::unique_ptr<RenderWidget> widget);
@@ -711,8 +709,6 @@ class CONTENT_EXPORT RenderWidget
   friend class QueueMessageSwapPromiseTest;
   friend class RenderWidgetTest;
   friend class RenderViewImplTest;
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, EmulatingPopupRect);
 
   // Called by InitFor*() methods on a new RenderWidget. This contains
   // initialization that occurs whether the RenderWidget is created as undead or
@@ -740,14 +736,14 @@ class CONTENT_EXPORT RenderWidget
   void ResizeWebWidget();
 
   // Enable or disable auto-resize. This is part of
-  // OnSynchronizeVisualProperties though tests may call to it more directly.
+  // OnUpdateVisualProperties though tests may call to it more directly.
   void SetAutoResizeMode(bool auto_resize,
                          const gfx::Size& min_size_before_dsf,
                          const gfx::Size& max_size_before_dsf,
                          float device_scale_factor);
 
   // Sets the zoom level on the RenderView. This is part of
-  // OnSynchronizeVisualProperties though tests may call to it more directly.
+  // OnUpdateVisualProperties though tests may call to it more directly.
   void SetZoomLevel(double zoom_level);
 
   // Helper method to get the device_viewport_rect() from the compositor, which
@@ -761,6 +757,7 @@ class CONTENT_EXPORT RenderWidget
       const ui::LatencyInfo& latency_info,
       InputEventDispatchType dispatch_type);
   void OnClose();
+  void OnUpdateVisualProperties(const VisualProperties& properties);
   void OnCreatingNewAck();
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();

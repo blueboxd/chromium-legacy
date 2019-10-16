@@ -138,5 +138,6 @@ interface AppCacheFrontend {
 
   // In the network service world this message sets the URLLoaderFactory to be
   // used for subresources.
-  SetSubresourceFactory(network.mojom.URLLoaderFactory url_loader_factory);
+  SetSubresourceFactory(
+      pending_remote<network.mojom.URLLoaderFactory> url_loader_factory);
 };

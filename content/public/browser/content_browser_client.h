@@ -11,63 +11,41 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "base/values.h"
-#include "build/build_config.h"
-#include "content/public/browser/browser_or_resource_context.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/generated_code_cache_settings.h"
-#include "content/public/browser/global_request_id.h"
-#include "content/public/browser/global_routing_id.h"
-#include "content/public/browser/navigation_throttle.h"
-#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_visibility_state.h"
-#include "content/public/browser/quota_permission_context.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_type.h"
-#include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
-#include "media/media_buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/mime_util.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
-#include "services/service_manager/public/cpp/binder_map.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/manifest.h"
-#include "services/service_manager/public/mojom/service.mojom-forward.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/quota/quota_manager.h"
-#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-forward.h"
-#include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
-#include "third_party/blink/public/mojom/window_features/window_features.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 #if (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
 #include "base/posix/global_descriptors.h"
@@ -77,6 +55,10 @@
 #include "content/public/browser/posix_file_descriptor_info.h"
 #endif
 
+namespace net {
+class AuthCredentials;
+}  // namespace net
+
 class GURL;
 using LoginAuthRequiredCallback =
     base::OnceCallback<void(const base::Optional<net::AuthCredentials>&)>;
@@ -84,45 +66,61 @@ using LoginAuthRequiredCallback =
 namespace base {
 class CommandLine;
 class FilePath;
-}
+}  // namespace base
 
 namespace blink {
 namespace mojom {
 class RendererPreferences;
+class RendererPreferenceWatcher;
 class WebUsbService;
-}
+class WindowFeatures;
+}  // namespace mojom
+class AssociatedInterfaceRegistry;
 class URLLoaderThrottle;
 }  // namespace blink
 
 namespace device {
 class LocationProvider;
-}
+}  // namespace device
 
 namespace media {
 class AudioLogFactory;
 class AudioManager;
 enum class EncryptionMode;
-}
-
-namespace mojo {
-class ScopedInterfaceEndpointHandle;
-}
+}  // namespace media
 
 namespace network {
+enum class OriginPolicyState;
 class SharedURLLoaderFactory;
-}
+namespace mojom {
+class TrustedHeaderClient;
+}  // namespace mojom
+}  // namespace network
 
 namespace service_manager {
 class Identity;
+struct Manifest;
 class Service;
-}
+
+template <typename...>
+class BinderRegistryWithArgs;
+using BinderRegistry = BinderRegistryWithArgs<>;
+
+template <typename>
+class BinderMapWithContext;
+
+namespace mojom {
+class Service;
+}  // namespace mojom
+}  // namespace service_manager
 
 namespace net {
 class AuthChallengeInfo;
-class AuthCredentials;
 class ClientCertIdentity;
 using ClientCertIdentityList = std::vector<std::unique_ptr<ClientCertIdentity>>;
 class ClientCertStore;
+class HttpResponseHeaders;
+class NetworkIsolationKey;
 class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
@@ -130,30 +128,33 @@ class URLRequest;
 
 namespace network {
 namespace mojom {
+class NetworkContext;
 class NetworkService;
-}
+class TrustedURLLoaderHeaderClient;
+}  // namespace mojom
 struct ResourceRequest;
 }  // namespace network
 
 namespace rappor {
 class RapporService;
-}
+}  // namespace rappor
 
 namespace sandbox {
 class TargetPolicy;
-}
+}  // namespace sandbox
 
 namespace ui {
 class SelectFilePolicy;
-}
+}  // namespace ui
 
 namespace url {
 class Origin;
-}
+}  // namespace url
 
 namespace storage {
 class FileSystemBackend;
-}
+struct QuotaSettings;
+}  // namespace storage
 
 namespace content {
 enum class PermissionType;
@@ -171,7 +172,10 @@ class LockObserver;
 class LoginDelegate;
 class MediaObserver;
 class NavigationHandle;
+class NavigationThrottle;
 class NavigationUIData;
+class OverlayWindow;
+class PictureInPictureWindowController;
 class PlatformNotificationService;
 class QuotaPermissionContext;
 class ReceiverPresentationServiceDelegate;
@@ -190,9 +194,13 @@ class URLLoaderRequestInterceptor;
 class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
+struct GlobalFrameRoutingId;
+struct GlobalRequestID;
 struct MainFunctionParams;
+struct NavigationDownloadPolicy;
 struct OpenURLParams;
 struct Referrer;
+struct SocketPermissionRequest;
 struct WebPreferences;
 
 // Embedder API (or SPI) for participating in browser logic, to be implemented
@@ -736,7 +744,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetQuotaSettings(
       content::BrowserContext* context,
       content::StoragePartition* partition,
-      storage::OptionalQuotaSettingsCallback callback);
+      base::OnceCallback<void(base::Optional<storage::QuotaSettings>)>
+          callback);
 
   // Allows the embedder to provide settings that determine if generated code
   // can be cached and the amount of disk space used for caching generated code.
@@ -1552,7 +1561,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // decisions about whether to allow an external application to launch.
   virtual bool HandleExternalProtocol(
       const GURL& url,
-      WebContents::Getter web_contents_getter,
+      base::Callback<WebContents*(void)> web_contents_getter,
       int child_id,
       NavigationUIData* navigation_data,
       bool is_main_frame,

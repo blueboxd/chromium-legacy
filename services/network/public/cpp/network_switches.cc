@@ -70,6 +70,9 @@ const char kExplicitlyAllowedPorts[] = "explicitly-allowed-ports";
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely-treat-insecure-origin-as-secure";
 
+// Enable OOR-CORS in child processes.
+const char kEnableOutOfBlinkCors[] = "enable-oor-cors";
+
 }  // namespace switches
 
 }  // namespace network

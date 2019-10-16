@@ -77,7 +77,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
       const net::HostPortPair& host_port_pair,
       mojom::TLSClientSocketOptionsPtr socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TLSClientSocketRequest request,
+      mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
       mojo::PendingRemote<mojom::SocketObserver> observer,
       mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) override;
   void SetSendBufferSize(int send_buffer_size,

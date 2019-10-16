@@ -68,7 +68,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     std::unique_ptr<SignedExchangeReporter> reporter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    int frame_tree_node_id,
     scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
     const std::string& accept_langs)
     : outer_request_(outer_request),
@@ -81,7 +81,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       reporter_(std::move(reporter)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
-      frame_tree_node_id_getter_(frame_tree_node_id_getter),
+      frame_tree_node_id_(frame_tree_node_id),
       metric_recorder_(std::move(metric_recorder)),
       accept_langs_(accept_langs) {
   DCHECK(outer_request_.url.is_valid());
@@ -172,7 +172,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       std::move(cert_fetcher_factory), outer_request_.load_flags,
       std::make_unique<blink::SignedExchangeRequestMatcher>(
           outer_request_.headers, accept_langs_),
-      std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_getter_);
+      std::move(devtools_proxy_), reporter_.get(), frame_tree_node_id_);
 }
 
 void SignedExchangeLoader::OnComplete(

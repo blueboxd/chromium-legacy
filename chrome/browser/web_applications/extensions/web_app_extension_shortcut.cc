@@ -96,34 +96,9 @@ void UpdateAllShortcutsForShortcutInfo(
   base::FilePath shortcut_data_dir =
       internals::GetShortcutDataDir(*shortcut_info);
   internals::PostShortcutIOTaskAndReply(
-      base::BindOnce(&internals::UpdatePlatformShortcuts, shortcut_data_dir,
-                     old_app_title),
+      base::BindOnce(&internals::UpdatePlatformShortcuts,
+                     std::move(shortcut_data_dir), old_app_title),
       std::move(shortcut_info), std::move(callback));
-}
-
-void CreatePlatformShortcutsAndPostCallback(
-    const base::FilePath& shortcut_data_path,
-    const ShortcutLocations& creation_locations,
-    ShortcutCreationReason creation_reason,
-    CreateShortcutsCallback callback,
-    const ShortcutInfo& shortcut_info) {
-  bool shortcut_created = internals::CreatePlatformShortcuts(
-      shortcut_data_path, creation_locations, creation_reason, shortcut_info);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), shortcut_created));
-}
-
-void ScheduleCreatePlatformShortcut(
-    ShortcutCreationReason reason,
-    const ShortcutLocations& locations,
-    CreateShortcutsCallback callback,
-    std::unique_ptr<ShortcutInfo> shortcut_info) {
-  base::FilePath shortcut_data_dir =
-      internals::GetShortcutDataDir(*shortcut_info);
-  internals::PostShortcutIOTask(
-      base::BindOnce(&CreatePlatformShortcutsAndPostCallback, shortcut_data_dir,
-                     locations, reason, std::move(callback)),
-      std::move(shortcut_info));
 }
 
 }  // namespace
@@ -163,8 +138,11 @@ void CreateShortcutsWithInfo(ShortcutCreationReason reason,
     }
   }
 
-  ScheduleCreatePlatformShortcut(reason, locations, std::move(callback),
-                                 std::move(shortcut_info));
+  base::FilePath shortcut_data_dir =
+      internals::GetShortcutDataDir(*shortcut_info);
+  internals::ScheduleCreatePlatformShortcuts(shortcut_data_dir, locations,
+                                             reason, std::move(shortcut_info),
+                                             std::move(callback));
 }
 
 void GetShortcutInfoForApp(const extensions::Extension* extension,

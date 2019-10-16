@@ -39,7 +39,8 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
       int64_t blob_key);
   // This closure holds a raw pointer to the IndexedDBActiveBlobRegistry,
   // and may not be called after it is deleted.
-  base::Closure GetAddBlobRefCallback(int64_t database_id, int64_t blob_key);
+  base::RepeatingClosure GetAddBlobRefCallback(int64_t database_id,
+                                               int64_t blob_key);
   // Call this to force the registry to drop its use counts, permitting the
   // factory to drop any blob-related refcount for the backing store.
   // This will also turn any outstanding callbacks into no-ops.

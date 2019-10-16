@@ -9,11 +9,17 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
+#include "services/network/network_service.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -91,6 +97,26 @@ blink::UserAgentMetadata ContentBrowserClientImpl::GetUserAgentMetadata() {
   metadata.model = "";
 
   return metadata;
+}
+
+mojo::Remote<network::mojom::NetworkContext>
+ContentBrowserClientImpl::CreateNetworkContext(
+    content::BrowserContext* context,
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  mojo::Remote<network::mojom::NetworkContext> network_context;
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->user_agent = GetUserAgent();
+  context_params->accept_language = "en-us,en";
+  if (!context->IsOffTheRecord()) {
+    base::FilePath cookie_path = context->GetPath();
+    cookie_path = cookie_path.Append(FILE_PATH_LITERAL("Cookies"));
+    context_params->cookie_path = cookie_path;
+  }
+  content::GetNetworkService()->CreateNetworkContext(
+      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
+  return network_context;
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)

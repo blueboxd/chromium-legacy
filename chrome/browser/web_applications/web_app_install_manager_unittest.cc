@@ -61,7 +61,7 @@ class WebAppInstallManagerTest : public WebAppTest {
   std::unique_ptr<WebApplicationInfo> CreateWebAppInfo(const GURL& url) {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->app_url = url;
-    WebApplicationInfo::IconInfo icon_info;
+    WebApplicationIconInfo icon_info;
     icon_info.url = kIconUrl;
     icon_info.width = icon_size::k256;
     web_app_info->icons.push_back(std::move(icon_info));

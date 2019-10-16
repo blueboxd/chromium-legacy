@@ -70,7 +70,11 @@ Options:
                       Tool or extractor.py). Defaults to "python_script".
   path_filters        Optional paths to filter which files the tool is run on.
                       It can also include deleted files names when auditor is
-                      run on a partial repository.
+                      run on a partial repository. These are ignored if all of
+                      the following are true:
+                        - Not using --extractor-input
+                        - Using --no-filtering OR --all-files
+                        - Using the python extractor
 
 Example:
   traffic_annotation_auditor --build-path=out/Release
@@ -376,7 +380,8 @@ int main(int argc, char* argv[]) {
                       .Append(base::FilePath::kParentDirectory);
   }
 
-  TrafficAnnotationAuditor auditor(source_path, build_path, tool_path);
+  TrafficAnnotationAuditor auditor(source_path, build_path, tool_path,
+                                   path_filters);
 
   // Extract annotations.
   if (extractor_input.empty()) {
@@ -388,7 +393,15 @@ int main(int argc, char* argv[]) {
       return error_value;
     }
 
-    if (!auditor.RunExtractor(backend, path_filters, filter_files, all_files,
+    // If we're using the Python backend, it's fast enough that we can ignore
+    // any path filters when we say we want to audit everything.
+    if (backend == ExtractorBackend::PYTHON_SCRIPT &&
+        (!filter_files || all_files)) {
+      LOG(WARNING) << "The path_filters input is being ignored.";
+      auditor.ClearPathFilters();
+    }
+
+    if (!auditor.RunExtractor(backend, filter_files, all_files,
                               !error_resilient, errors_file)) {
       LOG(ERROR) << "Failed to run clang tool.";
       return error_value;
@@ -416,7 +429,7 @@ int main(int argc, char* argv[]) {
     return error_value;
 
   // Perform checks.
-  if (!auditor.RunAllChecks(path_filters, test_only)) {
+  if (!auditor.RunAllChecks(test_only)) {
     LOG(ERROR) << "Running checks failed.";
     return error_value;
   }

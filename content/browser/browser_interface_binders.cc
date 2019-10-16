@@ -29,6 +29,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
 #include "content/public/browser/webvr_service_provider.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"

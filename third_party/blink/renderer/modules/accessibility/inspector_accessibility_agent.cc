@@ -34,8 +34,7 @@ using protocol::Accessibility::AXRelatedNode;
 using protocol::Accessibility::AXValue;
 using protocol::Maybe;
 using protocol::Response;
-
-using namespace html_names;
+namespace AXPropertyNameEnum = protocol::Accessibility::AXPropertyNameEnum;
 
 namespace {
 
@@ -450,13 +449,14 @@ class SparseAttributeAXPropertyAdapter
       HeapVector<Member<AXObject>>& objects) override {
     switch (attribute) {
       case AXObjectVectorAttribute::kAriaControls:
-        properties_.emplace_back(
-            CreateRelatedNodeListProperty(AXPropertyNameEnum::Controls, objects,
-                                          kAriaControlsAttr, *ax_object_));
+        properties_.emplace_back(CreateRelatedNodeListProperty(
+            AXPropertyNameEnum::Controls, objects,
+            html_names::kAriaControlsAttr, *ax_object_));
         break;
       case AXObjectVectorAttribute::kAriaFlowTo:
         properties_.emplace_back(CreateRelatedNodeListProperty(
-            AXPropertyNameEnum::Flowto, objects, kAriaFlowtoAttr, *ax_object_));
+            AXPropertyNameEnum::Flowto, objects, html_names::kAriaFlowtoAttr,
+            *ax_object_));
         break;
     }
   }
@@ -467,16 +467,17 @@ void FillRelationships(AXObject& ax_object,
   AXObject::AXObjectVector results;
   ax_object.AriaDescribedbyElements(results);
   if (!results.IsEmpty()) {
-    properties.emplace_back(
-        CreateRelatedNodeListProperty(AXPropertyNameEnum::Describedby, results,
-                                      kAriaDescribedbyAttr, ax_object));
+    properties.emplace_back(CreateRelatedNodeListProperty(
+        AXPropertyNameEnum::Describedby, results,
+        html_names::kAriaDescribedbyAttr, ax_object));
   }
   results.clear();
 
   ax_object.AriaOwnsElements(results);
   if (!results.IsEmpty()) {
-    properties.emplace_back(CreateRelatedNodeListProperty(
-        AXPropertyNameEnum::Owns, results, kAriaOwnsAttr, ax_object));
+    properties.emplace_back(
+        CreateRelatedNodeListProperty(AXPropertyNameEnum::Owns, results,
+                                      html_names::kAriaOwnsAttr, ax_object));
   }
   results.clear();
 }

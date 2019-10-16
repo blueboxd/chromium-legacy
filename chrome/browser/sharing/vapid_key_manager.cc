@@ -4,41 +4,79 @@
 
 #include "chrome/browser/sharing/vapid_key_manager.h"
 
+#include "base/feature_list.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "components/sync/driver/sync_service.h"
 #include "crypto/ec_private_key.h"
 
-VapidKeyManager::VapidKeyManager(SharingSyncPreference* sharing_sync_preference)
-    : sharing_sync_preference_(sharing_sync_preference) {}
+VapidKeyManager::VapidKeyManager(SharingSyncPreference* sharing_sync_preference,
+                                 syncer::SyncService* sync_service)
+    : sharing_sync_preference_(sharing_sync_preference),
+      sync_service_(sync_service) {}
 
 VapidKeyManager::~VapidKeyManager() = default;
 
 crypto::ECPrivateKey* VapidKeyManager::GetOrCreateKey() {
-  base::Optional<std::vector<uint8_t>> stored_key =
-      sharing_sync_preference_->GetVapidKey();
+  if (!vapid_key_)
+    RefreshCachedKey();
 
-  if (stored_key) {
-    vapid_key_ = crypto::ECPrivateKey::CreateFromPrivateKeyInfo(*stored_key);
-    return vapid_key_.get();
+  return vapid_key_.get();
+}
+
+bool VapidKeyManager::RefreshCachedKey() {
+  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey)) {
+    auto derived_key = sync_service_->GetExperimentalAuthenticationKey();
+    if (!derived_key)
+      return InitWithPreference();
+
+    return UpdateCachedKey(std::move(derived_key));
+  } else {
+    if (InitWithPreference())
+      return true;
+
+    if (vapid_key_)
+      return false;
+
+    auto generated_key = crypto::ECPrivateKey::Create();
+    if (!generated_key) {
+      LogSharingVapidKeyCreationResult(
+          SharingVapidKeyCreationResult::kGenerateECKeyFailed);
+      return false;
+    }
+
+    return UpdateCachedKey(std::move(generated_key));
   }
+}
 
-  vapid_key_ = crypto::ECPrivateKey::Create();
-  if (!vapid_key_) {
-    LogSharingVapidKeyCreationResult(
-        SharingVapidKeyCreationResult::kGenerateECKeyFailed);
-    return nullptr;
-  }
-
-  std::vector<uint8_t> key;
-  if (!vapid_key_->ExportPrivateKey(&key)) {
-    LOG(ERROR) << "Could not export vapid key";
-    vapid_key_.reset();
+bool VapidKeyManager::UpdateCachedKey(
+    std::unique_ptr<crypto::ECPrivateKey> new_key) {
+  std::vector<uint8_t> new_key_info;
+  if (!new_key->ExportPrivateKey(&new_key_info)) {
     LogSharingVapidKeyCreationResult(
         SharingVapidKeyCreationResult::kExportPrivateKeyFailed);
-    return nullptr;
+    return false;
   }
 
-  sharing_sync_preference_->SetVapidKey(key);
+  if (vapid_key_info_ == new_key_info)
+    return false;
+
+  vapid_key_ = std::move(new_key);
+  vapid_key_info_ = std::move(new_key_info);
+  sharing_sync_preference_->SetVapidKey(vapid_key_info_);
   LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult::kSuccess);
-  return vapid_key_.get();
+  return true;
+}
+
+bool VapidKeyManager::InitWithPreference() {
+  base::Optional<std::vector<uint8_t>> preference_key_info =
+      sharing_sync_preference_->GetVapidKey();
+  if (!preference_key_info || vapid_key_info_ == *preference_key_info)
+    return false;
+
+  vapid_key_ =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(*preference_key_info);
+  vapid_key_info_ = std::move(*preference_key_info);
+  return true;
 }

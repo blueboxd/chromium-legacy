@@ -537,7 +537,7 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
         &web_app_info->generated_icon_color);
   }
   for (const auto& icon : extension_sync_data.linked_icons()) {
-    WebApplicationInfo::IconInfo icon_info;
+    WebApplicationIconInfo icon_info;
     icon_info.url = icon.url;
     icon_info.width = icon.size;
     icon_info.height = icon.size;

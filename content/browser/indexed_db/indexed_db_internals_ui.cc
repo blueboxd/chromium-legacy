@@ -102,8 +102,8 @@ void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
       web_ui()->GetWebContents()->GetBrowserContext();
 
   BrowserContext::StoragePartitionCallback cb =
-      base::Bind(&IndexedDBInternalsUI::AddContextFromStoragePartition,
-                 base::Unretained(this));
+      base::BindRepeating(&IndexedDBInternalsUI::AddContextFromStoragePartition,
+                          base::Unretained(this));
   BrowserContext::ForEachStoragePartition(browser_context, std::move(cb));
 }
 
@@ -174,7 +174,7 @@ bool IndexedDBInternalsUI::GetOriginContext(
 
   StoragePartition* result_partition;
   BrowserContext::StoragePartitionCallback cb =
-      base::Bind(&FindContext, path, &result_partition, context);
+      base::BindRepeating(&FindContext, path, &result_partition, context);
   BrowserContext::ForEachStoragePartition(browser_context, std::move(cb));
 
   if (!result_partition || !(context->get()))
@@ -259,7 +259,7 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
 
   std::vector<base::FilePath> paths = context->GetStoragePaths(origin);
   zip::ZipWithFilterCallback(context->data_path(), zip_path,
-                             base::Bind(AllowWhitelistedPaths, paths));
+                             base::BindRepeating(AllowWhitelistedPaths, paths));
 
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(&IndexedDBInternalsUI::OnDownloadDataReady,
@@ -368,9 +368,9 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
   // This is how to watch for the download to finish: first wait for it
   // to start, then attach a download::DownloadItem::Observer to observe the
   // state change to the finished state.
-  dl_params->set_callback(base::Bind(&IndexedDBInternalsUI::OnDownloadStarted,
-                                     base::Unretained(this), partition_path,
-                                     origin, temp_path, connection_count));
+  dl_params->set_callback(base::BindOnce(
+      &IndexedDBInternalsUI::OnDownloadStarted, base::Unretained(this),
+      partition_path, origin, temp_path, connection_count));
 
   BrowserContext* context = web_contents->GetBrowserContext();
   BrowserContext::GetDownloadManager(context)->DownloadUrl(

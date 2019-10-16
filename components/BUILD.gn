@@ -243,6 +243,7 @@ test("components_unittests") {
       "//components/page_load_metrics/renderer:unit_tests",
       "//components/paint_preview/browser:unit_tests",
       "//components/paint_preview/common:unit_tests",
+      "//components/paint_preview/renderer:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
       "//components/payments/content:unit_tests",
       "//components/payments/content/utility:unit_tests",
@@ -510,6 +511,7 @@ if (!is_ios && !is_fuchsia) {
       "dom_distiller/content/browser/distiller_page_web_contents_browsertest.cc",
       "dom_distiller/content/browser/test/dom_distiller_js_browsertest.cc",
       "offline_pages/content/renovations/test/page_renovator_browsertest.cc",
+      "paint_preview/renderer/paint_preview_recorder_browsertest.cc",
       "security_state/content/content_utils_browsertest.cc",
       "ukm/content/source_url_recorder_browsertest.cc",
     ]
@@ -536,6 +538,7 @@ if (!is_ios && !is_fuchsia) {
       "//components/dom_distiller/core:test_support",
       "//components/offline_pages/content/renovations",
       "//components/offline_pages/core/renovations",
+      "//components/paint_preview/renderer",
       "//components/password_manager/content/browser",
       "//components/security_state/content",
       "//components/security_state/core",

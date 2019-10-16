@@ -13,7 +13,9 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 #include "url/gurl.h"
@@ -69,8 +71,9 @@ class AppShimController : public chrome::mojom::AppShim {
   void ChannelError(uint32_t custom_reason, const std::string& description);
   void BootstrapChannelError(uint32_t custom_reason,
                              const std::string& description);
-  void OnShimConnectedResponse(apps::AppShimLaunchResult result,
-                               chrome::mojom::AppShimRequest app_shim_request);
+  void OnShimConnectedResponse(
+      apps::AppShimLaunchResult result,
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver);
 
   // chrome::mojom::AppShim implementation.
   void CreateRemoteCocoaApplication(
@@ -128,11 +131,11 @@ class AppShimController : public chrome::mojom::AppShim {
   base::scoped_nsobject<NSRunningApplication> chrome_launched_by_app_;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
-  chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_;
+  mojo::Remote<chrome::mojom::AppShimHostBootstrap> host_bootstrap_;
 
-  mojo::Binding<chrome::mojom::AppShim> shim_binding_;
-  chrome::mojom::AppShimHostPtr host_;
-  chrome::mojom::AppShimHostRequest host_request_;
+  mojo::Receiver<chrome::mojom::AppShim> shim_receiver_{this};
+  mojo::Remote<chrome::mojom::AppShimHost> host_;
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> host_receiver_;
 
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;

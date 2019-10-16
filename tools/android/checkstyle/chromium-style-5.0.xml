@@ -145,11 +145,12 @@
       <property name="message" value="Please name the StrictModeContext variable &quot;ignored&quot; (crbug.com/767058#c4)."/>
     </module>
     <module name="RegexpSinglelineJava">
+      <!-- Tests are also allowed to use System.exit if need be, please add dirs to tools/android/checkstyle/suppressions.xml -->
       <property name="id" value="SystemExitCheck"/>
       <property name="severity" value="error"/>
-      <property name="format" value="System\.exit\([^0]"/>
+      <property name="format" value="System\.exit\("/>
       <property name="ignoreComments" value="true"/>
-      <property name="message" value="Throw an exception instead of calling System#exit with a non-zero exit status (crbug.com/1000651)."/>
+      <property name="message" value="Throw an exception instead of calling System#exit (crbug.com/1000651)."/>
     </module>
   </module>
 </module>

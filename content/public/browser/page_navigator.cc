@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/browser/page_navigator.h"
+#include "content/browser/frame_host/navigation_request.h"
 
 namespace content {
 
@@ -65,5 +66,27 @@ OpenURLParams::OpenURLParams(const GURL& url,
 OpenURLParams::OpenURLParams(const OpenURLParams& other) = default;
 
 OpenURLParams::~OpenURLParams() = default;
+
+// static
+OpenURLParams OpenURLParams::FromNavigationHandle(NavigationHandle* handle) {
+  OpenURLParams params(
+      handle->GetURL(), Referrer(handle->GetReferrer()),
+      handle->GetFrameTreeNodeId(), WindowOpenDisposition::CURRENT_TAB,
+      handle->GetPageTransition(), handle->IsRendererInitiated());
+
+  params.initiator_origin = handle->GetInitiatorOrigin();
+  params.source_site_instance = handle->GetSourceSiteInstance();
+  params.redirect_chain = handle->GetRedirectChain();
+  params.user_gesture = handle->HasUserGesture();
+  params.started_from_context_menu = handle->WasStartedFromContextMenu();
+  params.href_translate = handle->GetHrefTranslate();
+  params.reload_type = handle->GetReloadType();
+
+  // TODO(lukasza): Consider also covering |post_data| (and |uses_post|) and
+  // |extra_headers| (this is difficult, because we can't cast |handle| to
+  // NavigationRequest*, because it may be MockNavigationHandle in unit tests).
+
+  return params;
+}
 
 }  // namespace content

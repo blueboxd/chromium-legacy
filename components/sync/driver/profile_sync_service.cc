@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -41,7 +42,7 @@
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
-#include "crypto/sha2.h"
+#include "crypto/ec_private_key.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {
@@ -866,8 +867,7 @@ void ProfileSyncService::OnEngineInitialized(
           initial_types, debug_info_listener, &data_type_controllers_,
           user_settings_.get(), engine_.get(), this);
 
-  crypto_.SetSyncEngine(GetAuthenticatedAccountInfo().account_id,
-                        engine_.get());
+  crypto_.SetSyncEngine(GetAuthenticatedAccountInfo(), engine_.get());
 
   // Auto-start means IsFirstSetupComplete gets set automatically.
   if (start_behavior_ == AUTO_START &&
@@ -1119,24 +1119,15 @@ bool ProfileSyncService::RequiresClientUpgrade() const {
   return last_actionable_error_.action == UPGRADE_CLIENT;
 }
 
-std::string ProfileSyncService::GetExperimentalAuthenticationId() const {
-  // Dependent fields are first populated when the sync engine is initialized,
-  // when usually all except keystore keys are guaranteed to be available.
-  // Keystore keys are usually available initially too, but in rare cases they
-  // should arrive in later sync cycles.
-  if (last_keystore_key_.empty()) {
-    return std::string();
+std::unique_ptr<crypto::ECPrivateKey>
+ProfileSyncService::GetExperimentalAuthenticationKey() const {
+  std::string secret = GetExperimentalAuthenticationSecret();
+  if (secret.empty()) {
+    return nullptr;
   }
 
-  // A separator is not strictly needed but it's adopted here as good practice.
-  const std::string kSeparator("|");
-  const std::string gaia_id = GetAuthenticatedAccountInfo().gaia;
-  const std::string birthday = sync_prefs_.GetBirthday();
-  DCHECK(!gaia_id.empty());
-  DCHECK(!birthday.empty());
-
-  return crypto::SHA256HashString(gaia_id + kSeparator + birthday + kSeparator +
-                                  last_keystore_key_);
+  return crypto::ECPrivateKey::DeriveFromSecret(
+      base::as_bytes(base::make_span(secret)));
 }
 
 bool ProfileSyncService::CanConfigureDataTypes(
@@ -1927,6 +1918,31 @@ void ProfileSyncService::ReconfigureDueToPassphrase(ConfigureReason reason) {
   // IsSetupInProgress() case where the UI needs to be updated to reflect that
   // the passphrase was accepted (https://crbug.com/870256).
   NotifyObservers();
+}
+
+std::string ProfileSyncService::GetExperimentalAuthenticationSecretForTest()
+    const {
+  return GetExperimentalAuthenticationSecret();
+}
+
+std::string ProfileSyncService::GetExperimentalAuthenticationSecret() const {
+  // Dependent fields are first populated when the sync engine is initialized,
+  // when usually all except keystore keys are guaranteed to be available.
+  // Keystore keys are usually available initially too, but in rare cases they
+  // should arrive in later sync cycles.
+  if (last_keystore_key_.empty()) {
+    return std::string();
+  }
+
+  // A separator is not strictly needed but it's adopted here as good practice.
+  const std::string kSeparator("|");
+  const std::string gaia_id = GetAuthenticatedAccountInfo().gaia;
+  const std::string birthday = sync_prefs_.GetBirthday();
+  DCHECK(!gaia_id.empty());
+  DCHECK(!birthday.empty());
+
+  return base::StrCat(
+      {gaia_id, kSeparator, birthday, kSeparator, last_keystore_key_});
 }
 
 }  // namespace syncer

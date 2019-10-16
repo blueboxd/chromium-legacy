@@ -771,8 +771,7 @@ TEST_F(FocuslessSpatialNavigationSimTest, OpenSelectPopup) {
       )HTML");
   Compositor().BeginFrame();
 
-  HTMLSelectElement* select =
-      ToHTMLSelectElement(GetDocument().getElementById("target"));
+  auto* select = To<HTMLSelectElement>(GetDocument().getElementById("target"));
   SimulateKeyPress(ui::DomKey::ARROW_DOWN);
 
   SpatialNavigationController& spat_nav_controller =

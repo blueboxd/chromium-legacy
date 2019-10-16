@@ -462,11 +462,12 @@ TEST_F(TCPBoundSocketTest, UpgradeToTLS) {
   client_socket_send_handle.reset();
 
   base::RunLoop run_loop;
-  mojom::TLSClientSocketPtr tls_client_socket;
+  mojo::Remote<mojom::TLSClientSocket> tls_client_socket;
   client_socket->UpgradeToTLS(
       test_server.host_port_pair(), nullptr /* options */,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&tls_client_socket), mojo::NullRemote() /* observer */,
+      tls_client_socket.BindNewPipeAndPassReceiver(),
+      mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int net_error,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,

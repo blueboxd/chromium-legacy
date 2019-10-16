@@ -326,7 +326,7 @@ cca.device.VideoConstraintsPreferrer =
     };
 
     const toConstraints = (width, height, fps) => ({
-      audio: true,
+      audio: {echoCancellation: false},
       video: {
         deviceId: {exact: deviceId},
         frameRate: fps ? {exact: fps} : {min: 24},

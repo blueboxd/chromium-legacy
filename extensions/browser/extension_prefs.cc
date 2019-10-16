@@ -1935,6 +1935,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
 #if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);
 #endif
+
+  registry->RegisterBooleanPref(pref_names::kBlockExternalExtensions, false);
 }
 
 template <class ExtensionIdContainer>

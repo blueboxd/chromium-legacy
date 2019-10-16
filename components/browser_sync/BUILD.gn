@@ -35,6 +35,10 @@ static_library("browser_sync") {
     "//components/version_info",
     "//components/version_info:generate_version_info",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
 }
 
 source_set("unit_tests") {

@@ -44,7 +44,7 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
   }
 
   bool ShouldCompleteDownload(download::DownloadItem* download,
-                              const base::Closure& closure) override {
+                              base::OnceClosure closure) override {
     return true;
   }
 

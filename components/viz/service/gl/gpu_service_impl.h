@@ -151,6 +151,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                               const gpu::SyncToken& sync_token) override;
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override;
+  void StartPeakMemoryMonitor(uint32_t sequence_num) override;
+  void GetPeakMemoryUsage(uint32_t sequence_num,
+                          GetPeakMemoryUsageCallback callback) override;
+
 #if defined(OS_WIN)
   void RequestCompleteGpuInfo(RequestCompleteGpuInfoCallback callback) override;
   void GetGpuSupportedRuntimeVersion(
@@ -283,6 +287,13 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void RequestHDRStatusOnMainThread(RequestHDRStatusCallback callback);
 
   void OnBackgroundedOnMainThread();
+
+  // Ensure that all peak memory tracking occurs on the main thread as all
+  // MemoryTracker are created on that thread. All requests made before
+  // GpuServiceImpl::InitializeWithHost will be enqueued.
+  void StartPeakMemoryMonitorOnMainThread(uint32_t sequence_num);
+  void GetPeakMemoryUsageOnMainThread(uint32_t sequence_num,
+                                      GetPeakMemoryUsageCallback callback);
 
   // Attempts to cleanly exit the process but only if not running in host
   // process. If |for_context_loss| is true an error message will be logged.

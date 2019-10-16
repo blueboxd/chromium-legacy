@@ -489,9 +489,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         base::trace_event::MemoryDumpManager::GetInstance()
             ->GetTracingProcessId();
     memory_tracker = std::make_unique<GpuCommandBufferMemoryTracker>(
-        kInProcessCommandBufferClientId, client_tracing_id,
-        command_buffer_id_.GetUnsafeValue(), params.attribs.context_type,
-        base::ThreadTaskRunnerHandle::Get());
+        command_buffer_id_, client_tracing_id, params.attribs.context_type,
+        base::ThreadTaskRunnerHandle::Get(), /* obserer=*/nullptr);
   }
 
   auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(

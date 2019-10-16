@@ -48,7 +48,7 @@ message WebAppProto {
   optional string scope = 5;
   required SourcesProto sources = 6;
   required bool is_locally_installed = 7;
-  optional bool is_sync_placeholder = 8;
+  optional bool is_in_sync_install = 8;
   // A list of icon infos.
   repeated WebAppIconInfoProto icons = 9;
 }

@@ -71,6 +71,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
@@ -78,6 +79,7 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
@@ -103,7 +105,6 @@
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
-#include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -292,7 +293,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DisableBeforeUnloadHangMonitorForTesting() override;
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
   bool GetSuddenTerminationDisablerState(
-      blink::WebSuddenTerminationDisablerType disabler_type) override;
+      blink::SuddenTerminationDisablerType disabler_type) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
                         blink::PolicyValue threshold_value) override;
@@ -1397,7 +1398,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                        const AXContentTreeUpdate& snapshot);
   void OnSuddenTerminationDisablerChanged(
       bool present,
-      blink::WebSuddenTerminationDisablerType disabler_type);
+      blink::SuddenTerminationDisablerType disabler_type);
   void OnDidFinishDocumentLoad();
   void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
@@ -2237,7 +2238,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       non_network_url_loader_factories_;
 
   // Bitfield for renderer-side state that blocks fast shutdown of the frame.
-  blink::WebSuddenTerminationDisablerType
+  blink::SuddenTerminationDisablerType
       sudden_termination_disabler_types_enabled_ = 0;
 
   // We switch between |audio_service_audio_output_stream_factory_| and

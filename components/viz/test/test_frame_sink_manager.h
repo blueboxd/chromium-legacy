@@ -6,9 +6,9 @@
 #define COMPONENTS_VIZ_TEST_TEST_FRAME_SINK_MANAGER_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace viz {
@@ -18,8 +18,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   TestFrameSinkManagerImpl();
   ~TestFrameSinkManagerImpl() override;
 
-  void BindRequest(mojom::FrameSinkManagerRequest request,
-                   mojom::FrameSinkManagerClientPtr client);
+  void BindReceiver(mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
+                    mojom::FrameSinkManagerClientPtr client);
 
  private:
   // mojom::FrameSinkManager:
@@ -63,7 +63,7 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   void EvictBackBuffer(uint32_t cache_id,
                        EvictBackBufferCallback callback) override {}
 
-  mojo::Binding<mojom::FrameSinkManager> binding_;
+  mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
   mojom::FrameSinkManagerClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFrameSinkManagerImpl);

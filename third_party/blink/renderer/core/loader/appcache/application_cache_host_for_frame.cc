@@ -129,12 +129,12 @@ void ApplicationCacheHostForFrame::LogMessage(
 }
 
 void ApplicationCacheHostForFrame::SetSubresourceFactory(
-    network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) {
+    mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+        url_loader_factory) {
   auto pending_factories = std::make_unique<URLLoaderFactoryBundleInfo>();
   pending_factories->pending_appcache_factory() =
       mojo::PendingRemote<network::mojom::URLLoaderFactory>(
-          url_loader_factory.PassInterface().PassHandle(),
-          url_loader_factory.version());
+          url_loader_factory.PassPipe(), url_loader_factory.version());
   local_frame_->Client()->UpdateSubresourceFactory(
       std::move(pending_factories));
 }

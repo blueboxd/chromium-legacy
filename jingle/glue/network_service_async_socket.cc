@@ -452,7 +452,7 @@ void NetworkServiceAsyncSocket::DoClose() {
   write_close_watcher_.reset();
 
   socket_ = nullptr;
-  tls_socket_ = nullptr;
+  tls_socket_.reset();
   socket_observer_receiver_.reset();
   socket_factory_ = nullptr;
 
@@ -495,7 +495,7 @@ bool NetworkServiceAsyncSocket::StartTls(const std::string& domain_name) {
   socket_->UpgradeToTLS(
       net::HostPortPair(domain_name, 443),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation_),
-      mojo::MakeRequest(&tls_socket_), std::move(socket_observer),
+      tls_socket_.BindNewPipeAndPassReceiver(), std::move(socket_observer),
       base::BindOnce(&NetworkServiceAsyncSocket::ProcessSSLConnectDone,
                      base::Unretained(this),
                      std::move(socket_observer_receiver)));

@@ -27,7 +27,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   WebApplicationInfo web_app_info;
   web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
   web_app_info.app_url = kAlternativeAppUrl;
-  WebApplicationInfo::IconInfo info;
+  WebApplicationIconInfo info;
   info.url = kAppIcon1;
   web_app_info.icons.push_back(info);
 

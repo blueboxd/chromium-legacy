@@ -60,7 +60,7 @@ base::FilePath GetTempDir(FileUtilsWrapper* utils,
 
 bool WriteIcon(FileUtilsWrapper* utils,
                const base::FilePath& icons_dir,
-               const WebApplicationInfo::IconInfo& icon_info) {
+               const WebApplicationIconInfo& icon_info) {
   base::FilePath icon_file =
       icons_dir.AppendASCII(base::StringPrintf("%i.png", icon_info.width));
 
@@ -91,7 +91,7 @@ bool WriteIcons(FileUtilsWrapper* utils,
     return false;
   }
 
-  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
+  for (const WebApplicationIconInfo& icon_info : web_app_info.icons) {
     // Skip unfetched bitmaps.
     if (icon_info.data.colorType() == kUnknown_SkColorType)
       continue;

@@ -254,7 +254,10 @@ cca.views.camera.Modes.getV1Constraints = async function(videoMode, deviceId) {
       // deviceId is set to null for requesting camera with default facing.
       constraint.facingMode = {exact: defaultFacing};
     }
-    return {audio: videoMode, video: constraint};
+    return {
+      audio: videoMode ? {echoCancellation: false} : false,
+      video: constraint,
+    };
   });
 };
 

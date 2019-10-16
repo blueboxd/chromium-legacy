@@ -3694,8 +3694,6 @@ jumbo_split_static_library("ui") {
         "app_list/search/arc_app_result.h",
         "app_list/search/crostini_app_result.cc",
         "app_list/search/crostini_app_result.h",
-        "app_list/search/internal_app_result.cc",
-        "app_list/search/internal_app_result.h",
         "ash/launcher/app_window_base.cc",
         "ash/launcher/app_window_base.h",
         "ash/launcher/arc_app_shelf_id.cc",

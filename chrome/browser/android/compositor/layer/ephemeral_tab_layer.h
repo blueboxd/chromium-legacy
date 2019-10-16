@@ -34,12 +34,24 @@ namespace android {
 class EphemeralTabLayer : public OverlayPanelLayer,
                           public favicon::FaviconDriverObserver {
  public:
+  static constexpr float kFaviconWidthDp =
+      OverlayPanelLayer::kDefaultIconWidthDp;
+
+  // Scale factor used to make the security icon size smaller to fit in the
+  // header.
+  static constexpr float kSecurityIconScale = 0.8f;
+
+  // Left margin that positions the icon in front of the caption.
+  static constexpr float kSecurityIconMarginStartDp = 8.f;
+
   static scoped_refptr<EphemeralTabLayer> Create(
       ui::ResourceManager* resource_manager,
       base::RepeatingCallback<void()>&& favicon_callback);
   void SetProperties(content::WebContents* web_contents,
                      int title_view_resource_id,
                      int caption_view_resource_id,
+                     int caption_icon_resource_id,
+                     jfloat caption_icon_opacity,
                      jfloat caption_animation_percentage,
                      jfloat text_layer_min_height,
                      jfloat title_caption_spacing,
@@ -70,7 +82,9 @@ class EphemeralTabLayer : public OverlayPanelLayer,
   void SetupTextLayer(float bar_top,
                       float bar_height,
                       float text_layer_min_height,
-                      int caption_resource_id,
+                      int caption_view_resource_id,
+                      int caption_icon_resource_id,
+                      float caption_icon_opacity,
                       float animation_percentage,
                       bool caption_visible,
                       int context_resource_id,
@@ -101,6 +115,7 @@ class EphemeralTabLayer : public OverlayPanelLayer,
   scoped_refptr<cc::UIResourceLayer> title_;
   scoped_refptr<cc::UIResourceLayer> caption_;
   scoped_refptr<cc::UIResourceLayer> favicon_layer_;
+  scoped_refptr<cc::UIResourceLayer> security_icon_layer_;
   scoped_refptr<cc::UIResourceLayer> text_layer_;
   std::unique_ptr<base::CancelableTaskTracker> cancelable_task_tracker_;
 };

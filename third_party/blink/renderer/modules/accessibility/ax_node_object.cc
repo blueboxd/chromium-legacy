@@ -85,7 +85,10 @@
 
 namespace blink {
 
-using namespace html_names;
+using html_names::kAltAttr;
+using html_names::kTitleAttr;
+using html_names::kTypeAttr;
+using html_names::kValueAttr;
 
 // In ARIA 1.1, default value of aria-level was changed to 2.
 const int kDefaultHeadingLevel = 2;
@@ -215,8 +218,8 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
 
   // Header and footer tags may also be exposed as landmark roles but not
   // always.
-  if (GetNode() &&
-      (GetNode()->HasTagName(kHeaderTag) || GetNode()->HasTagName(kFooterTag)))
+  if (GetNode() && (GetNode()->HasTagName(html_names::kHeaderTag) ||
+                    GetNode()->HasTagName(html_names::kFooterTag)))
     return kIncludeObject;
 
   // All controls are accessible.
@@ -457,16 +460,16 @@ const AXObject* AXNodeObject::InheritsPresentationalRoleFrom() const {
 static HashSet<QualifiedName>& GetLandmarkRolesNotAllowed() {
   DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, landmark_roles_not_allowed, ());
   if (landmark_roles_not_allowed.IsEmpty()) {
-    landmark_roles_not_allowed.insert(kArticleTag);
-    landmark_roles_not_allowed.insert(kAsideTag);
-    landmark_roles_not_allowed.insert(kNavTag);
-    landmark_roles_not_allowed.insert(kSectionTag);
-    landmark_roles_not_allowed.insert(kBlockquoteTag);
-    landmark_roles_not_allowed.insert(kDetailsTag);
-    landmark_roles_not_allowed.insert(kFieldsetTag);
-    landmark_roles_not_allowed.insert(kFigureTag);
-    landmark_roles_not_allowed.insert(kTdTag);
-    landmark_roles_not_allowed.insert(kMainTag);
+    landmark_roles_not_allowed.insert(html_names::kArticleTag);
+    landmark_roles_not_allowed.insert(html_names::kAsideTag);
+    landmark_roles_not_allowed.insert(html_names::kNavTag);
+    landmark_roles_not_allowed.insert(html_names::kSectionTag);
+    landmark_roles_not_allowed.insert(html_names::kBlockquoteTag);
+    landmark_roles_not_allowed.insert(html_names::kDetailsTag);
+    landmark_roles_not_allowed.insert(html_names::kFieldsetTag);
+    landmark_roles_not_allowed.insert(html_names::kFigureTag);
+    landmark_roles_not_allowed.insert(html_names::kTdTag);
+    landmark_roles_not_allowed.insert(html_names::kMainTag);
   }
   return landmark_roles_not_allowed;
 }
@@ -578,7 +581,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kTextField;
   }
 
-  if (auto* select_element = ToHTMLSelectElementOrNull(*GetNode())) {
+  if (auto* select_element = DynamicTo<HTMLSelectElement>(*GetNode())) {
     return select_element->IsMultiple() ? ax::mojom::Role::kListBox
                                         : ax::mojom::Role::kPopUpButton;
   }
@@ -628,52 +631,53 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsHTMLVideoElement(*GetNode()))
     return ax::mojom::Role::kVideo;
 
-  if (GetNode()->HasTagName(kDdTag))
+  if (GetNode()->HasTagName(html_names::kDdTag))
     return ax::mojom::Role::kDescriptionListDetail;
 
-  if (GetNode()->HasTagName(kDtTag))
+  if (GetNode()->HasTagName(html_names::kDtTag))
     return ax::mojom::Role::kDescriptionListTerm;
 
   if (GetNode()->nodeName() == "math")
     return ax::mojom::Role::kMath;
 
-  if (GetNode()->HasTagName(kRpTag) || GetNode()->HasTagName(kRtTag))
+  if (GetNode()->HasTagName(html_names::kRpTag) ||
+      GetNode()->HasTagName(html_names::kRtTag))
     return ax::mojom::Role::kRubyAnnotation;
 
   if (IsHTMLFormElement(*GetNode()))
     return ax::mojom::Role::kForm;
 
-  if (GetNode()->HasTagName(kAbbrTag))
+  if (GetNode()->HasTagName(html_names::kAbbrTag))
     return ax::mojom::Role::kAbbr;
 
-  if (GetNode()->HasTagName(kArticleTag))
+  if (GetNode()->HasTagName(html_names::kArticleTag))
     return ax::mojom::Role::kArticle;
 
-  if (GetNode()->HasTagName(kDelTag))
+  if (GetNode()->HasTagName(html_names::kDelTag))
     return ax::mojom::Role::kContentDeletion;
 
-  if (GetNode()->HasTagName(kInsTag))
+  if (GetNode()->HasTagName(html_names::kInsTag))
     return ax::mojom::Role::kContentInsertion;
 
-  if (GetNode()->HasTagName(kMainTag))
+  if (GetNode()->HasTagName(html_names::kMainTag))
     return ax::mojom::Role::kMain;
 
-  if (GetNode()->HasTagName(kMarkTag))
+  if (GetNode()->HasTagName(html_names::kMarkTag))
     return ax::mojom::Role::kMark;
 
-  if (GetNode()->HasTagName(kNavTag))
+  if (GetNode()->HasTagName(html_names::kNavTag))
     return ax::mojom::Role::kNavigation;
 
-  if (GetNode()->HasTagName(kAsideTag))
+  if (GetNode()->HasTagName(html_names::kAsideTag))
     return ax::mojom::Role::kComplementary;
 
-  if (GetNode()->HasTagName(kPreTag))
+  if (GetNode()->HasTagName(html_names::kPreTag))
     return ax::mojom::Role::kPre;
 
-  if (GetNode()->HasTagName(kSectionTag))
+  if (GetNode()->HasTagName(html_names::kSectionTag))
     return ax::mojom::Role::kSection;
 
-  if (GetNode()->HasTagName(kAddressTag))
+  if (GetNode()->HasTagName(html_names::kAddressTag))
     return ax::mojom::Role::kGenericContainer;
 
   if (IsA<HTMLDialogElement>(*GetNode()))
@@ -696,28 +700,28 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   // There should only be one banner/contentInfo per page. If header/footer are
   // being used within an article or section then it should not be exposed as
   // whole page's banner/contentInfo but as a generic container role.
-  if (GetNode()->HasTagName(kHeaderTag)) {
+  if (GetNode()->HasTagName(html_names::kHeaderTag)) {
     if (IsDescendantOfElementType(GetLandmarkRolesNotAllowed()))
       return ax::mojom::Role::kHeaderAsNonLandmark;
     return ax::mojom::Role::kHeader;
   }
 
-  if (GetNode()->HasTagName(kFooterTag)) {
+  if (GetNode()->HasTagName(html_names::kFooterTag)) {
     if (IsDescendantOfElementType(GetLandmarkRolesNotAllowed()))
       return ax::mojom::Role::kFooterAsNonLandmark;
     return ax::mojom::Role::kFooter;
   }
 
-  if (GetNode()->HasTagName(kBlockquoteTag))
+  if (GetNode()->HasTagName(html_names::kBlockquoteTag))
     return ax::mojom::Role::kBlockquote;
 
-  if (GetNode()->HasTagName(kCaptionTag))
+  if (GetNode()->HasTagName(html_names::kCaptionTag))
     return ax::mojom::Role::kCaption;
 
-  if (GetNode()->HasTagName(kFigcaptionTag))
+  if (GetNode()->HasTagName(html_names::kFigcaptionTag))
     return ax::mojom::Role::kFigcaption;
 
-  if (GetNode()->HasTagName(kFigureTag))
+  if (GetNode()->HasTagName(html_names::kFigureTag))
     return ax::mojom::Role::kFigure;
 
   if (GetNode()->nodeName() == "TIME")
@@ -807,7 +811,7 @@ bool AXNodeObject::IsMultiline() const {
 // also return true if an ancestor is editable.
 bool AXNodeObject::HasContentEditableAttributeSet() const {
   const AtomicString& content_editable_value =
-      GetAttribute(kContenteditableAttr);
+      GetAttribute(html_names::kContenteditableAttr);
   if (content_editable_value.IsNull())
     return false;
   // Both "true" (case-insensitive) and the empty string count as true.
@@ -1058,8 +1062,8 @@ bool AXNodeObject::IsMultiSelectable() const {
       break;
   }
 
-  return IsHTMLSelectElement(GetNode()) &&
-         ToHTMLSelectElement(*GetNode()).IsMultiple();
+  auto* html_select_element = DynamicTo<HTMLSelectElement>(GetNode());
+  return html_select_element && html_select_element->IsMultiple();
 }
 
 bool AXNodeObject::IsNativeCheckboxOrRadio() const {
@@ -1252,7 +1256,8 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   if (GetNode() && IsHTMLSummaryElement(*GetNode())) {
     if (GetNode()->parentNode() &&
         IsA<HTMLDetailsElement>(GetNode()->parentNode()))
-      return To<Element>(GetNode()->parentNode())->hasAttribute(kOpenAttr)
+      return To<Element>(GetNode()->parentNode())
+                     ->hasAttribute(html_names::kOpenAttr)
                  ? kExpandedExpanded
                  : kExpandedCollapsed;
   }
@@ -1316,22 +1321,22 @@ int AXNodeObject::HeadingLevel() const {
   if (!element)
     return 0;
 
-  if (element->HasTagName(kH1Tag))
+  if (element->HasTagName(html_names::kH1Tag))
     return 1;
 
-  if (element->HasTagName(kH2Tag))
+  if (element->HasTagName(html_names::kH2Tag))
     return 2;
 
-  if (element->HasTagName(kH3Tag))
+  if (element->HasTagName(html_names::kH3Tag))
     return 3;
 
-  if (element->HasTagName(kH4Tag))
+  if (element->HasTagName(html_names::kH4Tag))
     return 4;
 
-  if (element->HasTagName(kH5Tag))
+  if (element->HasTagName(html_names::kH5Tag))
     return 5;
 
-  if (element->HasTagName(kH6Tag))
+  if (element->HasTagName(html_names::kH6Tag))
     return 6;
 
   if (RoleValue() == ax::mojom::Role::kHeading)
@@ -1904,14 +1909,15 @@ String AXNodeObject::StringValue() const {
   if (!node)
     return String();
 
-  if (auto* select_element = ToHTMLSelectElementOrNull(*node)) {
+  if (auto* select_element = DynamicTo<HTMLSelectElement>(*node)) {
     int selected_index = select_element->selectedIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
     if (selected_index >= 0 &&
         static_cast<wtf_size_t>(selected_index) < list_items.size()) {
       const AtomicString& overridden_description =
-          list_items[selected_index]->FastGetAttribute(kAriaLabelAttr);
+          list_items[selected_index]->FastGetAttribute(
+              html_names::kAriaLabelAttr);
       if (!overridden_description.IsNull())
         return overridden_description;
     }
@@ -2060,7 +2066,7 @@ String AXNodeObject::TextAlternative(bool recursive,
   // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
   if (in_aria_labelled_by_traversal || NameFromContents(recursive)) {
     Node* node = GetNode();
-    if (!IsHTMLSelectElement(node)) {  // Avoid option descendant text
+    if (!IsA<HTMLSelectElement>(node)) {  // Avoid option descendant text
       name_from = ax::mojom::NameFrom::kContents;
       if (name_sources) {
         name_sources->push_back(NameSource(found_text_alternative));
@@ -2673,7 +2679,7 @@ bool AXNodeObject::OnNativeFocusAction() {
   // using AOM. To be extra safe, exclude objects that are clickable themselves.
   // This won't prevent anyone from having a click handler on the object's
   // container.
-  if (!IsClickable() && element->FastHasAttribute(kIdAttr) &&
+  if (!IsClickable() && element->FastHasAttribute(html_names::kIdAttr) &&
       CanBeActiveDescendant()) {
     return OnNativeClickAction();
   }
@@ -2784,8 +2790,7 @@ void AXNodeObject::UpdateChildrenIfNecessary() {
 }
 
 void AXNodeObject::SelectedOptions(AXObjectVector& options) const {
-  if (IsHTMLSelectElement(GetNode())) {
-    HTMLSelectElement* select = ToHTMLSelectElement(GetNode());
+  if (auto* select = DynamicTo<HTMLSelectElement>(GetNode())) {
     for (auto* const option : *select->selectedOptions()) {
       AXObject* ax_option = AXObjectCache().GetOrCreate(option);
       if (ax_option)
@@ -2877,11 +2882,11 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
-  if (!HasAttribute(kAriaOwnsAttr))
+  if (!HasAttribute(html_names::kAriaOwnsAttr))
     return;
 
   // Case 2: aria-owns attribute
-  TokenVectorFromAttribute(id_vector, kAriaOwnsAttr);
+  TokenVectorFromAttribute(id_vector, html_names::kAriaOwnsAttr);
   AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
 }
 
@@ -2926,8 +2931,9 @@ String AXNodeObject::NativeTextAlternative(
            ++label_index) {
         Element* label = labels->item(label_index);
         if (name_sources) {
-          if (!label->getAttribute(kForAttr).IsEmpty() &&
-              label->getAttribute(kForAttr) == html_element->GetIdAttribute()) {
+          if (!label->getAttribute(html_names::kForAttr).IsEmpty() &&
+              label->getAttribute(html_names::kForAttr) ==
+                  html_element->GetIdAttribute()) {
             name_sources->back().native_source = kAXTextFromNativeHTMLLabelFor;
           } else {
             name_sources->back().native_source =
@@ -3081,7 +3087,7 @@ String AXNodeObject::NativeTextAlternative(
     name_from = ax::mojom::NameFrom::kPlaceholder;
     if (name_sources) {
       name_sources->push_back(
-          NameSource(*found_text_alternative, kPlaceholderAttr));
+          NameSource(*found_text_alternative, html_names::kPlaceholderAttr));
       NameSource& source = name_sources->back();
       source.type = name_from;
     }
@@ -3092,7 +3098,7 @@ String AXNodeObject::NativeTextAlternative(
         NameSource& source = name_sources->back();
         source.text = text_alternative;
         source.attribute_value =
-            html_element->FastGetAttribute(kPlaceholderAttr);
+            html_element->FastGetAttribute(html_names::kPlaceholderAttr);
         *found_text_alternative = true;
       } else {
         return text_alternative;
@@ -3104,8 +3110,8 @@ String AXNodeObject::NativeTextAlternative(
   if (IsTextControl()) {
     name_from = ax::mojom::NameFrom::kPlaceholder;
     if (name_sources) {
-      name_sources->push_back(
-          NameSource(*found_text_alternative, kAriaPlaceholderAttr));
+      name_sources->push_back(NameSource(*found_text_alternative,
+                                         html_names::kAriaPlaceholderAttr));
       NameSource& source = name_sources->back();
       source.type = name_from;
     }
@@ -3127,7 +3133,7 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // 5.7 figure and figcaption Elements
-  if (GetNode()->HasTagName(kFigureTag)) {
+  if (GetNode()->HasTagName(html_names::kFigureTag)) {
     // figcaption
     name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
@@ -3137,7 +3143,7 @@ String AXNodeObject::NativeTextAlternative(
     }
     Element* figcaption = nullptr;
     for (Element& element : ElementTraversal::DescendantsOf(*(GetNode()))) {
-      if (element.HasTagName(kFigcaptionTag)) {
+      if (element.HasTagName(html_names::kFigcaptionTag)) {
         figcaption = &element;
         break;
       }
@@ -3233,10 +3239,10 @@ String AXNodeObject::NativeTextAlternative(
     name_from = ax::mojom::NameFrom::kAttribute;
     if (name_sources) {
       name_sources->push_back(
-          NameSource(*found_text_alternative, kSummaryAttr));
+          NameSource(*found_text_alternative, html_names::kSummaryAttr));
       name_sources->back().type = name_from;
     }
-    const AtomicString& summary = GetAttribute(kSummaryAttr);
+    const AtomicString& summary = GetAttribute(html_names::kSummaryAttr);
     if (!summary.IsNull()) {
       text_alternative = summary;
       if (name_sources) {
@@ -3332,7 +3338,7 @@ String AXNodeObject::NativeTextAlternative(
       name_from = ax::mojom::NameFrom::kAttribute;
       if (name_sources) {
         name_sources->push_back(
-            NameSource(found_text_alternative, kAriaLabelAttr));
+            NameSource(found_text_alternative, html_names::kAriaLabelAttr));
         name_sources->back().type = name_from;
       }
       if (Element* document_element = document->documentElement()) {
@@ -3440,13 +3446,14 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
   description_from = ax::mojom::DescriptionFrom::kRelatedElement;
   if (description_sources) {
     description_sources->push_back(
-        DescriptionSource(found_description, kAriaDescribedbyAttr));
+        DescriptionSource(found_description, html_names::kAriaDescribedbyAttr));
     description_sources->back().type = description_from;
   }
 
   // aria-describedby overrides any other accessible description, from:
   // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  const AtomicString& aria_describedby = GetAttribute(kAriaDescribedbyAttr);
+  const AtomicString& aria_describedby =
+      GetAttribute(html_names::kAriaDescribedbyAttr);
   if (!aria_describedby.IsNull()) {
     if (description_sources)
       description_sources->back().attribute_value = aria_describedby;
@@ -3582,10 +3589,10 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
   description_from = ax::mojom::DescriptionFrom::kAttribute;
   if (description_sources) {
     description_sources->push_back(
-        DescriptionSource(found_description, kAriaHelpAttr));
+        DescriptionSource(found_description, html_names::kAriaHelpAttr));
     description_sources->back().type = description_from;
   }
-  const AtomicString& help = GetAttribute(kAriaHelpAttr);
+  const AtomicString& help = GetAttribute(html_names::kAriaHelpAttr);
   if (!help.IsEmpty()) {
     description = help;
     if (description_sources) {

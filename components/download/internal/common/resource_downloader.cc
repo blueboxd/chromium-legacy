@@ -145,7 +145,7 @@ void ResourceDownloader::Start(
     std::unique_ptr<DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request,
     bool is_background_mode) {
-  callback_ = download_url_parameters->callback();
+  callback_ = std::move(download_url_parameters->callback());
   upload_callback_ = download_url_parameters->upload_callback();
   guid_ = download_url_parameters->guid();
   is_content_initiated_ = download_url_parameters->content_initiated();
@@ -240,7 +240,7 @@ void ResourceDownloader::OnResponseStarted(
           URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr(
               new URLLoaderFactoryProvider(url_loader_factory_),
               base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get())),
-          this, callback_));
+          this, std::move(callback_)));
 }
 
 void ResourceDownloader::OnReceiveRedirect() {

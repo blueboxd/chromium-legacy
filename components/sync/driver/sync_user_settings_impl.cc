@@ -171,10 +171,10 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
 }
 
 void SyncUserSettingsImpl::AddTrustedVaultDecryptionKeys(
-    const CoreAccountId& account_id,
+    const std::string& gaia_id,
     const std::vector<std::string>& keys) {
   DVLOG(1) << "Adding trusted vault decryption keys.";
-  crypto_->AddTrustedVaultDecryptionKeys(account_id, keys);
+  crypto_->AddTrustedVaultDecryptionKeys(gaia_id, keys);
 }
 
 void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
@@ -197,7 +197,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
     types.RetainAll(registered_model_types_);
   }
 
-  static_assert(39 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If adding a new sync data type, update the list below below if"
                 " you want to disable the new data type for local sync.");
   types.PutAll(ControlTypes());

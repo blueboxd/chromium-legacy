@@ -27,6 +27,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 class ProfileSyncServiceFactoryTest : public testing::Test {
@@ -45,7 +46,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
-    static_assert(39 == syncer::ModelType::NUM_ENTRIES,
+    static_assert(41 == syncer::ModelType::NUM_ENTRIES,
                   "When adding a new type, you probably want to add it here as "
                   "well (assuming it is already enabled).");
 
@@ -89,6 +90,10 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     if (arc::IsArcAllowedForProfile(profile()))
       datatypes.push_back(syncer::ARC_PACKAGE);
+    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+      datatypes.push_back(syncer::OS_PREFERENCES);
+      datatypes.push_back(syncer::OS_PRIORITY_PREFERENCES);
+    }
     datatypes.push_back(syncer::PRINTERS);
     if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
       datatypes.push_back(syncer::WIFI_CONFIGURATIONS);

@@ -81,9 +81,10 @@ bool CanUseExistingResource(const net::HttpResponseInfo* http_info) {
   // 1) If a cached response contains a Last-Modified header,
   // AppCacheUpdateJob::URLFetcher::AddConditionalHeaders() adds an
   // If-Modified-Since header, so the server may return an HTTP 304 Not Modified
-  // response. AppCacheUpdateJob::HandleUrlFetchCompleted() reuses the existing
-  // cache entry when a 304 is received, even though the HTTP specification
-  // mandates updating the cached headers with the headers in the 304 response.
+  // response. AppCacheUpdateJob::HandleResourceFetchCompleted() reuses the
+  // existing cache entry when a 304 is received, even though the HTTP
+  // specification mandates updating the cached headers with the headers in the
+  // 304 response.
   //
   // This deviation from the HTTP specification is Web-observable when AppCache
   // resources are served with Last-Modified and Cache-Control: max-age headers.
@@ -350,7 +351,7 @@ void AppCacheUpdateJob::HandleCacheFailure(
     const blink::mojom::AppCacheErrorDetails& error_details,
     ResultType result,
     const GURL& failed_resource_url) {
-  // 6.9.4 cache failure steps 2-8.
+  // 7.9.4 cache failure steps 2-8.
   DCHECK(internal_state_ != CACHE_FAILURE);
   DCHECK(!error_details.message.empty());
   DCHECK(result != UPDATE_OK);
@@ -502,7 +503,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
     // Wait for pending master entries to download.
     FetchMasterEntries();
-    MaybeCompleteUpdate();  // if not done, run async 6.9.4 step 7 substeps
+    MaybeCompleteUpdate();  // if not done, run async 7.9.4 step 7 substeps
     return;
   }
 
@@ -526,7 +527,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     return;
   }
 
-  // Proceed with update process. Section 6.9.4 steps 8-20.
+  // Proceed with update process. Section 7.9.4 steps 8-20.
   internal_state_ = DOWNLOADING;
   inprogress_cache_ =
       base::MakeRefCounted<AppCache>(storage_, storage_->NewCacheId());
@@ -605,7 +606,7 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     //   if (!manifestAttribute) skip it
 
     // Foreign entries will be detected during cache selection.
-    // Note: 6.9.4, step 17.9 possible optimization: if resource is HTML or XML
+    // Note: 7.9.4, step 17.9 possible optimization: if resource is HTML or XML
     // file whose root element is an html element with a manifest attribute
     // whose value doesn't match the manifest url of the application cache
     // being processed, mark the entry as being foreign.
@@ -707,7 +708,7 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
   DCHECK(found != pending_master_entries_.end());
   std::vector<AppCacheHost*>& hosts = found->second;
 
-  // Section 6.9.4. No update case: step 7.3, else step 22.
+  // Section 7.9.4. No update case: step 7.3, else step 22.
   if (response_code / 100 == 2) {
     // Add fetched master entry to the appropriate cache.
     AppCache* cache = inprogress_cache_.get() ? inprogress_cache_.get()
@@ -760,7 +761,7 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
       pending_master_entries_.erase(found);
       --master_entries_completed_;
 
-      // Section 6.9.4, step 22.3.
+      // Section 7.9.4, step 22.3.
       if (update_type_ == CACHE_ATTEMPT && pending_master_entries_.empty()) {
         HandleCacheFailure(
             blink::mojom::AppCacheErrorDetails(
@@ -1086,7 +1087,7 @@ void AppCacheUpdateJob::AddUrlToFileList(const GURL& url, int type) {
 void AppCacheUpdateJob::FetchUrls() {
   DCHECK_EQ(internal_state_, DOWNLOADING);
 
-  // Fetch each URL in the list according to section 6.9.4 step 17.1-17.3.
+  // Fetch each URL in the list according to section 7.9.4 step 18.1-18.3.
   // Fetch up to the concurrent limit. Other fetches will be triggered as each
   // each fetch completes.
   while (pending_url_fetches_.size() < kMaxConcurrentUrlFetches &&
@@ -1378,7 +1379,7 @@ void AppCacheUpdateJob::MaybeCompleteUpdate() {
           storage_->StoreEvictionTimes(group_);
       }
       group_->SetUpdateAppCacheStatus(AppCacheGroup::IDLE);
-      // 6.9.4 steps 7.3-7.7.
+      // 7.9.4 steps 7.3-7.7.
       NotifyAllAssociatedHosts(
           blink::mojom::AppCacheEventID::APPCACHE_NO_UPDATE_EVENT);
       DiscardDuplicateResponses();

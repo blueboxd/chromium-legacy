@@ -1420,9 +1420,9 @@ void NavigationRequest::OnRequestRedirected(
   // For renderer-initiated navigations we need to check if the source has
   // access to the URL. Browser-initiated navigations only rely on the
   // |CanRedirectToURL| test above.
-  if (!browser_initiated_ && source_site_instance() &&
+  if (!browser_initiated_ && GetSourceSiteInstance() &&
       !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          source_site_instance()->GetProcess()->GetID(),
+          GetSourceSiteInstance()->GetProcess()->GetID(),
           redirect_info.new_url)) {
     DVLOG(1) << "Denied unauthorized redirect for "
              << redirect_info.new_url.possibly_invalid_spec();
@@ -3607,6 +3607,10 @@ const GURL& NavigationRequest::GetURL() {
 
 SiteInstanceImpl* NavigationRequest::GetStartingSiteInstance() {
   return starting_site_instance_.get();
+}
+
+SiteInstanceImpl* NavigationRequest::GetSourceSiteInstance() {
+  return source_site_instance_.get();
 }
 
 bool NavigationRequest::IsRendererInitiated() {

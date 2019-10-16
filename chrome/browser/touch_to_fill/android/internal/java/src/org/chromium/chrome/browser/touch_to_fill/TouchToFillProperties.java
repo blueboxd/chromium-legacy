@@ -24,10 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 class TouchToFillProperties {
     static final PropertyModel.WritableBooleanPropertyKey VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey("visible");
-    static final PropertyModel.WritableObjectPropertyKey<String> FORMATTED_URL =
-            new PropertyModel.WritableObjectPropertyKey<>("formatted_url");
-    static final PropertyModel.WritableBooleanPropertyKey ORIGIN_SECURE =
-            new PropertyModel.WritableBooleanPropertyKey("origin_secure");
     static final PropertyModel
             .ReadableObjectPropertyKey<ListModel<MVCListAdapter.ListItem>> SHEET_ITEMS =
             new PropertyModel.ReadableObjectPropertyKey<>("sheet_items");
@@ -35,10 +31,8 @@ class TouchToFillProperties {
             new PropertyModel.ReadableObjectPropertyKey<>("view_event_listener");
 
     static PropertyModel createDefaultModel(ViewEventListener listener) {
-        return new PropertyModel
-                .Builder(VISIBLE, FORMATTED_URL, ORIGIN_SECURE, SHEET_ITEMS, VIEW_EVENT_LISTENER)
+        return new PropertyModel.Builder(VISIBLE, SHEET_ITEMS, VIEW_EVENT_LISTENER)
                 .with(VISIBLE, false)
-                .with(ORIGIN_SECURE, false)
                 .with(SHEET_ITEMS, new ListModel<>())
                 .with(VIEW_EVENT_LISTENER, listener)
                 .build();
@@ -62,6 +56,20 @@ class TouchToFillProperties {
                 FAVICON, CREDENTIAL, FORMATTED_ORIGIN, ON_CLICK_LISTENER};
 
         private CredentialProperties() {}
+    }
+
+    /**
+     * Properties defined here reflect the visible state of the header in the TouchToFill sheet.
+     */
+    static class HeaderProperties {
+        static final PropertyModel.ReadableObjectPropertyKey<String> FORMATTED_URL =
+                new PropertyModel.ReadableObjectPropertyKey<>("formatted_url");
+        static final PropertyModel.ReadableBooleanPropertyKey ORIGIN_SECURE =
+                new PropertyModel.ReadableBooleanPropertyKey("origin_secure");
+
+        static final PropertyKey[] ALL_KEYS = {FORMATTED_URL, ORIGIN_SECURE};
+
+        private HeaderProperties() {}
     }
 
     /**

@@ -297,7 +297,10 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
       origin_(origin),
       usage_(std::move(usage)),
       writable_paths_model_(usage_.writable_files, usage_.writable_directories),
-      readable_paths_model_({}, usage_.readable_directories) {}
+      readable_paths_model_({}, usage_.readable_directories) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   l10n_util::GetStringUTF16(IDS_DONE));
+}
 
 NativeFileSystemUsageBubbleView::~NativeFileSystemUsageBubbleView() = default;
 
@@ -316,11 +319,6 @@ base::string16 NativeFileSystemUsageBubbleView::GetAccessibleWindowTitle()
 
 int NativeFileSystemUsageBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 NativeFileSystemUsageBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
 bool NativeFileSystemUsageBubbleView::ShouldShowCloseButton() const {

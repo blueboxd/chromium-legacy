@@ -134,7 +134,7 @@ class HostFrameSinkManagerTestBase : public testing::Test {
   }
 
   bool IsBoundToFrameSinkManager() {
-    return host_manager_->frame_sink_manager_ptr_.is_bound() ||
+    return host_manager_->frame_sink_manager_remote_.is_bound() ||
            host_manager_->binding_.is_bound();
   }
 
@@ -206,9 +206,9 @@ class HostFrameSinkManagerRemoteTest : public HostFrameSinkManagerTestBase {
         std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>(
             &shared_bitmap_manager_);
 
-    mojom::FrameSinkManagerPtr frame_sink_manager;
-    mojom::FrameSinkManagerRequest frame_sink_manager_request =
-        mojo::MakeRequest(&frame_sink_manager);
+    mojo::PendingRemote<mojom::FrameSinkManager> frame_sink_manager;
+    mojo::PendingReceiver<mojom::FrameSinkManager> frame_sink_manager_receiver =
+        frame_sink_manager.InitWithNewPipeAndPassReceiver();
     mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
     mojom::FrameSinkManagerClientRequest frame_sink_manager_client_request =
         mojo::MakeRequest(&frame_sink_manager_client);
@@ -216,7 +216,7 @@ class HostFrameSinkManagerRemoteTest : public HostFrameSinkManagerTestBase {
     host_manager_->BindAndSetManager(
         std::move(frame_sink_manager_client_request), nullptr,
         std::move(frame_sink_manager));
-    manager_impl_->BindAndSetClient(std::move(frame_sink_manager_request),
+    manager_impl_->BindAndSetClient(std::move(frame_sink_manager_receiver),
                                     nullptr,
                                     std::move(frame_sink_manager_client));
   }

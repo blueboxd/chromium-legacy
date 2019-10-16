@@ -34,6 +34,8 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/reflector.h"
@@ -127,9 +129,10 @@ VizProcessTransportFactory::~VizProcessTransportFactory() {
 }
 
 void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
-  viz::mojom::FrameSinkManagerPtr frame_sink_manager;
-  viz::mojom::FrameSinkManagerRequest frame_sink_manager_request =
-      mojo::MakeRequest(&frame_sink_manager);
+  mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
+  mojo::PendingReceiver<viz::mojom::FrameSinkManager>
+      frame_sink_manager_receiver =
+          frame_sink_manager.InitWithNewPipeAndPassReceiver();
   viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
   viz::mojom::FrameSinkManagerClientRequest frame_sink_manager_client_request =
       mojo::MakeRequest(&frame_sink_manager_client);
@@ -144,7 +147,7 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
     // Hop to the IO thread, then send the other side of interface to viz
     // process.
     auto connect_on_io_thread =
-        [](viz::mojom::FrameSinkManagerRequest request,
+        [](mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
            viz::mojom::FrameSinkManagerClientPtrInfo client) {
           // There should always be a GpuProcessHost instance, and GPU process,
           // for running the compositor thread. The exception is during shutdown
@@ -153,12 +156,12 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
           auto* gpu_process_host = GpuProcessHost::Get();
           if (gpu_process_host) {
             gpu_process_host->gpu_host()->ConnectFrameSinkManager(
-                std::move(request), std::move(client));
+                std::move(receiver), std::move(client));
           }
         };
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(connect_on_io_thread,
-                                  std::move(frame_sink_manager_request),
+                                  std::move(frame_sink_manager_receiver),
                                   frame_sink_manager_client.PassInterface()));
   } else {
     DCHECK(!viz_compositor_thread_);
@@ -176,7 +179,7 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
     params->use_activation_deadline = activation_deadline_in_frames.has_value();
     params->activation_deadline_in_frames =
         activation_deadline_in_frames.value_or(0u);
-    params->frame_sink_manager = std::move(frame_sink_manager_request);
+    params->frame_sink_manager = std::move(frame_sink_manager_receiver);
     params->frame_sink_manager_client =
         frame_sink_manager_client.PassInterface();
     viz_compositor_thread_->CreateFrameSinkManager(std::move(params));

@@ -115,7 +115,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   if (web_app.theme_color().has_value())
     local_data->set_theme_color(web_app.theme_color().value());
 
-  local_data->set_is_sync_placeholder(web_app.is_sync_placeholder());
+  local_data->set_is_in_sync_install(web_app.is_in_sync_install());
 
   // Set sync_data to sync proto.
   sync_data->set_name(web_app.sync_data().name);
@@ -207,8 +207,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_theme_color())
     web_app->SetThemeColor(local_data.theme_color());
 
-  if (local_data.has_is_sync_placeholder())
-    web_app->SetIsSyncPlaceholder(local_data.is_sync_placeholder());
+  if (local_data.has_is_in_sync_install())
+    web_app->SetIsInSyncInstall(local_data.is_in_sync_install());
 
   // Parse sync_data from sync proto.
   WebApp::SyncData parsed_sync_data;

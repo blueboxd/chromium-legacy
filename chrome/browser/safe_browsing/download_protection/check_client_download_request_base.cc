@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
@@ -127,6 +128,7 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
     base::FilePath target_file_path,
     base::FilePath full_path,
     TabUrls tab_urls,
+    size_t file_size,
     content::BrowserContext* browser_context,
     CheckDownloadCallback callback,
     DownloadProtectionService* service,
@@ -137,6 +139,7 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
       full_path_(std::move(full_path)),
       tab_url_(std::move(tab_urls.url)),
       tab_referrer_url_(std::move(tab_urls.referrer)),
+      file_size_(file_size),
       callback_(std::move(callback)),
       service_(service),
       binary_feature_extractor_(std::move(binary_feature_extractor)),
@@ -202,12 +205,22 @@ void CheckClientDownloadRequestBase::FinishRequest(
                               reason, REASON_MAX);
   }
 
+  if (ShouldUploadBinary(reason)) {
+    if (!password_protected_allowed_ && is_password_protected_) {
+      result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
+      reason = DownloadCheckResultReason::REASON_BLOCKED_PASSWORD_PROTECTED;
+    } else if (BinaryUploadService::ShouldBlockFileSize(file_size_)) {
+      result = DownloadCheckResult::BLOCKED_TOO_LARGE;
+      reason = DownloadCheckResultReason::REASON_BLOCKED_TOO_LARGE;
+    } else {
+      UploadBinary(reason);
+    }
+  }
+
   DVLOG(2) << "SafeBrowsing download verdict for: " << source_url_
            << " verdict:" << reason << " result:" << static_cast<int>(result);
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
-
-  MaybeUploadBinary(reason);
 
   if (ShouldReturnAsynchronousVerdict(reason)) {
     std::move(callback_).Run(DownloadCheckResult::ASYNC_SCANNING);
@@ -331,16 +344,11 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
     return;
   }
 
-  if (!password_protected_allowed_ &&
-      std::any_of(results.archived_binaries.begin(),
-                  results.archived_binaries.end(),
-                  [](const ClientDownloadRequest::ArchivedBinary& binary) {
-                    return binary.is_encrypted();
-                  })) {
-    FinishRequest(DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED,
-                  REASON_BLOCKED_PASSWORD_PROTECTED);
-    return;
-  }
+  is_password_protected_ = std::any_of(
+      results.archived_binaries.begin(), results.archived_binaries.end(),
+      [](const ClientDownloadRequest::ArchivedBinary& binary) {
+        return binary.is_encrypted();
+      });
 
   // The content checks cannot determine that we decided to sample this file, so
   // special case that DownloadType.

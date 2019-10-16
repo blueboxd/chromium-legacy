@@ -115,7 +115,6 @@ class RenderWidgetHostOwnerDelegate;
 class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
-class VisualPropertiesManager;
 class WebCursor;
 struct EditCommand;
 struct VisualProperties;
@@ -174,20 +173,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                        bool hidden);
 
   ~RenderWidgetHostImpl() override;
-
-  // The visual properties manager is used to send visual property updates to
-  // Renderers. Visual properties include both page and widget-specific
-  // properties. Both must be sent in lock-step, and the widget may not exist,
-  // whereas the page always will. Therefore, this class cannot directly send
-  // visual property updates, it must use the manager, a member of
-  // RenderViewHostImpl. Eventually, page state should be stored on the visual
-  // properties manager as well.
-  // This method must be called immediately after construction of the
-  // RenderWidgetHostImpl. The only reason it isn't a member of the constructor
-  // is due to ordering constraints of construction of RenderViewHostImpl [which
-  // requires an instance of RenderWidgetHostImpl].
-  void BindVisualPropertiesManager(
-      base::WeakPtr<VisualPropertiesManager> visual_properties_manager);
 
   // Similar to RenderWidgetHost::FromID, but returning the Impl object.
   static RenderWidgetHostImpl* FromID(int32_t process_id, int32_t routing_id);
@@ -1308,12 +1293,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // This timer resets |pending_user_activation_counter_| after a short delay.
   // See comments on Add/ClearPendingUserActivation().
   base::OneShotTimer pending_user_activation_timer_;
-
-  // VisualPropertiesManager is owned by the RenderViewHost. For popup or pepper
-  // fullscreen widgets, the widget might outlive the RenderViewHost.
-  // TODO(https://crbug.com/1004009): Assert that this never happens and change
-  // this to be a raw pointer.
-  base::WeakPtr<VisualPropertiesManager> visual_properties_manager_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

@@ -1530,8 +1530,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
                                   &params->visual_properties.screen_info);
   // AttachWebFrameWidget() is not needed here since InitForMainFrame() received
   // the WebFrameWidget.
-  render_widget->SynchronizeVisualPropertiesFromRenderView(
-      params->visual_properties);
+  render_widget->OnUpdateVisualProperties(params->visual_properties);
 
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
@@ -1749,7 +1748,7 @@ void RenderFrameImpl::CreateFrame(
     // thus would not get VisualProperty updates while the frame is provisional,
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
-    render_frame->render_widget_->SynchronizeVisualPropertiesFromRenderView(
+    render_frame->render_widget_->OnUpdateVisualProperties(
         widget_params->visual_properties);
   }
 
@@ -5526,7 +5525,7 @@ void RenderFrameImpl::DidChangeActiveSchedulerTrackedFeatures(
 }
 
 void RenderFrameImpl::DidObserveLoadingBehavior(
-    blink::WebLoadingBehaviorFlag behavior) {
+    blink::LoadingBehaviorFlag behavior) {
   for (auto& observer : observers_)
     observer.DidObserveLoadingBehavior(behavior);
 }
@@ -5691,7 +5690,7 @@ void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
 
 void RenderFrameImpl::SuddenTerminationDisablerChanged(
     bool present,
-    blink::WebSuddenTerminationDisablerType disabler_type) {
+    blink::SuddenTerminationDisablerType disabler_type) {
   Send(new FrameHostMsg_SuddenTerminationDisablerChanged(routing_id_, present,
                                                          disabler_type));
 }

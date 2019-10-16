@@ -200,14 +200,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
                     bool /* result */)
 #endif
 
-// Updates a Renderer's visual properties, including both page properties and
-// widget properties. Eventually, we'd like to be able to send separate IPCs,
-// but it's not clear if that's possible. The |widget_routing_id| is used to
-// forward widget visual properties to the relevant widget.
-IPC_MESSAGE_ROUTED2(ViewMsg_UpdateVisualProperties,
-                    content::VisualProperties /* visual_properties */,
-                    int /* widget_routing_id */)
-
 // Sent to the main-frame's view to request performing a page scale animation
 // based on the point/rect provided.
 IPC_MESSAGE_ROUTED2(ViewMsg_AnimateDoubleTapZoom,

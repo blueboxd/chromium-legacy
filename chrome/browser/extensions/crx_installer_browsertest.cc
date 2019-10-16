@@ -131,8 +131,8 @@ SkBitmap CreateSquareBitmap(int size) {
   return bitmap;
 }
 
-WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size) {
-  WebApplicationInfo::IconInfo icon_info;
+WebApplicationIconInfo CreateIconInfoWithBitmap(int size) {
+  WebApplicationIconInfo icon_info;
   icon_info.width = size;
   icon_info.height = size;
   icon_info.data = CreateSquareBitmap(size);

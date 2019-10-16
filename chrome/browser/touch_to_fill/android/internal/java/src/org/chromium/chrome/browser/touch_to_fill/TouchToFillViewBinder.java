@@ -8,8 +8,8 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
@@ -46,12 +46,6 @@ class TouchToFillViewBinder {
             view.setEventListener(model.get(VIEW_EVENT_LISTENER));
         } else if (propertyKey == VISIBLE) {
             view.setVisible(model.get(VISIBLE));
-        } else if (propertyKey == FORMATTED_URL || propertyKey == ORIGIN_SECURE) {
-            if (model.get(ORIGIN_SECURE)) {
-                view.setSecureSubtitle(model.get(FORMATTED_URL));
-            } else {
-                view.setNonSecureSubtitle(model.get(FORMATTED_URL));
-            }
         } else if (propertyKey == SHEET_ITEMS) {
             view.setSheetItemListAdapter(
                     new RecyclerViewAdapter<>(new SimpleRecyclerViewMcp<>(model.get(SHEET_ITEMS),
@@ -72,7 +66,8 @@ class TouchToFillViewBinder {
             ViewGroup parent, @ItemType int itemType) {
         switch (itemType) {
             case ItemType.HEADER:
-                return null;
+                return new TouchToFillViewHolder(parent, R.layout.touch_to_fill_header_item,
+                        TouchToFillViewBinder::bindHeaderView);
             case ItemType.CREDENTIAL:
                 return new TouchToFillViewHolder(parent, R.layout.touch_to_fill_credential_item,
                         TouchToFillViewBinder::bindCredentialView);
@@ -130,6 +125,28 @@ class TouchToFillViewBinder {
             passwordText.setTransformationMethod(new PasswordTransformationMethod());
         } else {
             assert false : "Unhandled update to property:" + propertyKey;
+        }
+    }
+
+    /**
+     * Called whenever a property in the given model changes. It updates the given view accordingly.
+     * @param model The observed {@link PropertyModel}. Its data need to be reflected in the view.
+     * @param viewGroup The {@link ViewGroup} containing the header to update.
+     * @param key The {@link PropertyKey} which changed.
+     */
+    private static void bindHeaderView(PropertyModel model, ViewGroup viewGroup, PropertyKey key) {
+        if (key == FORMATTED_URL || key == ORIGIN_SECURE) {
+            TextView sheetSubtitleText = viewGroup.findViewById(R.id.touch_to_fill_sheet_subtitle);
+            if (model.get(ORIGIN_SECURE)) {
+                sheetSubtitleText.setText(model.get(FORMATTED_URL));
+            } else {
+                sheetSubtitleText.setText(
+                        String.format(viewGroup.getContext().getString(
+                                              R.string.touch_to_fill_sheet_subtitle_not_secure),
+                                model.get(FORMATTED_URL)));
+            }
+        } else {
+            assert false : "Unhandled update to property:" + key;
         }
     }
 

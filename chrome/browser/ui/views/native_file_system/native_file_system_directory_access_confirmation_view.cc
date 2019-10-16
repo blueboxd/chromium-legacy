@@ -49,15 +49,6 @@ base::string16 NativeFileSystemDirectoryAccessConfirmationView::GetWindowTitle()
       IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TITLE);
 }
 
-base::string16
-NativeFileSystemDirectoryAccessConfirmationView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(
-        IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-}
-
 bool NativeFileSystemDirectoryAccessConfirmationView::ShouldShowCloseButton()
     const {
   return false;
@@ -99,6 +90,10 @@ NativeFileSystemDirectoryAccessConfirmationView::
         const base::FilePath& path,
         base::OnceCallback<void(PermissionAction result)> callback)
     : callback_(std::move(callback)) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_ALLOW_BUTTON));
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

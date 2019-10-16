@@ -539,6 +539,17 @@ bool ChromeExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(
   return ExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(scheme);
 }
 
+bool ChromeExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
+    content::BrowserContext* context) const {
+  // If OOR-CORS is disabled, we never apply this enforcement.
+  if (!context->ShouldEnableOutOfBlinkCors())
+    return false;
+
+  // Enables the enforcement if the prefs is managed by the enterprise policy.
+  return Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
+      prefs::kCorsMitigationList);
+}
+
 // static
 void ChromeExtensionsBrowserClient::set_did_chrome_update_for_testing(
     bool did_update) {

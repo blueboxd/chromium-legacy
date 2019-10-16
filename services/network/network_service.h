@@ -79,7 +79,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   // Allows the browser process to synchronously initialize the NetworkService.
   // TODO(jam): remove this once the old path is gone.
-  void Initialize(mojom::NetworkServiceParamsPtr params);
+  void Initialize(mojom::NetworkServiceParamsPtr params,
+                  bool mock_network_change_notifier = false);
 
   // Creates a NetworkService instance on the current thread.
   static std::unique_ptr<NetworkService> Create(

@@ -128,7 +128,6 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% if iterator_method %}
 {{generate_method(iterator_method)}}
 {% endif %}
-{% block origin_safe_method_setter %}{% endblock %}
 {# Constructors #}
 {% for constructor in constructors %}
 {{generate_constructor(constructor)}}
@@ -235,7 +234,6 @@ static const struct {
 {% if iterator_method %}
 {{method_callback(iterator_method)}}
 {% endif %}
-{% block origin_safe_method_setter_callback %}{% endblock %}
 {# Special operations (methods) #}
 {% block named_property_getter_callback %}{% endblock %}
 {% block named_property_setter_callback %}{% endblock %}
@@ -616,7 +614,7 @@ static void Install{{v8_class}}Template(
                         if method.overloads else method.runtime_enabled_feature_name %}
   {% if not feature_name %}
   {% if method.is_cross_origin %}
-  {{install_origin_safe_method(method, 'instance_template', 'prototype_template') | trim | indent(2)}}
+  {{install_origin_safe_method(method, 'instance_template', 'prototype_template', 'interface_template', 'signature') | trim | indent(2)}}
   {% else %}
   {{install_custom_signature(method, 'instance_template', 'prototype_template', 'interface_template', 'signature') | trim | indent(2)}}
   {% endif %}

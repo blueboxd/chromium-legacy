@@ -14,8 +14,6 @@
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/driver/sync_user_settings.h"
 
-struct CoreAccountId;
-
 namespace syncer {
 
 class SyncPrefs;
@@ -65,7 +63,7 @@ class SyncUserSettingsImpl : public SyncUserSettings {
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
   void AddTrustedVaultDecryptionKeys(
-      const CoreAccountId& account_id,
+      const std::string& gaia_id,
       const std::vector<std::string>& keys) override;
 
   void SetSyncRequestedIfNotSetExplicitly();

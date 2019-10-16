@@ -80,7 +80,6 @@ class InterfaceTemplateContextBuilder(object):
         has_cross_origin_named_enum = False
         has_cross_origin_named_getter = False
         has_cross_origin_named_setter = False
-        has_origin_safe_method_setter = False
         has_security_check = False
         indexed_property_getter = None
         is_global = False
@@ -98,9 +97,6 @@ class InterfaceTemplateContextBuilder(object):
                 interface.indexed_property_getter, ['index'])
 
             if not interface.is_partial:
-                has_origin_safe_method_setter = is_global and any(
-                    method['is_check_security_for_receiver'] and not method['is_unforgeable']
-                    for method in methods)
                 has_security_check = ('CheckSecurity' in interface.extended_attributes and
                                       interface.name != 'EventTarget')
                 has_cross_origin_named_getter = (any(method['is_cross_origin'] for method in methods) or
@@ -114,7 +110,6 @@ class InterfaceTemplateContextBuilder(object):
         return {
             'attributes': attributes,
             'component': component,
-            'has_origin_safe_method_setter': has_origin_safe_method_setter,
             'has_constructor_callback': has_constructor_callback,
             'has_cross_origin_named_getter': has_cross_origin_named_getter,
             'has_cross_origin_named_setter': has_cross_origin_named_setter,

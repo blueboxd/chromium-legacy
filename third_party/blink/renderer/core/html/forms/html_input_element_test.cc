@@ -237,4 +237,16 @@ TEST_F(HTMLInputElementTest, RepaintAfterClearingFile) {
   EXPECT_TRUE(input->GetLayoutObject()->ShouldCheckForPaintInvalidation());
 }
 
+TEST_F(HTMLInputElementTest, UpdateTypeDcheck) {
+  Document& doc = GetDocument();
+  // Removing <body> is required to reproduce the issue.
+  doc.body()->remove();
+  Element* input = doc.CreateRawElement(html_names::kInputTag);
+  doc.documentElement()->appendChild(input);
+  input->focus();
+  input->setAttribute(html_names::kTypeAttr, AtomicString("radio"));
+  // Test succeeds if the above setAttribute() didn't trigger a DCHECK failure
+  // in Document::UpdateFocusAppearanceAfterLayout().
+}
+
 }  // namespace blink

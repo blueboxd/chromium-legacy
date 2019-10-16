@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
@@ -108,10 +110,11 @@ class CORE_EXPORT FetchRequestData final
   void SetIsHistoryNavigation(bool b) { is_history_navigation_ = b; }
 
   network::mojom::blink::URLLoaderFactory* URLLoaderFactory() const {
-    return url_loader_factory_.get();
+    return url_loader_factory_.is_bound() ? url_loader_factory_.get() : nullptr;
   }
-  void SetURLLoaderFactory(network::mojom::blink::URLLoaderFactoryPtr factory) {
-    url_loader_factory_ = std::move(factory);
+  void SetURLLoaderFactory(
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory> factory) {
+    url_loader_factory_.Bind(std::move(factory));
   }
   const base::UnguessableToken& WindowId() const { return window_id_; }
   void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
@@ -154,7 +157,7 @@ class CORE_EXPORT FetchRequestData final
   // the system would otherwise decide to use to load this request.
   // Currently used for blob: URLs, to ensure they can still be loaded even if
   // the URL got revoked after creating the request.
-  network::mojom::blink::URLLoaderFactoryPtr url_loader_factory_;
+  mojo::Remote<network::mojom::blink::URLLoaderFactory> url_loader_factory_;
   base::UnguessableToken window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchRequestData);

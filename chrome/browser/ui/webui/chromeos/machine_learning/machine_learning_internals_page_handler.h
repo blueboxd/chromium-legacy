@@ -26,7 +26,7 @@ class MachineLearningInternalsPageHandler : public mojom::PageHandler {
  private:
   // mojom::PageHandler:
   void LoadBuiltinModel(mojom::BuiltinModelSpecPtr spec,
-                        mojom::ModelRequest request,
+                        mojo::PendingReceiver<mojom::Model> receiver,
                         LoadBuiltinModelCallback callback) override;
 
   mojo::Receiver<mojom::PageHandler> receiver_;

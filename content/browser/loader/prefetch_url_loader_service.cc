@@ -191,21 +191,18 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
             ->prefetched_signed_exchange_cache;
   }
 
-  auto frame_tree_node_id_getter = base::BindRepeating(
-      [](int id) { return id; }, current_context.frame_tree_node_id);
-
   // For now we strongly bind the loader to the request, while we can
   // also possibly make the new loader owned by the factory so that
   // they can live longer than the client (i.e. run in detached mode).
   // TODO(kinuko): Revisit this.
   mojo::MakeStrongBinding(
       std::make_unique<PrefetchURLLoader>(
-          routing_id, request_id, options, frame_tree_node_id_getter,
+          routing_id, request_id, options, current_context.frame_tree_node_id,
           resource_request, std::move(client), traffic_annotation,
           std::move(network_loader_factory_to_use),
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
-              resource_request, frame_tree_node_id_getter),
+              resource_request, current_context.frame_tree_node_id),
           browser_context_, signed_exchange_prefetch_metric_recorder_,
           std::move(prefetched_signed_exchange_cache), blob_storage_context_,
           accept_langs_,
@@ -314,8 +311,7 @@ base::UnguessableToken PrefetchURLLoaderService::GenerateRecursivePrefetchToken(
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 PrefetchURLLoaderService::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
-  int frame_tree_node_id = frame_tree_node_id_getter.Run();
+    int frame_tree_node_id) {
   return GetContentClient()->browser()->CreateURLLoaderThrottles(
       request, browser_context_,
       base::BindRepeating(&WebContents::FromFrameTreeNodeId,

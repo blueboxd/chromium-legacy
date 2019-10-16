@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -419,15 +421,46 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Bool());
 #endif
 
-class CorsExtraSafelistedHeaderNamesTest : public InProcessBrowserTest {
+enum class CorsTestMode {
+  kWithCorsMitigationListPolicy,
+  kWithoutCorsMitigationListPolicy,
+};
+
+class CorsExtraSafelistedHeaderNamesTest
+    : public policy::PolicyTest,
+      public ::testing::WithParamInterface<CorsTestMode> {
  public:
   CorsExtraSafelistedHeaderNamesTest() {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{network::features::kOutOfBlinkCors, {}},
-         {features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
-          {{"extra-safelisted-request-headers", "foo,bar"}}}},
-        {});
+    switch (GetParam()) {
+      case CorsTestMode::kWithCorsMitigationListPolicy: {
+        auto list = std::make_unique<base::ListValue>();
+        list->AppendString("bar");
+        policy::PolicyMap policies;
+        policies.Set(policy::key::kCorsMitigationList,
+                     policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                     policy::POLICY_SOURCE_CLOUD, std::move(list), nullptr);
+        provider_.UpdateChromePolicy(policies);
+        scoped_feature_list_.InitWithFeaturesAndParameters(
+            {{network::features::kOutOfBlinkCors, {}},
+             {features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
+              {{"extra-safelisted-request-headers-for-enterprise", "foo"}}}},
+            {});
+        break;
+      }
+      case CorsTestMode::kWithoutCorsMitigationListPolicy:
+        scoped_feature_list_.InitWithFeaturesAndParameters(
+            {{network::features::kOutOfBlinkCors, {}},
+             {features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
+              {{"extra-safelisted-request-headers", "foo,bar"}}}},
+            {});
+        break;
+    }
   }
+
+  // Override to avoid conflict between the |scoped_feature_list_| and
+  // |command_line| that PolicyTest::SetUpCommandLine will introduce.
+  // TODO(crbug.com/1002483): Remove this workaround.
+  void SetUpCommandLine(base::CommandLine* command_line) override {}
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -438,6 +471,8 @@ class CorsExtraSafelistedHeaderNamesTest : public InProcessBrowserTest {
         base::BindRepeating(&CorsExtraSafelistedHeaderNamesTest::HandleRequest,
                             base::Unretained(this)));
     ASSERT_TRUE(cross_origin_test_server_.Start());
+
+    PolicyTest::SetUpOnMainThread();
   }
 
   void LoadAndWait(const GURL& url) {
@@ -502,7 +537,7 @@ class CorsExtraSafelistedHeaderNamesTest : public InProcessBrowserTest {
 
 constexpr char CorsExtraSafelistedHeaderNamesTest::kTestPath[];
 
-IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFoo) {
+IN_PROC_BROWSER_TEST_P(CorsExtraSafelistedHeaderNamesTest, RequestWithFoo) {
   GURL url(cross_origin_test_server().GetURL("/hello"));
   LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
       "%s?url=%s&headers=foo", kTestPath, url.spec().c_str())));
@@ -510,7 +545,15 @@ IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFoo) {
   EXPECT_EQ(1u, get_count());
 }
 
-IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFooBar) {
+IN_PROC_BROWSER_TEST_P(CorsExtraSafelistedHeaderNamesTest, RequestWithBar) {
+  GURL url(cross_origin_test_server().GetURL("/hello"));
+  LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
+      "%s?url=%s&headers=bar", kTestPath, url.spec().c_str())));
+  EXPECT_EQ(0u, options_count());
+  EXPECT_EQ(1u, get_count());
+}
+
+IN_PROC_BROWSER_TEST_P(CorsExtraSafelistedHeaderNamesTest, RequestWithFooBar) {
   GURL url(cross_origin_test_server().GetURL("/hello"));
   LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
       "%s?url=%s&headers=foo,bar", kTestPath, url.spec().c_str())));
@@ -518,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFooBar) {
   EXPECT_EQ(1u, get_count());
 }
 
-IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithBaz) {
+IN_PROC_BROWSER_TEST_P(CorsExtraSafelistedHeaderNamesTest, RequestWithBaz) {
   GURL url(cross_origin_test_server().GetURL("/hello"));
   LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
       "%s?url=%s&headers=baz", kTestPath, url.spec().c_str())));
@@ -526,10 +569,20 @@ IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithBaz) {
   EXPECT_EQ(1u, get_count());
 }
 
-IN_PROC_BROWSER_TEST_F(CorsExtraSafelistedHeaderNamesTest, RequestWithFooBaz) {
+IN_PROC_BROWSER_TEST_P(CorsExtraSafelistedHeaderNamesTest, RequestWithFooBaz) {
   GURL url(cross_origin_test_server().GetURL("/hello"));
   LoadAndWait(embedded_test_server()->GetURL(base::StringPrintf(
       "%s?url=%s&headers=foo,baz", kTestPath, url.spec().c_str())));
   EXPECT_EQ(1u, options_count());
   EXPECT_EQ(1u, get_count());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    WithCorsMitigationListPolicy,
+    CorsExtraSafelistedHeaderNamesTest,
+    testing::Values(CorsTestMode::kWithCorsMitigationListPolicy));
+
+INSTANTIATE_TEST_SUITE_P(
+    WithoutCorsMitigationListPolicy,
+    CorsExtraSafelistedHeaderNamesTest,
+    testing::Values(CorsTestMode::kWithoutCorsMitigationListPolicy));

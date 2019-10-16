@@ -368,7 +368,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_framer_doesnt_create_initial_encrypter,
-    false)
+    true)
 
 // If true, server drops client initial packets in datagrams < 1200 bytes.
 QUIC_FLAG(bool,

@@ -209,6 +209,8 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -5900,5 +5902,67 @@ INSTANTIATE_TEST_SUITE_P(
 
 #endif  //  defined(OS_WIN) || defined (OS_MACOSX) || (defined(OS_LINUX) &&
         //  !defined(OS_CHROMEOS))
+
+// See CorsExtraSafelistedHeaderNamesTest for more complex end to end tests.
+IN_PROC_BROWSER_TEST_F(PolicyTest, CorsMitigationExtraHeadersTest) {
+  // The list should be initialized as an empty list, but should not be managed.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList));
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList)->empty());
+  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kCorsMitigationList));
+
+  EXPECT_FALSE(extensions::ExtensionsBrowserClient::Get()
+                   ->ShouldForceWebRequestExtraHeaders(browser()->profile()));
+
+  PolicyMap policies;
+  policies.Set(key::kCorsMitigationList, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::ListValue>(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  // Now the list is managed, and it enforces the webRequest API to use the
+  // extraHeaders option.
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList));
+  EXPECT_TRUE(prefs->GetList(prefs::kCorsMitigationList)->empty());
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kCorsMitigationList));
+
+  EXPECT_EQ(network::features::ShouldEnableOutOfBlinkCorsForTesting(),
+            extensions::ExtensionsBrowserClient::Get()
+                ->ShouldForceWebRequestExtraHeaders(browser()->profile()));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, CorsLegacyModeEnabledConsistencyTest) {
+  Profile* profile = browser()->profile();
+  PrefService* prefs = profile->GetPrefs();
+  bool is_out_of_blink_cors_enabled = profile->ShouldEnableOutOfBlinkCors();
+
+  // Check initial states.
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));
+  EXPECT_FALSE(prefs->IsManagedPreference(prefs::kCorsLegacyModeEnabled));
+
+  // Check if updated policies are reflected. However, |profile| should keep
+  // returning a consistent value that returned at the first access.
+  PolicyMap policies;
+  policies.Set(key::kCorsLegacyModeEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kCorsLegacyModeEnabled));
+  EXPECT_EQ(is_out_of_blink_cors_enabled,
+            profile->ShouldEnableOutOfBlinkCors());
+
+  // Flip the value, and check again.
+  policies.Set(key::kCorsLegacyModeEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kCorsLegacyModeEnabled));
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kCorsLegacyModeEnabled));
+  EXPECT_EQ(is_out_of_blink_cors_enabled,
+            profile->ShouldEnableOutOfBlinkCors());
+}
 
 }  // namespace policy

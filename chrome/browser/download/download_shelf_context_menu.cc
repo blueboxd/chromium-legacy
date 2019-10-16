@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "content/public/common/content_features.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,18 +40,25 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 
   bool is_download = download_->download() != nullptr;
 
-  if (download_->IsMalicious())
-    model = GetMaliciousMenuModel(is_download);
-  else if (download_->MightBeMalicious())
-    model = GetMaybeMaliciousMenuModel(is_download);
-  else if (download_->GetState() == download::DownloadItem::COMPLETE)
-    model = GetFinishedMenuModel(is_download);
-  else if (download_->GetState() == download::DownloadItem::INTERRUPTED)
+  if (download_->GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
+      download_->GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE) {
     model = GetInterruptedMenuModel(is_download);
-  else if (download_->IsPaused())
+  } else if (download_->IsMalicious()) {
+    model = GetMaliciousMenuModel(is_download);
+  } else if (download_->MightBeMalicious()) {
+    model = GetMaybeMaliciousMenuModel(is_download);
+  } else if (download_->GetState() == download::DownloadItem::COMPLETE) {
+    model = GetFinishedMenuModel(is_download);
+  } else if (download_->GetState() == download::DownloadItem::INTERRUPTED) {
+    model = GetInterruptedMenuModel(is_download);
+  } else if (download_->IsPaused()) {
     model = GetInProgressPausedMenuModel(is_download);
-  else
+  } else {
     model = GetInProgressMenuModel(is_download);
+  }
+
   return model;
 }
 

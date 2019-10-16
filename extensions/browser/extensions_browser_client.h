@@ -341,6 +341,11 @@ class ExtensionsBrowserClient {
   virtual bool ShouldSchemeBypassNavigationChecks(
       const std::string& scheme) const;
 
+  // Returns true when we should enforce 'extraHeaders' option for any
+  // webRequest API callbacks so to mitigate CORS related compatibility issues.
+  virtual bool ShouldForceWebRequestExtraHeaders(
+      content::BrowserContext* context) const;
+
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;
 

@@ -2488,7 +2488,7 @@ RTCPeerConnectionHandler::CreateOrUpdateTransceiver(
 scoped_refptr<base::SingleThreadTaskRunner>
 RTCPeerConnectionHandler::signaling_thread() const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  return dependency_factory_->GetWebRtcSignalingThread();
+  return dependency_factory_->GetWebRtcSignalingTaskRunner();
 }
 
 blink::WebRTCSessionDescription

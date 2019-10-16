@@ -38,6 +38,10 @@ static const ModelType kStartOrder[] = {
     AUTOFILL_WALLET_METADATA, EXTENSION_SETTINGS, APP_SETTINGS, TYPED_URLS,
     HISTORY_DELETE_DIRECTIVES,
 
+    // Chrome OS settings affect the initial desktop appearance before the
+    // browser window opens, so start them before browser data types.
+    OS_PRIORITY_PREFERENCES, OS_PREFERENCES,
+
     // UI thread data types.
     BOOKMARKS, PREFERENCES, PRIORITY_PREFERENCES, EXTENSIONS, APPS, APP_LIST,
     ARC_PACKAGE, READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS, DICTIONARY,

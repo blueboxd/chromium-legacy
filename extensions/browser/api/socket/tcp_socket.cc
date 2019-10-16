@@ -482,7 +482,7 @@ void TCPSocket::OnReadComplete(int result,
 
 void TCPSocket::OnUpgradeToTLSComplete(
     UpgradeToTLSCallback callback,
-    network::mojom::TLSClientSocketPtr tls_socket,
+    mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
     const net::IPEndPoint& local_addr,
     const net::IPEndPoint& peer_addr,
     int result,
@@ -497,16 +497,16 @@ void TCPSocket::UpgradeToTLS(api::socket::SecureOptions* options,
                              UpgradeToTLSCallback callback) {
   if (!client_socket_ || !mojo_data_pump_ ||
       mojo_data_pump_->HasPendingRead() || mojo_data_pump_->HasPendingWrite()) {
-    std::move(callback).Run(net::ERR_FAILED, nullptr, net::IPEndPoint(),
-                            net::IPEndPoint(),
+    std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote(),
+                            net::IPEndPoint(), net::IPEndPoint(),
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
     return;
   }
   if (!local_addr_ || !peer_addr_) {
     DVLOG(1) << "Could not get local address or peer address.";
-    std::move(callback).Run(net::ERR_FAILED, nullptr, net::IPEndPoint(),
-                            net::IPEndPoint(),
+    std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote(),
+                            net::IPEndPoint(), net::IPEndPoint(),
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
     return;
@@ -520,8 +520,8 @@ void TCPSocket::UpgradeToTLS(api::socket::SecureOptions* options,
   // host, using this hostname.
   if (host_info.family == url::CanonHostInfo::BROKEN) {
     DVLOG(1) << "Could not canonicalize hostname";
-    std::move(callback).Run(net::ERR_FAILED, nullptr, net::IPEndPoint(),
-                            net::IPEndPoint(),
+    std::move(callback).Run(net::ERR_FAILED, mojo::NullRemote(),
+                            net::IPEndPoint(), net::IPEndPoint(),
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
     return;
@@ -551,15 +551,14 @@ void TCPSocket::UpgradeToTLS(api::socket::SecureOptions* options,
     if (has_version_max)
       mojo_socket_options->version_max = version_max;
   }
-  network::mojom::TLSClientSocketPtr tls_socket;
-  network::mojom::TLSClientSocketRequest tls_socket_request =
-      mojo::MakeRequest(&tls_socket);
+  mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket;
+  auto tls_socket_receiver = tls_socket.InitWithNewPipeAndPassReceiver();
   net::HostPortPair host_port_pair(canon_host, peer_addr_.value().port());
   client_socket_->UpgradeToTLS(
       host_port_pair, std::move(mojo_socket_options),
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
-      std::move(tls_socket_request), mojo::NullRemote() /* observer */,
+      std::move(tls_socket_receiver), mojo::NullRemote() /* observer */,
       base::BindOnce(&TCPSocket::OnUpgradeToTLSComplete, base::Unretained(this),
                      std::move(callback), std::move(tls_socket),
                      local_addr_.value(), peer_addr_.value()));

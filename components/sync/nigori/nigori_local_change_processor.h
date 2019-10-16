@@ -50,6 +50,10 @@ class NigoriLocalChangeProcessor {
   // Informs the Nigori processor of a new or updated Nigori entity.
   virtual void Put(std::unique_ptr<EntityData> entity_data) = 0;
 
+  // Returns true the Nigori entity as tracked by the processor has local
+  // changes. A commit may or may not be in progress at this time.
+  virtual bool IsEntityUnsynced() = 0;
+
   // Returns both the entity metadata and model type state such that the Nigori
   // model takes care of persisting them.
   virtual NigoriMetadataBatch GetMetadata() = 0;

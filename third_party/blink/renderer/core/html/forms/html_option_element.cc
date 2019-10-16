@@ -280,10 +280,10 @@ HTMLDataListElement* HTMLOptionElement::OwnerDataListElement() const {
 HTMLSelectElement* HTMLOptionElement::OwnerSelectElement() const {
   if (!parentNode())
     return nullptr;
-  if (auto* select = ToHTMLSelectElementOrNull(*parentNode()))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*parentNode()))
     return select;
   if (IsA<HTMLOptGroupElement>(*parentNode()))
-    return ToHTMLSelectElementOrNull(parentNode()->parentNode());
+    return DynamicTo<HTMLSelectElement>(parentNode()->parentNode());
   return nullptr;
 }
 
@@ -338,11 +338,11 @@ Node::InsertionNotificationRequest HTMLOptionElement::InsertedInto(
 }
 
 void HTMLOptionElement::RemovedFrom(ContainerNode& insertion_point) {
-  if (auto* select = ToHTMLSelectElementOrNull(insertion_point)) {
+  if (auto* select = DynamicTo<HTMLSelectElement>(insertion_point)) {
     if (!parentNode() || IsA<HTMLOptGroupElement>(*parentNode()))
       select->OptionRemoved(*this);
   } else if (IsA<HTMLOptGroupElement>(insertion_point)) {
-    select = ToHTMLSelectElementOrNull(insertion_point.parentNode());
+    select = DynamicTo<HTMLSelectElement>(insertion_point.parentNode());
     if (select)
       select->OptionRemoved(*this);
   }

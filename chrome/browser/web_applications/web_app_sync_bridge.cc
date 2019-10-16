@@ -374,9 +374,9 @@ void WebAppSyncBridge::ApplySyncDataChange(
     // storage.
     auto web_app = std::make_unique<WebApp>(app_id);
 
-    // Request a followup sync-initiated install for this placeholder to fetch
+    // Request a followup sync-initiated install for this stub app to fetch
     // full local data and all the icons.
-    web_app->SetIsSyncPlaceholder(true);
+    web_app->SetIsInSyncInstall(true);
 
     ApplySyncDataToApp(specifics, web_app.get());
 

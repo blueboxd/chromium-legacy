@@ -193,6 +193,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   int64_t GetNavigationId() override;
   const GURL& GetURL() override;
   SiteInstanceImpl* GetStartingSiteInstance() override;
+  SiteInstanceImpl* GetSourceSiteInstance() override;
   bool IsInMainFrame() override;
   bool IsParentMainFrame() override;
   bool IsRendererInitiated() override;
@@ -279,10 +280,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   NavigationState state() const { return state_; }
 
   FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
-
-  SiteInstanceImpl* source_site_instance() const {
-    return source_site_instance_.get();
-  }
 
   SiteInstanceImpl* dest_site_instance() const {
     return dest_site_instance_.get();

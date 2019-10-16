@@ -69,6 +69,9 @@ class CryptographerImpl : public Cryptographer {
   // have a default encryption key set, as reflected by CanEncrypt().
   sync_pb::NigoriKey ExportDefaultKey() const;
 
+  // Similar to Clone() but returns CryptographerImpl.
+  std::unique_ptr<CryptographerImpl> CloneImpl() const;
+
   // Cryptographer overrides.
   std::unique_ptr<Cryptographer> Clone() const override;
   bool CanEncrypt() const override;

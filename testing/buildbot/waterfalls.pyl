@@ -675,6 +675,17 @@
         'use_swarming': True,
         'os_type': 'android',
       },
+      'Android WebView P OOR-CORS FYI (rel)': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'webview_bot_oor_cors_gtests',
+        },
+        'use_swarming': True,
+        'os_type': 'android',
+      },
       'Memory Infra Tester': {
         'mixins': [
           'kitkat',

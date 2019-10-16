@@ -10,8 +10,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 AXRelationCache::AXRelationCache(AXObjectCacheImpl* object_cache)
     : object_cache_(object_cache) {}
 
@@ -22,11 +20,11 @@ void AXRelationCache::Init() {
   Document& document = object_cache_->GetDocument();
   for (Element& element :
        ElementTraversal::DescendantsOf(*document.documentElement())) {
-    const auto& id = element.FastGetAttribute(kForAttr);
+    const auto& id = element.FastGetAttribute(html_names::kForAttr);
     if (!id.IsEmpty())
       all_previously_seen_label_target_ids_.insert(id);
 
-    if (element.FastHasAttribute(kAriaOwnsAttr)) {
+    if (element.FastHasAttribute(html_names::kAriaOwnsAttr)) {
       if (AXObject* obj = object_cache_->GetOrCreate(&element)) {
         obj->ClearChildren();
         obj->AddChildren();
@@ -289,7 +287,8 @@ void AXRelationCache::TextChanged(AXObject* object) {
 }
 
 void AXRelationCache::LabelChanged(Node* node) {
-  const auto& id = To<HTMLElement>(node)->FastGetAttribute(kForAttr);
+  const auto& id =
+      To<HTMLElement>(node)->FastGetAttribute(html_names::kForAttr);
   if (!id.IsEmpty()) {
     all_previously_seen_label_target_ids_.insert(id);
     if (auto* control = To<HTMLLabelElement>(node)->control())

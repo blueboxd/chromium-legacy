@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace cc {
@@ -50,7 +51,7 @@ class CompositorDependenciesAndroid {
   friend class base::NoDestructor<CompositorDependenciesAndroid>;
 
   static void ConnectVizFrameSinkManagerOnIOThread(
-      viz::mojom::FrameSinkManagerRequest request,
+      mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
       viz::mojom::FrameSinkManagerClientPtrInfo client);
 
   CompositorDependenciesAndroid();

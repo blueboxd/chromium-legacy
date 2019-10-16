@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -37,7 +38,7 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   // requests.
   static void CreateURLLoaderFactory(
       base::WeakPtr<AppCacheHost> host,
-      network::mojom::URLLoaderFactoryPtr* loader_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>* loader_factory);
 
   // network::mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest url_loader_request,

@@ -33,6 +33,8 @@ class CookieControlsHandler : public content::WebUIMessageHandler {
   // Whether cookie controls UI should be hidden in incognito ntp.
   static bool ShouldHideCookieControlsUI(const Profile* profile);
 
+  static bool GetToggleCheckedValue(const Profile* profile);
+
  private:
   friend class CookieControlsHandlerTest;
 

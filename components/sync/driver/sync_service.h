@@ -22,6 +22,10 @@ struct CoreAccountInfo;
 class GoogleServiceAuthError;
 class GURL;
 
+namespace crypto {
+class ECPrivateKey;
+}  // namespace crypto
+
 namespace syncer {
 
 class JsController;
@@ -240,13 +244,14 @@ class SyncService : public KeyedService {
   // Sync to work.
   virtual bool RequiresClientUpgrade() const = 0;
 
-  // Returns a high-entropy randomly-generated ID that is unique to a user and
-  // sync-ed across devices via Nigori. Populated when the transport state
-  // becomes CONFIGURING. Returns an empty string if not available. Consumers
-  // of this ID should observe for changes via
+  // Returns a high-entropy elliptic curve (EC) private key that is unique to a
+  // user and sync-ed across devices via Nigori. Populated when the transport
+  // state becomes CONFIGURING. Returns nullptr if not available. Consumers of
+  // this key should observe for changes via
   // SyncServiceObserver::OnSyncCycleCompleted().
   // TODO(crbug.com/1012226): Remove when VAPID migration is over.
-  virtual std::string GetExperimentalAuthenticationId() const = 0;
+  virtual std::unique_ptr<crypto::ECPrivateKey>
+  GetExperimentalAuthenticationKey() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // DERIVED STATE ACCESS

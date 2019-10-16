@@ -141,6 +141,7 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
           item->GetTargetFilePath(),
           item->GetFullPath(),
           {item->GetTabUrl(), item->GetTabReferrerUrl()},
+          item->GetReceivedBytes(),
           content::DownloadItemUtils::GetBrowserContext(item),
           callback,
           service,
@@ -282,14 +283,7 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
 
 bool CheckClientDownloadRequest::ShouldReturnAsynchronousVerdict(
     DownloadCheckResultReason reason) {
-  if (!ShouldUploadForDlpScan() && !ShouldUploadForMalwareScan(reason))
-    return false;
-
-  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-  if (!profile)
-    return false;
-
-  return true;
+  return ShouldUploadBinary(reason) && ShouldDelayVerdicts();
 }
 
 bool CheckClientDownloadRequest::ShouldDelayVerdicts() {
@@ -299,21 +293,26 @@ bool CheckClientDownloadRequest::ShouldDelayVerdicts() {
           delay_delivery == DELAY_UPLOADS_AND_DOWNLOADS);
 }
 
-void CheckClientDownloadRequest::MaybeUploadBinary(
+bool CheckClientDownloadRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
   bool upload_for_dlp = ShouldUploadForDlpScan();
   bool upload_for_malware = ShouldUploadForMalwareScan(reason);
   if (!upload_for_dlp && !upload_for_malware)
-    return;
+    return false;
 
-  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-  if (!profile)
-    return;
+  return !!Profile::FromBrowserContext(GetBrowserContext());
+}
 
+void CheckClientDownloadRequest::UploadBinary(
+    DownloadCheckResultReason reason) {
+  bool upload_for_dlp = ShouldUploadForDlpScan();
+  bool upload_for_malware = ShouldUploadForMalwareScan(reason);
   auto request = std::make_unique<DownloadItemRequest>(
       item_, /*read_immediately=*/true,
       base::BindOnce(&CheckClientDownloadRequest::OnDeepScanningComplete,
                      weakptr_factory_.GetWeakPtr()));
+
+  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
 
   if (upload_for_dlp) {
     DlpDeepScanningClientRequest dlp_request;
@@ -398,14 +397,13 @@ bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
   int send_files_for_malware_check = profile->GetPrefs()->GetInteger(
       prefs::kSafeBrowsingSendFilesForMalwareCheck);
   if (send_files_for_malware_check !=
-      SendFilesForMalwareCheckValues::SEND_DOWNLOADS)
+          SendFilesForMalwareCheckValues::SEND_DOWNLOADS &&
+      send_files_for_malware_check !=
+          SendFilesForMalwareCheckValues::SEND_UPLOADS_AND_DOWNLOADS)
     return false;
 
   // If there's no DM token, the upload will fail, so we can skip uploading now.
-  if (policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty())
-    return false;
-
-  return true;
+  return !policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty();
 }
 
 void CheckClientDownloadRequest::OnDeepScanningComplete(

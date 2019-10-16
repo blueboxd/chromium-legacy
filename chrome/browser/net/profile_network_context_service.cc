@@ -126,6 +126,36 @@ network::mojom::AdditionalCertificatesPtr GetAdditionalCertificates(
 
 #endif  // defined (OS_CHROMEOS)
 
+void InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
+    Profile* profile,
+    std::vector<std::string>* extra_safelisted_request_header_names) {
+  PrefService* pref = profile->GetPrefs();
+  bool has_managed_mitigation_list =
+      pref->IsManagedPreference(prefs::kCorsMitigationList);
+
+  // Set default mitigation parameters managed by the server for normal users
+  // and enterprise users separately.
+  const char* const feature_param_name =
+      has_managed_mitigation_list
+          ? "extra-safelisted-request-headers-for-enterprise"
+          : "extra-safelisted-request-headers";
+  *extra_safelisted_request_header_names =
+      SplitString(base::GetFieldTrialParamValueByFeature(
+                      features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
+                      feature_param_name),
+                  ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  // We trust and append |pref|'s values only when they are set by the managed
+  // policy. Chrome does not have any interface to set this preference manually.
+  if (has_managed_mitigation_list) {
+    for (const auto& header_name_value :
+         *pref->GetList(prefs::kCorsMitigationList)) {
+      extra_safelisted_request_header_names->push_back(
+          header_name_value.GetString());
+    }
+  }
+}
+
 }  // namespace
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
@@ -176,6 +206,13 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       certificate_transparency::prefs::kCTExcludedLegacySPKIs,
       base::BindRepeating(&ProfileNetworkContextService::ScheduleUpdateCTPolicy,
                           base::Unretained(this)));
+
+  // Reflects CORS mitigation list policy updates dynamically.
+  pref_change_registrar_.Add(
+      prefs::kCorsMitigationList,
+      base::BindRepeating(
+          &ProfileNetworkContextService::UpdateCorsMitigationList,
+          base::Unretained(this)));
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() {}
@@ -335,6 +372,23 @@ void ProfileNetworkContextService::ScheduleUpdateCTPolicy() {
                                 &ProfileNetworkContextService::UpdateCTPolicy);
 }
 
+void ProfileNetworkContextService::UpdateCorsMitigationList() {
+  std::vector<std::string> cors_extra_safelisted_request_header_names;
+  InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
+      profile_, &cors_extra_safelisted_request_header_names);
+
+  content::BrowserContext::ForEachStoragePartition(
+      profile_, base::BindRepeating(
+                    [](std::vector<std::string>*
+                           cors_extra_safelisted_request_header_names,
+                       content::StoragePartition* storage_partition) {
+                      storage_partition->GetNetworkContext()
+                          ->SetCorsExtraSafelistedRequestHeaderNames(
+                              *cors_extra_safelisted_request_header_names);
+                    },
+                    &cors_extra_safelisted_request_header_names));
+}
+
 // static
 network::mojom::CookieManagerParamsPtr
 ProfileNetworkContextService::CreateCookieManagerParams(
@@ -398,11 +452,10 @@ ProfileNetworkContextService::CreateNetworkContextParams(
         base::TimeDelta::FromMilliseconds(100);
   }
 
-  network_context_params->cors_extra_safelisted_request_header_names =
-      SplitString(base::GetFieldTrialParamValueByFeature(
-                      features::kExtraSafelistedRequestHeadersForOutOfBlinkCors,
-                      "extra-safelisted-request-headers"),
-                  ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
+      profile_,
+      &network_context_params->cors_extra_safelisted_request_header_names);
+  network_context_params->enable_cors = profile_->ShouldEnableOutOfBlinkCors();
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;

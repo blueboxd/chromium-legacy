@@ -78,6 +78,7 @@ class WebRequestProxyingWebSocket
   void OnBeforeSendHeaders(const net::HttpRequestHeaders& headers,
                            OnBeforeSendHeadersCallback callback) override;
   void OnHeadersReceived(const std::string& headers,
+                         const net::IPEndPoint& endpoint,
                          OnHeadersReceivedCallback callback) override;
 
   static void StartProxying(

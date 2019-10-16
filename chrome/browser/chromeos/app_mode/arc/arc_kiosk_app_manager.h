@@ -46,9 +46,6 @@ class ArcKioskAppManager {
   // Registers kiosk app entries in local state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Removes cryptohomes which could not be removed during the previous session.
-  static void RemoveObsoleteCryptohomes();
-
   // Returns auto launched account id. If there is none, account is invalid,
   // thus is_valid() returns empty AccountId.
   const AccountId& GetAutoLaunchAccountId() const;

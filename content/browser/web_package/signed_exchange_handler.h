@@ -97,7 +97,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
       std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       SignedExchangeReporter* reporter,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
+      int frame_tree_node_id);
   virtual ~SignedExchangeHandler();
 
   int64_t GetExchangeHeaderLength() const { return exchange_header_length_; }
@@ -177,7 +177,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   // This is owned by SignedExchangeLoader which is the owner of |this|.
   SignedExchangeReporter* reporter_;
 
-  base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
+  const int frame_tree_node_id_;
 
   base::TimeTicks cert_fetch_start_time_;
 

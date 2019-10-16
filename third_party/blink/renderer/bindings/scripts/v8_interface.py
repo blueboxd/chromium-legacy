@@ -434,10 +434,6 @@ def interface_context(interface, interfaces, component_info):
     # Methods
     context.update(methods_context(interface, component_info))
     methods = context['methods']
-    context.update({
-        'has_origin_safe_method_setter': any(method['is_cross_origin'] and not method['is_unforgeable']
-            for method in methods),
-    })
 
     # Conditionally enabled methods
     conditional_methods = v8_methods.filter_conditionally_enabled(methods, interface.is_partial)

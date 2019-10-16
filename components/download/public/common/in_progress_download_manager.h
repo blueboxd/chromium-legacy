@@ -76,7 +76,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     // create the DownloadItem from in-progress cache.
     virtual void StartDownloadItem(
         std::unique_ptr<DownloadCreateInfo> info,
-        const DownloadUrlParameters::OnStartedCallback& on_started,
+        DownloadUrlParameters::OnStartedCallback on_started,
         StartDownloadItemCallback callback) {}
   };
 
@@ -124,13 +124,12 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info);
 
-  void StartDownload(
-      std::unique_ptr<DownloadCreateInfo> info,
-      std::unique_ptr<InputStream> stream,
-      URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
-          url_loader_factory_provider,
-      DownloadJob::CancelRequestCallback cancel_request_callback,
-      const DownloadUrlParameters::OnStartedCallback& on_started);
+  void StartDownload(std::unique_ptr<DownloadCreateInfo> info,
+                     std::unique_ptr<InputStream> stream,
+                     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
+                         url_loader_factory_provider,
+                     DownloadJob::CancelRequestCallback cancel_request_callback,
+                     DownloadUrlParameters::OnStartedCallback on_started);
 
   // Shutting down the manager and stop all downloads.
   void ShutDown();
@@ -213,7 +212,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
           url_loader_factory_provider,
       UrlDownloadHandler* downloader,
-      const DownloadUrlParameters::OnStartedCallback& callback) override;
+      DownloadUrlParameters::OnStartedCallback callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;

@@ -152,7 +152,7 @@ struct PageLoadTiming {
 };
 
 struct PageLoadMetadata {
-  // These are packed blink::WebLoadingBehaviorFlag enums.
+  // These are packed blink::LoadingBehaviorFlag enums.
   int32 behavior_flags = 0;
 };
 

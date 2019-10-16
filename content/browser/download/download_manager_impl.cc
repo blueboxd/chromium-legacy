@@ -61,6 +61,7 @@
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
@@ -111,14 +112,17 @@ StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
 
 void OnDownloadStarted(
     download::DownloadItemImpl* download,
-    const download::DownloadUrlParameters::OnStartedCallback& on_started) {
+    download::DownloadUrlParameters::OnStartedCallback on_started) {
   if (on_started.is_null())
     return;
 
-  if (!download || download->GetState() == download::DownloadItem::CANCELLED)
-    on_started.Run(nullptr, download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
-  else
-    on_started.Run(download, download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  if (!download || download->GetState() == download::DownloadItem::CANCELLED) {
+    std::move(on_started)
+        .Run(nullptr, download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+  } else {
+    std::move(on_started)
+        .Run(download, download::DOWNLOAD_INTERRUPT_REASON_NONE);
+  }
 }
 
 // Creates an interrupted download and calls StartDownload. Can be called on
@@ -137,7 +141,7 @@ void CreateInterruptedDownload(
       base::BindOnce(&DownloadManagerImpl::StartDownload, download_manager,
                      std::move(failed_created_info),
                      std::make_unique<download::InputStream>(),
-                     params->callback()));
+                     std::move(params->callback())));
 }
 
 class DownloadItemFactoryImpl : public download::DownloadItemFactory {
@@ -570,7 +574,7 @@ void DownloadManagerImpl::OnDownloadsInitialized() {
 
 void DownloadManagerImpl::StartDownloadItem(
     std::unique_ptr<download::DownloadCreateInfo> info,
-    const download::DownloadUrlParameters::OnStartedCallback& on_started,
+    download::DownloadUrlParameters::OnStartedCallback on_started,
     download::InProgressDownloadManager::StartDownloadItemCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -580,17 +584,17 @@ void DownloadManagerImpl::StartDownloadItem(
       download = nullptr;
     std::move(callback).Run(std::move(info), download,
                             should_persist_new_download_);
-    OnDownloadStarted(download, on_started);
+    OnDownloadStarted(download, std::move(on_started));
   } else {
     GetNextId(base::BindOnce(&DownloadManagerImpl::CreateNewDownloadItemToStart,
                              weak_factory_.GetWeakPtr(), std::move(info),
-                             on_started, std::move(callback)));
+                             std::move(on_started), std::move(callback)));
   }
 }
 
 void DownloadManagerImpl::CreateNewDownloadItemToStart(
     std::unique_ptr<download::DownloadCreateInfo> info,
-    const download::DownloadUrlParameters::OnStartedCallback& on_started,
+    download::DownloadUrlParameters::OnStartedCallback on_started,
     download::InProgressDownloadManager::StartDownloadItemCallback callback,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -607,7 +611,7 @@ void DownloadManagerImpl::CreateNewDownloadItemToStart(
     OnNewDownloadCreated(download);
   }
 
-  OnDownloadStarted(download, on_started);
+  OnDownloadStarted(download, std::move(on_started));
 }
 
 service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {
@@ -626,13 +630,13 @@ DownloadManagerImpl::GetQuarantineConnectionCallback() {
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<download::DownloadCreateInfo> info,
     std::unique_ptr<download::InputStream> stream,
-    const download::DownloadUrlParameters::OnStartedCallback& on_started) {
+    download::DownloadUrlParameters::OnStartedCallback on_started) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
   in_progress_manager_->StartDownload(
       std::move(info), std::move(stream),
       download::URLLoaderFactoryProvider::GetNullPtr(), base::DoNothing(),
-      on_started);
+      std::move(on_started));
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {

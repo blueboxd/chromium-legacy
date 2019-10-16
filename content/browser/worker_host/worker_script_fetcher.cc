@@ -11,6 +11,7 @@
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"

@@ -44,6 +44,8 @@ class ManagedUserWhitelistSpecifics;
 class MountainShareSpecifics;
 class NavigationRedirect;
 class NigoriSpecifics;
+class OsPreferenceSpecifics;
+class OsPriorityPreferenceSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
 class PaymentsCustomerData;
@@ -175,6 +177,12 @@ std::unique_ptr<base::DictionaryValue> NavigationRedirectToValue(
 
 std::unique_ptr<base::DictionaryValue> NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);
+
+std::unique_ptr<base::DictionaryValue> OsPreferenceSpecificsToValue(
+    const sync_pb::OsPreferenceSpecifics& specifics);
+
+std::unique_ptr<base::DictionaryValue> OsPriorityPreferenceSpecificsToValue(
+    const sync_pb::OsPriorityPreferenceSpecifics& specifics);
 
 std::unique_ptr<base::DictionaryValue> PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& password_specifics);

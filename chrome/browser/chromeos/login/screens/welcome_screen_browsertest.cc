@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
+#include "base/test/scoped_path_override.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -11,17 +15,31 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 
 namespace chromeos {
 
 namespace {
+
+const char kStartupManifest[] =
+    R"({
+      "version": "1.0",
+      "initial_locale" : "en-US",
+      "initial_timezone" : "US/Pacific",
+      "keyboard_layout" : "xkb:us::eng",
+    })";
 
 chromeos::OobeUI* GetOobeUI() {
   auto* host = chromeos::LoginDisplayHost::default_host();
@@ -45,6 +63,27 @@ void ToggleAccessibilityFeature(const std::string& feature_name,
   js.CreateWaiter(feature_toggle)->Wait();
 }
 
+class LanguageReloadObserver : public WelcomeScreen::Observer {
+ public:
+  explicit LanguageReloadObserver(WelcomeScreen* welcome_screen)
+      : welcome_screen_(welcome_screen) {
+    welcome_screen_->AddObserver(this);
+  }
+
+  // WelcomeScreen::Observer:
+  void OnLanguageListReloaded() override { run_loop_.Quit(); }
+
+  void Wait() { run_loop_.Run(); }
+
+  ~LanguageReloadObserver() override { welcome_screen_->RemoveObserver(this); }
+
+ private:
+  WelcomeScreen* const welcome_screen_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(LanguageReloadObserver);
+};
+
 }  // namespace
 
 class WelcomeScreenBrowserTest : public InProcessBrowserTest {
@@ -55,8 +94,18 @@ class WelcomeScreenBrowserTest : public InProcessBrowserTest {
   // InProcessBrowserTest:
 
   void SetUpOnMainThread() override {
-    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+    ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    base::FilePath startup_manifest =
+        data_dir_.GetPath().AppendASCII("startup_manifest.json");
+    base::WriteFile(startup_manifest, kStartupManifest,
+                    strlen(kStartupManifest));
+    path_override_ = std::make_unique<base::ScopedPathOverride>(
+        chromeos::FILE_STARTUP_CUSTOMIZATION_MANIFEST, startup_manifest);
 
+    ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+    test::TestPredicateWaiter(base::BindRepeating([]() {
+      return WizardController::default_controller() != nullptr;
+    })).Wait();
     WizardController::default_controller()
         ->screen_manager()
         ->DeleteScreenForTesting(WelcomeView::kScreenId);
@@ -65,6 +114,7 @@ class WelcomeScreenBrowserTest : public InProcessBrowserTest {
         base::BindRepeating(&WelcomeScreenBrowserTest::OnWelcomeScreenExit,
                             base::Unretained(this)));
     welcome_screen_ = welcome_screen.get();
+    observer_ = std::make_unique<LanguageReloadObserver>(welcome_screen_);
     WizardController::default_controller()
         ->screen_manager()
         ->SetScreenForTesting(std::move(welcome_screen));
@@ -87,8 +137,11 @@ class WelcomeScreenBrowserTest : public InProcessBrowserTest {
   }
 
   WelcomeScreen* welcome_screen_ = nullptr;
+  std::unique_ptr<LanguageReloadObserver> observer_;
 
  private:
+  std::unique_ptr<base::ScopedPathOverride> path_override_;
+  base::ScopedTempDir data_dir_;
   bool screen_exit_ = false;
 
   base::OnceClosure screen_exit_callback_;
@@ -320,6 +373,29 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   welcome_screen_->Show();
   OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   test::OobeJS().ExpectHiddenPath({"connect", "dockedMagnifierOobeOption"});
+}
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, PRE_SelectedLanguage) {
+  EXPECT_EQ(
+      StartupCustomizationDocument::GetInstance()->initial_locale_default(),
+      "en-US");
+  welcome_screen_->Show();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  const std::string locale = "ru";
+  welcome_screen_->SetApplicationLocale(locale);
+  test::OobeJS().TapOnPath({"connect", "welcomeScreen", "welcomeNextButton"});
+  WaitForScreenExit();
+  EXPECT_EQ(g_browser_process->local_state()->GetString(
+                language::prefs::kApplicationLocale),
+            locale);
+}
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, SelectedLanguage) {
+  observer_->Wait();
+  const std::string locale = "ru";
+  EXPECT_EQ(g_browser_process->local_state()->GetString(
+                language::prefs::kApplicationLocale),
+            locale);
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenWithExperimentalAccessibilityFeaturesTest,

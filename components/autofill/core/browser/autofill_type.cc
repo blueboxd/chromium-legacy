@@ -56,6 +56,10 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case ADDRESS_HOME_STREET_ADDRESS:
     case ADDRESS_HOME_SORTING_CODE:
     case ADDRESS_HOME_DEPENDENT_LOCALITY:
+    case ADDRESS_HOME_STREET:
+    case ADDRESS_HOME_HOUSE_NUMBER:
+    case ADDRESS_HOME_FLOOR:
+    case ADDRESS_HOME_OTHER_SUBUNIT:
       return ADDRESS_HOME;
 
     case ADDRESS_BILLING_LINE1:
@@ -716,6 +720,14 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "NOT_USERNAME";
     case UPI_VPA:
       return "UPI_VPA";
+    case ADDRESS_HOME_STREET:
+      return "ADDRESS_HOME_STREET";
+    case ADDRESS_HOME_HOUSE_NUMBER:
+      return "ADDRESS_HOME_HOUSE_NUMBER";
+    case ADDRESS_HOME_FLOOR:
+      return "ADDRESS_HOME_FLOOR";
+    case ADDRESS_HOME_OTHER_SUBUNIT:
+      return "ADDRESS_HOME_OTHER_SUBUNIT";
     case AMBIGUOUS_TYPE:
       return "AMBIGUOUS_TYPE";
     case MAX_VALID_FIELD_TYPE:

@@ -33,7 +33,7 @@ message PaintPreviewFrameProto {
 
   // Originates in renderer as Routing ID.
   // Converted to (Process ID || Routing ID) once processed in browser.
-  required int64 id = 3;
+  required uint64 id = 3;
 
   // Boolean indicating if the frame is the main frame.
   required bool is_main_frame = 4;

@@ -1157,6 +1157,10 @@ void QuicTestPacketMaker::InitializeHeader(uint64_t packet_number,
   header_.source_connection_id_included = HasSourceConnectionId();
   header_.reset_flag = false;
   header_.version_flag = ShouldIncludeVersion(should_include_version);
+  if (quic::VersionHasIetfInvariantHeader(version_.transport_version)) {
+    header_.form = header_.version_flag ? quic::IETF_QUIC_LONG_HEADER_PACKET
+                                        : quic::IETF_QUIC_SHORT_HEADER_PACKET;
+  }
   header_.long_packet_type = long_header_type_;
   header_.packet_number_length = GetPacketNumberLength();
   header_.packet_number = quic::QuicPacketNumber(packet_number);

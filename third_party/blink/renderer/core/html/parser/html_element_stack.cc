@@ -168,7 +168,7 @@ void HTMLElementStack::PopAll() {
     auto* element = DynamicTo<Element>(node);
     if (element) {
       element->FinishParsingChildren();
-      if (auto* select = ToHTMLSelectElementOrNull(node))
+      if (auto* select = DynamicTo<HTMLSelectElement>(node))
         select->SetBlocksFormSubmission(true);
     }
     top_ = top_->ReleaseNext();

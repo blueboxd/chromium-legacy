@@ -155,6 +155,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      const net::IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url) override {
     return OK;
   }

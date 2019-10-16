@@ -136,6 +136,11 @@ class TestGpuService : public mojom::GpuService {
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override {}
 
+  void StartPeakMemoryMonitor(uint32_t sequence_num) override {}
+
+  void GetPeakMemoryUsage(uint32_t sequence_num,
+                          GetPeakMemoryUsageCallback callback) override {}
+
 #if defined(OS_WIN)
   void RequestCompleteGpuInfo(
       RequestCompleteGpuInfoCallback callback) override {}

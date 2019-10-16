@@ -13,6 +13,9 @@
 #include "device/vr/util/fps_meter.h"
 #include "device/vr/util/sliding_average.h"
 #include "device/vr/vr_device.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -66,15 +69,16 @@ class XRCompositorCommon : public base::Thread,
   void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
                     XRFrameDataProvider::GetFrameDataCallback callback) final;
   void SetInputSourceButtonListener(
-      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo
-          input_listener_info) override;
+      mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>
+          input_listener_remote) override;
   void GetControllerDataAndSendFrameData(
       XRFrameDataProvider::GetFrameDataCallback callback,
       mojom::XRFrameDataPtr frame_data);
 
   void GetEnvironmentIntegrationProvider(
-      device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
-          environment_provider) final;
+      mojo::PendingAssociatedReceiver<
+          device::mojom::XREnvironmentIntegrationProvider> environment_provider)
+      final;
 
   void RequestGamepadProvider(
       mojo::PendingReceiver<mojom::IsolatedXRGamepadProvider> receiver);
@@ -90,7 +94,8 @@ class XRCompositorCommon : public base::Thread,
 
   // Allow derived classes to call methods on the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  mojom::XRInputSourceButtonListenerAssociatedPtr input_event_listener_;
+  mojo::AssociatedRemote<mojom::XRInputSourceButtonListener>
+      input_event_listener_;
 
  private:
   // base::Thread overrides:

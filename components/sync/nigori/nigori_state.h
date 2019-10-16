@@ -52,6 +52,9 @@ struct NigoriState {
   // Serialization to proto as sent to the sync server.
   sync_pb::NigoriSpecifics ToSpecificsProto() const;
 
+  // Makes a deep copy of |this|.
+  NigoriState Clone() const;
+
   std::unique_ptr<CryptographerImpl> cryptographer;
 
   // Pending keys represent a remote update that contained a keybag that cannot

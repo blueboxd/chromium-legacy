@@ -31,10 +31,10 @@
 #include "base/auto_reset.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
@@ -1202,7 +1202,7 @@ void HTMLDocumentParser::DocumentElementAvailable() {
     // from extensions. See example callstacks linked from crbug.com/931330.
     if (document->Loader()) {
       document->Loader()->DidObserveLoadingBehavior(
-          kWebLoadingBehaviorAmpDocumentLoaded);
+          kLoadingBehaviorAmpDocumentLoaded);
     }
   }
   if (preloader_)

@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "content/public/browser/content_browser_client.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace ash_service_registry {
 

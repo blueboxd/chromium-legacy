@@ -87,6 +87,15 @@ interface GpuService {
 
   GetVideoMemoryUsageStats() => (gpu.mojom.VideoMemoryUsageStats stats);
 
+  // Starts tracking the peak GPU memory until GetPeakMemoryUsage is called.
+  // To be associated with |sequence_num|, repeated calls with the same value
+  // are ignored.
+  StartPeakMemoryMonitor(uint32 sequence_num);
+
+  // Ends tracking the peak GPU memory for the associated |sequence_num|.
+  // Returning the value of the peak seen since StartPeakMemoryMonitorProcess.
+  GetPeakMemoryUsage(uint32 sequence_num) => (uint64 memory_usage);
+
   [EnableIf=is_win]
   RequestCompleteGpuInfo() => (gpu.mojom.DxDiagNode dx_diagnostics);
   [EnableIf=is_win]

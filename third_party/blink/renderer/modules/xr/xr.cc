@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
 namespace blink {
 
 namespace {
@@ -466,8 +467,9 @@ XRFrameProvider* XR::frameProvider() {
   return frame_provider_;
 }
 
-const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
-XR::xrEnvironmentProviderPtr() {
+const mojo::AssociatedRemote<
+    device::mojom::blink::XREnvironmentIntegrationProvider>&
+XR::xrEnvironmentProviderRemote() {
   return environment_provider_;
 }
 
@@ -934,10 +936,11 @@ void XR::OnRequestSessionReturned(
       // https://docs.google.com/spreadsheets/d/1b-dus1Ug3A8y0lX0blkmOjJILisUASdj8x9YN_XMwYc/view
       frameProvider()
           ->GetImmersiveDataProvider()
-          ->GetEnvironmentIntegrationProvider(mojo::MakeRequest(
-              &environment_provider_, GetExecutionContext()->GetTaskRunner(
-                                          TaskType::kMiscPlatformAPI)));
-      environment_provider_.set_connection_error_handler(WTF::Bind(
+          ->GetEnvironmentIntegrationProvider(
+              environment_provider_.BindNewEndpointAndPassReceiver(
+                  GetExecutionContext()->GetTaskRunner(
+                      TaskType::kMiscPlatformAPI)));
+      environment_provider_.set_disconnect_handler(WTF::Bind(
           &XR::OnEnvironmentProviderDisconnect, WrapWeakPersistent(this)));
 
       session->OnEnvironmentProviderCreated();

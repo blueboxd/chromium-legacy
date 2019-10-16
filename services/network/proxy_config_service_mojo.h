@@ -10,7 +10,9 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
@@ -39,7 +41,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyConfigServiceMojo
       mojo::PendingReceiver<mojom::ProxyConfigClient>
           proxy_config_client_receiver,
       base::Optional<net::ProxyConfigWithAnnotation> initial_proxy_config,
-      mojom::ProxyConfigPollerClientPtrInfo proxy_poller_client);
+      mojo::PendingRemote<mojom::ProxyConfigPollerClient> proxy_poller_client);
   ~ProxyConfigServiceMojo() override;
 
   // net::ProxyConfigService implementation:
@@ -55,7 +57,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyConfigServiceMojo
       const net::ProxyConfigWithAnnotation& proxy_config) override;
   void FlushProxyConfig(FlushProxyConfigCallback callback) override;
 
-  mojom::ProxyConfigPollerClientPtr proxy_poller_client_;
+  mojo::Remote<mojom::ProxyConfigPollerClient> proxy_poller_client_;
 
   net::ProxyConfigWithAnnotation config_;
   bool config_pending_ = true;

@@ -149,6 +149,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -967,8 +968,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       owned_render_widget_host_ = RenderWidgetHostFactory::Create(
           frame_tree_->render_widget_delegate(), GetProcess(),
           widget_routing_id, std::move(widget), /*hidden=*/true);
-      owned_render_widget_host_->BindVisualPropertiesManager(
-          render_view_host_->GetVisualPropertiesManager());
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
     }
 
@@ -3864,7 +3863,7 @@ void RenderFrameHostImpl::ExitFullscreen() {
 
 void RenderFrameHostImpl::OnSuddenTerminationDisablerChanged(
     bool present,
-    blink::WebSuddenTerminationDisablerType disabler_type) {
+    blink::SuddenTerminationDisablerType disabler_type) {
   DCHECK_NE(GetSuddenTerminationDisablerState(disabler_type), present);
   if (present) {
     sudden_termination_disabler_types_enabled_ |= disabler_type;
@@ -3874,7 +3873,7 @@ void RenderFrameHostImpl::OnSuddenTerminationDisablerChanged(
 }
 
 bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
-    blink::WebSuddenTerminationDisablerType disabler_type) {
+    blink::SuddenTerminationDisablerType disabler_type) {
   return (sudden_termination_disabler_types_enabled_ & disabler_type) != 0;
 }
 

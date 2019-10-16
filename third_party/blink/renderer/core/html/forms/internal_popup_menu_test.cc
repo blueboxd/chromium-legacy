@@ -33,8 +33,7 @@ TEST(InternalPopupMenuTest, WriteDocumentInStyleDirtyTree) {
   )HTML");
   document.View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  HTMLSelectElement* select =
-      ToHTMLSelectElement(document.getElementById("select"));
+  auto* select = To<HTMLSelectElement>(document.getElementById("select"));
   ASSERT_TRUE(select);
   auto* menu = MakeGarbageCollected<InternalPopupMenu>(
       MakeGarbageCollected<EmptyChromeClient>(), *select);
@@ -62,8 +61,7 @@ TEST(InternalPopupMenuTest, ShowSelectDisplayNone) {
   document.View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   auto* div = document.getElementById("container");
-  HTMLSelectElement* select =
-      ToHTMLSelectElement(document.getElementById("select"));
+  auto* select = To<HTMLSelectElement>(document.getElementById("select"));
   ASSERT_TRUE(select);
   auto* menu = MakeGarbageCollected<InternalPopupMenu>(
       MakeGarbageCollected<EmptyChromeClient>(), *select);

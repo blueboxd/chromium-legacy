@@ -39,6 +39,9 @@ extern const char kAllowedTypes[];
 // A boolean that tracks whether apps are allowed to enter fullscreen mode.
 extern const char kAppFullscreenAllowed[];
 
+// A boolean indicating if external extensions are blocked from installing.
+extern const char kBlockExternalExtensions[];
+
 // Dictionary pref that keeps track of per-extension settings. The keys are
 // extension ids.
 extern const char kExtensions[];

@@ -34,6 +34,7 @@ import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -171,7 +172,8 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         }
 
-        BrowserFragment fragment = WebLayer.createBrowserFragment(null);
+        File profile = new File(getDataDir(), "defaultProfile");
+        BrowserFragment fragment = WebLayer.createBrowserFragment(profile.getPath());
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 

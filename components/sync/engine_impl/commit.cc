@@ -61,10 +61,8 @@ std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
                                      CommitProcessor* commit_processor,
                                      ExtensionsActivity* extensions_activity) {
   // Gather per-type contributions.
-  ContributionMap contributions;
-  commit_processor->GatherCommitContributions(requested_types, max_entries,
-                                              cookie_jar_mismatch,
-                                              cookie_jar_empty, &contributions);
+  ContributionMap contributions = commit_processor->GatherCommitContributions(
+      requested_types, max_entries, cookie_jar_mismatch, cookie_jar_empty);
 
   // Give up if no one had anything to commit.
   if (contributions.empty())

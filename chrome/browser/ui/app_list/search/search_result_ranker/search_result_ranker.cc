@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -586,9 +588,25 @@ void SearchResultRanker::OverrideZeroStateResults(
 void SearchResultRanker::OnFilesOpened(
     const std::vector<FileOpenEvent>& file_opens) {
   // Log the open type of file open events
-  for (const auto& file_open : file_opens)
+  for (const auto& file_open : file_opens) {
     UMA_HISTOGRAM_ENUMERATION(kLogFileOpenType,
                               GetTypeFromFileTaskNotifier(file_open.open_type));
+    // TODO(chareszhao): move this outside of SearchResultRanker.
+    CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
+        {base::StrCat({"FileOpened-", file_open.path.value()})},
+        {{"open_type", static_cast<int>(file_open.open_type)}});
+  }
+}
+
+void SearchResultRanker::OnURLVisited(history::HistoryService* history_service,
+                                      ui::PageTransition transition,
+                                      const history::URLRow& row,
+                                      const history::RedirectList& redirects,
+                                      base::Time visit_time) {
+  // TODO(chareszhao): move this outside of SearchResultRanker.
+  CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
+      {base::StrCat({"URLVisited-", row.url().spec()})},
+      {{"PageTransition", static_cast<int>(transition)}});
 }
 
 void SearchResultRanker::OnURLsDeleted(

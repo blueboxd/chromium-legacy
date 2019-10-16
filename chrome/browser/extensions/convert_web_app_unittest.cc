@@ -44,8 +44,8 @@ namespace keys = manifest_keys;
 namespace {
 
 // Returns an icon info corresponding to a canned icon.
-WebApplicationInfo::IconInfo GetIconInfo(const GURL& url, int size) {
-  WebApplicationInfo::IconInfo result;
+WebApplicationIconInfo GetIconInfo(const GURL& url, int size) {
+  WebApplicationIconInfo result;
 
   base::FilePath icon_file;
   if (!base::PathService::Get(chrome::DIR_TEST_DATA, &icon_file)) {

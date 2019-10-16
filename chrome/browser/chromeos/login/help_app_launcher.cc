@@ -81,10 +81,6 @@ void HelpAppLauncher::ShowHelpTopicDialog(Profile* profile,
   LoginWebDialog* dialog = new LoginWebDialog(
       profile, NULL, parent_window_,
       l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE), topic_url);
-  dialog->SetDialogSize(l10n_util::GetLocalizedContentsWidthInPixels(
-                            IDS_HELP_APP_DIALOG_WIDTH_PIXELS),
-                        l10n_util::GetLocalizedContentsWidthInPixels(
-                            IDS_HELP_APP_DIALOG_HEIGHT_PIXELS));
   dialog->Show();
   // The dialog object will be deleted on dialog close.
 }

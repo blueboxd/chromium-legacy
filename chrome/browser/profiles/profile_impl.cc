@@ -161,6 +161,7 @@
 #include "services/identity/identity_service.h"
 #include "services/image_annotation/image_annotation_service.h"
 #include "services/image_annotation/public/mojom/constants.mojom.h"
+#include "services/network/public/cpp/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -1270,6 +1271,20 @@ void ProfileImpl::SetCorsOriginAccessListForOrigin(
 content::SharedCorsOriginAccessList*
 ProfileImpl::GetSharedCorsOriginAccessList() {
   return shared_cors_origin_access_list_.get();
+}
+
+bool ProfileImpl::ShouldEnableOutOfBlinkCors() {
+  // Obtains the applied policy at most one time per profile, and reuse the
+  // same value for the whole session so that CORS implementations distributed
+  // in multi-processes work consistently. Profile-bound renderers and
+  // NetworkContexts will be initialized based on this returned mode.
+  if (!cors_legacy_mode_enabled_.has_value()) {
+    cors_legacy_mode_enabled_ =
+        GetPrefs()->GetBoolean(prefs::kCorsLegacyModeEnabled);
+  }
+  if (cors_legacy_mode_enabled_.value())
+    return false;
+  return base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
 }
 
 std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(

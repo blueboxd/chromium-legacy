@@ -510,6 +510,11 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #if defined(OS_CHROMEOS)
     case syncer::ARC_PACKAGE:
       return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();
+    case syncer::OS_PREFERENCES:
+    case syncer::OS_PRIORITY_PREFERENCES:
+      return PrefServiceSyncableFromProfile(profile_)
+          ->GetSyncableService(type)
+          ->AsWeakPtr();
 #endif  // defined(OS_CHROMEOS)
     default:
       // The following datatypes still need to be transitioned to the

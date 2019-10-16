@@ -499,11 +499,12 @@ TEST_F(TCPSocketTest, AcceptedSocketCantUpgradeToTLS) {
   client_socket_send_handle.reset();
 
   base::RunLoop run_loop;
-  mojom::TLSClientSocketPtr tls_client_socket;
+  mojo::Remote<mojom::TLSClientSocket> tls_client_socket;
   server.most_recent_connected_socket()->UpgradeToTLS(
       net::HostPortPair("foopy", 443), nullptr /* options */,
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&tls_client_socket), mojo::NullRemote() /* observer */,
+      tls_client_socket.BindNewPipeAndPassReceiver(),
+      mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int net_error,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
@@ -1357,7 +1358,7 @@ TEST_F(TCPSocketWithMockSocketTest, SetOptionsAfterTLSUpgrade) {
 
   // UpgradeToTLS will destroy network::TCPConnectedSocket::|socket_|. Calling
   // SetNoDelay and SetKeepAlive should error out.
-  mojom::TLSClientSocketPtr tls_socket;
+  mojo::Remote<mojom::TLSClientSocket> tls_socket;
   client_socket_receive_handle.reset();
   client_socket_send_handle.reset();
   {
@@ -1366,7 +1367,8 @@ TEST_F(TCPSocketWithMockSocketTest, SetOptionsAfterTLSUpgrade) {
     client_socket->UpgradeToTLS(
         host_port_pair, nullptr /* ssl_config_ptr */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        mojo::MakeRequest(&tls_socket), mojo::NullRemote() /*observer */,
+        tls_socket.BindNewPipeAndPassReceiver(),
+        mojo::NullRemote() /*observer */,
         base::BindLambdaForTesting(
             [&](int result,
                 mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,

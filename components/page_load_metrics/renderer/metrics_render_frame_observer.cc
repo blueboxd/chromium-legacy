@@ -81,7 +81,7 @@ void MetricsRenderFrameObserver::DidChangeCpuTiming(base::TimeDelta time) {
 }
 
 void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
-    blink::WebLoadingBehaviorFlag behavior) {
+    blink::LoadingBehaviorFlag behavior) {
   if (page_timing_metrics_sender_)
     page_timing_metrics_sender_->DidObserveLoadingBehavior(behavior);
 }

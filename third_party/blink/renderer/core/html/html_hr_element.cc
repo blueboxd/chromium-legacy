@@ -112,11 +112,11 @@ void HTMLHRElement::CollectStyleForPresentationAttribute(
 HTMLSelectElement* HTMLHRElement::OwnerSelectElement() const {
   if (!parentNode())
     return nullptr;
-  if (auto* select = ToHTMLSelectElementOrNull(*parentNode()))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*parentNode()))
     return select;
   if (!IsA<HTMLOptGroupElement>(*parentNode()))
     return nullptr;
-  return ToHTMLSelectElementOrNull(parentNode()->parentNode());
+  return DynamicTo<HTMLSelectElement>(parentNode()->parentNode());
 }
 
 Node::InsertionNotificationRequest HTMLHRElement::InsertedInto(
@@ -132,12 +132,12 @@ Node::InsertionNotificationRequest HTMLHRElement::InsertedInto(
 }
 
 void HTMLHRElement::RemovedFrom(ContainerNode& insertion_point) {
-  if (auto* select = ToHTMLSelectElementOrNull(insertion_point)) {
+  if (auto* select = DynamicTo<HTMLSelectElement>(insertion_point)) {
     if (!parentNode() || IsA<HTMLOptGroupElement>(*parentNode()))
       select->HrInsertedOrRemoved(*this);
   } else if (IsA<HTMLOptGroupElement>(insertion_point)) {
     Node* parent = insertion_point.parentNode();
-    select = ToHTMLSelectElementOrNull(parent);
+    select = DynamicTo<HTMLSelectElement>(parent);
     if (select)
       select->HrInsertedOrRemoved(*this);
   }

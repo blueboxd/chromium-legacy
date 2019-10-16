@@ -495,7 +495,7 @@ int WebSocket::OnHeadersReceived(
     GURL* allowed_unsafe_redirect_url) {
   if (header_client_) {
     header_client_->OnHeadersReceived(
-        original_response_headers->raw_headers(),
+        original_response_headers->raw_headers(), net::IPEndPoint(),
         base::BindOnce(&WebSocket::OnHeadersReceivedComplete,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        override_response_headers, allowed_unsafe_redirect_url));

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -59,8 +60,9 @@ class XR final : public EventTargetWithInlineData,
 
   XRFrameProvider* frameProvider();
 
-  const device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr&
-  xrEnvironmentProviderPtr();
+  const mojo::AssociatedRemote<
+      device::mojom::blink::XREnvironmentIntegrationProvider>&
+  xrEnvironmentProviderRemote();
 
   // VRServiceClient overrides.
   void OnDeviceChanged() override;
@@ -297,7 +299,7 @@ class XR final : public EventTargetWithInlineData,
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
   mojo::Remote<device::mojom::blink::VRService> service_;
-  device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
+  mojo::AssociatedRemote<device::mojom::blink::XREnvironmentIntegrationProvider>
       environment_provider_;
   mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};
 

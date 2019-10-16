@@ -45,7 +45,7 @@ class SignedExchangePrefetchHandler final
   // |forwarding_client| is a pointer to the downstream client (typically who
   // creates this handler).
   SignedExchangePrefetchHandler(
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+      int frame_tree_node_id,
       const network::ResourceRequest& resource_request,
       const network::ResourceResponseHead& response,
       mojo::ScopedDataPipeConsumerHandle response_body,

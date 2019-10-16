@@ -32,7 +32,7 @@
 #include "content/public/common/page_importance_signals.h"
 #include "net/base/mime_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
+#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "url/gurl.h"
 
 using metrics::TabMetricsEvent;

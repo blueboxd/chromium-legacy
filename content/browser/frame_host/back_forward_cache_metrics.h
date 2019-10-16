@@ -49,10 +49,8 @@ class BackForwardCacheMetrics
   // tools/metrics/histograms/enums.xml. These values should not be renumbered.
   enum class HistoryNavigationOutcome {
     kRestored = 0,
-    kNotCached = 1,
-    kEvicted = 2,
-    kNotCachedDueToExperimentCondition = 3,
-    kMaxValue = kNotCachedDueToExperimentCondition,
+    kNotRestored = 1,
+    kMaxValue = kNotRestored,
   };
 
   // Please keep in sync with BackForwardCacheEvictedReason in

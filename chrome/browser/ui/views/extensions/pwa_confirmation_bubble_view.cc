@@ -35,7 +35,7 @@ bool g_auto_accept_pwa_for_testing = false;
 
 // Returns an ImageView containing the app icon.
 std::unique_ptr<views::ImageView> CreateIconView(
-    const std::vector<WebApplicationInfo::IconInfo>& icons) {
+    const std::vector<WebApplicationIconInfo>& icons) {
   constexpr int kIconSize = 48;
   gfx::ImageSkia image(
       std::make_unique<WebAppInfoImageSource>(kIconSize, icons),

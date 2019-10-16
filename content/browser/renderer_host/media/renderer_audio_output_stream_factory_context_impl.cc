@@ -10,6 +10,7 @@
 #include "content/browser/renderer_host/media/audio_output_delegate_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "media/audio/audio_system.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"

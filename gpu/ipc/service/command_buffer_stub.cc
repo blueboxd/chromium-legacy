@@ -98,7 +98,6 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
 
 }  // namespace
 
-
 CommandBufferStub::CommandBufferStub(
     GpuChannel* channel,
     const GPUCreateCommandBufferConfig& init_params,
@@ -657,9 +656,9 @@ std::unique_ptr<MemoryTracker> CommandBufferStub::CreateMemoryTracker(
     return current_factory.Run(init_params);
 
   return std::make_unique<GpuCommandBufferMemoryTracker>(
-      channel_->client_id(), channel_->client_tracing_id(),
-      command_buffer_id_.GetUnsafeValue(), init_params.attribs.context_type,
-      channel_->task_runner());
+      command_buffer_id_, channel_->client_tracing_id(),
+      init_params.attribs.context_type, channel_->task_runner(),
+      channel_->gpu_channel_manager()->peak_memory_monitor());
 }
 
 // static

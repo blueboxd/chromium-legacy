@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_OPTIONS_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -112,8 +113,8 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   // If not null, this URLLoaderFactory should be used to load this resource
   // rather than whatever factory the system might otherwise use.
   // Used for example for loading blob: URLs and for prefetch loading.
-  scoped_refptr<
-      base::RefCountedData<network::mojom::blink::URLLoaderFactoryPtr>>
+  scoped_refptr<base::RefCountedData<
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>>>
       url_loader_factory;
 };
 

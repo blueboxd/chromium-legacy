@@ -16,6 +16,8 @@
 #include "components/viz/demo/service/demo_service.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -134,9 +136,10 @@ class DemoWindow : public ui::PlatformWindowDelegate {
     // actual process of setting up the viz host and the service.
     // First, set up the mojo message-pipes that the host and the service will
     // use to communicate with each other.
-    viz::mojom::FrameSinkManagerPtr frame_sink_manager;
-    viz::mojom::FrameSinkManagerRequest frame_sink_manager_request =
-        mojo::MakeRequest(&frame_sink_manager);
+    mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
+    mojo::PendingReceiver<viz::mojom::FrameSinkManager>
+        frame_sink_manager_receiver =
+            frame_sink_manager.InitWithNewPipeAndPassReceiver();
     viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
     viz::mojom::FrameSinkManagerClientRequest
         frame_sink_manager_client_request =
@@ -150,7 +153,7 @@ class DemoWindow : public ui::PlatformWindowDelegate {
         std::move(frame_sink_manager));
 
     service_ = std::make_unique<demo::DemoService>(
-        std::move(frame_sink_manager_request),
+        std::move(frame_sink_manager_receiver),
         std::move(frame_sink_manager_client));
   }
 

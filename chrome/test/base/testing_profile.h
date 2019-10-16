@@ -45,6 +45,10 @@ class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
 }  // namespace content
 
+namespace net {
+class CookieStore;
+}
+
 namespace policy {
 class PolicyService;
 class ProfilePolicyConnector;
@@ -374,6 +378,7 @@ class TestingProfile : public Profile {
   GURL GetHomePage() override;
 
   void SetCreationTimeForTesting(base::Time creation_time) override;
+  bool ShouldEnableOutOfBlinkCors() override;
 
   PrefService* GetOffTheRecordPrefs() override;
 

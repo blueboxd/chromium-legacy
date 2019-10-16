@@ -6,9 +6,9 @@ PASS Basic sanity-checking (cross-site)
 FAIL Only whitelisted properties are accessible cross-origin (cross-origin) Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
 FAIL Only whitelisted properties are accessible cross-origin (same-origin + document.domain) Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
 FAIL Only whitelisted properties are accessible cross-origin (cross-site) Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame.
-FAIL Only whitelisted properties are usable as cross-origin this objects (cross-origin) promise_test: Unhandled rejection with value: object "SecurityError: Failed to execute 'replace' on 'Location': The current window does not have permission to navigate the target frame to 'javascript:undefined'."
-FAIL Only whitelisted properties are usable as cross-origin this objects (same-origin + document.domain) promise_test: Unhandled rejection with value: object "SecurityError: Failed to execute 'replace' on 'Location': The current window does not have permission to navigate the target frame to 'javascript:undefined'."
-FAIL Only whitelisted properties are usable as cross-origin this objects (cross-site) promise_test: Unhandled rejection with value: object "SecurityError: Failed to execute 'replace' on 'Location': The current window does not have permission to navigate the target frame to 'javascript:undefined'."
+FAIL Only whitelisted properties are usable as cross-origin this objects (cross-origin) promise_test: Unhandled rejection with value: object "SecurityError: Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame."
+FAIL Only whitelisted properties are usable as cross-origin this objects (same-origin + document.domain) promise_test: Unhandled rejection with value: object "SecurityError: Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame."
+FAIL Only whitelisted properties are usable as cross-origin this objects (cross-site) promise_test: Unhandled rejection with value: object "SecurityError: Blocked a frame with origin "http://web-platform.test:8001" from accessing a cross-origin frame."
 PASS [[GetPrototypeOf]] should return null (cross-origin)
 PASS [[GetPrototypeOf]] should return null (same-origin + document.domain)
 PASS [[GetPrototypeOf]] should return null (cross-site)

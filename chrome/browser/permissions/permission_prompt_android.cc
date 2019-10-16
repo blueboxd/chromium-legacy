@@ -23,6 +23,7 @@ PermissionPromptAndroid::PermissionPromptAndroid(
     : web_contents_(web_contents),
       delegate_(delegate),
       permission_request_notification_(nullptr),
+      permission_infobar_(nullptr),
       weak_factory_(this) {
   DCHECK(web_contents);
 
@@ -31,8 +32,8 @@ PermissionPromptAndroid::PermissionPromptAndroid(
   if (infobar_service &&
       GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
           GetContentSettingType(0u /* position */))) {
-    GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
-                                             infobar_service);
+    permission_infobar_ = GroupedPermissionInfoBarDelegate::Create(
+        weak_factory_.GetWeakPtr(), infobar_service);
     return;
   }
 
@@ -46,7 +47,14 @@ PermissionPromptAndroid::PermissionPromptAndroid(
   PermissionDialogDelegate::Create(web_contents_, this);
 }
 
-PermissionPromptAndroid::~PermissionPromptAndroid() {}
+PermissionPromptAndroid::~PermissionPromptAndroid() {
+  if (permission_infobar_) {
+    InfoBarService* infobar_service =
+        InfoBarService::FromWebContents(web_contents_);
+
+    infobar_service->RemoveInfoBar(permission_infobar_);
+  }
+}
 
 void PermissionPromptAndroid::UpdateAnchorPosition() {
   NOTREACHED() << "UpdateAnchorPosition is not implemented";
@@ -57,10 +65,11 @@ gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
   return nullptr;
 }
 
-bool PermissionPromptAndroid::ShouldDestroyOnTabSwitching() {
+PermissionPrompt::TabSwitchingBehavior
+PermissionPromptAndroid::GetTabSwitchingBehavior() {
   if (permission_request_notification_)
-    return true;
-  return false;
+    return permission_request_notification_->GetTabSwitchingBehavior();
+  return TabSwitchingBehavior::kKeepPromptAlive;
 }
 
 void PermissionPromptAndroid::Closing() {

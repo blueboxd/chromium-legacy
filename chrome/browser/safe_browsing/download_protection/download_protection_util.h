@@ -24,6 +24,7 @@ enum class DownloadCheckResult {
   WHITELISTED_BY_POLICY,
   ASYNC_SCANNING,
   BLOCKED_PASSWORD_PROTECTED,
+  BLOCKED_TOO_LARGE,
 };
 
 // Enum to keep track why a particular download verdict was chosen.
@@ -59,6 +60,7 @@ enum DownloadCheckResultReason {
   REASON_VERDICT_UNKNOWN = 27,
   REASON_DOWNLOAD_DESTROYED = 28,
   REASON_BLOCKED_PASSWORD_PROTECTED = 29,
+  REASON_BLOCKED_TOO_LARGE = 30,
   REASON_MAX  // Always add new values before this one.
 };
 

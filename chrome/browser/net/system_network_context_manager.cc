@@ -64,6 +64,7 @@
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
@@ -693,6 +694,8 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       network::mojom::NetworkContextParams::New();
   content::UpdateCorsExemptHeader(network_context_params.get());
   variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
+  network_context_params->enable_cors =
+      base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
 
   network_context_params->enable_brotli = true;
 

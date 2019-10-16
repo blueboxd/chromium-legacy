@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -18,6 +19,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_param_traits.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -46,8 +48,9 @@ class TestingAppShim : public chrome::mojom::AppShim {
   }
 
  private:
-  void OnShimConnectedDone(apps::AppShimLaunchResult result,
-                           chrome::mojom::AppShimRequest app_shim_request) {
+  void OnShimConnectedDone(
+      apps::AppShimLaunchResult result,
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
     received_launch_done_result_ = true;
     launch_done_result_ = result;
   }
@@ -120,7 +123,7 @@ class AppShimHostTest : public testing::Test,
     return task_runner_;
   }
   AppShimHost* host() { return host_.get(); }
-  chrome::mojom::AppShimHost* GetMojoHost() { return host_ptr_.get(); }
+  chrome::mojom::AppShimHost* GetMojoHost() { return host_remote_.get(); }
 
   void DoOnShimConnected(apps::AppShimLaunchType launch_type) {
     auto app_shim_info = chrome::mojom::AppShimInfo::New();
@@ -130,7 +133,7 @@ class AppShimHostTest : public testing::Test,
     app_shim_info->launch_type = launch_type;
     // Ownership of TestingAppShimHostBootstrap will be transferred to its host.
     (new TestingAppShimHostBootstrap(shim_->GetHostBootstrapReceiver()))
-        ->OnShimConnected(mojo::MakeRequest(&host_ptr_),
+        ->OnShimConnected(host_remote_.BindNewPipeAndPassReceiver(),
                           std::move(app_shim_info),
                           shim_->GetOnShimConnectedCallback());
   }
@@ -140,7 +143,7 @@ class AppShimHostTest : public testing::Test,
     return shim_->GetLaunchResult();
   }
 
-  void SimulateDisconnect() { host_ptr_.reset(); }
+  void SimulateDisconnect() { host_remote_.reset(); }
 
  protected:
   // AppShimHostBootstrap::Client:
@@ -198,7 +201,7 @@ class AppShimHostTest : public testing::Test,
   // AppShimHost will destroy itself in AppShimHost::Close, so use a weak
   // pointer here to avoid lifetime issues.
   std::unique_ptr<TestingAppShimHost> host_;
-  chrome::mojom::AppShimHostPtr host_ptr_;
+  mojo::Remote<chrome::mojom::AppShimHost> host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };

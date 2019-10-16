@@ -58,7 +58,8 @@ extern const base::Feature kDisableKeepaliveFetch;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kOutOfBlinkFrameAncestors;
 
-COMPONENT_EXPORT(NETWORK_CPP) bool ShouldEnableOutOfBlinkCors();
+COMPONENT_EXPORT(NETWORK_CPP)
+bool ShouldEnableOutOfBlinkCorsForTesting();
 
 }  // namespace features
 }  // namespace network

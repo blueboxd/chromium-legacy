@@ -212,6 +212,12 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 const base::Feature kSplitSettings{"SplitSettings",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables separate sync controls for OS settings (display, keyboard, etc.).
+// For example, the user could choose to sync OS settings but not browser
+// settings.
+const base::Feature kSplitSettingsSync{"SplitSettingsSync",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the updated cellular activation UI; see go/cros-cellular-design.
 const base::Feature kUpdatedCellularActivationUi{
     "UpdatedCellularActivationUi", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -263,6 +269,10 @@ bool IsParentalControlsSettingsEnabled() {
 
 bool IsSplitSettingsEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettings);
+}
+
+bool IsSplitSettingsSyncEnabled() {
+  return base::FeatureList::IsEnabled(kSplitSettingsSync);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

@@ -5,6 +5,7 @@
 #include <chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h>
 
 #include <algorithm>
+#include <map>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -14,14 +15,10 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
+#include "chrome/browser/chromeos/app_mode/pref_names.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
-#include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -29,74 +26,10 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
 namespace {
-
-// Preference for the dictionary of user ids for which cryptohomes have to be
-// removed upon browser restart.
-constexpr char kArcKioskUsersToRemove[] = "arc-kiosk-users-to-remove";
-
-void ScheduleDelayedCryptohomeRemoval(const cryptohome::Identification& id) {
-  PrefService* const local_state = g_browser_process->local_state();
-  ListPrefUpdate list_update(local_state, kArcKioskUsersToRemove);
-
-  list_update->AppendString(id.id());
-  local_state->CommitPendingWrite();
-}
-
-void CancelDelayedCryptohomeRemoval(const cryptohome::Identification& id) {
-  PrefService* const local_state = g_browser_process->local_state();
-  ListPrefUpdate list_update(local_state, kArcKioskUsersToRemove);
-  list_update->Remove(base::Value(id.id()), nullptr);
-  local_state->CommitPendingWrite();
-}
-
-void OnRemoveAppCryptohomeComplete(
-    const cryptohome::Identification& id,
-    base::OnceClosure callback,
-    base::Optional<cryptohome::BaseReply> reply) {
-  cryptohome::MountError error = BaseReplyToMountError(reply);
-  if (error == cryptohome::MOUNT_ERROR_NONE) {
-    CancelDelayedCryptohomeRemoval(id);
-  } else {
-    ScheduleDelayedCryptohomeRemoval(id);
-    LOG(ERROR) << "Remove app cryptohome failed, error: " << error;
-  }
-  if (!callback.is_null())
-    std::move(callback).Run();
-}
-
-void PerformDelayedCryptohomeRemovals(bool service_is_available) {
-  if (!service_is_available) {
-    LOG(ERROR) << "Crypthomed is not available.";
-    return;
-  }
-
-  PrefService* const local_state = g_browser_process->local_state();
-  const base::ListValue* const list =
-      local_state->GetList(kArcKioskUsersToRemove);
-  for (base::ListValue::const_iterator it = list->begin(); it != list->end();
-       ++it) {
-    std::string entry;
-    if (!it->GetAsString(&entry)) {
-      LOG(ERROR) << "List of cryptohome ids is broken";
-      continue;
-    }
-    const cryptohome::Identification cryptohome_id(
-        cryptohome::Identification::FromString(entry));
-
-    cryptohome::AccountIdentifier account_id_proto;
-    account_id_proto.set_account_id(cryptohome_id.id());
-
-    CryptohomeClient::Get()->RemoveEx(
-        account_id_proto, base::BindOnce(&OnRemoveAppCryptohomeComplete,
-                                         cryptohome_id, base::OnceClosure()));
-  }
-}
 
 // This class is owned by ChromeBrowserMainPartsChromeos.
 static ArcKioskAppManager* g_arc_kiosk_app_manager = nullptr;
@@ -109,14 +42,6 @@ const char ArcKioskAppManager::kArcKioskDictionaryName[] = "arc-kiosk";
 // static
 void ArcKioskAppManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kArcKioskDictionaryName);
-  registry->RegisterListPref(kArcKioskUsersToRemove);
-}
-
-// static
-void ArcKioskAppManager::RemoveObsoleteCryptohomes() {
-  chromeos::CryptohomeClient* const client = chromeos::CryptohomeClient::Get();
-  client->WaitForServiceToBeAvailable(
-      base::Bind(&PerformDelayedCryptohomeRemovals));
 }
 
 // static
@@ -264,7 +189,7 @@ void ArcKioskAppManager::UpdateApps() {
           app_info.action(), account_id, name));
       apps_.back()->LoadFromCache();
     }
-    CancelDelayedCryptohomeRemoval(cryptohome::Identification(account_id));
+    KioskCryptohomeRemover::CancelDelayedCryptohomeRemoval(account_id);
   }
 
   ClearRemovedApps(old_apps);
@@ -276,39 +201,14 @@ void ArcKioskAppManager::UpdateApps() {
 
 void ArcKioskAppManager::ClearRemovedApps(
     const std::map<std::string, std::unique_ptr<ArcKioskAppData>>& old_apps) {
-  // Check if currently active user must be deleted.
-  bool active_user_to_be_deleted = false;
-  const user_manager::User* active_user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  if (active_user) {
-    const AccountId active_account_id = active_user->GetAccountId();
-    for (const auto& it : old_apps) {
-      if (it.second->account_id() == active_account_id) {
-        active_user_to_be_deleted = true;
-        break;
-      }
-    }
-  }
-
-  // Remove cryptohome
+  std::vector<AccountId> account_ids_to_remove;
+  account_ids_to_remove.reserve(old_apps.size());
   for (auto& entry : old_apps) {
     entry.second->ClearCache();
-    const cryptohome::Identification cryptohome_id(entry.second->account_id());
-    if (active_user_to_be_deleted) {
-      // Schedule cryptohome removal after active user logout.
-      ScheduleDelayedCryptohomeRemoval(cryptohome_id);
-    } else {
-      cryptohome::AccountIdentifier account_id_proto;
-      account_id_proto.set_account_id(cryptohome_id.id());
-
-      CryptohomeClient::Get()->RemoveEx(
-          account_id_proto, base::BindOnce(&OnRemoveAppCryptohomeComplete,
-                                           cryptohome_id, base::OnceClosure()));
-    }
+    account_ids_to_remove.push_back(entry.second->account_id());
   }
-
-  if (active_user_to_be_deleted)
-    chrome::AttemptUserExit();
+  KioskCryptohomeRemover::RemoveCryptohomesAndExitIfNeeded(
+      account_ids_to_remove);
 }
 
 }  // namespace chromeos

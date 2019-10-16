@@ -44,7 +44,10 @@ DownloadItemRequest::DownloadItemRequest(download::DownloadItem* item,
                                          bool read_immediately,
                                          BinaryUploadService::Callback callback)
     : Request(std::move(callback)), item_(item), weakptr_factory_(this) {
-  read_immediately ? ReadFile() : item_->AddObserver(this);
+  if (read_immediately)
+    ReadFile();
+
+  item_->AddObserver(this);
 }
 
 DownloadItemRequest::~DownloadItemRequest() {
@@ -83,7 +86,8 @@ void DownloadItemRequest::RunPendingGetFileContentsCallbacks() {
 }
 
 void DownloadItemRequest::OnDownloadUpdated(download::DownloadItem* download) {
-  if (download == item_ && item_->GetFullPath() == item_->GetTargetFilePath())
+  if (!is_data_valid_ && download == item_ &&
+      item_->GetFullPath() == item_->GetTargetFilePath())
     ReadFile();
 }
 

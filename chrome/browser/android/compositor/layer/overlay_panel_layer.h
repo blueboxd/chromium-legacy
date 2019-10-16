@@ -25,10 +25,10 @@ namespace android {
 class OverlayPanelLayer : public Layer {
  public:
   // Default width for any icon displayed on an OverlayPanel.
-  static const float kDefaultIconWidthDp;
+  static constexpr float kDefaultIconWidthDp = 36.0f;
 
   // ID for Invalid resource.
-  static const int kInvalidResourceID;
+  static constexpr int kInvalidResourceID = -1;
 
   void SetResourceIds(int bar_text_resource_id,
                       int panel_shadow_resource_id,

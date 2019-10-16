@@ -22,10 +22,10 @@ MachineLearningInternalsPageHandler::~MachineLearningInternalsPageHandler() =
 
 void MachineLearningInternalsPageHandler::LoadBuiltinModel(
     mojom::BuiltinModelSpecPtr spec,
-    mojom::ModelRequest request,
+    mojo::PendingReceiver<mojom::Model> receiver,
     LoadBuiltinModelCallback callback) {
   ServiceConnection::GetInstance()->LoadBuiltinModel(
-      std::move(spec), std::move(request), std::move(callback));
+      std::move(spec), std::move(receiver), std::move(callback));
 }
 
 }  // namespace machine_learning

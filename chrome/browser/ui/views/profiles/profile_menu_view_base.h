@@ -63,7 +63,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
     kCookiesClearedOnExitLink = 14,
     kAddNewProfileButton = 15,
     kSyncSettingsButton = 16,
-    kMaxValue = kSyncSettingsButton,
+    kEditProfileButton = 17,
+    kMaxValue = kEditProfileButton,
   };
 
   // MenuItems struct keeps the menu items and meta data for a group of items in
@@ -119,7 +120,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   virtual void BuildMenu() = 0;
 
   // API to build the profile menu.
-  void SetHeading(const base::string16& heading);
+  void SetHeading(const base::string16& heading,
+                  const gfx::ImageSkia& clickable_icon,
+                  const base::string16& tooltip_text,
+                  base::RepeatingClosure action);
   void SetIdentityInfo(const gfx::ImageSkia& image,
                        const gfx::ImageSkia& badge,
                        const base::string16& title,

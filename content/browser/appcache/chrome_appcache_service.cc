@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"

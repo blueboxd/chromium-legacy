@@ -231,7 +231,7 @@ class WebRtcSetDescriptionObserverHandlerTest
     observer_ = new WebRtcSetDescriptionObserverForTest();
     observer_handler_ = std::make_unique<ObserverHandlerWrapper>(
         handler_type_, main_thread_,
-        dependency_factory_->GetWebRtcSignalingThread(), pc_,
+        dependency_factory_->GetWebRtcSignalingTaskRunner(), pc_,
         track_adapter_map_, observer_,
         surfacer_type_ == StateSurfacerType::kReceiversOnly);
   }

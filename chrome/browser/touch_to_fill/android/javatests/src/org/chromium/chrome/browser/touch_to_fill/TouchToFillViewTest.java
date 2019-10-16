@@ -15,8 +15,8 @@ import static org.mockito.Mockito.verify;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.CREDENTIAL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
@@ -41,6 +41,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -104,10 +105,14 @@ public class TouchToFillViewTest {
 
     @Test
     @MediumTest
-    public void testSubtitleUrlChangedByModel() {
+    public void testSecureSubtitleUrlDisplayed() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.set(FORMATTED_URL, "www.example.org");
-            mModel.set(ORIGIN_SECURE, true);
+            mModel.get(SHEET_ITEMS)
+                    .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.HEADER,
+                            new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
+                                    .with(FORMATTED_URL, "www.example.org")
+                                    .with(ORIGIN_SECURE, true)
+                                    .build()));
             mModel.set(VISIBLE, true);
         });
         pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
@@ -115,11 +120,23 @@ public class TouchToFillViewTest {
                 mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
         assertThat(subtitle.getText(), is("www.example.org"));
+    }
 
+    @Test
+    @MediumTest
+    public void testNonSecureSubtitleUrlDisplayed() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.set(FORMATTED_URL, "m.example.org");
-            mModel.set(ORIGIN_SECURE, false);
+            mModel.get(SHEET_ITEMS)
+                    .add(new MVCListAdapter.ListItem(TouchToFillProperties.ItemType.HEADER,
+                            new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
+                                    .with(FORMATTED_URL, "m.example.org")
+                                    .with(ORIGIN_SECURE, false)
+                                    .build()));
+            mModel.set(VISIBLE, true);
         });
+        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        TextView subtitle =
+                mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
         assertThat(subtitle.getText(), is(getFormattedNotSecureSubtitle("m.example.org")));
     }

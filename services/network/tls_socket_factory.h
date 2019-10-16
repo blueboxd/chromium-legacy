@@ -10,8 +10,9 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -61,7 +62,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSSocketFactory {
       const net::HostPortPair& host_port_pair,
       mojom::TLSClientSocketOptionsPtr socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TLSClientSocketRequest request,
+      mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
       mojo::PendingRemote<mojom::SocketObserver> observer,
       UpgradeToTLSCallback callback);
 
@@ -69,7 +70,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSSocketFactory {
   void CreateTLSClientSocket(
       const net::HostPortPair& host_port_pair,
       mojom::TLSClientSocketOptionsPtr socket_options,
-      mojom::TLSClientSocketRequest request,
+      mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
       std::unique_ptr<net::StreamSocket> underlying_socket,
       mojo::PendingRemote<mojom::SocketObserver> observer,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -87,7 +88,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSSocketFactory {
   net::SSLClientContext ssl_client_context_;
   net::ClientSocketFactory* client_socket_factory_;
   net::SSLConfigService* const ssl_config_service_;
-  mojo::StrongBindingSet<mojom::TLSClientSocket> tls_socket_bindings_;
+  mojo::UniqueReceiverSet<mojom::TLSClientSocket> tls_socket_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(TLSSocketFactory);
 };

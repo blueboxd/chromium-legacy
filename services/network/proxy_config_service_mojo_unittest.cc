@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -72,7 +71,7 @@ class ProxyConfigServiceMojoTest : public testing::Test {
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         proxy_config_service_(config_client_.BindNewPipeAndPassReceiver(),
                               base::Optional<net::ProxyConfigWithAnnotation>(),
-                              nullptr),
+                              mojo::NullRemote()),
         observer_(&proxy_config_service_) {
     proxy_config_service_.AddObserver(&observer_);
   }

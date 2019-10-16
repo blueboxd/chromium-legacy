@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace {
@@ -64,9 +66,9 @@ void AppShimHostBootstrap::ChannelError(uint32_t custom_reason,
   delete this;
 }
 
-chrome::mojom::AppShimHostRequest
-AppShimHostBootstrap::GetAppShimHostRequest() {
-  return std::move(app_shim_host_request_);
+mojo::PendingReceiver<chrome::mojom::AppShimHost>
+AppShimHostBootstrap::GetAppShimHostReceiver() {
+  return std::move(app_shim_host_receiver_);
 }
 
 const std::string& AppShimHostBootstrap::GetAppId() const {
@@ -97,7 +99,7 @@ bool AppShimHostBootstrap::IsMultiProfile() const {
 }
 
 void AppShimHostBootstrap::OnShimConnected(
-    chrome::mojom::AppShimHostRequest app_shim_host_request,
+    mojo::PendingReceiver<chrome::mojom::AppShimHost> app_shim_host_receiver,
     chrome::mojom::AppShimInfoPtr app_shim_info,
     OnShimConnectedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -106,7 +108,7 @@ void AppShimHostBootstrap::OnShimConnected(
   if (app_shim_info_)
     return;
 
-  app_shim_host_request_ = std::move(app_shim_host_request);
+  app_shim_host_receiver_ = std::move(app_shim_host_receiver);
   app_shim_info_ = std::move(app_shim_info);
   shim_connected_callback_ = std::move(callback);
 
@@ -124,16 +126,16 @@ void AppShimHostBootstrap::OnShimConnected(
 }
 
 void AppShimHostBootstrap::OnConnectedToHost(
-    chrome::mojom::AppShimRequest app_shim_request) {
+    mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
   std::move(shim_connected_callback_)
-      .Run(apps::APP_SHIM_LAUNCH_SUCCESS, std::move(app_shim_request));
+      .Run(apps::APP_SHIM_LAUNCH_SUCCESS, std::move(app_shim_receiver));
 }
 
 void AppShimHostBootstrap::OnFailedToConnectToHost(
     apps::AppShimLaunchResult result) {
   // Because there will be users of the AppShim interface in failure, just
-  // return a dummy request.
-  chrome::mojom::AppShimPtr dummy_ptr;
+  // return a dummy receiver.
+  mojo::Remote<chrome::mojom::AppShim> dummy_remote;
   std::move(shim_connected_callback_)
-      .Run(result, mojo::MakeRequest(&dummy_ptr));
+      .Run(result, dummy_remote.BindNewPipeAndPassReceiver());
 }

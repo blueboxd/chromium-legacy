@@ -342,8 +342,9 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
       std::vector<mojom::RouteMessagePtr> messages) override;
   void OnMediaRemoterCreated(
       int32_t tab_id,
-      media::mojom::MirrorServiceRemoterPtr remoter,
-      media::mojom::MirrorServiceRemotingSourceRequest source_request) override;
+      mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
+      mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
+          source_receiver) override;
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
   void GetMirroringServiceHostForTab(

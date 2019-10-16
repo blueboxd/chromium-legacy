@@ -5,6 +5,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
@@ -769,9 +770,7 @@ TEST_F(AppListControllerImplMetricsTest,
   EXPECT_FALSE(IsTabletMode());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
-  EXPECT_FALSE(AshTestBase::GetPrimaryShelf()
-                   ->shelf_layout_manager()
-                   ->is_app_list_visible());
+  GetAppListTestHelper()->CheckVisibility(false);
 
   // Check metrics initial values.
   histogram_tester_.ExpectTotalCount(

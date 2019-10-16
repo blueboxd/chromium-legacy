@@ -914,8 +914,9 @@ void MediaRouterMojoImpl::OnProviderConnectionError(
 
 void MediaRouterMojoImpl::OnMediaRemoterCreated(
     int32_t tab_id,
-    media::mojom::MirrorServiceRemoterPtr remoter,
-    media::mojom::MirrorServiceRemotingSourceRequest source_request) {
+    mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
+    mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
+        source_receiver) {
   DVLOG_WITH_INSTANCE(1) << __func__ << ": tab_id = " << tab_id;
 
   auto it = remoting_sources_.find(SessionID::FromSerializedValue(tab_id));
@@ -926,7 +927,7 @@ void MediaRouterMojoImpl::OnMediaRemoterCreated(
   }
 
   CastRemotingConnector* connector = it->second;
-  connector->ConnectToService(std::move(source_request), std::move(remoter));
+  connector->ConnectToService(std::move(source_receiver), std::move(remoter));
 }
 
 void MediaRouterMojoImpl::GetMediaSinkServiceStatus(

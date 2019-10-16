@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 
+#include <limits>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -45,6 +48,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -239,6 +243,14 @@ bool BrowserTabStripController::IsTabPinned(int model_index) const {
 
 void BrowserTabStripController::SelectTab(int model_index,
                                           const ui::Event& event) {
+  std::unique_ptr<content::PeakGpuMemoryTracker> tracker =
+      content::PeakGpuMemoryTracker::Create(
+          base::BindOnce([](uint64_t peak_memory) {
+            // Converting Bytes to Kilobytes.
+            UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.ChangeTab",
+                                    peak_memory / 1024u);
+          }));
+
   TabStripModel::UserGestureDetails gesture_detail(
       TabStripModel::GestureType::kOther, event.time_stamp());
   TabStripModel::GestureType type = TabStripModel::GestureType::kOther;
@@ -248,6 +260,16 @@ void BrowserTabStripController::SelectTab(int model_index,
     type = TabStripModel::GestureType::kTouch;
   gesture_detail.type = type;
   model_->ActivateTabAt(model_index, gesture_detail);
+
+  tabstrip_->GetWidget()->GetCompositor()->RequestPresentationTimeForNextFrame(
+      base::BindOnce(
+          [](std::unique_ptr<content::PeakGpuMemoryTracker> tracker,
+             const gfx::PresentationFeedback& feedback) {
+            // This callback will be ran once the ui::Compositor presents the
+            // next frame for the |tabstrip_|. The destruction of |tracker| will
+            // get the peak GPU memory and record a histogram.
+          },
+          std::move(tracker)));
 }
 
 void BrowserTabStripController::ExtendSelectionTo(int model_index) {

@@ -335,6 +335,15 @@ void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
   NudgeForCommitIfNeeded();
 }
 
+bool NigoriModelTypeProcessor::IsEntityUnsynced() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (entity_ == nullptr) {
+    return false;
+  }
+
+  return entity_->IsUnsynced();
+}
+
 NigoriMetadataBatch NigoriModelTypeProcessor::GetMetadata() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsTrackingMetadata());

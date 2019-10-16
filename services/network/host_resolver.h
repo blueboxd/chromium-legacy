@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) HostResolver
       mojo::PendingRemote<mojom::ResolveHostClient> response_client) override;
   void MdnsListen(const net::HostPortPair& host,
                   net::DnsQueryType query_type,
-                  mojom::MdnsListenClientPtr response_client,
+                  mojo::PendingRemote<mojom::MdnsListenClient> response_client,
                   MdnsListenCallback callback) override;
 
   size_t GetNumOutstandingRequestsForTesting() const;

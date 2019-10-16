@@ -4,6 +4,7 @@
 
 #include "content/browser/tracing/tracing_controller_impl.h"
 
+#include <inttypes.h>
 #include <memory>
 #include <utility>
 #include <vector>

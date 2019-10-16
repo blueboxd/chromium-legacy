@@ -1919,7 +1919,6 @@ void LayerTreeImpl::UnregisterScrollbar(
     element_id_to_scrollbar_layer_ids_.erase(scroll_element_id);
     if (IsActiveTree()) {
       host_impl_->UnregisterScrollbarAnimationController(scroll_element_id);
-      host_impl_->UnregisterScrollbarLayer(scroll_element_id);
     }
   }
 }

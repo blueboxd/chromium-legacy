@@ -34,6 +34,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "sql/database.h"
+#include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
 

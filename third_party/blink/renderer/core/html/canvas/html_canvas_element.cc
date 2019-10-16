@@ -1333,20 +1333,21 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
   // A select element with a "multiple" attribute or with a display size greater
   // than 1.
-  if (auto* select_element = ToHTMLSelectElementOrNull(element)) {
+  if (auto* select_element = DynamicTo<HTMLSelectElement>(element)) {
     if (select_element->IsMultiple() || select_element->size() > 1)
       return true;
   }
 
   // An option element that is in a list of options of a select element with a
   // "multiple" attribute or with a display size greater than 1.
-  if (IsA<HTMLOptionElement>(element) && element.parentNode() &&
-      IsHTMLSelectElement(*element.parentNode())) {
-    const HTMLSelectElement& select_element =
-        ToHTMLSelectElement(*element.parentNode());
-    if (select_element.IsMultiple() || select_element.size() > 1)
-      return true;
-  }
+  const auto* parent_select =
+      IsA<HTMLOptionElement>(element)
+          ? DynamicTo<HTMLSelectElement>(element.parentNode())
+          : nullptr;
+
+  if (parent_select &&
+      (parent_select->IsMultiple() || parent_select->size() > 1))
+    return true;
 
   // An element that would not be interactive content except for having the
   // tabindex attribute specified.

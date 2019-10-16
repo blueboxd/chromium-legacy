@@ -14,8 +14,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "storage/browser/quota/quota_settings.h"
 
 namespace content {
 class RenderFrameHost;

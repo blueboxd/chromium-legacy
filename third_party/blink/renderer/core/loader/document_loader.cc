@@ -373,8 +373,7 @@ void DocumentLoader::DidChangePerformanceTiming() {
   }
 }
 
-void DocumentLoader::DidObserveLoadingBehavior(
-    WebLoadingBehaviorFlag behavior) {
+void DocumentLoader::DidObserveLoadingBehavior(LoadingBehaviorFlag behavior) {
   if (frame_) {
     DCHECK_GE(state_, kCommitted);
     GetLocalFrameClient().DidObserveLoadingBehavior(behavior);
@@ -1422,7 +1421,7 @@ void DocumentLoader::DidCommitNavigation() {
       service_worker_network_provider_->GetControllerServiceWorkerMode() ==
           blink::mojom::ControllerServiceWorkerMode::kControlled) {
     GetLocalFrameClient().DidObserveLoadingBehavior(
-        kWebLoadingBehaviorServiceWorkerControlled);
+        kLoadingBehaviorServiceWorkerControlled);
   }
 
   Document* document = frame_->GetDocument();

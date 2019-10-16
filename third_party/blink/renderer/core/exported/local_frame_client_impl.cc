@@ -729,7 +729,7 @@ void LocalFrameClientImpl::DidChangeActiveSchedulerTrackedFeatures(
 }
 
 void LocalFrameClientImpl::DidObserveLoadingBehavior(
-    WebLoadingBehaviorFlag behavior) {
+    LoadingBehaviorFlag behavior) {
   if (web_frame_->Client())
     web_frame_->Client()->DidObserveLoadingBehavior(behavior);
 }
@@ -1007,7 +1007,7 @@ unsigned LocalFrameClientImpl::BackForwardLength() {
 
 void LocalFrameClientImpl::SuddenTerminationDisablerChanged(
     bool present,
-    WebSuddenTerminationDisablerType type) {
+    SuddenTerminationDisablerType type) {
   if (web_frame_->Client()) {
     web_frame_->Client()->SuddenTerminationDisablerChanged(present, type);
   }

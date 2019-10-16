@@ -23,11 +23,11 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/style/platform_style.h"
-#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -71,10 +71,26 @@ bool ShouldShowAeroShadowBorder() {
 // static
 const char MessageView::kViewClassName[] = "MessageView";
 
+class MessageView::HighlightPathGenerator
+    : public views::HighlightPathGenerator {
+ public:
+  HighlightPathGenerator() = default;
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    return static_cast<const MessageView*>(view)->GetHighlightPath();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
+};
+
 MessageView::MessageView(const Notification& notification)
     : notification_id_(notification.id()), slide_out_controller_(this, this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   focus_ring_ = views::FocusRing::Install(this);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<HighlightPathGenerator>());
 
   // TODO(amehfooz): Remove explicit color setting after native theme changes.
   focus_ring_->SetColor(gfx::kGoogleBlue500);
@@ -165,7 +181,7 @@ void MessageView::UpdateCornerRadius(int top_radius, int bottom_radius) {
   SchedulePaint();
 }
 
-void MessageView::UpdateFocusHighlight() {
+SkPath MessageView::GetHighlightPath() const {
   gfx::Rect rect(GetBoundsInScreen().size());
   // Shrink focus ring size by -kFocusHaloInset on each side to draw
   // them on top of the notifications. We need to do this because TrayBubbleView
@@ -183,14 +199,7 @@ void MessageView::UpdateFocusHighlight() {
                        bottom_radius, bottom_radius,   // bottom-right
                        bottom_radius, bottom_radius};  // bottom-left
 
-  auto path = std::make_unique<SkPath>();
-  path->addRoundRect(gfx::RectToSkRect(rect), radii);
-  SetProperty(views::kHighlightPathKey, path.release());
-}
-
-void MessageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  views::InkDropHostView::OnBoundsChanged(previous_bounds);
-  UpdateFocusHighlight();
+  return SkPath().addRoundRect(gfx::RectToSkRect(rect), radii);
 }
 
 void MessageView::OnContainerAnimationStarted() {

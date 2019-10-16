@@ -30,6 +30,7 @@
 
 namespace content {
 
+class NavigationHandle;
 class WebContents;
 
 struct CONTENT_EXPORT OpenURLParams {
@@ -52,6 +53,11 @@ struct CONTENT_EXPORT OpenURLParams {
                 bool is_renderer_initiated);
   OpenURLParams(const OpenURLParams& other);
   ~OpenURLParams();
+
+  // Creates OpenURLParams that 1) preserve all applicable |handle| properties
+  // (URL, referrer, initiator, etc.) with OpenURLParams equivalents and 2) fill
+  // in reasonable defaults for other properties (like WindowOpenDisposition).
+  static OpenURLParams FromNavigationHandle(NavigationHandle* handle);
 
   // The URL/referrer to be opened.
   GURL url;

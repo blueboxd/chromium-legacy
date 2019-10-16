@@ -49,6 +49,10 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   void AddLine(const NGPhysicalLineBoxFragment& line,
                const LogicalOffset& offset);
 
+  // Add a list marker to the current line.
+  void AddListMarker(const NGPhysicalBoxFragment& marker_fragment,
+                     const LogicalOffset& offset);
+
   // Build a |NGFragmentItems|. The builder cannot build twice because data set
   // to this builder may be cleared.
   void ToFragmentItems(WritingMode writing_mode,

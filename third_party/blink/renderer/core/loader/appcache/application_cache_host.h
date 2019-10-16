@@ -35,6 +35,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -104,7 +105,8 @@ class CORE_EXPORT ApplicationCacheHost
   void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
                   const String& message) override {}
   void SetSubresourceFactory(
-      network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override {}
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          url_loader_factory) override {}
 
   virtual void Trace(blink::Visitor*) {}
 

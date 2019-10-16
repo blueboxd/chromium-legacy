@@ -224,7 +224,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     }
     case kMenulistPart:
       COUNT_APPEARANCE(doc, MenuList);
-      if (!IsHTMLSelectElement(node) && !IsMenulistInput(node))
+      if (!IsA<HTMLSelectElement>(node) && !IsMenulistInput(node))
         DEPRECATE_APPEARANCE(doc, MenuListForOthers);
       return PaintMenuList(node, o.GetDocument(), style, paint_info, r);
     case kMeterPart:
@@ -398,7 +398,7 @@ bool ThemePainter::PaintDecorations(const Node* node,
   switch (style.EffectiveAppearance()) {
     case kMenulistButtonPart:
       COUNT_APPEARANCE(document, MenuListButton);
-      if (!IsHTMLSelectElement(node) && !IsMenulistInput(node))
+      if (!IsA<HTMLSelectElement>(node) && !IsMenulistInput(node))
         DEPRECATE_APPEARANCE(document, MenuListButtonForOthers);
       return PaintMenuListButton(node, document, style, paint_info, r);
     case kTextFieldPart:

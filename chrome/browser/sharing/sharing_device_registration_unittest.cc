@@ -4,15 +4,18 @@
 
 #include "chrome/browser/sharing/sharing_device_registration.h"
 
+#include <stdint.h>
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
@@ -22,11 +25,13 @@
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "crypto/ec_private_key.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,7 +123,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
  public:
   SharingDeviceRegistrationTest()
       : sync_prefs_(&prefs_, &fake_device_info_sync_service_),
-        vapid_key_manager_(&sync_prefs_),
+        vapid_key_manager_(&sync_prefs_, &test_sync_service_),
         sharing_device_registration_(pref_service_.get(),
                                      &sync_prefs_,
                                      &mock_instance_id_driver_,
@@ -213,6 +218,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
   std::unique_ptr<PrefService> pref_service_ =
       CreatePrefServiceAndRegisterPrefs();
   SharingSyncPreference sync_prefs_;
+  syncer::TestSyncService test_sync_service_;
   VapidKeyManager vapid_key_manager_;
   SharingDeviceRegistration sharing_device_registration_;
 
@@ -258,9 +264,14 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   EXPECT_EQ(expected_sharing_info, synced_sharing_info_);
   EXPECT_TRUE(fcm_registration_);
 
-  // Remove VAPID key to force a re-register, which will return a different FCM
+  // Change VAPID key to force a re-register, which will return a different FCM
   // token.
-  prefs_.RemoveUserPref("sharing.vapid_key");
+  auto vapid_key = crypto::ECPrivateKey::Create();
+  ASSERT_TRUE(vapid_key);
+  std::vector<uint8_t> vapid_key_info;
+  ASSERT_TRUE(vapid_key->ExportPrivateKey(&vapid_key_info));
+  sync_prefs_.SetVapidKey(vapid_key_info);
+  vapid_key_manager_.RefreshCachedKey();
   SetInstanceIDFCMToken(kFCMToken2);
 
   RegisterDeviceSync();

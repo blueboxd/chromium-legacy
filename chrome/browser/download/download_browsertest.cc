@@ -109,6 +109,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"

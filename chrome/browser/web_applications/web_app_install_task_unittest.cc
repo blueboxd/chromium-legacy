@@ -82,7 +82,7 @@ bool ContainsOneIconOfEachSize(const WebApplicationInfo& web_app_info) {
   for (int size_px : kIconSizes) {
     int num_icons_for_size =
         std::count_if(web_app_info.icons.begin(), web_app_info.icons.end(),
-                      [&size_px](const WebApplicationInfo::IconInfo& icon) {
+                      [&size_px](const WebApplicationIconInfo& icon) {
                         return icon.width == size_px && icon.height == size_px;
                       });
     if (num_icons_for_size != 1)
@@ -558,7 +558,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
 
-  for (const WebApplicationInfo::IconInfo& icon : web_app_info->icons) {
+  for (const WebApplicationIconInfo& icon : web_app_info->icons) {
     EXPECT_FALSE(icon.data.drawsNothing());
     EXPECT_EQ(color, icon.data.getColor(0, 0));
 
@@ -587,7 +587,7 @@ TEST_F(WebAppInstallTaskTest, GetIcons_NoIconsProvided) {
   // Make sure that icons have been generated for all sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(*web_app_info));
 
-  for (const WebApplicationInfo::IconInfo& icon : web_app_info->icons) {
+  for (const WebApplicationIconInfo& icon : web_app_info->icons) {
     EXPECT_FALSE(icon.data.drawsNothing());
     // Since all icons are generated, they should have an empty url.
     EXPECT_TRUE(icon.url.is_empty());
@@ -610,7 +610,7 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDisk) {
 
   // Generate one icon as if it was fetched from renderer.
   {
-    WebApplicationInfo::IconInfo icon_info = GenerateIconInfo(
+    WebApplicationIconInfo icon_info = GenerateIconInfo(
         GURL("https://example.com/app.ico"), original_icon_size_px, color);
     data_retriever_->web_app_info().icons.push_back(std::move(icon_info));
   }
@@ -841,7 +841,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
     bitmap.allocN32Pixels(icon_size::k256, icon_size::k128);
     bitmap.eraseColor(SK_ColorRED);
 
-    WebApplicationInfo::IconInfo icon_info;
+    WebApplicationIconInfo icon_info;
     icon_info.url = GURL("https://example.com/path/bad.ico");
     icon_info.width = icon_size::k256;
     icon_info.height = icon_size::k128;
@@ -863,7 +863,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
 
             // Make sure no red non-square icons, only square yellow ones.
-            for (const WebApplicationInfo::IconInfo& icon :
+            for (const WebApplicationIconInfo& icon :
                  final_web_app_info->icons) {
               EXPECT_FALSE(icon.data.drawsNothing());
               EXPECT_EQ(SK_ColorYELLOW, icon.data.getColor(0, 0));
@@ -895,12 +895,12 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = url;
 
-  WebApplicationInfo::IconInfo icon1_info;
+  WebApplicationIconInfo icon1_info;
   icon1_info.url = icon1_url;
   icon1_info.width = icon_size::k128;
   web_app_info->icons.push_back(std::move(icon1_info));
 
-  WebApplicationInfo::IconInfo icon2_info;
+  WebApplicationIconInfo icon2_info;
   icon2_info.url = icon2_url;
   icon2_info.width = icon_size::k256;
   web_app_info->icons.push_back(std::move(icon2_info));
@@ -979,7 +979,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
             // Make sure that icons have been generated for all sub sizes.
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
 
-            for (const WebApplicationInfo::IconInfo& icon :
+            for (const WebApplicationIconInfo& icon :
                  final_web_app_info->icons) {
               EXPECT_FALSE(icon.data.drawsNothing());
               EXPECT_TRUE(icon.url.is_empty());
@@ -1012,7 +1012,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
             // Make sure that icons have been generated for all sub sizes.
             EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
 
-            for (const WebApplicationInfo::IconInfo& icon :
+            for (const WebApplicationIconInfo& icon :
                  final_web_app_info->icons) {
               EXPECT_FALSE(icon.data.drawsNothing());
               EXPECT_TRUE(icon.url.is_empty());

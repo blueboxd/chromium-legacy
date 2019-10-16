@@ -6,6 +6,7 @@
 
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/lock_observer.h"
+#include "content/public/common/content_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {

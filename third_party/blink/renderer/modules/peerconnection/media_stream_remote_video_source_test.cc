@@ -59,7 +59,7 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
 
     std::unique_ptr<blink::TrackObserver> track_observer;
-    mock_factory_->GetWebRtcSignalingThread()->PostTask(
+    mock_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](scoped_refptr<base::SingleThreadTaskRunner> main_thread,
@@ -113,7 +113,7 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
     base::WaitableEvent waitable_event(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    mock_factory_->GetWebRtcSignalingThread()->PostTask(
+    mock_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](blink::MockWebRtcVideoTrack* video_track,

@@ -493,7 +493,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
   connected_socket_->UpgradeToTLS(
       host_port_pair, std::move(tls_client_socket_options),
       pepper_socket_utils::PepperTCPNetworkAnnotationTag(),
-      mojo::MakeRequest(&tls_client_socket_),
+      tls_client_socket_.BindNewPipeAndPassReceiver(),
       socket_observer_receiver_.BindNewPipeAndPassRemote(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&PepperTCPSocketMessageFilter::OnSSLHandshakeCompleted,

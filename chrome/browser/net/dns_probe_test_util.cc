@@ -65,7 +65,7 @@ void FakeHostResolver::ResolveHost(
 void FakeHostResolver::MdnsListen(
     const net::HostPortPair& host,
     net::DnsQueryType query_type,
-    network::mojom::MdnsListenClientPtr response_client,
+    mojo::PendingRemote<network::mojom::MdnsListenClient> response_client,
     MdnsListenCallback callback) {
   NOTREACHED();
 }
@@ -89,7 +89,7 @@ void HangingHostResolver::ResolveHost(
 void HangingHostResolver::MdnsListen(
     const net::HostPortPair& host,
     net::DnsQueryType query_type,
-    network::mojom::MdnsListenClientPtr response_client,
+    mojo::PendingRemote<network::mojom::MdnsListenClient> response_client,
     MdnsListenCallback callback) {
   NOTREACHED();
 }

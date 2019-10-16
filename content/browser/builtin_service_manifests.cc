@@ -13,6 +13,7 @@
 #include "content/public/app/content_renderer_manifest.h"
 #include "content/public/app/content_utility_manifest.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "media/mojo/buildflags.h"

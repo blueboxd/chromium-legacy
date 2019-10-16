@@ -71,6 +71,23 @@ std::string PermissionRequestNotificationAndroid::NotificationIdForOrigin(
   return kNotificationIdPrefix + origin;
 }
 
+// static
+PermissionPrompt::TabSwitchingBehavior
+PermissionRequestNotificationAndroid::GetTabSwitchingBehavior() {
+  if (QuietNotificationsPromptConfig::UIFlavorToUse() ==
+      QuietNotificationsPromptConfig::UIFlavor::QUIET_NOTIFICATION) {
+    return PermissionPrompt::TabSwitchingBehavior::
+        kDestroyPromptButKeepRequestPending;
+  } else {
+    // For heads-up notifications finalize the request as "ignored" on tab
+    // switching.
+    DCHECK_EQ(QuietNotificationsPromptConfig::UIFlavor::HEADS_UP_NOTIFICATION,
+              QuietNotificationsPromptConfig::UIFlavorToUse());
+    return PermissionPrompt::TabSwitchingBehavior::
+        kDestroyPromptAndIgnoreRequest;
+  }
+}
+
 void PermissionRequestNotificationAndroid::Close() {
   delegate_->Closing();
 }

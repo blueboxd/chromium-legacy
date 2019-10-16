@@ -130,12 +130,15 @@ class SharingService : public KeyedService,
   // Overrides for syncer::SyncServiceObserver.
   void OnSyncShutdown(syncer::SyncService* sync) override;
   void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
   // AckMessageHandler::AckMessageObserver override.
   void OnAckReceived(const std::string& message_id) override;
 
   // syncer::DeviceInfoTracker::Observer.
   void OnDeviceInfoChange() override;
+
+  void RefreshVapidKey();
 
   void RegisterDevice();
   void UnregisterDevice();

@@ -557,7 +557,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   web_contents()->GetController().GoToOffset(-2);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
   ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kCacheLimit, FROM_HERE);
 }
@@ -1448,7 +1448,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 4) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
   ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
                 FROM_HERE);
@@ -1494,7 +1494,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 4) Go back to A(B).
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
   ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
                 FROM_HERE);
@@ -1536,7 +1536,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 5) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
   ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
                 FROM_HERE);
@@ -1892,7 +1892,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_NE(rfh_a2, rfh_b);
   EXPECT_EQ(rfh_a2->GetLastCommittedURL(), url_a);
 
-  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
   ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution,
                 FROM_HERE);
@@ -1936,7 +1936,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 4) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kEvicted,
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
                 FROM_HERE);
   ExpectEvicted(BackForwardCacheMetrics::EvictedReason::kRendererProcessKilled,
                 FROM_HERE);

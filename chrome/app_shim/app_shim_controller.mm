@@ -27,13 +27,14 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/process_singleton_lock_posix.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/remote_cocoa/app_shim/application_bridge.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "content/public/browser/remote_cocoa.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -90,8 +91,7 @@ AppShimController::Params::~Params() = default;
 
 AppShimController::AppShimController(const Params& params)
     : params_(params),
-      shim_binding_(this),
-      host_request_(mojo::MakeRequest(&host_)),
+      host_receiver_(host_.BindNewPipeAndPassReceiver()),
       delegate_([[AppShimDelegate alloc] init]),
       launch_app_done_(false),
       attention_request_id_(0),
@@ -303,9 +303,9 @@ void AppShimController::CreateChannelAndSendLaunchApp(
   mojo::ScopedMessagePipeHandle message_pipe =
       bootstrap_mojo_connection_.Connect(std::move(endpoint));
   CHECK(message_pipe.is_valid());
-  host_bootstrap_ = chrome::mojom::AppShimHostBootstrapPtr(
-      chrome::mojom::AppShimHostBootstrapPtrInfo(std::move(message_pipe), 0));
-  host_bootstrap_.set_connection_error_with_reason_handler(base::BindOnce(
+  host_bootstrap_.Bind(mojo::PendingRemote<chrome::mojom::AppShimHostBootstrap>(
+      std::move(message_pipe), 0));
+  host_bootstrap_.set_disconnect_with_reason_handler(base::BindOnce(
       &AppShimController::BootstrapChannelError, base::Unretained(this)));
   [delegate_ setController:this];
 
@@ -321,7 +321,7 @@ void AppShimController::CreateChannelAndSendLaunchApp(
   [delegate_ getFilesToOpenAtStartup:&app_shim_info->files];
 
   host_bootstrap_->OnShimConnected(
-      std::move(host_request_), std::move(app_shim_info),
+      std::move(host_receiver_), std::move(app_shim_info),
       base::BindOnce(&AppShimController::OnShimConnectedResponse,
                      base::Unretained(this)));
 }
@@ -354,14 +354,14 @@ void AppShimController::ChannelError(uint32_t custom_reason,
 
 void AppShimController::OnShimConnectedResponse(
     apps::AppShimLaunchResult result,
-    chrome::mojom::AppShimRequest app_shim_request) {
+    mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
   if (result != apps::APP_SHIM_LAUNCH_SUCCESS) {
     Close();
     return;
   }
-  shim_binding_.Bind(std::move(app_shim_request),
-                     ui::WindowResizeHelperMac::Get()->task_runner());
-  shim_binding_.set_connection_error_with_reason_handler(
+  shim_receiver_.Bind(std::move(app_shim_receiver),
+                      ui::WindowResizeHelperMac::Get()->task_runner());
+  shim_receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&AppShimController::ChannelError, base::Unretained(this)));
 
   std::vector<base::FilePath> files;

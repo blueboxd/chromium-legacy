@@ -13,7 +13,7 @@
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer.h"
 #include "content/public/test/test_launcher.h"
-#include "crypto/sha2.h"
+#include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
@@ -38,33 +38,40 @@ using syncer::ModelTypeSet;
 using syncer::PassphraseType;
 using syncer::ProtoPassphraseInt32ToEnum;
 using syncer::SyncService;
+using testing::ElementsAre;
 using testing::SizeIs;
 
-class DatatypeCommitCountingFakeServerObserver : public FakeServer::Observer {
+// Intercepts all bookmark entity names as committed to the FakeServer.
+class CommittedBookmarkEntityNameObserver : public FakeServer::Observer {
  public:
-  explicit DatatypeCommitCountingFakeServerObserver(FakeServer* fake_server)
+  explicit CommittedBookmarkEntityNameObserver(FakeServer* fake_server)
       : fake_server_(fake_server) {
     fake_server->AddObserver(this);
   }
 
-  void OnCommit(const std::string& committer_id,
-                ModelTypeSet committed_model_types) override {
-    for (ModelType type : committed_model_types) {
-      ++datatype_commit_counts_[type];
-    }
-  }
-
-  int GetCommitCountForDatatype(ModelType type) {
-    return datatype_commit_counts_[type];
-  }
-
-  ~DatatypeCommitCountingFakeServerObserver() override {
+  ~CommittedBookmarkEntityNameObserver() override {
     fake_server_->RemoveObserver(this);
   }
 
+  void OnCommit(const std::string& committer_id,
+                ModelTypeSet committed_model_types) override {
+    sync_pb::ClientToServerMessage message;
+    fake_server_->GetLastCommitMessage(&message);
+    for (const sync_pb::SyncEntity& entity : message.commit().entries()) {
+      if (syncer::GetModelTypeFromSpecifics(entity.specifics()) ==
+          syncer::BOOKMARKS) {
+        committed_names_.insert(entity.name());
+      }
+    }
+  }
+
+  const std::set<std::string> GetCommittedEntityNames() const {
+    return committed_names_;
+  }
+
  private:
-  FakeServer* fake_server_;
-  std::map<syncer::ModelType, int> datatype_commit_counts_;
+  FakeServer* const fake_server_;
+  std::set<std::string> committed_names_;
 };
 
 // These tests use a gray-box testing approach to verify that the data committed
@@ -266,7 +273,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
-                       ShouldExposeExperimentalAuthenticationId) {
+                       ShouldExposeExperimentalAuthenticationKey) {
   const std::vector<std::string>& keystore_keys =
       GetFakeServer()->GetKeystoreKeys();
   ASSERT_THAT(keystore_keys, SizeIs(1));
@@ -277,27 +284,38 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
   SetupSyncNoWaitingForCompletion();
   ASSERT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/true));
 
-  // WARNING: Do *NOT* change these values since the authentication ID should be
-  // stable across different browser versions.
+  // WARNING: Do *NOT* change these values since the authentication key should
+  // be stable across different browser versions.
 
   // Default birthday determined by LoopbackServer.
   const std::string kDefaultBirthday = "0";
   const std::string kSeparator("|");
   std::string base64_encoded_keystore_key;
   base::Base64Encode(keystore_keys.back(), &base64_encoded_keystore_key);
-  const std::string authentication_id_before_hashing =
+  const std::string expected_authentication_secret =
       std::string("gaia_id_for_user_gmail.com") + kSeparator +
       kDefaultBirthday + kSeparator + base64_encoded_keystore_key;
 
-  EXPECT_EQ(GetSyncService()->GetExperimentalAuthenticationId(),
-            crypto::SHA256HashString(authentication_id_before_hashing));
+  EXPECT_EQ(GetSyncService()->GetExperimentalAuthenticationSecretForTest(),
+            expected_authentication_secret);
+  std::unique_ptr<crypto::ECPrivateKey> actual_key_1 =
+      GetSyncService()->GetExperimentalAuthenticationKey();
+  ASSERT_TRUE(actual_key_1);
+  std::vector<uint8_t> actual_private_key_1;
+  EXPECT_TRUE(actual_key_1->ExportPrivateKey(&actual_private_key_1));
 
-  // Entering the passphrase should not influence the authentication ID.
+  // Entering the passphrase should not influence the authentication key.
   ASSERT_TRUE(
       GetSyncService()->GetUserSettings()->SetDecryptionPassphrase("hunter2"));
   ASSERT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
-  EXPECT_EQ(GetSyncService()->GetExperimentalAuthenticationId(),
-            crypto::SHA256HashString(authentication_id_before_hashing));
+  EXPECT_EQ(GetSyncService()->GetExperimentalAuthenticationSecretForTest(),
+            expected_authentication_secret);
+  std::unique_ptr<crypto::ECPrivateKey> actual_key_2 =
+      GetSyncService()->GetExperimentalAuthenticationKey();
+  ASSERT_TRUE(actual_key_2);
+  std::vector<uint8_t> actual_private_key_2;
+  EXPECT_TRUE(actual_key_2->ExportPrivateKey(&actual_private_key_2));
+  EXPECT_EQ(actual_private_key_1, actual_private_key_2);
 }
 
 INSTANTIATE_TEST_SUITE_P(USS,
@@ -387,11 +405,14 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        DoesNotLeakUnencryptedData) {
   SetEncryptionPassphraseForClient(/*index=*/0, "hunter2");
-  DatatypeCommitCountingFakeServerObserver observer(GetFakeServer());
-  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(SetupClients());
 
+  // Create local bookmarks before sync is enabled.
   ASSERT_TRUE(AddURL(/*profile=*/0, "Should be encrypted",
                      GURL("https://google.com/encrypted")));
+
+  CommittedBookmarkEntityNameObserver observer(GetFakeServer());
+  ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(WaitForNigori(PassphraseType::kCustomPassphrase));
   // If WaitForEncryptedServerBookmarks() succeeds, that means that a
@@ -404,9 +425,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForEncryptedServerBookmarks(
       {{"Should be encrypted", GURL("https://google.com/encrypted")}},
       {KeyDerivationParams::CreateForPbkdf2(), "hunter2"}));
-  // Initial bookmarks sync would actually create and commit the permanent
-  // bookmark folders. Therefore, should be 2 commits by now.
-  EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 2);
+  EXPECT_THAT(observer.GetCommittedEntityNames(), ElementsAre("encrypted"));
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,

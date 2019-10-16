@@ -165,7 +165,8 @@ FetchRequestData* FetchRequestData::Clone(ScriptState* script_state,
     request->buffer_ = new2;
   }
   if (url_loader_factory_) {
-    url_loader_factory_->Clone(MakeRequest(&request->url_loader_factory_));
+    url_loader_factory_->Clone(
+        request->url_loader_factory_.BindNewPipeAndPassReceiver());
   }
   return request;
 }

@@ -15,6 +15,7 @@
 #include "content/public/browser/resource_context.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/http/http_auth_preferences.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -87,7 +88,7 @@ class HeadlessProxyConfigMonitor
 
   explicit HeadlessProxyConfigMonitor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : task_runner_(task_runner), poller_binding_(this) {
+      : task_runner_(task_runner) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // We must create the proxy config service on the UI loop on Linux because
     // it must synchronously run on the glib message loop.
@@ -115,8 +116,8 @@ class HeadlessProxyConfigMonitor
     DCHECK(!proxy_config_client_);
     network_context_params->proxy_config_client_receiver =
         proxy_config_client_.BindNewPipeAndPassReceiver();
-    poller_binding_.Bind(
-        mojo::MakeRequest(&network_context_params->proxy_config_poller_client));
+    poller_receiver_.Bind(network_context_params->proxy_config_poller_client
+                              .InitWithNewPipeAndPassReceiver());
     net::ProxyConfigWithAnnotation proxy_config;
     net::ProxyConfigService::ConfigAvailability availability =
         proxy_config_service_->GetLatestProxyConfig(&proxy_config);
@@ -150,7 +151,8 @@ class HeadlessProxyConfigMonitor
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
-  mojo::Binding<::network::mojom::ProxyConfigPollerClient> poller_binding_;
+  mojo::Receiver<::network::mojom::ProxyConfigPollerClient> poller_receiver_{
+      this};
   mojo::Remote<::network::mojom::ProxyConfigClient> proxy_config_client_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessProxyConfigMonitor);

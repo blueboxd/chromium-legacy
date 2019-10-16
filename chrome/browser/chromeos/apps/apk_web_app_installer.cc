@@ -143,7 +143,7 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
 void ApkWebAppInstaller::OnImageDecoded(const SkBitmap& decoded_image) {
   DCHECK(web_app_info_);
 
-  WebApplicationInfo::IconInfo icon_info;
+  WebApplicationIconInfo icon_info;
   icon_info.data = decoded_image;
   icon_info.width = decoded_image.width();
   icon_info.height = decoded_image.height();

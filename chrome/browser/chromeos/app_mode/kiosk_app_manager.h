@@ -128,9 +128,6 @@ class KioskAppManager : public KioskAppDataDelegate,
   // Registers kiosk app entries in local state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Removes cryptohomes which could not be removed during the previous session.
-  static void RemoveObsoleteCryptohomes();
-
   static bool IsConsumerKioskEnabled();
 
   // Initiates reading of consumer kiosk mode auto-launch status.

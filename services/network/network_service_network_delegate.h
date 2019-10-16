@@ -7,6 +7,8 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_delegate_impl.h"
 #include "services/network/network_context.h"
@@ -22,7 +24,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
   NetworkServiceNetworkDelegate(
       bool enable_referrers,
       bool validate_referrer_policy_on_initial_request,
-      mojom::ProxyErrorClientPtrInfo proxy_error_client_info,
+      mojo::PendingRemote<mojom::ProxyErrorClient> proxy_error_client_remote,
       NetworkContext* network_context);
   ~NetworkServiceNetworkDelegate() override;
 
@@ -47,6 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
       net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      const net::IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url) override;
   void OnBeforeRedirect(net::URLRequest* request,
                         const GURL& new_location) override;
@@ -100,7 +103,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
 
   bool enable_referrers_;
   bool validate_referrer_policy_on_initial_request_;
-  mojom::ProxyErrorClientPtr proxy_error_client_;
+  mojo::Remote<mojom::ProxyErrorClient> proxy_error_client_;
   NetworkContext* network_context_;
 
   mutable base::WeakPtrFactory<NetworkServiceNetworkDelegate> weak_ptr_factory_{

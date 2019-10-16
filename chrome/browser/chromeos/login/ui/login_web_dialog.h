@@ -45,9 +45,6 @@ class LoginWebDialog : public ui::WebDialogDelegate {
 
   void Show();
 
-  // Overrides default width/height for dialog.
-  void SetDialogSize(int width, int height);
-
   // Overrides dialog title.
   void SetDialogTitle(const base::string16& title);
 
@@ -94,10 +91,6 @@ class LoginWebDialog : public ui::WebDialogDelegate {
 
   base::string16 title_;
   const GURL url_;
-
-  // Dialog display size.
-  int width_;
-  int height_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginWebDialog);
 };

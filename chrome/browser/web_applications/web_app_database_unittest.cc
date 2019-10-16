@@ -71,7 +71,7 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
     app->SetIsLocallyInstalled(!(suffix & 2));
-    app->SetIsSyncPlaceholder(!(suffix & 4));
+    app->SetIsInSyncInstall(!(suffix & 4));
     app->SetDisplayMode((suffix & 1) ? blink::mojom::DisplayMode::kBrowser
                                      : blink::mojom::DisplayMode::kStandalone);
 
@@ -271,7 +271,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_TRUE(app->icons().empty());
-  EXPECT_FALSE(app->is_sync_placeholder());
+  EXPECT_FALSE(app->is_in_sync_install());
   EXPECT_TRUE(app->sync_data().name.empty());
   EXPECT_FALSE(app->sync_data().theme_color.has_value());
   controller().RegisterApp(std::move(app));
@@ -299,7 +299,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_TRUE(app_copy->icons().empty());
-  EXPECT_FALSE(app_copy->is_sync_placeholder());
+  EXPECT_FALSE(app_copy->is_in_sync_install());
   EXPECT_TRUE(app_copy->sync_data().name.empty());
   EXPECT_FALSE(app_copy->sync_data().theme_color.has_value());
 }

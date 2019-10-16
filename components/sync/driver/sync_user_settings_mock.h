@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "components/sync/driver/sync_user_settings.h"
-#include "google_apis/gaia/core_account_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace syncer {
@@ -49,7 +48,7 @@ class SyncUserSettingsMock : public SyncUserSettings {
   MOCK_METHOD1(SetEncryptionPassphrase, void(const std::string&));
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string&));
   MOCK_METHOD2(AddTrustedVaultDecryptionKeys,
-               void(const CoreAccountId&, const std::vector<std::string>&));
+               void(const std::string&, const std::vector<std::string>&));
 };
 
 }  // namespace syncer

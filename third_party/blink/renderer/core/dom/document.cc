@@ -7109,7 +7109,6 @@ bool Document::IsContextThread() const {
 }
 
 void Document::UpdateFocusAppearanceAfterLayout() {
-  DCHECK_LT(Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
   update_focus_appearance_after_layout_ = true;
 }
 

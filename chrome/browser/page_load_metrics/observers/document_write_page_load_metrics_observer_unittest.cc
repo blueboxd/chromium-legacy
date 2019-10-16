@@ -11,7 +11,7 @@
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 
 class DocumentWritePageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
@@ -54,7 +54,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlock) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock;
   NavigateAndCommit(GURL("https://www.google.com/"));
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
 
@@ -102,8 +102,8 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
   PopulateRequiredTimingFields(&timing);
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
-  metadata.behavior_flags |= blink::WebLoadingBehaviorFlag::
-      kWebLoadingBehaviorDocumentWriteBlockReload;
+  metadata.behavior_flags |=
+      blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlockReload;
   NavigateAndCommit(GURL("https://www.google.com/"));
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
 
@@ -143,7 +143,7 @@ TEST_F(DocumentWritePageLoadMetricsObserverTest, PossibleBlockReload) {
 
   // Another metadata update should not increase reload count.
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorServiceWorkerControlled;
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramDocWriteBlockReloadCount, 2);

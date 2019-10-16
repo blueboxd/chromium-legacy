@@ -11,8 +11,7 @@
 
 namespace blink {
 
-using namespace html_names;
-using namespace protocol::Accessibility;
+using protocol::Accessibility::AXRelatedNode;
 
 std::unique_ptr<AXProperty> CreateProperty(const String& name,
                                            std::unique_ptr<AXValue> value) {
@@ -167,43 +166,46 @@ std::unique_ptr<AXValue> CreateRelatedNodeListValue(
 }
 
 String ValueSourceType(ax::mojom::NameFrom name_from) {
+  namespace SourceType = protocol::Accessibility::AXValueSourceTypeEnum;
+
   switch (name_from) {
     case ax::mojom::NameFrom::kAttribute:
     case ax::mojom::NameFrom::kAttributeExplicitlyEmpty:
     case ax::mojom::NameFrom::kTitle:
     case ax::mojom::NameFrom::kValue:
-      return AXValueSourceTypeEnum::Attribute;
+      return SourceType::Attribute;
     case ax::mojom::NameFrom::kContents:
-      return AXValueSourceTypeEnum::Contents;
+      return SourceType::Contents;
     case ax::mojom::NameFrom::kPlaceholder:
-      return AXValueSourceTypeEnum::Placeholder;
+      return SourceType::Placeholder;
     case ax::mojom::NameFrom::kCaption:
     case ax::mojom::NameFrom::kRelatedElement:
-      return AXValueSourceTypeEnum::RelatedElement;
+      return SourceType::RelatedElement;
     default:
-      return AXValueSourceTypeEnum::Implicit;  // TODO(aboxhall): what to do
-                                               // here?
+      return SourceType::Implicit;  // TODO(aboxhall): what to do here?
   }
 }
 
 String NativeSourceType(AXTextFromNativeHTML native_source) {
+  namespace SourceType = protocol::Accessibility::AXValueNativeSourceTypeEnum;
+
   switch (native_source) {
     case kAXTextFromNativeHTMLFigcaption:
-      return AXValueNativeSourceTypeEnum::Figcaption;
+      return SourceType::Figcaption;
     case kAXTextFromNativeHTMLLabel:
-      return AXValueNativeSourceTypeEnum::Label;
+      return SourceType::Label;
     case kAXTextFromNativeHTMLLabelFor:
-      return AXValueNativeSourceTypeEnum::Labelfor;
+      return SourceType::Labelfor;
     case kAXTextFromNativeHTMLLabelWrapped:
-      return AXValueNativeSourceTypeEnum::Labelwrapped;
+      return SourceType::Labelwrapped;
     case kAXTextFromNativeHTMLTableCaption:
-      return AXValueNativeSourceTypeEnum::Tablecaption;
+      return SourceType::Tablecaption;
     case kAXTextFromNativeHTMLLegend:
-      return AXValueNativeSourceTypeEnum::Legend;
+      return SourceType::Legend;
     case kAXTextFromNativeHTMLTitleElement:
-      return AXValueNativeSourceTypeEnum::Title;
+      return SourceType::Title;
     default:
-      return AXValueNativeSourceTypeEnum::Other;
+      return SourceType::Other;
   }
 }
 
@@ -212,8 +214,8 @@ std::unique_ptr<AXValueSource> CreateValueSource(NameSource& name_source) {
   std::unique_ptr<AXValueSource> value_source =
       AXValueSource::create().setType(type).build();
   if (!name_source.related_objects.IsEmpty()) {
-    if (name_source.attribute == kAriaLabelledbyAttr ||
-        name_source.attribute == kAriaLabeledbyAttr) {
+    if (name_source.attribute == html_names::kAriaLabelledbyAttr ||
+        name_source.attribute == html_names::kAriaLabeledbyAttr) {
       std::unique_ptr<AXValue> attribute_value = CreateRelatedNodeListValue(
           name_source.related_objects, AXValueTypeEnum::IdrefList);
       if (!name_source.attribute_value.IsNull())

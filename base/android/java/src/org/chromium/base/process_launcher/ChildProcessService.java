@@ -272,6 +272,7 @@ public class ChildProcessService {
         mMainThread.start();
     }
 
+    @SuppressWarnings("checkstyle:SystemExitCheck") // Allowed due to http://crbug.com/928521#c16.
     public void onDestroy() {
         Log.i(TAG, "Destroying ChildProcessService pid=%d", Process.myPid());
         System.exit(0);

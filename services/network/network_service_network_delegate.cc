@@ -38,14 +38,14 @@ const char kClearSiteDataHeader[] = "Clear-Site-Data";
 NetworkServiceNetworkDelegate::NetworkServiceNetworkDelegate(
     bool enable_referrers,
     bool validate_referrer_policy_on_initial_request,
-    mojom::ProxyErrorClientPtrInfo proxy_error_client_info,
+    mojo::PendingRemote<mojom::ProxyErrorClient> proxy_error_client_remote,
     NetworkContext* network_context)
     : enable_referrers_(enable_referrers),
       validate_referrer_policy_on_initial_request_(
           validate_referrer_policy_on_initial_request),
       network_context_(network_context) {
-  if (proxy_error_client_info)
-    proxy_error_client_.Bind(std::move(proxy_error_client_info));
+  if (proxy_error_client_remote)
+    proxy_error_client_.Bind(std::move(proxy_error_client_remote));
 }
 
 NetworkServiceNetworkDelegate::~NetworkServiceNetworkDelegate() = default;
@@ -136,13 +136,14 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
     net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    const net::IPEndPoint& endpoint,
     GURL* allowed_unsafe_redirect_url) {
   auto chain = base::MakeRefCounted<PendingCallbackChain>(std::move(callback));
   URLLoader* url_loader = URLLoader::ForRequest(*request);
   if (url_loader) {
     chain->AddResult(url_loader->OnHeadersReceived(
         chain->CreateCallback(), original_response_headers,
-        override_response_headers, allowed_unsafe_redirect_url));
+        override_response_headers, endpoint, allowed_unsafe_redirect_url));
   }
 
 #if !defined(OS_IOS)

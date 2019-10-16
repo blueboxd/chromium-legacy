@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/test_sync_service.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/time/time.h"
@@ -11,6 +12,7 @@
 #include "components/sync/base/progress_marker_map.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
+#include "crypto/ec_private_key.h"
 
 namespace syncer {
 
@@ -97,6 +99,11 @@ void TestSyncService::SetUserDemographics(
   user_demographics_result_ = user_demographics_result;
 }
 
+void TestSyncService::SetExperimentalAuthenticationKey(
+    std::unique_ptr<crypto::ECPrivateKey> experimental_authentication_key) {
+  experimental_authentication_key_ = std::move(experimental_authentication_key);
+}
+
 void TestSyncService::SetEmptyLastCycleSnapshot() {
   SetLastCycleSnapshot(SyncCycleSnapshot());
 }
@@ -127,6 +134,11 @@ void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
 void TestSyncService::FireStateChanged() {
   for (auto& observer : observers_)
     observer.OnStateChanged(this);
+}
+
+void TestSyncService::FireSyncCycleCompleted() {
+  for (auto& observer : observers_)
+    observer.OnSyncCycleCompleted(this);
 }
 
 SyncUserSettings* TestSyncService::GetUserSettings() {
@@ -170,8 +182,12 @@ bool TestSyncService::RequiresClientUpgrade() const {
          syncer::UPGRADE_CLIENT;
 }
 
-std::string TestSyncService::GetExperimentalAuthenticationId() const {
-  return std::string();
+std::unique_ptr<crypto::ECPrivateKey>
+TestSyncService::GetExperimentalAuthenticationKey() const {
+  if (!experimental_authentication_key_)
+    return nullptr;
+
+  return experimental_authentication_key_->Copy();
 }
 
 std::unique_ptr<SyncSetupInProgressHandle>

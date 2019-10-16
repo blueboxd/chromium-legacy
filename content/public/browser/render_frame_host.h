@@ -26,10 +26,10 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
-#include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -330,7 +330,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Check whether the specific Blink feature is currently preventing fast
   // shutdown of the frame.
   virtual bool GetSuddenTerminationDisablerState(
-      blink::WebSuddenTerminationDisablerType disabler_type) = 0;
+      blink::SuddenTerminationDisablerType disabler_type) = 0;
 
   // Returns true if the given |threshold_value| is below the threshold value
   // specified in the policy for |feature| for this RenderFrameHost. See

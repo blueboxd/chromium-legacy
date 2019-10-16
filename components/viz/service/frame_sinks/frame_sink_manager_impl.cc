@@ -58,8 +58,7 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(const InitParams& params)
       hit_test_manager_(surface_manager()),
       restart_id_(params.restart_id),
       run_all_compositor_stages_before_draw_(
-          params.run_all_compositor_stages_before_draw),
-      binding_(this) {
+          params.run_all_compositor_stages_before_draw) {
   surface_manager_.AddObserver(&hit_test_manager_);
   surface_manager_.AddObserver(this);
 }
@@ -86,12 +85,12 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
 }
 
 void FrameSinkManagerImpl::BindAndSetClient(
-    mojom::FrameSinkManagerRequest request,
+    mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     mojom::FrameSinkManagerClientPtr client) {
   DCHECK(!client_);
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request), std::move(task_runner));
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver), std::move(task_runner));
   client_ptr_ = std::move(client);
   client_ = client_ptr_.get();
 }
@@ -106,8 +105,8 @@ void FrameSinkManagerImpl::SetLocalClient(
 }
 
 void FrameSinkManagerImpl::ForceShutdown() {
-  if (binding_.is_bound())
-    binding_.Close();
+  if (receiver_.is_bound())
+    receiver_.reset();
 
   for (auto& it : cached_back_buffers_)
     it.second.RunAndReset();

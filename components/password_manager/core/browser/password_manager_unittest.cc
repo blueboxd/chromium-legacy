@@ -1441,9 +1441,7 @@ TEST_F(PasswordManagerTest,
 
 // Tests whether two submissions to the same origin but different schemes
 // result in only saving the first submission, which has a secure scheme.
-// TODO(crbug.com/1008818): reenable this test after addressing the linked bug.
-TEST_F(PasswordManagerTest,
-       DISABLED_AttemptedSavePasswordSameOriginInsecureScheme) {
+TEST_F(PasswordManagerTest, AttemptedSavePasswordSameOriginInsecureScheme) {
   PasswordForm secure_form(MakeSimpleForm());
   secure_form.origin = GURL("https://example.com/login");
   secure_form.action = GURL("https://example.com/login");
@@ -1452,9 +1450,17 @@ TEST_F(PasswordManagerTest,
   secure_form.signon_realm = "https://example.com/";
 
   PasswordForm insecure_form(MakeSimpleForm());
+  // If all inputs of |secure_form| and |insecure_form| are the same, then
+  // |insecure_form| is considered as reappearing of |secure_form| and the
+  // submission is considered to be failed.
   insecure_form.username_element += ASCIIToUTF16("1");
+  FormFieldData& username_field = insecure_form.form_data.fields[0];
+  username_field.name = insecure_form.username_element;
   insecure_form.username_value = ASCIIToUTF16("compromised_user");
+  username_field.value = insecure_form.username_value;
   insecure_form.password_value = ASCIIToUTF16("C0mpr0m1s3d_P4ss");
+  FormFieldData& password_field = insecure_form.form_data.fields[1];
+  password_field.value = insecure_form.password_value;
   insecure_form.origin = GURL("http://example.com/home");
   insecure_form.action = GURL("http://example.com/home");
   insecure_form.form_data.url = insecure_form.origin;

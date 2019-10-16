@@ -233,7 +233,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   }
 
   bool updating_bounds() const { return updating_bounds_; }
-  bool is_app_list_visible() const { return is_app_list_visible_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
   HotseatState hotseat_state() const { return state_.hotseat_state; }
 
@@ -508,10 +507,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   ShelfWidget* shelf_widget_;
   Shelf* shelf_;
-
-  // Whether the app list is visible. This is maintained by
-  // OnAppListVisibilityChanged and OnHomeLauncherAnimationComplete.
-  bool is_app_list_visible_ = false;
 
   enum HomeLauncherAnimationState {
     kFinished,

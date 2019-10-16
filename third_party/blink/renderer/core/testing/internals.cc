@@ -1324,7 +1324,7 @@ String Internals::suggestedValue(Element* element,
   if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
     return textarea->SuggestedValue();
 
-  if (auto* select = ToHTMLSelectElementOrNull(*element))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*element))
     return select->SuggestedValue();
 
   return suggested_value;
@@ -1347,7 +1347,7 @@ void Internals::setSuggestedValue(Element* element,
   if (auto* textarea = ToHTMLTextAreaElementOrNull(*element))
     textarea->SetSuggestedValue(value);
 
-  if (auto* select = ToHTMLSelectElementOrNull(*element))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*element))
     select->SetSuggestedValue(value);
 }
 
@@ -1377,7 +1377,7 @@ void Internals::setAutofilledValue(Element* element,
         *Event::CreateBubble(event_type_names::kKeyup));
   }
 
-  if (auto* select = ToHTMLSelectElementOrNull(*element))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*element))
     select->setValue(value, true /* send_events */);
 
   To<HTMLFormControlElement>(element)->SetAutofillState(
@@ -2935,34 +2935,34 @@ String Internals::selectMenuListText(HTMLSelectElement* select) {
 
 bool Internals::isSelectPopupVisible(Node* node) {
   DCHECK(node);
-  if (auto* select = ToHTMLSelectElementOrNull(*node))
+  if (auto* select = DynamicTo<HTMLSelectElement>(*node))
     return select->PopupIsVisible();
   return false;
 }
 
 bool Internals::selectPopupItemStyleIsRtl(Node* node, int item_index) {
-  if (!node || !IsHTMLSelectElement(*node))
+  auto* select = DynamicTo<HTMLSelectElement>(node);
+  if (!select)
     return false;
 
-  HTMLSelectElement& select = ToHTMLSelectElement(*node);
   if (item_index < 0 ||
-      static_cast<wtf_size_t>(item_index) >= select.GetListItems().size())
+      static_cast<wtf_size_t>(item_index) >= select->GetListItems().size())
     return false;
   const ComputedStyle* item_style =
-      select.ItemComputedStyle(*select.GetListItems()[item_index]);
+      select->ItemComputedStyle(*select->GetListItems()[item_index]);
   return item_style && item_style->Direction() == TextDirection::kRtl;
 }
 
 int Internals::selectPopupItemStyleFontHeight(Node* node, int item_index) {
-  if (!node || !IsHTMLSelectElement(*node))
+  auto* select = DynamicTo<HTMLSelectElement>(node);
+  if (!select)
     return false;
 
-  HTMLSelectElement& select = ToHTMLSelectElement(*node);
   if (item_index < 0 ||
-      static_cast<wtf_size_t>(item_index) >= select.GetListItems().size())
+      static_cast<wtf_size_t>(item_index) >= select->GetListItems().size())
     return false;
   const ComputedStyle* item_style =
-      select.ItemComputedStyle(*select.GetListItems()[item_index]);
+      select->ItemComputedStyle(*select->GetListItems()[item_index]);
 
   if (item_style) {
     const SimpleFontData* font_data = item_style->GetFont().PrimaryFont();

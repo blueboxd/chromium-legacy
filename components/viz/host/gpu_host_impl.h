@@ -148,8 +148,9 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void BlockLiveOffscreenContexts();
 
   // Connects to FrameSinkManager running in the Viz service.
-  void ConnectFrameSinkManager(mojom::FrameSinkManagerRequest request,
-                               mojom::FrameSinkManagerClientPtrInfo client);
+  void ConnectFrameSinkManager(
+      mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
+      mojom::FrameSinkManagerClientPtrInfo client);
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   // Connects to Viz DevTools running in the Viz service.

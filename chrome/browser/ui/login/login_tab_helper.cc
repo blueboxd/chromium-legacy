@@ -17,6 +17,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 LoginTabHelper::~LoginTabHelper() {}
 

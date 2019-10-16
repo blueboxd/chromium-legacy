@@ -487,11 +487,6 @@
     "args": ["--force-presentation-receiver-for-testing"]
   },
   {
-    "prefix": "longtask-v2",
-    "base": "http/tests/performance-timing/longtask-v2",
-    "args": ["--enable-blink-features=LongTaskV2"]
-  },
-  {
     "prefix": "paint-timing",
     "base": "external/wpt/paint-timing",
     "args": ["--enable-threaded-compositing"]

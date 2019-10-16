@@ -7,7 +7,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 
 namespace internal {
 const char kHistogramDocWriteBlockFirstContentfulPaint[] =
@@ -50,7 +50,7 @@ const char kHistogramDocWriteBlockLoadingBehavior[] =
 void DocumentWritePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (GetDelegate().GetMainFrameMetadata().behavior_flags &
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock) {
+      blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock) {
     LogDocumentWriteBlockFirstContentfulPaint(timing);
   }
 }
@@ -59,7 +59,7 @@ void DocumentWritePageLoadMetricsObserver::
     OnFirstMeaningfulPaintInMainFrameDocument(
         const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (GetDelegate().GetMainFrameMetadata().behavior_flags &
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock) {
+      blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock) {
     LogDocumentWriteBlockFirstMeaningfulPaint(timing);
   }
 }
@@ -67,7 +67,7 @@ void DocumentWritePageLoadMetricsObserver::
 void DocumentWritePageLoadMetricsObserver::OnParseStop(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (GetDelegate().GetMainFrameMetadata().behavior_flags &
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock) {
+      blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock) {
     LogDocumentWriteBlockParseStop(timing);
   }
 }
@@ -95,19 +95,17 @@ void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
     content::RenderFrameHost* rfh,
     int behavior_flags) {
   if ((GetDelegate().GetMainFrameMetadata().behavior_flags &
-       blink::WebLoadingBehaviorFlag::
-           kWebLoadingBehaviorDocumentWriteBlockReload) &&
+       blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlockReload) &&
       !doc_write_block_reload_observed_) {
-    DCHECK(!(
-        GetDelegate().GetMainFrameMetadata().behavior_flags &
-        blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock));
+    DCHECK(!(GetDelegate().GetMainFrameMetadata().behavior_flags &
+             blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock));
     UMA_HISTOGRAM_COUNTS_1M(internal::kHistogramDocWriteBlockReloadCount, 1);
     LogLoadingBehaviorMetrics(LOADING_BEHAVIOR_RELOAD,
                               GetDelegate().GetSourceId());
     doc_write_block_reload_observed_ = true;
   }
   if ((GetDelegate().GetMainFrameMetadata().behavior_flags &
-       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock) &&
+       blink::LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock) &&
       !doc_write_block_observed_) {
     UMA_HISTOGRAM_BOOLEAN(internal::kHistogramDocWriteBlockCount, true);
     LogLoadingBehaviorMetrics(LOADING_BEHAVIOR_BLOCK,
@@ -115,8 +113,8 @@ void DocumentWritePageLoadMetricsObserver::OnLoadingBehaviorObserved(
     doc_write_block_observed_ = true;
   }
   if ((GetDelegate().GetMainFrameMetadata().behavior_flags &
-       blink::WebLoadingBehaviorFlag::
-           kWebLoadingBehaviorDocumentWriteBlockDifferentScheme) &&
+       blink::LoadingBehaviorFlag::
+           kLoadingBehaviorDocumentWriteBlockDifferentScheme) &&
       !doc_write_same_site_diff_scheme_) {
     LogLoadingBehaviorMetrics(LOADING_BEHAVIOR_SAME_SITE_DIFF_SCHEME,
                               GetDelegate().GetSourceId());

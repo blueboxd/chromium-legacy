@@ -31,6 +31,19 @@ if (!is_ios) {
     ]
   }
 
+  source_set("test_utils") {
+    testonly = true
+
+    sources = [
+      "test_utils.h",
+    ]
+
+    deps = [
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+  }
+
   source_set("unit_tests") {
     testonly = true
 

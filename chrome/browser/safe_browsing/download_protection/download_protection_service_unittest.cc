@@ -21,6 +21,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -34,6 +35,8 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/browser/safe_browsing/download_protection/check_native_file_system_write_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -130,12 +133,13 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
 class FakeSafeBrowsingService : public TestSafeBrowsingService {
  public:
-  FakeSafeBrowsingService()
+  explicit FakeSafeBrowsingService(Profile* profile)
       : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
         download_report_count_(0) {
     services_delegate_ = ServicesDelegate::CreateForTest(this, this);
+    services_delegate_->CreateBinaryUploadService(profile);
     mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
   }
 
@@ -239,11 +243,13 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
     // Start real threads for the IO and File threads so that the DCHECKs
     // to test that we're on the correct thread work.
-    sb_service_ = new StrictMock<FakeSafeBrowsingService>();
+    sb_service_ =
+        base::MakeRefCounted<StrictMock<FakeSafeBrowsingService>>(profile());
     sb_service_->Initialize();
     TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
         sb_service_.get());
-    binary_feature_extractor_ = new StrictMock<MockBinaryFeatureExtractor>();
+    binary_feature_extractor_ =
+        base::MakeRefCounted<StrictMock<MockBinaryFeatureExtractor>>();
     ON_CALL(*binary_feature_extractor_, ExtractImageFeatures(_, _, _, _))
         .WillByDefault(Return(true));
     download_service_ = sb_service_->download_protection_service();
@@ -287,6 +293,9 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
         ->SetTestingFactory(
             profile(),
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+
+    storage_.SetClientId("client id");
+    storage_.SetDMToken("dm token");
   }
 
   void TearDown() override {
@@ -508,6 +517,16 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
         prefs::kAllowPasswordProtectedFiles, value);
   }
 
+  void SetBlockLargeFilesPref(BlockLargeFileTransferValues value) {
+    g_browser_process->local_state()->SetInteger(prefs::kBlockLargeFileTransfer,
+                                                 value);
+  }
+
+  void SetSendFilesForMalwareCheckPref(SendFilesForMalwareCheckValues value) {
+    profile()->GetPrefs()->SetInteger(
+        prefs::kSafeBrowsingSendFilesForMalwareCheck, value);
+  }
+
   // Helper function to simulate a user gesture, then a link click.
   // The usual NavigateAndCommit is unsuitable because it creates
   // browser-initiated navigations, causing us to drop the referrer.
@@ -625,6 +644,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   base::ScopedTempDir temp_dir_;
   extensions::TestEventRouter* test_event_router_;
   TestingProfileManager testing_profile_manager_;
+  policy::FakeBrowserDMTokenStorage storage_;
 };
 
 void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptArchive(
@@ -2821,8 +2841,11 @@ TEST_F(DownloadProtectionServiceTest,
   content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
 
   {
+    SetSendFilesForMalwareCheckPref(
+        SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
     SetPasswordProtectedAllowedPref(
         AllowPasswordProtectedFilesValues::ALLOW_NONE);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;
     download_service_->CheckClientDownload(
@@ -2830,12 +2853,61 @@ TEST_F(DownloadProtectionServiceTest,
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_TRUE(IsResult(DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED));
-    EXPECT_FALSE(HasClientDownloadRequest());
+    EXPECT_TRUE(HasClientDownloadRequest());
   }
 
   {
     SetPasswordProtectedAllowedPref(
         AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
+}
+
+TEST_F(DownloadProtectionServiceTest, LargeFileBlockedByPreference) {
+  base::FilePath test_zip;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/encrypted.zip"},  // url_chain
+      "http://www.google.com/",                      // referrer
+      test_zip,                                      // tmp_path
+      temp_dir_.GetPath().Append(
+          FILE_PATH_LITERAL("encrypted.zip")));  // final_path
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+
+  EXPECT_CALL(item, GetReceivedBytes())
+      .WillRepeatedly(Return(100 * 1024 * 1024));
+
+  {
+    SetSendFilesForMalwareCheckPref(
+        SendFilesForMalwareCheckValues::SEND_DOWNLOADS);
+    SetBlockLargeFilesPref(BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::BLOCKED_TOO_LARGE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+  }
+
+  {
+    SetBlockLargeFilesPref(BlockLargeFileTransferValues::BLOCK_NONE);
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
 
     RunLoop run_loop;

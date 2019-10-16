@@ -39,24 +39,20 @@ namespace sync_preferences {
 namespace {
 
 const sync_pb::PreferenceSpecifics& GetSpecifics(const syncer::SyncData& pref) {
-  DCHECK(pref.GetDataType() == syncer::PREFERENCES ||
-         pref.GetDataType() == syncer::PRIORITY_PREFERENCES);
-  if (pref.GetDataType() == syncer::PRIORITY_PREFERENCES) {
-    return pref.GetSpecifics().priority_preference().preference();
-  } else {
-    return pref.GetSpecifics().preference();
-  }
-}
-
-sync_pb::PreferenceSpecifics* GetMutableSpecifics(
-    const syncer::ModelType type,
-    sync_pb::EntitySpecifics* specifics) {
-  if (type == syncer::PRIORITY_PREFERENCES) {
-    DCHECK(!specifics->has_preference());
-    return specifics->mutable_priority_preference()->mutable_preference();
-  } else {
-    DCHECK(!specifics->has_priority_preference());
-    return specifics->mutable_preference();
+  switch (pref.GetDataType()) {
+    case syncer::PREFERENCES:
+      return pref.GetSpecifics().preference();
+    case syncer::PRIORITY_PREFERENCES:
+      return pref.GetSpecifics().priority_preference().preference();
+#if defined(OS_CHROMEOS)
+    case syncer::OS_PREFERENCES:
+      return pref.GetSpecifics().os_preference().preference();
+    case syncer::OS_PRIORITY_PREFERENCES:
+      return pref.GetSpecifics().os_priority_preference().preference();
+#endif
+    default:
+      NOTREACHED();
+      return pref.GetSpecifics().preference();
   }
 }
 
@@ -68,7 +64,14 @@ PrefModelAssociator::PrefModelAssociator(
     PersistentPrefStore* user_pref_store)
     : type_(type), client_(client), user_pref_store_(user_pref_store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(type_ == PREFERENCES || type_ == PRIORITY_PREFERENCES);
+#if defined(OS_CHROMEOS)
+  DCHECK(type_ == syncer::PREFERENCES ||
+         type_ == syncer::PRIORITY_PREFERENCES ||
+         type_ == syncer::OS_PREFERENCES ||
+         type_ == syncer::OS_PRIORITY_PREFERENCES);
+#else
+  DCHECK(type_ == syncer::PREFERENCES || type_ == syncer::PRIORITY_PREFERENCES);
+#endif
   DCHECK(user_pref_store_);
 }
 
@@ -77,6 +80,27 @@ PrefModelAssociator::~PrefModelAssociator() {
   pref_service_ = nullptr;
 
   synced_pref_observers_.clear();
+}
+
+// static
+sync_pb::PreferenceSpecifics* PrefModelAssociator::GetMutableSpecifics(
+    syncer::ModelType type,
+    sync_pb::EntitySpecifics* specifics) {
+  switch (type) {
+    case syncer::PREFERENCES:
+      return specifics->mutable_preference();
+    case syncer::PRIORITY_PREFERENCES:
+      return specifics->mutable_priority_preference()->mutable_preference();
+#if defined(OS_CHROMEOS)
+    case syncer::OS_PREFERENCES:
+      return specifics->mutable_os_preference()->mutable_preference();
+    case syncer::OS_PRIORITY_PREFERENCES:
+      return specifics->mutable_os_priority_preference()->mutable_preference();
+#endif
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
 }
 
 void PrefModelAssociator::InitPrefAndAssociate(

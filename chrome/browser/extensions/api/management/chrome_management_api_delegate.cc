@@ -227,7 +227,7 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     web_app_info->open_as_window = false;
 
     if (!image_result.image.IsEmpty()) {
-      WebApplicationInfo::IconInfo icon;
+      WebApplicationIconInfo icon;
       icon.data = image_result.image.AsBitmap();
       icon.width = icon.data.width();
       icon.height = icon.data.height();

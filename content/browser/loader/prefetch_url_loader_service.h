@@ -101,9 +101,8 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
 
   // For URLLoaderThrottlesGetter.
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateURLLoaderThrottles(
-      const network::ResourceRequest& request,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
+  CreateURLLoaderThrottles(const network::ResourceRequest& request,
+                           int frame_tree_node_id);
 
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
   BrowserContext* browser_context_ = nullptr;

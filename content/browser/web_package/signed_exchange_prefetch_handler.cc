@@ -19,7 +19,7 @@
 namespace content {
 
 SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    int frame_tree_node_id,
     const network::ResourceRequest& resource_request,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
@@ -51,14 +51,14 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
       std::move(client), std::move(endpoints), url_loader_options,
       false /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          resource_request.url, response_head, frame_tree_node_id_getter,
+          resource_request.url, response_head, frame_tree_node_id,
           base::nullopt /* devtools_navigation_token */,
           resource_request.report_raw_headers),
-      SignedExchangeReporter::MaybeCreate(
-          resource_request.url, resource_request.referrer.spec(), response_head,
-          frame_tree_node_id_getter),
+      SignedExchangeReporter::MaybeCreate(resource_request.url,
+                                          resource_request.referrer.spec(),
+                                          response_head, frame_tree_node_id),
       std::move(url_loader_factory), loader_throttles_getter,
-      frame_tree_node_id_getter, std::move(metric_recorder), accept_langs);
+      frame_tree_node_id, std::move(metric_recorder), accept_langs);
 }
 
 SignedExchangePrefetchHandler::~SignedExchangePrefetchHandler() = default;

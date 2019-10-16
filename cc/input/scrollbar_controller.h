@@ -38,7 +38,6 @@ class CC_EXPORT ScrollbarController {
   ScrollbarOrientation orientation() {
     return currently_captured_scrollbar_->orientation();
   }
-  void DidUnregisterScrollbar(ElementId element_id);
 
   void WillBeginImplFrame();
 

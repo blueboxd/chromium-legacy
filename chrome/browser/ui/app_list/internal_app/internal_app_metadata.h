@@ -93,9 +93,6 @@ bool HasRecommendableForeignTab(
     GURL* url,
     sync_sessions::OpenTabsUIDelegate* test_delegate);
 
-// Returns the BuiltInAppName of an internal app.
-apps::BuiltInAppName GetInternalAppNameByAppId(const std::string& app_id);
-
 // Returns the number of internal apps which can show in launcher.
 // If |apps_name| is not nullptr, it will be the concatenated string of these
 // internal apps' name.

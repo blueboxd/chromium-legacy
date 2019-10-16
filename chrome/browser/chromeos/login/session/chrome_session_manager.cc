@@ -12,9 +12,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
@@ -245,8 +245,7 @@ void ChromeSessionManager::Initialize(
   const AccountId login_account_id(
       cryptohome::Identification::FromString(cryptohome_id).GetAccountId());
 
-  KioskAppManager::RemoveObsoleteCryptohomes();
-  ArcKioskAppManager::RemoveObsoleteCryptohomes();
+  KioskCryptohomeRemover::RemoveObsoleteCryptohomes();
 
   if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
     VLOG(1) << "Starting Chrome with kiosk auto launch.";

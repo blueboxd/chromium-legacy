@@ -119,17 +119,17 @@ void IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe(
 IndexedDBBlobInfo::ReleaseCallback
 IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(int64_t database_id,
                                                      int64_t blob_key) {
-  return base::Bind(
+  return base::BindRepeating(
       &IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe,
       scoped_refptr<base::TaskRunner>(backing_store_->task_runner()),
       weak_factory_.GetWeakPtr(), database_id, blob_key);
 }
 
-base::Closure IndexedDBActiveBlobRegistry::GetAddBlobRefCallback(
+base::RepeatingClosure IndexedDBActiveBlobRegistry::GetAddBlobRefCallback(
     int64_t database_id,
     int64_t blob_key) {
-  return base::Bind(&IndexedDBActiveBlobRegistry::AddBlobRef,
-                    weak_factory_.GetWeakPtr(), database_id, blob_key);
+  return base::BindRepeating(&IndexedDBActiveBlobRegistry::AddBlobRef,
+                             weak_factory_.GetWeakPtr(), database_id, blob_key);
 }
 
 void IndexedDBActiveBlobRegistry::ForceShutdown() {

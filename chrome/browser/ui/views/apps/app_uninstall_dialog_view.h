@@ -57,7 +57,6 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   bool Accept() override;
   bool Close() override;
   gfx::Size CalculatePreferredSize() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   gfx::ImageSkia GetWindowIcon() override;
   base::string16 GetWindowTitle() const override;
@@ -80,8 +79,6 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   // TODO(crbug.com/1009248): Remove these fields to use the consistent title
   // and button.
   base::string16 window_title_;
-  base::string16 confirm_button_text_;
-  base::string16 cancel_button_text_;
 
   DISALLOW_COPY_AND_ASSIGN(AppUninstallDialogView);
 };

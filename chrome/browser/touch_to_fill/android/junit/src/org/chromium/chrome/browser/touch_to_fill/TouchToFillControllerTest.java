@@ -18,8 +18,8 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
@@ -99,32 +99,31 @@ public class TouchToFillControllerTest {
         assertNotNull(mModel.get(SHEET_ITEMS));
         assertNotNull(mModel.get(VIEW_EVENT_LISTENER));
         assertThat(mModel.get(VISIBLE), is(false));
-        assertThat(mModel.get(FORMATTED_URL), is(nullValue()));
-        assertThat(mModel.get(ORIGIN_SECURE), is(false));
     }
 
     @Test
-    public void testShowCredentialsSetsFormattedUrl() {
+    public void testShowCredentialsCreatesHeader() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
-        assertThat(mModel.get(FORMATTED_URL), is(TEST_URL));
-        assertThat(mModel.get(ORIGIN_SECURE), is(true));
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        assertThat(itemList.get(0).type, is(ItemType.HEADER));
+        assertThat(itemList.get(0).model.get(FORMATTED_URL), is(TEST_URL));
+        assertThat(itemList.get(0).model.get(ORIGIN_SECURE), is(true));
     }
 
     @Test
     public void testShowCredentialsSetsCredentialListAndRequestsFavicons() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
-        ListModel<MVCListAdapter.ListItem> credentialList = mModel.get(SHEET_ITEMS);
-        // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
-        assertThat(credentialList.size(), is(3));
-        assertThat(credentialList.get(0).type, is(ItemType.CREDENTIAL));
-        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(ANA));
-        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
-        assertThat(credentialList.get(1).type, is(TouchToFillProperties.ItemType.CREDENTIAL));
-        assertThat(credentialList.get(1).model.get(CREDENTIAL), is(CARL));
-        assertThat(credentialList.get(1).model.get(FAVICON), is(nullValue()));
-        assertThat(credentialList.get(2).type, is(TouchToFillProperties.ItemType.CREDENTIAL));
-        assertThat(credentialList.get(2).model.get(CREDENTIAL), is(BOB));
-        assertThat(credentialList.get(2).model.get(FAVICON), is(nullValue()));
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        assertThat(itemList.size(), is(4));
+        assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
+        assertThat(itemList.get(1).model.get(CREDENTIAL), is(ANA));
+        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(2).type, is(ItemType.CREDENTIAL));
+        assertThat(itemList.get(2).model.get(CREDENTIAL), is(CARL));
+        assertThat(itemList.get(2).model.get(FAVICON), is(nullValue()));
+        assertThat(itemList.get(3).type, is(ItemType.CREDENTIAL));
+        assertThat(itemList.get(3).model.get(CREDENTIAL), is(BOB));
+        assertThat(itemList.get(3).model.get(FAVICON), is(nullValue()));
 
         verify(mMockDelegate).fetchFavicon(eq("https://m.a.xyz/"), eq(DESIRED_FAVICON_SIZE), any());
         verify(mMockDelegate).fetchFavicon(eq(TEST_URL), eq(DESIRED_FAVICON_SIZE), any());
@@ -135,12 +134,11 @@ public class TouchToFillControllerTest {
     @Test
     public void testFetchFaviconUpdatesModel() {
         mMediator.showCredentials(TEST_URL, true, Collections.singletonList(CARL));
-        ListModel<MVCListAdapter.ListItem> credentialList = mModel.get(SHEET_ITEMS);
-        assertThat(credentialList.size(), is(1));
-        // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
-        assertThat(credentialList.get(0).type, is(TouchToFillProperties.ItemType.CREDENTIAL));
-        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(CARL));
-        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        assertThat(itemList.size(), is(2));
+        assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
+        assertThat(itemList.get(1).model.get(CREDENTIAL), is(CARL));
+        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
 
         // ANA and CARL both have TEST_URL as their origin URL
         verify(mMockDelegate)
@@ -150,39 +148,37 @@ public class TouchToFillControllerTest {
         Bitmap bitmap = Bitmap.createBitmap(
                 DESIRED_FAVICON_SIZE, DESIRED_FAVICON_SIZE, Bitmap.Config.ARGB_8888);
         callback.onResult(bitmap);
-        assertThat(credentialList.get(0).model.get(FAVICON), is(bitmap));
+        assertThat(itemList.get(1).model.get(FAVICON), is(bitmap));
     }
 
     @Test
     public void testShowCredentialsFormatPslOrigins() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, BOB));
-        assertThat(mModel.get(SHEET_ITEMS).size(), is(2));
-        assertThat(mModel.get(SHEET_ITEMS).get(0).type, is(ItemType.CREDENTIAL));
-        assertThat(mModel.get(SHEET_ITEMS).get(0).model.get(FORMATTED_ORIGIN),
-                is(format(ANA.getOriginUrl())));
+        assertThat(mModel.get(SHEET_ITEMS).size(), is(3));
         assertThat(mModel.get(SHEET_ITEMS).get(1).type, is(ItemType.CREDENTIAL));
         assertThat(mModel.get(SHEET_ITEMS).get(1).model.get(FORMATTED_ORIGIN),
+                is(format(ANA.getOriginUrl())));
+        assertThat(mModel.get(SHEET_ITEMS).get(2).type, is(ItemType.CREDENTIAL));
+        assertThat(mModel.get(SHEET_ITEMS).get(2).model.get(FORMATTED_ORIGIN),
                 is(format(BOB.getOriginUrl())));
     }
 
     @Test
     public void testClearsCredentialListWhenShowingAgain() {
         mMediator.showCredentials(TEST_URL, true, Collections.singletonList(ANA));
-        ListModel<MVCListAdapter.ListItem> credentialList = mModel.get(SHEET_ITEMS);
-        // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
-        assertThat(credentialList.size(), is(1));
-        assertThat(credentialList.get(0).type, is(ItemType.CREDENTIAL));
-        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(ANA));
-        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
+        ListModel<MVCListAdapter.ListItem> itemList = mModel.get(SHEET_ITEMS);
+        assertThat(itemList.size(), is(2));
+        assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
+        assertThat(itemList.get(1).model.get(CREDENTIAL), is(ANA));
+        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
 
         // Showing the sheet a second time should replace all changed credentials.
         mMediator.showCredentials(TEST_URL, true, Collections.singletonList(BOB));
-        credentialList = mModel.get(SHEET_ITEMS);
-        // TODO(https://crbug.com/1013209): Simplify this after adding equals to ModelList.
-        assertThat(credentialList.size(), is(1));
-        assertThat(credentialList.get(0).type, is(ItemType.CREDENTIAL));
-        assertThat(credentialList.get(0).model.get(CREDENTIAL), is(BOB));
-        assertThat(credentialList.get(0).model.get(FAVICON), is(nullValue()));
+        itemList = mModel.get(SHEET_ITEMS);
+        assertThat(itemList.size(), is(2));
+        assertThat(itemList.get(1).type, is(ItemType.CREDENTIAL));
+        assertThat(itemList.get(1).model.get(CREDENTIAL), is(BOB));
+        assertThat(itemList.get(1).model.get(FAVICON), is(nullValue()));
     }
 
     @Test

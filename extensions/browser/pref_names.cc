@@ -31,6 +31,7 @@ const char kAlertsInitialized[] = "extensions.alerts.initialized";
 const char kAllowedInstallSites[] = "extensions.allowed_install_sites";
 const char kAllowedTypes[] = "extensions.allowed_types";
 const char kAppFullscreenAllowed[] = "apps.fullscreen.allowed";
+const char kBlockExternalExtensions[] = "extensions.block_external_extensions";
 const char kExtensions[] = "extensions.settings";
 const char kExtensionManagement[] = "extensions.management";
 const char kInstallAllowList[] = "extensions.install.allowlist";

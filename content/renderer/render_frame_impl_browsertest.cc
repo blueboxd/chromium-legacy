@@ -22,7 +22,6 @@
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unfreezable_frame_messages.h"
-#include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
@@ -224,20 +223,18 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   // subframe's widget, and it will set the size for the WebView.
   RenderWidget* main_frame_widget =
       GetMainRenderFrame()->GetLocalRootRenderWidget();
-  ViewMsg_UpdateVisualProperties resize_message(
-      view_->GetRoutingID(), visual_properties,
-      main_frame_widget->routing_id());
+  WidgetMsg_UpdateVisualProperties resize_message(
+      main_frame_widget->routing_id(), visual_properties);
 
-  static_cast<RenderViewImpl*>(view_)->OnMessageReceived(resize_message);
+  main_frame_widget->OnMessageReceived(resize_message);
   EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
             blink::WebSize(size));
   EXPECT_NE(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
 
   // The subframe sets the size only for itself.
-  ViewMsg_UpdateVisualProperties resize_message_subframe(
-      view_->GetRoutingID(), visual_properties, frame_widget()->routing_id());
-  static_cast<RenderViewImpl*>(view_)->OnMessageReceived(
-      resize_message_subframe);
+  WidgetMsg_UpdateVisualProperties resize_message_subframe(
+      frame_widget()->routing_id(), visual_properties);
+  frame_widget()->OnMessageReceived(resize_message_subframe);
   EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
 }
 

@@ -74,6 +74,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
 
     base::FilePath clang_tool_path =
         source_path_.Append(kClangToolPath).Append(platform_name);
+    std::vector<std::string> path_filters;
 
     // As build path is not available and not used in tests, the default (empty)
     // build path is passed to auditor.
@@ -81,7 +82,7 @@ class TrafficAnnotationAuditorTest : public ::testing::Test {
         source_path_,
         source_path_.Append(FILE_PATH_LITERAL("out"))
             .Append(FILE_PATH_LITERAL("Default")),
-        clang_tool_path);
+        clang_tool_path, path_filters);
 
     id_checker_ = std::make_unique<TrafficAnnotationIDChecker>(
         TrafficAnnotationAuditor::GetReservedIDsSet(), kDummyDeprecatedIDs);

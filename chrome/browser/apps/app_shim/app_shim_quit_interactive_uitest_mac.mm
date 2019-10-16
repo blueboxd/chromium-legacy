@@ -26,6 +26,8 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 
 using extensions::PlatformAppBrowserTest;
@@ -65,14 +67,14 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
         extensions::ExtensionRegistry::Get(profile());
     extension_id_ =
         GetExtensionByPath(registry->enabled_extensions(), app_path_)->id();
-    chrome::mojom::AppShimHostPtr host_ptr;
+    mojo::Remote<chrome::mojom::AppShimHost> host;
     auto app_shim_info = chrome::mojom::AppShimInfo::New();
     app_shim_info->profile_path = profile()->GetPath().BaseName();
     app_shim_info->app_id = extension_id_;
     app_shim_info->app_url = GURL("https://example.com");
     app_shim_info->launch_type = apps::APP_SHIM_LAUNCH_REGISTER_ONLY;
     (new TestAppShimHostBootstrap)
-        ->OnShimConnected(mojo::MakeRequest(&host_ptr),
+        ->OnShimConnected(host.BindNewPipeAndPassReceiver(),
                           std::move(app_shim_info),
                           base::BindOnce(&AppShimQuitTest::DoShimLaunchDone,
                                          base::Unretained(this)));
@@ -83,8 +85,9 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     content::RunAllPendingInMessageLoop();
   }
 
-  void DoShimLaunchDone(apps::AppShimLaunchResult result,
-                        chrome::mojom::AppShimRequest app_shim_request) {}
+  void DoShimLaunchDone(
+      apps::AppShimLaunchResult result,
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);

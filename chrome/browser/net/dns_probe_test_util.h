@@ -50,10 +50,11 @@ class FakeHostResolver : public network::mojom::HostResolver {
                    mojo::PendingRemote<network::mojom::ResolveHostClient>
                        pending_response_client) override;
 
-  void MdnsListen(const net::HostPortPair& host,
-                  net::DnsQueryType query_type,
-                  network::mojom::MdnsListenClientPtr response_client,
-                  MdnsListenCallback callback) override;
+  void MdnsListen(
+      const net::HostPortPair& host,
+      net::DnsQueryType query_type,
+      mojo::PendingRemote<network::mojom::MdnsListenClient> response_client,
+      MdnsListenCallback callback) override;
 
  private:
   mojo::Receiver<network::mojom::HostResolver> receiver_;
@@ -72,10 +73,11 @@ class HangingHostResolver : public network::mojom::HostResolver {
                    mojo::PendingRemote<network::mojom::ResolveHostClient>
                        response_client) override;
 
-  void MdnsListen(const net::HostPortPair& host,
-                  net::DnsQueryType query_type,
-                  network::mojom::MdnsListenClientPtr response_client,
-                  MdnsListenCallback callback) override;
+  void MdnsListen(
+      const net::HostPortPair& host,
+      net::DnsQueryType query_type,
+      mojo::PendingRemote<network::mojom::MdnsListenClient> response_client,
+      MdnsListenCallback callback) override;
 
  private:
   mojo::Receiver<network::mojom::HostResolver> receiver_;

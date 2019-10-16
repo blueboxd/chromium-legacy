@@ -59,17 +59,20 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
   MOCK_METHOD2(OnRouteMessagesReceived,
                void(const std::string& route_id,
                     std::vector<mojom::RouteMessagePtr> messages));
-  void OnMediaRemoterCreated(int32_t tab_id,
-                             media::mojom::MirrorServiceRemoterPtr remoter,
-                             media::mojom::MirrorServiceRemotingSourceRequest
-                                 source_request) override {
-    OnMediaRemoterCreatedInternal(tab_id, remoter, source_request);
+  void OnMediaRemoterCreated(
+      int32_t tab_id,
+      mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
+      mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
+          source_receiver) override {
+    OnMediaRemoterCreatedInternal(tab_id, std::move(remoter),
+                                  std::move(source_receiver));
   }
   MOCK_METHOD3(
       OnMediaRemoterCreatedInternal,
       void(int32_t tab_id,
-           media::mojom::MirrorServiceRemoterPtr& remoter,
-           media::mojom::MirrorServiceRemotingSourceRequest& source_request));
+           mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
+           mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
+               source_receiver));
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override {
     GetMediaSinkServiceStatusInternal(callback);

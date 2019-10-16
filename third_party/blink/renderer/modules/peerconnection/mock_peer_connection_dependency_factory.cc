@@ -379,7 +379,7 @@ MockPeerConnectionDependencyFactory::CreateIceCandidate(
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-MockPeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
+MockPeerConnectionDependencyFactory::GetWebRtcSignalingTaskRunner() {
   return signaling_thread_.task_runner();
 }
 

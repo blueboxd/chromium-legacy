@@ -256,6 +256,7 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeaders(
 
 void WebRequestProxyingWebSocket::OnHeadersReceived(
     const std::string& headers,
+    const net::IPEndPoint& endpoint,
     OnHeadersReceivedCallback callback) {
   DCHECK(receiver_as_header_client_.is_bound());
 

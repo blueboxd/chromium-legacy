@@ -461,12 +461,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnAudioStateChanged(bool is_audio_playing);
   void OnSetBackgroundOpaque(bool opaque);
 
-  // |visual_properties| contains both page and widget scoped properties. This
-  // method consumes the page visual properties and forwards widget properties
-  // using |widget_routing_id|.
-  void OnUpdateVisualProperties(const VisualProperties& visual_properties,
-                                int widget_routing_id);
-
   // Page message handlers -----------------------------------------------------
   void OnPageWasHidden();
   void OnPageWasShown();

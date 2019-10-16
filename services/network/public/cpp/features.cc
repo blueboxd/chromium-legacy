@@ -154,7 +154,7 @@ const base::Feature kDisableKeepaliveFetch{"DisableKeepaliveFetch",
 const base::Feature kOutOfBlinkFrameAncestors{
     "OutOfBlinkFrameAncestors", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool ShouldEnableOutOfBlinkCors() {
+bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }
 

@@ -1140,7 +1140,7 @@ void SocketSecureFunction::AsyncWorkStart() {
 
 void SocketSecureFunction::TlsConnectDone(
     int result,
-    network::mojom::TLSClientSocketPtr tls_socket,
+    mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
     const net::IPEndPoint& local_addr,
     const net::IPEndPoint& peer_addr,
     mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,

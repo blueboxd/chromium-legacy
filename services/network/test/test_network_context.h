@@ -186,6 +186,9 @@ class TestNetworkContext : public mojom::NetworkContext {
       std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override {}
+  void SetCorsExtraSafelistedRequestHeaderNames(
+      const std::vector<std::string>&
+          cors_extra_safelisted_request_header_names) override {}
   void AddHSTS(const std::string& host,
                base::Time expiry,
                bool include_subdomains,

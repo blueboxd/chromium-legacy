@@ -6,14 +6,14 @@
 
 namespace viz {
 
-TestFrameSinkManagerImpl::TestFrameSinkManagerImpl() : binding_(this) {}
+TestFrameSinkManagerImpl::TestFrameSinkManagerImpl() = default;
 
-TestFrameSinkManagerImpl::~TestFrameSinkManagerImpl() {}
+TestFrameSinkManagerImpl::~TestFrameSinkManagerImpl() = default;
 
-void TestFrameSinkManagerImpl::BindRequest(
-    mojom::FrameSinkManagerRequest request,
+void TestFrameSinkManagerImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
     mojom::FrameSinkManagerClientPtr client) {
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
   client_ = std::move(client);
 }
 

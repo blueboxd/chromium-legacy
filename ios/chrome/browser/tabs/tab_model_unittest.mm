@@ -666,14 +666,9 @@ TEST_P(TabModelTest, RestorePersistedSessionAfterEmpty) {
   [tab_model_ restoreSessionWindow:session_window forInitialRestore:NO];
 
   EXPECT_EQ(0U, [tab_model_ count]);
-  EXPECT_TRUE([[NSFileManager defaultManager] removeItemAtPath:state_path
-                                                         error:nullptr]);
 }
 
 TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
-  NSString* stashPath =
-      base::SysUTF8ToNSString(chrome_browser_state_->GetStatePath().value());
-
   // Reset the TabModel with a custom SessionServiceIOS (to control whether
   // data is saved to disk).
   TestSessionService* test_session_service = [[TestSessionService alloc] init];
@@ -723,10 +718,6 @@ TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {
 
   EXPECT_EQ(tab_model_.webStateList->GetWebStateAt(1),
             tab_model_.webStateList->GetActiveWebState());
-
-  // Clean up.
-  EXPECT_TRUE([[NSFileManager defaultManager] removeItemAtPath:stashPath
-                                                         error:nullptr]);
 }
 
 INSTANTIATE_TEST_SUITE_P(ProgrammaticTabModelTest,

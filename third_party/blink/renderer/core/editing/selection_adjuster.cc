@@ -409,7 +409,7 @@ class ShadowBoundaryAdjuster final {
 
   static bool IsSelectionBoundary(const Node& node) {
     return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
-           IsHTMLSelectElement(node);
+           IsA<HTMLSelectElement>(node);
   }
 
   static Node* EnclosingShadowHostForStart(const PositionInFlatTree& position) {

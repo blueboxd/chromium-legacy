@@ -289,8 +289,7 @@ class MODULES_EXPORT UserMediaProcessor
   mojo::Remote<blink::mojom::blink::MediaStreamDispatcherHost> dispatcher_host_;
 
   // UserMedia requests are processed sequentially. |current_request_info_|
-  // contains the request currently being processed, if any, and
-  // |pending_request_infos_| is a list of queued requests.
+  // contains the request currently being processed.
   Member<RequestInfo> current_request_info_;
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   base::OnceClosure request_completed_cb_;

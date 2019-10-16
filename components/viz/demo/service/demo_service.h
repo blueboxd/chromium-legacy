@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace viz {
@@ -22,7 +23,7 @@ namespace demo {
 // the host over the mojom.FrameSinkManagerClient API.
 class DemoService {
  public:
-  DemoService(viz::mojom::FrameSinkManagerRequest request,
+  DemoService(mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
               viz::mojom::FrameSinkManagerClientPtr client);
   ~DemoService();
 

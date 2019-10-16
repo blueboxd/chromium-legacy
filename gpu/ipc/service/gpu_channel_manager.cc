@@ -52,6 +52,49 @@ const int kMaxKeepAliveTimeMs = 200;
 #endif
 }
 
+GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor()
+    : weak_factory_(this) {}
+
+GpuChannelManager::GpuPeakMemoryMonitor::~GpuPeakMemoryMonitor() {}
+
+uint64_t GpuChannelManager::GpuPeakMemoryMonitor::GetPeakMemoryUsage(
+    uint32_t sequence_num) {
+  auto sequence = sequence_trackers_.find(sequence_num);
+  if (sequence != sequence_trackers_.end())
+    return sequence->second;
+  return 0u;
+}
+
+void GpuChannelManager::GpuPeakMemoryMonitor::StartGpuMemoryTracking(
+    uint32_t sequence_num) {
+  sequence_trackers_.emplace(sequence_num, current_memory_);
+}
+
+void GpuChannelManager::GpuPeakMemoryMonitor::StopGpuMemoryTracking(
+    uint32_t sequence_num) {
+  sequence_trackers_.erase(sequence_num);
+}
+
+void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
+    CommandBufferId id,
+    uint64_t old_size,
+    uint64_t new_size) {
+  current_memory_ += new_size - old_size;
+  if (old_size < new_size) {
+    // When memory has increased, iterate over the sequences to update their
+    // peak.
+    // TODO(jonross): This should be fine if we typically have 1-2 sequences.
+    // However if that grows we may end up iterating many times are memory
+    // approaches peak. If that is the case we should track a
+    // |peak_since_last_sequence_update_| on the the memory changes. Then only
+    // update the sequences with a new one is added, or the peak is requested.
+    for (auto& sequence : sequence_trackers_) {
+      if (current_memory_ > sequence.second)
+        sequence.second = current_memory_;
+    }
+  }
+}
+
 GpuChannelManager::GpuChannelManager(
     const GpuPreferences& gpu_preferences,
     GpuChannelManagerDelegate* delegate,
@@ -248,6 +291,16 @@ void GpuChannelManager::GetVideoMemoryUsageStats(
       .has_duplicates = true;
 
   video_memory_usage_stats->bytes_allocated = total_size;
+}
+
+void GpuChannelManager::StartPeakMemoryMonitor(uint32_t sequence_num) {
+  peak_memory_monitor_.StartGpuMemoryTracking(sequence_num);
+}
+
+uint64_t GpuChannelManager::GetPeakMemoryUsage(uint32_t sequence_num) {
+  uint64_t total_memory = peak_memory_monitor_.GetPeakMemoryUsage(sequence_num);
+  peak_memory_monitor_.StopGpuMemoryTracking(sequence_num);
+  return total_memory;
 }
 
 #if defined(OS_ANDROID)

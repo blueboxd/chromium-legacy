@@ -337,12 +337,12 @@ ChildURLLoaderFactoryBundle::PassInterface() {
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
   if (default_factory_)
-    pending_default_factory = default_factory_.PassInterface();
+    pending_default_factory = default_factory_.Unbind();
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       pending_appcache_factory;
   if (appcache_factory_)
-    pending_appcache_factory = appcache_factory_.PassInterface();
+    pending_appcache_factory = appcache_factory_.Unbind();
 
   network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info;
   if (direct_network_factory_) {

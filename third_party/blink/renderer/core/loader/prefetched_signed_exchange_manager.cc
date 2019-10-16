@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -212,9 +213,10 @@ PrefetchedSignedExchangeManager::CreateDefaultURLLoader(
 std::unique_ptr<WebURLLoader>
 PrefetchedSignedExchangeManager::CreatePrefetchedSignedExchangeURLLoader(
     const WebURLRequest& request,
-    network::mojom::blink::URLLoaderFactoryPtr loader_factory) {
+    mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+        loader_factory) {
   return Platform::Current()
-      ->WrapURLLoaderFactory(loader_factory.PassInterface().PassHandle())
+      ->WrapURLLoaderFactory(loader_factory.PassPipe())
       ->CreateURLLoader(
           request,
           frame_->GetFrameScheduler()->CreateResourceLoadingTaskRunnerHandle());
@@ -278,18 +280,19 @@ void PrefetchedSignedExchangeManager::TriggerLoad() {
     if (!loader)
       continue;
     auto* prefetched_exchange = maching_prefetched_exchanges.at(i);
-    network::mojom::blink::URLLoaderFactoryPtr loader_factory =
-        network::mojom::blink::URLLoaderFactoryPtr(
-            network::mojom::blink::URLLoaderFactoryPtrInfo(
-                std::move(prefetched_exchange->loader_factory_handle),
-                network::mojom::URLLoaderFactory::Version_));
-    network::mojom::blink::URLLoaderFactoryPtr loader_factory_clone;
-    loader_factory->Clone(MakeRequest(&loader_factory_clone));
+    mojo::Remote<network::mojom::blink::URLLoaderFactory> loader_factory(
+        mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>(
+            std::move(prefetched_exchange->loader_factory_handle),
+            network::mojom::URLLoaderFactory::Version_));
+    mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+        loader_factory_clone;
+    loader_factory->Clone(
+        loader_factory_clone.InitWithNewPipeAndPassReceiver());
     // Reset loader_factory_handle to support loading the same resource again.
     prefetched_exchange->loader_factory_handle =
-        loader_factory_clone.PassInterface().PassHandle();
+        loader_factory_clone.PassPipe();
     loader->SetURLLoader(CreatePrefetchedSignedExchangeURLLoader(
-        loader->request(), std::move(loader_factory)));
+        loader->request(), loader_factory.Unbind()));
   }
 }
 

@@ -143,16 +143,15 @@ class BLINK_COMMON_EXPORT URLLoaderFactoryBundle
     return output;
   }
 
-  // TODO(crbug.com/955171): Replace URLLoaderFactoryPtr with Remote below.
   // |default_factory_| is the default factory used by the bundle. It usually
   // goes to "network", but it's possible it was overriden in case when the
   // context should not be given access to the network.
-  network::mojom::URLLoaderFactoryPtr default_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> default_factory_;
 
   // |appcache_factory_| is a special loader factory that intercepts
   // requests when the context has AppCache. See also
   // AppCacheSubresourceURLFactory.
-  network::mojom::URLLoaderFactoryPtr appcache_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> appcache_factory_;
 
   // Map from URL scheme to Remote<URLLoaderFactory> for handling URL requests
   // for schemes not handled by the |default_factory_|.  See also

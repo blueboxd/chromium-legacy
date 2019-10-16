@@ -10,8 +10,6 @@
 
 #include "components/sync/driver/sync_user_settings.h"
 
-struct CoreAccountId;
-
 namespace syncer {
 
 class TestSyncService;
@@ -54,7 +52,7 @@ class TestSyncUserSettings : public SyncUserSettings {
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
   void AddTrustedVaultDecryptionKeys(
-      const CoreAccountId& account_id,
+      const std::string& gaia_id,
       const std::vector<std::string>& keys) override;
 
   void SetFirstSetupComplete();

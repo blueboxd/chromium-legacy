@@ -15,8 +15,6 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
 
-struct CoreAccountId;
-
 namespace syncer {
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
@@ -120,7 +118,7 @@ class SyncUserSettings : public syncer::DataTypeEncryptionHandler {
   // TRUSTED_VAULT_PASSPHRASE: it provides new decryption keys that could
   // allow decrypting pending Nigori keys.
   virtual void AddTrustedVaultDecryptionKeys(
-      const CoreAccountId& account_id,
+      const std::string& gaia_id,
       const std::vector<std::string>& keys) = 0;
 };
 

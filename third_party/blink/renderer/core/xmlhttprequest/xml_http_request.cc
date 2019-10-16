@@ -709,7 +709,7 @@ void XMLHttpRequest::open(const AtomicString& method,
 
   if (url_.ProtocolIs("blob")) {
     GetExecutionContext()->GetPublicURLManager().Resolve(
-        url_, MakeRequest(&blob_url_loader_factory_));
+        url_, blob_url_loader_factory_.InitWithNewPipeAndPassReceiver());
   }
 
   async_ = async;
@@ -1082,9 +1082,10 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   resource_loader_options.initiator_info.name =
       fetch_initiator_type_names::kXmlhttprequest;
   if (blob_url_loader_factory_) {
-    resource_loader_options.url_loader_factory = base::MakeRefCounted<
-        base::RefCountedData<network::mojom::blink::URLLoaderFactoryPtr>>(
-        std::move(blob_url_loader_factory_));
+    resource_loader_options.url_loader_factory =
+        base::MakeRefCounted<base::RefCountedData<
+            mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>>>(
+            std::move(blob_url_loader_factory_));
   }
 
   // When responseType is set to "blob", we redirect the downloaded data to a

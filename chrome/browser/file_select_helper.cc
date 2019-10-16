@@ -117,6 +117,7 @@ bool IsDownloadAllowedBySafeBrowsing(
     // for PPAPI downloads.
     case Result::ASYNC_SCANNING:
     case Result::BLOCKED_PASSWORD_PROTECTED:
+    case Result::BLOCKED_TOO_LARGE:
       NOTREACHED();
       return true;
   }

@@ -202,7 +202,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameInputBeforeNavigation) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
@@ -266,7 +266,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameNavigationBeforeInput) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
@@ -317,7 +317,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   page_load_metrics::mojom::PageLoadTiming subframe_timing;
@@ -381,7 +381,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutInstability) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 0.5);
@@ -421,7 +421,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   page_load_metrics::mojom::PageLoadTiming subframe_timing;
@@ -488,7 +488,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFullNavigation) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
@@ -530,7 +530,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFrameDeleted) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   tester()->histogram_tester().ExpectTotalCount(
@@ -586,7 +586,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe1);
   tester()->SimulateMetadataUpdate(metadata, subframe2);
 
@@ -691,7 +691,7 @@ TEST_F(AMPPageLoadMetricsObserverTest,
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.
@@ -776,7 +776,7 @@ TEST_F(AMPPageLoadMetricsObserverTest,
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags =
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded;
   tester()->SimulateMetadataUpdate(metadata, subframe);
 
   // Navigate the main frame to trigger metrics recording.

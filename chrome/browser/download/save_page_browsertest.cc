@@ -500,7 +500,7 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   bool ShouldCompleteDownload(
       download::DownloadItem* item,
-      const base::Closure& user_complete_callback) override {
+      base::OnceClosure user_complete_callback) override {
     return false;
   }
 

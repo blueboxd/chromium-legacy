@@ -40,7 +40,7 @@ std::set<int> SizesToGenerate() {
 void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
                                std::vector<BitmapAndSource>* square_icons) {
   // Add all existing icons from WebApplicationInfo.
-  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
+  for (const WebApplicationIconInfo& icon_info : web_app_info.icons) {
     const SkBitmap& icon = icon_info.data;
     if (!icon.drawsNothing() && icon.width() == icon.height())
       square_icons->push_back(BitmapAndSource(icon_info.url, icon));
@@ -67,7 +67,7 @@ void ReplaceWebAppIcons(std::map<int, BitmapAndSource> size_map,
   // Populate the icon data into the WebApplicationInfo we are using to
   // install the bookmark app.
   for (const auto& size_and_icon : size_map) {
-    WebApplicationInfo::IconInfo icon_info;
+    WebApplicationIconInfo icon_info;
     icon_info.data = size_and_icon.second.bitmap;
     icon_info.url = size_and_icon.second.source_url;
     icon_info.width = icon_info.data.width();
@@ -95,7 +95,7 @@ void UpdateWebAppIconsWithoutChangingLinks(
   // Now add in any icons from the updated list that don't have URLs.
   for (const auto& pair : size_map) {
     if (pair.second.source_url.is_empty()) {
-      WebApplicationInfo::IconInfo icon_info;
+      WebApplicationIconInfo icon_info;
       icon_info.data = pair.second.bitmap;
       icon_info.width = pair.first;
       icon_info.height = pair.first;
@@ -129,7 +129,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
   // Create the WebApplicationInfo icons list *outside* of |web_app_info|, so
   // that we can decide later whether or not to replace the existing icons array
   // (conditionally on whether there were any that didn't have purpose ANY).
-  std::vector<WebApplicationInfo::IconInfo> web_app_icons;
+  std::vector<WebApplicationIconInfo> web_app_icons;
   for (const auto& icon : manifest.icons) {
     // An icon's purpose vector should never be empty (the manifest parser
     // should have added ANY if there was no purpose specified in the manifest).
@@ -141,7 +141,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
     }
 
     // TODO(benwells): Take the declared icon density and sizes into account.
-    WebApplicationInfo::IconInfo info;
+    WebApplicationIconInfo info;
     info.url = icon.src;
     web_app_icons.push_back(info);
   }

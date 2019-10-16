@@ -88,7 +88,7 @@ void VerifyCert(const scoped_refptr<net::X509Certificate>& certificate,
                 const GURL& url,
                 const std::string& ocsp_result,
                 const std::string& sct_list,
-                base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+                int frame_tree_node_id,
                 VerifyCallback callback) {
   VerifyCallback wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), net::ERR_FAILED, net::CertVerifyResult(),
@@ -97,8 +97,7 @@ void VerifyCert(const scoped_refptr<net::X509Certificate>& certificate,
   network::mojom::NetworkContext* network_context =
       g_network_context_for_testing;
   if (!network_context) {
-    auto* frame =
-        FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
+    auto* frame = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
     if (!frame)
       return;
 
@@ -176,7 +175,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<blink::SignedExchangeRequestMatcher> request_matcher,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     SignedExchangeReporter* reporter,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
+    int frame_tree_node_id)
     : is_secure_transport_(is_secure_transport),
       has_nosniff_(has_nosniff),
       headers_callback_(std::move(headers_callback)),
@@ -186,7 +185,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       request_matcher_(std::move(request_matcher)),
       devtools_proxy_(std::move(devtools_proxy)),
       reporter_(reporter),
-      frame_tree_node_id_getter_(frame_tree_node_id_getter) {
+      frame_tree_node_id_(frame_tree_node_id) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::SignedExchangeHandler");
 
@@ -237,7 +236,8 @@ SignedExchangeHandler::~SignedExchangeHandler() = default;
 SignedExchangeHandler::SignedExchangeHandler()
     : is_secure_transport_(true),
       has_nosniff_(true),
-      load_flags_(net::LOAD_NORMAL) {}
+      load_flags_(net::LOAD_NORMAL),
+      frame_tree_node_id_(FrameTreeNode::kFrameTreeNodeInvalidId) {}
 
 const GURL& SignedExchangeHandler::GetFallbackUrl() const {
   return prologue_fallback_url_and_after_.fallback_url().url;
@@ -521,7 +521,7 @@ void SignedExchangeHandler::OnCertReceived(
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&VerifyCert, certificate, url, stapled_ocsp_response,
-                     sct_list_from_cert_cbor, frame_tree_node_id_getter_,
+                     sct_list_from_cert_cbor, frame_tree_node_id_,
                      base::BindOnce(&SignedExchangeHandler::OnVerifyCert,
                                     weak_factory_.GetWeakPtr())));
 }

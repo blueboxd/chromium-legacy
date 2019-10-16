@@ -75,7 +75,7 @@ void TLSSocketFactory::UpgradeToTLS(
     const net::HostPortPair& host_port_pair,
     mojom::TLSClientSocketOptionsPtr socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TLSClientSocketRequest request,
+    mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     UpgradeToTLSCallback callback) {
   const net::StreamSocket* socket = socket_delegate->BorrowSocket();
@@ -86,7 +86,7 @@ void TLSSocketFactory::UpgradeToTLS(
     return;
   }
   CreateTLSClientSocket(
-      host_port_pair, std::move(socket_options), std::move(request),
+      host_port_pair, std::move(socket_options), std::move(receiver),
       socket_delegate->TakeSocket(), std::move(observer),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(callback));
@@ -95,16 +95,16 @@ void TLSSocketFactory::UpgradeToTLS(
 void TLSSocketFactory::CreateTLSClientSocket(
     const net::HostPortPair& host_port_pair,
     mojom::TLSClientSocketOptionsPtr socket_options,
-    mojom::TLSClientSocketRequest request,
+    mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
     std::unique_ptr<net::StreamSocket> underlying_socket,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) {
   auto socket = std::make_unique<TLSClientSocket>(
-      std::move(request), std::move(observer),
+      std::move(observer),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
   TLSClientSocket* socket_raw = socket.get();
-  tls_socket_bindings_.AddBinding(std::move(socket), std::move(request));
+  tls_socket_receivers_.Add(std::move(socket), std::move(receiver));
 
   net::SSLClientContext* ssl_client_context = &ssl_client_context_;
 

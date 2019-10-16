@@ -945,7 +945,7 @@ TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
   EXPECT_NE(nullptr, select->FirstFragment().PaintProperties()->OverflowClip());
 
   // Should not assert in FindPropertiesNeedingUpdate.
-  ToHTMLSelectElement(select->GetNode())->setSelectedIndex(1);
+  To<HTMLSelectElement>(select->GetNode())->setSelectedIndex(1);
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(nullptr, select->FirstFragment().PaintProperties()->OverflowClip());
 }

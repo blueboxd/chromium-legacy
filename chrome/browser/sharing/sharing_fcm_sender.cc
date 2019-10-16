@@ -73,6 +73,14 @@ void SharingFCMSender::DoSendMessageToDevice(
     return;
   }
 
+  auto* vapid_key = vapid_key_manager_->GetOrCreateKey();
+  if (!vapid_key) {
+    LOG(ERROR) << "Unable to retrieve VAPID key";
+    std::move(callback).Run(SharingSendMessageResult::kInternalError,
+                            base::nullopt);
+    return;
+  }
+
   const syncer::DeviceInfo* local_device_info =
       device_info_provider_->GetLocalDeviceInfo();
   message.set_sender_guid(local_device_info->guid());
@@ -92,8 +100,8 @@ void SharingFCMSender::DoSendMessageToDevice(
 
   gcm_driver_->SendWebPushMessage(
       kSharingFCMAppID, fcm_registration->authorized_entity, target.p256dh,
-      target.auth_secret, target.fcm_token,
-      vapid_key_manager_->GetOrCreateKey(), std::move(web_push_message),
+      target.auth_secret, target.fcm_token, vapid_key,
+      std::move(web_push_message),
       base::BindOnce(&SharingFCMSender::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

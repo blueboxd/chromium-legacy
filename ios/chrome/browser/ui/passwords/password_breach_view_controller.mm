@@ -291,7 +291,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
       [UIFontMetrics metricsForTextStyle:UIFontTextStyleTitle1];
   title.font = [fontMetrics scaledFontForFont:font];
   title.textColor = [UIColor colorNamed:kTextPrimaryColor];
-  title.text = self.titleString;
+  title.text = self.titleString.capitalizedString;
   title.textAlignment = NSTextAlignmentCenter;
   title.translatesAutoresizingMaskIntoConstraints = NO;
   title.adjustsFontForContentSizeCategory = YES;
@@ -340,7 +340,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   [primaryActionButton addTarget:self
                           action:@selector(didTapPrimaryActionButton)
                 forControlEvents:UIControlEventTouchUpInside];
-  [primaryActionButton setTitle:self.primaryActionString
+  [primaryActionButton setTitle:self.primaryActionString.capitalizedString
                        forState:UIControlStateNormal];
   primaryActionButton.contentEdgeInsets =
       UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);

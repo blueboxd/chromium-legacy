@@ -10,8 +10,6 @@ import mock
 EXPECTATIONS_DRIVER_TAGS = frozenset([
     'angle_lt_25.20.100.6444',
     'angle_lt_25.20.100.6577',
-    'mesa_lt_17.1.6',
-    'mesa_lt_17.3.9',
     'mesa_lt_19.1.2'
 ])
 

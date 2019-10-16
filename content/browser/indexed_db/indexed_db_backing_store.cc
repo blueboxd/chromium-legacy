@@ -1532,7 +1532,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     this->last_modified_ = last_modified;
 
     delegate->Start(blob->CreateReader(),
-                    base::Bind(&LocalWriteClosure::Run, this));
+                    base::BindRepeating(&LocalWriteClosure::Run, this));
     chained_blob_writer_->set_delegate(std::move(delegate));
   }
 

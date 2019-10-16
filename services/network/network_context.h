@@ -316,6 +316,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       std::vector<mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<mojom::CorsOriginPatternPtr> block_patterns,
       SetCorsOriginAccessListsForOriginCallback callback) override;
+  void SetCorsExtraSafelistedRequestHeaderNames(
+      const std::vector<std::string>&
+          cors_extra_safelisted_request_header_names) override;
   void EnableStaticKeyPinningForTesting(
       EnableStaticKeyPinningForTestingCallback callback) override;
   void SetFailingHttpTransactionForTesting(
@@ -422,6 +425,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor() {
     return domain_reliability_monitor_.get();
   }
+
+  bool IsCorsEnabled() const { return cors_enabled_; }
 
  private:
   URLRequestContextOwner MakeURLRequestContext();
@@ -611,6 +616,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages CORS preflight requests and its cache.
   cors::PreflightController cors_preflight_controller_;
+
+  // Manages if OOR-CORS is enabled.
+  bool cors_enabled_ = false;
 
   std::unique_ptr<NetworkQualitiesPrefDelegate>
       network_qualities_pref_delegate_;

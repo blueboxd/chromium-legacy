@@ -32,7 +32,7 @@ namespace web_apps {
 namespace {
 
 void AddInstallIcon(const WebElement& link,
-                    std::vector<WebApplicationInfo::IconInfo>* icons) {
+                    std::vector<WebApplicationIconInfo>* icons) {
   WebString href = link.GetAttribute("href");
   if (href.IsNull() || href.IsEmpty())
     return;
@@ -42,7 +42,7 @@ void AddInstallIcon(const WebElement& link,
   if (!url.is_valid())
     return;
 
-  WebApplicationInfo::IconInfo icon_info;
+  WebApplicationIconInfo icon_info;
   if (link.HasAttribute("sizes")) {
     blink::WebVector<blink::WebSize> icon_sizes =
         blink::WebIconSizesParser::ParseIconSizes(link.GetAttribute("sizes"));

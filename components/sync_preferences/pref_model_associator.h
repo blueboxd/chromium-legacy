@@ -26,6 +26,7 @@ class Value;
 }
 
 namespace sync_pb {
+class EntitySpecifics;
 class PreferenceSpecifics;
 }
 
@@ -49,6 +50,12 @@ class PrefModelAssociator : public syncer::SyncableService {
 
   // See description above field for details.
   bool models_associated() const { return models_associated_; }
+
+  // Returns the mutable preference from |specifics| for a given model |type|.
+  // Exposed for testing.
+  static sync_pb::PreferenceSpecifics* GetMutableSpecifics(
+      syncer::ModelType type,
+      sync_pb::EntitySpecifics* specifics);
 
   // syncer::SyncableService implementation.
   void WaitUntilReadyToSync(base::OnceClosure done) override;
@@ -191,7 +198,7 @@ class PrefModelAssociator : public syncer::SyncableService {
   std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory_;
 
   // The datatype that this associator is responible for, either PREFERENCES or
-  // PRIORITY_PREFERENCES.
+  // PRIORITY_PREFERENCES or OS_PREFERENCES or OS_PRIORITY_PREFERENCES.
   syncer::ModelType type_;
 
   // Map prefs to lists of observers. Observers will receive notification when

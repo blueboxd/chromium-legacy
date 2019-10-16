@@ -92,7 +92,7 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryBundle::GetFactory(
   if (appcache_factory_)
     return appcache_factory_.get();
 
-  return default_factory_.get();
+  return default_factory_.is_bound() ? default_factory_.get() : nullptr;
 }
 
 void URLLoaderFactoryBundle::CreateLoaderAndStart(
@@ -143,10 +143,12 @@ bool URLLoaderFactoryBundle::BypassRedirectChecks() const {
 void URLLoaderFactoryBundle::Update(
     std::unique_ptr<URLLoaderFactoryBundleInfo> pending_factories) {
   if (pending_factories->pending_default_factory()) {
+    default_factory_.reset();
     default_factory_.Bind(
         std::move(pending_factories->pending_default_factory()));
   }
   if (pending_factories->pending_appcache_factory()) {
+    appcache_factory_.reset();
     appcache_factory_.Bind(
         std::move(pending_factories->pending_appcache_factory()));
   }

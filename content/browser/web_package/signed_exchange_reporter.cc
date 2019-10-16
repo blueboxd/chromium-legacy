@@ -118,9 +118,8 @@ bool ShouldDowngradeReport(const char* result_string,
   return false;
 }
 
-void ReportResultOnUI(base::OnceCallback<int(void)> frame_tree_node_id_getter,
+void ReportResultOnUI(int frame_tree_node_id,
                       network::mojom::SignedExchangeReportPtr report) {
-  int frame_tree_node_id = std::move(frame_tree_node_id_getter).Run();
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (!frame_tree_node)
@@ -146,23 +145,23 @@ std::unique_ptr<SignedExchangeReporter> SignedExchangeReporter::MaybeCreate(
     const GURL& outer_url,
     const std::string& referrer,
     const network::ResourceResponseHead& response,
-    base::OnceCallback<int(void)> frame_tree_node_id_getter) {
+    int frame_tree_node_id) {
   if (!signed_exchange_utils::
           IsSignedExchangeReportingForDistributorsEnabled()) {
     return nullptr;
   }
   return base::WrapUnique(new SignedExchangeReporter(
-      outer_url, referrer, response, std::move(frame_tree_node_id_getter)));
+      outer_url, referrer, response, frame_tree_node_id));
 }
 
 SignedExchangeReporter::SignedExchangeReporter(
     const GURL& outer_url,
     const std::string& referrer,
     const network::ResourceResponseHead& response,
-    base::OnceCallback<int(void)> frame_tree_node_id_getter)
+    int frame_tree_node_id)
     : report_(network::mojom::SignedExchangeReport::New()),
       request_start_(response.load_timing.request_start),
-      frame_tree_node_id_getter_(std::move(frame_tree_node_id_getter)) {
+      frame_tree_node_id_(frame_tree_node_id) {
   report_->outer_url = outer_url;
   report_->referrer = referrer;
   report_->server_ip_address = response.remote_endpoint.address();
@@ -196,7 +195,6 @@ void SignedExchangeReporter::set_cert_url(const GURL& cert_url) {
 void SignedExchangeReporter::ReportResultAndFinish(
     SignedExchangeLoadResult result) {
   DCHECK(report_);
-  DCHECK(frame_tree_node_id_getter_);
 
   const char* result_string = GetResultTypeString(result);
   report_->success = result == SignedExchangeLoadResult::kSuccess;
@@ -214,10 +212,9 @@ void SignedExchangeReporter::ReportResultAndFinish(
     report_->elapsed_time = base::TimeTicks::Now() - request_start_;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&ReportResultOnUI, std::move(frame_tree_node_id_getter_),
-                     std::move(report_)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&ReportResultOnUI, frame_tree_node_id_,
+                                std::move(report_)));
 }
 
 }  // namespace content

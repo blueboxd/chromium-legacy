@@ -1197,6 +1197,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTLS13HardeningForLocalAnchorsEnabled,
     prefs::kTLS13HardeningForLocalAnchorsEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kCorsMitigationList,
+    prefs::kCorsMitigationList,
+    base::Value::Type::LIST },
+  { key::kCorsLegacyModeEnabled,
+    prefs::kCorsLegacyModeEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

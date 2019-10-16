@@ -17,6 +17,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
+#include "net/base/mime_util.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 

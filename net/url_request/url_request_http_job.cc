@@ -910,6 +910,9 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
       OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_HEADERS_RECEIVED);
       allowed_unsafe_redirect_url_ = GURL();
+      IPEndPoint endpoint;
+      if (transaction_)
+        transaction_->GetRemoteEndpoint(&endpoint);
       // The NetworkDelegate must watch for OnRequestDestroyed and not modify
       // any of the arguments after it's called.
       // TODO(mattm): change the API to remove the out-params and take the
@@ -918,7 +921,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
           request_,
           base::BindOnce(&URLRequestHttpJob::OnHeadersReceivedCallback,
                          weak_factory_.GetWeakPtr()),
-          headers.get(), &override_response_headers_,
+          headers.get(), &override_response_headers_, endpoint,
           &allowed_unsafe_redirect_url_);
       if (error != OK) {
         if (error == ERR_IO_PENDING) {

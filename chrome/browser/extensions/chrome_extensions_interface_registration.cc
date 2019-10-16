@@ -38,7 +38,7 @@
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "media/capture/video/chromeos/camera_app_device_provider_impl.h"
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -94,7 +94,7 @@ void HandleCameraResult(
 // Connects to CameraAppDeviceProvider which could be used to get
 // CameraAppDevice from video capture service through CameraAppDeviceBridge.
 void ConnectToCameraAppDeviceProvider(
-    cros::mojom::CameraAppDeviceProviderRequest request,
+    mojo::PendingReceiver<cros::mojom::CameraAppDeviceProvider> receiver,
     content::RenderFrameHost* source) {
   mojo::PendingRemote<cros::mojom::CameraAppDeviceBridge> device_bridge;
   auto device_bridge_receiver = device_bridge.InitWithNewPipeAndPassReceiver();
@@ -114,20 +114,21 @@ void ConnectToCameraAppDeviceProvider(
   auto camera_app_device_provider =
       std::make_unique<media::CameraAppDeviceProviderImpl>(
           std::move(device_bridge), std::move(mapping_callback));
-  mojo::MakeStrongBinding(std::move(camera_app_device_provider),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(camera_app_device_provider),
+                              std::move(receiver));
 }
 
 // Connects to CameraAppHelper that could handle camera intents.
 void ConnectToCameraAppHelper(
-    chromeos_camera::mojom::CameraAppHelperRequest request,
+    mojo::PendingReceiver<chromeos_camera::mojom::CameraAppHelper> receiver,
     content::RenderFrameHost* source) {
   auto handle_result_callback = base::BindRepeating(
       &HandleCameraResult, source->GetProcess()->GetBrowserContext());
   auto camera_app_helper =
       std::make_unique<chromeos_camera::CameraAppHelperImpl>(
           std::move(handle_result_callback));
-  mojo::MakeStrongBinding(std::move(camera_app_helper), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(camera_app_helper),
+                              std::move(receiver));
 }
 #endif
 

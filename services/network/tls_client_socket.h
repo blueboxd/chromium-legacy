@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_family.h"
@@ -32,8 +33,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSClientSocket
     : public mojom::TLSClientSocket,
       public SocketDataPump::Delegate {
  public:
-  TLSClientSocket(mojom::TLSClientSocketRequest request,
-                  mojo::PendingRemote<mojom::SocketObserver> observer,
+  TLSClientSocket(mojo::PendingRemote<mojom::SocketObserver> observer,
                   const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~TLSClientSocket() override;
 

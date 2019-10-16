@@ -87,7 +87,7 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       std::make_unique<SharingSyncPreference>(profile->GetPrefs(),
                                               device_info_sync_service);
   std::unique_ptr<VapidKeyManager> vapid_key_manager =
-      std::make_unique<VapidKeyManager>(sync_prefs.get());
+      std::make_unique<VapidKeyManager>(sync_prefs.get(), sync_service);
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration =
       std::make_unique<SharingDeviceRegistration>(
           profile->GetPrefs(), sync_prefs.get(), instance_id_service->driver(),

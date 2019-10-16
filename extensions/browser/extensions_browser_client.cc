@@ -99,4 +99,9 @@ bool ExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(
   return false;
 }
 
+bool ExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
+    content::BrowserContext* context) const {
+  return false;
+}
+
 }  // namespace extensions

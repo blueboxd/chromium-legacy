@@ -22,7 +22,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.accounts.Account;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,10 +29,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.test.DisableNativeTestRule;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.identitymanager.CoreAccountId;
@@ -50,7 +48,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Config(manifest = Config.NONE)
 public class SigninManagerTest {
     @Rule
-    public JniMocker mocker = new JniMocker();
+    public final JniMocker mocker = new JniMocker();
+
+    @Rule
+    public final DisableNativeTestRule mDisableNative = new DisableNativeTestRule();
 
     @Mock
     SigninManager.Natives mNativeMock;
@@ -63,10 +64,6 @@ public class SigninManagerTest {
 
     @Before
     public void setUp() {
-        // TODO(https://crbug.com/1007903): Use DisableNativeTestRule instead.
-        RecordHistogram.setDisabledForTests(true);
-        RecordUserAction.setDisabledForTests(true);
-
         initMocks(this);
 
         mocker.mock(SigninManagerJni.TEST_HOOKS, mNativeMock);
@@ -86,13 +83,6 @@ public class SigninManagerTest {
 
         mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
                 AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");
-    }
-
-    @After
-    public void tearDown() {
-        // TODO(https://crbug.com/1007903): Use DisableNativeTestRule instead.
-        RecordHistogram.setDisabledForTests(false);
-        RecordUserAction.setDisabledForTests(false);
     }
 
     @Test

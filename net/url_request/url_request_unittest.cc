@@ -439,6 +439,7 @@ class BlockingNetworkDelegate : public TestNetworkDelegate {
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      const IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url) override;
 
   // Resets the callbacks and |stage_blocked_for_callback_|.
@@ -544,12 +545,14 @@ int BlockingNetworkDelegate::OnHeadersReceived(
     CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
+    const IPEndPoint& endpoint,
     GURL* allowed_unsafe_redirect_url) {
   // TestNetworkDelegate always completes synchronously.
-  CHECK_NE(ERR_IO_PENDING,
-           TestNetworkDelegate::OnHeadersReceived(
-               request, base::NullCallback(), original_response_headers,
-               override_response_headers, allowed_unsafe_redirect_url));
+  CHECK_NE(
+      ERR_IO_PENDING,
+      TestNetworkDelegate::OnHeadersReceived(
+          request, base::NullCallback(), original_response_headers,
+          override_response_headers, endpoint, allowed_unsafe_redirect_url));
 
   return MaybeBlockStage(ON_HEADERS_RECEIVED, std::move(callback));
 }
@@ -2917,6 +2920,7 @@ class FixedDateNetworkDelegate : public TestNetworkDelegate {
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      const IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url) override;
 
  private:
@@ -2930,6 +2934,7 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
     CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
+    const IPEndPoint& endpoint,
     GURL* allowed_unsafe_redirect_url) {
   HttpResponseHeaders* new_response_headers =
       new HttpResponseHeaders(original_response_headers->raw_headers());
@@ -2940,7 +2945,7 @@ int FixedDateNetworkDelegate::OnHeadersReceived(
   *override_response_headers = new_response_headers;
   return TestNetworkDelegate::OnHeadersReceived(
       request, std::move(callback), original_response_headers,
-      override_response_headers, allowed_unsafe_redirect_url);
+      override_response_headers, endpoint, allowed_unsafe_redirect_url);
 }
 
 // Test that cookie expiration times are adjusted for server/client clock
@@ -4337,12 +4342,14 @@ class AsyncLoggingNetworkDelegate : public TestNetworkDelegate {
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      const IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url) override {
     // TestNetworkDelegate always completes synchronously.
-    CHECK_NE(ERR_IO_PENDING,
-             TestNetworkDelegate::OnHeadersReceived(
-                 request, base::NullCallback(), original_response_headers,
-                 override_response_headers, allowed_unsafe_redirect_url));
+    CHECK_NE(
+        ERR_IO_PENDING,
+        TestNetworkDelegate::OnHeadersReceived(
+            request, base::NullCallback(), original_response_headers,
+            override_response_headers, endpoint, allowed_unsafe_redirect_url));
     return RunCallbackAsynchronously(request, std::move(callback));
   }
 

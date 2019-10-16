@@ -380,9 +380,7 @@ void RenderWidgetFullscreenPepper::Close(std::unique_ptr<RenderWidget> widget) {
   RenderWidget::Close(std::move(widget));
 }
 
-void RenderWidgetFullscreenPepper::SynchronizeVisualPropertiesFromRenderView(
-    const VisualProperties& visual_properties) {
-  RenderWidget::SynchronizeVisualPropertiesFromRenderView(visual_properties);
+void RenderWidgetFullscreenPepper::AfterUpdateVisualProperties() {
   UpdateLayerBounds();
 }
 

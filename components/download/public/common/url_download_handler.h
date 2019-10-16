@@ -28,7 +28,7 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
         URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
             url_loader_factory_provider,
         UrlDownloadHandler* downloader,
-        const DownloadUrlParameters::OnStartedCallback& callback) = 0;
+        DownloadUrlParameters::OnStartedCallback callback) = 0;
 
     // Called after the connection is cancelled or finished.
     virtual void OnUrlDownloadStopped(UrlDownloadHandler* downloader) = 0;

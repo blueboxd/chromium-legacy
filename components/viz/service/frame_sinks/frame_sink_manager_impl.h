@@ -34,7 +34,6 @@
 #include "components/viz/service/surfaces/surface_observer.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
@@ -83,10 +82,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // incoming IPCs and destroys all [Root]CompositorFrameSinkImpls.
   void ForceShutdown();
 
-  // Binds |this| as a FrameSinkManagerImpl for |request| on |task_runner|. On
+  // Binds |this| as a FrameSinkManagerImpl for |receiver| on |task_runner|. On
   // Mac |task_runner| will be the resize helper task runner. May only be called
   // once.
-  void BindAndSetClient(mojom::FrameSinkManagerRequest request,
+  void BindAndSetClient(mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
                         scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                         mojom::FrameSinkManagerClientPtr client);
 
@@ -349,7 +348,7 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   mojom::FrameSinkManagerClient* client_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_ = nullptr;
   mojom::FrameSinkManagerClientPtr client_ptr_;
-  mojo::Binding<mojom::FrameSinkManager> binding_;
+  mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
 
   base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;
 

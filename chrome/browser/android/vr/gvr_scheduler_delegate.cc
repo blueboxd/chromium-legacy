@@ -1317,15 +1317,15 @@ void GvrSchedulerDelegate::ProcessWebVrFrameFromGMB(
 }
 
 void GvrSchedulerDelegate::GetEnvironmentIntegrationProvider(
-    device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
-        environment_provider) {
+    mojo::PendingAssociatedReceiver<
+        device::mojom::XREnvironmentIntegrationProvider> environment_provider) {
   // Environment integration is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Environment integration is not supported.");
 }
 
 void GvrSchedulerDelegate::SetInputSourceButtonListener(
-    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) {
+    mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>) {
   // Input eventing is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Input eventing is not supported.");

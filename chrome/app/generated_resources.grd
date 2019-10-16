@@ -1571,6 +1571,14 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is being scanned">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is being scanned.
       </message>
+      <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_TOO_LARGE"
+        desc="Message shown in the download shelf when a download is blocked for being too large">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is too large for cloud scanning and has been blocked from opening.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_PASSWORD_PROTECTED"
+        desc="Message shown in the download shelf when a download is blocked for being encrypted">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is encrypted and has been blocked from opening.
+      </message>
       <message name="IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is uncommon.">
         This file is not commonly downloaded and may be dangerous.

@@ -66,10 +66,15 @@ class CONTENT_EXPORT NavigationHandle {
   // e.g. URLs might be rewritten by the renderer before being committed.
   virtual const GURL& GetURL() = 0;
 
-  // Returns the SiteInstance that started the request.
-  // If a frame in SiteInstance A navigates a frame in SiteInstance B to a URL
-  // in SiteInstance C, then this returns B.
+  // Returns the SiteInstance where the frame being navigated was at the start
+  // of the navigation.  If a frame in SiteInstance A navigates a frame in
+  // SiteInstance B to a URL in SiteInstance C, then this returns B.
   virtual SiteInstance* GetStartingSiteInstance() = 0;
+
+  // Returns the SiteInstance of the initiator of the navigation.  If a frame in
+  // SiteInstance A navigates a frame in SiteInstance B to a URL in SiteInstance
+  // C, then this returns A.
+  virtual SiteInstance* GetSourceSiteInstance() = 0;
 
   // Whether the navigation is taking place in the main frame or in a subframe.
   // This remains constant over the navigation lifetime.

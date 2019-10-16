@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
@@ -89,12 +90,12 @@ void HostResolver::ResolveHost(
       internal_resolver_, host, ConvertOptionalParameters(optional_parameters),
       net_log_);
 
-  mojom::ResolveHostHandleRequest control_handle_request;
+  mojo::PendingReceiver<mojom::ResolveHostHandle> control_handle_receiver;
   if (optional_parameters)
-    control_handle_request = std::move(optional_parameters->control_handle);
+    control_handle_receiver = std::move(optional_parameters->control_handle);
 
   int rv = request->Start(
-      std::move(control_handle_request), std::move(response_client),
+      std::move(control_handle_receiver), std::move(response_client),
       base::BindOnce(&HostResolver::OnResolveHostComplete,
                      base::Unretained(this), request.get()));
   if (rv != net::ERR_IO_PENDING)
@@ -106,10 +107,11 @@ void HostResolver::ResolveHost(
   DCHECK(insertion_result);
 }
 
-void HostResolver::MdnsListen(const net::HostPortPair& host,
-                              net::DnsQueryType query_type,
-                              mojom::MdnsListenClientPtr response_client,
-                              MdnsListenCallback callback) {
+void HostResolver::MdnsListen(
+    const net::HostPortPair& host,
+    net::DnsQueryType query_type,
+    mojo::PendingRemote<mojom::MdnsListenClient> response_client,
+    MdnsListenCallback callback) {
 #if !BUILDFLAG(ENABLE_MDNS)
   NOTREACHED();
 #endif  // !BUILDFLAG(ENABLE_MDNS)

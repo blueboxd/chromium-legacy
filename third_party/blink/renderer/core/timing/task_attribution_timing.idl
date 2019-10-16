@@ -5,7 +5,6 @@
 // https://w3c.github.io/longtasks/#sec-TaskAttributionTiming
 [Exposed=Window]
 interface TaskAttributionTiming : PerformanceEntry {
-    [RuntimeEnabled=LongTaskV2] readonly attribute DOMString scriptURL;
     readonly attribute DOMString containerType;
     readonly attribute DOMString containerSrc;
     readonly attribute DOMString containerId;

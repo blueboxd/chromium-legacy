@@ -9,6 +9,7 @@
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/syncable/user_share.h"
+#include "crypto/ec_private_key.h"
 
 namespace syncer {
 
@@ -94,8 +95,9 @@ bool FakeSyncService::RequiresClientUpgrade() const {
   return false;
 }
 
-std::string FakeSyncService::GetExperimentalAuthenticationId() const {
-  return std::string();
+std::unique_ptr<crypto::ECPrivateKey>
+FakeSyncService::GetExperimentalAuthenticationKey() const {
+  return nullptr;
 }
 
 UserShare* FakeSyncService::GetUserShare() const {

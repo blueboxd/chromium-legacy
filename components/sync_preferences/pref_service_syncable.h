@@ -107,6 +107,13 @@ class PrefServiceSyncable : public PrefService {
 
   PrefModelAssociator pref_sync_associator_;
   PrefModelAssociator priority_pref_sync_associator_;
+
+#if defined(OS_CHROMEOS)
+  // Associators for Chrome OS system preferences.
+  PrefModelAssociator os_pref_sync_associator_;
+  PrefModelAssociator os_priority_pref_sync_associator_;
+#endif
+
   const scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
 
   base::ObserverList<PrefServiceSyncableObserver>::Unchecked observer_list_;

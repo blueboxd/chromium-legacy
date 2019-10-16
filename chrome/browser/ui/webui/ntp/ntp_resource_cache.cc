@@ -285,6 +285,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetStringUTF8(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE);
   replacements["cookieControlsDescription"] =
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_COOKIE_CONTROLS_DESCRIPTION);
+  replacements["cookieControlsToggleChecked"] =
+      CookieControlsHandler::GetToggleCheckedValue(profile_) ? "checked" : "";
 
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);

@@ -47,6 +47,7 @@
 #include "content/public/browser/resource_coordinator_service.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/connection_filter.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"

@@ -119,7 +119,7 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux {
   // |*link_changed| to true if |online_links_| changed, sets |*tunnel_changed|
   // to true if |online_links_| changed with regards to a tunnel interface while
   // reading the message from |buffer|.
-  void HandleMessage(char* buffer,
+  void HandleMessage(const char* buffer,
                      size_t length,
                      bool* address_changed,
                      bool* link_changed,

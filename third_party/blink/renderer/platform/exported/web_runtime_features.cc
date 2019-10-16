@@ -525,10 +525,6 @@ void WebRuntimeFeatures::EnableExpensiveBackgroundTimerThrottling(bool enable) {
   RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableScrollAnchorSerialization(bool enable) {
-  RuntimeEnabledFeatures::SetScrollAnchorSerializationEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableFetchMetadata(bool enable) {
   RuntimeEnabledFeatures::SetFetchMetadataEnabled(enable);
 }

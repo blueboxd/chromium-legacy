@@ -16,17 +16,17 @@ FakeServiceConnectionImpl::~FakeServiceConnectionImpl() {}
 
 void FakeServiceConnectionImpl::LoadBuiltinModel(
     mojom::BuiltinModelSpecPtr spec,
-    mojom::ModelRequest request,
+    mojo::PendingReceiver<mojom::Model> receiver,
     mojom::MachineLearningService::LoadBuiltinModelCallback callback) {
-  model_bindings_.AddBinding(this, std::move(request));
+  model_receivers_.Add(this, std::move(receiver));
   std::move(callback).Run(mojom::LoadModelResult::OK);
 }
 
 void FakeServiceConnectionImpl::LoadFlatBufferModel(
     mojom::FlatBufferModelSpecPtr spec,
-    mojom::ModelRequest request,
+    mojo::PendingReceiver<mojom::Model> receiver,
     mojom::MachineLearningService::LoadFlatBufferModelCallback callback) {
-  model_bindings_.AddBinding(this, std::move(request));
+  model_receivers_.Add(this, std::move(receiver));
   std::move(callback).Run(mojom::LoadModelResult::OK);
 }
 

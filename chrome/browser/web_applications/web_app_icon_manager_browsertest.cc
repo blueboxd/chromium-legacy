@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(WebAppIconManagerBrowserTest, SingleIcon) {
     web_application_info->open_as_window = true;
 
     {
-      WebApplicationInfo::IconInfo info;
+      WebApplicationIconInfo info;
       info.width = icon_size::k32;
       info.height = icon_size::k32;
       info.data.allocN32Pixels(info.width, info.height, true);

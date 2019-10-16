@@ -15,6 +15,6 @@
   <suppress id="MethodNameCheck" files="FirstRunIntegrationUnitTest.java"/>
   <suppress id="MethodNameCheck" files="SplashActivityTest.java"/>
   <!-- Third-party libraries, test infrastructure, build, and tooling can use
-       System#exit freely. -->
-  <suppress id="SystemExitCheck" files="src/(build|testing|third_party|tools)/"/>
+       System#exit freely. Feel free to add other test directories here. -->
+  <suppress id="SystemExitCheck" files="src/(build|testing|third_party|tools|base/test)/"/>
 </suppressions>

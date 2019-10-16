@@ -142,7 +142,7 @@ void SubresourceFilter::ReportLoad(
       if (auto* document = DynamicTo<Document>(execution_context_.Get())) {
         if (DocumentLoader* loader = document->Loader()) {
           loader->DidObserveLoadingBehavior(
-              kWebLoadingBehaviorSubresourceFilterMatch);
+              kLoadingBehaviorSubresourceFilterMatch);
         }
       }
       break;

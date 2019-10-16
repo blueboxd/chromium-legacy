@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -27,6 +28,7 @@
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -376,7 +378,8 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // preflight logic is implemented in Blink. So we return a "fallback required"
   // response to Blink.
   // TODO(falken): Remove this mechanism after OOB-CORS ships.
-  if (!network::features::ShouldEnableOutOfBlinkCors() &&
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          network::switches::kEnableOutOfBlinkCors) &&
       ((resource_request_.mode == network::mojom::RequestMode::kCors ||
         resource_request_.mode ==
             network::mojom::RequestMode::kCorsWithForcedPreflight) &&

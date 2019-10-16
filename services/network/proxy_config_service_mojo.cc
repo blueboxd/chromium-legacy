@@ -12,7 +12,7 @@ ProxyConfigServiceMojo::ProxyConfigServiceMojo(
     mojo::PendingReceiver<mojom::ProxyConfigClient>
         proxy_config_client_receiver,
     base::Optional<net::ProxyConfigWithAnnotation> initial_proxy_config,
-    mojom::ProxyConfigPollerClientPtrInfo proxy_poller_client) {
+    mojo::PendingRemote<mojom::ProxyConfigPollerClient> proxy_poller_client) {
   DCHECK(initial_proxy_config || proxy_config_client_receiver.is_valid());
 
   if (initial_proxy_config)
@@ -22,6 +22,11 @@ ProxyConfigServiceMojo::ProxyConfigServiceMojo(
     receiver_.Bind(std::move(proxy_config_client_receiver));
     // Only use the |proxy_poller_client| if there's a
     // |proxy_config_client_receiver|.
+    if (!proxy_poller_client) {
+      // NullRemote() could be passed in unit tests. In that case, it can't be
+      // bound.
+      return;
+    }
     proxy_poller_client_.Bind(std::move(proxy_poller_client));
   }
 }

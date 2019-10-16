@@ -48,6 +48,10 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/user_event_model_type_controller.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 using base::FeatureList;
 using bookmarks::BookmarkModel;
 using sync_bookmarks::BookmarkChangeProcessor;
@@ -329,6 +333,25 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   }
 
 #if defined(OS_CHROMEOS)
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (!disabled_types.Has(syncer::OS_PREFERENCES)) {
+      controllers.push_back(
+          std::make_unique<SyncableServiceBasedModelTypeController>(
+              syncer::OS_PREFERENCES,
+              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+              sync_client_->GetSyncableServiceForType(syncer::OS_PREFERENCES),
+              dump_stack));
+    }
+    if (!disabled_types.Has(syncer::OS_PRIORITY_PREFERENCES)) {
+      controllers.push_back(
+          std::make_unique<SyncableServiceBasedModelTypeController>(
+              syncer::OS_PRIORITY_PREFERENCES,
+              sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+              sync_client_->GetSyncableServiceForType(
+                  syncer::OS_PRIORITY_PREFERENCES),
+              dump_stack));
+    }
+  }
   if (!disabled_types.Has(syncer::PRINTERS)) {
     controllers.push_back(
         CreateModelTypeControllerForModelRunningOnUIThread(syncer::PRINTERS));
@@ -342,7 +365,7 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                 ->GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS)
                 .get())));
   }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   // Reading list sync is enabled by default only on iOS. Register unless
   // Reading List or Reading List Sync is explicitly disabled.

@@ -636,6 +636,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(WidgetMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(WidgetMsg_Close, OnClose)
+    IPC_MESSAGE_HANDLER(WidgetMsg_UpdateVisualProperties,
+                        OnUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetActive, OnSetActive)
@@ -701,10 +703,9 @@ void RenderWidget::OnClose() {
   Close(base::WrapUnique(this));
 }
 
-void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
+void RenderWidget::OnUpdateVisualProperties(
     const VisualProperties& visual_properties_from_browser) {
-  TRACE_EVENT0("renderer",
-               "RenderWidget::SynchronizeVisualPropertiesFromRenderView");
+  TRACE_EVENT0("renderer", "RenderWidget::OnUpdateVisualProperties");
 
   // TODO(crbug.com/995981): We shouldn't be sending VisualProperties to undead
   // RenderWidgets already, but if we do we could crash if the RenderWidget
@@ -936,6 +937,8 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
   // 939118 tracks fixing webviews to not use scroll_focused_node_into_view.
   if (delegate() && visual_properties.scroll_focused_node_into_view)
     delegate()->ScrollFocusedNodeIntoViewForWidget();
+
+  AfterUpdateVisualProperties();
 }
 
 void RenderWidget::OnEnableDeviceEmulation(

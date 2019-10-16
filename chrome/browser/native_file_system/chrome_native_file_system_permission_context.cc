@@ -383,6 +383,7 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
     case Result::DANGEROUS_HOST:
     case Result::POTENTIALLY_UNWANTED:
     case Result::BLOCKED_PASSWORD_PROTECTED:
+    case Result::BLOCKED_TOO_LARGE:
       return ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult::
           kBlock;
 

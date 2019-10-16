@@ -8,7 +8,7 @@
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
-# tags: [ angle_lt_25.20.100.6444 mesa_lt_17.1.6 ]
+# tags: [ angle_lt_25.20.100.6444 ]
 # results: [ Failure RetryOnFailure Skip ]
 
 
@@ -333,9 +333,6 @@ crbug.com/992231 [ mac passthrough amd-0x679e ] conformance/context/context-size
 ####################
 # Linux failures   #
 ####################
-
-# Intel driver issues
-crbug.com/680675 [ linux intel mesa_lt_17.1.6 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 
 # The following two tests only fail on Linux/Intel with Mesa 18.0.5,
 # not on Mesa 17.1.4 with the same Intel HD 630 GPU.

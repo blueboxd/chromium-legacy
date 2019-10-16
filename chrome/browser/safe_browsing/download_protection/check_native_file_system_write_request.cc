@@ -65,6 +65,7 @@ CheckNativeFileSystemWriteRequest::CheckNativeFileSystemWriteRequest(
                                      item->target_file_path,
                                      item->full_path,
                                      TabUrlsFromWebContents(item->web_contents),
+                                     item->size,
                                      item->browser_context,
                                      std::move(callback),
                                      service,
@@ -155,7 +156,12 @@ bool CheckNativeFileSystemWriteRequest::ShouldReturnAsynchronousVerdict(
   return false;
 }
 
-void CheckNativeFileSystemWriteRequest::MaybeUploadBinary(
+bool CheckNativeFileSystemWriteRequest::ShouldUploadBinary(
+    DownloadCheckResultReason reason) {
+  return false;
+}
+
+void CheckNativeFileSystemWriteRequest::UploadBinary(
     DownloadCheckResultReason reason) {}
 
 void CheckNativeFileSystemWriteRequest::NotifyRequestFinished(

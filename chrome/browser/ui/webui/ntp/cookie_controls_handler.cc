@@ -73,12 +73,13 @@ void CookieControlsHandler::HandleObserveCookieControlsSettingsChanges(
 
 void CookieControlsHandler::OnCookieControlsChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
+  FireWebUIListener("cookie-controls-changed",
+                    base::Value(GetToggleCheckedValue(profile)));
+}
+
+bool CookieControlsHandler::GetToggleCheckedValue(const Profile* profile) {
   int mode = profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode);
-  base::Value checked(
-      mode == static_cast<int>(content_settings::CookieControlsMode::kOff)
-          ? false
-          : true);
-  FireWebUIListener("cookie-controls-changed", checked);
+  return mode != static_cast<int>(content_settings::CookieControlsMode::kOff);
 }
 
 void CookieControlsHandler::OnThirdPartyCookieBlockingChanged() {

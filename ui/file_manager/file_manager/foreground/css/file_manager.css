@@ -461,6 +461,10 @@ body:not(.check-select) #selection-menu-button {
   display: none;
 }
 
+.cloud-import-combo-button {
+  position: relative;
+}
+
 .cloud-import-combo-button > .buttons {
   display: flex;
 }

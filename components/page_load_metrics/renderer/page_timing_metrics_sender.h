@@ -14,9 +14,9 @@
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/renderer/page_resource_data_use.h"
 #include "content/public/common/previews_state.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 
 class GURL;
@@ -45,7 +45,7 @@ class PageTimingMetricsSender {
                           std::unique_ptr<PageResourceDataUse> initial_request);
   ~PageTimingMetricsSender();
 
-  void DidObserveLoadingBehavior(blink::WebLoadingBehaviorFlag behavior);
+  void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior);
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature);
   void DidObserveNewCssPropertyUsage(blink::mojom::CSSSampleId css_property,
                                      bool is_animated);

@@ -17,12 +17,10 @@
 
 namespace blink {
 
-using namespace device::mojom::blink;
-
 const char SensorProxy::kDefaultErrorDescription[] =
     "Could not connect to a sensor";
 
-SensorProxy::SensorProxy(SensorType sensor_type,
+SensorProxy::SensorProxy(device::mojom::blink::SensorType sensor_type,
                          SensorProviderProxy* provider,
                          Page* page)
     : PageVisibilityObserver(page),
@@ -132,7 +130,7 @@ bool SensorProxy::ShouldSuspendUpdates() const {
   return !focused_frame_origin->CanAccess(this_origin);
 }
 
-SensorProvider* SensorProxy::sensor_provider() const {
+device::mojom::blink::SensorProvider* SensorProxy::sensor_provider() const {
   return provider_->sensor_provider();
 }
 

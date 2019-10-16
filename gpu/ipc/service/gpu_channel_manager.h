@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
@@ -23,6 +24,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/gr_cache_controller.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
@@ -138,6 +140,10 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
     return gpu_memory_buffer_factory_;
   }
 
+  MemoryTracker::Observer* peak_memory_monitor() {
+    return &peak_memory_monitor_;
+  }
+
 #if defined(OS_ANDROID)
   void DidAccessGpu();
   void OnBackgroundCleanup();
@@ -157,6 +163,13 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   void GetVideoMemoryUsageStats(
       VideoMemoryUsageStats* video_memory_usage_stats) const;
 
+  // Starts tracking the peak memory across all MemoryTrackers for
+  // |sequence_num|. Repeated calls with the same value are ignored.
+  void StartPeakMemoryMonitor(uint32_t sequence_num);
+
+  // Ends the tracking for |sequence_num| and returns the peak memory usage.
+  uint64_t GetPeakMemoryUsage(uint32_t sequence_num);
+
   scoped_refptr<SharedContextState> GetSharedContextState(
       ContextResult* result);
   void ScheduleGrContextCleanup();
@@ -173,6 +186,37 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   void LoseAllContexts();
 
  private:
+  friend class GpuChannelManagerTest;
+
+  // Observes changes in GPU memory, and tracks the peak usage for clients. The
+  // client is responsible for providing a unique |sequence_num| for each time
+  // period in which it wishes to track memory usage.
+  class GPU_IPC_SERVICE_EXPORT GpuPeakMemoryMonitor
+      : public MemoryTracker::Observer {
+   public:
+    GpuPeakMemoryMonitor();
+    ~GpuPeakMemoryMonitor() override;
+
+    uint64_t GetPeakMemoryUsage(uint32_t sequence_num);
+    void StartGpuMemoryTracking(uint32_t sequence_num);
+    void StopGpuMemoryTracking(uint32_t sequence_num);
+
+   private:
+    // MemoryTracker::Observer:
+    void OnMemoryAllocatedChange(CommandBufferId id,
+                                 uint64_t old_size,
+                                 uint64_t new_size) override;
+
+    // Tracks all currently requested sequences mapped to the peak memory seen.
+    base::flat_map<uint32_t, uint64_t> sequence_trackers_;
+
+    // Tracks the total current memory across all MemoryTrackers.
+    uint64_t current_memory_ = 0u;
+
+    base::WeakPtrFactory<GpuPeakMemoryMonitor> weak_factory_;
+    DISALLOW_COPY_AND_ASSIGN(GpuPeakMemoryMonitor);
+  };
+
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
 
 #if defined(OS_ANDROID)
@@ -250,6 +294,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // If features::SkiaOnMetad, |metal_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
   viz::MetalContextProvider* metal_context_provider_ = nullptr;
+
+  GpuPeakMemoryMonitor peak_memory_monitor_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

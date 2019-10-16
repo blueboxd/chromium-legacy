@@ -210,6 +210,8 @@ class PreflightController::PreflightLoader final {
     loader_->SetOnResponseStartedCallback(base::BindRepeating(
         &PreflightLoader::HandleResponseHeader, base::Unretained(this)));
 
+    // TODO(yhirano): Set kURLLoadOptionAsCorsPreflight.
+    // TODO(yhirano): Set kURLLoadOptionUseHeaderClient.
     loader_->DownloadToString(
         loader_factory,
         base::BindOnce(&PreflightLoader::HandleResponseBody,

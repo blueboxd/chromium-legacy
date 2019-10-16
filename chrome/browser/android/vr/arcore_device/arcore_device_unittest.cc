@@ -18,6 +18,7 @@
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_service_client.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -136,14 +137,15 @@ class ArCoreDeviceTest : public testing::Test {
 
     frame_provider.Bind(std::move(session_->data_provider));
     frame_provider->GetEnvironmentIntegrationProvider(
-        mojo::MakeRequest(&environment_provider));
+        environment_provider.BindNewEndpointAndPassReceiver());
     std::move(quit_closure).Run();
   }
 
   StubMailboxToSurfaceBridge* bridge;
   StubArCoreSessionUtils* session_utils;
   mojo::Remote<mojom::XRFrameDataProvider> frame_provider;
-  mojom::XREnvironmentIntegrationProviderAssociatedPtr environment_provider;
+  mojo::AssociatedRemote<mojom::XREnvironmentIntegrationProvider>
+      environment_provider;
   std::unique_ptr<base::RunLoop> run_loop;
   base::OnceClosure quit_closure;
 

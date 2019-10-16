@@ -57,7 +57,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   // are not created when a resource throttle or a resource handler blocks the
   // download request. I.e. the download triggered a warning of some sort and
   // the user chose to not to proceed with the download as a result.
-  typedef base::Callback<void(DownloadItem*, DownloadInterruptReason)>
+  typedef base::OnceCallback<void(DownloadItem*, DownloadInterruptReason)>
       OnStartedCallback;
 
   typedef std::pair<std::string, std::string> RequestHeadersNameValuePair;
@@ -155,7 +155,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   void set_post_id(int64_t post_id) { post_id_ = post_id; }
 
   // See OnStartedCallback above.
-  void set_callback(const OnStartedCallback& callback) { callback_ = callback; }
+  void set_callback(OnStartedCallback callback) {
+    callback_ = std::move(callback);
+  }
 
   // If not empty, specifies the full target path for the download. This value
   // overrides the filename suggested by a Content-Disposition headers. It
@@ -259,7 +261,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
     network_isolation_key_ = network_isolation_key;
   }
 
-  const OnStartedCallback& callback() const { return callback_; }
+  OnStartedCallback& callback() { return callback_; }
   bool content_initiated() const { return content_initiated_; }
   const std::string& last_modified() const { return last_modified_; }
   const std::string& etag() const { return etag_; }

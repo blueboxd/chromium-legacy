@@ -464,11 +464,13 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   }
 
   void SetDeviceScaleFactor(float dsf) {
-    view()->GetWidget()->SynchronizeVisualPropertiesFromRenderView(
-        MakeVisualPropertiesWithDeviceScaleFactor(dsf));
+    RenderWidget* widget = view()->GetWidget();
+    WidgetMsg_UpdateVisualProperties msg(
+        widget->routing_id(), MakeVisualPropertiesWithDeviceScaleFactor(dsf));
+    widget->OnMessageReceived(msg);
+
     ASSERT_EQ(dsf, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
-    ASSERT_EQ(dsf,
-              view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+    ASSERT_EQ(dsf, widget->GetOriginalScreenInfo().device_scale_factor);
   }
 
   VisualProperties MakeVisualPropertiesWithDeviceScaleFactor(float dsf) {
@@ -621,10 +623,26 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
       FrameHostMsg_UpdateState::ID));
 }
 
+class RenderViewImplEmulatingPopupTest : public RenderViewImplTest {
+ protected:
+  VisualProperties InitialVisualProperties() override {
+    VisualProperties visual_properties =
+        RenderViewImplTest::InitialVisualProperties();
+    visual_properties.screen_info.rect = gfx::Rect(800, 600);
+    return visual_properties;
+  }
+};
+
 // Popup RenderWidgets should inherit emulation params from the parent.
-TEST_F(RenderViewImplTest, EmulatingPopupRect) {
-  gfx::Rect window_screen_rect(1, 2, 137, 137);
-  gfx::Rect widget_screen_rect(5, 7, 57, 57);
+TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
+  // Real screen rect set to 800x600.
+  gfx::Rect screen_rect(800, 600);
+  // Real widget and window screen rects.
+  gfx::Rect window_screen_rect(1, 2, 137, 139);
+  gfx::Rect widget_screen_rect(5, 7, 57, 59);
+
+  // Verify screen rect will be set.
+  EXPECT_EQ(gfx::Rect(view()->GetWidget()->GetScreenInfo().rect), screen_rect);
 
   {
     // Make a popup widget.
@@ -634,25 +652,38 @@ TEST_F(RenderViewImplTest, EmulatingPopupRect) {
     ASSERT_TRUE(popup_widget);
 
     // Set its size.
-    popup_widget->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
+    {
+      WidgetMsg_UpdateScreenRects msg(popup_widget->routing_id(),
+                                      widget_screen_rect, window_screen_rect);
+      popup_widget->OnMessageReceived(msg);
+    }
 
-    // Check that the size was set.
-    EXPECT_EQ(window_screen_rect.x(), popup_widget->WindowRect().x);
-    EXPECT_EQ(window_screen_rect.y(), popup_widget->WindowRect().y);
+    // The WindowScreenRect, WidgetScreenRect, and ScreenRect are all available
+    // to the popup.
+    EXPECT_EQ(window_screen_rect, gfx::Rect(popup_widget->WindowRect()));
+    EXPECT_EQ(widget_screen_rect, gfx::Rect(popup_widget->ViewRect()));
+    EXPECT_EQ(screen_rect, gfx::Rect(popup_widget->GetScreenInfo().rect));
 
-    EXPECT_EQ(widget_screen_rect.x(), popup_widget->ViewRect().x);
-    EXPECT_EQ(widget_screen_rect.y(), popup_widget->ViewRect().y);
-
-    popup_widget->OnClose();
+    // Close and destroy the widget.
+    {
+      WidgetMsg_Close msg(popup_widget->routing_id());
+      popup_widget->OnMessageReceived(msg);
+    }
   }
 
   // Enable device emulation on the parent widget.
   blink::WebDeviceEmulationParams emulation_params;
-  gfx::Rect emulated_window_rect(0, 0, 980, 1200);
+  gfx::Rect emulated_widget_rect(150, 160, 980, 1200);
+  // In mobile emulation the WindowScreenRect and ScreenRect are both set to
+  // match the WidgetScreenRect, which we set here.
   emulation_params.screen_position = blink::WebDeviceEmulationParams::kMobile;
-  emulation_params.view_size = emulated_window_rect.size();
-  emulation_params.view_position = blink::WebPoint(150, 160);
-  view()->GetWidget()->OnEnableDeviceEmulation(emulation_params);
+  emulation_params.view_size = emulated_widget_rect.size();
+  emulation_params.view_position = emulated_widget_rect.origin();
+  {
+    WidgetMsg_EnableDeviceEmulation msg(view()->GetWidget()->routing_id(),
+                                        emulation_params);
+    view()->GetWidget()->OnMessageReceived(msg);
+  }
 
   {
     // Make a popup again. It should inherit device emulation params.
@@ -662,16 +693,51 @@ TEST_F(RenderViewImplTest, EmulatingPopupRect) {
     ASSERT_TRUE(popup_widget);
 
     // Set its size again.
-    popup_widget->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
+    {
+      WidgetMsg_UpdateScreenRects msg(popup_widget->routing_id(),
+                                      widget_screen_rect, window_screen_rect);
+      popup_widget->OnMessageReceived(msg);
+    }
 
-    // This time, the size should be affected by emulation params.
-    EXPECT_EQ(150 + window_screen_rect.x(), popup_widget->WindowRect().x);
-    EXPECT_EQ(160 + window_screen_rect.y(), popup_widget->WindowRect().y);
+    // This time, the position of the WidgetScreenRect and WindowScreenRect
+    // should be affected by emulation params.
+    // TODO(danakj): This means the popup sees the top level widget at the
+    // emulated position *plus* the real position. Whereas the top level
+    // widget will see itself at the emulation position. Why this inconsistency?
+    int window_x = emulated_widget_rect.x() + window_screen_rect.x();
+    int window_y = emulated_widget_rect.y() + window_screen_rect.y();
+    EXPECT_EQ(window_x, popup_widget->WindowRect().x);
+    EXPECT_EQ(window_y, popup_widget->WindowRect().y);
 
-    EXPECT_EQ(150 + widget_screen_rect.x(), popup_widget->ViewRect().x);
-    EXPECT_EQ(160 + widget_screen_rect.y(), popup_widget->ViewRect().y);
+    int widget_x = emulated_widget_rect.x() + widget_screen_rect.x();
+    int widget_y = emulated_widget_rect.y() + widget_screen_rect.y();
+    EXPECT_EQ(widget_x, popup_widget->ViewRect().x);
+    EXPECT_EQ(widget_y, popup_widget->ViewRect().y);
 
-    popup_widget->OnClose();
+    // TODO(danakj): Why don't the sizes get changed by emulation? The comments
+    // that used to be in this test suggest that the sizes used to change, and
+    // we were testing for that. But now we only test for positions changing?
+    EXPECT_EQ(window_screen_rect.width(), popup_widget->WindowRect().width);
+    EXPECT_EQ(window_screen_rect.height(), popup_widget->WindowRect().height);
+    EXPECT_EQ(widget_screen_rect.width(), popup_widget->ViewRect().width);
+    EXPECT_EQ(widget_screen_rect.height(), popup_widget->ViewRect().height);
+    EXPECT_EQ(emulated_widget_rect, gfx::Rect(view()->GetWidget()->ViewRect()));
+    EXPECT_EQ(emulated_widget_rect,
+              gfx::Rect(view()->GetWidget()->WindowRect()));
+
+    // TODO(danakj): Why isn't the ScreenRect visible to the popup an emulated
+    // value? The ScreenRect has been changed by emulation as demonstrated
+    // below.
+    EXPECT_EQ(gfx::Rect(800, 600),
+              gfx::Rect(popup_widget->GetScreenInfo().rect));
+    EXPECT_EQ(emulated_widget_rect,
+              gfx::Rect(view()->GetWidget()->GetScreenInfo().rect));
+
+    // Close and destroy the widget.
+    {
+      WidgetMsg_Close msg(popup_widget->routing_id());
+      popup_widget->OnMessageReceived(msg);
+    }
   }
 }
 

@@ -585,12 +585,13 @@ class SocketSecureFunction : public SocketAsyncApiFunction {
   void AsyncWorkStart() override;
 
  private:
-  void TlsConnectDone(int result,
-                      network::mojom::TLSClientSocketPtr tls_socket,
-                      const net::IPEndPoint& local_addr,
-                      const net::IPEndPoint& peer_addr,
-                      mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-                      mojo::ScopedDataPipeProducerHandle send_pipe_handle);
+  void TlsConnectDone(
+      int result,
+      mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
+      const net::IPEndPoint& local_addr,
+      const net::IPEndPoint& peer_addr,
+      mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+      mojo::ScopedDataPipeProducerHandle send_pipe_handle);
 
   std::unique_ptr<api::socket::Secure::Params> params_;
 

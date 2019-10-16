@@ -53,20 +53,20 @@ void ProxyResolvingSocketMojo::Connect(
 void ProxyResolvingSocketMojo::UpgradeToTLS(
     const net::HostPortPair& host_port_pair,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TLSClientSocketRequest request,
+    mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback) {
   // Wait for data pipes to be closed by the client before doing the upgrade.
   if (socket_data_pump_) {
     pending_upgrade_to_tls_callback_ = base::BindOnce(
         &ProxyResolvingSocketMojo::UpgradeToTLS, base::Unretained(this),
-        host_port_pair, traffic_annotation, std::move(request),
+        host_port_pair, traffic_annotation, std::move(receiver),
         std::move(observer), std::move(callback));
     return;
   }
   tls_socket_factory_->UpgradeToTLS(
       this, host_port_pair, nullptr /* sockt_options */, traffic_annotation,
-      std::move(request), std::move(observer),
+      std::move(receiver), std::move(observer),
       base::BindOnce(
           [](mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback,
              int32_t net_error,

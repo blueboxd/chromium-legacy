@@ -9,6 +9,7 @@
 
 #include "content/public/browser/content_browser_client.h"
 #include "headless/public/headless_browser.h"
+#include "storage/browser/quota/quota_settings.h"
 
 namespace headless {
 

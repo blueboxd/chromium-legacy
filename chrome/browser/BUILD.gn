@@ -2334,8 +2334,6 @@ jumbo_split_static_library("browser") {
       "android/customtabs/detached_resource_request.cc",
       "android/customtabs/detached_resource_request.h",
       "android/customtabs/detached_resource_request_android.cc",
-      "android/customtabs/dynamicmodule/module_metrics.cc",
-      "android/customtabs/dynamicmodule/module_metrics.h",
       "android/customtabs/origin_verifier.cc",
       "android/customtabs/origin_verifier.h",
       "android/devtools_manager_delegate_android.cc",

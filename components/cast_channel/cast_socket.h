@@ -351,8 +351,8 @@ class CastSocketImpl : public CastSocket {
   // Owned remote to the underlying TCP socket.
   mojo::Remote<network::mojom::TCPConnectedSocket> tcp_socket_;
 
-  // Owned ptr to the underlying SSL socket.
-  network::mojom::TLSClientSocketPtr socket_;
+  // Owned remote to the underlying SSL socket.
+  mojo::Remote<network::mojom::TLSClientSocket> socket_;
 
   // Helper class to write to the SSL socket.
   std::unique_ptr<MojoDataPump> mojo_data_pump_;

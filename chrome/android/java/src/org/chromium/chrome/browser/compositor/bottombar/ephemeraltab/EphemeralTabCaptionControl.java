@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
+
+import org.chromium.base.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelTextViewInflater;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -29,11 +32,16 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
     /** The caption visibility. */
     private boolean mIsVisible;
 
+    private Supplier<String> mUrl;
+
     /**
      * The caption animation percentage, which controls how and where to draw. It is
      * 0 when the Contextual Search bar is peeking and 1 when it is maxmized.
      */
     private float mAnimationPercentage;
+
+    private @DrawableRes int mIconId;
+    private float mIconOpacity;
 
     /**
      * @param panel                     The panel.
@@ -41,16 +49,15 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
      * @param container                 The container View used to inflate the View.
      * @param resourceLoader            The resource loader that will handle the snapshot capturing.
      */
-    public EphemeralTabCaptionControl(OverlayPanel panel, Context context, ViewGroup container,
+    public EphemeralTabCaptionControl(EphemeralTabPanel panel, Context context, ViewGroup container,
             DynamicResourceLoader resourceLoader) {
         super(panel, R.layout.ephemeral_tab_caption_view, R.id.ephemeral_tab_caption_view, context,
                 container, resourceLoader,
-                (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                                ? R.dimen.overlay_panel_end_buttons_width
-                                : R.dimen.overlay_panel_padded_button_width),
-                (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
-                                ? R.dimen.overlay_panel_end_buttons_width
-                                : R.dimen.overlay_panel_padded_button_width));
+                (EphemeralTabPanel.isNewLayout() ? R.dimen.overlay_panel_end_buttons_width
+                                                 : R.dimen.overlay_panel_padded_button_width),
+                (EphemeralTabPanel.isNewLayout() ? R.dimen.overlay_panel_end_buttons_width
+                                                 : R.dimen.overlay_panel_padded_button_width));
+        mUrl = panel::getUrl;
     }
 
     /**
@@ -65,7 +72,12 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
             if (mCaption == null) {
                 // |mCaption| gets initialized synchronously in |onFinishInflate|.
                 inflate();
-                mCaption.setText(R.string.contextmenu_open_in_new_tab);
+                if (EphemeralTabPanel.isNewLayout()) {
+                    mCaption.setText(
+                            UrlFormatter.formatUrlForSecurityDisplayOmitScheme(mUrl.get()));
+                } else {
+                    mCaption.setText(R.string.contextmenu_open_in_new_tab);
+                }
             }
             invalidate();
             mIsVisible = true;
@@ -73,6 +85,28 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
 
         mAnimationPercentage = percentage;
         if (mAnimationPercentage == 0.f) mShowingCaption = false;
+    }
+
+    /** Sets the security icon. */
+    public void setSecurityIcon(@DrawableRes int resId) {
+        mIconId = resId;
+        ImageView securityIcon = (ImageView) getView().findViewById(R.id.security_icon);
+        securityIcon.setImageResource(resId);
+    }
+
+    /** @return Security icon resource ID */
+    public @DrawableRes int getIconId() {
+        return mIconId;
+    }
+
+    /** Sets the security icon opacity. */
+    public void setIconOpacity(float opacity) {
+        mIconOpacity = opacity;
+    }
+
+    /** @return Security icon opacity. */
+    public float getIconOpacity() {
+        return mIconOpacity;
     }
 
     /**
@@ -102,7 +136,7 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
      * @return The current percentage ranging from 0.0 to 1.0.
      */
     public float getAnimationPercentage() {
-        return mAnimationPercentage;
+        return EphemeralTabPanel.isNewLayout() ? 1.f : mAnimationPercentage;
     }
 
     /**
@@ -127,5 +161,8 @@ public class EphemeralTabCaptionControl extends OverlayPanelTextViewInflater {
 
         View view = getView();
         mCaption = (TextView) view.findViewById(R.id.ephemeral_tab_caption);
+        if (EphemeralTabPanel.isNewLayout()) {
+            view.findViewById(R.id.security_icon).setVisibility(View.VISIBLE);
+        }
     }
 }

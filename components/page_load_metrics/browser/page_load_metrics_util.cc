@@ -162,7 +162,7 @@ base::Optional<base::TimeDelta> GetInitialForegroundDuration(
 
 bool DidObserveLoadingBehaviorInAnyFrame(
     const PageLoadMetricsObserverDelegate& delegate,
-    blink::WebLoadingBehaviorFlag behavior) {
+    blink::LoadingBehaviorFlag behavior) {
   const int all_frame_loading_behavior_flags =
       delegate.GetMainFrameMetadata().behavior_flags |
       delegate.GetSubframeMetadata().behavior_flags;

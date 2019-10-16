@@ -120,18 +120,18 @@ class ConsumerHost::StreamWriter {
 ConsumerHost::TracingSession::TracingSession(
     ConsumerHost* host,
     mojo::PendingReceiver<mojom::TracingSessionHost> tracing_session_host,
-    mojo::Remote<mojom::TracingSessionClient> tracing_session_client,
+    mojo::PendingRemote<mojom::TracingSessionClient> tracing_session_client,
     const perfetto::TraceConfig& trace_config,
     mojom::TracingClientPriority priority)
     : host_(host),
       tracing_session_client_(std::move(tracing_session_client)),
-      binding_(this, std::move(tracing_session_host)),
+      receiver_(this, std::move(tracing_session_host)),
       tracing_priority_(priority) {
   host_->service()->RegisterTracingSession(this);
 
   tracing_session_client_.set_disconnect_handler(base::BindOnce(
       &ConsumerHost::DestructTracingSession, base::Unretained(host)));
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &ConsumerHost::DestructTracingSession, base::Unretained(host)));
 
   privacy_filtering_enabled_ = false;
@@ -527,14 +527,12 @@ void ConsumerHost::EnableTracing(
                       if (!weak_this) {
                         return;
                       }
-                      mojo::Remote<mojom::TracingSessionClient>
-                          tracing_session_client_remote(
-                              std::move(tracing_session_client));
+
                       weak_this->tracing_session_ =
                           std::make_unique<TracingSession>(
                               weak_this.get(), std::move(tracing_session_host),
-                              std::move(tracing_session_client_remote),
-                              trace_config, priority);
+                              std::move(tracing_session_client), trace_config,
+                              priority);
                     },
                     weak_factory_.GetWeakPtr(), std::move(tracing_session_host),
                     std::move(tracing_session_client), trace_config, priority));

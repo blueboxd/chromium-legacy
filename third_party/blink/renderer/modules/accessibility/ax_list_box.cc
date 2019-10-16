@@ -51,10 +51,10 @@ ax::mojom::Role AXListBox::DetermineAccessibilityRole() {
 }
 
 AXObject* AXListBox::ActiveDescendant() {
-  if (!IsHTMLSelectElement(GetNode()))
+  auto* select = DynamicTo<HTMLSelectElement>(GetNode());
+  if (!select)
     return nullptr;
 
-  HTMLSelectElement* select = ToHTMLSelectElement(GetNode());
   int active_index = select->ActiveSelectionEndListIndex();
   if (active_index >= 0 && active_index < static_cast<int>(select->length())) {
     HTMLOptionElement* option = select->item(active_index_);
@@ -65,10 +65,10 @@ AXObject* AXListBox::ActiveDescendant() {
 }
 
 void AXListBox::ActiveIndexChanged() {
-  if (!IsHTMLSelectElement(GetNode()))
+  auto* select = DynamicTo<HTMLSelectElement>(GetNode());
+  if (!select)
     return;
 
-  HTMLSelectElement* select = ToHTMLSelectElement(GetNode());
   int active_index = select->ActiveSelectionEndListIndex();
   if (active_index == active_index_)
     return;

@@ -314,12 +314,6 @@ bool HasRecommendableForeignTab(
   return has_recommendation;
 }
 
-apps::BuiltInAppName GetInternalAppNameByAppId(const std::string& app_id) {
-  const auto* app = FindInternalApp(app_id);
-  DCHECK(app);
-  return app->internal_app_name;
-}
-
 size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name,
                                                     const Profile* profile) {
   size_t num_of_internal_apps_show_in_launcher = 0u;

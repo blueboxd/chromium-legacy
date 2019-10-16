@@ -21,10 +21,6 @@ class Extension;
 
 namespace web_app {
 
-// Callback made when CreateShortcuts has finished trying to create the
-// platform shortcuts indicating whether or not they were successfully created.
-using CreateShortcutsCallback = base::OnceCallback<void(bool shortcut_created)>;
-
 // Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
 using ShortcutInfoCallback =
     base::OnceCallback<void(std::unique_ptr<ShortcutInfo>)>;

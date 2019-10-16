@@ -72,7 +72,7 @@ double XRAnchor::lastChangedTime(bool& is_null) const {
 }
 
 void XRAnchor::detach() {
-  session_->xr()->xrEnvironmentProviderPtr()->DetachAnchor(id_);
+  session_->xr()->xrEnvironmentProviderRemote()->DetachAnchor(id_);
 }
 
 void XRAnchor::Trace(blink::Visitor* visitor) {

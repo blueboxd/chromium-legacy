@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -42,9 +44,13 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   WrappedResourceRequest webreq(request);
 
-  network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
+  mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+      url_loader_factory;
   if (options.url_loader_factory) {
-    options.url_loader_factory->data->Clone(MakeRequest(&url_loader_factory));
+    mojo::Remote<network::mojom::blink::URLLoaderFactory>
+        url_loader_factory_remote(std::move(options.url_loader_factory->data));
+    url_loader_factory_remote->Clone(
+        url_loader_factory.InitWithNewPipeAndPassReceiver());
   }
   // Resolve any blob: URLs that haven't been resolved yet. The XHR and
   // fetch() API implementations resolve blob URLs earlier because there can
@@ -66,7 +72,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
   if (request.Url().ProtocolIs("blob") && !url_loader_factory &&
       request.GetRequestContext() != mojom::RequestContextType::SHARED_WORKER) {
     frame_or_imported_document_->GetDocument().GetPublicURLManager().Resolve(
-        request.Url(), MakeRequest(&url_loader_factory));
+        request.Url(), url_loader_factory.InitWithNewPipeAndPassReceiver());
   }
   LocalFrame& frame = frame_or_imported_document_->GetFrame();
   FrameScheduler* frame_scheduler = frame.GetFrameScheduler();
@@ -79,7 +85,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
   // resource loader handle's task runner.
   if (url_loader_factory) {
     return Platform::Current()
-        ->WrapURLLoaderFactory(url_loader_factory.PassInterface().PassHandle())
+        ->WrapURLLoaderFactory(url_loader_factory.PassPipe())
         ->CreateURLLoader(
             webreq, frame_scheduler->CreateResourceLoadingTaskRunnerHandle());
   }

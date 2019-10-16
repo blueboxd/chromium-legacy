@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_SHORTCUT_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_SHORTCUT_H_
 
+#include <memory>
+
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -94,6 +97,11 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
                                       const std::string& extension_id,
                                       const GURL& url);
 
+// Callback made when CreateShortcuts has finished trying to create the
+// platform shortcuts indicating whether or not they were successfully
+// created.
+using CreateShortcutsCallback = base::OnceCallback<void(bool shortcut_created)>;
+
 namespace internals {
 
 // Implemented for each platform, does the platform specific parts of creating
@@ -102,10 +110,21 @@ namespace internals {
 // shortcut, and is also used as the UserDataDir for platform app shortcuts.
 // |shortcut_info| contains info about the shortcut to create, and
 // |creation_locations| contains information about where to create them.
+// Performs blocking IO operations.
 bool CreatePlatformShortcuts(const base::FilePath& shortcut_data_path,
                              const ShortcutLocations& creation_locations,
                              ShortcutCreationReason creation_reason,
                              const ShortcutInfo& shortcut_info);
+
+// Schedules a call to |CreatePlatformShortcuts| on the Shortcut IO thread and
+// invokes |callback| when complete. This function must be called from the UI
+// thread.
+void ScheduleCreatePlatformShortcuts(
+    const base::FilePath& shortcut_data_path,
+    const ShortcutLocations& creation_locations,
+    ShortcutCreationReason reason,
+    std::unique_ptr<ShortcutInfo> shortcut_info,
+    CreateShortcutsCallback callback);
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and

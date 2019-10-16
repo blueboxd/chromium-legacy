@@ -168,6 +168,13 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
     {WEB_APPS, "WEB_APP", "web_apps", "Web Apps",
      sync_pb::EntitySpecifics::kWebAppFieldNumber,
      ModelTypeForHistograms::kWebApps},
+    {OS_PREFERENCES, "OS_PREFERENCE", "os_preferences", "OS Preferences",
+     sync_pb::EntitySpecifics::kOsPreferenceFieldNumber,
+     ModelTypeForHistograms::kOsPreferences},
+    {OS_PRIORITY_PREFERENCES, "OS_PRIORITY_PREFERENCE",
+     "os_priority_preferences", "OS Priority Preferences",
+     sync_pb::EntitySpecifics::kOsPriorityPreferenceFieldNumber,
+     ModelTypeForHistograms::kOsPriorityPreferences},
     // ---- Proxy types ----
     {PROXY_TABS, "", "", "Tabs", -1, ModelTypeForHistograms::kProxyTabs},
     // ---- Control Types ----
@@ -182,11 +189,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(39 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(39 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -307,6 +314,12 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case WIFI_CONFIGURATIONS:
       specifics->mutable_wifi_configuration();
       break;
+    case OS_PREFERENCES:
+      specifics->mutable_os_preference();
+      break;
+    case OS_PRIORITY_PREFERENCES:
+      specifics->mutable_os_priority_preference();
+      break;
     case ModelType::NUM_ENTRIES:
       NOTREACHED() << "No default field value for " << ModelTypeToString(type);
       break;
@@ -349,7 +362,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(39 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -424,12 +437,16 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return WEB_APPS;
   if (specifics.has_wifi_configuration())
     return WIFI_CONFIGURATIONS;
+  if (specifics.has_os_preference())
+    return OS_PREFERENCES;
+  if (specifics.has_os_priority_preference())
+    return OS_PRIORITY_PREFERENCES;
 
   return UNSPECIFIED;
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(39 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -443,6 +460,9 @@ ModelTypeSet EncryptableUserTypes() {
   // Priority preferences are not encrypted because they might be synced before
   // encryption is ready.
   encryptable_user_types.Remove(PRIORITY_PREFERENCES);
+  // OS priority preferences are not encrypted because they might be synced
+  // before encryption is ready.
+  encryptable_user_types.Remove(OS_PRIORITY_PREFERENCES);
   // Supervised user settings are not encrypted since they are set server-side.
   encryptable_user_types.Remove(SUPERVISED_USER_SETTINGS);
   // Supervised user whitelists are not encrypted since they are managed

@@ -60,7 +60,7 @@ class RTCRtpSenderImplTest : public ::testing::Test {
   // posted to the current thread in the meantime while waiting.
   void SyncWithSignalingThread() const {
     base::RunLoop run_loop;
-    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -89,10 +89,10 @@ class RTCRtpSenderImplTest : public ::testing::Test {
       track_ref = track_map_->GetOrCreateLocalTrackAdapter(web_track);
       DCHECK(track_ref->is_initialized());
     }
-    RtpSenderState sender_state(main_thread_,
-                                dependency_factory_->GetWebRtcSignalingThread(),
-                                mock_webrtc_sender_.get(), std::move(track_ref),
-                                std::vector<std::string>());
+    RtpSenderState sender_state(
+        main_thread_, dependency_factory_->GetWebRtcSignalingTaskRunner(),
+        mock_webrtc_sender_.get(), std::move(track_ref),
+        std::vector<std::string>());
     sender_state.Initialize();
     return std::make_unique<RTCRtpSenderImpl>(
         peer_connection_.get(), track_map_, std::move(sender_state));

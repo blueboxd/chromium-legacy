@@ -11,7 +11,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 
 namespace internal {
 
@@ -421,6 +421,6 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
 
 bool ServiceWorkerPageLoadMetricsObserver::IsServiceWorkerControlled() {
   return (GetDelegate().GetMainFrameMetadata().behavior_flags &
-          blink::WebLoadingBehaviorFlag::
-              kWebLoadingBehaviorServiceWorkerControlled) != 0;
+          blink::LoadingBehaviorFlag::
+              kLoadingBehaviorServiceWorkerControlled) != 0;
 }

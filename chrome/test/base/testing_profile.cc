@@ -121,6 +121,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1004,6 +1005,10 @@ GURL TestingProfile::GetHomePage() {
 
 void TestingProfile::SetCreationTimeForTesting(base::Time creation_time) {
   start_time_ = creation_time;
+}
+
+bool TestingProfile::ShouldEnableOutOfBlinkCors() {
+  return network::features::ShouldEnableOutOfBlinkCorsForTesting();
 }
 
 PrefService* TestingProfile::GetOffTheRecordPrefs() {

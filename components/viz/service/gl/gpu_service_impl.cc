@@ -524,6 +524,22 @@ void GpuServiceImpl::GetVideoMemoryUsageStats(
   std::move(callback).Run(video_memory_usage_stats);
 }
 
+void GpuServiceImpl::StartPeakMemoryMonitor(uint32_t sequence_num) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuServiceImpl::StartPeakMemoryMonitorOnMainThread,
+                     weak_ptr_, sequence_num));
+}
+
+void GpuServiceImpl::GetPeakMemoryUsage(uint32_t sequence_num,
+                                        GetPeakMemoryUsageCallback callback) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+  main_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&GpuServiceImpl::GetPeakMemoryUsageOnMainThread,
+                                weak_ptr_, sequence_num, std::move(callback)));
+}
+
 #if defined(OS_WIN)
 void GpuServiceImpl::GetGpuSupportedRuntimeVersion(
     GetGpuSupportedRuntimeVersionCallback callback) {
@@ -876,6 +892,18 @@ void GpuServiceImpl::Stop(StopCallback callback) {
   main_runner_->PostTaskAndReply(
       FROM_HERE, base::BindOnce(&GpuServiceImpl::MaybeExit, weak_ptr_, false),
       std::move(callback));
+}
+
+void GpuServiceImpl::StartPeakMemoryMonitorOnMainThread(uint32_t sequence_num) {
+  gpu_channel_manager_->StartPeakMemoryMonitor(sequence_num);
+}
+
+void GpuServiceImpl::GetPeakMemoryUsageOnMainThread(
+    uint32_t sequence_num,
+    GetPeakMemoryUsageCallback callback) {
+  uint64_t peak_memory = gpu_channel_manager_->GetPeakMemoryUsage(sequence_num);
+  io_runner_->PostTask(FROM_HERE,
+                       base::BindOnce(std::move(callback), peak_memory));
 }
 
 void GpuServiceImpl::MaybeExit(bool for_context_loss) {

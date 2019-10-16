@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestPrivacyChanges, RedirectNotFollowed) {
   // See https://ci.chromium.org/p/chromium/builders/ci/linux-oor-cors-rel.
   const int expected_request_count =
       (privacy_changes_enabled_ &&
-       network::features::ShouldEnableOutOfBlinkCors())
+       network::features::ShouldEnableOutOfBlinkCorsForTesting())
           ? 1
           : 2;
   EXPECT_EQ(expected_request_count, destination_counter->GetRequestCount());

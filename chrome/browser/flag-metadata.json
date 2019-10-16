@@ -1638,11 +1638,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-scroll-anchor-serialization",
-    "owners": [ "pnoland" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-search-box-selection",
     "owners": [ "ginko", "newcomer" ],
     "expiry_milestone": 78
@@ -2106,7 +2101,7 @@
   {
     "name": "file-manager-feedback-panel",
     "owners": [ "adanilo" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 81
   },
   {
     // See https://crbug.com/904630, offical builds only.

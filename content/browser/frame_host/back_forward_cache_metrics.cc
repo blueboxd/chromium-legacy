@@ -190,9 +190,7 @@ void BackForwardCacheMetrics::MarkEvictedFromBackForwardCacheWithReason(
 
 void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     NavigationRequest* navigation) {
-  // TODO(hajimehoshi): Use kNotCachedDueToExperimentCondition if the
-  // experiment condition does not match.
-  HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotCached;
+  HistoryNavigationOutcome outcome = HistoryNavigationOutcome::kNotRestored;
   if (navigation->IsServedFromBackForwardCache()) {
     outcome = HistoryNavigationOutcome::kRestored;
 
@@ -201,15 +199,8 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
         BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::kRestored);
   }
 
-  // |last_committed_main_frame_navigation_id_ == -1| checks the case when the
-  // browser is restored. In this case, the page has history items but does not
-  // have back-forward cache. Just after restoring, |evicted_reason_| does not
-  // have a value.
-  if (evicted_reason_.has_value() ||
-      last_committed_main_frame_navigation_id_ == -1) {
-    DCHECK(!navigation->IsServedFromBackForwardCache());
-    outcome = HistoryNavigationOutcome::kEvicted;
-  }
+  // TODO(hajimehoshi): Do not record the outcome when the experient condition
+  // does not match.
   UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
                             outcome);
 

@@ -118,10 +118,12 @@ class BLINK_MODULES_EXPORT PeerConnectionDependencyFactory
 
   void EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() const;
+
+  // Returns the rtc::Thread instance associated with the WebRTC worker thread.
   // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
-  rtc::Thread* GetWebRtcWorkerThreadRtcThread() const;
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread()
-      const;
+  rtc::Thread* GetWebRtcWorkerThreadRtcThread();
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetWebRtcSignalingTaskRunner();
 
  protected:
   virtual const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&

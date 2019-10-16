@@ -98,8 +98,8 @@ class DragDownloadFile::DragDownloadFileUI
     params->set_referrer_policy(
         Referrer::ReferrerPolicyForUrlRequest(referrer_.policy));
     params->set_referrer_encoding(referrer_encoding_);
-    params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,
-                                    weak_ptr_factory_.GetWeakPtr()));
+    params->set_callback(base::BindOnce(&DragDownloadFileUI::OnDownloadStarted,
+                                        weak_ptr_factory_.GetWeakPtr()));
     params->set_file_path(file_path);
     params->set_file(std::move(file));  // Nulls file.
     params->set_download_source(download::DownloadSource::DRAG_AND_DROP);

@@ -2060,6 +2060,7 @@ ExtensionWebRequestEventRouter::GetMatchingListeners(
 namespace {
 
 helpers::EventResponseDelta CalculateDelta(
+    content::BrowserContext* browser_context,
     ExtensionWebRequestEventRouter::BlockedRequest* blocked_request,
     ExtensionWebRequestEventRouter::EventResponse* response,
     int extra_info_spec) {
@@ -2072,8 +2073,9 @@ helpers::EventResponseDelta CalculateDelta(
       net::HttpRequestHeaders* old_headers = blocked_request->request_headers;
       net::HttpRequestHeaders* new_headers = response->request_headers.get();
       return helpers::CalculateOnBeforeSendHeadersDelta(
-          response->extension_id, response->extension_install_time,
-          response->cancel, old_headers, new_headers, extra_info_spec);
+          browser_context, response->extension_id,
+          response->extension_install_time, response->cancel, old_headers,
+          new_headers, extra_info_spec);
     }
     case ExtensionWebRequestEventRouter::kOnHeadersReceived: {
       const net::HttpResponseHeaders* old_headers =
@@ -2233,8 +2235,8 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   CHECK_GE(num_handlers_blocking, 0);
 
   if (response) {
-    helpers::EventResponseDelta delta =
-        CalculateDelta(&blocked_request, response, extra_info_spec);
+    helpers::EventResponseDelta delta = CalculateDelta(
+        browser_context, &blocked_request, response, extra_info_spec);
 
     activity_monitor::OnWebRequestApiUsed(
         static_cast<content::BrowserContext*>(browser_context), extension_id,
@@ -2600,8 +2602,8 @@ WebRequestInternalAddEventListenerFunction::Run() {
   if (HasOptionalArgument(2)) {
     base::ListValue* value = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetList(2, &value));
-    EXTENSION_FUNCTION_VALIDATE(
-        ExtraInfoSpec::InitFromValue(*value, &extra_info_spec));
+    EXTENSION_FUNCTION_VALIDATE(ExtraInfoSpec::InitFromValue(
+        browser_context(), *value, &extra_info_spec));
   }
 
   std::string event_name;

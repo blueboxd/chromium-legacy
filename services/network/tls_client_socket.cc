@@ -19,7 +19,6 @@
 namespace network {
 
 TLSClientSocket::TLSClientSocket(
-    mojom::TLSClientSocketRequest request,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : observer_(std::move(observer)), traffic_annotation_(traffic_annotation) {}

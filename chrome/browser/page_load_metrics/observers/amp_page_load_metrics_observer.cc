@@ -230,8 +230,7 @@ void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     return;
 
   if ((behavior_flags &
-       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) ==
-      0)
+       blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded) == 0)
     return;
 
   auto it = amp_subframe_info_.find(subframe_rfh);
@@ -259,8 +258,7 @@ void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved() {
   bool should_record = false;
   if (!observed_amp_main_frame_ &&
       (GetDelegate().GetMainFrameMetadata().behavior_flags &
-       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
-          0) {
+       blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded) != 0) {
     builder.SetMainFrameAmpPageLoad(true);
     observed_amp_main_frame_ = true;
     should_record = true;
@@ -268,8 +266,7 @@ void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved() {
 
   if (!observed_amp_sub_frame_ &&
       (GetDelegate().GetSubframeMetadata().behavior_flags &
-       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
-          0) {
+       blink::LoadingBehaviorFlag::kLoadingBehaviorAmpDocumentLoaded) != 0) {
     builder.SetSubFrameAmpPageLoad(true);
     observed_amp_sub_frame_ = true;
     should_record = true;

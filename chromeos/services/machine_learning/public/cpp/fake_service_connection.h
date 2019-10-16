@@ -14,6 +14,8 @@
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace chromeos {
 namespace machine_learning {
@@ -31,14 +33,14 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   ~FakeServiceConnectionImpl() override;
 
   // It's safe to execute LoadBuiltinModel and LoadFlatBufferModel for multi
-  // times, but all the requests will be bound to the same instance.
+  // times, but all the receivers will be bound to the same instance.
   void LoadBuiltinModel(mojom::BuiltinModelSpecPtr spec,
-                        mojom::ModelRequest request,
+                        mojo::PendingReceiver<mojom::Model> receiver,
                         mojom::MachineLearningService::LoadBuiltinModelCallback
                             callback) override;
   void LoadFlatBufferModel(
       mojom::FlatBufferModelSpecPtr spec,
-      mojom::ModelRequest request,
+      mojo::PendingReceiver<mojom::Model> receiver,
       mojom::MachineLearningService::LoadFlatBufferModelCallback callback)
       override;
 
@@ -58,7 +60,7 @@ class FakeServiceConnectionImpl : public ServiceConnection,
                       const std::vector<double>& value);
 
  private:
-  mojo::BindingSet<mojom::Model> model_bindings_;
+  mojo::ReceiverSet<mojom::Model> model_receivers_;
   mojo::BindingSet<mojom::GraphExecutor> graph_bindings_;
   mojom::TensorPtr execute_result_;
 

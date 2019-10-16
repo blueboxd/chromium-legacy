@@ -20,8 +20,10 @@
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
 #include "media/mojo/mojom/renderer.mojom.h"
+#include "net/url_request/url_request_context.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-forward.h"
+#include "storage/browser/quota/quota_settings.h"
 
 class PrefService;
 

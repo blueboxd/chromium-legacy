@@ -65,8 +65,8 @@ class DtlsIceTransportAdapterCrossThreadFactory
       : ice_transport_(ice_transport) {}
   void InitializeOnMainThread(LocalFrame& frame) override {
     DCHECK(!worker_thread_rtc_thread_);
-    worker_thread_rtc_thread_ =
-        Platform::Current()->GetWebRtcWorkerThreadRtcThread();
+    worker_thread_rtc_thread_ = PeerConnectionDependencyFactory::GetInstance()
+                                    ->GetWebRtcWorkerThreadRtcThread();
   }
 
   std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
@@ -98,8 +98,8 @@ class DefaultIceTransportAdapterCrossThreadFactory
 
     async_resolver_factory_ =
         Platform::Current()->CreateWebRtcAsyncResolverFactory();
-    worker_thread_rtc_thread_ =
-        Platform::Current()->GetWebRtcWorkerThreadRtcThread();
+    worker_thread_rtc_thread_ = PeerConnectionDependencyFactory::GetInstance()
+                                    ->GetWebRtcWorkerThreadRtcThread();
   }
 
   std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(

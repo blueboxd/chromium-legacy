@@ -113,8 +113,6 @@ component("ui_devtools") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//net",
-    "//services/tracing/public/cpp",
-    "//services/tracing/public/mojom",
     "//ui/gfx",
   ]
 
@@ -123,6 +121,8 @@ component("ui_devtools") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
+    "//services/tracing/public/cpp",
+    "//services/tracing/public/mojom",
     "//third_party/perfetto/gn:default_deps",
   ]
 }

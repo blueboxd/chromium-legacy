@@ -87,7 +87,7 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
                     const DownloadTargetCallback&));
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const base::FilePath&));
   MOCK_METHOD2(ShouldCompleteDownload,
-               bool(download::DownloadItem*, const base::Closure&));
+               bool(download::DownloadItem*, base::OnceClosure));
   MOCK_METHOD2(ShouldOpenDownload,
                bool(download::DownloadItem*,
                     const DownloadOpenDelayedCallback&));

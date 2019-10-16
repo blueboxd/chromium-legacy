@@ -602,9 +602,10 @@ interface XRFrameDataProvider {
   // for some reason, such as device disconnection.
   GetFrameData(XRFrameDataRequestOptions? options) => (XRFrameData? frame_data);
   GetEnvironmentIntegrationProvider(
-      associated XREnvironmentIntegrationProvider& environment_provider);
+      pending_associated_receiver<XREnvironmentIntegrationProvider>
+          environment_provider);
   SetInputSourceButtonListener(
-      associated XRInputSourceButtonListener? event_listener);
+      pending_associated_remote<XRInputSourceButtonListener>? event_listener);
 };
 
 // Provides the necessary functionality for sending frames to a headset.

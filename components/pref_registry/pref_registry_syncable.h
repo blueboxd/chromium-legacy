@@ -16,8 +16,7 @@
 // TODO(tfarina): Change this namespace to pref_registry.
 namespace user_prefs {
 
-// A PrefRegistry that forces users to choose whether each registered
-// preference is syncable or not.
+// A PrefRegistry for syncable prefs.
 //
 // Classes or components that want to register such preferences should
 // define a static function named RegisterUserPrefs that takes a
@@ -49,6 +48,14 @@ class PrefRegistrySyncable : public PrefRegistrySimple {
     //    a passphrase.
     // -- they are preferred for receiving server-provided data.
     SYNCABLE_PRIORITY_PREF = 1 << 1,
+
+#if defined(OS_CHROMEOS)
+    // As above, but the pref is for an OS settings (e.g. keyboard layout).
+    // This distinction allows OS pref sync to be controlled independently from
+    // browser pref sync in the UI.
+    SYNCABLE_OS_PREF = 1 << 2,
+    SYNCABLE_OS_PRIORITY_PREF = 1 << 3,
+#endif
   };
 
   typedef base::Callback<void(const std::string& path, uint32_t flags)>

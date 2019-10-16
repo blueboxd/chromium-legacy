@@ -92,7 +92,8 @@ class AppCacheHostTest : public testing::Test {
                     const std::string& message) override {}
 
     void SetSubresourceFactory(
-        network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            url_loader_factory) override {}
 
     // WebContentsObserver:
     void AppCacheAccessed(const GURL& manifest_url,

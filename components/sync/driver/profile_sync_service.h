@@ -126,7 +126,8 @@ class ProfileSyncService : public SyncService,
   bool RequiresClientUpgrade() const override;
   std::unique_ptr<SyncSetupInProgressHandle> GetSetupInProgressHandle()
       override;
-  std::string GetExperimentalAuthenticationId() const override;
+  std::unique_ptr<crypto::ECPrivateKey> GetExperimentalAuthenticationKey()
+      const override;
   bool IsSetupInProgress() const override;
   ModelTypeSet GetRegisteredDataTypes() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
@@ -260,6 +261,10 @@ class ProfileSyncService : public SyncService,
 
   SyncClient* GetSyncClientForTest();
 
+  // Combines GAIA ID, sync birthday and keystore key with '|' sepearator to
+  // generate a secret. Returns empty string if keystore key is not available.
+  std::string GetExperimentalAuthenticationSecretForTest() const;
+
  private:
   // Passed as an argument to StopImpl to control whether or not the sync
   // engine should clear its data directory when it shuts down. See StopImpl
@@ -360,6 +365,8 @@ class ProfileSyncService : public SyncService,
 
   // Called by SyncServiceCrypto when a passphrase is required or accepted.
   void ReconfigureDueToPassphrase(ConfigureReason reason);
+
+  std::string GetExperimentalAuthenticationSecret() const;
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.

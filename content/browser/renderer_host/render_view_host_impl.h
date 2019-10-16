@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/input/input_device_change_observer.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
-#include "content/browser/renderer_host/visual_properties_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/notification_observer.h"
@@ -132,10 +131,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const base::UnguessableToken& devtools_frame_token,
       const FrameReplicationState& replicated_frame_state,
       bool window_was_created_with_opener);
-
-  base::WeakPtr<VisualPropertiesManager> GetVisualPropertiesManager() {
-    return visual_properties_manager_.GetWeakPtr();
-  }
 
   // Tracks whether this RenderViewHost is in an active state (rather than
   // pending swap out or swapped out), according to its main frame
@@ -368,9 +363,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
-
-  // Used to send Page and Widget visual properties to Renderers.
-  VisualPropertiesManager visual_properties_manager_;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_{this};
 

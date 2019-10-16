@@ -596,15 +596,16 @@ PeerConnectionDependencyFactory::GetWebRtcWorkerThread() const {
                                            : nullptr;
 }
 
-rtc::Thread* PeerConnectionDependencyFactory::GetWebRtcWorkerThreadRtcThread()
-    const {
+rtc::Thread* PeerConnectionDependencyFactory::GetWebRtcWorkerThreadRtcThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   return chrome_worker_thread_.IsRunning() ? worker_thread_ : nullptr;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-PeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
+PeerConnectionDependencyFactory::GetWebRtcSignalingTaskRunner() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  EnsureInitialized();
   return chrome_signaling_thread_.IsRunning()
              ? chrome_signaling_thread_.task_runner()
              : nullptr;

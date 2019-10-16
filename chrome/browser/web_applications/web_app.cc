@@ -70,8 +70,8 @@ void WebApp::SetIsLocallyInstalled(bool is_locally_installed) {
   is_locally_installed_ = is_locally_installed;
 }
 
-void WebApp::SetIsSyncPlaceholder(bool is_sync_placeholder) {
-  is_sync_placeholder_ = is_sync_placeholder;
+void WebApp::SetIsInSyncInstall(bool is_in_sync_install) {
+  is_in_sync_install_ = is_in_sync_install;
 }
 
 void WebApp::SetIcons(Icons icons) {
@@ -102,7 +102,7 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
   const std::string display_mode =
       blink::DisplayModeToString(app.display_mode_);
   const bool is_locally_installed = app.is_locally_installed_;
-  const bool is_sync_placeholder = app.is_sync_placeholder_;
+  const bool is_in_sync_install = app.is_in_sync_install_;
 
   return out << "app_id: " << app.app_id_ << std::endl
              << "  name: " << app.name_ << std::endl
@@ -112,7 +112,7 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
              << "  display_mode: " << display_mode << std::endl
              << "  sources: " << app.sources_.to_string() << std::endl
              << "  is_locally_installed: " << is_locally_installed << std::endl
-             << "  is_sync_placeholder: " << is_sync_placeholder << std::endl
+             << "  is_in_sync_install: " << is_in_sync_install << std::endl
              << "  sync_data.name: " << app.sync_data_.name << std::endl
              << "  sync_data.theme_color: " << sync_theme_color << std::endl
              << "  description: " << app.description_;
@@ -134,11 +134,11 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
   return std::tie(app1.app_id_, app1.sources_, app1.name_, app1.launch_url_,
                   app1.description_, app1.scope_, app1.theme_color_,
                   app1.icons_, app1.display_mode_, app1.is_locally_installed_,
-                  app1.is_sync_placeholder_, app1.sync_data_) ==
+                  app1.is_in_sync_install_, app1.sync_data_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.icons_, app2.display_mode_, app2.is_locally_installed_,
-                  app2.is_sync_placeholder_, app2.sync_data_);
+                  app2.is_in_sync_install_, app2.sync_data_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

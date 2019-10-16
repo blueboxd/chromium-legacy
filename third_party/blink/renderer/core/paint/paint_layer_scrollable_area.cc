@@ -2235,7 +2235,7 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
 static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
   // Don't force composite scroll for select or text input elements.
   if (Node* node = layer->GetLayoutObject().GetNode()) {
-    if (IsHTMLSelectElement(node))
+    if (IsA<HTMLSelectElement>(node))
       return false;
     if (TextControlElement* text_control = EnclosingTextControl(node)) {
       if (IsHTMLInputElement(text_control)) {

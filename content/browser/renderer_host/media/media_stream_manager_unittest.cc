@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"

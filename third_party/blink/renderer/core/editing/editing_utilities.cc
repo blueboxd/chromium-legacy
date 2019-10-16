@@ -343,7 +343,7 @@ bool IsNodeFullyContained(const EphemeralRange& range, const Node& node) {
 // instead of |isSelectionBondary()|.
 bool IsUserSelectContain(const Node& node) {
   return IsHTMLTextAreaElement(node) || IsHTMLInputElement(node) ||
-         IsHTMLSelectElement(node);
+         IsA<HTMLSelectElement>(node);
 }
 
 enum EditableLevel { kEditable, kRichlyEditable };

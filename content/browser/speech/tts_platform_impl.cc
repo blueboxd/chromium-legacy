@@ -8,6 +8,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #endif
 
 #include <string>

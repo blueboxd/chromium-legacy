@@ -67,7 +67,7 @@ Source::Type InferSourceFromMetricsInstallSource(
 void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
   WebApp::Icons web_app_icons;
 
-  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
+  for (const WebApplicationIconInfo& icon_info : web_app_info.icons) {
     // Skip unfetched bitmaps.
     if (icon_info.data.colorType() == kUnknown_SkColorType)
       continue;
@@ -130,7 +130,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   SetIcons(web_app_info, web_app.get());
 
-  web_app->SetIsSyncPlaceholder(false);
+  web_app->SetIsInSyncInstall(false);
   WebApp::SyncData sync_data;
   sync_data.name = base::UTF16ToUTF8(web_app_info.title);
   sync_data.theme_color = web_app_info.theme_color;

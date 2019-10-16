@@ -201,6 +201,18 @@ void NGBoxFragmentBuilder::PropagateBreak(
 
 scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     WritingMode block_or_line_writing_mode) {
+#if DCHECK_IS_ON()
+  if (ItemsBuilder()) {
+    for (const ChildWithOffset& child : Children()) {
+      DCHECK(child.fragment);
+      const NGPhysicalFragment& fragment = *child.fragment;
+      DCHECK(fragment.IsLineBox() ||
+             // TODO(kojii): How to place floats and OOF is TBD.
+             fragment.IsFloatingOrOutOfFlowPositioned());
+    }
+  }
+#endif
+
   if (UNLIKELY(node_ && has_block_fragmentation_)) {
     if (!inline_break_tokens_.IsEmpty()) {
       if (auto token = inline_break_tokens_.back()) {

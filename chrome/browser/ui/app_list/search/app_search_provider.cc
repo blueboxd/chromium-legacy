@@ -57,7 +57,6 @@
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
-#include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_utils/fuzzy_tokenized_string_match.h"
@@ -285,6 +284,17 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
     if (proxy) {
       Observe(&proxy->AppRegistryCache());
     }
+
+    sync_sessions::SessionSyncService* service =
+        SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+    if (!service)
+      return;
+    // base::Unretained() is safe below because the subscription itself is a
+    // class member field and handles destruction well.
+    foreign_session_updated_subscription_ =
+        service->SubscribeToForeignSessionsChanged(base::BindRepeating(
+            &AppSearchProvider::RefreshAppsAndUpdateResultsDeferred,
+            base::Unretained(owner)));
   }
 
   ~AppServiceDataSource() override = default;
@@ -298,9 +308,23 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
     }
     proxy->AppRegistryCache().ForEachApp([this, apps_vector](
                                              const apps::AppUpdate& update) {
-      if ((update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) ||
-          (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue)) {
+      if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
         return;
+
+      if (!std::strcmp(update.AppId().c_str(),
+                       ash::kInternalAppIdContinueReading)) {
+        // Continue reading depends on the tab of session from other devices.
+        // This checking can be moved to built_in_app, however, it's more
+        // reasonable to leave it in search result code, because the status of
+        // continue reading is not changed. It depends on the session sync
+        // result to decide whether it should be shown in the recommended
+        // result, so leave the code in the search result part.
+        sync_sessions::SessionSyncService* service =
+            SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
+        if (!service || (!service->GetOpenTabsUIDelegate() &&
+                         !owner()->open_tabs_ui_delegate_for_testing())) {
+          return;
+        }
       }
 
       // TODO(crbug.com/826982): add the "can load in incognito" concept to
@@ -367,6 +391,9 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
   // There are reasons to have more than one icon caching layer. See the
   // comments for the apps::IconCache::GarbageCollectionPolicy enum.
   apps::IconCache icon_cache_;
+
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+      foreign_session_updated_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceDataSource);
 };
@@ -661,83 +688,6 @@ class ArcDataSource : public IconCachedDataSource,
   DISALLOW_COPY_AND_ASSIGN(ArcDataSource);
 };
 
-class InternalDataSource : public AppSearchProvider::DataSource {
- public:
-  InternalDataSource(Profile* profile,
-                     AppSearchProvider* owner,
-                     bool just_suggestion_chips)
-      : AppSearchProvider::DataSource(profile, owner),
-        just_suggestion_chips_(just_suggestion_chips) {
-    sync_sessions::SessionSyncService* service =
-        SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
-    if (!service)
-      return;
-    // base::Unretained() is safe below because the subscription itself is a
-    // class member field and handles destruction well.
-    foreign_session_updated_subscription_ =
-        service->SubscribeToForeignSessionsChanged(base::BindRepeating(
-            &AppSearchProvider::RefreshAppsAndUpdateResultsDeferred,
-            base::Unretained(owner)));
-  }
-
-  ~InternalDataSource() override = default;
-
-  // AppSearchProvider::DataSource overrides:
-  void AddApps(AppSearchProvider::Apps* apps) override {
-    for (const auto& internal_app : GetInternalAppList(profile())) {
-      if (just_suggestion_chips_ && !IsSuggestionChip(internal_app.app_id)) {
-        continue;
-      }
-
-      if (!std::strcmp(internal_app.app_id,
-                       ash::kInternalAppIdContinueReading)) {
-        sync_sessions::SessionSyncService* service =
-            SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
-        if (!service || (!service->GetOpenTabsUIDelegate() &&
-                         !owner()->open_tabs_ui_delegate_for_testing())) {
-          continue;
-        }
-      }
-
-      apps->emplace_back(std::make_unique<AppSearchProvider::App>(
-          this, internal_app.app_id,
-          l10n_util::GetStringUTF8(internal_app.name_string_resource_id),
-          base::Time() /* last_launch_time */, base::Time() /* install_time */,
-          true /* installed_internally */));
-      apps->back()->set_recommendable(internal_app.recommendable);
-      apps->back()->set_searchable(internal_app.searchable);
-      if (internal_app.searchable_string_resource_id != 0) {
-        apps->back()->AddSearchableText(l10n_util::GetStringUTF16(
-            internal_app.searchable_string_resource_id));
-      }
-    }
-  }
-
-  std::unique_ptr<AppResult> CreateResult(
-      const std::string& app_id,
-      AppListControllerDelegate* list_controller,
-      bool is_recommended) override {
-    return std::make_unique<InternalAppResult>(profile(), app_id,
-                                               list_controller, is_recommended);
-  }
-
- private:
-  // Whether InternalDataSource provides just internal apps that should be
-  // shown as suggestion chips. If true, other internal apps are provided by
-  // AppServiceDataSource.
-  //
-  // TODO(crbug.com/826982): move the "foreign session updated subscription"
-  // into the App Service? Or if, in terms of UI, "continue reading" is exposed
-  // only in the app list search UI, it might make more sense to leave it in
-  // this code. See also built_in_chromeos_apps.cc.
-  bool just_suggestion_chips_;
-
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-      foreign_session_updated_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(InternalDataSource);
-};
-
 class CrostiniDataSource : public IconCachedDataSource,
                            public crostini::CrostiniRegistryService::Observer {
  public:
@@ -849,8 +799,6 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
           std::make_unique<CrostiniDataSource>(profile, this));
     }
   }
-  data_sources_.emplace_back(
-      std::make_unique<InternalDataSource>(profile, this, app_service_enabled));
 }
 
 AppSearchProvider::~AppSearchProvider() {}

@@ -558,7 +558,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 
   template <typename T>
   void InvokeOnSignalingThread(T callback) {
-    mock_dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    mock_dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE, std::move(callback));
     RunMessageLoopsUntilIdle();
   }
@@ -569,7 +569,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     base::WaitableEvent waitable_event(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    mock_dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    mock_dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
                                   base::Unretained(&waitable_event)));
     waitable_event.Wait();

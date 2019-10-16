@@ -155,7 +155,7 @@ void TCPConnectedSocket::UpgradeToTLS(
     const net::HostPortPair& host_port_pair,
     mojom::TLSClientSocketOptionsPtr socket_options,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::TLSClientSocketRequest request,
+    mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
     mojo::PendingRemote<mojom::SocketObserver> observer,
     mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) {
   if (!tls_socket_factory_) {
@@ -169,12 +169,12 @@ void TCPConnectedSocket::UpgradeToTLS(
     pending_upgrade_to_tls_callback_ = base::BindOnce(
         &TCPConnectedSocket::UpgradeToTLS, base::Unretained(this),
         host_port_pair, std::move(socket_options), traffic_annotation,
-        std::move(request), std::move(observer), std::move(callback));
+        std::move(receiver), std::move(observer), std::move(callback));
     return;
   }
   tls_socket_factory_->UpgradeToTLS(
       this, host_port_pair, std::move(socket_options), traffic_annotation,
-      std::move(request), std::move(observer), std::move(callback));
+      std::move(receiver), std::move(observer), std::move(callback));
 }
 
 void TCPConnectedSocket::SetSendBufferSize(int send_buffer_size,

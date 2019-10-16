@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_FOR_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_FOR_FRAME_H_
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
@@ -34,7 +35,8 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
   void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
                   const String& message) override;
   void SetSubresourceFactory(
-      network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override;
+      mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
+          url_loader_factory) override;
 
   void WillStartLoadingMainResource(DocumentLoader* loader,
                                     const KURL& url,

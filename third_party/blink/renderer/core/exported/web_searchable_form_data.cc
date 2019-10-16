@@ -123,7 +123,7 @@ bool IsInDefaultState(const HTMLFormControlElement& form_element) {
     if (input->type() == input_type_names::kCheckbox ||
         input->type() == input_type_names::kRadio)
       return input->checked() == input->FastHasAttribute(kCheckedAttr);
-  } else if (auto* select = ToHTMLSelectElementOrNull(form_element)) {
+  } else if (auto* select = DynamicTo<HTMLSelectElement>(form_element)) {
     return IsSelectInDefaultState(*select);
   }
   return true;

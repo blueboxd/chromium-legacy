@@ -129,8 +129,10 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     DVLOG(1) << "Creating WebRtcAudioRenderer for remote WebRTC track.";
 
     renderer = new WebRtcAudioRenderer(
-        Platform::Current()->GetWebRtcSignalingTaskRunner(), web_stream,
-        web_frame, GetSessionIdForWebRtcAudioRenderer(), device_id.Utf8());
+        PeerConnectionDependencyFactory::GetInstance()
+            ->GetWebRtcSignalingTaskRunner(),
+        web_stream, web_frame, GetSessionIdForWebRtcAudioRenderer(),
+        device_id.Utf8());
 
     if (!audio_device->SetAudioRenderer(renderer.get())) {
       WebRtcLogMessage("Error: SetAudioRenderer failed for remote track.");

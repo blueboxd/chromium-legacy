@@ -36,7 +36,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const {
-    return dependency_factory_->GetWebRtcSignalingThread();
+    return dependency_factory_->GetWebRtcSignalingTaskRunner();
   }
 
   blink::WebMediaStreamTrack CreateLocalTrack(const std::string& id) {

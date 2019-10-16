@@ -14,7 +14,9 @@
 #include "base/process/process.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/common/mac/app_shim.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace apps {
 using ShimLaunchedCallback = base::OnceCallback<void(base::Process)>;
@@ -114,9 +116,9 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Weak, owns |this|.
   Client* const client_;
 
-  mojo::Binding<chrome::mojom::AppShimHost> host_binding_;
-  chrome::mojom::AppShimPtr app_shim_;
-  chrome::mojom::AppShimRequest app_shim_request_;
+  mojo::Receiver<chrome::mojom::AppShimHost> host_receiver_{this};
+  mojo::Remote<chrome::mojom::AppShim> app_shim_;
+  mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver_;
 
   // Only allow LaunchShim to have any effect on the first time it is called. If
   // that launch fails, it will re-launch (requesting that the shim be

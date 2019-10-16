@@ -123,8 +123,8 @@ String ElementInnerTextCollector::RunOn(const Element& element) {
   // Note: Handles <select> and <option> here since they are implemented as
   // UA shadow DOM, e.g. Text nodes in <option> don't have layout object.
   // See also: https://github.com/whatwg/html/issues/3797
-  if (IsHTMLSelectElement(element))
-    ProcessSelectElement(ToHTMLSelectElement(element));
+  if (auto* html_select_element = DynamicTo<HTMLSelectElement>(element))
+    ProcessSelectElement(*html_select_element);
   else if (auto* option_element = DynamicTo<HTMLOptionElement>(element))
     ProcessOptionElement(*option_element);
   else
@@ -309,8 +309,8 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
   //   whose child boxes include only those of option element child nodes; and
   // * option element have an associated non-replaced block-level CSS box whose
   //   child boxes are as normal for non-replaced block-level CSS boxes.
-  if (IsHTMLSelectElement(node))
-    return ProcessSelectElement(ToHTMLSelectElement(node));
+  if (auto* html_select_element = DynamicTo<HTMLSelectElement>(node))
+    return ProcessSelectElement(*html_select_element);
   if (auto* option_element = DynamicTo<HTMLOptionElement>(node)) {
     // Since child nodes of OPTION are not rendered, we use dedicated function.
     // e.g. <div>ab<option>12</div>cd</div>innerText == "ab\n12\ncd"

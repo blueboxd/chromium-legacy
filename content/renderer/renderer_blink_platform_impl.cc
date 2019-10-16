@@ -558,21 +558,6 @@ RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
   return rtc_dependency_factory->GetWebRtcWorkerThread();
 }
 
-rtc::Thread* RendererBlinkPlatformImpl::GetWebRtcWorkerThreadRtcThread() {
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  rtc_dependency_factory->EnsureInitialized();
-  return rtc_dependency_factory->GetWebRtcWorkerThreadRtcThread();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-RendererBlinkPlatformImpl::GetWebRtcSignalingTaskRunner() {
-  auto* rtc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  rtc_dependency_factory->EnsureInitialized();
-  return rtc_dependency_factory->GetWebRtcSignalingThread();
-}
-
 std::unique_ptr<cricket::PortAllocator>
 RendererBlinkPlatformImpl::CreateWebRtcPortAllocator(
     blink::WebLocalFrame* frame) {
@@ -588,26 +573,6 @@ RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
       blink::PeerConnectionDependencyFactory::GetInstance();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->CreateAsyncResolverFactory();
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<webrtc::RtpCapabilities>
-RendererBlinkPlatformImpl::GetRtpSenderCapabilities(
-    const blink::WebString& kind) {
-  auto* pc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  pc_dependency_factory->EnsureInitialized();
-  return pc_dependency_factory->GetSenderCapabilities(kind.Utf8());
-}
-
-std::unique_ptr<webrtc::RtpCapabilities>
-RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
-    const blink::WebString& kind) {
-  auto* pc_dependency_factory =
-      blink::PeerConnectionDependencyFactory::GetInstance();
-  pc_dependency_factory->EnsureInitialized();
-  return pc_dependency_factory->GetReceiverCapabilities(kind.Utf8());
 }
 
 //------------------------------------------------------------------------------

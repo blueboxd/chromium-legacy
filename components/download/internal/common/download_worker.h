@@ -61,7 +61,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
       URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
           url_loader_factory_provider,
       UrlDownloadHandler* downloader,
-      const DownloadUrlParameters::OnStartedCallback& callback) override;
+      DownloadUrlParameters::OnStartedCallback callback) override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
   void OnUrlDownloadHandlerCreated(
       UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;

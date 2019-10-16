@@ -118,6 +118,13 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
   }
 }
 
+void NGFragmentItemsBuilder::AddListMarker(
+    const NGPhysicalBoxFragment& marker_fragment,
+    const LogicalOffset& offset) {
+  items_.push_back(std::make_unique<NGFragmentItem>(marker_fragment, 1));
+  offsets_.push_back(offset);
+}
+
 // Convert internal logical offsets to physical. Items are kept with logical
 // offset until outer box size is determined.
 void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,

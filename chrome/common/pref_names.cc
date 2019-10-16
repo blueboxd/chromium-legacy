@@ -2812,4 +2812,9 @@ const char kSharingLocalSharingInfo[] = "sharing.local_sharing_info";
 const char kHatsSurveyMetadata[] = "hats.survey_metadata";
 #endif  // !defined(OS_ANDROID)
 
+// TODO(crbug.com/1000977, crbug.com/1000984): Remove this during M81:83.
+const char kCorsMitigationList[] = "cors.mitigation.list";
+// TODO(crbug.com/1001450): Remove this once we fully shipped OOR-CORS.
+const char kCorsLegacyModeEnabled[] = "cors.legacy_mode.enabled";
+
 }  // namespace prefs

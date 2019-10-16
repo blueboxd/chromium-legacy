@@ -92,10 +92,13 @@ constexpr auto kUpdateLoadStatesInterval =
 
 std::unique_ptr<net::NetworkChangeNotifier> CreateNetworkChangeNotifierIfNeeded(
     net::NetworkChangeNotifier::ConnectionType initial_connection_type,
-    net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype) {
+    net::NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype,
+    bool mock_network_change_notifier) {
   // There is a global singleton net::NetworkChangeNotifier if NetworkService
   // is running inside of the browser process.
   if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier()) {
+    if (mock_network_change_notifier)
+      return net::NetworkChangeNotifier::CreateMock();
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     // On Android and ChromeOS, network change events are synced from the
     // browser process.
@@ -227,7 +230,8 @@ NetworkService::NetworkService(
     Initialize(mojom::NetworkServiceParams::New());
 }
 
-void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
+void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
+                                bool mock_network_change_notifier) {
   if (initialized_)
     return;
 
@@ -268,7 +272,8 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params) {
           net::NetworkChangeNotifier::ConnectionType(
               params->initial_connection_type),
           net::NetworkChangeNotifier::ConnectionSubtype(
-              params->initial_connection_subtype)));
+              params->initial_connection_subtype),
+          mock_network_change_notifier));
 
   trace_net_log_observer_.WatchForTraceStart(net_log_);
 

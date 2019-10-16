@@ -21,6 +21,7 @@
 #include "net/base/features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -193,9 +194,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 
   WebRuntimeFeatures::EnableUserActivationV2(
       base::FeatureList::IsEnabled(features::kUserActivationV2));
-
-  if (base::FeatureList::IsEnabled(features::kScrollAnchorSerialization))
-    WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
   WebRuntimeFeatures::EnableFeatureFromString(
       "CSSBackdropFilter",
@@ -572,8 +570,10 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
 
   if (ui::IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::EnableOverlayScrollbars(true);
-  if (network::features::ShouldEnableOutOfBlinkCors())
+
+  if (command_line.HasSwitch(network::switches::kEnableOutOfBlinkCors))
     WebRuntimeFeatures::EnableOutOfBlinkCors(true);
+
   WebRuntimeFeatures::EnableFormControlsRefresh(
       features::IsFormControlsRefreshEnabled());
 

@@ -92,12 +92,16 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
 
         int titleViewId = title.getViewId();
         int captionViewId = 0;
+        int captionIconId = 0;
+        float captionIconOpacity = 0.f;
         float captionAnimationPercentage = 0.f;
         boolean captionVisible = false;
         if (caption != null) {
             captionViewId = caption.getViewId();
             captionAnimationPercentage = caption.getAnimationPercentage();
+            captionIconOpacity = caption.getIconOpacity();
             captionVisible = caption.getIsVisible();
+            captionIconId = caption.getIconId();
         }
         boolean isProgressBarVisible = panel.isProgressBarVisible();
         float progressBarHeight = panel.getProgressBarHeight();
@@ -107,18 +111,18 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
 
         WebContents panelWebContents = panel.getWebContents();
         EphemeralTabSceneLayerJni.get().update(mNativePtr, EphemeralTabSceneLayer.this, titleViewId,
-                captionViewId, captionAnimationPercentage, bar.getTextLayerMinHeight(),
-                bar.getTitleCaptionSpacing(), captionVisible, R.drawable.progress_bar_background,
-                R.drawable.progress_bar_foreground, mDpToPx, panel.getBasePageBrightness(),
-                panel.getBasePageY() * mDpToPx, panelWebContents, panel.getOffsetX() * mDpToPx,
-                panel.getOffsetY() * mDpToPx, panel.getWidth() * mDpToPx,
-                panel.getHeight() * mDpToPx, panel.getBarBackgroundColor(),
-                panel.getBarMarginSide() * mDpToPx, panel.getBarMarginTop() * mDpToPx,
-                panel.getBarHeight() * mDpToPx, panel.isBarBorderVisible(),
-                panel.getBarBorderHeight() * mDpToPx, panel.getBarShadowVisible(),
-                panel.getIconColor(), panel.getDragHandlebarColor(), panel.getFaviconOpacity(),
-                isProgressBarVisible, progressBarHeight * mDpToPx, progressBarOpacity,
-                progressBarCompletion, separatorLineColor);
+                captionViewId, captionIconId, captionIconOpacity, captionAnimationPercentage,
+                bar.getTextLayerMinHeight(), bar.getTitleCaptionSpacing(), captionVisible,
+                R.drawable.progress_bar_background, R.drawable.progress_bar_foreground, mDpToPx,
+                panel.getBasePageBrightness(), panel.getBasePageY() * mDpToPx, panelWebContents,
+                panel.getOffsetX() * mDpToPx, panel.getOffsetY() * mDpToPx,
+                panel.getWidth() * mDpToPx, panel.getHeight() * mDpToPx,
+                panel.getBarBackgroundColor(), panel.getBarMarginSide() * mDpToPx,
+                panel.getBarMarginTop() * mDpToPx, panel.getBarHeight() * mDpToPx,
+                panel.isBarBorderVisible(), panel.getBarBorderHeight() * mDpToPx,
+                panel.getBarShadowVisible(), panel.getIconColor(), panel.getDragHandlebarColor(),
+                panel.getFaviconOpacity(), isProgressBarVisible, progressBarHeight * mDpToPx,
+                progressBarOpacity, progressBarCompletion, separatorLineColor);
     }
 
     @Override
@@ -137,8 +141,9 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
 
     @Override
     protected void initializeNative() {
-        if (mNativePtr == 0)
+        if (mNativePtr == 0) {
             mNativePtr = EphemeralTabSceneLayerJni.get().init(EphemeralTabSceneLayer.this);
+        }
         assert mNativePtr != 0;
     }
 
@@ -166,8 +171,9 @@ public class EphemeralTabSceneLayer extends SceneOverlayLayer {
                 int barShadowResourceId, int panelIconResourceId, int dragHandlebarResourceId,
                 int openTabIconResourceId, int closeIconResourceId);
         void update(long nativeEphemeralTabSceneLayer, EphemeralTabSceneLayer caller,
-                int titleViewId, int captionViewId, float captionAnimationPercentage,
-                float textLayerMinHeight, float titleCaptionSpacing, boolean captionVisible,
+                int titleViewId, int captionViewId, int captionIconId, float captionIconOpacity,
+                float captionAnimationPercentage, float textLayerMinHeight,
+                float titleCaptionSpacing, boolean captionVisible,
                 int progressBarBackgroundResourceId, int progressBarResourceId, float dpToPx,
                 float basePageBrightness, float basePageYOffset, WebContents webContents,
                 float panelX, float panelY, float panelWidth, float panelHeight,

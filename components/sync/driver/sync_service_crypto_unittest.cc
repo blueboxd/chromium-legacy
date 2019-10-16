@@ -39,6 +39,12 @@ sync_pb::EncryptedData MakeEncryptedData(
   return encrypted;
 }
 
+CoreAccountInfo MakeAccountInfoWithGaia(const std::string& gaia) {
+  CoreAccountInfo result;
+  result.gaia = gaia;
+  return result;
+}
+
 class MockCryptoSyncPrefs : public CryptoSyncPrefs {
  public:
   MockCryptoSyncPrefs() = default;
@@ -57,10 +63,10 @@ class MockTrustedVaultClient : public TrustedVaultClient {
 
   MOCK_METHOD2(
       FetchKeys,
-      void(const CoreAccountId& account_id,
+      void(const std::string& gaia_id,
            base::OnceCallback<void(const std::vector<std::string>&)> cb));
   MOCK_METHOD2(StoreKeys,
-               void(const CoreAccountId& account_id,
+               void(const std::string& gaia_id,
                     const std::vector<std::string>& keys));
 };
 
@@ -95,7 +101,7 @@ class SyncServiceCryptoTest : public testing::Test {
 TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
   const std::string kTestPassphrase = "somepassphrase";
 
-  crypto_.SetSyncEngine(CoreAccountId(), &engine_);
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
   ASSERT_FALSE(crypto_.IsPassphraseRequired());
 
   // Mimic the engine determining that a passphrase is required.
@@ -126,45 +132,99 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
 
 TEST_F(SyncServiceCryptoTest,
        ShouldStoreTrustedVaultKeysBeforeEngineInitialization) {
-  const CoreAccountId kAccount = CoreAccountId("account1");
+  const std::string kAccount = "account1";
   const std::vector<std::string> kKeys = {"key1"};
-  EXPECT_CALL(trusted_vault_client_, StoreKeys(kAccount, kKeys));
+  EXPECT_CALL(trusted_vault_client_, StoreKeys("account1", kKeys));
   crypto_.AddTrustedVaultDecryptionKeys(kAccount, kKeys);
 }
 
 TEST_F(SyncServiceCryptoTest,
        ShouldStoreTrustedVaultKeysAfterEngineInitialization) {
-  const CoreAccountId kSyncingAccount = CoreAccountId("syncingaccount");
-  const CoreAccountId kOtherAccount = CoreAccountId("otheraccount");
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
+  const CoreAccountInfo kOtherAccount = MakeAccountInfoWithGaia("otheraccount");
   const std::vector<std::string> kSyncingAccountKeys = {"key1"};
   const std::vector<std::string> kOtherAccountKeys = {"key2"};
 
   crypto_.SetSyncEngine(kSyncingAccount, &engine_);
 
   EXPECT_CALL(trusted_vault_client_,
-              StoreKeys(kOtherAccount, kOtherAccountKeys));
+              StoreKeys(kOtherAccount.gaia, kOtherAccountKeys));
   EXPECT_CALL(trusted_vault_client_,
-              StoreKeys(kSyncingAccount, kSyncingAccountKeys));
+              StoreKeys(kSyncingAccount.gaia, kSyncingAccountKeys));
 
   // Only the sync-ing account should be propagated to the engine.
   EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kOtherAccountKeys, _))
       .Times(0);
   EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kSyncingAccountKeys, _));
-  crypto_.AddTrustedVaultDecryptionKeys(kOtherAccount, kOtherAccountKeys);
-  crypto_.AddTrustedVaultDecryptionKeys(kSyncingAccount, kSyncingAccountKeys);
+  crypto_.AddTrustedVaultDecryptionKeys(kOtherAccount.gaia, kOtherAccountKeys);
+  crypto_.AddTrustedVaultDecryptionKeys(kSyncingAccount.gaia,
+                                        kSyncingAccountKeys);
 }
 
-TEST_F(SyncServiceCryptoTest, ShouldReadValidTrustedVaultKeysFromClient) {
-  const CoreAccountId kSyncingAccount = CoreAccountId("syncingaccount");
+TEST_F(SyncServiceCryptoTest,
+       ShouldReadValidTrustedVaultKeysFromClientBeforeInitialization) {
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
+  const std::vector<std::string> kFetchedKeys = {"key1"};
+
+  EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // OnTrustedVaultKeyRequired() called during initialization of the sync
+  // engine (i.e. before SetSyncEngine()).
+  EXPECT_CALL(trusted_vault_client_, FetchKeys(_, _)).Times(0);
+  crypto_.OnTrustedVaultKeyRequired();
+
+  base::OnceCallback<void(const std::vector<std::string>&)> fetch_keys_cb;
+  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount.gaia, _))
+      .WillOnce(
+          [&](const std::string& gaia_id,
+              base::OnceCallback<void(const std::vector<std::string>&)> cb) {
+            fetch_keys_cb = std::move(cb);
+          });
+
+  // Trusted vault keys should be fetched only after the engine initialization
+  // is completed.
+  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  VerifyAndClearExpectations();
+
+  // While there is an ongoing fetch, there should be no user action required.
+  ASSERT_TRUE(fetch_keys_cb);
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  base::OnceClosure add_keys_cb;
+  EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(kFetchedKeys, _))
+      .WillOnce(
+          [&](const std::vector<std::string>& keys, base::OnceClosure done_cb) {
+            add_keys_cb = std::move(done_cb);
+          });
+
+  // Mimic completion of the fetch.
+  std::move(fetch_keys_cb).Run(kFetchedKeys);
+  ASSERT_TRUE(add_keys_cb);
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // Mimic completion of the engine.
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  crypto_.OnTrustedVaultKeyAccepted();
+  std::move(add_keys_cb).Run();
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldReadValidTrustedVaultKeysFromClientAfterInitialization) {
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
   const std::vector<std::string> kFetchedKeys = {"key1"};
 
   EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
   base::OnceCallback<void(const std::vector<std::string>&)> fetch_keys_cb;
-  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount, _))
+  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount.gaia, _))
       .WillOnce(
-          [&](const CoreAccountId& account_id,
+          [&](const std::string& gaia_id,
               base::OnceCallback<void(const std::vector<std::string>&)> cb) {
             fetch_keys_cb = std::move(cb);
           });
@@ -198,15 +258,16 @@ TEST_F(SyncServiceCryptoTest, ShouldReadValidTrustedVaultKeysFromClient) {
 }
 
 TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
-  const CoreAccountId kSyncingAccount = CoreAccountId("syncingaccount");
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
   const std::vector<std::string> kFetchedKeys = {"key1"};
 
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
   base::OnceCallback<void(const std::vector<std::string>&)> fetch_keys_cb;
-  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount, _))
+  EXPECT_CALL(trusted_vault_client_, FetchKeys(kSyncingAccount.gaia, _))
       .WillOnce(
-          [&](const CoreAccountId& account_id,
+          [&](const std::string& gaia_id,
               base::OnceCallback<void(const std::vector<std::string>&)> cb) {
             fetch_keys_cb = std::move(cb);
           });

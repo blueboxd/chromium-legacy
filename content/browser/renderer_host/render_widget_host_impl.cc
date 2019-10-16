@@ -66,7 +66,6 @@
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
-#include "content/browser/renderer_host/visual_properties_manager.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_messages.h"
@@ -429,13 +428,6 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
   render_frame_metadata_provider_.RemoveObserver(this);
   if (!destroyed_)
     Destroy(false);
-}
-
-void RenderWidgetHostImpl::BindVisualPropertiesManager(
-    base::WeakPtr<VisualPropertiesManager> visual_properties_manager) {
-  DCHECK(visual_properties_manager);
-  DCHECK(!visual_properties_manager_);
-  visual_properties_manager_ = std::move(visual_properties_manager);
 }
 
 // static
@@ -933,16 +925,12 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
       old_visual_properties_->visible_viewport_size !=
           visual_properties->visible_viewport_size;
 
-  bool sent_visual_properties = false;
-  if (visual_properties_manager_) {
-    visual_properties_manager_->SendVisualProperties(*visual_properties,
-                                                     GetRoutingID());
-    sent_visual_properties = true;
-  }
+  Send(new WidgetMsg_UpdateVisualProperties(routing_id_, *visual_properties));
 
-  // Ideally, page visual properties and widget visual properties would be sent
-  // synchronously. As they become decoupled, members should be moved from the
-  // VisualPropertiesManager::SendVisualProperties into this one.
+  // TODO(danakj): All visual properties should go through
+  // WidgetMsg_UpdateVisualProperties in order to be synchronized by the
+  // LocalSurfaceIdAllocation which synchronizes in the display compositor for
+  // a global atomic screen update across all frame widgets. This should move.
   if (delegate() && visible_viewport_size_changed) {
     delegate()->NotifyVisibleViewportSizeChanged(
         visual_properties->visible_viewport_size);
@@ -951,20 +939,18 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   bool width_changed =
       !old_visual_properties_ || old_visual_properties_->new_size.width() !=
                                      visual_properties->new_size.width();
-  if (sent_visual_properties) {
-    TRACE_EVENT_WITH_FLOW2(
-        TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
-        "RenderWidgetHostImpl::SynchronizeVisualProperties send message",
-        visual_properties->local_surface_id_allocation->local_surface_id()
-            .submission_trace_id(),
-        TRACE_EVENT_FLAG_FLOW_OUT, "message",
-        "WidgetMsg_SynchronizeVisualProperties", "local_surface_id",
-        visual_properties->local_surface_id_allocation->local_surface_id()
-            .ToString());
-    visual_properties_ack_pending_ =
-        DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
-    old_visual_properties_ = std::move(visual_properties);
-  }
+  TRACE_EVENT_WITH_FLOW2(
+      TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
+      "RenderWidgetHostImpl::SynchronizeVisualProperties send message",
+      visual_properties->local_surface_id_allocation->local_surface_id()
+          .submission_trace_id(),
+      TRACE_EVENT_FLAG_FLOW_OUT, "message",
+      "WidgetMsg_SynchronizeVisualProperties", "local_surface_id",
+      visual_properties->local_surface_id_allocation->local_surface_id()
+          .ToString());
+  visual_properties_ack_pending_ =
+      DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
+  old_visual_properties_ = std::move(visual_properties);
 
   // Warning: |visual_properties| invalid after this point.
 
@@ -972,7 +958,7 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     delegate_->RenderWidgetWasResized(this, width_changed);
   }
 
-  return sent_visual_properties;
+  return true;
 }
 
 void RenderWidgetHostImpl::GotFocus() {

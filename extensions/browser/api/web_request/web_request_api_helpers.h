@@ -23,11 +23,16 @@
 #include "net/base/auth.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace base {
 class ListValue;
 class DictionaryValue;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace extensions {
@@ -187,7 +192,9 @@ struct ExtraInfoSpec {
     EXTRA_HEADERS = 1 << 5,
   };
 
-  static bool InitFromValue(const base::ListValue& value, int* extra_info_spec);
+  static bool InitFromValue(content::BrowserContext* browser_context,
+                            const base::ListValue& value,
+                            int* extra_info_spec);
 };
 
 // Data container for RequestCookies as defined in the declarative WebRequest
@@ -374,6 +381,7 @@ EventResponseDelta CalculateOnBeforeRequestDelta(
     bool cancel,
     const GURL& new_url);
 EventResponseDelta CalculateOnBeforeSendHeadersDelta(
+    content::BrowserContext* browser_context,
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
@@ -480,7 +488,9 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
     const std::string& value);
 
 // Returns whether a request header should be hidden from listeners.
-bool ShouldHideRequestHeader(int extra_info_spec, const std::string& name);
+bool ShouldHideRequestHeader(content::BrowserContext* browser_context,
+                             int extra_info_spec,
+                             const std::string& name);
 
 // Returns whether a response header should be hidden from listeners.
 bool ShouldHideResponseHeader(int extra_info_spec, const std::string& name);

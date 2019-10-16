@@ -7,8 +7,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 class BoolAttributeSetter : public AXSparseAttributeSetter {
  public:
   BoolAttributeSetter(AXBoolAttribute attribute) : attribute_(attribute) {}
@@ -145,45 +143,47 @@ AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
                       ax_sparse_attribute_setter_map, ());
   if (ax_sparse_attribute_setter_map.IsEmpty()) {
     ax_sparse_attribute_setter_map.Set(
-        kAriaActivedescendantAttr,
+        html_names::kAriaActivedescendantAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaActiveDescendant));
     ax_sparse_attribute_setter_map.Set(
-        kAriaControlsAttr, new ObjectVectorAttributeSetter(
-                               AXObjectVectorAttribute::kAriaControls));
+        html_names::kAriaControlsAttr,
+        new ObjectVectorAttributeSetter(
+            AXObjectVectorAttribute::kAriaControls));
     ax_sparse_attribute_setter_map.Set(
-        kAriaFlowtoAttr,
+        html_names::kAriaFlowtoAttr,
         new ObjectVectorAttributeSetter(AXObjectVectorAttribute::kAriaFlowTo));
     ax_sparse_attribute_setter_map.Set(
-        kAriaDetailsAttr,
+        html_names::kAriaDetailsAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaDetails));
     ax_sparse_attribute_setter_map.Set(
-        kAriaErrormessageAttr,
+        html_names::kAriaErrormessageAttr,
         new ObjectAttributeSetter(AXObjectAttribute::kAriaErrorMessage));
     ax_sparse_attribute_setter_map.Set(
-        kAriaKeyshortcutsAttr,
+        html_names::kAriaKeyshortcutsAttr,
         new StringAttributeSetter(AXStringAttribute::kAriaKeyShortcuts));
     ax_sparse_attribute_setter_map.Set(
-        kAriaRoledescriptionAttr,
+        html_names::kAriaRoledescriptionAttr,
         new StringAttributeSetter(AXStringAttribute::kAriaRoleDescription));
     ax_sparse_attribute_setter_map.Set(
-        kAriaBusyAttr, new BoolAttributeSetter(AXBoolAttribute::kAriaBusy));
+        html_names::kAriaBusyAttr,
+        new BoolAttributeSetter(AXBoolAttribute::kAriaBusy));
     ax_sparse_attribute_setter_map.Set(
-        kAriaColcountAttr,
+        html_names::kAriaColcountAttr,
         new IntAttributeSetter(AXIntAttribute::kAriaColumnCount));
     ax_sparse_attribute_setter_map.Set(
-        kAriaColindexAttr,
+        html_names::kAriaColindexAttr,
         new UIntAttributeSetter(AXUIntAttribute::kAriaColumnIndex));
     ax_sparse_attribute_setter_map.Set(
-        kAriaColspanAttr,
+        html_names::kAriaColspanAttr,
         new UIntAttributeSetter(AXUIntAttribute::kAriaColumnSpan));
     ax_sparse_attribute_setter_map.Set(
-        kAriaRowcountAttr,
+        html_names::kAriaRowcountAttr,
         new IntAttributeSetter(AXIntAttribute::kAriaRowCount));
     ax_sparse_attribute_setter_map.Set(
-        kAriaRowindexAttr,
+        html_names::kAriaRowindexAttr,
         new UIntAttributeSetter(AXUIntAttribute::kAriaRowIndex));
     ax_sparse_attribute_setter_map.Set(
-        kAriaRowspanAttr,
+        html_names::kAriaRowspanAttr,
         new UIntAttributeSetter(AXUIntAttribute::kAriaRowSpan));
   }
   return ax_sparse_attribute_setter_map;

@@ -34,6 +34,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/buildflags.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
 #if defined(OS_ANDROID)

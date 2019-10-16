@@ -7000,3 +7000,17 @@ fuzzer_test("net_qpack_round_trip_fuzzer") {
   ]
   seed_corpus = "third_party/quiche/src/quic/core/qpack/fuzzer/qpack_round_trip_fuzzer_corpus/"
 }
+
+if (is_linux) {
+  fuzzer_test("net_base_address_tracker_linux_fuzzer") {
+    sources = [
+      "base/address_tracker_linux_fuzzer.cc",
+    ]
+    deps = [
+      ":net_fuzzer_test_support",
+      ":test_support",
+      "//base",
+      "//net",
+    ]
+  }
+}

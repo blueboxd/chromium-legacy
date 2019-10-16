@@ -18420,6 +18420,57 @@
       This leaves users open to security risks related to running the audio stack unsandboxed.
       If this policy is not set, the default configuration for the audio sandbox will be used, which may differ per platform.
       This policy is intended to give enterprises flexibility to disable the audio sandbox if they use security software setups that interfere with the sandbox.'''
+    },
+    {
+      'name': 'CorsMitigationList',
+      'owners': ['toyoshim@chromium.org', 'yhirano@chromium.org', 'kinuko@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['x-googapps-allowed-domains', 'youtube-restrict'],
+      'id': 629,
+      'caption': '''Enable <ph name="CORS">CORS</ph> check mitigations in the new <ph name="CORS">CORS</ph> implementation''',
+      'tags': [],
+      'desc': '''Enable <ph name="CORS">CORS</ph> check mitigations in the new <ph name="CORS">CORS</ph> implementation, allowing Extensions to keep compatible behavior, and allowing <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to send specified headers without <ph name="CORS">CORS</ph> checks.
+
+      If this list is set to empty, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> tries to run Extensions in compatible manners, and does not introduce <ph name="API">API</ph> changes for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 79 as explained at <ph name="WEB_REQUEST_API_MANUAL">https://developer.chrome.com/extensions/webRequest</ph>.
+
+      If this list is set to have <ph name="HTTP">HTTP</ph> request header names, <ph name="CORS">CORS</ph> inspection will ignore the listed headers in addition to enable the mitigation for Extensions.
+
+      If this list is not set, both mitigations explained above are not applied.
+
+      For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.'''
+    },
+    {
+      'name': 'CorsLegacyModeEnabled',
+      'owners': ['toyoshim@chromium.org', 'yhirano@chromium.org', 'kinuko@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 630,
+      'caption': '''Use the legacy <ph name="CORS">CORS</ph> implementation rather than new <ph name="CORS">CORS</ph>''',
+      'tags': [],
+      'desc': '''Use the legacy <ph name="CORS">CORS</ph> implementation rather than new <ph name="CORS">CORS</ph>.
+
+      If this setting is set to True, the legacy implementation is used that should be compatibile with previous versions.
+
+      If this setting is set to False, or is not set, the new implementation is used that might cause enterprise specific compatibility issues potentially.
+
+      This policy will be removed after a couple of milestones.
+
+      For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.'''
     }
   ],
 
@@ -19242,6 +19293,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 628,
+  'highest_id_currently_used': 630,
   'highest_atomic_group_id_currently_used': 38
 }

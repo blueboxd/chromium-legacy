@@ -44,12 +44,12 @@ class WebApp {
   // If app isn't locally installed, it is excluded from UIs and only listed as
   // a part of user's app library.
   bool is_locally_installed() const { return is_locally_installed_; }
-  // Sync-initiated installation produces a sync placeholder app awaiting for
-  // full installation process. The sync placeholder app has only app_id,
+  // Sync-initiated installation produces a stub app awaiting for full
+  // installation process. The |is_in_sync_install| app has only app_id,
   // launch_url and sync_data fields defined, no icons. If online install
   // succeeds, icons get downloaded and all the fields get their values. If
   // install fails, icons get generated using |sync_data| fields.
-  bool is_sync_placeholder() const { return is_sync_placeholder_; }
+  bool is_in_sync_install() const { return is_in_sync_install_; }
 
   struct IconInfo {
     GURL url;
@@ -89,7 +89,7 @@ class WebApp {
   void SetThemeColor(base::Optional<SkColor> theme_color);
   void SetDisplayMode(blink::mojom::DisplayMode display_mode);
   void SetIsLocallyInstalled(bool is_locally_installed);
-  void SetIsSyncPlaceholder(bool is_sync_placeholder);
+  void SetIsInSyncInstall(bool is_in_sync_install);
   void SetIcons(Icons icons);
 
   void SetSyncData(SyncData sync_data);
@@ -114,7 +114,7 @@ class WebApp {
   base::Optional<SkColor> theme_color_;
   blink::mojom::DisplayMode display_mode_;
   bool is_locally_installed_ = true;
-  bool is_sync_placeholder_ = false;
+  bool is_in_sync_install_ = false;
   Icons icons_;
 
   SyncData sync_data_;

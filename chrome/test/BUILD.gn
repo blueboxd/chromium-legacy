@@ -667,6 +667,7 @@ if (!is_android) {
       "//chrome/browser/devtools:test_support",
       "//chrome/browser/notifications/scheduler/test:test_support",
       "//chrome/browser/profiling_host:profiling_browsertests",
+      "//chrome/browser/resources:browser_tests",
       "//chrome/browser/web_applications:browser_tests",
       "//chrome/browser/web_applications/extensions:browser_tests",
       "//chrome/renderer",
@@ -3608,7 +3609,6 @@ test("unit_tests") {
 
   if (is_android) {
     sources += [
-      "../browser/android/customtabs/dynamicmodule/module_metrics_unittest.cc",
       "../browser/android/search_permissions/search_permissions_service_unittest.cc",
       "../browser/autofill/address_accessory_controller_impl_unittest.cc",
       "../browser/autofill/autofill_credit_card_filling_infobar_delegate_mobile_unittest.cc",

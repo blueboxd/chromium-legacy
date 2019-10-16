@@ -335,7 +335,7 @@ class CONTENT_EXPORT PepperTCPSocketMessageFilter
   // Holds socket if Connect() is called.
   mojo::Remote<network::mojom::TCPConnectedSocket> connected_socket_;
   // Holds socket if socket was upgraded to SSL.
-  network::mojom::TLSClientSocketPtr tls_client_socket_;
+  mojo::Remote<network::mojom::TLSClientSocket> tls_client_socket_;
   // Holds socket if Listen() is called.
   mojo::Remote<network::mojom::TCPServerSocket> server_socket_;
 

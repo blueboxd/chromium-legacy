@@ -131,17 +131,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebRTCPeerConnectionHandlerClient* client,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
-  rtc::Thread* GetWebRtcWorkerThreadRtcThread() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()
-      override;
   std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
       blink::WebLocalFrame* frame) override;
   std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory() override;
-  std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
-      const blink::WebString& kind) override;
-  std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
-      const blink::WebString& kind) override;
   base::Optional<double> GetWebRtcMaxCaptureFrameRate() override;
   scoped_refptr<media::AudioRendererSink> NewAudioRendererSink(
       blink::WebAudioDeviceSourceType source_type,

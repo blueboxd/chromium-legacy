@@ -6,6 +6,7 @@ import("//build/buildflag_header.gni")
 import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/network/public/cpp/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 buildflag_header("buildflags") {
   header = "network_service_buildflags.h"
@@ -240,5 +241,14 @@ source_set("tests") {
 
   public_deps = [
     ":buildflags",
+  ]
+}
+
+fuzzer_test("cors_fuzzer") {
+  sources = [
+    "cors/cors_fuzzer.cc",
+  ]
+  deps = [
+    ":cpp",
   ]
 }

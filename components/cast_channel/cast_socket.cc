@@ -421,7 +421,7 @@ int CastSocketImpl::DoSslConnect() {
   tcp_socket_->UpgradeToTLS(
       host_port_pair, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(GetNetworkTrafficAnnotationTag()),
-      mojo::MakeRequest(&socket_), mojo::NullRemote() /* observer */,
+      socket_.BindNewPipeAndPassReceiver(), mojo::NullRemote() /* observer */,
       base::BindOnce(&CastSocketImpl::OnUpgradeToTLS,
                      weak_factory_.GetWeakPtr()));
 

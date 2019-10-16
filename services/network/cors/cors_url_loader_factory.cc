@@ -92,12 +92,12 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (!IsSane(context_, resource_request)) {
+  if (!IsSane(context_, resource_request, options)) {
     client->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
   }
 
-  if (features::ShouldEnableOutOfBlinkCors() && !disable_web_security_) {
+  if (context_->IsCorsEnabled() && !disable_web_security_) {
     auto loader = std::make_unique<CorsURLLoader>(
         std::move(request), routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
@@ -134,7 +134,8 @@ void CorsURLLoaderFactory::DeleteIfNeeded() {
 }
 
 bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
-                                  const ResourceRequest& request) {
+                                  const ResourceRequest& request,
+                                  uint32_t options) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
   if (!request.request_initiator && !IsNavigationRequestMode(request.mode) &&
@@ -276,6 +277,14 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     LOG(WARNING) << "unsupported credentials mode on a navigation request";
     mojo::ReportBadMessage(
         "CorsURLLoaderFactory: unsupported credentials mode on navigation");
+    return false;
+  }
+
+  // kURLLoadOptionAsCorsPreflight should be set only by the network service.
+  // Otherwise the network service will be confused.
+  if (options & mojom::kURLLoadOptionAsCorsPreflight) {
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: kURLLoadOptionAsCorsPreflight is set");
     return false;
   }
 

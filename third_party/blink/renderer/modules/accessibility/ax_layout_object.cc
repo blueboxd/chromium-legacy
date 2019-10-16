@@ -113,8 +113,6 @@ bool IsNeutralWithinTable(blink::AXObject* obj) {
 
 namespace blink {
 
-using namespace html_names;
-
 AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
                                AXObjectCacheImpl& ax_object_cache)
     : AXNodeObject(layout_object->GetNode(), ax_object_cache),
@@ -515,7 +513,7 @@ AccessibilityGrabbedState AXLayoutObject::IsGrabbed() const {
   if (!SupportsARIADragging())
     return kGrabbedStateUndefined;
 
-  const AtomicString& grabbed = GetAttribute(kAriaGrabbedAttr);
+  const AtomicString& grabbed = GetAttribute(html_names::kAriaGrabbedAttr);
   return EqualIgnoringASCIICase(grabbed, "true") ? kGrabbedStateTrue
                                                  : kGrabbedStateFalse;
 }
@@ -761,7 +759,8 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
 
 bool AXLayoutObject::HasAriaCellRole(Element* elem) const {
   DCHECK(elem);
-  const AtomicString& aria_role_str = elem->FastGetAttribute(kRoleAttr);
+  const AtomicString& aria_role_str =
+      elem->FastGetAttribute(html_names::kRoleAttr);
   if (aria_role_str.IsEmpty())
     return false;
 
@@ -875,7 +874,7 @@ const AtomicString& AXLayoutObject::AccessKey() const {
   auto* element = DynamicTo<Element>(layout_object_->GetNode());
   if (!element)
     return g_null_atom;
-  return element->getAttribute(kAccesskeyAttr);
+  return element->getAttribute(html_names::kAccesskeyAttr);
 }
 
 RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
@@ -1429,15 +1428,15 @@ String AXLayoutObject::StringValue() const {
     // LayoutMenuList will go straight to the text() of its selected item.
     // This has to be overridden in the case where the selected item has an ARIA
     // label.
-    HTMLSelectElement* select_element =
-        ToHTMLSelectElement(layout_object_->GetNode());
+    auto* select_element = To<HTMLSelectElement>(layout_object_->GetNode());
     int selected_index = select_element->selectedIndex();
     const HeapVector<Member<HTMLElement>>& list_items =
         select_element->GetListItems();
     if (selected_index >= 0 &&
         static_cast<size_t>(selected_index) < list_items.size()) {
       const AtomicString& overridden_description =
-          list_items[selected_index]->FastGetAttribute(kAriaLabelAttr);
+          list_items[selected_index]->FastGetAttribute(
+              html_names::kAriaLabelAttr);
       if (!overridden_description.IsNull())
         return overridden_description;
     }
@@ -1604,18 +1603,18 @@ ax::mojom::HasPopup AXLayoutObject::HasPopup() const {
 // a future version of WAI-ARIA. After that we will re-implement them
 // following new spec.
 bool AXLayoutObject::SupportsARIADragging() const {
-  const AtomicString& grabbed = GetAttribute(kAriaGrabbedAttr);
+  const AtomicString& grabbed = GetAttribute(html_names::kAriaGrabbedAttr);
   return EqualIgnoringASCIICase(grabbed, "true") ||
          EqualIgnoringASCIICase(grabbed, "false");
 }
 
 void AXLayoutObject::Dropeffects(
     Vector<ax::mojom::Dropeffect>& dropeffects) const {
-  if (!HasAttribute(kAriaDropeffectAttr))
+  if (!HasAttribute(html_names::kAriaDropeffectAttr))
     return;
 
   Vector<String> str_dropeffects;
-  TokenVectorFromAttribute(str_dropeffects, kAriaDropeffectAttr);
+  TokenVectorFromAttribute(str_dropeffects, html_names::kAriaDropeffectAttr);
 
   if (str_dropeffects.IsEmpty()) {
     dropeffects.push_back(ax::mojom::Dropeffect::kNone);
@@ -1643,13 +1642,13 @@ ax::mojom::Dropeffect AXLayoutObject::ParseDropeffect(
 }
 
 bool AXLayoutObject::SupportsARIAFlowTo() const {
-  return !GetAttribute(kAriaFlowtoAttr).IsEmpty();
+  return !GetAttribute(html_names::kAriaFlowtoAttr).IsEmpty();
 }
 
 bool AXLayoutObject::SupportsARIAOwns() const {
   if (!layout_object_)
     return false;
-  const AtomicString& aria_owns = GetAttribute(kAriaOwnsAttr);
+  const AtomicString& aria_owns = GetAttribute(html_names::kAriaOwnsAttr);
 
   return !aria_owns.IsEmpty();
 }
@@ -2534,7 +2533,7 @@ bool AXLayoutObject::IsDataTable() const {
       valid_cell_count++;
 
       // Any <th> tag -> treat as data table.
-      if (cell_node->HasTagName(kThTag))
+      if (cell_node->HasTagName(html_names::kThTag))
         return true;
 
       // In this case, the developer explicitly assigned a "data" table
@@ -2543,7 +2542,7 @@ bool AXLayoutObject::IsDataTable() const {
         HTMLTableCellElement& cell_element = ToHTMLTableCellElement(*cell_node);
         if (!cell_element.Headers().IsEmpty() ||
             !cell_element.Abbr().IsEmpty() || !cell_element.Axis().IsEmpty() ||
-            !cell_element.FastGetAttribute(kScopeAttr).IsEmpty())
+            !cell_element.FastGetAttribute(html_names::kScopeAttr).IsEmpty())
           return true;
       }
 
@@ -2791,7 +2790,7 @@ static bool IsNonEmptyNonHeaderCell(const LayoutNGTableCellInterface* cell) {
     return false;
 
   if (Node* node = cell->ToLayoutObject()->GetNode())
-    return node->hasChildren() && node->HasTagName(kTdTag);
+    return node->hasChildren() && node->HasTagName(html_names::kTdTag);
 
   return false;
 }
@@ -2801,7 +2800,7 @@ static bool IsHeaderCell(const LayoutNGTableCellInterface* cell) {
     return false;
 
   if (Node* node = cell->ToLayoutObject()->GetNode())
-    return node->HasTagName(kThTag);
+    return node->HasTagName(html_names::kThTag);
 
   return false;
 }
@@ -2884,10 +2883,10 @@ ax::mojom::Role AXLayoutObject::DetermineTableCellRole() const {
   if (parent->RoleValue() == ax::mojom::Role::kLayoutTableRow)
     return ax::mojom::Role::kLayoutTableCell;
 
-  if (!GetNode() || !GetNode()->HasTagName(kThTag))
+  if (!GetNode() || !GetNode()->HasTagName(html_names::kThTag))
     return ax::mojom::Role::kCell;
 
-  const AtomicString& scope = GetAttribute(kScopeAttr);
+  const AtomicString& scope = GetAttribute(html_names::kScopeAttr);
   if (EqualIgnoringASCIICase(scope, "row") ||
       EqualIgnoringASCIICase(scope, "rowgroup"))
     return ax::mojom::Role::kRowHeader;

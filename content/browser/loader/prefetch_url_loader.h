@@ -54,14 +54,12 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   // |url_loader_throttles_getter| may be used when a prefetch handler needs to
   // additionally create a request (e.g. for fetching certificate if the
-  // prefetch was for a signed exchange).  |frame_tree_node_id_getter| is called
-  // only on UI thread when NetworkService is not enabled, but can be also
-  // called on IO thread otherwise.
+  // prefetch was for a signed exchange).
   PrefetchURLLoader(
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+      int frame_tree_node_id,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -127,7 +125,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   bool IsSignedExchangeHandlingEnabled();
 
-  const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
+  const int frame_tree_node_id_;
 
   // Set in the constructor and updated when redirected.
   network::ResourceRequest resource_request_;

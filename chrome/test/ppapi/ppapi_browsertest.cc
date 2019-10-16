@@ -439,8 +439,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback)
       : tcp_failure_type_(tcp_failure_type),
         observer_(std::move(observer)),
-        receiver_(this, std::move(receiver)),
-        tls_client_socket_binding_(this) {
+        receiver_(this, std::move(receiver)) {
     if (tcp_failure_type_ == TCPFailureType::kConnectError) {
       std::move(callback).Run(
           net::ERR_FAILED, base::nullopt /* local_addr */,
@@ -473,8 +472,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       network::mojom::TCPServerSocket::AcceptCallback callback)
       : tcp_failure_type_(tcp_failure_type),
         observer_(std::move(observer)),
-        receiver_(this),
-        tls_client_socket_binding_(this) {
+        receiver_(this) {
     if (tcp_failure_type_ == TCPFailureType::kAcceptError) {
       std::move(callback).Run(
           net::ERR_FAILED, base::nullopt /* remote_addr */,
@@ -510,7 +508,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       const net::HostPortPair& host_port_pair,
       network::mojom::TLSClientSocketOptionsPtr socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::TLSClientSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TLSClientSocket> receiver,
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
       network::mojom::TCPConnectedSocket::UpgradeToTLSCallback callback)
       override {
@@ -519,7 +517,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
     // Succeed or fail, keep these pipes open (Their state shouldn't matter when
     // checking for failures).
     observer_.Bind(std::move(observer));
-    tls_client_socket_binding_.Bind(std::move(request));
+    tls_client_socket_receiver_.Bind(std::move(receiver));
 
     if (tcp_failure_type_ == TCPFailureType::kUpgradeToTLSClosePipe) {
       receiver_.reset();
@@ -632,7 +630,8 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
   mojo::ScopedDataPipeConsumerHandle send_pipe_handle_;
 
   mojo::Receiver<network::mojom::TCPConnectedSocket> receiver_;
-  mojo::Binding<network::mojom::TLSClientSocket> tls_client_socket_binding_;
+  mojo::Receiver<network::mojom::TLSClientSocket> tls_client_socket_receiver_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(MockTCPConnectedSocket);
 };

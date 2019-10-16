@@ -53,6 +53,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      const IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url) override;
 
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;

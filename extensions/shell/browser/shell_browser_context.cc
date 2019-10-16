@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/shell/browser/shell_special_storage_policy.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom.h"
 
 namespace extensions {
 

@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"

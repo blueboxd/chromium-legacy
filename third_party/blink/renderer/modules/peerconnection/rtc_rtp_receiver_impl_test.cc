@@ -53,7 +53,7 @@ class RTCRtpReceiverImplTest : public ::testing::Test {
   // posted to the current thread in the meantime while waiting.
   void SyncWithSignalingThread() const {
     base::RunLoop run_loop;
-    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -63,7 +63,7 @@ class RTCRtpReceiverImplTest : public ::testing::Test {
     std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
         track_ref;
     base::RunLoop run_loop;
-    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCRtpReceiverImplTest::CreateReceiverOnSignalingThread,
                        base::Unretained(this), std::move(webrtc_track),
@@ -73,7 +73,7 @@ class RTCRtpReceiverImplTest : public ::testing::Test {
     DCHECK(mock_webrtc_receiver_);
     DCHECK(track_ref);
     blink::RtpReceiverState state(
-        main_thread_, dependency_factory_->GetWebRtcSignalingThread(),
+        main_thread_, dependency_factory_->GetWebRtcSignalingTaskRunner(),
         mock_webrtc_receiver_.get(), std::move(track_ref), {});
     state.Initialize();
     return std::make_unique<RTCRtpReceiverImpl>(peer_connection_.get(),

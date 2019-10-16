@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_MEMORY_METRICS_COLLECTOR_ANDROID_H_
 #define COMPONENTS_CRASH_CONTENT_BROWSER_CRASH_MEMORY_METRICS_COLLECTOR_ANDROID_H_
 
+#include "base/supports_user_data.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "content/public/browser/content_browser_client.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

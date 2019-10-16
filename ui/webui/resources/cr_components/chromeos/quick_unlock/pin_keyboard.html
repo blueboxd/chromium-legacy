@@ -107,7 +107,7 @@
         flex-direction: column;
         font-weight: 400;
         height: var(--pin-button-height);
-        justify-content: center;
+        justify-content: space-between;
         margin: 0 var(--pin-button-horizontal-margin);
         min-height: 0;
         min-width: 0;
@@ -133,22 +133,20 @@
 
       .digit-button inner-text {
         font-family: 'Roboto';
-        position: absolute;
       }
 
-      .number {
-        color: var(--pin-keyboard-number-color, var(--paper-blue-grey-700));
-        font-size: 18px;
-        top: 0;
-      }
-
-      .letter {
-        bottom: 0;
+      inner-text.letter {
         color: var(--pin-keyboard-letter-color, var(--google-grey-700));
         font-size: 12px;
         margin-top: 8px;
 
         @apply --pin-keyboard-digit-button-letter;
+      }
+
+      .number {
+        color: var(--pin-keyboard-number-color, var(--paper-blue-grey-700));
+        font-size: 18px;
+        height: 16px;
       }
 
       #pinInput {

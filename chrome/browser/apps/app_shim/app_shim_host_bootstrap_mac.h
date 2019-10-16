@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
@@ -47,12 +48,13 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
 
   // Called in response to connecting (or failing to connect to) an
   // AppShimHost.
-  void OnConnectedToHost(chrome::mojom::AppShimRequest app_shim_request);
+  void OnConnectedToHost(
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver);
   void OnFailedToConnectToHost(apps::AppShimLaunchResult result);
 
   base::ProcessId GetAppShimPid() const { return pid_; }
 
-  chrome::mojom::AppShimHostRequest GetAppShimHostRequest();
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> GetAppShimHostReceiver();
   const std::string& GetAppId() const;
   const GURL& GetAppURL();
   const base::FilePath& GetProfilePath();
@@ -74,9 +76,10 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   void ChannelError(uint32_t custom_reason, const std::string& description);
 
   // chrome::mojom::AppShimHostBootstrap.
-  void OnShimConnected(chrome::mojom::AppShimHostRequest app_shim_host_request,
-                       chrome::mojom::AppShimInfoPtr app_shim_info,
-                       OnShimConnectedCallback callback) override;
+  void OnShimConnected(
+      mojo::PendingReceiver<chrome::mojom::AppShimHost> app_shim_host_receiver,
+      chrome::mojom::AppShimInfoPtr app_shim_info,
+      OnShimConnectedCallback callback) override;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
   mojo::Receiver<chrome::mojom::AppShimHostBootstrap> host_bootstrap_receiver_{
@@ -86,7 +89,7 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   // happened yet. The |app_shim_info_| is non-null if and only if a shim has
   // connected.
   base::ProcessId pid_ = 0;
-  chrome::mojom::AppShimHostRequest app_shim_host_request_;
+  mojo::PendingReceiver<chrome::mojom::AppShimHost> app_shim_host_receiver_;
   chrome::mojom::AppShimInfoPtr app_shim_info_;
   OnShimConnectedCallback shim_connected_callback_;
 

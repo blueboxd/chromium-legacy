@@ -114,7 +114,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // has been called or the function has returned true for a particular
   // download it should continue to return true for that download.
   virtual bool ShouldCompleteDownload(download::DownloadItem* item,
-                                      const base::Closure& complete_callback);
+                                      base::OnceClosure complete_callback);
 
   // Allows the delegate to override opening the download. If this function
   // returns false, the delegate needs to call callback when it's done

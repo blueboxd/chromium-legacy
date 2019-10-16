@@ -8,14 +8,15 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FORMATTED_URL;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
 import androidx.annotation.Px;
 
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
+import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.ListModel;
@@ -44,12 +45,17 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
     void showCredentials(
             String formattedUrl, boolean isOriginSecure, List<Credential> credentials) {
         assert credentials != null;
-        mModel.set(FORMATTED_URL, formattedUrl);
-        mModel.set(ORIGIN_SECURE, isOriginSecure);
         mModel.set(VISIBLE, true);
 
         ListModel<ListItem> sheetItems = mModel.get(SHEET_ITEMS);
         sheetItems.clear();
+
+        sheetItems.add(new ListItem(TouchToFillProperties.ItemType.HEADER,
+                new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
+                        .with(FORMATTED_URL, formattedUrl)
+                        .with(ORIGIN_SECURE, isOriginSecure)
+                        .build()));
+
         for (Credential credential : credentials) {
             PropertyModel propertyModel =
                     new PropertyModel.Builder(CredentialProperties.ALL_KEYS)

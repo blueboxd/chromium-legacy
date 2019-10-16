@@ -51,7 +51,7 @@ bool AwDownloadManagerDelegate::DetermineDownloadTarget(
 
 bool AwDownloadManagerDelegate::ShouldCompleteDownload(
     download::DownloadItem* item,
-    const base::Closure& complete_callback) {
+    base::OnceClosure complete_callback) {
   NOTREACHED();
   return true;
 }

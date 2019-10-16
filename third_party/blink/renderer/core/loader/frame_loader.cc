@@ -243,9 +243,6 @@ void FrameLoader::SetDefersLoading(bool defers) {
 }
 
 void FrameLoader::SaveScrollAnchor() {
-  if (!RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled())
-    return;
-
   if (!document_loader_ || !document_loader_->GetHistoryItem() ||
       !frame_->View())
     return;
@@ -1175,13 +1172,11 @@ void FrameLoader::RestoreScrollPositionAndViewState(
   if (should_restore_scroll) {
     // TODO(pnoland): attempt to restore the anchor in more places than this.
     // Anchor-based restore should allow for earlier restoration.
-    bool did_restore =
-        RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled() &&
-        view->LayoutViewport()->RestoreScrollAnchor(
-            {view_state.scroll_anchor_data_.selector_,
-             LayoutPoint(view_state.scroll_anchor_data_.offset_.x,
-                         view_state.scroll_anchor_data_.offset_.y),
-             view_state.scroll_anchor_data_.simhash_});
+    bool did_restore = view->LayoutViewport()->RestoreScrollAnchor(
+        {view_state.scroll_anchor_data_.selector_,
+         LayoutPoint(view_state.scroll_anchor_data_.offset_.x,
+                     view_state.scroll_anchor_data_.offset_.y),
+         view_state.scroll_anchor_data_.simhash_});
     if (!did_restore) {
       view->LayoutViewport()->SetScrollOffset(view_state.scroll_offset_,
                                               kProgrammaticScroll);

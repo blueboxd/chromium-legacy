@@ -15,13 +15,13 @@ using Traits = StructTraits<blink::mojom::URLLoaderFactoryBundleDataView,
                             std::unique_ptr<blink::URLLoaderFactoryBundleInfo>>;
 
 // static
-network::mojom::URLLoaderFactoryPtrInfo Traits::default_factory(
+mojo::PendingRemote<network::mojom::URLLoaderFactory> Traits::default_factory(
     BundleInfoType& bundle) {
   return std::move(bundle->pending_default_factory());
 }
 
 // static
-network::mojom::URLLoaderFactoryPtrInfo Traits::appcache_factory(
+mojo::PendingRemote<network::mojom::URLLoaderFactory> Traits::appcache_factory(
     BundleInfoType& bundle) {
   return std::move(bundle->pending_appcache_factory());
 }

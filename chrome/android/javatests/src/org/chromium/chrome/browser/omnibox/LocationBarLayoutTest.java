@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -249,5 +250,49 @@ public class LocationBarLayoutTest {
         setupTabForTests(true);
         onView(withId(R.id.location_bar_status))
                 .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), GONE));
+    }
+
+    @Test
+    @SmallTest
+    public void testSetUrlBarFocus() {
+        final LocationBarLayout locationBar = getLocationBar();
+
+        Assert.assertEquals(
+                0, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(
+                    true, SEARCH_TERMS_URL, LocationBar.OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
+        });
+        Assert.assertTrue(locationBar.isUrlBarFocused());
+        Assert.assertTrue(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(SEARCH_TERMS_URL, getUrlText(getUrlBar()));
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(
+                    true, SEARCH_TERMS, LocationBar.OmniboxFocusReason.SEARCH_QUERY);
+        });
+        Assert.assertTrue(locationBar.isUrlBarFocused());
+        Assert.assertTrue(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(SEARCH_TERMS, getUrlText(getUrlBar()));
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
+        });
+        Assert.assertFalse(locationBar.isUrlBarFocused());
+        Assert.assertFalse(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.setUrlBarFocus(true, null, LocationBar.OmniboxFocusReason.OMNIBOX_TAP);
+        });
+        Assert.assertTrue(locationBar.isUrlBarFocused());
+        Assert.assertFalse(locationBar.didFocusUrlFromFakebox());
+        Assert.assertEquals(
+                2, RecordHistogram.getHistogramTotalCountForTesting("Android.OmniboxFocusReason"));
     }
 }

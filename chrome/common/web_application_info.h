@@ -17,18 +17,18 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
+struct WebApplicationIconInfo {
+  WebApplicationIconInfo();
+  ~WebApplicationIconInfo();
+
+  GURL url;
+  int width;
+  int height;
+  SkBitmap data;
+};
+
 // Structure used when installing a web page as an app.
 struct WebApplicationInfo {
-  struct IconInfo {
-    IconInfo();
-    ~IconInfo();
-
-    GURL url;
-    int width;
-    int height;
-    SkBitmap data;
-  };
-
   enum MobileCapable {
     MOBILE_CAPABLE_UNSPECIFIED,
     MOBILE_CAPABLE,
@@ -52,7 +52,7 @@ struct WebApplicationInfo {
   GURL scope;
 
   // Set of available icons.
-  std::vector<IconInfo> icons;
+  std::vector<WebApplicationIconInfo> icons;
 
   // Whether the page is marked as mobile-capable, including apple specific meta
   // tag.

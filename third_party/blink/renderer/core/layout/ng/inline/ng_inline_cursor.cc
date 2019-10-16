@@ -54,7 +54,9 @@ NGInlineCursor::NGInlineCursor(const LayoutBlockFlow& block_flow) {
     return;
   }
 
-  NOTREACHED();
+  // We reach here in case of |ScrollANchor::NotifyBeforeLayout()| via
+  // |LayoutText::PhysicalLinesBoundingBox()|
+  // See external/wpt/css/css-scroll-anchoring/wrapped-text.html
 }
 
 NGInlineCursor::NGInlineCursor(const NGFragmentItems& items)
@@ -74,6 +76,8 @@ NGInlineCursor::NGInlineCursor(const NGInlineCursor& other)
       root_paint_fragment_(other.root_paint_fragment_),
       current_paint_fragment_(other.current_paint_fragment_),
       layout_inline_(other.layout_inline_) {}
+
+NGInlineCursor::NGInlineCursor() = default;
 
 bool NGInlineCursor::operator==(const NGInlineCursor& other) const {
   if (root_paint_fragment_) {
@@ -262,6 +266,10 @@ const PhysicalOffset NGInlineCursor::CurrentOffset() const {
   return PhysicalOffset();
 }
 
+const PhysicalRect NGInlineCursor::CurrentRect() const {
+  return PhysicalRect(CurrentOffset(), CurrentSize());
+}
+
 TextDirection NGInlineCursor::CurrentResolvedDirection() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->PhysicalFragment().ResolvedDirection();
@@ -317,21 +325,26 @@ void NGInlineCursor::MakeNull() {
   }
   if (fragment_items_)
     return MoveToItem(items_.end());
-  NOTREACHED();
 }
 
 void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
-  if (root_paint_fragment_) {
-    const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
-    if (!fragments.IsInLayoutNGInlineFormattingContext() || fragments.IsEmpty())
-      return MakeNull();
-    return MoveTo(fragments.front());
+  if (fragment_items_) {
+    item_iter_ = items_.begin();
+    while (current_item_ && CurrentLayoutObject() != &layout_object)
+      MoveToNextItem();
+    return;
   }
-  DCHECK(IsItemCursor());
-  item_iter_ = items_.begin();
-  while (current_item_ && CurrentLayoutObject() != &layout_object)
-    MoveToNextItem();
+  const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
+  if (!fragments.IsInLayoutNGInlineFormattingContext() || fragments.IsEmpty())
+    return MakeNull();
+  if (!root_paint_fragment_) {
+    // We reach here in case of |ScrollANchor::NotifyBeforeLayout()| via
+    // |LayoutText::PhysicalLinesBoundingBox()|
+    // See external/wpt/css/css-scroll-anchoring/wrapped-text.html
+    root_paint_fragment_ = fragments.front().Root();
+  }
+  return MoveTo(fragments.front());
 }
 
 void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {

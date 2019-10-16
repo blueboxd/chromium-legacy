@@ -22,6 +22,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -55,27 +56,27 @@ class ServiceConnectionTest : public testing::Test {
 // Tests that LoadBuiltinModel runs OK (no crash) in a basic Mojo
 // environment.
 TEST_F(ServiceConnectionTest, LoadBuiltinModel) {
-  mojom::ModelPtr model;
+  mojo::Remote<mojom::Model> model;
   mojom::BuiltinModelSpecPtr spec =
       mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL);
   ServiceConnection::GetInstance()->LoadBuiltinModel(
-      std::move(spec), mojo::MakeRequest(&model),
+      std::move(spec), model.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
 // Tests that LoadFlatBufferModel runs OK (no crash) in a basic Mojo
 // environment.
 TEST_F(ServiceConnectionTest, LoadFlatBufferModel) {
-  mojom::ModelPtr model;
+  mojo::Remote<mojom::Model> model;
   mojom::FlatBufferModelSpecPtr spec = mojom::FlatBufferModelSpec::New();
   ServiceConnection::GetInstance()->LoadFlatBufferModel(
-      std::move(spec), mojo::MakeRequest(&model),
+      std::move(spec), model.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
 // Tests the fake ML service for builtin model.
 TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
-  mojom::ModelPtr model;
+  mojo::Remote<mojom::Model> model;
   bool callback_done = false;
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
@@ -86,7 +87,7 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
                                          std::vector<double>{expected_value});
   ServiceConnection::GetInstance()->LoadBuiltinModel(
       mojom::BuiltinModelSpec::New(mojom::BuiltinModelId::TEST_MODEL),
-      mojo::MakeRequest(&model),
+      model.BindNewPipeAndPassReceiver(),
       base::BindOnce(
           [](bool* callback_done, mojom::LoadModelResult result) {
             EXPECT_EQ(result, mojom::LoadModelResult::OK);
@@ -136,7 +137,7 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForBuiltinModel) {
 
 // Tests the fake ML service for flatbuffer model.
 TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
-  mojom::ModelPtr model;
+  mojo::Remote<mojom::Model> model;
   bool callback_done = false;
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
@@ -147,7 +148,7 @@ TEST_F(ServiceConnectionTest, FakeServiceConnectionForFlatBufferModel) {
                                          std::vector<double>{expected_value});
 
   ServiceConnection::GetInstance()->LoadFlatBufferModel(
-      mojom::FlatBufferModelSpec::New(), mojo::MakeRequest(&model),
+      mojom::FlatBufferModelSpec::New(), model.BindNewPipeAndPassReceiver(),
       base::BindOnce(
           [](bool* callback_done, mojom::LoadModelResult result) {
             EXPECT_EQ(result, mojom::LoadModelResult::OK);

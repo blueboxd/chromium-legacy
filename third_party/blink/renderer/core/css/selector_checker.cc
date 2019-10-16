@@ -84,8 +84,8 @@ static bool MatchesSpatialNavigationFocusPseudoClass(const Element& element) {
 }
 
 static bool MatchesListBoxPseudoClass(const Element& element) {
-  return IsHTMLSelectElement(element) &&
-         !ToHTMLSelectElement(element).UsesMenuList();
+  auto* html_select_element = DynamicTo<HTMLSelectElement>(element);
+  return html_select_element && !html_select_element->UsesMenuList();
 }
 
 static bool MatchesTagName(const Element& element,

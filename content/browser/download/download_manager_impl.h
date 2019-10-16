@@ -135,7 +135,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void StartDownload(
       std::unique_ptr<download::DownloadCreateInfo> info,
       std::unique_ptr<download::InputStream> stream,
-      const download::DownloadUrlParameters::OnStartedCallback& on_started);
+      download::DownloadUrlParameters::OnStartedCallback on_started);
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
@@ -181,14 +181,14 @@ class CONTENT_EXPORT DownloadManagerImpl
   base::FilePath GetDefaultDownloadDirectory() override;
   void StartDownloadItem(
       std::unique_ptr<download::DownloadCreateInfo> info,
-      const download::DownloadUrlParameters::OnStartedCallback& on_started,
+      download::DownloadUrlParameters::OnStartedCallback on_started,
       download::InProgressDownloadManager::StartDownloadItemCallback callback)
       override;
 
   // Creates a new download item and call |callback|.
   void CreateNewDownloadItemToStart(
       std::unique_ptr<download::DownloadCreateInfo> info,
-      const download::DownloadUrlParameters::OnStartedCallback& on_started,
+      download::DownloadUrlParameters::OnStartedCallback on_started,
       download::InProgressDownloadManager::StartDownloadItemCallback callback,
       uint32_t id);
 

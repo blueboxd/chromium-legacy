@@ -334,7 +334,7 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
 
   auto* delegate = download_manager_->GetDelegate();
   if (!delegate || delegate->ShouldCompleteDownload(
-                       download_, base::Bind(&SavePackage::Finish, this))) {
+                       download_, base::BindOnce(&SavePackage::Finish, this))) {
     Finish();
   }
 }

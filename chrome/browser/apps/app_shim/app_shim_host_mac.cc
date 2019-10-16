@@ -22,8 +22,7 @@ AppShimHost::AppShimHost(AppShimHost::Client* client,
                          const base::FilePath& profile_path,
                          bool uses_remote_views)
     : client_(client),
-      host_binding_(this),
-      app_shim_request_(mojo::MakeRequest(&app_shim_)),
+      app_shim_receiver_(app_shim_.BindNewPipeAndPassReceiver()),
       launch_shim_has_been_called_(false),
       app_id_(app_id),
       profile_path_(profile_path),
@@ -123,11 +122,11 @@ void AppShimHost::OnBootstrapConnected(
 
   DCHECK(!bootstrap_);
   bootstrap_ = std::move(bootstrap);
-  bootstrap_->OnConnectedToHost(std::move(app_shim_request_));
+  bootstrap_->OnConnectedToHost(std::move(app_shim_receiver_));
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  host_binding_.Bind(bootstrap_->GetAppShimHostRequest());
-  host_binding_.set_connection_error_with_reason_handler(
+  host_receiver_.Bind(bootstrap_->GetAppShimHostReceiver());
+  host_receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
 }
 

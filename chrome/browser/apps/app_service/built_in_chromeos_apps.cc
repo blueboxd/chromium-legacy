@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -104,15 +103,6 @@ void BuiltInChromeOsApps::Connect(
     // TODO(crbug.com/826982): move source of truth for built-in apps from
     // ui/app_list to here when the AppService feature is enabled by default.
     for (const auto& internal_app : app_list::GetInternalAppList(profile_)) {
-      // TODO(crbug.com/826982): support the "continue reading" app? Or leave
-      // it specifically to the chrome/browser/ui/app_list/search code? If
-      // moved here, it might mean calling sync_sessions::SessionSyncService's
-      // SubscribeToForeignSessionsChanged. See also app_search_provider.cc's
-      // InternalDataSource.
-      if (internal_app.internal_app_name == BuiltInAppName::kContinueReading) {
-        continue;
-      }
-
       apps::mojom::AppPtr app = Convert(internal_app);
       if (!app.is_null()) {
         if (hide_settings_app_for_testing_ &&

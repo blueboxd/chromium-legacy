@@ -135,6 +135,10 @@ enum ModelType {
   WIFI_CONFIGURATIONS,
   // A web app object.
   WEB_APPS,
+  // OS-specific preferences (a.k.a. "OS settings"). Chrome OS only.
+  OS_PREFERENCES,
+  // Synced before other user types. Never encrypted. Chrome OS only.
+  OS_PRIORITY_PREFERENCES,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -223,7 +227,9 @@ enum class ModelTypeForHistograms {
   kSecurityEvents = 43,
   kWifiConfigurations = 44,
   kWebApps = 45,
-  kMaxValue = kWebApps
+  kOsPreferences = 46,
+  kOsPriorityPreferences = 47,
+  kMaxValue = kOsPriorityPreferences
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -253,7 +259,8 @@ constexpr ModelTypeSet ProtocolTypes() {
       SUPERVISED_USER_SETTINGS, APP_LIST, SUPERVISED_USER_WHITELISTS,
       ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI,
       DEPRECATED_EXPERIMENTS, MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF,
-      SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS);
+      SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES,
+      OS_PRIORITY_PREFERENCES);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -273,7 +280,8 @@ constexpr ModelTypeSet AlwaysPreferredUserTypes() {
 // types are synced before other user types and are never encrypted.
 constexpr ModelTypeSet PriorityUserTypes() {
   return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
+                      OS_PRIORITY_PREFERENCES);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real

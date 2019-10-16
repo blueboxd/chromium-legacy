@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(CorsPreflightCacheBrowserTest, Default) {
       shell(), embedded_test_server()->GetURL(base::StringPrintf(
                    "%s?;%d;reload", kTestPath, cross_origin_port()))));
   EXPECT_EQ(kTestDone, watcher3->WaitAndGetTitle());
-  EXPECT_EQ(network::features::ShouldEnableOutOfBlinkCors() ? 2u : 1u,
+  EXPECT_EQ(network::features::ShouldEnableOutOfBlinkCorsForTesting() ? 2u : 1u,
             options_count());
   EXPECT_EQ(3u, get_count());
 }

@@ -313,15 +313,15 @@ void AddressTrackerLinux::ReadMessages(bool* address_changed,
     UpdateCurrentConnectionType();
 }
 
-void AddressTrackerLinux::HandleMessage(char* buffer,
+void AddressTrackerLinux::HandleMessage(const char* buffer,
                                         size_t length,
                                         bool* address_changed,
                                         bool* link_changed,
                                         bool* tunnel_changed) {
   DCHECK(buffer);
-  for (struct nlmsghdr* header = reinterpret_cast<struct nlmsghdr*>(buffer);
-       NLMSG_OK(header, length);
-       header = NLMSG_NEXT(header, length)) {
+  for (const struct nlmsghdr* header =
+           reinterpret_cast<const struct nlmsghdr*>(buffer);
+       NLMSG_OK(header, length); header = NLMSG_NEXT(header, length)) {
     switch (header->nlmsg_type) {
       case NLMSG_DONE:
         return;

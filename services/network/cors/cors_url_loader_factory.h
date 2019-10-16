@@ -70,7 +70,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   void DeleteIfNeeded();
 
-  bool IsSane(const NetworkContext* context, const ResourceRequest& request);
+  bool IsSane(const NetworkContext* context,
+              const ResourceRequest& request,
+              uint32_t options);
 
   mojo::ReceiverSet<mojom::URLLoaderFactory> receivers_;
 

@@ -85,13 +85,13 @@ void ProxyConfigMonitor::AddToNetworkContextParams(
       proxy_config_client.InitWithNewPipeAndPassReceiver();
   proxy_config_client_set_.Add(std::move(proxy_config_client));
 
-  poller_binding_set_.AddBinding(
-      this,
-      mojo::MakeRequest(&network_context_params->proxy_config_poller_client));
+  poller_receiver_set_.Add(this,
+                           network_context_params->proxy_config_poller_client
+                               .InitWithNewPipeAndPassReceiver());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  error_binding_set_.AddBinding(
-      this, mojo::MakeRequest(&network_context_params->proxy_error_client));
+  error_receiver_set_.Add(this, network_context_params->proxy_error_client
+                                    .InitWithNewPipeAndPassReceiver());
 #endif
 
   net::ProxyConfigWithAnnotation proxy_config;

@@ -688,6 +688,9 @@ void RenderViewTest::Reload(const GURL& url) {
 
 void RenderViewTest::Resize(gfx::Size new_size,
                             bool is_fullscreen_granted) {
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderWidget* render_widget = view->GetWidget();
+
   VisualProperties visual_properties;
   visual_properties.screen_info = ScreenInfo();
   visual_properties.new_size = new_size;
@@ -696,13 +699,10 @@ void RenderViewTest::Resize(gfx::Size new_size,
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
   visual_properties.display_mode = blink::mojom::DisplayMode::kBrowser;
-  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
-  RenderWidget* render_widget = view->GetWidget();
-  std::unique_ptr<IPC::Message> resize_message(
-      new ViewMsg_UpdateVisualProperties(view->GetRoutingID(),
-                                         visual_properties,
-                                         render_widget->routing_id()));
-  view->OnMessageReceived(*resize_message);
+
+  WidgetMsg_UpdateVisualProperties resize_msg(render_widget->routing_id(),
+                                              visual_properties);
+  render_widget->OnMessageReceived(resize_msg);
 }
 
 void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,

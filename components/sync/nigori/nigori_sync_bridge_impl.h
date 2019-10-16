@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_NIGORI_NIGORI_SYNC_BRIDGE_IMPL_H_
 #define COMPONENTS_SYNC_NIGORI_NIGORI_SYNC_BRIDGE_IMPL_H_
 
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,6 +33,7 @@ namespace syncer {
 
 class Encryptor;
 class NigoriStorage;
+class PendingLocalNigoriCommit;
 
 // USS implementation of SyncEncryptionHandler.
 // This class holds the current Nigori state and processes incoming changes and
@@ -130,6 +132,17 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // Serializes state of the bridge and sync metadata into the proto.
   sync_pb::NigoriLocalData SerializeAsNigoriLocalData() const;
 
+  // Appends |local_commit| to |pending_local_commit_queue_| and if appropriate
+  // calls Put() to trigger the commit.
+  void QueuePendingLocalCommit(
+      std::unique_ptr<PendingLocalNigoriCommit> local_commit);
+
+  // Processes |pending_local_commit_queue_| FIFO such that all non-applicable
+  // pending commits issue a failure, until the first one that is applicable is
+  // found (if any). If such applicable commit is found, the corresponding Put()
+  // call is issued.
+  void PutNextApplicablePendingLocalCommit();
+
   const Encryptor* const encryptor_;
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
@@ -146,10 +159,13 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   syncer::NigoriState state_;
 
-  // TODO(crbug/922900): consider using checked ObserverList once
-  // SyncEncryptionHandlerImpl is no longer needed or consider refactoring old
-  // implementation to use checked ObserverList as well.
-  base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
+  std::list<std::unique_ptr<PendingLocalNigoriCommit>>
+      pending_local_commit_queue_;
+
+  // Observer that owns the list of actual observers, and broadcasts
+  // notifications to all observers in the list.
+  class BroadcastingObserver;
+  const std::unique_ptr<BroadcastingObserver> broadcasting_observer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

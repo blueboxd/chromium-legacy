@@ -260,8 +260,10 @@ gfx::NativeWindow PermissionPromptImpl::GetNativeWindow() {
   return nullptr;
 }
 
-bool PermissionPromptImpl::ShouldDestroyOnTabSwitching() {
-  return true;
+PermissionPrompt::TabSwitchingBehavior
+PermissionPromptImpl::GetTabSwitchingBehavior() {
+  return PermissionPrompt::TabSwitchingBehavior::
+      kDestroyPromptButKeepRequestPending;
 }
 
 void PermissionPromptImpl::Closing() {

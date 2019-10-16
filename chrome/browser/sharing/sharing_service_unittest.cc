@@ -30,6 +30,7 @@
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "crypto/ec_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -134,12 +135,15 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
       : SharingDeviceRegistration(pref_service,
                                   prefs,
                                   instance_id_driver,
-                                  vapid_key_manager) {}
+                                  vapid_key_manager),
+        vapid_key_manager_(vapid_key_manager) {}
   ~FakeSharingDeviceRegistration() override = default;
 
   void RegisterDevice(
       SharingDeviceRegistration::RegistrationCallback callback) override {
     registration_attempts_++;
+    // Simulate SharingDeviceRegistration calling GetOrCreateKey.
+    vapid_key_manager_->GetOrCreateKey();
     std::move(callback).Run(result_);
   }
 
@@ -163,6 +167,7 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   }
 
  private:
+  VapidKeyManager* vapid_key_manager_;
   SharingDeviceRegistrationResult result_ =
       SharingDeviceRegistrationResult::kSuccess;
   int registration_attempts_ = 0;
@@ -175,11 +180,11 @@ class SharingServiceTest : public testing::Test {
   SharingServiceTest() {
     sync_prefs_ =
         new SharingSyncPreference(&prefs_, &fake_device_info_sync_service);
+    vapid_key_manager_ = new VapidKeyManager(sync_prefs_, &test_sync_service_);
     sharing_device_registration_ = new FakeSharingDeviceRegistration(
         /* pref_service= */ nullptr, sync_prefs_, &mock_instance_id_driver_,
         vapid_key_manager_,
         fake_device_info_sync_service.GetLocalDeviceInfoProvider());
-    vapid_key_manager_ = new VapidKeyManager(sync_prefs_);
     fcm_sender_ = new SharingFCMSender(
         &fake_gcm_driver_,
         fake_device_info_sync_service.GetLocalDeviceInfoProvider(), sync_prefs_,
@@ -515,11 +520,14 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
-  // Registration will be attempeted as VAPID key is cleared.
+  auto vapid_key = crypto::ECPrivateKey::Create();
+  ASSERT_TRUE(vapid_key);
+  std::vector<uint8_t> vapid_key_info;
+  ASSERT_TRUE(vapid_key->ExportPrivateKey(&vapid_key_info));
+
+  // Registration will be attempeted as VAPID key has changed.
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
-  prefs_.SetUserPref("sharing.vapid_key",
-                     base::Value::ToUniquePtrValue(
-                         base::Value(base::Value::Type::DICTIONARY)));
+  sync_prefs_->SetVapidKey(vapid_key_info);
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 }
@@ -549,6 +557,8 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(syncer::DEVICE_INFO);
+  test_sync_service_.SetExperimentalAuthenticationKey(
+      crypto::ECPrivateKey::Create());
 
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
@@ -558,6 +568,14 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
+
+  // Registration will be attempeted as sync auth id has changed.
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
+  test_sync_service_.SetExperimentalAuthenticationKey(
+      crypto::ECPrivateKey::Create());
+  test_sync_service_.FireSyncCycleCompleted();
+  EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 }
 

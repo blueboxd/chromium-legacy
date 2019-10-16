@@ -34,6 +34,9 @@ const base::FilePath::CharType kUptimeFileName[] =
 const base::FilePath::CharType kUpdateRebootNeededUptimeFile[] =
     FILE_PATH_LITERAL("/run/chrome/update_reboot_needed_uptime");
 
+const base::FilePath::CharType kStartupCustomizationManifestFile[] =
+    FILE_PATH_LITERAL("/opt/oem/etc/startup_manifest.json");
+
 const base::FilePath::CharType kDeviceLocalAccountExtensionDir[] =
     FILE_PATH_LITERAL("/var/cache/device_local_account_extensions");
 
@@ -74,6 +77,9 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case FILE_UPDATE_REBOOT_NEEDED_UPTIME:
       *result = base::FilePath(kUpdateRebootNeededUptimeFile);
+      break;
+    case FILE_STARTUP_CUSTOMIZATION_MANIFEST:
+      *result = base::FilePath(kStartupCustomizationManifestFile);
       break;
     case DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS:
       *result = base::FilePath(kDeviceLocalAccountExtensionDir);

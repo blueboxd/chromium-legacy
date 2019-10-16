@@ -13,6 +13,8 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.chrome.test.DisableNativeTestRule;
+
 /**
  * Test case to instrument DummyUiActivity for UI testing scenarios.
  * Recommend to use setUpTest() and tearDownTest() to setup and tear down instead of @Before and

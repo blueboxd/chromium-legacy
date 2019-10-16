@@ -87,10 +87,6 @@ class MediaPermission;
 class GpuVideoAcceleratorFactories;
 }
 
-namespace rtc {
-class Thread;
-}
-
 namespace service_manager {
 class InterfaceProvider;
 }
@@ -106,7 +102,6 @@ class ContextProvider;
 }
 
 namespace webrtc {
-struct RtpCapabilities;
 class AsyncResolverFactory;
 }
 
@@ -581,16 +576,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  // Returns the rtc::Thread instance associated with the WebRTC worker thread.
-  // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
-  // May return null if WebRTC functionality is not implemented.
-  virtual rtc::Thread* GetWebRtcWorkerThreadRtcThread() { return nullptr; }
-
-  virtual scoped_refptr<base::SingleThreadTaskRunner>
-  GetWebRtcSignalingTaskRunner() {
-    return nullptr;
-  }
-
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
       WebLocalFrame* frame);
@@ -598,13 +583,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<webrtc::AsyncResolverFactory>
   CreateWebRtcAsyncResolverFactory();
-
-  // Returns the most optimistic view of the capabilities of the system for
-  // sending or receiving media of the given kind ("audio" or "video").
-  virtual std::unique_ptr<webrtc::RtpCapabilities> GetRtpSenderCapabilities(
-      const WebString& kind);
-  virtual std::unique_ptr<webrtc::RtpCapabilities> GetRtpReceiverCapabilities(
-      const WebString& kind);
 
   // Checks if the default minimum starting volume value for the AGC is
   // overridden on the command line.

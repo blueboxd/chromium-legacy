@@ -459,6 +459,7 @@ int TestNetworkDelegate::OnHeadersReceived(
     CompletionOnceCallback callback,
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
+    const IPEndPoint& endpoint,
     GURL* allowed_unsafe_redirect_url) {
   int req_id = GetRequestId(request);
   bool is_first_response =

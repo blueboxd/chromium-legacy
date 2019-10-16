@@ -20,6 +20,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 
@@ -95,9 +96,10 @@ CompositorDependenciesAndroid::CompositorDependenciesAndroid()
 CompositorDependenciesAndroid::~CompositorDependenciesAndroid() = default;
 
 void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
-  viz::mojom::FrameSinkManagerPtr frame_sink_manager;
-  viz::mojom::FrameSinkManagerRequest frame_sink_manager_request =
-      mojo::MakeRequest(&frame_sink_manager);
+  mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
+  mojo::PendingReceiver<viz::mojom::FrameSinkManager>
+      frame_sink_manager_receiver =
+          frame_sink_manager.InitWithNewPipeAndPassReceiver();
   viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
   viz::mojom::FrameSinkManagerClientRequest frame_sink_manager_client_request =
       mojo::MakeRequest(&frame_sink_manager_client);
@@ -117,7 +119,7 @@ void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
   // connected to the GPU process.
   pending_connect_viz_on_io_thread_ = base::BindOnce(
       &CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread,
-      std::move(frame_sink_manager_request),
+      std::move(frame_sink_manager_receiver),
       frame_sink_manager_client.PassInterface());
 }
 
@@ -144,12 +146,12 @@ void CompositorDependenciesAndroid::TryEstablishVizConnectionIfNeeded() {
 // re-run when the request is deleted (goes out of scope).
 // static
 void CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread(
-    viz::mojom::FrameSinkManagerRequest request,
+    mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
     viz::mojom::FrameSinkManagerClientPtrInfo client) {
   auto* gpu_process_host = GpuProcessHost::Get();
   if (!gpu_process_host)
     return;
-  gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(request),
+  gpu_process_host->gpu_host()->ConnectFrameSinkManager(std::move(receiver),
                                                         std::move(client));
 }
 

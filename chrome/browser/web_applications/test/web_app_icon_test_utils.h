@@ -16,9 +16,9 @@ namespace web_app {
 
 SkBitmap CreateSquareIcon(int size_px, SkColor solid_color);
 
-WebApplicationInfo::IconInfo GenerateIconInfo(const GURL& url,
-                                              int size_px,
-                                              SkColor solid_color);
+WebApplicationIconInfo GenerateIconInfo(const GURL& url,
+                                        int size_px,
+                                        SkColor solid_color);
 
 void AddIconToIconsMap(const GURL& icon_url,
                        int size_px,

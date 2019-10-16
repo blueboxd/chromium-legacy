@@ -173,7 +173,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
   NavigateAndCommit(GURL(kDefaultTestUrl));
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorServiceWorkerControlled;
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
 
   tester()->histogram_tester().ExpectTotalCount(
@@ -250,7 +250,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorkerBackground) {
 
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorServiceWorkerControlled;
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
@@ -306,7 +306,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, InboxSite) {
   NavigateAndCommit(GURL(kInboxTestUrl));
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorServiceWorkerControlled;
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
 
   tester()->histogram_tester().ExpectTotalCount(
@@ -429,7 +429,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, SearchSite) {
   NavigateAndCommit(GURL(kSearchTestUrl));
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorServiceWorkerControlled;
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
 
   tester()->histogram_tester().ExpectTotalCount(
@@ -619,7 +619,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest,
                                 ui::PAGE_TRANSITION_FORWARD_BACK));
   page_load_metrics::mojom::PageLoadMetadata metadata;
   metadata.behavior_flags |=
-      blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorServiceWorkerControlled;
+      blink::LoadingBehaviorFlag::kLoadingBehaviorServiceWorkerControlled;
   tester()->SimulateTimingAndMetadataUpdate(timing, metadata);
 
   tester()->histogram_tester().ExpectTotalCount(

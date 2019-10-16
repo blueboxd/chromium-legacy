@@ -12,7 +12,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_path_override.h"
 #include "build/branding_buildflags.h"
@@ -31,6 +34,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/pref_names.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -51,12 +55,17 @@ namespace {
 const char kManifestPath[] = "/update_manifest";
 const char kAppPath[] = "/app.crx";
 
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kExternalAppId[] = "kekdneafjmhmndejhmbcadfiiofngffo";
+#endif
+
 class ExternalProviderImplTest : public ExtensionServiceTestBase {
  public:
   ExternalProviderImplTest() {}
   ~ExternalProviderImplTest() override {}
 
-  void InitServiceWithExternalProviders() {
+  void InitServiceWithExternalProviders(
+      const base::Optional<bool> block_external = base::nullopt) {
 #if defined(OS_CHROMEOS)
     user_manager::ScopedUserManager scoped_user_manager(
         std::make_unique<chromeos::FakeChromeUserManager>());
@@ -71,12 +80,25 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     // would cause the external updates to never finish install.
     profile_->GetPrefs()->SetString(prefs::kDefaultApps, "");
 
+    if (block_external.has_value())
+      SetExternalExtensionsBlockedByPolicy(block_external.value());
+
     ProviderCollection providers;
     extensions::ExternalProviderImpl::CreateExternalProviders(
         service_, profile_.get(), &providers);
 
     for (std::unique_ptr<ExternalProviderInterface>& provider : providers)
       service_->AddProviderForTesting(std::move(provider));
+  }
+
+  void OverrideExternalExtensionsPath() {
+    external_externsions_overrides_.reset(new base::ScopedPathOverride(
+        chrome::DIR_EXTERNAL_EXTENSIONS, data_dir().AppendASCII("external")));
+  }
+
+  void SetExternalExtensionsBlockedByPolicy(const bool block_external) {
+    profile_->GetPrefs()->SetBoolean(pref_names::kBlockExternalExtensions,
+                                     block_external);
   }
 
   void InitializeExtensionServiceWithUpdaterAndPrefs() {
@@ -142,6 +164,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
     return nullptr;
   }
 
+  std::unique_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
   std::unique_ptr<ExtensionCacheFake> test_extension_cache_;
 
@@ -160,18 +183,42 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
 TEST_F(ExternalProviderImplTest, InAppPayments) {
   InitServiceWithExternalProviders();
 
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
+  base::RunLoop run_loop;
   service_->set_external_updates_finished_callback_for_test(
-      runner->QuitClosure());
-
+      run_loop.QuitClosure());
   service_->CheckForExternalUpdates();
-  runner->Run();
+  run_loop.Run();
 
   EXPECT_TRUE(registry()->GetInstalledExtension(
       extension_misc::kInAppPaymentsSupportAppId));
   EXPECT_TRUE(service_->IsExtensionEnabled(
       extension_misc::kInAppPaymentsSupportAppId));
+}
+
+TEST_F(ExternalProviderImplTest, BlockedExternalUserProviders) {
+  OverrideExternalExtensionsPath();
+  InitServiceWithExternalProviders(true);
+
+  base::RunLoop run_loop;
+  service_->set_external_updates_finished_callback_for_test(
+      run_loop.QuitClosure());
+  service_->CheckForExternalUpdates();
+  run_loop.Run();
+
+  EXPECT_FALSE(registry()->GetInstalledExtension(kExternalAppId));
+}
+
+TEST_F(ExternalProviderImplTest, NotBlockedExternalUserProviders) {
+  OverrideExternalExtensionsPath();
+  InitServiceWithExternalProviders(false);
+
+  base::RunLoop run_loop;
+  service_->set_external_updates_finished_callback_for_test(
+      run_loop.QuitClosure());
+  service_->CheckForExternalUpdates();
+  run_loop.Run();
+
+  EXPECT_TRUE(registry()->GetInstalledExtension(kExternalAppId));
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

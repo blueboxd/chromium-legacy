@@ -163,7 +163,7 @@ public class EphemeralTabCoordinator {
     }
 
     @DrawableRes
-    private static int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
+    static int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
             case ConnectionSecurityLevel.WARNING:

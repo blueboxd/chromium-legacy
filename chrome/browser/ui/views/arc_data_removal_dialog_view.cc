@@ -50,7 +50,6 @@ class DataRemovalConfirmationDialog : public views::DialogDelegateView,
   ui::ModalType GetModalType() const override;
 
   // views::DialogDelegate:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 
@@ -83,6 +82,10 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
     Profile* profile,
     DataRemovalConfirmationCallback confirm_callback)
     : profile_(profile), confirm_callback_(std::move(confirm_callback)) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_ARC_DATA_REMOVAL_CONFIRMATION_OK_BUTTON));
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
@@ -129,15 +132,6 @@ base::string16 DataRemovalConfirmationDialog::GetWindowTitle() const {
 
 ui::ModalType DataRemovalConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
-}
-
-base::string16 DataRemovalConfirmationDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK) {
-    return l10n_util::GetStringUTF16(
-        IDS_ARC_DATA_REMOVAL_CONFIRMATION_OK_BUTTON);
-  }
-  return views::DialogDelegate::GetDialogButtonLabel(button);
 }
 
 bool DataRemovalConfirmationDialog::Accept() {

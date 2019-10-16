@@ -30,7 +30,7 @@ class AwDownloadManagerDelegate : public content::DownloadManagerDelegate,
       download::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;
   bool ShouldCompleteDownload(download::DownloadItem* item,
-                              const base::Closure& complete_callback) override;
+                              base::OnceClosure complete_callback) override;
   bool ShouldOpenDownload(
       download::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;

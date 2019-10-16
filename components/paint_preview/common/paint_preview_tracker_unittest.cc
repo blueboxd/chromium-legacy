@@ -18,6 +18,8 @@ namespace paint_preview {
 
 namespace {
 
+constexpr int32_t kRoutingId = 1;
+
 struct TestContext {
   const gfx::Rect* rect;
   bool was_called;
@@ -25,15 +27,17 @@ struct TestContext {
 
 }  // namespace
 
-TEST(PaintPreviewTrackerTest, TestGuid) {
+TEST(PaintPreviewTrackerTest, TestGetters) {
   auto token = base::UnguessableToken::Create();
-  PaintPreviewTracker tracker;
-  tracker.SetGuid(token);
+  PaintPreviewTracker tracker(token, kRoutingId, true);
   EXPECT_EQ(tracker.Guid(), token);
+  EXPECT_EQ(tracker.RoutingId(), kRoutingId);
+  EXPECT_TRUE(tracker.IsMainFrame());
 }
 
 TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
-  PaintPreviewTracker tracker;
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRoutingId,
+                              true);
   const int kRoutingId = 50;
   gfx::Rect rect(50, 40, 30, 20);
   uint32_t content_id = tracker.CreateContentForRemoteFrame(rect, kRoutingId);
@@ -53,7 +57,8 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
 }
 
 TEST(PaintPreviewTrackerTest, TestGlyphRunList) {
-  PaintPreviewTracker tracker;
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRoutingId,
+                              true);
   std::string unichars = "abc";
   auto typeface = SkTypeface::MakeDefault();
   SkFont font(typeface);
@@ -70,7 +75,8 @@ TEST(PaintPreviewTrackerTest, TestGlyphRunList) {
 }
 
 TEST(PaintPreviewTrackerTest, TestAnnotateLinks) {
-  PaintPreviewTracker tracker;
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRoutingId,
+                              true);
   const std::string url_1 = "https://www.chromium.org";
   const gfx::Rect rect_1(10, 20, 30, 40);
   tracker.AnnotateLink(url_1, rect_1);

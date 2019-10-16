@@ -34,13 +34,13 @@ class MojoDataPump;
 
 class TCPSocket : public Socket {
  public:
-  using UpgradeToTLSCallback =
-      base::OnceCallback<void(int,
-                              network::mojom::TLSClientSocketPtr,
-                              const net::IPEndPoint&,
-                              const net::IPEndPoint&,
-                              mojo::ScopedDataPipeConsumerHandle,
-                              mojo::ScopedDataPipeProducerHandle)>;
+  using UpgradeToTLSCallback = base::OnceCallback<void(
+      int,
+      mojo::PendingRemote<network::mojom::TLSClientSocket>,
+      const net::IPEndPoint&,
+      const net::IPEndPoint&,
+      mojo::ScopedDataPipeConsumerHandle,
+      mojo::ScopedDataPipeProducerHandle)>;
 
   // Constuctor for when |socket_mode_| is unknown. The |socket_mode_| will be
   // filled in when the consumer calls Listen/Connect.
@@ -148,14 +148,15 @@ class TCPSocket : public Socket {
       mojo::ScopedDataPipeProducerHandle send_stream);
   void OnWriteComplete(net::CompletionOnceCallback callback, int result);
   void OnReadComplete(int result, scoped_refptr<net::IOBuffer> io_buffer);
-  void OnUpgradeToTLSComplete(UpgradeToTLSCallback callback,
-                              network::mojom::TLSClientSocketPtr tls_socket,
-                              const net::IPEndPoint& local_addr,
-                              const net::IPEndPoint& peer_addr,
-                              int result,
-                              mojo::ScopedDataPipeConsumerHandle receive_stream,
-                              mojo::ScopedDataPipeProducerHandle send_stream,
-                              const base::Optional<net::SSLInfo>& ssl_info);
+  void OnUpgradeToTLSComplete(
+      UpgradeToTLSCallback callback,
+      mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
+      const net::IPEndPoint& local_addr,
+      const net::IPEndPoint& peer_addr,
+      int result,
+      mojo::ScopedDataPipeConsumerHandle receive_stream,
+      mojo::ScopedDataPipeProducerHandle send_stream,
+      const base::Optional<net::SSLInfo>& ssl_info);
 
   content::StoragePartition* GetStoragePartitionHelper();
 

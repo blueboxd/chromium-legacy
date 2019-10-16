@@ -59,8 +59,6 @@ RenderViewHost* RenderViewHostFactory::Create(
                                       /*hidden=*/true),
       delegate, routing_id, main_frame_routing_id, swapped_out,
       true /* has_initialized_audio_host */);
-  view_host->GetWidget()->BindVisualPropertiesManager(
-      view_host->GetVisualPropertiesManager());
   return view_host;
 }
 

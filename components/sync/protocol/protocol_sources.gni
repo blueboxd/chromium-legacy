@@ -30,6 +30,8 @@ sync_protocol_bases = [
   "history_status",
   "loopback_server",
   "managed_user_setting_specifics",
+  "managed_user_shared_setting_specifics",
+  "managed_user_specifics",
   "managed_user_whitelist_specifics",
   "model_type_state",
   "model_type_store_schema_descriptor",

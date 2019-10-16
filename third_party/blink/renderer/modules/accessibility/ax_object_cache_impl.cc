@@ -92,8 +92,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 // Return a node for the current layout object or ancestor layout object.
 Node* GetClosestNodeForLayoutObject(LayoutObject* layout_object) {
@@ -393,7 +391,8 @@ static bool NodeHasRole(Node* node, const String& role) {
     return false;
 
   // TODO(accessibility) support role strings with multiple roles.
-  return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), role);
+  return EqualIgnoringASCIICase(element->getAttribute(html_names::kRoleAttr),
+                                role);
 }
 
 AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
@@ -1317,12 +1316,14 @@ bool AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   DeferTreeUpdate(&AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout,
                   attr_name, element);
 
-  if (attr_name != kRoleAttr && attr_name != kTypeAttr &&
-      attr_name != kSizeAttr && attr_name != kAltAttr &&
-      attr_name != kTitleAttr &&
-      (attr_name != kForAttr && !IsA<HTMLLabelElement>(*element)) &&
-      attr_name != kIdAttr && attr_name != kTabindexAttr &&
-      attr_name != kDisabledAttr &&
+  if (attr_name != html_names::kRoleAttr &&
+      attr_name != html_names::kTypeAttr &&
+      attr_name != html_names::kSizeAttr && attr_name != html_names::kAltAttr &&
+      attr_name != html_names::kTitleAttr &&
+      (attr_name != html_names::kForAttr && !IsA<HTMLLabelElement>(*element)) &&
+      attr_name != html_names::kIdAttr &&
+      attr_name != html_names::kTabindexAttr &&
+      attr_name != html_names::kDisabledAttr &&
       !attr_name.LocalName().StartsWith("aria-")) {
     return false;
   }
@@ -1351,26 +1352,32 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
     Element* element) {
   DCHECK(element);
   DCHECK(!element->GetDocument().NeedsLayoutTreeUpdateForNode(*element));
-  if (attr_name == kRoleAttr || attr_name == kTypeAttr) {
+  if (attr_name == html_names::kRoleAttr ||
+      attr_name == html_names::kTypeAttr) {
     HandleRoleChangeWithCleanLayout(element);
-  } else if (attr_name == kSizeAttr || attr_name == kAriaHaspopupAttr) {
+  } else if (attr_name == html_names::kSizeAttr ||
+             attr_name == html_names::kAriaHaspopupAttr) {
     // Role won't change on edits.
     HandleRoleChangeIfNotEditableWithCleanLayout(element);
-  } else if (attr_name == kAltAttr || attr_name == kTitleAttr) {
+  } else if (attr_name == html_names::kAltAttr ||
+             attr_name == html_names::kTitleAttr) {
     TextChangedWithCleanLayout(element);
-  } else if (attr_name == kForAttr && IsA<HTMLLabelElement>(*element)) {
+  } else if (attr_name == html_names::kForAttr &&
+             IsA<HTMLLabelElement>(*element)) {
     LabelChangedWithCleanLayout(element);
-  } else if (attr_name == kIdAttr) {
+  } else if (attr_name == html_names::kIdAttr) {
     MaybeNewRelationTarget(element, Get(element));
-  } else if (attr_name == kTabindexAttr) {
+  } else if (attr_name == html_names::kTabindexAttr) {
     FocusableChangedWithCleanLayout(element);
-  } else if (attr_name == kDisabledAttr || attr_name == kReadonlyAttr) {
+  } else if (attr_name == html_names::kDisabledAttr ||
+             attr_name == html_names::kReadonlyAttr) {
     MarkElementDirty(element, false);
-  } else if (attr_name == kValueAttr) {
+  } else if (attr_name == html_names::kValueAttr) {
     HandleValueChanged(element);
-  } else if (attr_name == kMinAttr || attr_name == kMaxAttr) {
+  } else if (attr_name == html_names::kMinAttr ||
+             attr_name == html_names::kMaxAttr) {
     MarkElementDirty(element, false);
-  } else if (attr_name == kStepAttr) {
+  } else if (attr_name == html_names::kStepAttr) {
     MarkElementDirty(element, false);
   }
 
@@ -1378,30 +1385,32 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
     return;
 
   // Perform updates specific to each attribute.
-  if (attr_name == kAriaActivedescendantAttr) {
+  if (attr_name == html_names::kAriaActivedescendantAttr) {
     HandleActiveDescendantChangedWithCleanLayout(element);
-  } else if (attr_name == kAriaValuenowAttr ||
-             attr_name == kAriaValuetextAttr) {
+  } else if (attr_name == html_names::kAriaValuenowAttr ||
+             attr_name == html_names::kAriaValuetextAttr) {
     HandleValueChanged(element);
-  } else if (attr_name == kAriaLabelAttr || attr_name == kAriaLabeledbyAttr ||
-             attr_name == kAriaLabelledbyAttr) {
+  } else if (attr_name == html_names::kAriaLabelAttr ||
+             attr_name == html_names::kAriaLabeledbyAttr ||
+             attr_name == html_names::kAriaLabelledbyAttr) {
     TextChangedWithCleanLayout(element);
-  } else if (attr_name == kAriaDescribedbyAttr) {
+  } else if (attr_name == html_names::kAriaDescribedbyAttr) {
     // TODO do we need a DescriptionChanged() ?
     TextChangedWithCleanLayout(element);
-  } else if (attr_name == kAriaCheckedAttr || attr_name == kAriaPressedAttr) {
+  } else if (attr_name == html_names::kAriaCheckedAttr ||
+             attr_name == html_names::kAriaPressedAttr) {
     CheckedStateChanged(element);
-  } else if (attr_name == kAriaSelectedAttr) {
+  } else if (attr_name == html_names::kAriaSelectedAttr) {
     HandleAriaSelectedChangedWithCleanLayout(element);
-  } else if (attr_name == kAriaExpandedAttr) {
+  } else if (attr_name == html_names::kAriaExpandedAttr) {
     HandleAriaExpandedChangeWithCleanLayout(element);
-  } else if (attr_name == kAriaHiddenAttr) {
+  } else if (attr_name == html_names::kAriaHiddenAttr) {
     ChildrenChangedWithCleanLayout(element->parentNode());
-  } else if (attr_name == kAriaInvalidAttr) {
+  } else if (attr_name == html_names::kAriaInvalidAttr) {
     PostNotification(element, ax::mojom::Event::kInvalidStatusChanged);
-  } else if (attr_name == kAriaErrormessageAttr) {
+  } else if (attr_name == html_names::kAriaErrormessageAttr) {
     MarkElementDirty(element, false);
-  } else if (attr_name == kAriaOwnsAttr) {
+  } else if (attr_name == html_names::kAriaOwnsAttr) {
     ChildrenChangedWithCleanLayout(element);
     // Ensure aria-owns update fires on original parent as well
     if (AXObject* obj = GetOrCreate(element)) {

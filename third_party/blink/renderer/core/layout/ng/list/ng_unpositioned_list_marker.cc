@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -124,6 +125,11 @@ void NGUnpositionedListMarker::AddToBox(
       marker_offset.block_offset);
 
   DCHECK(container_builder);
+  if (NGFragmentItemsBuilder* items_builder =
+          container_builder->ItemsBuilder()) {
+    items_builder->AddListMarker(marker_physical_fragment, marker_offset);
+    return;
+  }
   container_builder->AddChild(marker_physical_fragment, marker_offset);
 }
 
@@ -142,6 +148,7 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
   LogicalOffset offset(InlineOffset(marker_size.inline_size), LayoutUnit());
 
   DCHECK(container_builder);
+  DCHECK(!container_builder->ItemsBuilder());
   container_builder->AddChild(marker_physical_fragment, offset);
 
   return marker_size.block_size;

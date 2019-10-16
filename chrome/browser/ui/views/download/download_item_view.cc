@@ -451,7 +451,8 @@ void DownloadItemView::Layout() {
       save_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
       child_origin.Offset(button_size.width() + kSaveDiscardButtonPadding, 0);
     }
-    discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
+    if (discard_button_)
+      discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   } else if (IsShowingDeepScanning()) {
     gfx::Point child_origin(kStartPadding + kWarningIconSize + kStartPadding,
                             (height() - deep_scanning_label_->height()) / 2);
@@ -970,9 +971,15 @@ void DownloadItemView::ShowWarningDialog() {
         this, model_->GetWarningConfirmButtonText());
     save_button_ = AddChildView(std::move(save_button));
   }
-  auto discard_button = views::MdTextButton::Create(
-      this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-  discard_button_ = AddChildView(std::move(discard_button));
+
+  if (model_->GetDangerType() !=
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED &&
+      model_->GetDangerType() !=
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED) {
+    auto discard_button = views::MdTextButton::Create(
+        this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+    discard_button_ = AddChildView(std::move(discard_button));
+  }
 
   base::string16 dangerous_label =
       model_->GetWarningText(font_list_, kTextWidth);
@@ -1008,6 +1015,8 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
       return gfx::CreateVectorIcon(
           vector_icons::kWarningIcon, kWarningIconSize,
           GetNativeTheme()->GetSystemColor(
@@ -1023,8 +1032,6 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
-    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
-    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
@@ -1088,8 +1095,9 @@ void DownloadItemView::ClearDeepScanningDialog() {
 }
 
 gfx::Size DownloadItemView::GetButtonSize() const {
-  DCHECK(discard_button_ && (mode_ == MALICIOUS_MODE || save_button_));
-  gfx::Size size = discard_button_->GetPreferredSize();
+  gfx::Size size;
+  if (discard_button_)
+    discard_button_->GetPreferredSize();
   if (save_button_)
     size.SetToMax(save_button_->GetPreferredSize());
   return size;

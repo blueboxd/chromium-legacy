@@ -40,8 +40,6 @@ using testing::Return;
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 class MockVideoWebMediaPlayer : public EmptyWebMediaPlayer {
@@ -111,7 +109,7 @@ class MediaControlsRotateToFullscreenDelegateTest
     SetupPageWithClients(&clients,
                          MakeGarbageCollected<StubLocalFrameClient>());
     video_ = MakeGarbageCollected<HTMLVideoElement>(GetDocument());
-    GetVideo().setAttribute(kControlsAttr, g_empty_atom);
+    GetVideo().setAttribute(html_names::kControlsAttr, g_empty_atom);
     // Most tests should call GetDocument().body()->AppendChild(&GetVideo());
     // This is not done automatically, so that tests control timing of `Attach`.
   }
@@ -148,7 +146,7 @@ class MediaControlsRotateToFullscreenDelegateTest
     // If scripts are not enabled, controls will always be shown.
     GetFrame().GetSettings()->SetScriptEnabled(true);
 
-    GetVideo().removeAttribute(kControlsAttr);
+    GetVideo().removeAttribute(html_names::kControlsAttr);
   }
 
   void DispatchEvent(EventTarget& target, const AtomicString& type) {

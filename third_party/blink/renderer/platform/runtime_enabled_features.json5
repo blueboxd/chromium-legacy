@@ -912,9 +912,6 @@
       status: "stable",
     },
     {
-      name: "LongTaskV2",
-    },
-    {
       name:"ManualSlotting",
       status:"experimental",
     },
@@ -1446,11 +1443,6 @@
     },
     {
       name: "ScriptStreamingOnPreload",
-    },
-    // Serialize and restore scroll anchors.
-    {
-      name: "ScrollAnchorSerialization",
-      status: "test",
     },
     {
       name: "ScrollCustomization",

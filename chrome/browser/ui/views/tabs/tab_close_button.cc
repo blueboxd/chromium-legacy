@@ -24,9 +24,9 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view_class_properties.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -35,25 +35,6 @@
 namespace {
 constexpr int kGlyphWidth = 16;
 constexpr int kTouchGlyphWidth = 24;
-
-class TabCloseButtonHighlightPathGenerator
-    : public views::HighlightPathGenerator {
- public:
-  TabCloseButtonHighlightPathGenerator() = default;
-
-  // views::HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    const gfx::Rect bounds = view->GetContentsBounds();
-    const gfx::Point center = bounds.CenterPoint();
-    const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-        views::EMPHASIS_MAXIMUM, bounds.size());
-    return SkPath().addCircle(center.x(), center.y(), radius);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabCloseButtonHighlightPathGenerator);
-};
-
 }  //  namespace
 
 TabCloseButton::TabCloseButton(views::ButtonListener* listener,
@@ -74,8 +55,6 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
   GetInkDrop()->SetHoverHighlightFadeDuration(base::TimeDelta());
 
   SetInstallFocusRingOnFocus(true);
-  views::HighlightPathGenerator::Install(
-      this, std::make_unique<TabCloseButtonHighlightPathGenerator>());
 }
 
 TabCloseButton::~TabCloseButton() {}
@@ -139,6 +118,25 @@ gfx::Size TabCloseButton::CalculatePreferredSize() const {
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
+}
+
+void TabCloseButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ImageButton::OnBoundsChanged(previous_bounds);
+  auto path = std::make_unique<SkPath>();
+  const gfx::Rect bounds = GetContentsBounds();
+  const gfx::Point center = bounds.CenterPoint();
+  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, bounds.size());
+  path->addCircle(center.x(), center.y(), radius);
+  SetProperty(views::kHighlightPathKey, path.release());
+}
+
+std::unique_ptr<views::InkDropMask> TabCloseButton::CreateInkDropMask() const {
+  const gfx::Rect bounds = GetContentsBounds();
+  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, bounds.size());
+  return std::make_unique<views::CircleInkDropMask>(
+      size(), GetMirroredRect(bounds).CenterPoint(), radius);
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {

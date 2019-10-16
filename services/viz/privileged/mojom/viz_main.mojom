@@ -24,7 +24,7 @@ struct FrameSinkManagerParams {
   uint32 activation_deadline_in_frames = 4;
 
   // Host to viz interface.
-  FrameSinkManager& frame_sink_manager;
+  pending_receiver<FrameSinkManager> frame_sink_manager;
 
   // Viz to host interface.
   FrameSinkManagerClient frame_sink_manager_client;

@@ -47,9 +47,6 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "crypto/sha2.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/cache_type.h"
@@ -2675,10 +2672,11 @@ TEST_F(NetworkContextTest, ResolveHost_Sync) {
   resolver->set_synchronous_mode(true);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2704,10 +2702,11 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
   resolver->set_synchronous_mode(false);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2718,7 +2717,7 @@ TEST_F(NetworkContextTest, ResolveHost_Async) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
@@ -2740,10 +2739,11 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Sync) {
   resolver->set_synchronous_mode(true);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2768,10 +2768,11 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Async) {
   resolver->set_synchronous_mode(false);
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2782,7 +2783,7 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Async) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
   run_loop.Run();
 
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, response_client.result_error());
@@ -2820,10 +2821,11 @@ TEST_F(NetworkContextTest, ResolveHost_CloseControlHandle) {
       CreateContextWithParams(CreateContextParams());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2832,7 +2834,7 @@ TEST_F(NetworkContextTest, ResolveHost_CloseControlHandle) {
   network_context->ResolveHost(net::HostPortPair("localhost", 160),
                                std::move(optional_parameters),
                                std::move(pending_response_client));
-  control_handle = nullptr;
+  control_handle.reset();
   run_loop.Run();
 
   EXPECT_EQ(net::OK, response_client.result_error());
@@ -2855,10 +2857,11 @@ TEST_F(NetworkContextTest, ResolveHost_Cancellation) {
   ASSERT_EQ(0, resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2868,7 +2871,7 @@ TEST_F(NetworkContextTest, ResolveHost_Cancellation) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   control_handle->Cancel(net::ERR_ABORTED);
   run_loop.Run();
@@ -2894,10 +2897,11 @@ TEST_F(NetworkContextTest, ResolveHost_DestroyContext) {
   ASSERT_EQ(0, resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2907,7 +2911,7 @@ TEST_F(NetworkContextTest, ResolveHost_DestroyContext) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   network_context = nullptr;
   run_loop.Run();
@@ -2931,10 +2935,11 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
   ASSERT_EQ(0, resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -2944,7 +2949,7 @@ TEST_F(NetworkContextTest, ResolveHost_CloseClient) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   response_client.CloseReceiver();
   run_loop.RunUntilIdle();
@@ -3055,10 +3060,11 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -3068,7 +3074,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseResolver) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
 
   resolver.reset();
   run_loop.Run();
@@ -3097,10 +3103,11 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   ASSERT_EQ(0, internal_resolver->num_cancellations());
 
   base::RunLoop run_loop;
-  mojom::ResolveHostHandlePtr control_handle;
+  mojo::Remote<mojom::ResolveHostHandle> control_handle;
   mojom::ResolveHostParametersPtr optional_parameters =
       mojom::ResolveHostParameters::New();
-  optional_parameters->control_handle = mojo::MakeRequest(&control_handle);
+  optional_parameters->control_handle =
+      control_handle.BindNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::ResolveHostClient> pending_response_client;
   TestResolveHostClient response_client(&pending_response_client, &run_loop);
 
@@ -3115,7 +3122,7 @@ TEST_F(NetworkContextTest, CreateHostResolver_CloseContext) {
   bool control_handle_closed = false;
   auto connection_error_callback =
       base::BindLambdaForTesting([&]() { control_handle_closed = true; });
-  control_handle.set_connection_error_handler(connection_error_callback);
+  control_handle.set_disconnect_handler(connection_error_callback);
   bool resolver_closed = false;
   auto resolver_closed_callback =
       base::BindLambdaForTesting([&]() { resolver_closed = true; });
@@ -4104,7 +4111,7 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
     std::string details;
   };
 
-  TestProxyErrorClient() : binding_(this) {}
+  TestProxyErrorClient() = default;
 
   ~TestProxyErrorClient() override {}
 
@@ -4125,14 +4132,13 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
     return on_pac_script_error_calls_;
   }
 
-  // Creates an InterfacePtrInfo, binds it to |*this| and returns it.
-  mojom::ProxyErrorClientPtrInfo CreateInterfacePtrInfo() {
-    mojom::ProxyErrorClientPtrInfo client_ptr_info;
-
-    binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-    binding_.set_connection_error_handler(base::BindOnce(
+  // Creates an mojo::PendingRemote, binds it to |*this| and returns it.
+  mojo::PendingRemote<mojom::ProxyErrorClient> CreateRemote() {
+    mojo::PendingRemote<mojom::ProxyErrorClient> client_remote =
+        receiver_.BindNewPipeAndPassRemote();
+    receiver_.set_disconnect_handler(base::BindOnce(
         &TestProxyErrorClient::OnMojoPipeError, base::Unretained(this)));
-    return client_ptr_info;
+    return client_remote;
   }
 
   // Runs until the message pipe is closed due to an error.
@@ -4153,7 +4159,7 @@ class TestProxyErrorClient final : public mojom::ProxyErrorClient {
       std::move(quit_closure_for_on_mojo_pipe_error_).Run();
   }
 
-  mojo::Binding<mojom::ProxyErrorClient> binding_;
+  mojo::Receiver<mojom::ProxyErrorClient> receiver_{this};
 
   base::OnceClosure quit_closure_for_on_mojo_pipe_error_;
   bool has_received_mojo_pipe_error_ = false;
@@ -4191,8 +4197,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfProxyConnection) {
   TestProxyErrorClient proxy_error_client;
   mojom::NetworkContextParamsPtr context_params =
       mojom::NetworkContextParams::New();
-  context_params->proxy_error_client =
-      proxy_error_client.CreateInterfacePtrInfo();
+  context_params->proxy_error_client = proxy_error_client.CreateRemote();
   net::ProxyConfig proxy_config;
   // Set the proxy to an unreachable address (host resolution fails).
   proxy_config.proxy_rules().ParseFromString("proxy.bad.dns");
@@ -4253,8 +4258,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotNotifiedOfUnreachableError) {
   // configuration.
   TestProxyErrorClient proxy_error_client;
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->proxy_error_client =
-      proxy_error_client.CreateInterfacePtrInfo();
+  context_params->proxy_error_client = proxy_error_client.CreateRemote();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
 
@@ -4373,8 +4377,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
   TestProxyErrorClient proxy_error_client;
   mojom::NetworkContextParamsPtr context_params =
       mojom::NetworkContextParams::New();
-  context_params->proxy_error_client =
-      proxy_error_client.CreateInterfacePtrInfo();
+  context_params->proxy_error_client = proxy_error_client.CreateRemote();
 
 #if defined(OS_CHROMEOS)
   context_params->dhcp_wpad_url_client =
@@ -4520,6 +4523,7 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
     }
 
     void OnHeadersReceived(const std::string& headers,
+                           const net::IPEndPoint& endpoint,
                            OnHeadersReceivedCallback callback) override {
       auto new_headers =
           base::MakeRefCounted<net::HttpResponseHeaders>(headers);
@@ -4559,6 +4563,11 @@ class TestURLLoaderHeaderClient : public mojom::TrustedURLLoaderHeaderClient {
       int32_t request_id,
       mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
       override {
+    header_client_.Bind(std::move(receiver));
+  }
+  void OnLoaderForCorsPreflightCreated(
+      const ResourceRequest& request,
+      mojo::PendingReceiver<mojom::TrustedHeaderClient> receiver) override {
     header_client_.Bind(std::move(receiver));
   }
 
@@ -4713,6 +4722,7 @@ class HangingTestURLLoaderHeaderClient
     }
 
     void OnHeadersReceived(const std::string& headers,
+                           const net::IPEndPoint& endpoint,
                            OnHeadersReceivedCallback callback) override {
       saved_received_headers_ = headers;
       saved_on_headers_received_callback_ = std::move(callback);
@@ -4765,6 +4775,11 @@ class HangingTestURLLoaderHeaderClient
       int32_t request_id,
       mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
       override {
+    header_client_.Bind(std::move(receiver));
+  }
+  void OnLoaderForCorsPreflightCreated(
+      const ResourceRequest& request,
+      mojo::PendingReceiver<mojom::TrustedHeaderClient> receiver) override {
     header_client_.Bind(std::move(receiver));
   }
 
@@ -4885,7 +4900,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnBeforeSendHeaders) {
 
   // The reported error differs, but eventually URLLoader returns
   // net::ERR_ABORTED once OOR-CORS clean-up is finished.
-  if (features::ShouldEnableOutOfBlinkCors())
+  if (features::ShouldEnableOutOfBlinkCorsForTesting())
     EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
   else
     EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);
@@ -4938,7 +4953,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
 
   // The reported error differs, but eventually URLLoader returns
   // net::ERR_ABORTED once OOR-CORS clean-up is finished.
-  if (features::ShouldEnableOutOfBlinkCors())
+  if (features::ShouldEnableOutOfBlinkCorsForTesting())
     EXPECT_EQ(client.completion_status().error_code, net::ERR_ABORTED);
   else
     EXPECT_EQ(client.completion_status().error_code, net::ERR_FAILED);

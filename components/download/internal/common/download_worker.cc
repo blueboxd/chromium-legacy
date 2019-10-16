@@ -114,7 +114,7 @@ void DownloadWorker::OnUrlDownloadStarted(
     URLLoaderFactoryProvider::URLLoaderFactoryProviderPtr
         url_loader_factory_provider,
     UrlDownloadHandler* downloader,
-    const DownloadUrlParameters::OnStartedCallback& callback) {
+    DownloadUrlParameters::OnStartedCallback callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
 

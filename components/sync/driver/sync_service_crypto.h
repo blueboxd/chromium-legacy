@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine/sync_engine.h"
-#include "google_apis/gaia/core_account_id.h"
 
 namespace syncer {
 
@@ -49,7 +49,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
   bool SetDecryptionPassphrase(const std::string& passphrase);
-  void AddTrustedVaultDecryptionKeys(const CoreAccountId& account_id,
+  void AddTrustedVaultDecryptionKeys(const std::string& gaia_id,
                                      const std::vector<std::string>& keys);
 
   // Returns the actual passphrase type being used for encryption.
@@ -77,7 +77,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
                                base::Time passphrase_time) override;
 
   // Used to provide the engine when it is initialized.
-  void SetSyncEngine(const CoreAccountId& account_id, SyncEngine* engine);
+  void SetSyncEngine(const CoreAccountInfo& account_info, SyncEngine* engine);
 
   // Creates a proxy observer object that will post calls to this thread.
   std::unique_ptr<SyncEncryptionHandler::Observer> GetEncryptionObserverProxy();
@@ -96,6 +96,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     // retrieve trusted vault keys.
     kTrustedVaultKeyRequired,
   };
+
+  // Reads trusted vault keys from the client and feeds them to the sync engine.
+  void FetchTrustedVaultKeys();
 
   // Called at various stages of asynchronously fetching and processing trusted
   // vault encryption keys.
@@ -126,7 +129,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer {
     SyncEngine* engine = nullptr;
 
     // Populated when the engine is initialized.
-    CoreAccountId account_id;
+    CoreAccountInfo account_info;
 
     RequiredUserAction required_user_action = RequiredUserAction::kNone;
 

@@ -40,6 +40,7 @@ namespace net {
 class CookieOptions;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class IPEndPoint;
 class ProxyInfo;
 class URLRequest;
 
@@ -66,6 +67,7 @@ class NET_EXPORT NetworkDelegate {
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      const IPEndPoint& remote_endpoint,
       GURL* allowed_unsafe_redirect_url);
   void NotifyBeforeRedirect(URLRequest* request,
                             const GURL& new_location);
@@ -184,6 +186,7 @@ class NET_EXPORT NetworkDelegate {
       CompletionOnceCallback callback,
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
+      const IPEndPoint& remote_endpoint,
       GURL* allowed_unsafe_redirect_url) = 0;
 
   // Called right after a redirect response code was received. |new_location| is

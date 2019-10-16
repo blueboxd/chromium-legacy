@@ -54,13 +54,13 @@ class RTCRtpTransceiverImplTest : public ::testing::Test {
   // posted to the current thread in the meantime while waiting.
   void SyncWithSignalingThread() const {
     base::RunLoop run_loop;
-    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner() const {
-    return dependency_factory_->GetWebRtcSignalingThread();
+    return dependency_factory_->GetWebRtcSignalingTaskRunner();
   }
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>

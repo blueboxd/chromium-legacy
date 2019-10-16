@@ -105,7 +105,7 @@ class AMPPageLoadMetricsObserver
     page_load_metrics::PageRenderData render_data;
 
     // Whether an AMP document was loaded, based on observed
-    // WebLoadingBehaviorFlags for this frame.
+    // LoadingBehaviorFlags for this frame.
     bool amp_document_loaded = false;
   };
 

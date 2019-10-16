@@ -25,6 +25,7 @@ class HttpTransactionFactory;
 class HttpUserAgentSettings;
 class NetLog;
 class ProxyConfigService;
+class URLRequestContextGetter;
 class URLRequestJobFactory;
 }  // namespace net
 

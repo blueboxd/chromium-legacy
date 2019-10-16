@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -19,7 +20,8 @@ using LoginWebDialogTest = InProcessBrowserTest;
 // Tests that LoginWebDialog is not minimizable.
 IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, CannotMinimize) {
   LoginWebDialog* dialog = new LoginWebDialog(
-      browser()->profile(), nullptr, nullptr, base::string16(), GURL());
+      browser()->profile(), nullptr, browser()->window()->GetNativeWindow(),
+      base::string16(), GURL());
   dialog->Show();
   aura::Window* window = dialog->get_dialog_window_for_test();
   ASSERT_TRUE(window);
@@ -30,7 +32,8 @@ IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, CannotMinimize) {
 // Tests that LoginWebDialog can be closed by 'Shift + BrowserBack' accelerator.
 IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, CloseDialogByAccelerator) {
   LoginWebDialog* dialog = new LoginWebDialog(
-      browser()->profile(), nullptr, nullptr, base::string16(), GURL());
+      browser()->profile(), nullptr, browser()->window()->GetNativeWindow(),
+      base::string16(), GURL());
   dialog->Show();
   gfx::NativeWindow window = dialog->get_dialog_window_for_test();
   ASSERT_TRUE(window);

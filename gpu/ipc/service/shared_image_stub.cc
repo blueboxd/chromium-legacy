@@ -22,12 +22,13 @@ namespace gpu {
 
 SharedImageStub::SharedImageStub(GpuChannel* channel, int32_t route_id)
     : channel_(channel),
+      command_buffer_id_(
+          CommandBufferIdFromChannelAndRoute(channel->client_id(), route_id)),
       sequence_(channel->scheduler()->CreateSequence(SchedulingPriority::kLow)),
       sync_point_client_state_(
           channel->sync_point_manager()->CreateSyncPointClientState(
               CommandBufferNamespace::GPU_IO,
-              CommandBufferIdFromChannelAndRoute(channel->client_id(),
-                                                 route_id),
+              command_buffer_id_,
               sequence_)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "gpu::SharedImageStub", channel_->task_runner());
@@ -440,7 +441,11 @@ void SharedImageStub::OnError() {
 }
 
 void SharedImageStub::TrackMemoryAllocatedChange(uint64_t delta) {
+  uint64_t old_size = size_;
   size_ += delta;
+  channel_->gpu_channel_manager()
+      ->peak_memory_monitor()
+      ->OnMemoryAllocatedChange(command_buffer_id_, old_size, size_);
 }
 
 uint64_t SharedImageStub::GetSize() const {

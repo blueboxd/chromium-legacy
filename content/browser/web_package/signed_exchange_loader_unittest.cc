@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
@@ -181,7 +182,7 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
           nullptr /* reporter */, CreateMockPingLoaderFactory(),
           base::BindRepeating(&SignedExchangeLoaderTest::ThrottlesGetter),
-          base::RepeatingCallback<int(void)>(), nullptr /* metric_recorder */,
+          FrameTreeNode::kFrameTreeNodeInvalidId, nullptr /* metric_recorder */,
           std::string() /* accept_langs */);
 
   EXPECT_CALL(mock_loader, PauseReadingBodyFromNet());

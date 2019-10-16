@@ -6,6 +6,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/visual_properties.h"
+#include "content/common/widget_messages.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/compositor/layer_tree_view.h"
@@ -27,8 +28,11 @@ class RenderWidgetTest : public RenderViewTest {
     return static_cast<RenderViewImpl*>(view_)->GetWidget();
   }
 
-  void OnSynchronizeVisualProperties(const VisualProperties& params) {
-    widget()->SynchronizeVisualPropertiesFromRenderView(params);
+  void OnSynchronizeVisualProperties(
+      const VisualProperties& visual_properties) {
+    WidgetMsg_UpdateVisualProperties msg(widget()->routing_id(),
+                                         visual_properties);
+    widget()->OnMessageReceived(msg);
   }
 
   void GetCompositionRange(gfx::Range* range) {
@@ -234,7 +238,11 @@ TEST_F(RenderWidgetTest, ActivePinchGestureUpdatesLayerTreeHost) {
 
   // Sync visual properties on a mainframe RenderWidget.
   visual_properties.is_pinch_gesture_active = true;
-  widget()->SynchronizeVisualPropertiesFromRenderView(visual_properties);
+  {
+    WidgetMsg_UpdateVisualProperties msg(widget()->routing_id(),
+                                         visual_properties);
+    widget()->OnMessageReceived(msg);
+  }
   // We do not expect the |is_pinch_gesture_active| value to propagate to the
   // LayerTreeHost for the main-frame. Since GesturePinch events are handled
   // directly by the layer tree for the main frame, it already knows whether or

@@ -48,7 +48,6 @@ class NativeFileSystemRestrictedDirectoryDialogView
   // views::DialogDelegateView:
   base::string16 GetWindowTitle() const override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
   bool Accept() override;
   bool Cancel() override;
@@ -62,7 +61,7 @@ class NativeFileSystemRestrictedDirectoryDialogView
       bool is_directory,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback);
 
-  bool is_directory_;
+  const bool is_directory_;
   base::OnceCallback<void(SensitiveDirectoryResult)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemRestrictedDirectoryDialogView);

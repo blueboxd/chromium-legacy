@@ -455,9 +455,9 @@ void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
-const download::DownloadUrlParameters::OnStartedCallback
+download::DownloadUrlParameters::OnStartedCallback
 DownloadTestItemCreationObserver::callback() {
-  return base::Bind(
+  return base::BindOnce(
       &DownloadTestItemCreationObserver::DownloadItemCreationCallback, this);
 }
 

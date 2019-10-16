@@ -32,7 +32,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+    int frame_tree_node_id,
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -46,7 +46,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     const std::string& accept_langs,
     RecursivePrefetchTokenGenerator recursive_prefetch_token_generator)
-    : frame_tree_node_id_getter_(frame_tree_node_id_getter),
+    : frame_tree_node_id_(frame_tree_node_id),
       resource_request_(resource_request),
       network_loader_factory_(std::move(network_loader_factory)),
       client_binding_(this),
@@ -158,7 +158,7 @@ void PrefetchURLLoader::OnReceiveResponse(
     // network. (Until |this| calls the handler's FollowRedirect.)
     signed_exchange_prefetch_handler_ =
         std::make_unique<SignedExchangePrefetchHandler>(
-            frame_tree_node_id_getter_, resource_request_, response,
+            frame_tree_node_id_, resource_request_, response,
             mojo::ScopedDataPipeConsumerHandle(), std::move(loader_),
             client_binding_.Unbind(), network_loader_factory_,
             url_loader_throttles_getter_, this,

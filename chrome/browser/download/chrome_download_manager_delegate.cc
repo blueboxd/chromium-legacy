@@ -280,6 +280,12 @@ void ConnectToQuarantineService(
                               std::move(receiver));
 }
 
+bool IsDownloadTooLargeOrEncrypted(download::DownloadDangerType danger_type) {
+  return (danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
+          danger_type ==
+              download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED);
+}
+
 }  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
@@ -448,7 +454,7 @@ void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
 
 bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     DownloadItem* item,
-    const base::Closure& internal_complete_callback) {
+    base::OnceClosure internal_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   if (!download_prefs_->safebrowsing_for_trusted_sources_enabled() &&
@@ -465,7 +471,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
       DVLOG(2) << __func__ << "() Start SB download check for download = "
                << item->DebugString(false);
       state = new SafeBrowsingState();
-      state->set_callback(internal_complete_callback);
+      state->set_callback(std::move(internal_complete_callback));
       item->SetUserData(&SafeBrowsingState::kSafeBrowsingUserDataKey,
                         base::WrapUnique(state));
       service->CheckClientDownload(
@@ -499,12 +505,12 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
             download::DOWNLOAD_INTERRUPT_REASON_NONE);
       }
       base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     internal_complete_callback);
+                     std::move(internal_complete_callback));
       return false;
     }
   } else if (!state->is_complete()) {
     // Don't complete the download until we have an answer.
-    state->set_callback(internal_complete_callback);
+    state->set_callback(std::move(internal_complete_callback));
     return false;
   }
 
@@ -514,20 +520,29 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
 
 void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
     uint32_t download_id,
-    const base::Closure& user_complete_callback) {
+    base::OnceClosure user_complete_callback) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item)
     return;
-  if (ShouldCompleteDownload(item, user_complete_callback))
-    user_complete_callback.Run();
+  // This should be called only once.
+  base::RepeatingClosure callback = base::BindRepeating(
+      [](base::OnceClosure callback) { std::move(callback).Run(); },
+      base::Passed(&user_complete_callback));
+  if (ShouldCompleteDownload(item, callback)) {
+    // |callback| should not have run when ShouldCompleteDownload() returns
+    // true.
+    std::move(callback).Run();
+  }
 }
 
 bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
     DownloadItem* item,
-    const base::Closure& user_complete_callback) {
-  return IsDownloadReadyForCompletion(item, base::Bind(
-      &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal,
-      weak_ptr_factory_.GetWeakPtr(), item->GetId(), user_complete_callback));
+    base::OnceClosure user_complete_callback) {
+  return IsDownloadReadyForCompletion(
+      item, base::BindOnce(
+                &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal,
+                weak_ptr_factory_.GetWeakPtr(), item->GetId(),
+                std::move(user_complete_callback)));
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(
@@ -1135,6 +1150,9 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
       case safe_browsing::DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED:
         danger_type = download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED;
         break;
+      case safe_browsing::DownloadCheckResult::BLOCKED_TOO_LARGE:
+        danger_type = download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE;
+        break;
     }
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
@@ -1151,11 +1169,14 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         item->OnAsyncScanningCompleted(danger_type);
       }
     } else if (ShouldBlockFile(danger_type, item)) {
+      // Specifying a dangerous type here would take precedence over the
+      // blocking of the file. For BLOCKED_TOO_LARGE and
+      // BLOCKED_PASSWORD_PROTECTED, we want to display more clear UX, so
+      // allow those danger types.
+      if (!IsDownloadTooLargeOrEncrypted(danger_type))
+        danger_type = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
       item->OnContentCheckCompleted(
-          // Specifying a dangerous type here would take precedence over the
-          // blocking of the file.
-          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-          download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+          danger_type, download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     } else {
       item->OnContentCheckCompleted(danger_type,
                                     download::DOWNLOAD_INTERRUPT_REASON_NONE);
@@ -1265,6 +1286,9 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
   DownloadPrefs::DownloadRestriction download_restriction =
       download_prefs_->download_restriction();
 
+  if (IsDownloadTooLargeOrEncrypted(danger_type))
+    return true;
+
   if (item &&
       base::FeatureList::IsEnabled(features::kDisallowUnsafeHttpDownloads)) {
     // Check field trial for an override of the default unsafe mime-type.
@@ -1312,17 +1336,6 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
       }
     }
   }
-
-  if (danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED)
-    return true;
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  if (item && item->GetTotalBytes() >= 0 &&
-      safe_browsing::BinaryUploadService::ShouldBlockFileSize(
-          size_t(item->GetTotalBytes()))) {
-    return true;
-  }
-#endif
 
   switch (download_restriction) {
     case (DownloadPrefs::DownloadRestriction::NONE):

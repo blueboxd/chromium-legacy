@@ -166,7 +166,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(
   webrtc::AudioSourceInterface* source_interface = nullptr;
   local_track_audio_sink_.reset(new blink::WebRtcAudioSink(
       web_track_.Id().Utf8(), source_interface,
-      factory_->GetWebRtcSignalingThread(), main_thread_));
+      factory_->GetWebRtcSignalingTaskRunner(), main_thread_));
 
   if (auto* media_stream_source = blink::ProcessedLocalAudioSource::From(
           blink::MediaStreamAudioSource::From(web_track_.Source()))) {
@@ -300,7 +300,7 @@ void WebRtcMediaStreamTrackAdapter::DisposeRemoteAudioTrack() {
   DCHECK(remote_audio_track_adapter_);
   DCHECK_EQ(web_track_.Source().GetType(),
             blink::WebMediaStreamSource::kTypeAudio);
-  factory_->GetWebRtcSignalingThread()->PostTask(
+  factory_->GetWebRtcSignalingTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcMediaStreamTrackAdapter::
                          UnregisterRemoteAudioTrackAdapterOnSignalingThread,

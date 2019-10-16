@@ -15,6 +15,10 @@ GpuHostImplTestApi::GpuHostImplTestApi(GpuHostImpl* gpu_host)
 
 GpuHostImplTestApi::~GpuHostImplTestApi() = default;
 
+void GpuHostImplTestApi::FlushRemoteForTesting() {
+  gpu_host_->gpu_service_remote_.FlushForTesting();
+}
+
 void GpuHostImplTestApi::SetGpuService(
     mojo::Remote<mojom::GpuService> gpu_service) {
   gpu_host_->gpu_service_remote_ = std::move(gpu_service);

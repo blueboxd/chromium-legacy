@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,7 +38,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/runtime_data.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -91,11 +91,12 @@ bool ParseCookieLifetime(const net::ParsedCookie& cookie,
   return false;
 }
 
-std::set<std::string> GetExtraHeaderRequestHeaders() {
+std::set<std::string> GetExtraHeaderRequestHeaders(
+    bool is_out_of_blink_cors_enabled) {
   std::set<std::string> headers(
       {"accept-encoding", "accept-language", "cookie", "referer"});
 
-  if (network::features::ShouldEnableOutOfBlinkCors())
+  if (is_out_of_blink_cors_enabled)
     headers.insert("origin");
 
   return headers;
@@ -367,12 +368,14 @@ IgnoredAction::IgnoredAction(extensions::ExtensionId extension_id,
 
 IgnoredAction::IgnoredAction(IgnoredAction&& rhs) = default;
 
-bool ExtraInfoSpec::InitFromValue(const base::ListValue& value,
+bool ExtraInfoSpec::InitFromValue(content::BrowserContext* browser_context,
+                                  const base::ListValue& value,
                                   int* extra_info_spec) {
-  *extra_info_spec = base::FeatureList::IsEnabled(
-                         extensions_features::kForceWebRequestExtraHeaders)
-                         ? EXTRA_HEADERS
-                         : 0;
+  *extra_info_spec =
+      extensions::ExtensionsBrowserClient::Get()
+              ->ShouldForceWebRequestExtraHeaders(browser_context)
+          ? EXTRA_HEADERS
+          : 0;
   for (size_t i = 0; i < value.GetSize(); ++i) {
     std::string str;
     if (!value.GetString(i, &str))
@@ -573,6 +576,7 @@ EventResponseDelta CalculateOnBeforeRequestDelta(
 }
 
 EventResponseDelta CalculateOnBeforeSendHeadersDelta(
+    content::BrowserContext* browser_context,
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
@@ -589,8 +593,10 @@ EventResponseDelta CalculateOnBeforeSendHeadersDelta(
     {
       net::HttpRequestHeaders::Iterator i(*old_headers);
       while (i.GetNext()) {
-        if (ShouldHideRequestHeader(extra_info_spec, i.name()))
+        if (ShouldHideRequestHeader(browser_context, extra_info_spec,
+                                    i.name())) {
           continue;
+        }
         if (!new_headers->HasHeader(i.name())) {
           result.deleted_request_headers.push_back(i.name());
         }
@@ -601,8 +607,10 @@ EventResponseDelta CalculateOnBeforeSendHeadersDelta(
     {
       net::HttpRequestHeaders::Iterator i(*new_headers);
       while (i.GetNext()) {
-        if (ShouldHideRequestHeader(extra_info_spec, i.name()))
+        if (ShouldHideRequestHeader(browser_context, extra_info_spec,
+                                    i.name())) {
           continue;
+        }
         std::string value;
         if (!old_headers->GetHeader(i.name(), &value) || i.value() != value) {
           result.modified_request_headers.SetHeader(i.name(), i.value());
@@ -1501,12 +1509,21 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
   return header;
 }
 
-bool ShouldHideRequestHeader(int extra_info_spec, const std::string& name) {
-  static const std::set<std::string> kRequestHeaders =
-      GetExtraHeaderRequestHeaders();
+bool ShouldHideRequestHeader(content::BrowserContext* browser_context,
+                             int extra_info_spec,
+                             const std::string& name) {
+  static const std::set<std::string> kRequestHeadersForOutOfBlinkCors =
+      GetExtraHeaderRequestHeaders(/*is_out_of_blink_cors_enabled=*/true);
+  static const std::set<std::string> kRequestHeadersForBlinkCors =
+      GetExtraHeaderRequestHeaders(/*is_out_of_blink_cors_enabled=*/false);
+  bool is_out_of_blink_cors_enabled =
+      browser_context && browser_context->ShouldEnableOutOfBlinkCors();
+  const std::set<std::string>& request_headers =
+      is_out_of_blink_cors_enabled ? kRequestHeadersForOutOfBlinkCors
+                                   : kRequestHeadersForBlinkCors;
   return !(extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS) &&
-         kRequestHeaders.find(base::ToLowerASCII(name)) !=
-             kRequestHeaders.end();
+         request_headers.find(base::ToLowerASCII(name)) !=
+             request_headers.end();
 }
 
 bool ShouldHideResponseHeader(int extra_info_spec, const std::string& name) {

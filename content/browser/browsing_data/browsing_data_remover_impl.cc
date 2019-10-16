@@ -36,6 +36,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_util.h"
 
 using base::UserMetricsAction;
 

@@ -1517,7 +1517,8 @@ class AppCacheStorageImplTest : public testing::Test {
     void LogMessage(blink::mojom::ConsoleMessageLevel log_level,
                     const std::string& message) override {}
     void SetSubresourceFactory(
-        network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            url_loader_factory) override {}
 
     bool error_event_was_raised_;
   };

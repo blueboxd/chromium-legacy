@@ -36,6 +36,12 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
       app_modal_(app_modal),
       callback_(callback) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -74,14 +80,6 @@ gfx::Size DownloadInProgressDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-base::string16 DownloadInProgressDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK
-          ? IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON
-          : IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON);
 }
 
 bool DownloadInProgressDialogView::Cancel() {

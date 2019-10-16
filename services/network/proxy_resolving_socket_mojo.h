@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -41,7 +42,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketMojo
   void UpgradeToTLS(
       const net::HostPortPair& host_port_pair,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::TLSClientSocketRequest request,
+      mojo::PendingReceiver<mojom::TLSClientSocket> receiver,
       mojo::PendingRemote<mojom::SocketObserver> observer,
       mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback) override;
 

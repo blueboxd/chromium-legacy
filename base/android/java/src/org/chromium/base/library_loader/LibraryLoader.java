@@ -403,9 +403,6 @@ public class LibraryLoader {
 
             mLoaded = true;
         } catch (UnsatisfiedLinkError e) {
-            // Callers typically call System.exit() when catching this exception, make sure that it
-            // doesn't get lost.
-            Log.e(TAG, "Unable to load library.", e);
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED, e);
         }
     }

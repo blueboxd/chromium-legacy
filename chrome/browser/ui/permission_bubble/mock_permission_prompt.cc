@@ -27,11 +27,12 @@ gfx::NativeWindow MockPermissionPrompt::GetNativeWindow() {
   return nullptr;
 }
 
-bool MockPermissionPrompt::ShouldDestroyOnTabSwitching() {
+PermissionPrompt::TabSwitchingBehavior
+MockPermissionPrompt::GetTabSwitchingBehavior() {
 #if defined(OS_ANDROID)
-  return false;
+  return TabSwitchingBehavior::kKeepPromptAlive;
 #else
-  return true;
+  return TabSwitchingBehavior::kDestroyPromptButKeepRequestPending;
 #endif
 }
 

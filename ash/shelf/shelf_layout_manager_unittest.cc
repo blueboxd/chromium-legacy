@@ -3252,7 +3252,6 @@ TEST_P(HotseatShelfLayoutManagerTest, GoingToTabletModeNoWindows) {
 
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
-  EXPECT_TRUE(GetShelfLayoutManager()->is_app_list_visible());
 }
 
 // Tests that the hotseat is kHidden when entering tablet mode with a window.
@@ -3267,7 +3266,6 @@ TEST_P(HotseatShelfLayoutManagerTest, GoingToTabletModeWithWindows) {
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(false);
-  EXPECT_FALSE(GetShelfLayoutManager()->is_app_list_visible());
 }
 
 // Tests that closing a window which was opened prior to entering tablet mode
@@ -3286,7 +3284,6 @@ TEST_P(HotseatShelfLayoutManagerTest, ClosingLastWindowInTabletMode) {
 
   EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(true);
-  EXPECT_TRUE(GetShelfLayoutManager()->is_app_list_visible());
 }
 
 // Tests that a window that is created after going to tablet mode, then closed,
@@ -3302,14 +3299,12 @@ TEST_P(HotseatShelfLayoutManagerTest, CloseLastWindowOpenedInTabletMode) {
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
   GetAppListTestHelper()->CheckVisibility(false);
-  EXPECT_FALSE(GetShelfLayoutManager()->is_app_list_visible());
 
   // Hide the window, the hotseat should be kShown, and the home launcher should
   // be visible.
   window->Hide();
 
   EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
-  EXPECT_TRUE(GetShelfLayoutManager()->is_app_list_visible());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
@@ -3326,20 +3321,17 @@ TEST_F(HotseatShelfLayoutManagerTest, ShowingAndHidingAutohiddenShelf) {
 
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
-  EXPECT_FALSE(GetShelfLayoutManager()->is_app_list_visible());
 
   SwipeDownOnShelf();
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
-  EXPECT_FALSE(GetShelfLayoutManager()->is_app_list_visible());
 
   // Swipe down again, nothing should change.
   SwipeDownOnShelf();
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
-  EXPECT_FALSE(GetShelfLayoutManager()->is_app_list_visible());
 }
 
 // Tests that swiping up on the shelf background shows the home launcher.
@@ -3356,7 +3348,6 @@ TEST_P(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
   if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
-  EXPECT_FALSE(GetShelfLayoutManager()->is_app_list_visible());
 
   // Swipe up again on the shelf background to show the home launcher.
   gfx::Rect display_bounds =
@@ -3371,7 +3362,6 @@ TEST_P(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
   if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
-  EXPECT_TRUE(GetShelfLayoutManager()->is_app_list_visible());
 }
 
 // Tests that swiping up on the hotseat shows the home launcher.
@@ -3389,7 +3379,6 @@ TEST_P(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
   if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
-  EXPECT_FALSE(GetShelfLayoutManager()->is_app_list_visible());
 
   // Swipe up on the Hotseat (parent of ShelfView) to show the HomeLauncher.
   gfx::Point start(GetPrimaryShelf()
@@ -3406,7 +3395,6 @@ TEST_P(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(HotseatState::kShown, GetShelfLayoutManager()->hotseat_state());
   if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
-  EXPECT_TRUE(GetShelfLayoutManager()->is_app_list_visible());
 }
 
 // Tests that tapping an active window with an extended hotseat results in a

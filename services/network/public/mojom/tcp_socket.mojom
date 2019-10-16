@@ -77,7 +77,7 @@ interface TCPConnectedSocket {
   UpgradeToTLS(HostPortPair host_port_pair,
                TLSClientSocketOptions? options,
                MutableNetworkTrafficAnnotationTag traffic_annotation,
-               TLSClientSocket& request,
+               pending_receiver<TLSClientSocket> receiver,
                pending_remote<SocketObserver>? observer)
       => (int32 net_error,
           handle<data_pipe_consumer>? receive_stream,

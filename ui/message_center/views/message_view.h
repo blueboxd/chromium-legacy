@@ -121,7 +121,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnBlur() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void RemovedFromWidget() override;
@@ -166,11 +165,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   // Changes the background color and schedules a paint.
   virtual void SetDrawBackgroundAsActive(bool active);
 
-  // Update the focus ring highlight for the notification.
-  // Adds a highlight path based on the notification's bounds
-  // and corner radii.
-  void UpdateFocusHighlight();
-
   void SetCornerRadius(int top_radius, int bottom_radius);
 
   views::ScrollView* scroller() { return scroller_; }
@@ -179,6 +173,12 @@ class MESSAGE_CENTER_EXPORT MessageView
 
  private:
   friend class test::MessagePopupCollectionTest;
+
+  class HighlightPathGenerator;
+
+  // Gets the highlight path for the notification based on bounds and corner
+  // radii.
+  SkPath GetHighlightPath() const;
 
   // Returns the ideal slide mode by calculating the current status.
   views::SlideOutController::SlideMode CalculateSlideMode() const;

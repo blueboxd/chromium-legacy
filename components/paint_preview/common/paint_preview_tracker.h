@@ -23,17 +23,22 @@
 
 namespace paint_preview {
 
-// Tracks metadata for a Paint Preview.
+// Tracks metadata for a Paint Preview. Contains all the data required to
+// produce a PaintPreviewFrameProto.
 class PaintPreviewTracker {
  public:
-  PaintPreviewTracker();
+  PaintPreviewTracker(const base::UnguessableToken& guid,
+                      int routing_id,
+                      bool is_main_frame);
   ~PaintPreviewTracker();
 
-  // Data Collection ----------------------------------------------------------
+  // Getters ------------------------------------------------------------------
 
-  // Use base::UnguessableToken as a GUID that identifies the paint preview.
-  void SetGuid(base::UnguessableToken guid) { guid_ = guid; }
   base::UnguessableToken Guid() const { return guid_; }
+  int RoutingId() const { return routing_id_; }
+  bool IsMainFrame() const { return is_main_frame_; }
+
+  // Data Collection ----------------------------------------------------------
 
   // Creates a placeholder SkPicture for an OOP subframe located at |rect|
   // mapped to the |routing_id| of OOP RenderFrame. Returns the content id of
@@ -56,6 +61,7 @@ class PaintPreviewTracker {
   void CustomDataToSkPictureCallback(SkCanvas* canvas, uint32_t content_id);
 
   // Expose internal maps for use in MakeSerialProcs().
+  // NOTE: Cannot be const due to how SkPicture procs work.
   PictureSerializationContext* GetPictureSerializationContext() {
     return &content_id_to_proxy_id_;
   }
@@ -65,7 +71,10 @@ class PaintPreviewTracker {
   const std::vector<LinkDataProto>& GetLinks() const { return links_; }
 
  private:
-  base::UnguessableToken guid_;
+  const base::UnguessableToken guid_;
+  const int routing_id_;
+  const bool is_main_frame_;
+
   std::vector<LinkDataProto> links_;
   PictureSerializationContext content_id_to_proxy_id_;
   TypefaceUsageMap typeface_glyph_usage_;

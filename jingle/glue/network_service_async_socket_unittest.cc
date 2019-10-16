@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -165,7 +166,7 @@ class MockProxyResolvingSocket : public network::mojom::ProxyResolvingSocket {
   void UpgradeToTLS(
       const net::HostPortPair& host_port_pair,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::TLSClientSocketRequest request,
+      mojo::PendingReceiver<network::mojom::TLSClientSocket> receiver,
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
       network::mojom::ProxyResolvingSocket::UpgradeToTLSCallback callback)
       override {

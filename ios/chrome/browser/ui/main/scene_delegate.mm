@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/main/scene_delegate.h"
 
+#include "base/mac/foundation_util.h"
+#import "ios/chrome/app/chrome_overlay_window.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -18,7 +21,18 @@
   return _sceneState;
 }
 
-#pragma mark - UISceneDelegate
+#pragma mark - UIWindowSceneDelegate
+
+// This getter is called when the SceneDelegate is created. Returning a
+// ChromeOverlayWindow allows UIKit to use that as the main window for this
+// scene.
+- (UIWindow*)window {
+  if (!_window) {
+    // Sizing of the window is handled by UIKit.
+    _window = [[ChromeOverlayWindow alloc] init];
+  }
+  return _window;
+}
 
 #pragma mark Connecting and Disconnecting the Scene
 
@@ -26,6 +40,7 @@
     willConnectToSession:(UISceneSession*)session
                  options:(UISceneConnectionOptions*)connectionOptions
     API_AVAILABLE(ios(13)) {
+  self.sceneState.scene = base::mac::ObjCCastStrict<UIWindowScene>(scene);
   self.sceneState.activationLevel = SceneActivationLevelBackground;
 }
 

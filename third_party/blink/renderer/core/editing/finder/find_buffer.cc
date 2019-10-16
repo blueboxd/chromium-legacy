@@ -105,8 +105,8 @@ bool ShouldIgnoreContents(const Node& node) {
          IsA<HTMLIFrameElement>(*element) || IsHTMLImageElement(*element) ||
          IsA<HTMLLegendElement>(*element) || IsA<HTMLMeterElement>(*element) ||
          IsHTMLObjectElement(*element) || IsA<HTMLProgressElement>(*element) ||
-         (IsHTMLSelectElement(*element) &&
-          ToHTMLSelectElement(*element).UsesMenuList()) ||
+         (IsA<HTMLSelectElement>(*element) &&
+          To<HTMLSelectElement>(*element).UsesMenuList()) ||
          IsHTMLStyleElement(*element) || IsHTMLScriptElement(*element) ||
          IsHTMLVideoElement(*element) || IsA<HTMLAudioElement>(*element) ||
          (element->GetDisplayLockContext() &&

@@ -87,7 +87,7 @@ class ChromeDownloadManagerDelegate
       const content::DownloadTargetCallback& callback) override;
   bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
   bool ShouldCompleteDownload(download::DownloadItem* item,
-                              const base::Closure& complete_callback) override;
+                              base::OnceClosure complete_callback) override;
   bool ShouldOpenDownload(
       download::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;
@@ -228,10 +228,9 @@ class ChromeDownloadManagerDelegate
   // Internal gateways for ShouldCompleteDownload().
   bool IsDownloadReadyForCompletion(
       download::DownloadItem* item,
-      const base::Closure& internal_complete_callback);
-  void ShouldCompleteDownloadInternal(
-      uint32_t download_id,
-      const base::Closure& user_complete_callback);
+      base::OnceClosure internal_complete_callback);
+  void ShouldCompleteDownloadInternal(uint32_t download_id,
+                                      base::OnceClosure user_complete_callback);
 
   // Sets the next download id based on download database records, and runs all
   // cached id callbacks.

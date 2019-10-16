@@ -88,9 +88,13 @@ sync_pb::NigoriKey CryptographerImpl::ExportDefaultKey() const {
   return key_bag_.ExportKey(default_encryption_key_name_);
 }
 
-std::unique_ptr<Cryptographer> CryptographerImpl::Clone() const {
+std::unique_ptr<CryptographerImpl> CryptographerImpl::CloneImpl() const {
   return base::WrapUnique(
       new CryptographerImpl(key_bag_.Clone(), default_encryption_key_name_));
+}
+
+std::unique_ptr<Cryptographer> CryptographerImpl::Clone() const {
+  return CloneImpl();
 }
 
 bool CryptographerImpl::CanEncrypt() const {

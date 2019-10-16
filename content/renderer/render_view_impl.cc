@@ -1266,8 +1266,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateVisualProperties,
-                        OnUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
@@ -2005,15 +2003,6 @@ void RenderViewImpl::OnPageWasShown() {
 #endif
 
   ApplyPageHidden(/*hidden=*/false, /*initial_setting=*/false);
-}
-
-void RenderViewImpl::OnUpdateVisualProperties(
-    const VisualProperties& visual_properties,
-    int widget_routing_id) {
-  // The widget may have been destroyed while the IPC was in flight.
-  RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
-  if (widget && !widget->IsUndeadOrProvisional())
-    widget->SynchronizeVisualPropertiesFromRenderView(visual_properties);
 }
 
 void RenderViewImpl::OnUpdatePageVisualProperties(

@@ -11,7 +11,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -75,26 +74,6 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
         } else {
             mBottomSheetController.hideContent(this, false);
         }
-    }
-
-    /**
-     * Renders the given secure url into the subtitle.
-     * @param formattedUrl A {@link String} containing a URL already formatted to display.
-     */
-    void setSecureSubtitle(String formattedUrl) {
-        TextView sheetSubtitleText = mContentView.findViewById(R.id.touch_to_fill_sheet_subtitle);
-        sheetSubtitleText.setText(formattedUrl);
-    }
-
-    /**
-     * Renders the given non-secure url into the subtitle.
-     * @param formattedUrl A {@link String} containing a URL already formatted to display.
-     */
-    void setNonSecureSubtitle(String formattedUrl) {
-        TextView sheetSubtitleText = mContentView.findViewById(R.id.touch_to_fill_sheet_subtitle);
-        String subtitleText = String.format(
-                mContext.getString(R.string.touch_to_fill_sheet_subtitle_not_secure), formattedUrl);
-        sheetSubtitleText.setText(subtitleText);
     }
 
     void setSheetItemListAdapter(RecyclerView.Adapter adapter) {

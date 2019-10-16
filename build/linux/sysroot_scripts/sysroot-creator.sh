@@ -104,7 +104,10 @@ DownloadOrCopyNonUniqueFilename() {
   local hash="$(echo "$url" | sha256sum | cut -d' ' -f1)"
 
   DownloadOrCopy "${url}" "${dest}.${hash}"
-  cp "${dest}.${hash}" "$dest"
+  # cp the file to prevent having to redownload it, but mv it to the
+  # final location so that it's atomic.
+  cp "${dest}.${hash}" "${dest}.$$"
+  mv "${dest}.$$" "${dest}"
 }
 
 DownloadOrCopy() {
@@ -119,10 +122,25 @@ DownloadOrCopy() {
     SubBanner "downloading from $1 -> $2"
     # Appending the "$$" shell pid is necessary here to prevent concurrent
     # instances of sysroot-creator.sh from trying to write to the same file.
-    # --create-dirs is added in case there are slashes in the filename, as can
-    # happen with the "debian/security" release class.
-    curl -L "$1" --create-dirs -o "${2}.partial.$$"
-    mv "${2}.partial.$$" $2
+    local temp_file="${2}.partial.$$"
+    # curl --retry doesn't retry when the page gives a 4XX error, so we need to
+    # manually rerun.
+    for i in {1..10}; do
+      # --create-dirs is added in case there are slashes in the filename, as can
+      # happen with the "debian/security" release class.
+      local http_code=$(curl -L "$1" --create-dirs -o "${temp_file}" \
+                        -w "%{http_code}")
+      if [ ${http_code} -eq 200 ]; then
+        break
+      fi
+      echo "Bad HTTP code ${http_code} when downloading $1"
+      rm -f "${temp_file}"
+      sleep $i
+    done
+    if [ ! -f "${temp_file}" ]; then
+      exit 1
+    fi
+    mv "${temp_file}" $2
   else
     SubBanner "copying from $1"
     cp "$1" "$2"
@@ -240,7 +258,6 @@ GeneratePackageListCommon() {
   local packages="$3"
 
   local dists="${DIST} ${DIST_UPDATES:-}"
-  local repos="main ${REPO_EXTRA:-}"
 
   local list_base="${BUILD_DIR}/Packages.${DIST}_${arch}"
   > "${list_base}"  # Create (or truncate) a zero-length file.
@@ -337,12 +354,27 @@ HacksAndPatchesCommon() {
   nm -D --defined-only --with-symbol-versions "${libc_so}" | \
     "${SCRIPT_DIR}/find_incompatible_glibc_symbols.py" >> "${glob_h}"
 
+  # fcntl64() was introduced in glibc 2.28.  Make sure to use fcntl() instead.
+  local fcntl_h="${INSTALL_ROOT}/usr/include/fcntl.h"
+  sed -i '{N; s/#ifndef \(__USE_FILE_OFFSET64\nextern int fcntl\)/#ifdef \1/}' \
+      "${fcntl_h}"
+  # On i386, fcntl() was updated in glibc 2.28.
+  nm -D --defined-only --with-symbol-versions "${libc_so}" | \
+    "${SCRIPT_DIR}/find_incompatible_glibc_symbols.py" >> "${fcntl_h}"
+
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig scripts"
   mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
   mv ${INSTALL_ROOT}/usr/lib/${arch}-${os}/pkgconfig/* \
       ${INSTALL_ROOT}/usr/lib/pkgconfig
+
+  # Temporary workaround for invalid implicit conversion from void* in pipewire.
+  # This is already fixed upstream in [1], so this can be removed once it rolls
+  # into Debian.
+  # [1] https://github.com/PipeWire/pipewire/commit/371da358d1580dc06218d18a12a99611cac39e4e
+  local pipewire_utils_h="${INSTALL_ROOT}/usr/include/pipewire/utils.h"
+  sed -i 's/malloc/(struct spa_pod*)malloc/' "${pipewire_utils_h}"
 }
 
 

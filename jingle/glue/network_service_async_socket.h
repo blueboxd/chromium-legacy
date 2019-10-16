@@ -20,6 +20,7 @@
 #include "jingle/glue/network_service_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/host_port_pair.h"
@@ -211,7 +212,7 @@ class NetworkServiceAsyncSocket : public jingle_xmpp::AsyncSocket,
   // exists.
   network::mojom::ProxyResolvingSocketPtr socket_;
   // TLS socket, if StartTls has been called.
-  network::mojom::TLSClientSocketPtr tls_socket_;
+  mojo::Remote<network::mojom::TLSClientSocket> tls_socket_;
 
   // Used to route error notifications here.
   mojo::Receiver<network::mojom::SocketObserver> socket_observer_receiver_{

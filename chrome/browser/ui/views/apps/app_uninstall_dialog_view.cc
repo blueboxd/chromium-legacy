@@ -47,6 +47,10 @@ AppUninstallDialogView::AppUninstallDialogView(
     apps::UninstallDialog* uninstall_dialog)
     : apps::UninstallDialog::UiBase(image, uninstall_dialog),
       BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -91,12 +95,6 @@ gfx::Size AppUninstallDialogView::CalculatePreferredSize() const {
   return gfx::Size(default_width, GetHeightForWidth(default_width));
 }
 
-base::string16 AppUninstallDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_CANCEL ? cancel_button_text_
-                                            : confirm_button_text_;
-}
-
 ui::ModalType AppUninstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -138,9 +136,6 @@ void AppUninstallDialogView::InitializeViewForExtension(
   window_title_ =
       l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
                                  base::UTF8ToUTF16(extension->name()));
-
-  confirm_button_text_ =
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
 
   if (extensions::ManifestURL::UpdatesFromGallery(extension)) {
     auto report_abuse_checkbox = std::make_unique<views::Checkbox>(
@@ -185,9 +180,11 @@ void AppUninstallDialogView::InitializeViewForArcApp(
         IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING);
   }
 
-  confirm_button_text_ = l10n_util::GetStringUTF16(
-      app_info->shortcut ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON
-                         : IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON);
+  if (!app_info->shortcut) {
+    DialogDelegate::set_button_label(
+        ui::DIALOG_BUTTON_OK,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
+  }
 
   auto* text_container = AddChildView(std::make_unique<views::View>());
   auto* text_container_layout =
@@ -207,8 +204,6 @@ void AppUninstallDialogView::InitializeViewForArcApp(
 void AppUninstallDialogView::InitializeView(Profile* profile,
                                             apps::mojom::AppType app_type,
                                             const std::string& app_id) {
-  cancel_button_text_ = l10n_util::GetStringUTF16(IDS_CANCEL);
-
   switch (app_type) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:

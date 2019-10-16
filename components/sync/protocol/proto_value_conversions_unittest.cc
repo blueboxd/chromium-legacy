@@ -25,6 +25,8 @@
 #include "components/sync/protocol/managed_user_setting_specifics.pb.h"
 #include "components/sync/protocol/managed_user_whitelist_specifics.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
+#include "components/sync/protocol/os_preference_specifics.pb.h"
+#include "components/sync/protocol/os_priority_preference_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
@@ -56,7 +58,7 @@ namespace {
 
 DEFINE_SPECIFICS_TO_VALUE_TEST(encrypted)
 
-static_assert(39 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new field, add a DEFINE_SPECIFICS_TO_VALUE_TEST "
               "for your field below, and optionally a test for the specific "
               "conversions.");
@@ -81,6 +83,8 @@ DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_setting)
 DEFINE_SPECIFICS_TO_VALUE_TEST(managed_user_whitelist)
 DEFINE_SPECIFICS_TO_VALUE_TEST(mountain_share)
 DEFINE_SPECIFICS_TO_VALUE_TEST(nigori)
+DEFINE_SPECIFICS_TO_VALUE_TEST(os_preference)
+DEFINE_SPECIFICS_TO_VALUE_TEST(os_priority_preference)
 DEFINE_SPECIFICS_TO_VALUE_TEST(password)
 DEFINE_SPECIFICS_TO_VALUE_TEST(preference)
 DEFINE_SPECIFICS_TO_VALUE_TEST(printer)

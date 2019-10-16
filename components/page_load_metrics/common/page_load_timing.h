@@ -8,7 +8,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
-#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 
 namespace page_load_metrics {
 

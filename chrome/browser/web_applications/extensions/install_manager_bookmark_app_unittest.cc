@@ -72,8 +72,8 @@ SkBitmap CreateSquareBitmapWithColor(int size, SkColor color) {
   return bitmap;
 }
 
-WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
-  WebApplicationInfo::IconInfo icon_info;
+WebApplicationIconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
+  WebApplicationIconInfo icon_info;
   icon_info.width = size;
   icon_info.height = size;
   icon_info.data = CreateSquareBitmapWithColor(size, color);

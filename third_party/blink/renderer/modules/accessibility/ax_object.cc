@@ -68,8 +68,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 struct RoleHashTraits : HashTraits<ax::mojom::Role> {
@@ -1100,7 +1098,7 @@ const AXObject* AXObject::InertRoot() const {
     element = FlatTreeTraversal::ParentElement(*node);
 
   while (element) {
-    if (element->hasAttribute(kInertAttr))
+    if (element->hasAttribute(html_names::kInertAttr))
       return AXObjectCache().GetOrCreate(element);
     element = FlatTreeTraversal::ParentElement(*element);
   }
@@ -1239,7 +1237,7 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   // aria-labelledby or aria-describedby.
   if (RuntimeEnabledFeatures::AccessibilityExposeDisplayNoneEnabled()) {
     if (Element* element = GetElement()) {
-      if (element->FastHasAttribute(kIdAttr) &&
+      if (element->FastHasAttribute(html_names::kIdAttr) &&
           IsHiddenForTextAlternativeCalculation()) {
         return true;
       }
@@ -1323,7 +1321,7 @@ bool AXObject::CanReceiveAccessibilityFocus() const {
     return true;
 
   // aria-activedescendant focus
-  return elem->FastHasAttribute(kIdAttr) && CanBeActiveDescendant();
+  return elem->FastHasAttribute(html_names::kIdAttr) && CanBeActiveDescendant();
 }
 
 bool AXObject::CanSetValueAttribute() const {
@@ -1676,9 +1674,10 @@ String AXObject::AriaTextAlternative(bool recursive,
 
     // Check ARIA attributes.
     const QualifiedName& attr =
-        HasAttribute(kAriaLabeledbyAttr) && !HasAttribute(kAriaLabelledbyAttr)
-            ? kAriaLabeledbyAttr
-            : kAriaLabelledbyAttr;
+        HasAttribute(html_names::kAriaLabeledbyAttr) &&
+                !HasAttribute(html_names::kAriaLabelledbyAttr)
+            ? html_names::kAriaLabeledbyAttr
+            : html_names::kAriaLabelledbyAttr;
 
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, attr));
@@ -1721,7 +1720,7 @@ String AXObject::AriaTextAlternative(bool recursive,
   name_from = ax::mojom::NameFrom::kAttribute;
   if (name_sources) {
     name_sources->push_back(
-        NameSource(*found_text_alternative, kAriaLabelAttr));
+        NameSource(*found_text_alternative, html_names::kAriaLabelAttr));
     name_sources->back().type = name_from;
   }
   const AtomicString& aria_label =
@@ -1808,9 +1807,9 @@ void AXObject::AriaLabelledbyElementVector(
     HeapVector<Member<Element>>& elements,
     Vector<String>& ids) const {
   // Try both spellings, but prefer aria-labelledby, which is the official spec.
-  ElementsFromAttribute(elements, kAriaLabelledbyAttr, ids);
+  ElementsFromAttribute(elements, html_names::kAriaLabelledbyAttr, ids);
   if (!ids.size())
-    ElementsFromAttribute(elements, kAriaLabeledbyAttr, ids);
+    ElementsFromAttribute(elements, html_names::kAriaLabeledbyAttr, ids);
 }
 
 String AXObject::TextFromAriaLabelledby(AXObjectSet& visited,
@@ -1825,7 +1824,7 @@ String AXObject::TextFromAriaDescribedby(AXRelatedObjectVector* related_objects,
                                          Vector<String>& ids) const {
   AXObjectSet visited;
   HeapVector<Member<Element>> elements;
-  ElementsFromAttribute(elements, kAriaDescribedbyAttr, ids);
+  ElementsFromAttribute(elements, html_names::kAriaDescribedbyAttr, ids);
   return TextFromElements(true, visited, elements, related_objects);
 }
 
@@ -2615,7 +2614,7 @@ AtomicString AXObject::Language() const {
   // 2. The list of languages the browser sends in the [Accept-Language] header.
   // 3. The browser's default language.
 
-  const AtomicString& lang = GetAttribute(kLangAttr);
+  const AtomicString& lang = GetAttribute(html_names::kLangAttr);
   if (!lang.IsEmpty())
     return lang;
 
@@ -3363,7 +3362,7 @@ bool AXObject::NameFromSelectedOption(bool recursive) const {
     // This can be either a button widget with a non-false value of
     // aria-haspopup or a select element with size of 1.
     case ax::mojom::Role::kPopUpButton:
-      return ToHTMLSelectElementOrNull(*GetNode()) ? recursive : false;
+      return DynamicTo<HTMLSelectElement>(*GetNode()) ? recursive : false;
     default:
       return false;
   }

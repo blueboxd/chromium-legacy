@@ -23,12 +23,13 @@ namespace extensions {
 const char kTLSSocketTypeInvalidError[] =
     "Cannot listen on a socket that is already connected.";
 
-TLSSocket::TLSSocket(network::mojom::TLSClientSocketPtr tls_socket,
-                     const net::IPEndPoint& local_addr,
-                     const net::IPEndPoint& peer_addr,
-                     mojo::ScopedDataPipeConsumerHandle receive_stream,
-                     mojo::ScopedDataPipeProducerHandle send_stream,
-                     const std::string& owner_extension_id)
+TLSSocket::TLSSocket(
+    mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
+    const net::IPEndPoint& local_addr,
+    const net::IPEndPoint& peer_addr,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream,
+    const std::string& owner_extension_id)
     : ResumableTCPSocket(nullptr, owner_extension_id),
       tls_socket_(std::move(tls_socket)),
       local_addr_(local_addr),

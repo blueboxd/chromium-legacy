@@ -62,7 +62,7 @@ PageTimingMetricsSender::~PageTimingMetricsSender() {
 }
 
 void PageTimingMetricsSender::DidObserveLoadingBehavior(
-    blink::WebLoadingBehaviorFlag behavior) {
+    blink::LoadingBehaviorFlag behavior) {
   if (behavior & metadata_->behavior_flags) {
     return;
   }

@@ -102,9 +102,9 @@ interface AppShimHostBootstrap {
   // process is requesting to be associated with the given profile and app_id.
   // Once the profile and app_id are stored, and all future messages from the
   // app shim relate to this app.
-  OnShimConnected(AppShimHost& host_request,
+  OnShimConnected(pending_receiver<AppShimHost> host_receiver,
                   AppShimInfo app_shim_info) =>
                       (AppShimLaunchResult launch_result,
-                       AppShim& app_shim_request);
+                       pending_receiver<AppShim> app_shim_receiver);
 };
 

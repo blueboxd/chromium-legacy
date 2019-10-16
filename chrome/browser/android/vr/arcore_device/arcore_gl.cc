@@ -100,8 +100,7 @@ struct ArCoreHitTestRequest {
 ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
     : gl_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ar_image_transport_(std::move(ar_image_transport)),
-      webxr_(std::make_unique<vr::WebXrPresentationState>()),
-      environment_binding_(this) {
+      webxr_(std::make_unique<vr::WebXrPresentationState>()) {
   DVLOG(1) << __func__;
 }
 
@@ -618,20 +617,21 @@ void ArCoreGl::UpdateLayerBounds(int16_t frame_index,
 }
 
 void ArCoreGl::GetEnvironmentIntegrationProvider(
-    device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
-        environment_request) {
+    mojo::PendingAssociatedReceiver<
+        device::mojom::XREnvironmentIntegrationProvider> environment_provider) {
   DVLOG(3) << __func__;
 
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 
-  environment_binding_.Bind(std::move(environment_request));
-  environment_binding_.set_connection_error_handler(base::BindOnce(
+  environment_receiver_.reset();
+  environment_receiver_.Bind(std::move(environment_provider));
+  environment_receiver_.set_disconnect_handler(base::BindOnce(
       &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArCoreGl::SetInputSourceButtonListener(
-    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) {
+    mojo::PendingAssociatedRemote<device::mojom::XRInputSourceButtonListener>) {
   // Input eventing is not supported. This call should not
   // be made on this device.
   mojo::ReportBadMessage("Input eventing is not supported.");
@@ -919,7 +919,7 @@ void ArCoreGl::OnBindingDisconnect() {
 void ArCoreGl::CloseBindingsIfOpen() {
   DVLOG(3) << __func__;
 
-  environment_binding_.Close();
+  environment_receiver_.reset();
   frame_data_receiver_.reset();
   session_controller_receiver_.reset();
   presentation_receiver_.reset();

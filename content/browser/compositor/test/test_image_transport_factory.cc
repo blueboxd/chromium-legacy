@@ -12,6 +12,8 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/test_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/compositor/reflector.h"
 #include "ui/compositor/test/in_process_context_provider.h"
 
@@ -40,9 +42,10 @@ TestImageTransportFactory::TestImageTransportFactory()
     test_frame_sink_manager_impl_ =
         std::make_unique<viz::TestFrameSinkManagerImpl>();
 
-    viz::mojom::FrameSinkManagerPtr frame_sink_manager;
-    viz::mojom::FrameSinkManagerRequest frame_sink_manager_request =
-        mojo::MakeRequest(&frame_sink_manager);
+    mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager;
+    mojo::PendingReceiver<viz::mojom::FrameSinkManager>
+        frame_sink_manager_receiver =
+            frame_sink_manager.InitWithNewPipeAndPassReceiver();
     viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
     viz::mojom::FrameSinkManagerClientRequest
         frame_sink_manager_client_request =
@@ -56,8 +59,8 @@ TestImageTransportFactory::TestImageTransportFactory()
     // Bind endpoints in TestFrameSinkManagerImpl. For non-tests there would be
     // a FrameSinkManagerImpl running in another process and these interface
     // endpoints would be bound there.
-    test_frame_sink_manager_impl_->BindRequest(
-        std::move(frame_sink_manager_request),
+    test_frame_sink_manager_impl_->BindReceiver(
+        std::move(frame_sink_manager_receiver),
         std::move(frame_sink_manager_client));
   } else {
     shared_bitmap_manager_ = std::make_unique<viz::ServerSharedBitmapManager>();

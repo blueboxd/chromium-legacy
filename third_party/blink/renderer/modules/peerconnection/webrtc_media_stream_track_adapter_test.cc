@@ -95,7 +95,7 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
     base::WaitableEvent waitable_event(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&WebRtcMediaStreamTrackAdapterTest::
                                       RunMessageLoopUntilIdleOnSignalingThread,
                                   base::Unretained(this), &waitable_event));
@@ -106,7 +106,7 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
 
   void RunMessageLoopUntilIdleOnSignalingThread(
       base::WaitableEvent* waitable_event) {
-    DCHECK(dependency_factory_->GetWebRtcSignalingThread()
+    DCHECK(dependency_factory_->GetWebRtcSignalingTaskRunner()
                ->BelongsToCurrentThread());
     base::RunLoop().RunUntilIdle();
     waitable_event->Signal();
@@ -163,7 +163,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, DISABLED_LocalVideoTrack) {
 TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteAudioTrack) {
   scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
       blink::MockWebRtcAudioTrack::Create("remote_audio_track");
-  dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+  dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
@@ -188,7 +188,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteAudioTrack) {
 TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteVideoTrack) {
   scoped_refptr<blink::MockWebRtcVideoTrack> webrtc_track =
       blink::MockWebRtcVideoTrack::Create("remote_video_track");
-  dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+  dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
@@ -213,7 +213,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteVideoTrack) {
 TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteTrackExplicitlyInitialized) {
   scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
       blink::MockWebRtcAudioTrack::Create("remote_audio_track");
-  dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+  dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
@@ -242,7 +242,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, RemoteTrackExplicitlyInitialized) {
 TEST_F(WebRtcMediaStreamTrackAdapterTest, LastReferenceOnSignalingThread) {
   scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
       blink::MockWebRtcAudioTrack::Create("remote_audio_track");
-  dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+  dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WebRtcMediaStreamTrackAdapterTest::CreateRemoteTrackAdapter,
@@ -255,7 +255,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, LastReferenceOnSignalingThread) {
   base::WaitableEvent waitable_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+  dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WebRtcMediaStreamTrackAdapterTest::HoldOntoAdapterReference,

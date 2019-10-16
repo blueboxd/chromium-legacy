@@ -7,7 +7,8 @@
 
 #include "base/containers/span.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -186,7 +187,8 @@ class XRSession final
     return display_info_;
   }
 
-  device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+  mojo::PendingAssociatedRemote<
+      device::mojom::blink::XRInputSourceButtonListener>
   GetInputClickListener();
 
   bool EmulatedPosition() const {
@@ -348,8 +350,8 @@ class XRSession final
   device::mojom::blink::VRDisplayInfoPtr display_info_;
 
   mojo::Receiver<device::mojom::blink::XRSessionClient> client_receiver_;
-  mojo::AssociatedBinding<device::mojom::blink::XRInputSourceButtonListener>
-      input_binding_;
+  mojo::AssociatedReceiver<device::mojom::blink::XRInputSourceButtonListener>
+      input_receiver_{this};
 
   Member<XRFrameRequestCallbackCollection> callback_collection_;
   // Viewer pose in mojo space.

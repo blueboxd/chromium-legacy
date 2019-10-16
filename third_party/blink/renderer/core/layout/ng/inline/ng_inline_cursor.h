@@ -21,6 +21,7 @@ class NGFragmentItems;
 class NGPaintFragment;
 class NGPhysicalBoxFragment;
 struct PhysicalOffset;
+struct PhysicalRect;
 struct PhysicalSize;
 
 // This class traverses fragments in an inline formatting context.
@@ -38,6 +39,7 @@ class CORE_EXPORT NGInlineCursor {
   explicit NGInlineCursor(const NGFragmentItems& items);
   explicit NGInlineCursor(const NGPaintFragment& root_paint_fragment);
   NGInlineCursor(const NGInlineCursor& other);
+  NGInlineCursor();
 
   bool operator==(const NGInlineCursor& other) const;
   bool operator!=(const NGInlineCursor& other) const {
@@ -110,6 +112,7 @@ class CORE_EXPORT NGInlineCursor {
 
   // The offset relative to the root of the inline formatting context.
   const PhysicalOffset CurrentOffset() const;
+  const PhysicalRect CurrentRect() const;
   const PhysicalSize CurrentSize() const;
 
   // Returns start/end of offset in text content of current text fragment.
@@ -170,11 +173,6 @@ class CORE_EXPORT NGInlineCursor {
 
  private:
   using ItemsSpan = base::span<const std::unique_ptr<NGFragmentItem>>;
-
-  // |NGInlineCursor| is either paint fragment cursor or fragment item cursor.
-  // TODO(yosin): When we implement default constructor of |NGInlineCursor|,
-  // we'll call it "void cursor" instead of "null cursor".
-  NGInlineCursor() = delete;
 
   // True if current position is descendant or self of |layout_object|.
   // Note: This function is used for moving cursor in culled inline boxes.

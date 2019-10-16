@@ -528,7 +528,6 @@ void SocketsTcpSecureFunction::AsyncWorkStart() {
     }
   }
 
-  network::mojom::TLSClientSocketPtr tls_socket;
   socket->UpgradeToTLS(
       &legacy_params,
       base::BindOnce(&SocketsTcpSecureFunction::TlsConnectDone, this));
@@ -536,7 +535,7 @@ void SocketsTcpSecureFunction::AsyncWorkStart() {
 
 void SocketsTcpSecureFunction::TlsConnectDone(
     int result,
-    network::mojom::TLSClientSocketPtr tls_socket,
+    mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
     const net::IPEndPoint& local_addr,
     const net::IPEndPoint& peer_addr,
     mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,

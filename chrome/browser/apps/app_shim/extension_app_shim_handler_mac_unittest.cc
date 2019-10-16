@@ -22,11 +22,14 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -188,7 +191,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
         weak_factory_(this) {}
   void DoTestLaunch(apps::AppShimLaunchType launch_type,
                     const std::vector<base::FilePath>& files) {
-    chrome::mojom::AppShimHostPtr host_ptr;
+    mojo::Remote<chrome::mojom::AppShimHost> host;
     auto app_shim_info = chrome::mojom::AppShimInfo::New();
     app_shim_info->profile_path = profile_path_;
     app_shim_info->app_id = app_id_;
@@ -197,7 +200,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
     app_shim_info->launch_type = launch_type;
     app_shim_info->files = files;
     OnShimConnected(
-        mojo::MakeRequest(&host_ptr), std::move(app_shim_info),
+        host.BindNewPipeAndPassReceiver(), std::move(app_shim_info),
         base::BindOnce(&TestingAppShimHostBootstrap::DoTestLaunchDone,
                        launch_result_));
   }
@@ -205,7 +208,7 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
   static void DoTestLaunchDone(
       base::Optional<apps::AppShimLaunchResult>* launch_result,
       apps::AppShimLaunchResult result,
-      chrome::mojom::AppShimRequest app_shim_request) {
+      mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
     if (launch_result)
       launch_result->emplace(result);
   }

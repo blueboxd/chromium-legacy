@@ -157,8 +157,8 @@ class MockPeerConnectionDependencyFactory
       int sdp_mline_index,
       const std::string& sdp) override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread()
-      const override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()
+      override;
 
   // If |fail| is true, subsequent calls to CreateSessionDescription will
   // return nullptr. This can be used to fake a blob of SDP that fails to be

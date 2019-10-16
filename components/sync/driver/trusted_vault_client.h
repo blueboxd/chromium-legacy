@@ -11,8 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
-struct CoreAccountId;
-
 namespace syncer {
 
 // Interface that allows platform-specific logic related to accessing locally
@@ -26,14 +24,14 @@ class TrustedVaultClient {
   // Implementations are expected to NOT prompt the user for actions. |cb| is
   // called on completion with known keys or an empty list if none known.
   virtual void FetchKeys(
-      const CoreAccountId& account_id,
+      const std::string& gaia_id,
       base::OnceCallback<void(const std::vector<std::string>&)> cb) = 0;
 
   // Allows implementations to store encryption keys fetched by other means such
   // as Web interactions. Implementations are free to completely ignore these
   // keys, so callers may not assume that later calls to FetchKeys() would
   // necessarily return the keys passed here.
-  virtual void StoreKeys(const CoreAccountId& account_id,
+  virtual void StoreKeys(const std::string& gaia_id,
                          const std::vector<std::string>& keys) = 0;
 
  private:

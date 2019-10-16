@@ -28,13 +28,13 @@ class ServiceConnectionImpl : public ServiceConnection {
   ~ServiceConnectionImpl() override = default;
 
   void LoadBuiltinModel(mojom::BuiltinModelSpecPtr spec,
-                        mojom::ModelRequest request,
+                        mojo::PendingReceiver<mojom::Model> receiver,
                         mojom::MachineLearningService::LoadBuiltinModelCallback
                             result_callback) override;
 
   void LoadFlatBufferModel(
       mojom::FlatBufferModelSpecPtr spec,
-      mojom::ModelRequest request,
+      mojo::PendingReceiver<mojom::Model> receiver,
       mojom::MachineLearningService::LoadFlatBufferModelCallback
           result_callback) override;
 
@@ -60,23 +60,23 @@ class ServiceConnectionImpl : public ServiceConnection {
 
 void ServiceConnectionImpl::LoadBuiltinModel(
     mojom::BuiltinModelSpecPtr spec,
-    mojom::ModelRequest request,
+    mojo::PendingReceiver<mojom::Model> receiver,
     mojom::MachineLearningService::LoadBuiltinModelCallback result_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindMachineLearningServiceIfNeeded();
   machine_learning_service_->LoadBuiltinModel(
-      std::move(spec), std::move(request), std::move(result_callback));
+      std::move(spec), std::move(receiver), std::move(result_callback));
 }
 
 void ServiceConnectionImpl::LoadFlatBufferModel(
     mojom::FlatBufferModelSpecPtr spec,
-    mojom::ModelRequest request,
+    mojo::PendingReceiver<mojom::Model> receiver,
     mojom::MachineLearningService::LoadFlatBufferModelCallback
         result_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindMachineLearningServiceIfNeeded();
   machine_learning_service_->LoadFlatBufferModel(
-      std::move(spec), std::move(request), std::move(result_callback));
+      std::move(spec), std::move(receiver), std::move(result_callback));
 }
 
 void ServiceConnectionImpl::BindMachineLearningServiceIfNeeded() {

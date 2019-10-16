@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/main/scene_state.h"
 
 #import "base/ios/crb_protocol_observers.h"
+#import "ios/chrome/app/chrome_overlay_window.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -26,6 +28,7 @@
 @end
 
 @implementation SceneState
+@synthesize window = _window;
 
 - (instancetype)init {
   self = [super init];
@@ -47,6 +50,30 @@
 }
 
 #pragma mark - Setters & Getters.
+
+- (void)setWindow:(UIWindow*)window {
+  if (IsMultiwindowSupported()) {
+    // No need to set anything, instead the getter is backed by scene.windows
+    // property.
+    return;
+  }
+  _window = window;
+}
+
+- (UIWindow*)window {
+  if (IsMultiwindowSupported()) {
+    UIWindow* mainWindow = nil;
+    if (@available(ios 13, *)) {
+      for (UIWindow* window in self.scene.windows) {
+        if ([window isKindOfClass:[ChromeOverlayWindow class]]) {
+          mainWindow = window;
+        }
+      }
+    }
+    return mainWindow;
+  }
+  return _window;
+}
 
 - (void)setActivationLevel:(SceneActivationLevel)newLevel {
   if (_activationLevel == newLevel) {

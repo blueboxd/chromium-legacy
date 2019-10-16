@@ -160,8 +160,8 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
     // block more scripts than necessary.
     if (params.Url().Protocol() != document.GetSecurityOrigin()->Protocol()) {
       document.Loader()->DidObserveLoadingBehavior(
-          WebLoadingBehaviorFlag::
-              kWebLoadingBehaviorDocumentWriteBlockDifferentScheme);
+          LoadingBehaviorFlag::
+              kLoadingBehaviorDocumentWriteBlockDifferentScheme);
     }
     return false;
   }
@@ -176,7 +176,7 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
     // Recording this metric since an increase in number of reloads for pages
     // where a script was blocked could be indicative of a page break.
     document.Loader()->DidObserveLoadingBehavior(
-        WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlockReload);
+        LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlockReload);
     AddWarningHeader(&params);
     return false;
   }
@@ -185,7 +185,7 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
   // that are eligible for blocking. Note that if there are multiple scripts
   // the flag will be conveyed to the browser process only once.
   document.Loader()->DidObserveLoadingBehavior(
-      WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock);
+      LoadingBehaviorFlag::kLoadingBehaviorDocumentWriteBlock);
 
   if (!ShouldDisallowFetch(settings, GetNetworkStateNotifier().ConnectionType(),
                            GetNetworkStateNotifier().EffectiveType())) {

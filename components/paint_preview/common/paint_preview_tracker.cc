@@ -44,7 +44,10 @@ void RectToRectProto(RectProto* rect_proto, const gfx::Rect& rect) {
 
 }  // namespace
 
-PaintPreviewTracker::PaintPreviewTracker() = default;
+PaintPreviewTracker::PaintPreviewTracker(const base::UnguessableToken& guid,
+                                         int routing_id,
+                                         bool is_main_frame)
+    : guid_(guid), routing_id_(routing_id), is_main_frame_(is_main_frame) {}
 PaintPreviewTracker::~PaintPreviewTracker() = default;
 
 uint32_t PaintPreviewTracker::CreateContentForRemoteFrame(const gfx::Rect& rect,

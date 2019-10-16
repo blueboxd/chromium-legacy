@@ -27,7 +27,7 @@ HostFrameSinkManager::~HostFrameSinkManager() = default;
 
 void HostFrameSinkManager::SetLocalManager(
     FrameSinkManagerImpl* frame_sink_manager_impl) {
-  DCHECK(!frame_sink_manager_ptr_);
+  DCHECK(!frame_sink_manager_remote_);
   frame_sink_manager_impl_ = frame_sink_manager_impl;
 
   frame_sink_manager_ = frame_sink_manager_impl;
@@ -36,15 +36,15 @@ void HostFrameSinkManager::SetLocalManager(
 void HostFrameSinkManager::BindAndSetManager(
     mojom::FrameSinkManagerClientRequest request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    mojom::FrameSinkManagerPtr ptr) {
+    mojo::PendingRemote<mojom::FrameSinkManager> remote) {
   DCHECK(!frame_sink_manager_impl_);
   DCHECK(!binding_.is_bound());
 
   binding_.Bind(std::move(request), std::move(task_runner));
-  frame_sink_manager_ptr_ = std::move(ptr);
-  frame_sink_manager_ = frame_sink_manager_ptr_.get();
+  frame_sink_manager_remote_.Bind(std::move(remote));
+  frame_sink_manager_ = frame_sink_manager_remote_.get();
 
-  frame_sink_manager_ptr_.set_connection_error_handler(base::BindOnce(
+  frame_sink_manager_remote_.set_disconnect_handler(base::BindOnce(
       &HostFrameSinkManager::OnConnectionLost, base::Unretained(this)));
 
   if (connection_was_lost_) {
@@ -143,7 +143,7 @@ void HostFrameSinkManager::SetFrameSinkDebugLabel(
 void HostFrameSinkManager::CreateRootCompositorFrameSink(
     mojom::RootCompositorFrameSinkParamsPtr params) {
   // Should only be used with an out-of-process display compositor.
-  DCHECK(frame_sink_manager_ptr_);
+  DCHECK(frame_sink_manager_remote_);
 
   FrameSinkId frame_sink_id = params->frame_sink_id;
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
@@ -347,7 +347,7 @@ void HostFrameSinkManager::OnConnectionLost() {
   connection_was_lost_ = true;
 
   binding_.Close();
-  frame_sink_manager_ptr_.reset();
+  frame_sink_manager_remote_.reset();
   frame_sink_manager_ = nullptr;
 
   // Any cached back buffers are invalid once the connection to the
@@ -431,15 +431,15 @@ uint32_t HostFrameSinkManager::CacheBackBufferForRootSink(
   DCHECK(it != frame_sink_data_map_.end());
   DCHECK(it->second.is_root);
   DCHECK(it->second.IsFrameSinkRegistered());
-  DCHECK(frame_sink_manager_ptr_);
+  DCHECK(frame_sink_manager_remote_);
 
   uint32_t cache_id = next_cache_back_buffer_id_++;
-  frame_sink_manager_ptr_->CacheBackBuffer(cache_id, root_sink_id);
+  frame_sink_manager_remote_->CacheBackBuffer(cache_id, root_sink_id);
   return cache_id;
 }
 
 void HostFrameSinkManager::EvictCachedBackBuffer(uint32_t cache_id) {
-  DCHECK(frame_sink_manager_ptr_);
+  DCHECK(frame_sink_manager_remote_);
 
   if (cache_id < min_valid_cache_back_buffer_id_)
     return;
@@ -448,7 +448,7 @@ void HostFrameSinkManager::EvictCachedBackBuffer(uint32_t cache_id) {
   // the platform window (eg. XWindow or HWND) get destroyed before the
   // platform window is destroyed.
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
-  frame_sink_manager_ptr_->EvictBackBuffer(cache_id);
+  frame_sink_manager_remote_->EvictBackBuffer(cache_id);
 }
 
 HostFrameSinkManager::FrameSinkData::FrameSinkData() = default;

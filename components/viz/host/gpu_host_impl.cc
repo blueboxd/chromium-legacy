@@ -176,7 +176,7 @@ void GpuHostImpl::BlockLiveOffscreenContexts() {
 }
 
 void GpuHostImpl::ConnectFrameSinkManager(
-    mojom::FrameSinkManagerRequest request,
+    mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
     mojom::FrameSinkManagerClientPtrInfo client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuHostImpl::ConnectFrameSinkManager");
@@ -188,7 +188,7 @@ void GpuHostImpl::ConnectFrameSinkManager(
       params_.deadline_to_synchronize_surfaces.has_value();
   params->activation_deadline_in_frames =
       params_.deadline_to_synchronize_surfaces.value_or(0u);
-  params->frame_sink_manager = std::move(request);
+  params->frame_sink_manager = std::move(receiver);
   params->frame_sink_manager_client = std::move(client);
   viz_main_->CreateFrameSinkManager(std::move(params));
 }

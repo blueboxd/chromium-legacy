@@ -30,6 +30,9 @@ class MockNavigationHandle : public NavigationHandle {
   SiteInstance* GetStartingSiteInstance() override {
     return starting_site_instance_;
   }
+  SiteInstance* GetSourceSiteInstance() override {
+    return nullptr;  // Good enough for unit tests...
+  }
   bool IsInMainFrame() override {
     return render_frame_host_ ? !render_frame_host_->GetParent() : true;
   }
@@ -94,7 +97,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(HasPrefetchedAlternativeSubresourceSignedExchange, bool());
   bool WasResponseCached() override { return was_response_cached_; }
   const net::ProxyServer& GetProxyServer() override { return proxy_server_; }
-  MOCK_METHOD0(GetHrefTranslate, const std::string&());
+  const std::string& GetHrefTranslate() override { return href_translate_; }
   const base::Optional<url::Origin>& GetInitiatorOrigin() override {
     return initiator_origin_;
   }
@@ -173,6 +176,7 @@ class MockNavigationHandle : public NavigationHandle {
   net::ProxyServer proxy_server_;
   base::Optional<url::Origin> initiator_origin_;
   ReloadType reload_type_ = content::ReloadType::NONE;
+  std::string href_translate_;
 };
 
 }  // namespace content

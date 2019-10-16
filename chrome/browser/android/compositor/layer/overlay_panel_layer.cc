@@ -17,9 +17,6 @@
 
 namespace android {
 
-const float OverlayPanelLayer::kDefaultIconWidthDp = 36.0f;
-const int OverlayPanelLayer::kInvalidResourceID = -1;
-
 scoped_refptr<cc::Layer> OverlayPanelLayer::GetIconLayer() {
   if (panel_icon_resource_id_ == kInvalidResourceID)
     return nullptr;

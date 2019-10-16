@@ -37,6 +37,8 @@ import "favicon_tracking_specifics.proto";
 import "get_updates_caller_info.proto";
 import "history_delete_directive_specifics.proto";
 import "managed_user_setting_specifics.proto";
+import "managed_user_shared_setting_specifics.proto";
+import "managed_user_specifics.proto";
 import "managed_user_whitelist_specifics.proto";
 import "mountain_share_specifics.proto";
 import "nigori_specifics.proto";
@@ -143,6 +145,11 @@ message EntitySpecifics {
     FaviconTrackingSpecifics favicon_tracking = 181534;
     FaviconImageSpecifics favicon_image = 182019;
     ManagedUserSettingSpecifics managed_user_setting = 186662;
+    // TODO(tschumann): Remove once server-side dependencies are resolved.
+    ManagedUserSpecifics managed_user = 194582 [deprecated = true];
+    // TODO(tschumann): Remove once server-side dependencies are resolved.
+    ManagedUserSharedSettingSpecifics managed_user_shared_setting = 202026
+        [deprecated = true];
     ManagedUserWhitelistSpecifics managed_user_whitelist = 306060;
     AppListSpecifics app_list = 229170;
     AutofillWalletSpecifics autofill_wallet = 306270;
@@ -160,10 +167,6 @@ message EntitySpecifics {
     OsPreferenceSpecifics os_preference = 702141;
     OsPriorityPreferenceSpecifics os_priority_preference = 703915;
   }
-  reserved 194582;
-  reserved "managed_user";
-  reserved 202026;
-  reserved "managed_user_shared_setting";
   reserved 218175;
   reserved "wifi_credential";
   reserved 223759;

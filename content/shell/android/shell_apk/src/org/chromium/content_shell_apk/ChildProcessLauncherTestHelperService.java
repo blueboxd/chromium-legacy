@@ -36,6 +36,7 @@ public class ChildProcessLauncherTestHelperService extends Service {
 
     private final Handler.Callback mHandlerCallback = new Handler.Callback() {
         @Override
+        @SuppressWarnings("checkstyle:SystemExitCheck") // Allowed due to ChildProcessService.
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_BIND_SERVICE:

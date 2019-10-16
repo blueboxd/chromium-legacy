@@ -32,6 +32,7 @@
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 const char kSignInPromoQueryKeyShowAccountManagement[] =
     "showAccountManagement";

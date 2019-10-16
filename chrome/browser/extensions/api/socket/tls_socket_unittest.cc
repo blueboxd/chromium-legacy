@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_storage_partition.h"
 #include "extensions/browser/api/socket/tls_socket.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -67,14 +68,16 @@ class TLSSocketTestBase : public extensions::ExtensionServiceTestBase {
     socket->UpgradeToTLS(
         nullptr /* options */,
         base::BindLambdaForTesting(
-            [&](int result, network::mojom::TLSClientSocketPtr tls_socket_ptr,
+            [&](int result,
+                mojo::PendingRemote<network::mojom::TLSClientSocket>
+                    pending_tls_socket,
                 const net::IPEndPoint& local_addr,
                 const net::IPEndPoint& peer_addr,
                 mojo::ScopedDataPipeConsumerHandle receive_handle,
                 mojo::ScopedDataPipeProducerHandle send_handle) {
               if (net::OK == result) {
                 tls_socket = std::make_unique<TLSSocket>(
-                    std::move(tls_socket_ptr), local_addr, peer_addr,
+                    std::move(pending_tls_socket), local_addr, peer_addr,
                     std::move(receive_handle), std::move(send_handle), FAKE_ID);
               }
               run_loop.Quit();
@@ -171,12 +174,12 @@ TEST_F(TLSSocketTest, UpgradeToTLSWhilePendingRead) {
   auto socket = CreateTCPSocket();
   // This read will be pending when UpgradeToTLS() is called.
   socket->Read(1 /* count */, base::DoNothing());
-  network::mojom::TLSClientSocketPtr tls_socket_ptr;
   base::RunLoop run_loop;
   socket->UpgradeToTLS(
       nullptr /* options */,
       base::BindLambdaForTesting(
-          [&](int result, network::mojom::TLSClientSocketPtr tls_socket_ptr,
+          [&](int result,
+              mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
               const net::IPEndPoint& local_addr,
               const net::IPEndPoint& peer_addr,
               mojo::ScopedDataPipeConsumerHandle receive_handle,
@@ -204,7 +207,6 @@ TEST_F(TLSSocketTest, UpgradeToTLSWithCustomOptions) {
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
   auto socket = CreateTCPSocket();
-  network::mojom::TLSClientSocketPtr tls_socket_ptr;
   api::socket::SecureOptions options;
   options.tls_version = std::make_unique<api::socket::TLSVersionConstraints>();
   options.tls_version->min = std::make_unique<std::string>("tls1.1");
@@ -214,7 +216,8 @@ TEST_F(TLSSocketTest, UpgradeToTLSWithCustomOptions) {
   socket->UpgradeToTLS(
       &options,
       base::BindLambdaForTesting(
-          [&](int result, network::mojom::TLSClientSocketPtr tls_socket_ptr,
+          [&](int result,
+              mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
               const net::IPEndPoint& local_addr,
               const net::IPEndPoint& peer_addr,
               mojo::ScopedDataPipeConsumerHandle receive_handle,
@@ -245,7 +248,6 @@ TEST_F(TLSSocketTest, UpgradeToTLSWithCustomOptionsTLS13) {
   mock_client_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
 
   auto socket = CreateTCPSocket();
-  network::mojom::TLSClientSocketPtr tls_socket_ptr;
   api::socket::SecureOptions options;
   options.tls_version = std::make_unique<api::socket::TLSVersionConstraints>();
   options.tls_version->min = std::make_unique<std::string>("tls1.3");
@@ -255,7 +257,8 @@ TEST_F(TLSSocketTest, UpgradeToTLSWithCustomOptionsTLS13) {
   socket->UpgradeToTLS(
       &options,
       base::BindLambdaForTesting(
-          [&](int result, network::mojom::TLSClientSocketPtr tls_socket_ptr,
+          [&](int result,
+              mojo::PendingRemote<network::mojom::TLSClientSocket> tls_socket,
               const net::IPEndPoint& local_addr,
               const net::IPEndPoint& peer_addr,
               mojo::ScopedDataPipeConsumerHandle receive_handle,

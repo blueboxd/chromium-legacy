@@ -573,8 +573,11 @@ interface MediaRouter {
   // can be used to access the MediaRemoter to control a media remoting session
   // and send RPC messages to the remote device. |remoting_source| is bound to
   // receive the updates/messages from MediaRemoter.
-  OnMediaRemoterCreated(int32 tab_id, media.mojom.MirrorServiceRemoter remoter,
-      media.mojom.MirrorServiceRemotingSource& remoting_source);
+  OnMediaRemoterCreated(
+      int32 tab_id,
+      pending_remote<media.mojom.MirrorServiceRemoter> remoter,
+      pending_receiver<media.mojom.MirrorServiceRemotingSource>
+          remoting_source);
 
   // Returns current status of media sink service in JSON format.
   GetMediaSinkServiceStatus() => (string status);

@@ -119,6 +119,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       net::CompletionOnceCallback callback,
       const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      const net::IPEndPoint& endpoint,
       GURL* allowed_unsafe_redirect_url);
 
   // mojom::AuthChallengeResponder:

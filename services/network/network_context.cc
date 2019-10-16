@@ -397,6 +397,9 @@ NetworkContext::NetworkContext(
     cors_exempt_header_list_.insert(key);
 
   origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
+
+  cors_enabled_ =
+      base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
 }
 
 NetworkContext::~NetworkContext() {
@@ -1204,6 +1207,15 @@ void NetworkContext::SetCorsOriginAccessListsForOrigin(
   cors_origin_access_list_.SetAllowListForOrigin(source_origin, allow_patterns);
   cors_origin_access_list_.SetBlockListForOrigin(source_origin, block_patterns);
   std::move(callback).Run();
+}
+
+void NetworkContext::SetCorsExtraSafelistedRequestHeaderNames(
+    const std::vector<std::string>&
+        cors_extra_safelisted_request_header_names) {
+  cors_preflight_controller_.set_extra_safelisted_header_names(
+      base::flat_set<std::string>(
+          cors_extra_safelisted_request_header_names.cbegin(),
+          cors_extra_safelisted_request_header_names.cend()));
 }
 
 void NetworkContext::AddHSTS(const std::string& host,
@@ -2164,6 +2176,7 @@ void NetworkContext::InitializeCorsParams() {
   }
   for (const auto& key : params_->cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
+  cors_enabled_ = params_->enable_cors;
 }
 
 void NetworkContext::GetOriginPolicyManager(

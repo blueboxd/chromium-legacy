@@ -11,6 +11,6 @@ import "chromeos/services/machine_learning/public/mojom/graph_executor.mojom";
 interface PageHandler {
   // Loads the specified builtin model by forwarding it to Chrome OS ML
   // Service.
-  LoadBuiltinModel(BuiltinModelSpec spec, Model& request)
+  LoadBuiltinModel(BuiltinModelSpec spec, pending_receiver<Model> receiver)
       => (LoadModelResult result);
 };

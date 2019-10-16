@@ -65,7 +65,7 @@ class TransceiverStateSurfacerTest : public ::testing::Test {
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> signaling_task_runner() const {
-    return dependency_factory_->GetWebRtcSignalingThread();
+    return dependency_factory_->GetWebRtcSignalingTaskRunner();
   }
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>

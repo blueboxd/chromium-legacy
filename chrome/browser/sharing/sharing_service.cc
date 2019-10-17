@@ -268,18 +268,20 @@ void SharingService::SendMessageToDevice(
     SendMessageCallback callback) {
   std::string message_guid = base::GenerateGUID();
   send_message_callbacks_.emplace(message_guid, std::move(callback));
+  chrome_browser_sharing::MessageType message_type =
+      SharingPayloadCaseToMessageType(message.payload_case());
 
   base::PostDelayedTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
       base::BindOnce(&SharingService::InvokeSendMessageCallback,
-                     weak_ptr_factory_.GetWeakPtr(), message_guid,
+                     weak_ptr_factory_.GetWeakPtr(), message_guid, message_type,
                      SharingSendMessageResult::kAckTimeout),
       kSendMessageTimeout);
 
   base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
       sync_prefs_->GetSharingInfo(device_guid);
   if (!sharing_info) {
-    InvokeSendMessageCallback(message_guid,
+    InvokeSendMessageCallback(message_guid, message_type,
                               SharingSendMessageResult::kDeviceNotFound);
     return;
   }
@@ -288,7 +290,7 @@ void SharingService::SendMessageToDevice(
       std::move(*sharing_info), time_to_live, std::move(message),
       base::BindOnce(&SharingService::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
-                     message_guid));
+                     message_guid, message_type));
 }
 
 void SharingService::SetDeviceInfoTrackerForTesting(
@@ -296,12 +298,14 @@ void SharingService::SetDeviceInfoTrackerForTesting(
   device_info_tracker_ = tracker;
 }
 
-void SharingService::OnMessageSent(base::TimeTicks start_time,
-                                   const std::string& message_guid,
-                                   SharingSendMessageResult result,
-                                   base::Optional<std::string> message_id) {
+void SharingService::OnMessageSent(
+    base::TimeTicks start_time,
+    const std::string& message_guid,
+    chrome_browser_sharing::MessageType message_type,
+    SharingSendMessageResult result,
+    base::Optional<std::string> message_id) {
   if (result != SharingSendMessageResult::kSuccessful) {
-    InvokeSendMessageCallback(message_guid, result);
+    InvokeSendMessageCallback(message_guid, message_type, result);
     return;
   }
 
@@ -309,10 +313,13 @@ void SharingService::OnMessageSent(base::TimeTicks start_time,
   message_guids_.emplace(*message_id, message_guid);
 }
 
-void SharingService::OnAckReceived(const std::string& message_id) {
+void SharingService::OnAckReceived(
+    chrome_browser_sharing::MessageType message_type,
+    const std::string& message_id) {
   auto times_iter = send_message_times_.find(message_id);
   if (times_iter != send_message_times_.end()) {
-    LogSharingMessageAckTime(base::TimeTicks::Now() - times_iter->second);
+    LogSharingMessageAckTime(message_type,
+                             base::TimeTicks::Now() - times_iter->second);
     send_message_times_.erase(times_iter);
   }
 
@@ -322,12 +329,13 @@ void SharingService::OnAckReceived(const std::string& message_id) {
 
   std::string message_guid = std::move(iter->second);
   message_guids_.erase(iter);
-  InvokeSendMessageCallback(message_guid,
+  InvokeSendMessageCallback(message_guid, message_type,
                             SharingSendMessageResult::kSuccessful);
 }
 
 void SharingService::InvokeSendMessageCallback(
     const std::string& message_guid,
+    chrome_browser_sharing::MessageType message_type,
     SharingSendMessageResult result) {
   auto iter = send_message_callbacks_.find(message_guid);
   if (iter == send_message_callbacks_.end())
@@ -336,7 +344,7 @@ void SharingService::InvokeSendMessageCallback(
   SendMessageCallback callback = std::move(iter->second);
   send_message_callbacks_.erase(iter);
   std::move(callback).Run(result);
-  LogSendSharingMessageResult(result);
+  LogSendSharingMessageResult(message_type, result);
 }
 
 void SharingService::OnDeviceInfoChange() {

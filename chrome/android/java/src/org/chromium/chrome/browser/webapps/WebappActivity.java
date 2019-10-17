@@ -454,10 +454,11 @@ public class WebappActivity extends SingleTabActivity {
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), CustomTabsUiType.MINIMAL_UI_WEBAPP,
-                new ArrayList<String>(), true /* is opened by Chrome */,
-                true /* should show share */, false /* should show star (bookmarking) */,
-                false /* should show download */, false /* is incognito */);
+                getWindow().getDecorView(), getToolbarManager().getBookmarkBridgeSupplier(),
+                CustomTabsUiType.MINIMAL_UI_WEBAPP, new ArrayList<String>(),
+                true /* is opened by Chrome */, true /* should show share */,
+                false /* should show star (bookmarking) */, false /* should show download */,
+                false /* is incognito */);
     }
 
     /**
@@ -688,7 +689,7 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     public int getBaseStatusBarColor() {
-        return isStatusBarDefaultThemeColor() ? Color.WHITE : mBrandColor;
+        return isStatusBarDefaultThemeColor() ? Color.BLACK : mBrandColor;
     }
 
     @Override

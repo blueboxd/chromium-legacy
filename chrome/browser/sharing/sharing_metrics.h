@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_METRICS_H_
 #define CHROME_BROWSER_SHARING_SHARING_METRICS_H_
 
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
-
 #include "base/time/time.h"
+#include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 
@@ -72,9 +71,15 @@ enum class SharingClickToCallSelection {
 const char kSharingClickToCallUiContextMenu[] = "ContextMenu";
 const char kSharingClickToCallUiDialog[] = "Dialog";
 
+chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
+    chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
+
 // Logs the |payload_case| to UMA. This should be called when a SharingMessage
-// is received.
+// is received. Additionally, a suffixed version of the histogram is logged
+// using |original_message_type| which is different from the actual message type
+// for ack messages.
 void LogSharingMessageReceived(
+    chrome_browser_sharing::MessageType original_message_type,
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
 
 // Logs the |result| to UMA. This should be called after attempting register
@@ -126,7 +131,8 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
 
 // Logs to UMA the time from sending a FCM message from the Sharing service
 // until an ack message is received for it.
-void LogSharingMessageAckTime(base::TimeDelta time);
+void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
+                              base::TimeDelta time);
 
 // Logs to UMA the |type| of dialog shown for sharing feature.
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type);
@@ -137,10 +143,14 @@ void LogClickToCallHelpTextClicked(SharingDialogType type);
 
 // Logs to UMA result of sending a SharingMessage. This should not be called for
 // sending ack messages.
-void LogSendSharingMessageResult(SharingSendMessageResult result);
+void LogSendSharingMessageResult(
+    chrome_browser_sharing::MessageType message_type,
+    SharingSendMessageResult result);
 
 // Logs to UMA result of sendin an ack of a SharingMessage.
-void LogSendSharingAckMessageResult(SharingSendMessageResult result);
+void LogSendSharingAckMessageResult(
+    chrome_browser_sharing::MessageType message_type,
+    SharingSendMessageResult result);
 
 // Records a Click to Call selection to UKM. This is logged after a completed
 // action like selecting an app or a device to send the phone number to.

@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_protocol_encoding.h"
 #include "content/browser/devtools/devtools_stream_file.h"
@@ -956,7 +955,7 @@ void TracingHandler::OnFrameFromVideoConsumer(
   ++number_of_screenshots_from_video_consumer_;
   DCHECK(video_consumer_);
   if (number_of_screenshots_from_video_consumer_ >=
-      DevToolsFrameTraceRecorder::kMaximumNumberOfScreenshots) {
+      DevToolsTraceableScreenshot::kMaximumNumberOfScreenshots) {
     video_consumer_->StopCapture();
   }
 }

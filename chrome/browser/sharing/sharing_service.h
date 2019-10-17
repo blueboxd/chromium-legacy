@@ -134,7 +134,8 @@ class SharingService : public KeyedService,
   void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
   // AckMessageHandler::AckMessageObserver override.
-  void OnAckReceived(const std::string& message_id) override;
+  void OnAckReceived(chrome_browser_sharing::MessageType message_type,
+                     const std::string& message_id) override;
 
   // syncer::DeviceInfoTracker::Observer.
   void OnDeviceInfoChange() override;
@@ -149,10 +150,13 @@ class SharingService : public KeyedService,
 
   void OnMessageSent(base::TimeTicks start_time,
                      const std::string& message_guid,
+                     chrome_browser_sharing::MessageType message_type,
                      SharingSendMessageResult result,
                      base::Optional<std::string> message_id);
-  void InvokeSendMessageCallback(const std::string& message_guid,
-                                 SharingSendMessageResult result);
+  void InvokeSendMessageCallback(
+      const std::string& message_guid,
+      chrome_browser_sharing::MessageType message_type,
+      SharingSendMessageResult result);
 
   // Returns true if required sync feature is enabled.
   bool IsSyncEnabled() const;

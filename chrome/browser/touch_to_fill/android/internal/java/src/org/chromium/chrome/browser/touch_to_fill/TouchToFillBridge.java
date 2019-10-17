@@ -68,6 +68,12 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
     }
 
     @Override
+    public void onManagePasswordsSelected() {
+        assert mNativeView != 0 : "The native side is already dismissed";
+        TouchToFillBridgeJni.get().onManagePasswordsSelected(mNativeView);
+    }
+
+    @Override
     public void onCredentialSelected(Credential credential) {
         assert mNativeView != 0 : "The native side is already dismissed";
         TouchToFillBridgeJni.get().onCredentialSelected(mNativeView, credential);
@@ -82,6 +88,7 @@ class TouchToFillBridge implements TouchToFillComponent.Delegate {
     @NativeMethods
     interface Natives {
         void onCredentialSelected(long nativeTouchToFillViewImpl, Credential credential);
+        void onManagePasswordsSelected(long nativeTouchToFillViewImpl);
         void onDismiss(long nativeTouchToFillViewImpl);
         void fetchFavicon(long nativeTouchToFillViewImpl, String origin, int desiredSizeInPx,
                 Callback<Bitmap> callback);

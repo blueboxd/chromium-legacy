@@ -358,7 +358,7 @@ HTMLSlotElement* SlotAssignment::GetCachedFirstSlotWithoutAccessingNodeTree(
     const AtomicString& slot_name) {
   if (Element* slot =
           slot_map_->GetCachedFirstElementWithoutAccessingNodeTree(slot_name)) {
-    return ToHTMLSlotElement(slot);
+    return To<HTMLSlotElement>(slot);
   }
   return nullptr;
 }

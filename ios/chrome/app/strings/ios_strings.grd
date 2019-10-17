@@ -2089,9 +2089,6 @@ New Search
       <message name="IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP_BLOCK" desc="Text on the button, when tapped will block opening an external application for this browsing session. [iOS only]">
           Block
       </message>
-      <message name="IDS_IOS_PASTE_AND_GO" desc="Text in the editing menu shown when long-pressing the omnibox. Enables pasting the current contents of the clipboard and searching the text or navigating to the url. [iOS only]">
-          Paste and Go
-      </message>
       <message name="IDS_IOS_NAVIGATION_BAR_ADD_BUTTON" desc="Label of the button allowing the user to add a new credit card to the list of their saved credit cards.">
           Add
       </message>

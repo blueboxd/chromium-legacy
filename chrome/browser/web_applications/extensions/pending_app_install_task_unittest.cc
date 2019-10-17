@@ -174,6 +174,11 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
             }));
   }
 
+  void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                      InstallFinalizedCallback callback) override {
+    NOTREACHED();
+  }
+
   void UninstallExternalWebApp(const GURL& app_url,
                                UninstallWebAppCallback callback) override {
     DCHECK(base::Contains(next_uninstall_external_web_app_results_, app_url));

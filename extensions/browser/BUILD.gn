@@ -615,6 +615,7 @@ source_set("unit_tests") {
     "computed_hashes_unittest.cc",
     "content_hash_fetcher_unittest.cc",
     "content_hash_tree_unittest.cc",
+    "content_verifier/content_hash_unittest.cc",
     "content_verifier_unittest.cc",
     "content_verify_job_unittest.cc",
     "error_map_unittest.cc",

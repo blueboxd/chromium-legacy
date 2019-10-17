@@ -32,6 +32,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils.NightModeParams;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -100,9 +101,9 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
 
             mCustomScrollView = new ScrollView(activity);
             mCustomTextView1 = new TextView(activity);
-            mCustomTextView1.setId(org.chromium.chrome.R.id.button_one);
+            mCustomTextView1.setId(R.id.test_view_one);
             mCustomTextView2 = new TextView(activity);
-            mCustomTextView2.setId(org.chromium.chrome.R.id.button_two);
+            mCustomTextView2.setId(R.id.test_view_two);
         });
     }
 

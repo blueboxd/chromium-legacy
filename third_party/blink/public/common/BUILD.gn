@@ -104,6 +104,7 @@ source_set("headers") {
     "messaging/transferable_message.h",
     "messaging/transferable_message_mojom_traits.h",
     "mime_util/mime_util.h",
+    "navigation/triggering_event_info.h",
     "notifications/notification_constants.h",
     "notifications/notification_mojom_traits.h",
     "notifications/notification_resources.h",

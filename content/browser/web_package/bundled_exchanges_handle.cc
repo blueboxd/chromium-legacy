@@ -18,6 +18,8 @@
 #include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -63,6 +65,19 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     "streaming should be provided by another URLLoader request that is issued "
     "by Blink, but based on a user initiated navigation."
   )");
+
+void AddMetadataParseErrorMessageToConsole(
+    int frame_tree_node_id,
+    const data_decoder::mojom::BundleMetadataParseErrorPtr& metadata_error) {
+  WebContents* web_contents =
+      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (!web_contents)
+    return;
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kError,
+      std::string("Failed to read metadata of Web Bundle file: ") +
+          metadata_error->message);
+}
 
 // A class to provide a network::mojom::URLLoader interface to redirect a
 // request to the BundledExchanges to the main resource url.
@@ -129,8 +144,10 @@ class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
 //     StartResponse() to create the loader for the main resource.
 class InterceptorForFile final : public NavigationLoaderInterceptor {
  public:
-  explicit InterceptorForFile(DoneCallback done_callback)
-      : done_callback_(std::move(done_callback)) {}
+  explicit InterceptorForFile(DoneCallback done_callback,
+                              int frame_tree_node_id)
+      : done_callback_(std::move(done_callback)),
+        frame_tree_node_id_(frame_tree_node_id) {}
   ~InterceptorForFile() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -188,6 +205,8 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error) {
+      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_,
+                                            metadata_error);
       forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(
           net::ERR_INVALID_BUNDLED_EXCHANGES));
       forwarding_client_.reset();
@@ -195,8 +214,8 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
     }
     DCHECK(reader_);
     primary_url_ = reader_->GetPrimaryURL();
-    url_loader_factory_ =
-        std::make_unique<BundledExchangesURLLoaderFactory>(std::move(reader_));
+    url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
+        std::move(reader_), frame_tree_node_id_);
 
     const GURL new_url =
         bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
@@ -220,6 +239,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
   }
 
   DoneCallback done_callback_;
+  const int frame_tree_node_id_;
   scoped_refptr<BundledExchangesReader> reader_;
   GURL primary_url_;
   std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
@@ -252,10 +272,12 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
 class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
  public:
   InterceptorForTrustableFile(std::unique_ptr<BundledExchangesSource> source,
-                              DoneCallback done_callback)
+                              DoneCallback done_callback,
+                              int frame_tree_node_id)
       : source_(std::move(source)),
         reader_(base::MakeRefCounted<BundledExchangesReader>(source_->Clone())),
-        done_callback_(std::move(done_callback)) {
+        done_callback_(std::move(done_callback)),
+        frame_tree_node_id_(frame_tree_node_id) {
     reader_->ReadMetadata(
         base::BindOnce(&InterceptorForTrustableFile::OnMetadataReady,
                        weak_factory_.GetWeakPtr()));
@@ -322,11 +344,12 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
     DCHECK(!url_loader_factory_);
 
     if (error) {
+      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_, error);
       metadata_error_ = std::move(error);
     } else {
       primary_url_ = reader_->GetPrimaryURL();
       url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
-          std::move(reader_));
+          std::move(reader_), frame_tree_node_id_);
     }
 
     if (pending_request_) {
@@ -339,6 +362,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
   std::unique_ptr<BundledExchangesSource> source_;
   scoped_refptr<BundledExchangesReader> reader_;
   DoneCallback done_callback_;
+  const int frame_tree_node_id_;
 
   network::ResourceRequest pending_resource_request_;
   network::mojom::URLLoaderRequest pending_request_;
@@ -371,9 +395,11 @@ class InterceptorForTrackedNavigationFromTrustableFile final
  public:
   InterceptorForTrackedNavigationFromTrustableFile(
       scoped_refptr<BundledExchangesReader> reader,
-      DoneCallback done_callback)
+      DoneCallback done_callback,
+      int frame_tree_node_id)
       : url_loader_factory_(std::make_unique<BundledExchangesURLLoaderFactory>(
-            std::move(reader))),
+            std::move(reader),
+            frame_tree_node_id)),
         done_callback_(std::move(done_callback)) {}
   ~InterceptorForTrackedNavigationFromTrustableFile() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -432,9 +458,11 @@ class InterceptorForTrackedNavigationFromFile final
  public:
   InterceptorForTrackedNavigationFromFile(
       scoped_refptr<BundledExchangesReader> reader,
-      DoneCallback done_callback)
+      DoneCallback done_callback,
+      int frame_tree_node_id)
       : url_loader_factory_(std::make_unique<BundledExchangesURLLoaderFactory>(
-            std::move(reader))),
+            std::move(reader),
+            frame_tree_node_id)),
         done_callback_(std::move(done_callback)) {}
   ~InterceptorForTrackedNavigationFromFile() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -514,11 +542,13 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
  public:
   InterceptorForNavigationInfo(
       std::unique_ptr<BundledExchangesNavigationInfo> navigation_info,
-      DoneCallback done_callback)
+      DoneCallback done_callback,
+      int frame_tree_node_id)
       : reader_(base::MakeRefCounted<BundledExchangesReader>(
             navigation_info->source().Clone())),
         target_inner_url_(navigation_info->target_inner_url()),
-        done_callback_(std::move(done_callback)) {
+        done_callback_(std::move(done_callback)),
+        frame_tree_node_id_(frame_tree_node_id) {
     reader_->ReadMetadata(
         base::BindOnce(&InterceptorForNavigationInfo::OnMetadataReady,
                        weak_factory_.GetWeakPtr()));
@@ -571,10 +601,11 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
     DCHECK(!url_loader_factory_);
 
     if (error) {
+      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_, error);
       metadata_error_ = std::move(error);
     } else {
       url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
-          std::move(reader_));
+          std::move(reader_), frame_tree_node_id_);
     }
 
     if (pending_request_) {
@@ -587,6 +618,7 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
   scoped_refptr<BundledExchangesReader> reader_;
   const GURL target_inner_url_;
   DoneCallback done_callback_;
+  const int frame_tree_node_id_;
 
   network::ResourceRequest pending_resource_request_;
   network::mojom::URLLoaderRequest pending_request_;
@@ -605,32 +637,36 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
 }  // namespace
 
 // static
-std::unique_ptr<BundledExchangesHandle>
-BundledExchangesHandle::CreateForFile() {
+std::unique_ptr<BundledExchangesHandle> BundledExchangesHandle::CreateForFile(
+    int frame_tree_node_id) {
   auto handle = base::WrapUnique(new BundledExchangesHandle());
   handle->SetInterceptor(std::make_unique<InterceptorForFile>(
       base::BindOnce(&BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                     handle->weak_factory_.GetWeakPtr())));
+                     handle->weak_factory_.GetWeakPtr()),
+      frame_tree_node_id));
   return handle;
 }
 
 // static
 std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandle::CreateForTrustableFile(
-    std::unique_ptr<BundledExchangesSource> source) {
+    std::unique_ptr<BundledExchangesSource> source,
+    int frame_tree_node_id) {
   DCHECK(source->is_trusted());
   auto handle = base::WrapUnique(new BundledExchangesHandle());
   handle->SetInterceptor(std::make_unique<InterceptorForTrustableFile>(
       std::move(source),
       base::BindOnce(&BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                     handle->weak_factory_.GetWeakPtr())));
+                     handle->weak_factory_.GetWeakPtr()),
+      frame_tree_node_id));
   return handle;
 }
 
 // static
 std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandle::CreateForTrackedNavigation(
-    scoped_refptr<BundledExchangesReader> reader) {
+    scoped_refptr<BundledExchangesReader> reader,
+    int frame_tree_node_id) {
   auto handle = base::WrapUnique(new BundledExchangesHandle());
   if (reader->source().is_trusted()) {
     handle->SetInterceptor(
@@ -638,14 +674,16 @@ BundledExchangesHandle::CreateForTrackedNavigation(
             std::move(reader),
             base::BindOnce(
                 &BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                handle->weak_factory_.GetWeakPtr())));
+                handle->weak_factory_.GetWeakPtr()),
+            frame_tree_node_id));
   } else {
     handle->SetInterceptor(
         std::make_unique<InterceptorForTrackedNavigationFromFile>(
             std::move(reader),
             base::BindOnce(
                 &BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                handle->weak_factory_.GetWeakPtr())));
+                handle->weak_factory_.GetWeakPtr()),
+            frame_tree_node_id));
   }
   return handle;
 }
@@ -653,12 +691,14 @@ BundledExchangesHandle::CreateForTrackedNavigation(
 // static
 std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandle::CreateForNavigationInfo(
-    std::unique_ptr<BundledExchangesNavigationInfo> navigation_info) {
+    std::unique_ptr<BundledExchangesNavigationInfo> navigation_info,
+    int frame_tree_node_id) {
   auto handle = base::WrapUnique(new BundledExchangesHandle());
   handle->SetInterceptor(std::make_unique<InterceptorForNavigationInfo>(
       std::move(navigation_info),
       base::BindOnce(&BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                     handle->weak_factory_.GetWeakPtr())));
+                     handle->weak_factory_.GetWeakPtr()),
+      frame_tree_node_id));
   return handle;
 }
 

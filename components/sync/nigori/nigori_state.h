@@ -23,13 +23,7 @@ class NigoriModel;
 namespace syncer {
 
 class CryptographerImpl;
-
-// Creates a cryptographer that can decrypt all |keystore_keys| and uses the
-// last one as default encryption key. May return null in case of error.
-// TODO(crbug.com/922900): consider maintaining cached version of this
-// cryptographer in NigoriState to avoid repeated creations.
-std::unique_ptr<CryptographerImpl> CreateCryptographerFromKeystoreKeys(
-    const std::vector<std::string>& keystore_keys);
+class KeystoreKeysCryptographer;
 
 struct NigoriState {
   static constexpr sync_pb::NigoriSpecifics::PassphraseType
@@ -77,10 +71,10 @@ struct NigoriState {
   base::Optional<KeyDerivationParams> custom_passphrase_key_derivation_params;
   bool encrypt_everything;
 
-  // Base64 encoded keystore keys. The last element is the current keystore
-  // key. These keys are not a part of Nigori node and are persisted
-  // separately. Must be encrypted with OSCrypt before persisting.
-  std::vector<std::string> keystore_keys;
+  // Contains keystore keys. Uses last keystore key as encryption key. Must be
+  // not null. Serialized as keystore keys, which must be encrypted with
+  // OSCrypt before persisting.
+  std::unique_ptr<KeystoreKeysCryptographer> keystore_keys_cryptographer;
 
   // Represents |keystore_decryptor_token| from NigoriSpecifics in case it
   // can't be decrypted right after remote update arrival due to lack of

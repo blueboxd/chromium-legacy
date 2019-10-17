@@ -329,8 +329,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), mIntentDataProvider.getUiType(),
-                mIntentDataProvider.getMenuTitles(), mIntentDataProvider.isOpenedByChrome(),
+                getWindow().getDecorView(), getToolbarManager().getBookmarkBridgeSupplier(),
+                mIntentDataProvider.getUiType(), mIntentDataProvider.getMenuTitles(),
+                mIntentDataProvider.isOpenedByChrome(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
                 mIntentDataProvider.shouldShowStarButton(),
                 mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito());

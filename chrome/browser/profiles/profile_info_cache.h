@@ -192,6 +192,11 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // used by the profiles.
   void MigrateLegacyProfileNamesAndDownloadAvatars();
 
+  // Recompute profile names to guarantee there are no duplicates of "Person n"
+  // exist, i.e. Two or more profiles with the profile name "Person 1" would be
+  // recomputed to "Person 1" and "Person 2".
+  void RecomputeProfileNamesIfNeeded();
+
   std::vector<std::string> sorted_keys_;
   const base::FilePath user_data_dir_;
 

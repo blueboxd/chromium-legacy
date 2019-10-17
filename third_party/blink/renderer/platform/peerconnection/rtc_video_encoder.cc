@@ -372,8 +372,15 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   media::VideoPixelFormat pixel_format = media::PIXEL_FORMAT_I420;
   auto storage_type =
       media::VideoEncodeAccelerator::Config::StorageType::kShmem;
-  // TODO(crbug.com/1014209): Enable native input mode after fake video capture
-  // device supports delivering GpuMemoryBuffer frames.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kVideoCaptureUseGpuMemoryBuffer) &&
+      video_content_type_ != webrtc::VideoContentType::SCREENSHARE) {
+    // Use import mode for camera when GpuMemoryBuffer-based video capture is
+    // enabled.
+    pixel_format = media::PIXEL_FORMAT_NV12;
+    storage_type = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+    use_native_input_ = true;
+  }
   const media::VideoEncodeAccelerator::Config config(
       pixel_format, input_visible_size_, profile, bitrate * 1000, base::nullopt,
       base::nullopt, base::nullopt, storage_type,

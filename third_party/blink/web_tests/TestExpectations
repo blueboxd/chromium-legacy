@@ -260,9 +260,6 @@ crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-orig
 
 # Display locking failures
 
-# MSAN failure
-crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
-
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
 # These tests are no longer applicable in BlinkGenPropertyTree mode.
@@ -2651,6 +2648,10 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/eol-spaces-bidi-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-enter-exit.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]

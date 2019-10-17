@@ -491,18 +491,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
 
   // 3) Flush A.
   web_contents()->GetController().GetBackForwardCache().Flush();
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());  // Flush is synchronous.
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
 
   // 4) Go back to a new A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
 
   // 5) Flush B.
   web_contents()->GetController().GetBackForwardCache().Flush();
-  EXPECT_TRUE(delete_observer_rfh_b.deleted());
+  EXPECT_TRUE(delete_observer_rfh_b.deleted());  // Flush is synchronous.
 }
 
 // Check the visible URL in the omnibox is properly updated when restoring a
@@ -1887,7 +1886,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // rfh_a should have been deleted, and page A navigated to normally.
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  delete_observer_rfh_a.WaitUntilDeleted();
   RenderFrameHostImpl* rfh_a2 = current_frame_host();
   EXPECT_NE(rfh_a2, rfh_b);
   EXPECT_EQ(rfh_a2->GetLastCommittedURL(), url_a);
@@ -1927,7 +1926,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // The cached RenderFrameHost should be destroyed (not kept in the cache).
   crash_observer.Wait();
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  delete_observer_rfh_a.WaitUntilDeleted();
 
   // rfh_b should still be the current frame.
   EXPECT_EQ(current_frame_host(), rfh_b);
@@ -2038,7 +2037,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FetchWhileStoring) {
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  delete_observer_rfh_a.WaitUntilDeleted();
 }
 
 // Only HTTP/HTTPS main document can enter the BackForwardCache.
@@ -2477,7 +2476,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  delete_observer_rfh_a.WaitUntilDeleted();
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
@@ -2504,7 +2503,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 2) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
+  delete_observer_rfh_a.WaitUntilDeleted();
 
   // This should not die
   BackForwardCache::DisableForRenderFrameHost(
@@ -2517,15 +2516,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectEvictedIsEmpty(FROM_HERE);
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// Flaky. https://crbug.com/1013802
-#define MAYBE_DisableBackForwardCacheIframe \
-  DISABLED_DisableBackForwardCacheIframe
-#else
-#define MAYBE_DisableBackForwardCacheIframe DisableBackForwardCacheIframe
-#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       MAYBE_DisableBackForwardCacheIframe) {
+                       DisableBackForwardCacheIframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -2541,10 +2533,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   BackForwardCache::DisableForRenderFrameHost(
       rfh_b, "DisabledByBackForwardCacheBrowserTest");
 
-  // 2) Navigate to C. A and B are immediately deleted.
+  // 2) Navigate to C. A and B are deleted.
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(delete_observer_rfh_b.deleted());
+  delete_observer_rfh_a.WaitUntilDeleted();
+  delete_observer_rfh_b.WaitUntilDeleted();
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
@@ -2936,6 +2928,37 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, RestoreWhilePendingCommit) {
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(rfh1, current_frame_host());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheCrossSiteHttpPost) {
+  SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Note we do a cross-site post because same-site navigations of any kind
+  // aren't cached currently.
+  GURL form_url(embedded_test_server()->GetURL(
+      "a.com", "/form_that_posts_cross_site.html"));
+  GURL redirect_target_url(embedded_test_server()->GetURL("x.com", "/echoall"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to the page with form that posts via 307 redirection to
+  // |redirect_target_url| (cross-site from |form_url|).
+  EXPECT_TRUE(NavigateToURL(shell(), form_url));
+
+  // Submit the form.
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell(), "document.getElementById('text-form').submit()"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected, redirected location.
+  EXPECT_EQ(redirect_target_url,
+            shell()->web_contents()->GetLastCommittedURL());
+  RenderFrameDeletedObserver delete_observer_rfh(current_frame_host());
+
+  // Navigate away. |redirect_target_url|'s page should not be cached.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delete_observer_rfh.WaitUntilDeleted();
 }
 
 }  // namespace content

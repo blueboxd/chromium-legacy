@@ -89,12 +89,17 @@ class ImageProcessorParamTest
         Fourcc::FromVideoPixelFormat(input_image.PixelFormat());
     Fourcc output_fourcc =
         Fourcc::FromVideoPixelFormat(output_image.PixelFormat());
-    ImageProcessor::PortConfig input_config(input_fourcc, input_image.Size(),
-                                            {}, input_image.Size(),
-                                            input_storage_types);
-    ImageProcessor::PortConfig output_config(output_fourcc, output_image.Size(),
-                                             {}, output_image.Size(),
-                                             output_storage_types);
+    auto input_layout = test::CreateVideoFrameLayout(input_image.PixelFormat(),
+                                                     input_image.Size());
+    auto output_layout = test::CreateVideoFrameLayout(
+        output_image.PixelFormat(), output_image.Size());
+    LOG_ASSERT(input_layout && output_layout);
+    ImageProcessor::PortConfig input_config(
+        input_fourcc, input_image.Size(), input_layout->planes(),
+        input_image.Size(), input_storage_types);
+    ImageProcessor::PortConfig output_config(
+        output_fourcc, output_image.Size(), output_layout->planes(),
+        output_image.Size(), output_storage_types);
     // TODO(crbug.com/917951): Select more appropriate number of buffers.
     constexpr size_t kNumBuffers = 1;
     LOG_ASSERT(output_image.IsMetadataLoaded());

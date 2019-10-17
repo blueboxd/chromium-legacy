@@ -65,7 +65,7 @@ inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
   Clear();
   for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
     // Re-distribution across v0 and v1 shadow trees is not supported
-    if (IsHTMLSlotElement(child))
+    if (IsA<HTMLSlotElement>(child))
       continue;
 
     if (IsActiveV0InsertionPoint(*child)) {

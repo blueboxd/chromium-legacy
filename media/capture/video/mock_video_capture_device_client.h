@@ -10,6 +10,9 @@
 
 namespace media {
 
+using FakeFrameCapturedCallback =
+    base::RepeatingCallback<void(const VideoCaptureFormat&)>;
+
 class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
  public:
   MockVideoCaptureDeviceClient();
@@ -68,6 +71,13 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
                     base::TimeDelta timestamp,
                     gfx::Rect visible_rect,
                     const media::VideoFrameMetadata& additional_metadata));
+
+  static std::unique_ptr<MockVideoCaptureDeviceClient>
+  CreateMockClientWithBufferAllocator(
+      FakeFrameCapturedCallback frame_captured_callback);
+
+ protected:
+  FakeFrameCapturedCallback fake_frame_captured_callback_;
 };
 
 using NiceMockVideoCaptureDeviceClient =

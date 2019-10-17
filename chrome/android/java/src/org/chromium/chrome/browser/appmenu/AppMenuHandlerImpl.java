@@ -18,15 +18,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.PopupMenu;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.Callback;
-import org.chromium.base.ObservableSupplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
@@ -53,10 +48,8 @@ class AppMenuHandlerImpl
     private final AppMenuDelegate mAppMenuDelegate;
     private final View mDecorView;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
-    private final @Nullable ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
-    private @Nullable Callback<OverviewModeBehavior> mOverviewModeSupplierCallback;
-    private @Nullable OverviewModeBehavior mOverviewModeBehavior;
-    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
+    private Callback<MenuItem> mTestOptionsItemSelectedListener;
 
     /**
      * The resource id of the menu item to highlight when the menu next opens. A value of
@@ -80,13 +73,10 @@ class AppMenuHandlerImpl
      *            activity.
      * @param activityLifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the containing
      *            activity.
-     * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
-     *            {@link OverviewModeBehavior} associated with the containing activity.
      */
     public AppMenuHandlerImpl(AppMenuPropertiesDelegate delegate, AppMenuDelegate appMenuDelegate,
             int menuResourceId, View decorView,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher,
-            @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mAppMenuDelegate = appMenuDelegate;
         mDelegate = delegate;
         mDecorView = decorView;
@@ -97,50 +87,6 @@ class AppMenuHandlerImpl
 
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mActivityLifecycleDispatcher.register(this);
-
-        mOverviewModeObserver = new EmptyOverviewModeObserver() {
-            // OverviewModeBehavior.OverviewModeObserver implementation
-            @Override
-            public void onOverviewModeStartedShowing(boolean showToolbar) {
-                hideAppMenu();
-            }
-
-            @Override
-            public void onOverviewModeFinishedShowing() {
-                // Ideally we wouldn't allow the app menu to show while animating the overview mode.
-                // This is hard to track, however, because in some instances
-                // #onOverviewModeStartedShowing is called after #onOverviewModeFinishedShowing (see
-                // https://crbug.com/969047). Once that bug is fixed, we can remove this call to
-                // hide in favor of disallowing app menu shows during animation. Alternatively, we
-                // could expose a way to query whether an animation is in progress.
-                hideAppMenu();
-            }
-
-            @Override
-            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-                hideAppMenu();
-            }
-
-            @Override
-            public void onOverviewModeFinishedHiding() {
-                hideAppMenu();
-            }
-        };
-
-        // TODO(twellington): Move overview mode/app menu logic to parent root UI coordinator (to
-        // control interaction between peer components)?
-        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
-        if (mOverviewModeBehaviorSupplier != null) {
-            mOverviewModeSupplierCallback = overviewModeBehavior -> {
-                if (mOverviewModeBehavior != null) {
-                    mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-                }
-
-                mOverviewModeBehavior = overviewModeBehavior;
-                mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
-            };
-            mOverviewModeBehaviorSupplier.addObserver(mOverviewModeSupplierCallback);
-        }
 
         assert mHardwareButtonMenuAnchor
                 != null : "Using AppMenu requires to have menu_anchor_stub view";
@@ -154,12 +100,6 @@ class AppMenuHandlerImpl
         hideAppMenu();
 
         mActivityLifecycleDispatcher.unregister(this);
-        if (mOverviewModeBehaviorSupplier != null) {
-            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeSupplierCallback);
-        }
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-        }
     }
 
     @Override
@@ -333,6 +273,11 @@ class AppMenuHandlerImpl
 
     @VisibleForTesting
     public void onOptionsItemSelected(MenuItem item) {
+        if (mTestOptionsItemSelectedListener != null) {
+            mTestOptionsItemSelectedListener.onResult(item);
+            return;
+        }
+
         mAppMenuDelegate.onOptionsItemSelected(
                 item.getItemId(), mDelegate.getBundleForMenuItem(item));
     }
@@ -383,5 +328,16 @@ class AppMenuHandlerImpl
             if (!mBlockers.get(i).canShowAppMenu()) return false;
         }
         return true;
+    }
+
+    @VisibleForTesting
+    void overrideOnOptionItemSelectedListenerForTests(
+            Callback<MenuItem> onOptionsItemSelectedListener) {
+        mTestOptionsItemSelectedListener = onOptionsItemSelectedListener;
+    }
+
+    @VisibleForTesting
+    AppMenuPropertiesDelegate getDelegateForTests() {
+        return mDelegate;
     }
 }

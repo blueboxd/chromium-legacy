@@ -63,6 +63,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "features_unittest.cc",
     "send_tab_to_self_bridge_unittest.cc",
     "send_tab_to_self_entry_unittest.cc",
   ]
@@ -74,6 +75,7 @@ source_set("unit_tests") {
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
     "//components/sync:test_support",
     "//components/sync_device_info:test_support",
+    "//components/sync_preferences:test_support",
     "//testing/gtest",
     "//url",
   ]

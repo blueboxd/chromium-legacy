@@ -32,8 +32,8 @@ import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -101,10 +101,7 @@ public class TabPersistentStoreTest {
 
         @Override
         public Tab createNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent) {
-            Tab tab = TabBuilder.createForLazyLoad(loadUrlParams)
-                              .setIncognito(mIsIncognito)
-                              .setLaunchType(TabLaunchType.FROM_LINK)
-                              .build();
+            Tab tab = new MockTab(0, mIsIncognito, TabLaunchType.FROM_LINK);
             mSelector.getModel(mIsIncognito).addTab(tab, TabModel.INVALID_TAB_INDEX, type);
             storeTabInfo(null, tab.getId());
             return tab;
@@ -112,10 +109,7 @@ public class TabPersistentStoreTest {
 
         @Override
         public Tab createFrozenTab(TabState state, int id, int index) {
-            Tab tab = TabBuilder.createFromFrozenState()
-                              .setId(id)
-                              .setIncognito(state.isIncognito())
-                              .build();
+            Tab tab = new MockTab(id, state.isIncognito(), TabLaunchType.FROM_RESTORE);
             TabTestUtils.restoreFieldsFromState(tab, state);
             mSelector.getModel(mIsIncognito).addTab(tab, index, TabLaunchType.FROM_RESTORE);
             storeTabInfo(state, id);

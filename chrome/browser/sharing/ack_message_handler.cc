@@ -13,7 +13,8 @@ AckMessageHandler::~AckMessageHandler() = default;
 void AckMessageHandler::OnMessage(
     const chrome_browser_sharing::SharingMessage& message) {
   for (AckMessageObserver& observer : observers_)
-    observer.OnAckReceived(message.ack_message().original_message_id());
+    observer.OnAckReceived(message.ack_message().original_message_type(),
+                           message.ack_message().original_message_id());
 }
 
 void AckMessageHandler::AddObserver(AckMessageObserver* observer) {

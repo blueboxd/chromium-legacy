@@ -885,6 +885,16 @@ class BrowseAmazonMobileStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 4
 
 
+class BrowseAmazonMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:shopping:amazon:2019'
+  URL = 'https://www.amazon.com.br/s/?k=telefone+celular'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  ITEM_SELECTOR = '[class="a-size-base a-color-base a-text-normal"]'
+  ITEMS_TO_VISIT = 4
+
+
 class BrowseLazadaMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:shopping:lazada'
   URL = 'https://www.lazada.co.id/catalog/?q=Wrist+watch'

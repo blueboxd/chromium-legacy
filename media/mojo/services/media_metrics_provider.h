@@ -16,6 +16,7 @@
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace media {
@@ -107,7 +108,8 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
       mojom::VideoDecodeStatsRecorderRequest request) override;
   void AcquireLearningTaskController(
       const std::string& taskName,
-      media::learning::mojom::LearningTaskControllerRequest request) override;
+      mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
+          receiver) override;
   void AddBytesReceived(uint64_t bytes_received) override;
 
   void ReportPipelineUMA();

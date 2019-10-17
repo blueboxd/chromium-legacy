@@ -231,8 +231,12 @@ cca.device.VideoConstraintsPreferrer =
 
     devices.forEach(({deviceId, videoResols, videoMaxFps, fpsRanges}) => {
       this.deviceResolutions_[deviceId] = videoResols;
-      let {width = -1, height = -1} = this.prefResolution_[deviceId] || {};
-      if (!videoResols.find(([w, h]) => w === width && h === height)) {
+      const findResol = (width, height) =>
+          videoResols.find(([w, h]) => w == width && h == height) &&
+          {width, height};
+      let {width, height} = this.prefResolution_[deviceId] ||
+          findResol(1920, 1080) || findResol(1280, 720) || {};
+      if (findResol(width, height) === undefined) {
         [width, height] = videoResols.reduce(
             (maxR, R) => (maxR[0] * maxR[1] < R[0] * R[1] ? R : maxR), [0, 0]);
       }
@@ -455,8 +459,13 @@ cca.device.PhotoResolPreferrer = class extends cca.device.ConstraintsPreferrer {
                 (captureR, r) => (r[0] > captureR[0] ? r : captureR), [0, -1]);
           }
 
+          const filterByScreenSize = ([w, h], index, arr) =>
+              index == arr.length - 1 ||
+              (w <= window.screen.width && h <= window.screen.height);
+
           const candidates = [...previewRs]
                                  .sort(([w, h], [w2, h2]) => w2 - w)
+                                 .filter(filterByScreenSize)
                                  .map(([width, height]) => ({
                                         audio: false,
                                         video: {

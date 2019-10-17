@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.appmenu;
 
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.Callback;
+import org.chromium.chrome.R;
 
 /**
  * Utility methods for performing operations on the app menu needed for testing.
@@ -20,11 +23,11 @@ import org.chromium.chrome.browser.ChromeActivity;
  */
 public class AppMenuTestSupport {
     /**
-     * @param The {@link ChromeActivity} for the current test.
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
      * @return The {@link Menu} held by the app menu.
      */
-    public static Menu getMenu(ChromeActivity activity) {
-        return getAppMenuCoordinator(activity)
+    public static Menu getMenu(AppMenuCoordinator coordinator) {
+        return ((AppMenuCoordinatorImpl) coordinator)
                 .getAppMenuHandlerImplForTesting()
                 .getAppMenu()
                 .getMenu();
@@ -33,22 +36,84 @@ public class AppMenuTestSupport {
     /**
      * See {@link AppMenuHandlerImpl#onOptionsItemSelected(MenuItem)}.
      */
-    public static void onOptionsItemSelected(ChromeActivity activity, MenuItem item) {
-        getAppMenuCoordinator(activity).getAppMenuHandlerImplForTesting().onOptionsItemSelected(
-                item);
+    public static void onOptionsItemSelected(AppMenuCoordinator coordinator, MenuItem item) {
+        ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .onOptionsItemSelected(item);
     }
 
     /**
-     * See {@link AppMenuHandlerImpl#showAppMenu(View, boolean, boolean)}.
+     * Show the app menu.
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
+     * @param anchorView Anchor view (usually a menu button) to be used for the popup, if null is
+     *         passed then hardware menu button anchor will be used.
+     * @param startDragging Whether dragging is started. For example, if the app menu is showed by
+     *         tapping on a button, this should be false. If it is showed by start
+     *         dragging down on the menu button, this should be true. Note that if
+     *         anchorView is null, this must be false since we no longer support
+     *         hardware menu button dragging.
+     * @param showFromBottom Whether the menu should be shown from the bottom up.
+     * @return True, if the menu is shown, false, if menu is not shown, example
+     *         reasons: the menu is not yet available to be shown, or the menu is
+     *         already showing.
      */
-    public static boolean showAppMenu(ChromeActivity activity, View anchorView,
+    public static boolean showAppMenu(AppMenuCoordinator coordinator, View anchorView,
             boolean startDragging, boolean showFromBottom) {
-        return getAppMenuCoordinator(activity).getAppMenuHandlerImplForTesting().showAppMenu(
-                anchorView, startDragging, showFromBottom);
+        return ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .showAppMenu(anchorView, startDragging, showFromBottom);
     }
 
-    private static AppMenuCoordinatorImpl getAppMenuCoordinator(ChromeActivity activity) {
-        return ((AppMenuCoordinatorImpl) activity.getRootUiCoordinatorForTesting()
-                        .getAppMenuCoordinatorForTesting());
+    /**
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
+     * @return The {@link ListView} for the app menu.
+     */
+    public static ListView getListView(AppMenuCoordinator coordinator) {
+        return ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .getAppMenu()
+                .getListView();
+    }
+
+    /**
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
+     * @return Whether the app menu should be shown according to the app menu component.
+     */
+    public static boolean shouldShowAppMenu(AppMenuCoordinator coordinator) {
+        return ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .shouldShowAppMenu();
+    }
+
+    /**
+     * Override the callback that's executed when an option in the menu is selected. Typically
+     * handled by {@link AppMenuDelegate#onOptionsItemSelected(int, Bundle)}.
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
+     * @param onOptionsItemSelectedListener The callback to execute instead of the AppMenuDelegate
+     *         method.
+     */
+    public static void overrideOnOptionItemSelectedListener(
+            AppMenuCoordinator coordinator, Callback<MenuItem> onOptionsItemSelectedListener) {
+        ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .overrideOnOptionItemSelectedListenerForTests(onOptionsItemSelectedListener);
+    }
+
+    /**
+     * @param coordinator The {@link AppMenuCoordinator} associated with the app menu being tested.
+     * @return The {@link AppMenuPropertiesDelegate} for the coordinator.
+     */
+    public static AppMenuPropertiesDelegate getAppMenuPropertiesDelegate(
+            AppMenuCoordinator coordinator) {
+        return ((AppMenuCoordinatorImpl) coordinator)
+                .getAppMenuHandlerImplForTesting()
+                .getDelegateForTests();
+    }
+
+    /**
+     * @return The view id for the ListView displaying app menu items.
+     */
+    public static int getAppMenuLayoutListViewId() {
+        return R.id.app_menu_list;
     }
 }

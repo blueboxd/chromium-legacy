@@ -1725,7 +1725,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), this,
-                mOverviewModeController.mOverviewModeBehaviorSupplier);
+                mOverviewModeController.mOverviewModeBehaviorSupplier,
+                getToolbarManager().getBookmarkBridgeSupplier());
     }
 
     @Override

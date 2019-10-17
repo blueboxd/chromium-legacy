@@ -33,9 +33,10 @@ void apps::UninstallDialog::UiBase::Create(
     Profile* profile,
     apps::mojom::AppType app_type,
     const std::string& app_id,
+    const std::string& app_name,
     gfx::ImageSkia image,
     apps::UninstallDialog* uninstall_dialog) {
-  new AppUninstallDialogView(profile, app_type, app_id, image,
+  new AppUninstallDialogView(profile, app_type, app_id, app_name, image,
                              uninstall_dialog);
 }
 
@@ -43,11 +44,13 @@ AppUninstallDialogView::AppUninstallDialogView(
     Profile* profile,
     apps::mojom::AppType app_type,
     const std::string& app_id,
+    const std::string& app_name,
     gfx::ImageSkia image,
     apps::UninstallDialog* uninstall_dialog)
     : apps::UninstallDialog::UiBase(image, uninstall_dialog),
       BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
-      app_type_(app_type) {
+      app_type_(app_type),
+      app_name_(app_name) {
   InitializeView(profile, app_id);
   constrained_window::CreateBrowserModalDialogViews(this, nullptr)->Show();
 }
@@ -89,7 +92,28 @@ gfx::ImageSkia AppUninstallDialogView::GetWindowIcon() {
 }
 
 base::string16 AppUninstallDialogView::GetWindowTitle() const {
-  return window_title_;
+  switch (app_type_) {
+    case apps::mojom::AppType::kUnknown:
+    case apps::mojom::AppType::kBuiltIn:
+      NOTREACHED();
+      return base::string16();
+    case apps::mojom::AppType::kArc:
+      return l10n_util::GetStringUTF16(
+          shortcut_ ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE
+                    : IDS_APP_UNINSTALL_PROMPT_TITLE);
+    case apps::mojom::AppType::kCrostini:
+#if defined(OS_CHROMEOS)
+      return l10n_util::GetStringUTF16(
+          IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_TITLE);
+#else
+      NOTREACHED();
+      return base::string16();
+#endif
+    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kWeb:
+      return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
+                                        base::UTF8ToUTF16(app_name_));
+  }
 }
 
 bool AppUninstallDialogView::ShouldShowCloseButton() const {
@@ -114,6 +138,10 @@ void AppUninstallDialogView::AddMultiLineLabel(
 void AppUninstallDialogView::InitializeViewForExtension(
     Profile* profile,
     const std::string& app_id) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -128,10 +156,6 @@ void AppUninstallDialogView::InitializeViewForExtension(
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
           app_id);
   DCHECK(extension);
-
-  window_title_ =
-      l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
-                                 base::UTF8ToUTF16(extension->name()));
 
   if (extensions::ManifestURL::UpdatesFromGallery(extension)) {
     auto report_abuse_checkbox = std::make_unique<views::Checkbox>(
@@ -168,16 +192,14 @@ void AppUninstallDialogView::InitializeViewForArcApp(
       arc_prefs->GetApp(app_id);
   DCHECK(arc_prefs);
 
-  window_title_ = l10n_util::GetStringUTF16(
-      app_info->shortcut ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE
-                         : IDS_APP_UNINSTALL_PROMPT_TITLE);
+  shortcut_ = app_info->shortcut;
 
   base::string16 heading_text = l10n_util::GetStringFUTF16(
-      app_info->shortcut ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING
-                         : IDS_NON_PLATFORM_APP_UNINSTALL_PROMPT_HEADING,
-      base::UTF8ToUTF16(app_info->name));
+      shortcut_ ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING
+                : IDS_NON_PLATFORM_APP_UNINSTALL_PROMPT_HEADING,
+      base::UTF8ToUTF16(app_name_));
   base::string16 subheading_text;
-  if (!app_info->shortcut) {
+  if (!shortcut_) {
     subheading_text = l10n_util::GetStringUTF16(
         IDS_ARC_APP_UNINSTALL_PROMPT_DATA_REMOVAL_WARNING);
   }
@@ -186,6 +208,10 @@ void AppUninstallDialogView::InitializeViewForArcApp(
     DialogDelegate::set_button_label(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
+  } else {
+    DialogDelegate::set_button_label(
+        ui::DIALOG_BUTTON_OK,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
   }
 
   auto* icon_view = AddChildView(std::make_unique<views::ImageView>());
@@ -207,6 +233,27 @@ void AppUninstallDialogView::InitializeViewForArcApp(
   if (!subheading_text.empty())
     AddMultiLineLabel(text_container, subheading_text);
 }
+
+void AppUninstallDialogView::InitializeViewForCrostiniApp(
+    Profile* profile,
+    const std::string& app_id) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
+
+  views::LayoutProvider* provider = views::LayoutProvider::Get();
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical,
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+  base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY,
+      base::UTF8ToUTF16(app_name_));
+  auto* message_label = AddChildView(std::make_unique<views::Label>(message));
+  message_label->SetMultiLine(true);
+  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+}
 #endif
 
 void AppUninstallDialogView::InitializeView(Profile* profile,
@@ -219,10 +266,16 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kArc:
 #if defined(OS_CHROMEOS)
       InitializeViewForArcApp(profile, app_id);
+#else
+      NOTREACHED();
 #endif
       break;
     case apps::mojom::AppType::kCrostini:
+#if defined(OS_CHROMEOS)
+      InitializeViewForCrostiniApp(profile, app_id);
+#else
       NOTREACHED();
+#endif
       break;
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:

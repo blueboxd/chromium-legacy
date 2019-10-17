@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -14,7 +15,6 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/url_formatter/elide_url.h"
-#include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 using password_manager::CredentialPair;
@@ -33,9 +33,9 @@ void OnImageFetched(base::OnceCallback<void(const gfx::Image&)> callback,
 }  // namespace
 
 TouchToFillController::TouchToFillController(
-    content::WebContents* web_contents,
+    ChromePasswordManagerClient* password_client,
     favicon::FaviconService* favicon_service)
-    : web_contents_(web_contents), favicon_service_(favicon_service) {}
+    : password_client_(password_client), favicon_service_(favicon_service) {}
 
 TouchToFillController::~TouchToFillController() = default;
 
@@ -67,6 +67,11 @@ void TouchToFillController::OnCredentialSelected(
       ->FillSuggestion(credential.username, credential.password);
 }
 
+void TouchToFillController::OnManagePasswordsSelected() {
+  password_client_->NavigateToManagePasswordsPage(
+      password_manager::ManagePasswordsReferrer::kTouchToFill);
+}
+
 void TouchToFillController::OnDismiss() {
   if (!driver_)
     return;
@@ -75,7 +80,7 @@ void TouchToFillController::OnDismiss() {
 }
 
 gfx::NativeView TouchToFillController::GetNativeView() {
-  return web_contents_->GetNativeView();
+  return password_client_->web_contents()->GetNativeView();
 }
 
 void TouchToFillController::FetchFavicon(

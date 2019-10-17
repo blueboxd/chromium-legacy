@@ -3588,6 +3588,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppReinstallZeroState)},
 #endif  // OS_CHROMEOS
 
+    {"enable-sync-device-info-in-transport-mode",
+     flag_descriptions::kSyncDeviceInfoInTransportModeName,
+     flag_descriptions::kSyncDeviceInfoInTransportModeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(switches::kSyncDeviceInfoInTransportMode)},
+
     {"enable-sync-uss-bookmarks",
      flag_descriptions::kEnableSyncUSSBookmarksName,
      flag_descriptions::kEnableSyncUSSBookmarksDescription, kOsAll,

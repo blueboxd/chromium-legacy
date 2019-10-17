@@ -16,8 +16,9 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 interface AndroidOverlayProvider {
   // Create an overlay and send it to |client|, using |config| as the initial
   // configuration.  |overlay| will hold the overlay object.
-  CreateOverlay(AndroidOverlay& overlay, AndroidOverlayClient client,
-    AndroidOverlayConfig config);
+  CreateOverlay(pending_receiver<AndroidOverlay> overlay,
+                pending_remote<AndroidOverlayClient> client,
+                AndroidOverlayConfig config);
 };
 
 // One overlay instance.  This will be provided by the provider to clients

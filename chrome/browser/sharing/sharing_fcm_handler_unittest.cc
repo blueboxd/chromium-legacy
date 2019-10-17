@@ -50,7 +50,7 @@ class MockSharingFCMSender : public SharingFCMSender {
   MOCK_METHOD4(SendMessageToDevice,
                void(syncer::DeviceInfo::SharingInfo target,
                     base::TimeDelta time_to_live,
-                    chrome_browser_sharing::SharingMessage message,
+                    SharingMessage message,
                     SendMessageCallback callback));
 };
 
@@ -142,6 +142,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
   SharingMessage sharing_ack_message;
   sharing_ack_message.mutable_ack_message()->set_original_message_id(
       kTestMessageId);
+  sharing_ack_message.mutable_ack_message()->set_original_message_type(
+      chrome_browser_sharing::PING_MESSAGE);
 
   // Tests OnMessage flow in SharingFCMHandler when no handler is registered.
   EXPECT_CALL(mock_sharing_message_handler_, OnMessage(_)).Times(0);
@@ -183,6 +185,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerSecondaryUser) {
   SharingMessage sharing_ack_message;
   sharing_ack_message.mutable_ack_message()->set_original_message_id(
       kTestMessageId);
+  sharing_ack_message.mutable_ack_message()->set_original_message_type(
+      chrome_browser_sharing::PING_MESSAGE);
 
   // Tests OnMessage flow in SharingFCMHandler after handler is added.
   EXPECT_CALL(mock_sharing_message_handler_,
@@ -212,6 +216,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithRecipientInfo) {
   SharingMessage sharing_ack_message;
   sharing_ack_message.mutable_ack_message()->set_original_message_id(
       kTestMessageId);
+  sharing_ack_message.mutable_ack_message()->set_original_message_type(
+      chrome_browser_sharing::PING_MESSAGE);
 
   EXPECT_CALL(mock_sharing_message_handler_,
               OnMessage(ProtoEquals(sharing_message)));

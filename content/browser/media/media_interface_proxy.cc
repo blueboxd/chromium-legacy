@@ -149,11 +149,11 @@ MediaInterfaceProxy::~MediaInterfaceProxy() {
 }
 
 void MediaInterfaceProxy::CreateAudioDecoder(
-    media::mojom::AudioDecoderRequest request) {
+    mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) {
   DCHECK(thread_checker_.CalledOnValidThread());
   InterfaceFactory* factory = media_interface_factory_ptr_->Get();
   if (factory)
-    factory->CreateAudioDecoder(std::move(request));
+    factory->CreateAudioDecoder(std::move(receiver));
 }
 
 void MediaInterfaceProxy::CreateVideoDecoder(

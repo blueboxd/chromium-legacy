@@ -30,6 +30,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/possible_username_data.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::FormData;
 using autofill::FormFieldData;
@@ -143,6 +144,10 @@ bool FormContainsFieldWithName(const FormData& form,
       return true;
   }
   return false;
+}
+
+bool IsUsernameFirstFlowFeatureEnabled() {
+  return base::FeatureList::IsEnabled(features::kUsernameFirstFlow);
 }
 
 }  // namespace
@@ -339,9 +344,6 @@ void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   metrics_recorder_->SetSubmissionIndicatorEvent(
       parsed_submitted_form_->submission_event);
 
-  std::unique_ptr<PasswordForm> parsed_observed_form =
-      parser_.Parse(observed_form_, FormDataParser::Mode::kFilling);
-
   base::string16 password_to_save = pending_credentials_.password_value;
   bool skip_zero_click = pending_credentials_.skip_zero_click;
   pending_credentials_ = credentials_to_update;
@@ -424,6 +426,8 @@ void PasswordFormManager::OnNeverClicked() {
   votes_uploader_.UploadPasswordVote(*parsed_submitted_form_,
                                      *parsed_submitted_form_,
                                      autofill::UNKNOWN_TYPE, std::string());
+
+  votes_uploader_.MaybeSendSingleUsernameVote(false /* credentials_saved */);
   PermanentlyBlacklist();
 }
 
@@ -434,6 +438,8 @@ void PasswordFormManager::OnNoInteraction(bool is_update) {
       *parsed_submitted_form_, *parsed_submitted_form_,
       is_update ? autofill::PROBABLY_NEW_PASSWORD : autofill::UNKNOWN_TYPE,
       std::string());
+
+  votes_uploader_.MaybeSendSingleUsernameVote(false /* credentials_saved */);
 }
 
 void PasswordFormManager::PermanentlyBlacklist() {
@@ -685,13 +691,17 @@ bool PasswordFormManager::ProvisionallySave(
   is_submitted_ = true;
   CalculateFillingAssistanceMetric(submitted_form);
   metrics_recorder_->set_possible_username_used(false);
+  votes_uploader_.clear_single_username_vote_data();
 
-  if (parsed_submitted_form_->username_value.empty() && possible_username &&
+  if (IsUsernameFirstFlowFeatureEnabled() &&
+      parsed_submitted_form_->username_value.empty() && possible_username &&
       IsPossibleUsernameValid(*possible_username,
                               parsed_submitted_form_->signon_realm,
                               base::Time::Now())) {
     parsed_submitted_form_->username_value = possible_username->value;
     metrics_recorder_->set_possible_username_used(true);
+    votes_uploader_.set_single_username_vote_data(
+        possible_username->renderer_id, possible_username->form_predictions);
   }
   CreatePendingCredentials();
   return true;

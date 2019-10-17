@@ -29,7 +29,9 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   // Parses the URL fragment and, if possible, creates and returns a fragment
   // based on an Element in the page. Returns nullptr otherwise. Produces side
   // effects related to fragment targeting in the page in either case.
-  static ElementFragmentAnchor* TryCreate(const KURL& url, LocalFrame& frame);
+  static ElementFragmentAnchor* TryCreate(const KURL& url,
+                                          LocalFrame& frame,
+                                          bool should_scroll);
 
   ElementFragmentAnchor(Node& anchor_node, LocalFrame& frame);
   ~ElementFragmentAnchor() override = default;

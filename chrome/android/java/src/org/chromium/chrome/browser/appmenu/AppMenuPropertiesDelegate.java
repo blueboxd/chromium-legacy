@@ -11,9 +11,6 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
-import org.chromium.chrome.browser.tab.Tab;
-
 /**
  * App Menu helper that handles hiding and showing menu items based on activity state.
  */
@@ -97,17 +94,4 @@ public interface AppMenuPropertiesDelegate {
      * @param view The view that was inflated.
      */
     void onHeaderViewInflated(AppMenuHandler appMenuHandler, View view);
-
-    /**
-     * Updates the bookmarks bridge.
-     *
-     * @param bookmarkBridge The bookmarks bridge.
-     */
-    void setBookmarkBridge(BookmarkBridge bookmarkBridge);
-
-    /**
-     * Returns true iff the translate menu item should be visible.
-     * @param tab Tab being displayed.
-     */
-    boolean isTranslateMenuItemVisible(Tab tab);
 }

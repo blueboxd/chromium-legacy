@@ -348,12 +348,19 @@ void NGInlineCursor::InternalMoveTo(const LayoutObject& layout_object) {
 }
 
 void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
+  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext()) << layout_object;
   InternalMoveTo(layout_object);
   if (IsNotNull() || !layout_object.IsLayoutInline()) {
     layout_inline_ = nullptr;
     return;
   }
   // In case of |layout_object| is cullred inline.
+  if (!fragment_items_ && !root_paint_fragment_) {
+    root_paint_fragment_ =
+        layout_object.RootInlineFormattingContext()->PaintFragment();
+    if (!root_paint_fragment_)
+      return MakeNull();
+  }
   layout_inline_ = ToLayoutInline(&layout_object);
   MoveToFirst();
   while (IsNotNull() && !IsInclusiveDescendantOf(layout_object))
@@ -437,8 +444,12 @@ void NGInlineCursor::MoveToNextForSameLayoutObject() {
   }
   if (current_paint_fragment_) {
     if (auto* paint_fragment =
-            current_paint_fragment_->NextForSameLayoutObject())
+            current_paint_fragment_->NextForSameLayoutObject()) {
+      // |paint_fragment| can be in another fragment tree rooted by
+      // |root_paint_fragment_|, e.g. "multicol-span-all-restyle-002.html"
+      root_paint_fragment_ = paint_fragment->Root();
       return MoveTo(*paint_fragment);
+    }
     return MakeNull();
   }
   if (current_item_) {

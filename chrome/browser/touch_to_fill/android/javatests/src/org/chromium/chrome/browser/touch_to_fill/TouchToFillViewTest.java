@@ -17,6 +17,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
@@ -44,6 +45,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -53,6 +55,7 @@ import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * View tests for the Touch To Fill component ensure that model changes are reflected in the sheet.
@@ -67,7 +70,7 @@ public class TouchToFillViewTest {
             new Credential("Bob", "***", "Bob", "mobile.example.xyz", true);
 
     @Mock
-    private TouchToFillProperties.ViewEventListener mMockListener;
+    private Callback<Integer> mDismissHandler;
     @Mock
     private Callback<Credential> mCredentialCallback;
 
@@ -81,7 +84,7 @@ public class TouchToFillViewTest {
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
-        mModel = TouchToFillProperties.createDefaultModel(mMockListener);
+        mModel = TouchToFillProperties.createDefaultModel(mDismissHandler);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTouchToFillView =
                     new TouchToFillView(getActivity(), getActivity().getBottomSheetController());
@@ -94,7 +97,7 @@ public class TouchToFillViewTest {
     public void testVisibilityChangedByModel() {
         // After setting the visibility to true, the view should exist and be visible.
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
         assertThat(mTouchToFillView.getContentView().isShown(), is(true));
 
         // After hiding the view, the view should still exist but be invisible.
@@ -115,7 +118,7 @@ public class TouchToFillViewTest {
                                     .build()));
             mModel.set(VISIBLE, true);
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
         TextView subtitle =
                 mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
@@ -134,7 +137,7 @@ public class TouchToFillViewTest {
                                     .build()));
             mModel.set(VISIBLE, true);
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
         TextView subtitle =
                 mTouchToFillView.getContentView().findViewById(R.id.touch_to_fill_sheet_subtitle);
 
@@ -151,7 +154,7 @@ public class TouchToFillViewTest {
                             buildCredentialItem(BOB)));
         });
 
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
         assertThat(getCredentials().getChildCount(), is(3));
         assertThat(getCredentialOriginAt(0).getVisibility(), is(View.GONE));
         assertThat(getCredentialNameAt(0).getText(), is(ANA.getFormattedUsername()));
@@ -179,7 +182,7 @@ public class TouchToFillViewTest {
             mModel.get(SHEET_ITEMS).addAll(Collections.singletonList(buildCredentialItem(ANA)));
             mModel.set(VISIBLE, true);
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
 
         assertNotNull(getCredentials().getChildAt(0));
 
@@ -190,12 +193,33 @@ public class TouchToFillViewTest {
 
     @Test
     @MediumTest
+    public void testManagePasswordsIsClickable() {
+        final AtomicBoolean manageButtonClicked = new AtomicBoolean(false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.set(ON_CLICK_MANAGE, () -> manageButtonClicked.set(true));
+            mModel.set(VISIBLE, true);
+        });
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { getActivity().getBottomSheet().setSheetState(SheetState.FULL, false); });
+        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+
+        TextView manageButton = mTouchToFillView.getContentView().findViewById(
+                R.id.touch_to_fill_sheet_manage_passwords);
+        TouchCommon.singleClickView(manageButton);
+
+        pollUiThread(manageButtonClicked::get);
+    }
+
+    @Test
+    @MediumTest
     public void testDismissesWhenHidden() {
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, true));
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
         TestThreadUtils.runOnUiThreadBlocking(() -> mModel.set(VISIBLE, false));
         pollUiThread(() -> getBottomSheetState() == SheetState.HIDDEN);
-        verify(mMockListener).onDismissed();
+        verify(mDismissHandler).onResult(StateChangeReason.NONE);
     }
 
     private ChromeActivity getActivity() {

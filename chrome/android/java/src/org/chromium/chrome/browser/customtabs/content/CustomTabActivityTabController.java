@@ -355,7 +355,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
 
     private Tab createTab() {
         WebContents webContents = takeWebContents();
-        Tab tab = mTabFactory.createTab();
+        Tab tab = mTabFactory.createTab(webContents, mCustomTabDelegateFactory.get());
         int launchSource = mIntent.getIntExtra(
                 CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, LaunchSourceType.OTHER);
         if (launchSource == LaunchSourceType.WEBAPK) {
@@ -365,9 +365,6 @@ public class CustomTabActivityTabController implements InflationObserver, Native
             TabAssociatedApp.from(tab).setAppId(
                     mConnection.getClientPackageNameForSession(mSession));
         }
-
-        tab.initialize(webContents, mCustomTabDelegateFactory.get(), false /*initiallyHidden*/,
-                null, false /*unfreeze*/);
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
             if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();

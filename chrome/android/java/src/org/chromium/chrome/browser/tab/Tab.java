@@ -276,18 +276,13 @@ public class Tab {
      *
      * Package-private. Use {@link TabBuilder} to create an instance.
      *
-     * @param id            The id this tab should be identified with.
-     * @param parent        The tab that caused this tab to be opened.
-     * @param incognito     Whether or not this tab is incognito.
-     * @param window        An instance of a {@link WindowAndroid}.
-     * @param launchType    Type indicating how this tab was launched.
-     * @param creationState State in which the tab is created.
-     * @param loadUrlParams Parameters used for a lazily loaded Tab.
+     * @param id The id this tab should be identified with.
+     * @param parent The tab that caused this tab to be opened.
+     * @param incognito Whether or not this tab is incognito.
+     * @param launchType Type indicating how this tab was launched.
      */
     @SuppressLint("HandlerLeak")
-    Tab(int id, Tab parent, boolean incognito, WindowAndroid window,
-            @Nullable @TabLaunchType Integer launchType,
-            @Nullable @TabCreationState Integer creationState, LoadUrlParams loadUrlParams) {
+    Tab(int id, Tab parent, boolean incognito, @Nullable @TabLaunchType Integer launchType) {
         mId = TabIdManager.getInstance().generateValidId(id);
         mIncognito = incognito;
         if (parent == null) {
@@ -308,13 +303,7 @@ public class Tab {
                 ContextUtils.getApplicationContext(), ChromeActivity.getThemeId(),
                 false /*nightMode*/);
 
-        mWindowAndroid = window;
         mLaunchType = launchType;
-        mLaunchTypeAtCreation = launchType;
-        mPendingLoadParams = loadUrlParams;
-        if (loadUrlParams != null) mUrl = loadUrlParams.getUrl();
-
-        TabHelpers.initTabHelpers(this, parent, creationState);
 
         mAttachStateChangeListener = new OnAttachStateChangeListener() {
             @Override
@@ -847,20 +836,29 @@ public class Tab {
     /**
      * Initializes {@link Tab} with {@code webContents}.  If {@code webContents} is {@code null} a
      * new {@link WebContents} will be created for this {@link Tab}.
-     * @param webContents       A {@link WebContents} object or {@code null} if one should be
-     *                          created.
-     * @param delegateFactory   The {@link TabDelegateFactory} to be used for delegate creation.
-     * @param initiallyHidden   Only used if {@code webContents} is {@code null}.  Determines
-     *                          whether or not the newly created {@link WebContents} will be hidden
-     *                          or not.
-     * @param tabState          State containing information about this Tab, if it was persisted.
-     * @param unfreeze          Whether there should be an attempt to restore state at the end of
-     *                          the initialization.
+     * @param parent The tab that caused this tab to be opened.
+     * @param creationState State in which the tab is created.
+     * @param loadUrlParams Parameters used for a lazily loaded Tab.
+     * @param webContents A {@link WebContents} object or {@code null} if one should be created.
+     * @param delegateFactory The {@link TabDelegateFactory} to be used for delegate creation.
+     * @param initiallyHidden Only used if {@code webContents} is {@code null}.  Determines
+     *        whether or not the newly created {@link WebContents} will be hidden or not.
+     * @param tabState State containing information about this Tab, if it was persisted.
+     * @param unfreeze Whether there should be an attempt to restore state at the end of
+     *        the initialization.
      */
-    public void initialize(WebContents webContents, @Nullable TabDelegateFactory delegateFactory,
-            boolean initiallyHidden, TabState tabState, boolean unfreeze) {
+    void initialize(Tab parent, @Nullable @TabCreationState Integer creationState,
+            LoadUrlParams loadUrlParams, WebContents webContents,
+            @Nullable TabDelegateFactory delegateFactory, boolean initiallyHidden,
+            TabState tabState, boolean unfreeze) {
         try {
             TraceEvent.begin("Tab.initialize");
+
+            mLaunchTypeAtCreation = mLaunchType;
+            mPendingLoadParams = loadUrlParams;
+            if (loadUrlParams != null) mUrl = loadUrlParams.getUrl();
+
+            TabHelpers.initTabHelpers(this, parent, creationState);
 
             if (tabState != null) restoreFieldsFromState(tabState);
 

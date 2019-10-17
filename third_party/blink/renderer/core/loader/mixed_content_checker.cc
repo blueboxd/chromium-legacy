@@ -765,7 +765,7 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
     const KURL& mixed_content_url) {
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
-      "insecure element '%s'. As part of an experiment this request was "
+      "insecure element '%s'. This request was "
       "automatically upgraded to HTTPS, For more information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
       "autoupgrade-mixed.md",
@@ -782,8 +782,8 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
     const KURL& mixed_content_url) {
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted "
-      "to connect to the insecure WebSocket endpoint '%s'. As part of an "
-      "experiment this request was automatically upgraded to HTTPS, For more "
+      "to connect to the insecure WebSocket endpoint '%s'. "
+      "This request was automatically upgraded to HTTPS, For more "
       "information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
       "autoupgrade-mixed.md",

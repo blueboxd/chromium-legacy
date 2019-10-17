@@ -93,6 +93,7 @@ jumbo_static_library("weblayer_lib") {
     "//net",
     "//net:net_resources",
     "//sandbox",
+    "//services/network/public/mojom",
     "//services/service_manager/embedder:embedder_result_codes",
     "//skia",
     "//third_party/blink/public/strings",

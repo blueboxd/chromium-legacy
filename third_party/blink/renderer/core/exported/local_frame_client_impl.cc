@@ -494,7 +494,7 @@ void LocalFrameClientImpl::BeginNavigation(
     bool has_transient_activation,
     WebFrameLoadType frame_load_type,
     bool is_client_redirect,
-    WebTriggeringEventInfo triggering_event_info,
+    TriggeringEventInfo triggering_event_info,
     HTMLFormElement* form,
     ContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy,

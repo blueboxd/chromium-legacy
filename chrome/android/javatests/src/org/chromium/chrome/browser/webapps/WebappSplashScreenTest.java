@@ -86,7 +86,7 @@ public class WebappSplashScreenTest {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         Assert.assertEquals(
-                Color.WHITE, mActivityTestRule.getActivity().getWindow().getStatusBarColor());
+                Color.BLACK, mActivityTestRule.getActivity().getWindow().getStatusBarColor());
     }
 
     @Test

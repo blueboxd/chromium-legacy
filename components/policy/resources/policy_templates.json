@@ -5815,7 +5815,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'int',
       'schema': { 'type': 'integer' },
-      'supported_on': ['chrome_os:11-'],
+      'supported_on': ['chrome_os:11-', 'chrome.*:79-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,

@@ -16,6 +16,7 @@
 #include "media/blink/watch_time_reporter.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/mojom/watch_time_recorder.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -240,8 +241,8 @@ class WatchTimeReporterTest
     }
     void AcquireLearningTaskController(
         const std::string& taskName,
-        media::learning::mojom::LearningTaskControllerRequest request)
-        override {}
+        mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
+            receiver) override {}
     void Initialize(bool is_mse, mojom::MediaURLScheme url_scheme) override {}
     void OnError(PipelineStatus status) override {}
     void SetIsAdMedia() override {}

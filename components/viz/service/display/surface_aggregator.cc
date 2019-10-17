@@ -98,17 +98,15 @@ struct SurfaceAggregator::RoundedCornerInfo {
   RoundedCornerInfo() = default;
 
   // |target_transform| is the transform that maps |bounds_arg| from its current
-  // space into the desired target space. It must be a scale+translation matrix.
+  // space into the desired target space. It must be an axis aligned transform.
   RoundedCornerInfo(const gfx::RRectF& bounds_arg,
                     bool is_fast_rounded_corner,
                     const gfx::Transform target_transform)
       : bounds(bounds_arg), is_fast_rounded_corner(is_fast_rounded_corner) {
     if (bounds.IsEmpty())
       return;
-    DCHECK(target_transform.Preserves2dAxisAlignment());
-    SkMatrix matrix = target_transform.matrix();
-    bounds.Scale(matrix.getScaleX(), matrix.getScaleY());
-    bounds.Offset(target_transform.To2dTranslation());
+    bool success = target_transform.TransformRRectF(&bounds);
+    DCHECK(success);
   }
 
   gfx::RRectF bounds;

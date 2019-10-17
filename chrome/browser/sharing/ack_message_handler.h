@@ -11,15 +11,21 @@
 #include "base/observer_list.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 
+namespace chrome_browser_sharing {
+enum MessageType : int;
+}  // namespace chrome_browser_sharing
+
 // Class to managae ack message and notify observers.
 class AckMessageHandler : public SharingMessageHandler {
  public:
   // Interface for objects observing ack message received events.
   class AckMessageObserver : public base::CheckedObserver {
    public:
-    // Called when an ack message is received, where the identifier of original
-    // message is |message_id|.
-    virtual void OnAckReceived(const std::string& message_id) = 0;
+    // Called when an ack message is received, where |message_type| is the type
+    // of the original message, and |message_id| is the identifier of the
+    // original message.
+    virtual void OnAckReceived(chrome_browser_sharing::MessageType message_type,
+                               const std::string& message_id) = 0;
   };
 
   AckMessageHandler();

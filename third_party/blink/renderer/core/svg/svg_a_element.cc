@@ -48,8 +48,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(svg_names::kATag, document),
       SVGURIReference(this),
@@ -140,8 +138,8 @@ void SVGAElement::DefaultEventHandler(Event& event) {
           &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)));
       frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
-          event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
-                            : WebTriggeringEventInfo::kFromUntrustedEvent);
+          event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
+                            : TriggeringEventInfo::kFromUntrustedEvent);
       frame_request.GetResourceRequest().SetHasUserGesture(
           LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
 
@@ -183,7 +181,7 @@ bool SVGAElement::ShouldHaveFocusAppearance() const {
 }
 
 bool SVGAElement::IsURLAttribute(const Attribute& attribute) const {
-  return attribute.GetName().LocalName() == kHrefAttr ||
+  return attribute.GetName().LocalName() == html_names::kHrefAttr ||
          SVGGraphicsElement::IsURLAttribute(attribute);
 }
 

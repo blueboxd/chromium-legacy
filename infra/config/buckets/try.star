@@ -1114,6 +1114,7 @@ mac_builder(
 
 mac_builder(
     name = 'mac-rel',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -1122,10 +1123,12 @@ mac_builder(
 # The 10.xx version translates to which bots will run isolated tests.
 mac_builder(
     name = 'mac_chromium_10.10',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_10.12_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
@@ -1146,6 +1149,7 @@ mac_builder(
 mac_builder(
     name = 'mac_chromium_compile_dbg_ng',
     builderless = True,
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     os = os.MAC_10_13,
     ssd = True,
@@ -1153,10 +1157,12 @@ mac_builder(
 
 mac_builder(
     name = 'mac_chromium_compile_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_dbg_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(

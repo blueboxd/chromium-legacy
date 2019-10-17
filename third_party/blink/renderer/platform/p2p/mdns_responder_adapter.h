@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_P2P_MDNS_RESPONDER_ADAPTER_H_
 
 #include "mojo/public/cpp/bindings/shared_remote.h"
-#include "services/network/public/mojom/mdns_responder.mojom-blink.h"
+#include "services/network/public/mojom/mdns_responder.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
 

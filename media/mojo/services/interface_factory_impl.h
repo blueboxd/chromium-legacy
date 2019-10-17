@@ -40,7 +40,8 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   ~InterfaceFactoryImpl() final;
 
   // mojom::InterfaceFactory implementation.
-  void CreateAudioDecoder(mojom::AudioDecoderRequest request) final;
+  void CreateAudioDecoder(
+      mojo::PendingReceiver<mojom::AudioDecoder> receiver) final;
   void CreateVideoDecoder(mojom::VideoDecoderRequest request) final;
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              mojom::RendererRequest request) final;
@@ -87,7 +88,7 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   MojoCdmServiceContext cdm_service_context_;
 
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
-  mojo::StrongBindingSet<mojom::AudioDecoder> audio_decoder_bindings_;
+  mojo::UniqueReceiverSet<mojom::AudioDecoder> audio_decoder_receivers_;
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)

@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -164,7 +165,14 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     /** Retrieves the application Menu */
     public Menu getMenu() throws ExecutionException {
         return TestThreadUtils.runOnUiThreadBlocking(
-                () -> AppMenuTestSupport.getMenu(getActivity()));
+                () -> AppMenuTestSupport.getMenu(getAppMenuCoordinator()));
+    }
+
+    /**
+     * @return The {@link AppMenuCoordinator} for the activity.
+     */
+    public AppMenuCoordinator getAppMenuCoordinator() {
+        return getActivity().getRootUiCoordinatorForTesting().getAppMenuCoordinatorForTesting();
     }
 
     /**
@@ -183,7 +191,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     /**
      * Waits for the activity to fully finish its native initialization.
-     * @param The {@link ChromeActivity} to wait for.
+     * @param activity The {@link ChromeActivity} to wait for.
      */
     public static void waitForActivityNativeInitializationComplete(ChromeActivity activity) {
         CriteriaHelper.pollUiThread(()

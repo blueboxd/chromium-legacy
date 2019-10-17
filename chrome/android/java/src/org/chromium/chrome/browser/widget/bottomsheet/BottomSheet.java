@@ -103,10 +103,16 @@ public class BottomSheet
         int DISABLED = -2;
     }
 
-    /** The different reasons that the sheet's state can change. */
+    /**
+     * The different reasons that the sheet's state can change.
+     *
+     * Needs to stay in sync with BottomSheet.StateChangeReason in enums.xml. These values are
+     * persisted to logs. Entries should not be renumbered and numeric values should never be
+     * reused.
+     */
     @IntDef({StateChangeReason.NONE, StateChangeReason.SWIPE, StateChangeReason.BACK_PRESS,
             StateChangeReason.TAP_SCRIM, StateChangeReason.NAVIGATION,
-            StateChangeReason.COMPOSITED_UI, StateChangeReason.VR})
+            StateChangeReason.COMPOSITED_UI, StateChangeReason.VR, StateChangeReason.MAX_VALUE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StateChangeReason {
         int NONE = 0;
@@ -116,6 +122,7 @@ public class BottomSheet
         int NAVIGATION = 4;
         int COMPOSITED_UI = 5;
         int VR = 6;
+        int MAX_VALUE = VR;
     }
 
     /** The different priorities that the sheet's content can have. */

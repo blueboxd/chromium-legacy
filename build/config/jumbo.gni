@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")  # To see if jumbo should be turned off
-import("//build/split_static_library.gni")  # When someone uses that target_type
 import("//build/toolchain/goma.gni")
 
 declare_args() {
@@ -49,9 +48,9 @@ jumbo_file_merge_default = 50
 # Goma builds benefit from more parallelism
 jumbo_file_merge_goma = 8
 
-# Use one of the targets jumbo_source_set, jumbo_static_library,
-# jumbo_split_static_library or jumbo_component to generate a target
-# which merges sources if possible to compile much faster.
+# Use one of the targets jumbo_source_set, jumbo_static_library, or
+# jumbo_component to generate a target which merges sources if possible to
+# compile much faster.
 #
 # Special values.
 #
@@ -214,11 +213,6 @@ template("internal_jumbo_target") {
   }
 
   target_type = invoker.target_type
-  if (use_jumbo_build_for_target && target_type == "split_static_library") {
-    # Meaningless and also impossible if split_count > len(jumbo_files)
-    target_type = "static_library"
-    not_needed(invoker, [ "split_count" ])
-  }
 
   # Perform the actual operation, either on the original sources or
   # the sources post-jumbo merging.
@@ -277,22 +271,6 @@ set_defaults("jumbo_static_library") {
   # This sets the default list of configs when the jumbo_static_library target
   # is defined. The default_compiler_configs comes from BUILDCONFIG.gn and
   # is the list normally applied to static libraries and source sets.
-  configs = default_compiler_configs
-}
-
-# See documentation above by "internal_jumbo_target".
-template("jumbo_split_static_library") {
-  internal_jumbo_target(target_name) {
-    target_type = "split_static_library"
-    forward_variables_from(invoker, "*")
-  }
-}
-
-set_defaults("jumbo_split_static_library") {
-  # This sets the default list of configs when the
-  # jumbo_split_static_library target is defined. The
-  # default_compiler_configs comes from BUILDCONFIG.gn and is the list
-  # normally applied to static libraries and source sets.
   configs = default_compiler_configs
 }
 

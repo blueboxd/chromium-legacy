@@ -118,6 +118,10 @@ void TouchToFillViewImpl::OnCredentialSelected(
   OnCredentialSelected(ConvertJavaCredential(env, credential));
 }
 
+void TouchToFillViewImpl::OnManagePasswordsSelected(JNIEnv* env) {
+  controller_->OnManagePasswordsSelected();
+}
+
 void TouchToFillViewImpl::OnDismiss(JNIEnv* env) {
   OnDismiss();
 }

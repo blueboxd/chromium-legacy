@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -18,10 +19,11 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.DISMISS_HANDLER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
 import android.graphics.Bitmap;
@@ -36,12 +38,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordHistogramJni;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.modelutil.ListModel;
@@ -56,6 +63,7 @@ import java.util.Collections;
  * properly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 public class TouchToFillControllerTest {
     private static final String TEST_URL = "www.example.xyz";
     private static final String TEST_SUBDOMAIN_URL = "subdomain.example.xyz";
@@ -75,16 +83,21 @@ public class TouchToFillControllerTest {
     @Mock
     private TouchToFillComponent.Delegate mMockDelegate;
 
+    @Mock
+    private RecordHistogram.Natives mMockRecordHistogram;
+
     // Can't be local, as it has to be initialized by initMocks.
     @Captor
     private ArgumentCaptor<Callback<Bitmap>> mCallbackArgumentCaptor;
 
     private final TouchToFillMediator mMediator = new TouchToFillMediator();
-    private final PropertyModel mModel = TouchToFillProperties.createDefaultModel(mMediator);
+    private final PropertyModel mModel =
+            TouchToFillProperties.createDefaultModel(mMediator::onDismissed);
 
     public TouchToFillControllerTest() {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
+        mJniMocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogram);
         when(mUrlFormatterJniMock.formatUrlForDisplayOmitScheme(anyString()))
                 .then(inv -> format(inv.getArgument(0)));
     }
@@ -97,7 +110,7 @@ public class TouchToFillControllerTest {
     @Test
     public void testCreatesValidDefaultModel() {
         assertNotNull(mModel.get(SHEET_ITEMS));
-        assertNotNull(mModel.get(VIEW_EVENT_LISTENER));
+        assertNotNull(mModel.get(DISMISS_HANDLER));
         assertThat(mModel.get(VISIBLE), is(false));
     }
 
@@ -188,6 +201,20 @@ public class TouchToFillControllerTest {
     }
 
     @Test
+    public void testCallsCallbackAndHidesOnSelectingItemDoesNotRecordIndexForSingleCredential() {
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA));
+        assertThat(mModel.get(VISIBLE), is(true));
+        assertNotNull(mModel.get(SHEET_ITEMS).get(1).model.get(ON_CLICK_LISTENER));
+
+        mModel.get(SHEET_ITEMS).get(1).model.get(ON_CLICK_LISTENER).onResult(ANA);
+        verify(mMockDelegate).onCredentialSelected(ANA);
+        assertThat(mModel.get(VISIBLE), is(false));
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           TouchToFillMediator.UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX),
+                is(0));
+    }
+
+    @Test
     public void testCallsCallbackAndHidesOnSelectingItem() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL));
         assertThat(mModel.get(VISIBLE), is(true));
@@ -196,13 +223,29 @@ public class TouchToFillControllerTest {
         mModel.get(SHEET_ITEMS).get(1).model.get(ON_CLICK_LISTENER).onResult(CARL);
         verify(mMockDelegate).onCredentialSelected(CARL);
         assertThat(mModel.get(VISIBLE), is(false));
+        assertThat(RecordHistogram.getHistogramValueCountForTesting(
+                           TouchToFillMediator.UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX, 1),
+                is(1));
     }
 
     @Test
     public void testCallsDelegateAndHidesOnDismiss() {
         mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL));
-        mMediator.onDismissed();
+        mMediator.onDismissed(BottomSheet.StateChangeReason.BACK_PRESS);
         verify(mMockDelegate).onDismissed();
+        assertThat(mModel.get(VISIBLE), is(false));
+        assertThat(RecordHistogram.getHistogramValueCountForTesting(
+                           TouchToFillMediator.UMA_TOUCH_TO_FILL_DISMISSAL_REASON,
+                           BottomSheet.StateChangeReason.BACK_PRESS),
+                is(1));
+    }
+
+    @Test
+    public void testHidesWhenSelectingManagePasswords() {
+        mMediator.showCredentials(TEST_URL, true, Arrays.asList(ANA, CARL, BOB));
+        assertThat(mModel.get(ON_CLICK_MANAGE), is(notNullValue()));
+        mModel.get(ON_CLICK_MANAGE).run();
+        verify(mMockDelegate).onManagePasswordsSelected();
         assertThat(mModel.get(VISIBLE), is(false));
     }
 

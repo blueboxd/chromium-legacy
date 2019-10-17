@@ -172,10 +172,6 @@ public class SearchActivity extends AsyncInitializationActivity
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        mTab = new TabBuilder()
-                       .setWindow(getWindowAndroid())
-                       .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
-                       .build();
         TabDelegateFactory factory = new TabDelegateFactory() {
             @Override
             public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
@@ -218,8 +214,12 @@ public class SearchActivity extends AsyncInitializationActivity
                 return null;
             }
         };
-        mTab.initialize(
-                WebContentsFactory.createWebContents(false, false), factory, false, null, false);
+        mTab = new TabBuilder()
+                       .setWindow(getWindowAndroid())
+                       .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
+                       .setWebContents(WebContentsFactory.createWebContents(false, false))
+                       .setDelegateFactory(factory)
+                       .build();
         mTab.loadUrl(new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
 
         mSearchBoxDataProvider.onNativeLibraryReady(mTab);

@@ -37,6 +37,11 @@ public interface TouchToFillComponent {
         void onDismissed();
 
         /**
+         * Called when the user selects the "Manage Passwords" option.
+         */
+        void onManagePasswordsSelected();
+
+        /**
          * Called to fetch a favicon for one origin to display it in the UI.
          */
         void fetchFavicon(String origin, @Px int desiredSize, Callback<Bitmap> callback);

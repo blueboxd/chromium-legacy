@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace password_manager {
 
@@ -31,6 +32,9 @@ struct PossibleUsernameData {
   int32_t renderer_id;
   base::string16 value;
   base::Time last_change;
+
+  // Predictions for the form which contains a field with |renderer_id|.
+  FormPredictions* form_predictions = nullptr;
 };
 
 // Checks that |possible_username| might represent an username:

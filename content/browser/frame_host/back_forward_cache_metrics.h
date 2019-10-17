@@ -42,7 +42,8 @@ class BackForwardCacheMetrics
     kWasGrantedMediaAccess,
     kBlocklistedFeatures,
     kDisableForRenderFrameHostCalled,
-    kDomainNotAllowed
+    kDomainNotAllowed,
+    kHTTPMethodNotGET
   };
 
   // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in

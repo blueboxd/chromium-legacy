@@ -94,6 +94,7 @@ void HTMLFormElement::Trace(Visitor* visitor) {
   visitor->Trace(listed_elements_);
   visitor->Trace(image_elements_);
   visitor->Trace(planned_navigation_);
+  visitor->Trace(activated_submit_button_);
   HTMLElement::Trace(visitor);
 }
 
@@ -331,10 +332,27 @@ void HTMLFormElement::PrepareForSubmission(
     planned_navigation_ = nullptr;
     Submit(event, submit_button);
   }
+  if (!planned_navigation_ || activated_submit_button_)
+    return;
+  base::AutoReset<bool> submit_scope(&is_submitting_, true);
+  SubmitForm(planned_navigation_);
+  planned_navigation_ = nullptr;
+}
+
+void HTMLFormElement::WillActivateSubmitButton(
+    HTMLFormControlElement* element) {
+  if (!activated_submit_button_)
+    activated_submit_button_ = element;
+}
+
+void HTMLFormElement::DidActivateSubmitButton(HTMLFormControlElement* element) {
+  if (activated_submit_button_ != element)
+    return;
+  activated_submit_button_ = nullptr;
   if (!planned_navigation_)
     return;
   base::AutoReset<bool> submit_scope(&is_submitting_, true);
-  ScheduleFormSubmission(planned_navigation_);
+  SubmitForm(planned_navigation_);
   planned_navigation_ = nullptr;
 }
 
@@ -449,14 +467,14 @@ void HTMLFormElement::Submit(Event* event,
   }
   if (form_submission->Method() == FormSubmission::kDialogMethod) {
     SubmitDialog(form_submission);
-  } else if (in_user_js_submit_event_) {
+  } else if (in_user_js_submit_event_ || activated_submit_button_) {
     // Need to postpone the submission in order to make this cancelable by
     // another submission request.
     planned_navigation_ = form_submission;
   } else {
     // This runs JavaScript code if action attribute value is javascript:
     // protocol.
-    ScheduleFormSubmission(form_submission);
+    SubmitForm(form_submission);
   }
 }
 
@@ -489,12 +507,15 @@ FormData* HTMLFormElement::ConstructEntryList(
   return &form_data;
 }
 
-void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
+// Actually submit the form - navigate now.
+void HTMLFormElement::SubmitForm(FormSubmission* submission) {
   DCHECK(submission->Method() == FormSubmission::kPostMethod ||
          submission->Method() == FormSubmission::kGetMethod);
   DCHECK(submission->Data());
   DCHECK(submission->Form());
   if (submission->Action().IsEmpty())
+    return;
+  if (!GetDocument().IsActive())
     return;
   if (GetDocument().IsSandboxed(WebSandboxFlags::kForms)) {
     // FIXME: This message should be moved off the console once a solution to
@@ -598,6 +619,11 @@ void HTMLFormElement::Disassociate(ListedElement& e) {
   listed_elements_are_dirty_ = true;
   listed_elements_.clear();
   RemoveFromPastNamesMap(e.ToHTMLElement());
+
+  if (activated_submit_button_ != &e)
+    return;
+  activated_submit_button_ = nullptr;
+  planned_navigation_ = nullptr;
 }
 
 bool HTMLFormElement::IsURLAttribute(const Attribute& attribute) const {

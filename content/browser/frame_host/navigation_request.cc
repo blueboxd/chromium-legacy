@@ -2063,14 +2063,15 @@ void NavigationRequest::OnStartChecksComplete(
                switches::kTrustableBundledExchangesFileUrl));
     bundled_exchanges_handle_ =
         bundled_exchanges_handle_tracker_->MaybeCreateBundledExchangesHandle(
-            common_params_->url);
+            common_params_->url, frame_tree_node_->frame_tree_node_id());
   }
   if (!bundled_exchanges_handle_ && bundled_exchanges_navigation_info_) {
     DCHECK(base::FeatureList::IsEnabled(features::kWebBundles) ||
            base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kTrustableBundledExchangesFileUrl));
     bundled_exchanges_handle_ = BundledExchangesHandle::CreateForNavigationInfo(
-        bundled_exchanges_navigation_info_->Clone());
+        bundled_exchanges_navigation_info_->Clone(),
+        frame_tree_node_->frame_tree_node_id());
   }
   if (!bundled_exchanges_handle_) {
     if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
@@ -2081,11 +2082,13 @@ void NavigationRequest::OnStartChecksComplete(
       // invalid character.
       if (source) {
         bundled_exchanges_handle_ =
-            BundledExchangesHandle::CreateForTrustableFile(std::move(source));
+            BundledExchangesHandle::CreateForTrustableFile(
+                std::move(source), frame_tree_node_->frame_tree_node_id());
       }
     } else if (bundled_exchanges_utils::CanLoadAsBundledExchangesFile(
                    common_params_->url)) {
-      bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile();
+      bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile(
+          frame_tree_node_->frame_tree_node_id());
     }
   }
 

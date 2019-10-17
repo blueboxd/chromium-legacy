@@ -69,7 +69,7 @@ system in another browser engine.
 1. Add `import("//build/config/jumbo.gni")` to `BUILD.gn`.
 2. Change your target, for instance `static_library`, to
    `jumbo_static_library`. So far `source_set`, `component`,
-   `static_library` and `split_static_library` are supported.
+   `static_library` are supported.
 3. Recompile and test.
 
 ### Example

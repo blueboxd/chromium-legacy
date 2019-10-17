@@ -1765,6 +1765,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-sync-device-info-in-transport-mode",
+    "owners": ["//components/sync/OWNERS", "//chrome/browser/sharing/OWNERS"],
+    "expiry_milestone": 81
+  },
+  {
     "name": "enable-sync-uss-bookmarks",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
     "expiry_milestone": 80
@@ -1925,7 +1930,7 @@
   },
   {
     "name": "enable-webassembly-baseline",
-    "owners": [ "clemensh", "wasm-team@google.com" ],
+    "owners": [ "clemensb", "wasm-team@google.com" ],
     "expiry_milestone": 83
   },
   {
@@ -1935,7 +1940,7 @@
   },
   {
     "name": "enable-webassembly-code-gc",
-    "owners": [ "clemensh", "wasm-team@google.com" ],
+    "owners": [ "clemensb", "wasm-team@google.com" ],
     "expiry_milestone": 83
   },
   {
@@ -2382,7 +2387,7 @@
   {
     "name": "manual-password-generation-android",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 80
   },
   {
     "name": "media-router-cast-allow-all-ips",

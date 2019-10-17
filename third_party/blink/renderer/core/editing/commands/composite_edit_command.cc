@@ -1503,7 +1503,7 @@ void CompositeEditCommand::MoveParagraphs(
                              kDoNotAnnotateForInterchange,
                              ConvertBlocksToInlines::kConvert,
                              kDoNotResolveURLs, constraining_ancestor),
-                "")
+                "", kDisallowScriptingAndPluginContent)
           : nullptr;
 
   // A non-empty paragraph's style is moved when we copy and move it.  We don't

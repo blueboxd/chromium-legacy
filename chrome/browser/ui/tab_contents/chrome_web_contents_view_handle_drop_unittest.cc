@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_handle_drop.h"
@@ -39,11 +40,18 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
     return web_contents_.get();
   }
 
+  void EnableFeature(const base::Feature& feature) {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeature(feature);
+  }
+
   void EnableDeepScanning(bool enable, bool scan_succeeds) {
     SetScanPolicies(enable ? safe_browsing::CHECK_UPLOADS
                            : safe_browsing::CHECK_NONE);
     if (!enable)
       return;
+
+    EnableFeature(safe_browsing::kDeepScanningOfUploads);
 
     run_loop_.reset(new base::RunLoop());
 
@@ -103,6 +111,7 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   TestingProfile* profile_;
   std::unique_ptr<base::RunLoop> run_loop_;

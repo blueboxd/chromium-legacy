@@ -75,7 +75,7 @@ TEST_F(SlotScopedTraversalTest, emptySlot) {
 
   Element* host = GetDocument().QuerySelector("#host");
   ShadowRoot* shadow_root = host->OpenShadowRoot();
-  auto* slot = ToHTMLSlotElement(shadow_root->QuerySelector("slot"));
+  auto* slot = To<HTMLSlotElement>(shadow_root->QuerySelector("slot"));
 
   EXPECT_EQ(nullptr, SlotScopedTraversal::FirstAssignedToSlot(*slot));
   EXPECT_EQ(nullptr, SlotScopedTraversal::LastAssignedToSlot(*slot));
@@ -109,7 +109,7 @@ TEST_F(SlotScopedTraversalTest, simpleSlot) {
   Element* inner1 = GetDocument().QuerySelector("#inner1");
   Element* inner2 = GetDocument().QuerySelector("#inner2");
   ShadowRoot* shadow_root = host->OpenShadowRoot();
-  auto* slot = ToHTMLSlotElement(shadow_root->QuerySelector("slot"));
+  auto* slot = To<HTMLSlotElement>(shadow_root->QuerySelector("slot"));
 
   EXPECT_EQ(inner1, SlotScopedTraversal::FirstAssignedToSlot(*slot));
   EXPECT_EQ(inner2, SlotScopedTraversal::LastAssignedToSlot(*slot));
@@ -162,9 +162,9 @@ TEST_F(SlotScopedTraversalTest, multipleSlots) {
   slot_element[2] = shadow_root->QuerySelector("#unnamedslot");
 
   HTMLSlotElement* slot[3];
-  slot[0] = ToHTMLSlotElement(slot_element[0]);
-  slot[1] = ToHTMLSlotElement(slot_element[1]);
-  slot[2] = ToHTMLSlotElement(slot_element[2]);
+  slot[0] = To<HTMLSlotElement>(slot_element[0]);
+  slot[1] = To<HTMLSlotElement>(slot_element[1]);
+  slot[2] = To<HTMLSlotElement>(slot_element[2]);
 
   {
     // <slot id='slot0'> : Expected assigned nodes: inner0, inner4
@@ -234,7 +234,7 @@ TEST_F(SlotScopedTraversalTest, shadowHostAtTopLevel) {
     AttachOpenShadowRoot(*inner[i], shadow_html);
 
     ShadowRoot* shadow_root = host->OpenShadowRoot();
-    auto* slot = ToHTMLSlotElement(shadow_root->QuerySelector("slot"));
+    auto* slot = To<HTMLSlotElement>(shadow_root->QuerySelector("slot"));
 
     switch (i) {
       case 0: {
@@ -340,7 +340,7 @@ TEST_F(SlotScopedTraversalTest, shadowHostAtSecondLevel) {
     }
 
     ShadowRoot* shadow_root = host->OpenShadowRoot();
-    auto* slot = ToHTMLSlotElement(shadow_root->QuerySelector("slot"));
+    auto* slot = To<HTMLSlotElement>(shadow_root->QuerySelector("slot"));
 
     switch (i) {
       case 0: {

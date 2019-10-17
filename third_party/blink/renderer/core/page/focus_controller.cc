@@ -139,7 +139,7 @@ class FocusNavigation : public GarbageCollected<FocusNavigation> {
     Element* owner = nullptr;
     if (node.AssignedSlot())
       owner = node.AssignedSlot();
-    else if (IsHTMLSlotElement(node.parentNode()))
+    else if (IsA<HTMLSlotElement>(node.parentNode()))
       owner = node.ParentOrShadowHostElement();
     else if (&node == node.ContainingTreeScope().RootNode())
       owner = TreeOwner(&node);
@@ -230,7 +230,7 @@ ScopedFocusNavigation::ScopedFocusNavigation(
     const Element* current,
     FocusController::OwnerMap& owner_map)
     : current_(current) {
-  if (HTMLSlotElement* slot = ToHTMLSlotElementOrNull(scoping_root_node)) {
+  if (auto* slot = DynamicTo<HTMLSlotElement>(scoping_root_node)) {
     if (slot->AssignedNodes().IsEmpty()) {
       navigation_ = MakeGarbageCollected<FocusNavigation>(scoping_root_node,
                                                           *slot, owner_map);
@@ -239,8 +239,7 @@ ScopedFocusNavigation::ScopedFocusNavigation(
       // the shadow tree.
       DCHECK(scoping_root_node.ContainingShadowRoot());
       navigation_ = MakeGarbageCollected<FocusNavigation>(
-          scoping_root_node.ContainingShadowRoot()->host(),
-          ToHTMLSlotElement(scoping_root_node), owner_map);
+          scoping_root_node.ContainingShadowRoot()->host(), *slot, owner_map);
     }
   } else {
     navigation_ =
@@ -295,7 +294,7 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByNonFocusableFocusScopeOwner(
   if (IsShadowHost(element))
     return ScopedFocusNavigation::OwnedByShadowHost(element, owner_map);
   return ScopedFocusNavigation::OwnedByHTMLSlotElement(
-      ToHTMLSlotElement(element), owner_map);
+      To<HTMLSlotElement>(element), owner_map);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::OwnedByShadowHost(
@@ -327,7 +326,7 @@ HTMLSlotElement* ScopedFocusNavigation::FindFallbackScopeOwnerSlot(
     const Element& element) {
   Element* parent = const_cast<Element*>(element.parentElement());
   while (parent) {
-    if (auto* slot = ToHTMLSlotElementOrNull(parent))
+    if (auto* slot = DynamicTo<HTMLSlotElement>(parent))
       return slot->AssignedNodes().IsEmpty() ? slot : nullptr;
     parent = parent->parentElement();
   }
@@ -343,10 +342,10 @@ bool ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
     const Element& current) {
   Element* parent = current.parentElement();
   while (parent) {
-    if (IsHTMLSlotElement(parent) &&
-        ToHTMLSlotElement(parent)->AssignedNodes().IsEmpty()) {
+    auto* html_slot_element = DynamicTo<HTMLSlotElement>(parent);
+    if (html_slot_element && html_slot_element->AssignedNodes().IsEmpty()) {
       return !SlotScopedTraversal::IsSlotScoped(current) &&
-             ToHTMLSlotElement(parent) == slot;
+             html_slot_element == slot;
     }
     parent = parent->parentElement();
   }
@@ -434,7 +433,7 @@ inline bool IsKeyboardFocusableShadowHost(const Element& element) {
 
 inline bool IsNonFocusableFocusScopeOwner(Element& element) {
   return IsNonKeyboardFocusableShadowHost(element) ||
-         IsHTMLSlotElement(element);
+         IsA<HTMLSlotElement>(element);
 }
 
 inline bool IsShadowHostDelegatesFocus(const Element& element) {

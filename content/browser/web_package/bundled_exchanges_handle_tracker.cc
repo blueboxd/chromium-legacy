@@ -23,9 +23,12 @@ BundledExchangesHandleTracker::~BundledExchangesHandleTracker() = default;
 
 std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandleTracker::MaybeCreateBundledExchangesHandle(
-    const GURL& url) {
-  if (reader_->HasEntry(url))
-    return BundledExchangesHandle::CreateForTrackedNavigation(reader_);
+    const GURL& url,
+    int frame_tree_node_id) {
+  if (reader_->HasEntry(url)) {
+    return BundledExchangesHandle::CreateForTrackedNavigation(
+        reader_, frame_tree_node_id);
+  }
   if (!reader_->source().is_trusted() &&
       url == bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
                  reader_->source().url(), target_inner_url_)) {
@@ -33,7 +36,8 @@ BundledExchangesHandleTracker::MaybeCreateBundledExchangesHandle(
     // reloaded.
     return BundledExchangesHandle::CreateForNavigationInfo(
         std::make_unique<BundledExchangesNavigationInfo>(
-            reader_->source().Clone(), target_inner_url_));
+            reader_->source().Clone(), target_inner_url_),
+        frame_tree_node_id);
   }
   return nullptr;
 }

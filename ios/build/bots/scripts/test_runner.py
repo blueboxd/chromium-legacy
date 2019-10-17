@@ -217,7 +217,7 @@ def terminate_process(proc, proc_name):
       if ps.is_running():
         LOGGER.info(
             'Process %s is still alive! %s process might block it.',
-            proc.name, proc_name)
+            psutil.Process(proc.pid).name(), proc_name)
         running_processes = [
             p for p in psutil.process_iter()
             # Use as_dict() to avoid API changes across versions of psutil.
@@ -253,7 +253,7 @@ def print_process_output(proc,
       if no output occurs in specified timeout. Sometimes proc generates
       child process that may block its parent and for such cases
       proc_name refers to the name of child process.
-      If proc_name is not specified, proc.name will be used to kill process.
+      If proc_name is not specified, process name will be used to kill process.
     Parser: A parser.
     timeout: A timeout(in seconds) to subprocess.stdout.readline method.
   """

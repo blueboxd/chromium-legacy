@@ -73,7 +73,7 @@ public class TabUnitTest {
         features.put("ShoppingAssist", true);
         ChromeFeatureList.setTestFeatures(features);
 
-        mTab = new Tab(TAB1_ID, null, false, mWindowAndroid, null, null, mLoadUrlParams);
+        mTab = new Tab(TAB1_ID, null, false, null);
         mTab.addObserver(mObserver);
     }
 

@@ -5,10 +5,7 @@
 #include "extensions/test/test_extension_dir.h"
 
 #include "base/files/file_util.h"
-#include "base/json/json_writer.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/test/values_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "extensions/browser/extension_creator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,7 +68,7 @@ base::FilePath TestExtensionDir::Pack() {
   return crx_path;
 }
 
-base::FilePath TestExtensionDir::UnpackedPath() {
+base::FilePath TestExtensionDir::UnpackedPath() const {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // We make this absolute because it's possible that dir_ contains a symlink as
   // part of it's path. When UnpackedInstaller::GetAbsolutePath() runs as part

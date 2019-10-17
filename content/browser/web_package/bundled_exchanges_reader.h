@@ -49,8 +49,9 @@ class CONTENT_EXPORT BundledExchangesReader final
   // Gets data_decoder::mojom::BundleResponsePtr for the given |url| that
   // contains response headers and range information for its body.
   // Should be called after ReadMetadata finishes.
-  using ResponseCallback =
-      base::OnceCallback<void(data_decoder::mojom::BundleResponsePtr)>;
+  using ResponseCallback = base::OnceCallback<void(
+      data_decoder::mojom::BundleResponsePtr,
+      data_decoder::mojom::BundleResponseParseErrorPtr)>;
   void ReadResponse(const GURL& url, ResponseCallback callback);
 
   // Starts loading response body. |response| should be obtained by

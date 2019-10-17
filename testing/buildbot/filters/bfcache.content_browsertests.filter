@@ -101,7 +101,3 @@
 -RenderViewHostTest.IsFocusedElementEditable
 -TouchInputBrowserTest.*
 -TouchpadPinchBrowserTest.*
-
-# Started failing around when https://crrev.com/c/1819251 was submitted.
-# https://crbug.com/1013550
--SessionHistoryTest.GoBackToCrossSitePostWithRedirect

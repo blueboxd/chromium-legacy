@@ -223,6 +223,31 @@ cca.views.camera.Preview.prototype.enableShowMetadata_ = async function() {
     element.textContent = val;
   };
 
+  const buildInverseTable = (obj, prefix) => {
+    const tbl = {};
+    for (const [key, val] of Object.entries(obj)) {
+      if (!key.startsWith(prefix)) {
+        continue;
+      }
+      if (tbl.hasOwnProperty(val)) {
+        console.error(`Duplicated value: ${val}`);
+        continue;
+      }
+      tbl[val] = key.slice(prefix.length);
+    }
+    return tbl;
+  };
+
+  const afStateName = buildInverseTable(
+      cros.mojom.AndroidControlAfState, 'ANDROID_CONTROL_AF_STATE_');
+  const aeStateName = buildInverseTable(
+      cros.mojom.AndroidControlAeState, 'ANDROID_CONTROL_AE_STATE_');
+  const awbStateName = buildInverseTable(
+      cros.mojom.AndroidControlAwbState, 'ANDROID_CONTROL_AWB_STATE_');
+  const aeAntibandingModeName = buildInverseTable(
+      cros.mojom.AndroidControlAeAntibandingMode,
+      'ANDROID_CONTROL_AE_ANTIBANDING_MODE_');
+
   const tag = cros.mojom.CameraMetadataTag;
   const metadataEntryHandlers = {
     [tag.ANDROID_LENS_FOCUS_DISTANCE]: ([value]) => {
@@ -233,31 +258,35 @@ cca.views.camera.Preview.prototype.enableShowMetadata_ = async function() {
       const focusDistance = (100 / value).toFixed(1);
       showValue('#preview-focus-distance', `${focusDistance} cm`);
     },
-    [tag.ANDROID_LENS_FOCAL_LENGTH]: ([value]) => {
-      const focalLength = value.toFixed(1);
-      showValue('#preview-focal-length', `${focalLength} mm`);
-    },
-    [tag.ANDROID_LENS_APERTURE]: ([value]) => {
-      const aperture = value.toFixed(1);
-      showValue('#preview-aperture', `f/${aperture}`);
+    [tag.ANDROID_CONTROL_AF_STATE]: ([value]) => {
+      showValue('#preview-af-state', afStateName[value]);
     },
     [tag.ANDROID_SENSOR_SENSITIVITY]: ([value]) => {
       const sensitivity = value;
       showValue('#preview-sensitivity', `ISO ${sensitivity}`);
     },
     [tag.ANDROID_SENSOR_EXPOSURE_TIME]: ([value]) => {
-      const shutterSpeed = Math.round(1e9 / value).toFixed(0);
+      const shutterSpeed = Math.round(1e9 / value);
       showValue('#preview-exposure-time', `1/${shutterSpeed}`);
     },
     [tag.ANDROID_SENSOR_FRAME_DURATION]: ([value]) => {
       const frameFrequency = Math.round(1e9 / value);
       showValue('#preview-frame-duration', `${frameFrequency} Hz`);
     },
+    [tag.ANDROID_CONTROL_AE_ANTIBANDING_MODE]: ([value]) => {
+      showValue('#preview-ae-antibanding-mode', aeAntibandingModeName[value]);
+    },
+    [tag.ANDROID_CONTROL_AE_STATE]: ([value]) => {
+      showValue('#preview-ae-state', aeStateName[value]);
+    },
     [tag.ANDROID_COLOR_CORRECTION_GAINS]: ([valueRed, , , valueBlue]) => {
       const wbGainRed = valueRed.toFixed(2);
       showValue('#preview-wb-gain-red', `${wbGainRed}x`);
       const wbGainBlue = valueBlue.toFixed(2);
       showValue('#preview-wb-gain-blue', `${wbGainBlue}x`);
+    },
+    [tag.ANDROID_CONTROL_AWB_STATE]: ([value]) => {
+      showValue('#preview-awb-state', awbStateName[value]);
     },
     [tag.ANDROID_CONTROL_AF_MODE]: ([value]) => {
       displayCategory('#preview-af', value !== tag.CONTROL_AF_MODE_OFF);

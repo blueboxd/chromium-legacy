@@ -8,7 +8,9 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/common/web_application_info.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 namespace web_app {
@@ -112,44 +114,51 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest(
 void ManifestUpdateTask::OnAllAppWindowsClosed(blink::Manifest manifest) {
   DCHECK_EQ(stage_, Stage::kPendingWindowsClosed);
 
-  // The app's name must not change due to an automatic update.
-  // TODO: Support name/short_name distinction.
-  manifest.name = base::NullableString16(
-      base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_)));
-  manifest.short_name = base::NullableString16();
+  auto web_application_info = std::make_unique<WebApplicationInfo>();
+  UpdateWebAppInfoFromManifest(manifest, web_application_info.get(),
+                               ForInstallableSite::kYes);
 
-  // Preserve the user's choice of launch container (excluding full screen).
-  // TODO(crbug.com/1009909): Test kMinimalUi.
-  auto display_mode = registrar_.GetAppDisplayMode(app_id_);
-  switch (display_mode) {
+  // The app's name must not change due to an automatic update.
+  web_application_info->title =
+      base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_));
+
+  // Preserve the user's choice of launch container (excluding fullscreen).
+  switch (registrar_.GetAppDisplayMode(app_id_)) {
     case blink::mojom::DisplayMode::kBrowser:
+      web_application_info->open_as_window = false;
+      break;
     case blink::mojom::DisplayMode::kMinimalUi:
     case blink::mojom::DisplayMode::kStandalone:
-      manifest.display = display_mode;
-      break;
     case blink::mojom::DisplayMode::kFullscreen:
-      // Fall back to a windowed mode.
-      manifest.display = blink::mojom::DisplayMode::kStandalone;
+      web_application_info->open_as_window = true;
       break;
     case blink::mojom::DisplayMode::kUndefined:
+      NOTREACHED();
       break;
   }
 
   stage_ = Stage::kPendingInstallation;
-  install_manager_.UpdateWebAppFromManifest(
-      app_id_, std::move(manifest),
-      base::Bind(&ManifestUpdateTask::OnInstallationComplete, AsWeakPtr()));
+  install_manager_.UpdateWebAppFromInfo(
+      app_id_, std::move(web_application_info),
+      base::Bind(&ManifestUpdateTask::OnInstallationComplete, AsWeakPtr(),
+                 std::move(manifest)));
 }
 
-void ManifestUpdateTask::OnInstallationComplete(const AppId& app_id,
+void ManifestUpdateTask::OnInstallationComplete(blink::Manifest manifest,
+                                                const AppId& app_id,
                                                 InstallResultCode code) {
   DCHECK_EQ(stage_, Stage::kPendingInstallation);
-  DCHECK_EQ(app_id_, app_id);
-  DCHECK(!IsSuccess(code) ||
-         code == InstallResultCode::kSuccessAlreadyInstalled);
 
-  DestroySelf(IsSuccess(code) ? ManifestUpdateResult::kAppUpdated
-                              : ManifestUpdateResult::kAppUpdateFailed);
+  if (!IsSuccess(code)) {
+    DestroySelf(ManifestUpdateResult::kAppUpdateFailed);
+    return;
+  }
+
+  DCHECK_EQ(app_id_, app_id);
+  DCHECK(!IsUpdateNeededForManifest(manifest));
+  DCHECK_EQ(code, InstallResultCode::kSuccessAlreadyInstalled);
+
+  DestroySelf(ManifestUpdateResult::kAppUpdated);
 }
 
 void ManifestUpdateTask::DestroySelf(ManifestUpdateResult result) {

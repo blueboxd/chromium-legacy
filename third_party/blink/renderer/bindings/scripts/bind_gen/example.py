@@ -17,8 +17,8 @@ def run_example(web_idl_database, output_dirs):
 
     root_node = code_node.SymbolScopeNode(renderer=renderer)
     root_node.extend([
-        code_node.SimpleNode(template_text="${z} = ${x} + ${y};"),
-        code_node.SimpleNode(template_text="print ${z};"),
+        code_node.TextNode("${z} = ${x} + ${y};"),
+        code_node.TextNode("print ${z};"),
     ])
 
     root_node.register_code_symbols([

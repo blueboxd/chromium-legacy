@@ -61,6 +61,10 @@ public class TabUmaTest {
         mTestServer.stopAndDestroyServer();
     }
 
+    private TabDelegateFactoryImpl createTabDelegateFactory() {
+        return new TabDelegateFactoryImpl(mActivityTestRule.getActivity());
+    }
+
     /**
      * Verify that Tab.StatusWhenSwitchedBackToForeground is correctly recording lazy loads.
      */
@@ -74,9 +78,9 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createForLazyLoad(new LoadUrlParams(mTestUrl))
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
                 return bgTab;
             }
         });
@@ -120,9 +124,9 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createLiveTab(true)
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
                 bgTab.show(TabSelectionType.FROM_USER);
                 return bgTab;
@@ -139,9 +143,9 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createLiveTab(true)
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
                 bgTab.loadUrl(new LoadUrlParams(mTestUrl));
                 // Simulate the renderer being killed by the OS.
                 ChromeTabUtils.simulateRendererKilledForTesting(bgTab, false);
@@ -160,9 +164,9 @@ public class TabUmaTest {
                 Tab bgTab = TabBuilder.createForLazyLoad(new LoadUrlParams(mTestUrl))
                                     .setWindow(mActivityTestRule.getActivity().getWindowAndroid())
                                     .setLaunchType(TabLaunchType.FROM_LONGPRESS_BACKGROUND)
+                                    .setDelegateFactory(createTabDelegateFactory())
+                                    .setInitiallyHidden(true)
                                     .build();
-                bgTab.initialize(null, new TabDelegateFactoryImpl(mActivityTestRule.getActivity()),
-                        true, null, false);
                 bgTab.show(TabSelectionType.FROM_USER);
                 return bgTab;
             }

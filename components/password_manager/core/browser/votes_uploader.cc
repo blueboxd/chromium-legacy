@@ -11,6 +11,7 @@
 #include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
@@ -26,6 +27,7 @@
 using autofill::AutofillDownloadManager;
 using autofill::AutofillField;
 using autofill::AutofillUploadContents;
+using autofill::FieldSignature;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
@@ -171,6 +173,19 @@ size_t GetLowEntropyHashValue(const base::string16& value) {
 
 }  // namespace
 
+SingleUsernameVoteData::SingleUsernameVoteData(
+    uint32_t renderer_id,
+    const FormPredictions& form_predictions)
+    : renderer_id(renderer_id), form_predictions(form_predictions) {}
+
+SingleUsernameVoteData::SingleUsernameVoteData(
+    const SingleUsernameVoteData& other) = default;
+SingleUsernameVoteData& SingleUsernameVoteData::operator=(
+    const SingleUsernameVoteData&) = default;
+SingleUsernameVoteData::SingleUsernameVoteData(SingleUsernameVoteData&& other) =
+    default;
+SingleUsernameVoteData::~SingleUsernameVoteData() = default;
+
 VotesUploader::VotesUploader(PasswordManagerClient* client,
                              bool is_possible_change_password_form)
     : client_(client),
@@ -201,6 +216,7 @@ void VotesUploader::SendVotesOnSave(
                          autofill::USERNAME,
                          FormStructure(observed).FormSignatureAsStr());
     }
+    MaybeSendSingleUsernameVote(true /* credentials_saved */);
   } else {
     SendVoteOnCredentialsReuse(observed, submitted_form, pending_credentials);
   }
@@ -357,6 +373,8 @@ bool VotesUploader::UploadPasswordVote(
   form_structure.set_randomized_encoder(
       RandomizedEncoder::Create(client_->GetPrefs()));
 
+  // TODO(crbug.com/875768): Use VotesUploader::StartUploadRequest for avoiding
+  // code duplication.
   bool success = download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       login_form_signature, true /* observed_submission */,
@@ -417,6 +435,8 @@ void VotesUploader::UploadFirstLoginVotes(
     logger.LogFormStructure(Logger::STRING_FIRSTUSE_FORM_VOTE, form_structure);
   }
 
+  // TODO(crbug.com/875768): Use VotesUploader::StartUploadRequest for avoiding
+  // code duplication.
   download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,
       std::string(), true /* observed_submission */, nullptr /* prefs */);
@@ -439,6 +459,48 @@ void VotesUploader::SetInitialHashValueOfUsernameField(
       break;
     }
   }
+}
+
+void VotesUploader::MaybeSendSingleUsernameVote(bool credentials_saved) {
+  if (!single_username_vote_data_)
+    return;
+
+  const FormPredictions& predictions =
+      single_username_vote_data_->form_predictions;
+  std::vector<FieldSignature> field_signatures;
+  for (const auto& field : predictions.fields)
+    field_signatures.push_back(field.signature);
+
+  std::unique_ptr<FormStructure> form_to_upload =
+      FormStructure::CreateForPasswordManagerUpload(predictions.form_signature,
+                                                    field_signatures);
+
+  // Label the username field with a SINGLE_USERNAME or NOT_USERNAME vote.
+  // TODO(crbug.com/552420): Use LabelFields() when cl/1667453 is landed.
+  ServerFieldTypeSet available_field_types;
+  for (size_t i = 0; i < form_to_upload->field_count(); ++i) {
+    AutofillField* field = form_to_upload->field(i);
+
+    ServerFieldType type = autofill::UNKNOWN_TYPE;
+    uint32_t field_renderer_id = predictions.fields[i].renderer_id;
+    if (field_renderer_id == single_username_vote_data_->renderer_id) {
+      type = credentials_saved && !has_username_edited_vote_
+                 ? autofill::SINGLE_USERNAME
+                 : autofill::NOT_USERNAME;
+      if (has_username_edited_vote_)
+        field->set_vote_type(AutofillUploadContents::Field::USERNAME_EDITED);
+      available_field_types.insert(type);
+    }
+    field->set_possible_types({type});
+  }
+
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogFormStructure(Logger::STRING_USERNAME_FIRST_FLOW_VOTE,
+                            *form_to_upload);
+  }
+
+  StartUploadRequest(std::move(form_to_upload), available_field_types);
 }
 
 void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
@@ -607,6 +669,27 @@ void VotesUploader::StoreInitialFieldValues(
           std::make_pair(field.unique_renderer_id, field.value));
     }
   }
+}
+
+bool VotesUploader::StartUploadRequest(
+    std::unique_ptr<autofill::FormStructure> form_to_upload,
+    const ServerFieldTypeSet& available_field_types) {
+  AutofillDownloadManager* download_manager =
+      client_->GetAutofillDownloadManager();
+  if (!download_manager)
+    return false;
+
+  // Force uploading as these events are relatively rare and we want to make
+  // sure to receive them.
+  form_to_upload->set_upload_required(UPLOAD_REQUIRED);
+
+  // Attach the Randomized Encoder.
+  form_to_upload->set_randomized_encoder(
+      RandomizedEncoder::Create(client_->GetPrefs()));
+
+  return download_manager->StartUploadRequest(
+      *form_to_upload, false /* was_autofilled */, available_field_types,
+      std::string(), true /* observed_submission */, nullptr /* prefs */);
 }
 
 }  // namespace password_manager

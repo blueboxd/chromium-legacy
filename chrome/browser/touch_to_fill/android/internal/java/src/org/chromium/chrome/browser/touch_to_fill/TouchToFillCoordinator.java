@@ -20,7 +20,8 @@ import java.util.List;
  */
 public class TouchToFillCoordinator implements TouchToFillComponent {
     private final TouchToFillMediator mMediator = new TouchToFillMediator();
-    private final PropertyModel mModel = TouchToFillProperties.createDefaultModel(mMediator);
+    private final PropertyModel mModel =
+            TouchToFillProperties.createDefaultModel(mMediator::onDismissed);
 
     @Override
     public void initialize(Context context, BottomSheetController sheetController,

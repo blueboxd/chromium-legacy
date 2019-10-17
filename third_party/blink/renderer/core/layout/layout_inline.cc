@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -54,15 +54,6 @@
 namespace blink {
 
 namespace {
-
-// TODO(layout-dev): Once we generate fragment for all inline element, we should
-// use |LayoutObject::EnclosingBlockFlowFragment()|.
-const NGPhysicalBoxFragment* ContainingBlockFlowFragmentOf(
-    const LayoutInline& node) {
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return nullptr;
-  return node.ContainingBlockFlowFragment();
-}
 
 // TODO(xiaochengh): Deduplicate with a similar function in ng_paint_fragment.cc
 // ::before, ::after and ::first-letter can be hit test targets.
@@ -787,12 +778,10 @@ template <typename PhysicalRectCollector>
 void LayoutInline::CollectLineBoxRects(
     const PhysicalRectCollector& yield) const {
   if (IsInLayoutNGInlineFormattingContext()) {
-    const auto* box_fragment = ContainingBlockFlowFragmentOf(*this);
-    if (!box_fragment)
-      return;
-    for (const auto& fragment :
-         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this))
-      yield(fragment.RectInContainerBox());
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    for (; cursor; cursor.MoveToNextForSameLayoutObject())
+      yield(cursor.CurrentRect());
     return;
   }
   if (!AlwaysCreateLineBoxes()) {
@@ -936,15 +925,11 @@ void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
 base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
     const {
   if (IsInLayoutNGInlineFormattingContext()) {
-    const NGPhysicalBoxFragment* box_fragment =
-        ContainingBlockFlowFragmentOf(*this);
-    if (!box_fragment)
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    if (!cursor)
       return base::nullopt;
-    const auto& fragments =
-        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    if (fragments.IsEmpty())
-      return base::nullopt;
-    return fragments.front().offset_to_container_box;
+    return cursor.CurrentOffset();
   }
   if (const InlineBox* first_box = FirstLineBoxIncludingCulling()) {
     LayoutPoint location = first_box->Location();
@@ -1083,17 +1068,15 @@ bool LayoutInline::HitTestCulledInline(
     DCHECK(ContainingNGBlockFlow());
     DCHECK(container_fragment->IsDescendantOfNotSelf(
         *ContainingNGBlockFlow()->PaintFragment()));
-    const auto& traversal_root =
-        To<NGPhysicalContainerFragment>(container_fragment->PhysicalFragment());
-    DCHECK(traversal_root.IsInline() || traversal_root.IsLineBox());
-    PhysicalOffset root_offset =
-        container_fragment->InlineOffsetToContainerBox();
-    const auto& descendants =
-        NGInlineFragmentTraversal::SelfFragmentsOf(traversal_root, this);
-    for (const auto& descendant : descendants) {
-      PhysicalRect rect = descendant.RectInContainerBox();
-      rect.Move(root_offset);
-      yield(rect);
+    DCHECK(container_fragment->PhysicalFragment().IsInline() ||
+           container_fragment->PhysicalFragment().IsLineBox());
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+      if (!cursor.CurrentPaintFragment()->IsDescendantOfNotSelf(
+              *container_fragment))
+        continue;
+      yield(cursor.CurrentRect());
     }
   } else {
     DCHECK(!ContainingNGBlockFlow());
@@ -1142,15 +1125,11 @@ PositionWithAffinity LayoutInline::PositionForPoint(
 
 PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
-    const NGPhysicalBoxFragment* box_fragment =
-        ContainingBlockFlowFragmentOf(*this);
-    if (!box_fragment)
-      return PhysicalRect();
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
     PhysicalRect bounding_box;
-    auto children =
-        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    for (const auto& child : children)
-      bounding_box.UniteIfNonZero(child.RectInContainerBox());
+    for (; cursor; cursor.MoveToNextForSameLayoutObject())
+      bounding_box.UniteIfNonZero(cursor.CurrentRect());
     return bounding_box;
   }
 

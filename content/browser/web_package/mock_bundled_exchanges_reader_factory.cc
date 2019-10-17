@@ -207,8 +207,10 @@ class MockBundledExchangesReaderFactoryImpl final
         url, base::BindOnce(
                  [](base::Closure quit_closure,
                     BundledExchangesReader::ResponseCallback callback,
-                    data_decoder::mojom::BundleResponsePtr response) {
-                   std::move(callback).Run(std::move(response));
+                    data_decoder::mojom::BundleResponsePtr response,
+                    data_decoder::mojom::BundleResponseParseErrorPtr error) {
+                   std::move(callback).Run(std::move(response),
+                                           std::move(error));
                    std::move(quit_closure).Run();
                  },
                  run_loop.QuitClosure(), std::move(callback)));

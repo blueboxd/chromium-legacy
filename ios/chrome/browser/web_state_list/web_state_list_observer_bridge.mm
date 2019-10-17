@@ -121,24 +121,20 @@ void WebStateListObserverBridge::WebStateActivatedAt(
                        reason:reason];
 }
 
-void WebStateListObserverBridge::WillCloseAllWebStates(
-    WebStateList* web_state_list,
-    bool user_action) {
-  const SEL selector = @selector(webStateList:willCloseAllWebStatesUserAction:);
+void WebStateListObserverBridge::WillBeginBatchOperation(
+    WebStateList* web_state_list) {
+  const SEL selector = @selector(webStateListWillBeginBatchOperation:);
   if (![observer_ respondsToSelector:selector])
     return;
 
-  [observer_ webStateList:web_state_list
-      willCloseAllWebStatesUserAction:(user_action ? YES : NO)];
+  [observer_ webStateListWillBeginBatchOperation:web_state_list];
 }
 
-void WebStateListObserverBridge::DidCloseAllWebStates(
-    WebStateList* web_state_list,
-    bool user_action) {
-  const SEL selector = @selector(webStateList:didCloseAllWebStatesUserAction:);
+void WebStateListObserverBridge::BatchOperationEnded(
+    WebStateList* web_state_list) {
+  const SEL selector = @selector(webStateListBatchOperationEnded:);
   if (![observer_ respondsToSelector:selector])
     return;
 
-  [observer_ webStateList:web_state_list
-      didCloseAllWebStatesUserAction:(user_action ? YES : NO)];
+  [observer_ webStateListBatchOperationEnded:web_state_list];
 }

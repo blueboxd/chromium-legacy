@@ -158,7 +158,7 @@ class CodeNode(object):
 
         Only limited subclasses may override this method.
         """
-        assert self._template_text
+        assert self._template_text is not None
         return renderer.render(
             caller=self,
             template_text=self._template_text,
@@ -283,20 +283,17 @@ class LiteralNode(CodeNode):
             renderer=renderer)
 
 
-class SimpleNode(CodeNode):
+class TextNode(CodeNode):
     """
-    Represents a simple node that never contains a branch nor sequence.
+    Represents a template text node.
 
-    Technically, you can make this node contain branches and sequences with
-    using template text and variable bindings, however, it's not supported.
+    TextNode is designed to be a leaf node of a code node tree.  TextNode
+    represents a template text while LiteralNode represents a literal text.
+    All template magics will be applied to |template_text|.
     """
 
-    def __init__(self, template_text, template_vars=None, renderer=None):
-        CodeNode.__init__(
-            self,
-            template_text=template_text,
-            template_vars=template_vars,
-            renderer=renderer)
+    def __init__(self, template_text, renderer=None):
+        CodeNode.__init__(self, template_text=template_text, renderer=renderer)
 
 
 class SequenceNode(CodeNode):

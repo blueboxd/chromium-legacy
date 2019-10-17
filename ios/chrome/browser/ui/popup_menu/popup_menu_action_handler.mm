@@ -136,18 +136,14 @@ using base::UserMetricsAction;
     case PopupMenuActionPasteAndGo: {
       RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
       NSString* query;
-      if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
-        ClipboardRecentContent* clipboardRecentContent =
-            ClipboardRecentContent::GetInstance();
-        if (base::Optional<GURL> optional_url =
-                clipboardRecentContent->GetRecentURLFromClipboard()) {
-          query = base::SysUTF8ToNSString(optional_url.value().spec());
-        } else if (base::Optional<base::string16> optional_text =
-                       clipboardRecentContent->GetRecentTextFromClipboard()) {
-          query = base::SysUTF16ToNSString(optional_text.value());
-        }
-      } else {
-        query = [UIPasteboard generalPasteboard].string;
+      ClipboardRecentContent* clipboardRecentContent =
+          ClipboardRecentContent::GetInstance();
+      if (base::Optional<GURL> optional_url =
+              clipboardRecentContent->GetRecentURLFromClipboard()) {
+        query = base::SysUTF8ToNSString(optional_url.value().spec());
+      } else if (base::Optional<base::string16> optional_text =
+                     clipboardRecentContent->GetRecentTextFromClipboard()) {
+        query = base::SysUTF16ToNSString(optional_text.value());
       }
       [self.dispatcher loadQuery:query immediately:YES];
       break;
@@ -175,7 +171,6 @@ using base::UserMetricsAction;
       [self.dispatcher showQRScanner];
       break;
     case PopupMenuActionSearchCopiedImage: {
-      DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
       RecordAction(UserMetricsAction("MobileMenuSearchCopiedImage"));
       ClipboardRecentContent* clipboardRecentContent =
           ClipboardRecentContent::GetInstance();

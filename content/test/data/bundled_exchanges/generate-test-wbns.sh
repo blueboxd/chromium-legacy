@@ -19,3 +19,29 @@ gen-bundle \
   -dir bundled_exchanges_browsertest/ \
   -manifestURL https://test.example.org/manifest.webmanifest \
   -o bundled_exchanges_browsertest.wbn
+
+# Generate a base WBN which will used to generate broken WBN.
+# This WBN must contains 3 entries:
+#   [1]: https://test.example.org/
+#   [2]: https://test.example.org/index.html
+#   [3]: https://test.example.org/script.html
+gen-bundle \
+  -version b1 \
+  -baseURL https://test.example.org/ \
+  -primaryURL https://test.example.org/ \
+  -dir broken_bundle/ \
+  -o broken_bundle_base.wbn
+
+# Rewrite ":status" (3a737461747573) header of the first entry to ":xxxxxx"
+# (3a787878787878).
+xxd -p broken_bundle_base.wbn |
+  tr -d '\n' |
+  sed 's/3a737461747573/3a787878787878/' |
+  xxd -r -p > broken_bundle_broken_first_entry.wbn
+
+# Rewrite ":status" (3a737461747573) header of the third entry (script.js) to
+# ":xxxxxx" (3a787878787878).
+xxd -p broken_bundle_base.wbn |
+  tr -d '\n' |
+  sed 's/3a737461747573/3a787878787878/3' |
+  xxd -r -p > broken_bundle_broken_script_entry.wbn

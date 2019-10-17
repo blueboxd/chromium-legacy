@@ -239,9 +239,7 @@ public class CustomTabActivityTest {
         // first, otherwise the UI is manipulated on a non-UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             if (getActivity() == null) return;
-            AppMenuCoordinator coordinator = getActivity()
-                                                     .getRootUiCoordinatorForTesting()
-                                                     .getAppMenuCoordinatorForTesting();
+            AppMenuCoordinator coordinator = mCustomTabActivityTestRule.getAppMenuCoordinator();
             // CCT doesn't always have a menu (ex. in the media viewer).
             if (coordinator == null) return;
             AppMenuHandler handler = coordinator.getAppMenuHandler();
@@ -611,9 +609,7 @@ public class CustomTabActivityTest {
 
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             getActivity().onMenuOrKeyboardAction(R.id.show_menu, false);
-            Assert.assertNull(getActivity()
-                                      .getRootUiCoordinatorForTesting()
-                                      .getAppMenuCoordinatorForTesting());
+            Assert.assertNull(mCustomTabActivityTestRule.getAppMenuCoordinator());
         });
     }
 
@@ -733,13 +729,13 @@ public class CustomTabActivityTest {
 
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            MenuItem item = ((CustomTabAppMenuPropertiesDelegate) getActivity()
-                                     .getRootUiCoordinatorForTesting()
-                                     .getAppMenuCoordinatorForTesting()
-                                     .getAppMenuPropertiesDelegate())
+            MenuItem item = ((CustomTabAppMenuPropertiesDelegate)
+                                     AppMenuTestSupport.getAppMenuPropertiesDelegate(
+                                             mCustomTabActivityTestRule.getAppMenuCoordinator()))
                                     .getMenuItemForTitle(TEST_MENU_TITLE);
             Assert.assertNotNull(item);
-            AppMenuTestSupport.onOptionsItemSelected(getActivity(), item);
+            AppMenuTestSupport.onOptionsItemSelected(
+                    mCustomTabActivityTestRule.getAppMenuCoordinator(), item);
         });
 
         onFinished.waitForCallback("Pending Intent was not sent.");
@@ -786,7 +782,8 @@ public class CustomTabActivityTest {
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             MenuItem item =
-                    AppMenuTestSupport.getMenu(getActivity()).findItem(R.id.open_in_browser_id);
+                    AppMenuTestSupport.getMenu(mCustomTabActivityTestRule.getAppMenuCoordinator())
+                            .findItem(R.id.open_in_browser_id);
             Assert.assertNotNull(item);
             getActivity().onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
         });

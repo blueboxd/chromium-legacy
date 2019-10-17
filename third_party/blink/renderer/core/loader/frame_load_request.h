@@ -27,9 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
@@ -80,11 +80,11 @@ struct CORE_EXPORT FrameLoadRequest {
     navigation_policy_ = navigation_policy;
   }
 
-  WebTriggeringEventInfo TriggeringEventInfo() const {
+  TriggeringEventInfo GetTriggeringEventInfo() const {
     return triggering_event_info_;
   }
-  void SetTriggeringEventInfo(WebTriggeringEventInfo info) {
-    DCHECK(info != WebTriggeringEventInfo::kUnknown);
+  void SetTriggeringEventInfo(TriggeringEventInfo info) {
+    DCHECK(info != TriggeringEventInfo::kUnknown);
     triggering_event_info_ = info;
   }
 
@@ -151,8 +151,8 @@ struct CORE_EXPORT FrameLoadRequest {
   ClientNavigationReason client_navigation_reason_ =
       ClientNavigationReason::kNone;
   NavigationPolicy navigation_policy_ = kNavigationPolicyCurrentTab;
-  WebTriggeringEventInfo triggering_event_info_ =
-      WebTriggeringEventInfo::kNotFromEvent;
+  TriggeringEventInfo triggering_event_info_ =
+      TriggeringEventInfo::kNotFromEvent;
   Member<HTMLFormElement> form_;
   ShouldSendReferrer should_send_referrer_;
   ContentSecurityPolicyDisposition

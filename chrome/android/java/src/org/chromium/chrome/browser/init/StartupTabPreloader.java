@@ -176,21 +176,18 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
             mLoadUrlParams.setReferrer(new Referrer(referrer, ReferrerPolicy.DEFAULT));
         }
 
-        // Create a detached tab and navigate it.
+        // Create a detached tab, but don't add it to the tab model yet. We'll do that
+        // later if the loadUrlParams etc... match.
         mTab = TabBuilder.createLiveTab(false)
                        .setIncognito(false)
                        .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
                        .setWindow(mWindowAndroid)
+                       .setWebContents(webContents)
+                       .setDelegateFactory(chromeTabCreator.createDefaultTabDelegateFactory())
                        .build();
 
         mObserver = new StartupTabObserver();
         mTab.addObserver(mObserver);
-
-        // Create and load the tab, but don't add it to the tab model yet. We'll do that
-        // later if the loadUrlParams etc... match.
-        mTab.initialize(webContents, chromeTabCreator.createDefaultTabDelegateFactory(), false,
-                /* tabState */ null,
-                /* unfreeze */ false);
         mTab.loadUrl(mLoadUrlParams);
     }
 

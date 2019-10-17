@@ -12,7 +12,6 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
 enum class WebappInstallSource;
@@ -114,10 +113,12 @@ class InstallManager {
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) = 0;
 
-  // Reinstall an existing web app with an updated manifest.
-  virtual void UpdateWebAppFromManifest(const AppId& app_id,
-                                        blink::Manifest manifest,
-                                        OnceInstallCallback callback) = 0;
+  // Reinstall an existing web app, will redownload icons and update them on
+  // disk.
+  virtual void UpdateWebAppFromInfo(
+      const AppId& app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback) = 0;
 
   virtual void Shutdown() = 0;
 

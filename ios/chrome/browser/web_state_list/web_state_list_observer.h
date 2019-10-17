@@ -85,15 +85,17 @@ class WebStateListObserver {
                                    int active_index,
                                    int reason);
 
-  // Invoked before all WebStates are closed in the WebStateList. If the
-  // WebState is closed due to user action, |user_action| will be true.
-  virtual void WillCloseAllWebStates(WebStateList* web_state_list,
-                                     bool user_action);
+  // Invoked before a batched operations begins. The observer can use this
+  // notification if it is interested in considering all those individual
+  // operations as a single mutation of the WebStateList (e.g. considering
+  // insertion of multiple tabs as a restoration operation).
+  virtual void WillBeginBatchOperation(WebStateList* web_state_list);
 
-  // Invoked after all WebStates are closed in the WebStateList. If the WebState
-  // is closed due to user action, |user_action| will be true.
-  virtual void DidCloseAllWebStates(WebStateList* web_state_list,
-                                    bool user_action);
+  // Invoked after the completion of batched operations. The observer can
+  // investigate the state of the WebStateList to detect any changes that
+  // were performed on it during the batch (e.g. detect that all tabs were
+  // closed at once).
+  virtual void BatchOperationEnded(WebStateList* web_state_list);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebStateListObserver);

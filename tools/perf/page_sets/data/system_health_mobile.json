@@ -84,6 +84,9 @@
         "browse:shopping:amazon": {
             "DEFAULT": "system_health_mobile_053.wprgo"
         },
+        "browse:shopping:amazon:2019": {
+            "DEFAULT": "system_health_mobile_5f3fefb816.wprgo"
+        },
         "browse:shopping:avito": {
             "DEFAULT": "system_health_mobile_053.wprgo"
         },

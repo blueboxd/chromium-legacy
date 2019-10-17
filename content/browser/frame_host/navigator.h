@@ -15,7 +15,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
@@ -116,7 +116,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       WindowOpenDisposition disposition,
       bool should_replace_current_entry,
       bool user_gesture,
-      blink::WebTriggeringEventInfo triggering_event_info,
+      blink::TriggeringEventInfo triggering_event_info,
       const std::string& href_translate,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {}
 

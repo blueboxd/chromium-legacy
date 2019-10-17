@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "url/mojom/url.mojom-blink.h"
+#include "url/mojom/url.mojom-blink-forward.h"
 #include "url/url_constants.h"
 
 namespace mojo {

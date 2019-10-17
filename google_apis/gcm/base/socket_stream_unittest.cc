@@ -70,7 +70,7 @@ class GCMSocketStreamTest : public testing::Test {
   SocketInputStream* input_stream() { return socket_input_stream_.get(); }
   SocketOutputStream* output_stream() { return socket_output_stream_.get(); }
 
-  network::mojom::ProxyResolvingSocketPtr mojo_socket_ptr_;
+  mojo::Remote<network::mojom::ProxyResolvingSocket> mojo_socket_remote_;
 
   void set_socket_output_stream(std::unique_ptr<SocketOutputStream> stream) {
     socket_output_stream_ = std::move(stream);
@@ -233,7 +233,8 @@ void GCMSocketStreamTest::OpenConnection() {
   mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
       kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&mojo_socket_ptr_), mojo::NullRemote() /* observer */,
+      mojo_socket_remote_.BindNewPipeAndPassReceiver(),
+      mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
               const base::Optional<net::IPEndPoint>& peer_addr,
@@ -250,13 +251,13 @@ void GCMSocketStreamTest::OpenConnection() {
 }
 
 void GCMSocketStreamTest::ResetInputStream() {
-  DCHECK(mojo_socket_ptr_);
+  DCHECK(mojo_socket_remote_);
   socket_input_stream_ =
       std::make_unique<SocketInputStream>(std::move(receive_pipe_handle_));
 }
 
 void GCMSocketStreamTest::ResetOutputStream() {
-  DCHECK(mojo_socket_ptr_);
+  DCHECK(mojo_socket_remote_);
   socket_output_stream_ =
       std::make_unique<SocketOutputStream>(std::move(send_pipe_handle_));
 }
@@ -373,7 +374,7 @@ TEST_F(GCMSocketStreamTest, ReadError) {
 TEST_F(GCMSocketStreamTest, ReadDisconnected) {
   BuildSocket(ReadList(1, net::MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING)),
               WriteList());
-  mojo_socket_ptr_.reset();
+  mojo_socket_remote_.reset();
   WaitForData(kReadDataSize);
   ASSERT_EQ(SocketInputStream::CLOSED, input_stream()->GetState());
   ASSERT_EQ(net::ERR_FAILED, input_stream()->last_error());
@@ -555,7 +556,7 @@ TEST_F(GCMSocketStreamTest, WriteError) {
 TEST_F(GCMSocketStreamTest, WriteDisconnected) {
   BuildSocket(ReadList(1, net::MockRead(net::SYNCHRONOUS, net::ERR_IO_PENDING)),
               WriteList());
-  mojo_socket_ptr_.reset();
+  mojo_socket_remote_.reset();
   DoOutputStreamWrite(base::StringPiece(kWriteData, kWriteDataSize));
   ASSERT_EQ(SocketOutputStream::CLOSED, output_stream()->GetState());
   ASSERT_EQ(net::ERR_FAILED, output_stream()->last_error());

@@ -15,7 +15,7 @@
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 
@@ -32,11 +32,12 @@ void MojoDecoderFactory::CreateAudioDecoders(
     MediaLog* media_log,
     std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) {
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
-  mojom::AudioDecoderPtr audio_decoder_ptr;
-  interface_factory_->CreateAudioDecoder(mojo::MakeRequest(&audio_decoder_ptr));
+  mojo::PendingRemote<mojom::AudioDecoder> audio_decoder;
+  interface_factory_->CreateAudioDecoder(
+      audio_decoder.InitWithNewPipeAndPassReceiver());
 
   audio_decoders->push_back(std::make_unique<MojoAudioDecoder>(
-      task_runner, std::move(audio_decoder_ptr)));
+      task_runner, std::move(audio_decoder)));
 #endif
 }
 

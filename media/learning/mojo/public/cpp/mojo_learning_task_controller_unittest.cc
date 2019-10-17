@@ -11,7 +11,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -59,21 +59,16 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
 
  public:
   MojoLearningTaskControllerTest()
-      : learning_controller_binding_(&fake_learning_controller_) {}
+      : learning_controller_receiver_(&fake_learning_controller_) {}
   ~MojoLearningTaskControllerTest() override = default;
 
   void SetUp() override {
     // Create a LearningTask.
     task_.name = "MyLearningTask";
 
-    // Create a fake learner provider mojo impl.
-    mojom::LearningTaskControllerPtr learning_controller_ptr;
-    learning_controller_binding_.Bind(
-        mojo::MakeRequest(&learning_controller_ptr));
-
     // Tell |learning_controller_| to forward to the fake learner impl.
     learning_controller_ = std::make_unique<MojoLearningTaskController>(
-        task_, std::move(learning_controller_ptr));
+        task_, learning_controller_receiver_.BindNewPipeAndPassRemote());
   }
 
   // Mojo stuff.
@@ -81,7 +76,7 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
 
   LearningTask task_;
   FakeMojoLearningTaskController fake_learning_controller_;
-  mojo::Binding<mojom::LearningTaskController> learning_controller_binding_;
+  mojo::Receiver<mojom::LearningTaskController> learning_controller_receiver_;
 
   // The learner under test.
   std::unique_ptr<MojoLearningTaskController> learning_controller_;

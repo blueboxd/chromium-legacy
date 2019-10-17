@@ -20,16 +20,18 @@ class WebAppUiManager;
 class InstallManager;
 enum class InstallResultCode;
 
+// This enum is recorded by UMA, the numeric values must not change.
 enum ManifestUpdateResult {
-  kNoAppInScope,
-  kThrottled,
-  kWebContentsDestroyed,
-  kAppUninstalled,
-  kAppIsPlaceholder,
-  kAppUpToDate,
-  kAppDataInvalid,
-  kAppUpdateFailed,
-  kAppUpdated,
+  kNoAppInScope = 0,
+  kThrottled = 1,
+  kWebContentsDestroyed = 2,
+  kAppUninstalled = 3,
+  kAppIsPlaceholder = 4,
+  kAppUpToDate = 5,
+  kAppDataInvalid = 6,
+  kAppUpdateFailed = 7,
+  kAppUpdated = 8,
+  kMaxValue = kAppUpdated,
 };
 
 // Used by UpdateManager on a per web app basis for checking and performing
@@ -71,7 +73,9 @@ class ManifestUpdateTask final
   void OnDidGetInstallableData(const InstallableData& data);
   bool IsUpdateNeededForManifest(const blink::Manifest& manifest) const;
   void OnAllAppWindowsClosed(blink::Manifest manifest);
-  void OnInstallationComplete(const AppId& app_id, InstallResultCode code);
+  void OnInstallationComplete(blink::Manifest manifest,
+                              const AppId& app_id,
+                              InstallResultCode code);
   void DestroySelf(ManifestUpdateResult result);
 
   const AppRegistrar& registrar_;

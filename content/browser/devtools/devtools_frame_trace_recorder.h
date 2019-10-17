@@ -9,20 +9,22 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
+namespace cc {
+class RenderFrameMetadata;
+}
+
 namespace content {
 
 class RenderFrameHostImpl;
-struct DevToolsFrameMetadata;
 
 class DevToolsFrameTraceRecorder {
  public:
   DevToolsFrameTraceRecorder();
   ~DevToolsFrameTraceRecorder();
 
-  void OnSynchronousSwapCompositorFrame(RenderFrameHostImpl* host,
-                                        const DevToolsFrameMetadata& metadata);
-
-  static constexpr int kMaximumNumberOfScreenshots = 450;
+  void OnSynchronousSwapCompositorFrame(
+      RenderFrameHostImpl* host,
+      const cc::RenderFrameMetadata& metadata);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrameTraceRecorder);

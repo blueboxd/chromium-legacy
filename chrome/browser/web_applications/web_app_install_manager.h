@@ -61,9 +61,10 @@ class WebAppInstallManager final : public InstallManager,
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
-  void UpdateWebAppFromManifest(const AppId& app_id,
-                                blink::Manifest manifest,
-                                OnceInstallCallback callback) override;
+  void UpdateWebAppFromInfo(
+      const AppId& app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback) override;
   void Shutdown() override;
 
   // For the new USS-based system only. SyncInstallDelegate:

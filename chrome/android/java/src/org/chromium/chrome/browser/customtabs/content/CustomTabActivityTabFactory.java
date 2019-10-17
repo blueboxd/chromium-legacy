@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 import javax.inject.Inject;
@@ -93,7 +94,7 @@ public class CustomTabActivityTabFactory {
     }
 
     /** Creates a new tab for a Custom Tab activity */
-    public Tab createTab() {
+    public Tab createTab(WebContents webContents, TabDelegateFactory delegateFactory) {
         Intent intent = mIntentDataProvider.getIntent();
         int assignedTabId =
                 IntentUtils.safeGetIntExtra(intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
@@ -106,6 +107,8 @@ public class CustomTabActivityTabFactory {
                 .setIncognito(mIntentDataProvider.isIncognito())
                 .setWindow(mActivityWindowAndroid.get())
                 .setLaunchType(TabLaunchType.FROM_EXTERNAL_APP)
+                .setWebContents(webContents)
+                .setDelegateFactory(delegateFactory)
                 .build();
     }
 

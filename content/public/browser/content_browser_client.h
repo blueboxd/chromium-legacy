@@ -1696,6 +1696,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if the extra ICU data file is available and should be used to
   // initialize ICU.
   virtual bool ShouldLoadExtraIcuDataFile();
+
+  // Returns true if the site is allowed to use persistent media device IDs.
+  virtual bool ArePersistentMediaDeviceIDsAllowed(
+      content::BrowserContext* browser_context,
+      const GURL& scope,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin);
 };
 
 }  // namespace content

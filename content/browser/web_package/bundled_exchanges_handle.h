@@ -27,13 +27,17 @@ class NavigationLoaderInterceptor;
 // loading. Running on the UI thread.
 class BundledExchangesHandle {
  public:
-  static std::unique_ptr<BundledExchangesHandle> CreateForFile();
+  static std::unique_ptr<BundledExchangesHandle> CreateForFile(
+      int frame_tree_node_id);
   static std::unique_ptr<BundledExchangesHandle> CreateForTrustableFile(
-      std::unique_ptr<BundledExchangesSource> source);
+      std::unique_ptr<BundledExchangesSource> source,
+      int frame_tree_node_id);
   static std::unique_ptr<BundledExchangesHandle> CreateForTrackedNavigation(
-      scoped_refptr<BundledExchangesReader> reader);
+      scoped_refptr<BundledExchangesReader> reader,
+      int frame_tree_node_id);
   static std::unique_ptr<BundledExchangesHandle> CreateForNavigationInfo(
-      std::unique_ptr<BundledExchangesNavigationInfo> navigation_info);
+      std::unique_ptr<BundledExchangesNavigationInfo> navigation_info,
+      int frame_tree_node_id);
 
   ~BundledExchangesHandle();
 

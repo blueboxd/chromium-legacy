@@ -30,7 +30,6 @@
 @property(nonatomic, copy, nullable) NSDictionary* fieldTrialValues;
 // Whether the current default search engine supports search by image
 @property(nonatomic, assign) BOOL supportsSearchByImage;
-@property(nonatomic, readonly) BOOL copiedContentBehaviorEnabled;
 @property(nonatomic, strong) AppGroupCommand* command;
 
 @end
@@ -117,14 +116,15 @@
   UIImage* copiedImage;
   CopiedContentType type = CopiedContentTypeNone;
 
-  if (UIImage* image = [self getCopiedImageUsingFlag]) {
+  if (UIImage* image = [self getCopiedImageFromClipboard]) {
     copiedImage = image;
     type = CopiedContentTypeImage;
   } else if (NSURL* url =
                  [self.clipboardRecentContent recentURLFromClipboard]) {
     copiedText = url.absoluteString;
     type = CopiedContentTypeURL;
-  } else if (NSString* text = [self getCopiedTextUsingFlag]) {
+  } else if (NSString* text =
+                 [self.clipboardRecentContent recentTextFromClipboard]) {
     copiedText = text;
     type = CopiedContentTypeString;
   }
@@ -134,21 +134,10 @@
                         copiedImage:copiedImage];
 }
 
-// Helper method to encapsulate both checking the flag and getting the copied
-// text.
-// TODO(crbug.com/932116): Can be removed when the flag is cleaned up.
-- (NSString*)getCopiedTextUsingFlag {
-  if (!self.copiedContentBehaviorEnabled) {
-    return nil;
-  }
-  return [self.clipboardRecentContent recentTextFromClipboard];
-}
-
-// Helper method to encapsulate both checking the flag and getting the copied
-// image.
-// TODO(crbug.com/932116): Can be removed when the flag is cleaned up.
-- (UIImage*)getCopiedImageUsingFlag {
-  if (!self.copiedContentBehaviorEnabled || !self.supportsSearchByImage) {
+// Helper method to encapsulate checking whether the current search engine
+// supports search-by-image and getting the copied image.
+- (UIImage*)getCopiedImageFromClipboard {
+  if (!self.supportsSearchByImage) {
     return nil;
   }
   return [self.clipboardRecentContent recentImageFromClipboard];
@@ -283,18 +272,6 @@
     case CopiedContentTypeNone:
       return true;
   }
-}
-
-- (BOOL)copiedContentBehaviorEnabled {
-  NSDictionary* storedData = self.fieldTrialValues[@"CopiedContentBehavior"];
-  NSNumber* storedVersion =
-      base::mac::ObjCCast<NSNumber>(storedData[kFieldTrialVersionKey]);
-  if (!storedVersion ||
-      ![kCopiedContentBehaviorVersion isEqualToNumber:storedVersion]) {
-    return NO;
-  }
-
-  return [storedData[kFieldTrialValueKey] boolValue];
 }
 
 @end

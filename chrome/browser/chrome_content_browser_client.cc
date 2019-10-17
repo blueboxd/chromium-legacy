@@ -5407,3 +5407,14 @@ bool ChromeContentBrowserClient::ShouldLoadExtraIcuDataFile() {
 #endif
   return false;
 }
+
+bool ChromeContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) {
+  // Persistent MediaDevice IDs are allowed if cookies are allowed.
+  return CookieSettingsFactory::GetForProfile(
+             Profile::FromBrowserContext(browser_context))
+      ->IsCookieAccessAllowed(url, site_for_cookies, top_frame_origin);
+}

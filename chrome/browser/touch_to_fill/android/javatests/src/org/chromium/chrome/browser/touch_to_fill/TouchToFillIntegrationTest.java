@@ -82,7 +82,7 @@ public class TouchToFillIntegrationTest {
         runOnUiThreadBlocking(() -> {
             mTouchToFill.showCredentials(EXAMPLE_URL, true, Collections.singletonList(ANA));
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
 
         pollUiThread(() -> getCredentials().getChildAt(0) != null);
         TouchCommon.singleClickView(getCredentials().getChildAt(0));
@@ -98,7 +98,7 @@ public class TouchToFillIntegrationTest {
         runOnUiThreadBlocking(() -> {
             mTouchToFill.showCredentials(EXAMPLE_URL, true, Arrays.asList(ANA, BOB));
         });
-        pollUiThread(() -> getBottomSheetState() == SheetState.FULL);
+        pollUiThread(() -> getBottomSheetState() == SheetState.PEEK);
 
         Espresso.pressBack();
 

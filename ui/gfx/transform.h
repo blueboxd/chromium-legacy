@@ -17,6 +17,7 @@ namespace gfx {
 
 class BoxF;
 class RectF;
+class RRectF;
 class Point;
 class PointF;
 class Point3F;
@@ -241,6 +242,10 @@ class GEOMETRY_SKIA_EXPORT Transform {
   // containing the transformed rect. Returns false if the matrix cannot be
   // inverted.
   bool TransformRectReverse(RectF* rect) const;
+
+  // Applies transformation on the given |rrect|. Returns false if the transform
+  // matrix cannot be applied to rrect.
+  bool TransformRRectF(RRectF* rrect) const;
 
   // Applies transformation on the given box. After the function completes,
   // |box| will be the smallest axis aligned bounding box containing the

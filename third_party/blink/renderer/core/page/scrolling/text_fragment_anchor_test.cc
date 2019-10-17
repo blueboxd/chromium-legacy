@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -1541,6 +1542,46 @@ TEST_F(TextFragmentAnchorTest, TextDirectiveInSvg) {
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(text)))
       << "<text> Element wasn't scrolled into view, viewport's scroll offset: "
       << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Ensure we restore the text highlight on page reload
+TEST_F(TextFragmentAnchorTest, HighlightOnReload) {
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
+  const String& html = R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML";
+  request.Complete(html);
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Tap to dismiss the highlight.
+  SimulateClick(10, 10);
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Reload the page and expect the highlight to be restored.
+  SimRequest reload_request("https://example.com/test.html#:~:text=test",
+                            "text/html");
+  MainFrame().StartReload(WebFrameLoadType::kReload);
+  reload_request.Complete(html);
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
 
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }

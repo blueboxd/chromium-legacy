@@ -12,6 +12,7 @@
 #include "base/version.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_verifier/content_verifier_key.h"
+#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
@@ -103,6 +104,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
       base::OnceCallback<void(scoped_refptr<ContentHash> hash,
                               bool was_cancelled)>;
   static void Create(FetchKey key,
+                     ContentVerifierDelegate::VerifierSourceType source_type,
                      const IsCancelledCallback& is_cancelled,
                      CreatedCallback created_callback);
 
@@ -139,6 +141,9 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     return !succeeded() && verified_contents_ != nullptr &&
            !did_attempt_creating_computed_hashes_;
   }
+
+  static std::string ComputeTreeHashForContent(const std::string& contents,
+                                               int block_size);
 
  private:
   friend class base::RefCountedThreadSafe<ContentHash>;

@@ -24,8 +24,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.components.signin.ProfileDataSource;
@@ -34,16 +38,26 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.widget.ChromeImageView;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests for ProfileDataCache image scaling. Leverages RenderTest instead of reimplementing
  * bitmap comparison to simplify access to the compared images on buildbots (via result_details).
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
-    // Anything different than logo_avatar_anonymous size should work.
-    // TODO(https://crbug.com/967770): Make parameterized and test scaling to different sizes.
-    private static final @Px int IMAGE_SIZE = 64;
+    @ClassParameter
+    private static final List<ParameterSet> sClassParams =
+            Arrays.asList(new ParameterSet().value(64).name("ImageSize64"),
+                    new ParameterSet().value(128).name("ImageSize128"));
+
+    private final @Px int mImageSize;
+
+    public ProfileDataCacheRenderTest(int imageSize) {
+        mImageSize = imageSize;
+    }
 
     @Rule
     public RenderTestRule mRenderTestRule =
@@ -66,7 +80,7 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
 
             mProfileDataSource = new FakeProfileDataSource();
             mProfileDataCache =
-                    new ProfileDataCache(getActivity(), IMAGE_SIZE, null, mProfileDataSource);
+                    new ProfileDataCache(getActivity(), mImageSize, null, mProfileDataSource);
             // ProfileDataCache only populates the cache when an observer is added.
             mProfileDataCache.addObserver(accountId -> {});
         });
@@ -76,17 +90,10 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
     @MediumTest
     @Feature("RenderTest")
     public void testPlaceholderIsScaled() throws IOException {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            String accountName = "no.data.for.this.account@example.com";
-            DisplayableProfileData displayableProfileData =
-                    mProfileDataCache.getProfileDataOrDefault(accountName);
-            Drawable placeholderImage = displayableProfileData.getImage();
-            assertEquals(IMAGE_SIZE, placeholderImage.getIntrinsicHeight());
-            assertEquals(IMAGE_SIZE, placeholderImage.getIntrinsicWidth());
-            mImageView.setImageDrawable(placeholderImage);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { checkImageIsScaled("no.data.for.this.account@example.com"); });
 
-        mRenderTestRule.render(mImageView, "profile_data_cache_placeholder");
+        mRenderTestRule.render(mImageView, "profile_data_cache_placeholder" + mImageSize);
     }
 
     @Test
@@ -98,16 +105,19 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
             ProfileDataSource.ProfileData profileData = new ProfileDataSource.ProfileData(
                     accountName, createAvatar(), "Full Name", "Given Name");
             mProfileDataSource.setProfileData(accountName, profileData);
-
-            DisplayableProfileData displayableProfileData =
-                    mProfileDataCache.getProfileDataOrDefault(accountName);
-            Drawable placeholderImage = displayableProfileData.getImage();
-            assertEquals(IMAGE_SIZE, placeholderImage.getIntrinsicHeight());
-            assertEquals(IMAGE_SIZE, placeholderImage.getIntrinsicWidth());
-            mImageView.setImageDrawable(placeholderImage);
+            checkImageIsScaled(accountName);
         });
 
-        mRenderTestRule.render(mImageView, "profile_data_cache_avatar");
+        mRenderTestRule.render(mImageView, "profile_data_cache_avatar" + mImageSize);
+    }
+
+    private void checkImageIsScaled(String accountName) {
+        DisplayableProfileData displayableProfileData =
+                mProfileDataCache.getProfileDataOrDefault(accountName);
+        Drawable placeholderImage = displayableProfileData.getImage();
+        assertEquals(mImageSize, placeholderImage.getIntrinsicHeight());
+        assertEquals(mImageSize, placeholderImage.getIntrinsicWidth());
+        mImageView.setImageDrawable(placeholderImage);
     }
 
     /**
@@ -116,7 +126,7 @@ public class ProfileDataCacheRenderTest extends DummyUiActivityTestCase {
      */
     private Bitmap createAvatar() {
         final int avatarSize = 100;
-        assertNotEquals("Should be different to test scaling", IMAGE_SIZE, avatarSize);
+        assertNotEquals("Should be different to test scaling", mImageSize, avatarSize);
 
         Bitmap result = Bitmap.createBitmap(avatarSize, avatarSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(result);

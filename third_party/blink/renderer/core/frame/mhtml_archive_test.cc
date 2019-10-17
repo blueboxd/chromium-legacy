@@ -28,10 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
+
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 #include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"

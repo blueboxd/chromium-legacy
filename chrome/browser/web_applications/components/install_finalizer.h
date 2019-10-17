@@ -44,6 +44,10 @@ class InstallFinalizer {
                                const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
 
+  // Write the new WebApp data to disk and update the app.
+  virtual void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                              InstallFinalizedCallback callback) = 0;
+
   // Removes the external app for |app_url| from disk and registrar. Fails if
   // there is no installed external app for |app_url|.
   virtual void UninstallExternalWebApp(const GURL& app_url,

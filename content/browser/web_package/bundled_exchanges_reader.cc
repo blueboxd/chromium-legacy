@@ -163,7 +163,13 @@ void BundledExchangesReader::ReadResponse(const GURL& url,
 
   auto it = entries_.find(net::SimplifyUrlForRequest(url));
   if (it == entries_.end() || it->second->response_locations.empty()) {
-    PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr));
+    PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback), nullptr,
+            data_decoder::mojom::BundleResponseParseError::New(
+                data_decoder::mojom::BundleParseErrorType::kParserInternalError,
+                "Not found in Web Bundle file.")));
     return;
   }
 
@@ -264,8 +270,7 @@ void BundledExchangesReader::OnResponseParsed(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_ready_);
 
-  // TODO(crbug.com/966753): Handle |error|.
-  std::move(callback).Run(std::move(response));
+  std::move(callback).Run(std::move(response), std::move(error));
 }
 
 }  // namespace content

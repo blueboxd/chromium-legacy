@@ -67,7 +67,7 @@ interface ProxyResolvingSocketFactory {
   CreateProxyResolvingSocket(url.mojom.Url url,
       ProxyResolvingSocketOptions? options,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
-      ProxyResolvingSocket& socket,
+      pending_receiver<ProxyResolvingSocket> socket,
       pending_remote<SocketObserver>? observer)
      => (int32 result,
          network.mojom.IPEndPoint? local_addr,

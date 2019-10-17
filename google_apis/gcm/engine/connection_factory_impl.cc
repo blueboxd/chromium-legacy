@@ -360,7 +360,7 @@ void ConnectionFactoryImpl::StartConnection() {
   socket_factory_->CreateProxyResolvingSocket(
       current_endpoint, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation),
-      mojo::MakeRequest(&socket_), mojo::NullRemote() /* observer */,
+      socket_.BindNewPipeAndPassReceiver(), mojo::NullRemote() /* observer */,
       base::BindOnce(&ConnectionFactoryImpl::OnConnectDone,
                      base::Unretained(this)));
 }

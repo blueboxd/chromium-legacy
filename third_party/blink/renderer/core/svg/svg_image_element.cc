@@ -223,9 +223,9 @@ const AtomicString SVGImageElement::ImageSourceURL() const {
 }
 
 void SVGImageElement::DidMoveToNewDocument(Document& old_document) {
-  GetImageLoader().UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
   GetImageLoader().ElementDidMoveToNewDocument();
   SVGGraphicsElement::DidMoveToNewDocument(old_document);
+  GetImageLoader().UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
 }
 
 }  // namespace blink

@@ -14,6 +14,10 @@
 #include "base/threading/thread_checker.h"
 #include "media/capture/video/video_capture_device.h"
 
+namespace gpu {
+class GpuMemoryBufferSupport;
+}  // namespace gpu
+
 namespace media {
 
 struct FakeDeviceState;
@@ -25,7 +29,7 @@ class FrameDelivererFactory;
 // as a frame count and timer.
 class PacmanFramePainter {
  public:
-  enum class Format { I420, SK_N32, Y16 };
+  enum class Format { I420, SK_N32, Y16, NV12 };
 
   PacmanFramePainter(Format pixel_format,
                      const FakeDeviceState* fake_device_state);
@@ -50,7 +54,8 @@ class FakeVideoCaptureDevice : public VideoCaptureDevice {
  public:
   enum class DeliveryMode {
     USE_DEVICE_INTERNAL_BUFFERS,
-    USE_CLIENT_PROVIDED_BUFFERS
+    USE_CLIENT_PROVIDED_BUFFERS,
+    USE_GPU_MEMORY_BUFFERS,
   };
 
   enum class DisplayMediaType { ANY, MONITOR, WINDOW, BROWSER };
@@ -134,15 +139,20 @@ struct FakeDeviceState {
 // A dependency needed by FakeVideoCaptureDevice.
 class FrameDelivererFactory {
  public:
-  FrameDelivererFactory(FakeVideoCaptureDevice::DeliveryMode delivery_mode,
-                        const FakeDeviceState* device_state);
+  FrameDelivererFactory(
+      FakeVideoCaptureDevice::DeliveryMode delivery_mode,
+      const FakeDeviceState* device_state,
+      std::unique_ptr<gpu::GpuMemoryBufferSupport> gmb_support);
+  ~FrameDelivererFactory();
 
   std::unique_ptr<FrameDeliverer> CreateFrameDeliverer(
-      const VideoCaptureFormat& format);
+      const VideoCaptureFormat& format,
+      bool video_capture_use_gmb);
 
  private:
   const FakeVideoCaptureDevice::DeliveryMode delivery_mode_;
   const FakeDeviceState* device_state_ = nullptr;
+  std::unique_ptr<gpu::GpuMemoryBufferSupport> gmb_support_;
 };
 
 struct FakePhotoDeviceConfig {

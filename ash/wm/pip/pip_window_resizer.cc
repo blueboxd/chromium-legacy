@@ -252,7 +252,8 @@ void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
 }
 
 void PipWindowResizer::CompleteDrag() {
-  if (details().bounds_change & kBoundsChange_Resizes) {
+  const bool is_resize = details().bounds_change & kBoundsChange_Resizes;
+  if (is_resize) {
     CollectFreeResizeAreaMetric(kAshPipFreeResizeFinishAreaHistogramName,
                                 GetTarget());
   } else {
@@ -283,7 +284,7 @@ void PipWindowResizer::CompleteDrag() {
   } else {
     // Animate the PIP window to its resting position.
     gfx::Rect bounds;
-    if (fling_amount > kPipMovementFlingThresholdSquared) {
+    if (!is_resize && fling_amount > kPipMovementFlingThresholdSquared) {
       bounds = ComputeFlungPosition();
     } else {
       bounds = GetTarget()->GetBoundsInScreen();

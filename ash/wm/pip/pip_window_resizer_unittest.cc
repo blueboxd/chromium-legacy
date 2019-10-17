@@ -255,6 +255,17 @@ TEST_P(PipWindowResizerTest, PipWindowCanBeResizedInTabletMode) {
   EXPECT_EQ(gfx::Rect(200, 200, 100, 110), test_state()->last_bounds());
 }
 
+TEST_P(PipWindowResizerTest, ResizingPipWindowDoesNotTriggerFling) {
+  PreparePipWindow(gfx::Rect(8, 8, 100, 100));
+  std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTBOTTOM));
+  ASSERT_TRUE(resizer.get());
+
+  Fling(std::move(resizer), 0.f, 4000.f);
+
+  // Ensure that the PIP window isn't flung to the bottom edge during resize.
+  EXPECT_EQ(gfx::Point(8, 8), test_state()->last_bounds().origin());
+}
+
 TEST_P(PipWindowResizerTest, PipWindowCanBeSwipeDismissed) {
   PreparePipWindow(gfx::Rect(8, 8, 100, 100));
   std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));

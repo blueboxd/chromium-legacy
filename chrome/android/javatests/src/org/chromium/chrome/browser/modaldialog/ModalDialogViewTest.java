@@ -34,8 +34,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -75,9 +75,9 @@ public class ModalDialogViewTest extends DummyUiActivityTestCase {
             mContentView.addView(mModalDialogView, MATCH_PARENT, WRAP_CONTENT);
 
             mCustomTextView1 = new TextView(activity);
-            mCustomTextView1.setId(R.id.button_one);
+            mCustomTextView1.setId(R.id.test_view_one);
             mCustomTextView2 = new TextView(activity);
-            mCustomTextView2.setId(R.id.button_two);
+            mCustomTextView2.setId(R.id.test_view_two);
         });
     }
 
@@ -204,21 +204,21 @@ public class ModalDialogViewTest extends DummyUiActivityTestCase {
         PropertyModel model = createModel(
                 mModelBuilder.with(ModalDialogProperties.CUSTOM_VIEW, mCustomTextView1));
         onView(withId(R.id.custom))
-                .check(matches(allOf(isDisplayed(), withChild(withId(R.id.button_one)))));
+                .check(matches(allOf(isDisplayed(), withChild(withId(R.id.test_view_one)))));
 
         // Change custom view.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.CUSTOM_VIEW, mCustomTextView2));
         onView(withId(R.id.custom))
-                .check(matches(allOf(isDisplayed(), not(withChild(withId(R.id.button_one))),
-                        withChild(withId(R.id.button_two)))));
+                .check(matches(allOf(isDisplayed(), not(withChild(withId(R.id.test_view_one))),
+                        withChild(withId(R.id.test_view_two)))));
 
         // Set custom view to null.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> model.set(ModalDialogProperties.CUSTOM_VIEW, null));
         onView(withId(R.id.custom))
-                .check(matches(allOf(not(isDisplayed()), not(withChild(withId(R.id.button_one))),
-                        not(withChild(withId(R.id.button_two))))));
+                .check(matches(allOf(not(isDisplayed()), not(withChild(withId(R.id.test_view_one))),
+                        not(withChild(withId(R.id.test_view_two))))));
     }
 
     @Test

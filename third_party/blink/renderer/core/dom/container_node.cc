@@ -1392,7 +1392,7 @@ void ContainerNode::RebuildChildrenLayoutTrees(
   DCHECK(!NeedsReattachLayoutTree());
 
   if (IsActiveSlotOrActiveV0InsertionPoint()) {
-    if (auto* slot = ToHTMLSlotElementOrNull(this)) {
+    if (auto* slot = DynamicTo<HTMLSlotElement>(this)) {
       slot->RebuildDistributedChildrenLayoutTrees(whitespace_attacher);
     } else {
       To<V0InsertionPoint>(this)->RebuildDistributedChildrenLayoutTrees(

@@ -35,7 +35,6 @@ cca.views.CameraIntent = class extends cca.views.Camera {
   constructor(intent, infoUpdater, photoPreferrer, videoPreferrer) {
     const resultSaver = {
       savePhoto: async (blob) => {
-        this.photoResult_ = blob;
         if (intent.shouldDownScale) {
           const image = await cca.util.blobToImage(blob);
           const ratio = Math.sqrt(
@@ -52,7 +51,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
         return await cca.models.IntentVideoSaver.create(intent);
       },
       finishSaveVideo: async (video, savedName) => {
-        this.videoResult_ = await video.endWrite();
+        this.videoResultFile_ = await video.endWrite();
       },
     };
     super(resultSaver, infoUpdater, photoPreferrer, videoPreferrer);
@@ -64,16 +63,22 @@ cca.views.CameraIntent = class extends cca.views.Camera {
     this.intent_ = intent;
 
     /**
-     * @type {?Blob}
+     * @type {?cca.views.camera.PhotoResult}
      * @private
      */
     this.photoResult_ = null;
 
     /**
-     * @type {?FileEntry}
+     * @type {?cca.views.camera.VideoResult}
      * @private
      */
     this.videoResult_ = null;
+
+    /**
+     * @type {?FileEntry}
+     * @private
+     */
+    this.videoResultFile_ = null;
 
     /**
      * @type {!cca.views.camera.ReviewResult}
@@ -85,9 +90,35 @@ cca.views.CameraIntent = class extends cca.views.Camera {
   /**
    * @override
    */
+  async doSavePhoto_(result, name) {
+    this.photoResult_ = result;
+    try {
+      await this.resultSaver_.savePhoto(result.blob, name);
+    } catch (e) {
+      cca.toast.show('error_msg_save_file_failed');
+      throw e;
+    }
+  }
+
+  /**
+   * @override
+   */
+  async doSaveVideo_(result, name) {
+    this.videoResult_ = result;
+    try {
+      await this.resultSaver_.finishSaveVideo(result.videoSaver, name);
+    } catch (e) {
+      cca.toast.show('error_msg_save_file_failed');
+      throw e;
+    }
+  }
+
+  /**
+   * @override
+   */
   beginTake_() {
     if (this.photoResult_ !== null) {
-      URL.revokeObjectURL(this.photoResult_);
+      URL.revokeObjectURL(this.photoResult_.blob);
     }
     this.photoResult_ = null;
     this.videoResult_ = null;
@@ -107,8 +138,14 @@ cca.views.CameraIntent = class extends cca.views.Camera {
       await this.restart();
       const confirmed = await (
           this.photoResult_ !== null ?
-              this.reviewResult_.openPhoto(this.photoResult_) :
-              this.reviewResult_.openVideo(this.videoResult_));
+              this.reviewResult_.openPhoto(this.photoResult_.blob) :
+              this.reviewResult_.openVideo(this.videoResultFile_));
+      const result = this.photoResult_ || this.videoResult_;
+      cca.metrics.log(
+          cca.metrics.Type.CAPTURE, this.facingMode_, result.duration || 0,
+          result.resolution,
+          confirmed ? cca.metrics.IntentResultType.CONFIRMED :
+                      cca.metrics.IntentResultType.CANCELED);
       if (confirmed) {
         await this.intent_.finish();
         window.close();

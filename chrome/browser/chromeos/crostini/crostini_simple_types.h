@@ -63,7 +63,13 @@ enum class CrostiniResult {
   CONTAINER_EXPORT_IMPORT_CANCELLED = 37,
   RESTART_ABORTED = 38,
   RESTART_FAILED_VM_STOPPED = 39,
-  kMaxValue = RESTART_FAILED_VM_STOPPED,
+  UPGRADE_CONTAINER_STARTED = 40,
+  UPGRADE_CONTAINER_ALREADY_RUNNING = 41,
+  UPGRADE_CONTAINER_NOT_SUPPORTED = 42,
+  UPGRADE_CONTAINER_ALREADY_UPGRADED = 43,
+  UPGRADE_CONTAINER_FAILED = 44,
+  CANCEL_UPGRADE_CONTAINER_FAILED = 45,
+  kMaxValue = CANCEL_UPGRADE_CONTAINER_FAILED,
 };
 
 enum class InstallLinuxPackageProgressStatus {
@@ -99,6 +105,18 @@ enum class ImportContainerProgressStatus {
   UNPACK,
   FAILURE_ARCHITECTURE,
   FAILURE_SPACE,
+};
+
+enum class UpgradeContainerProgressStatus {
+  SUCCEEDED,
+  FAILED,
+  UPGRADING,
+};
+
+enum class ContainerVersion {
+  UNKNOWN,
+  STRETCH,
+  BUSTER,
 };
 
 struct VmInfo {

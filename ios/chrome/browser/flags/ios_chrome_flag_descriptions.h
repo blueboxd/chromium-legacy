@@ -97,11 +97,6 @@ extern const char kCollectionsCardPresentationStyleDescription[];
 extern const char kConfirmInfobarMessagesUIName[];
 extern const char kConfirmInfobarMessagesUIDescription[];
 
-// Title and description for the flag to diffentiate between copied
-// urls, strings, and images.
-extern const char kCopiedContentBehaviorName[];
-extern const char kCopiedContentBehaviorDescription[];
-
 // Title and description for the flag to scan a new credit card using the
 // camera.
 extern const char kCreditCardScannerName[];
@@ -299,6 +294,11 @@ extern const char kSnapshotDrawViewDescription[];
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
+
+// Title and description for the flag to allow syncing DeviceInfo in
+// transport-only mode.
+extern const char kSyncDeviceInfoInTransportModeName[];
+extern const char kSyncDeviceInfoInTransportModeDescription[];
 
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.

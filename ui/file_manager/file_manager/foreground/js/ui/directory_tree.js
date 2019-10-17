@@ -6,11 +6,11 @@
 const directorytree = {};
 
 ////////////////////////////////////////////////////////////////////////////////
-// DirectoryTreeBase
+// DirectoryTreeBase methods
 
 /**
  * Implementation of methods for DirectoryTree and DirectoryItem. These classes
- * inherits cr.ui.Tree/TreeItem so we can't make them inherit this class.
+ * inherits cr.ui.Tree/cr.ui.TreeItem so we can't make them inherit this class.
  * Instead, we separate their implementations to this separate object and call
  * it with setting 'this' from DirectoryTree/Item.
  */
@@ -136,6 +136,17 @@ const TREE_ITEM_INNER_HTML = '<div class="tree-row">' +
 
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryItem
+
+/**
+ * An optional rowElement depth (indent) style handler where undefined uses the
+ * default cr.ui.Tree/cr.ui.TreeItem indent styling.
+ *
+ * TODO(crbug.com/992819): add an implementation for the FILES_NG_ENABLED case,
+ * where a rowElement child needs the indent, not the rowElement itself.
+ *
+ * @type {function(!cr.ui.TreeItem,number)|undefined}
+ */
+directorytree.styleRowElementDepth = undefined;
 
 /**
  * An expandable directory in the tree. Each element represents one folder (sub
@@ -2241,6 +2252,10 @@ DirectoryTree.decorate =
     (el, directoryModel, volumeManager, metadataModel, fileOperationManager,
      fakeEntriesVisible) => {
       el.__proto__ = DirectoryTree.prototype;
+
+      // TODO(crbug.com/992819): add overrides for the FILES_NG_ENABLED case.
+      Object.freeze(directorytree);
+
       /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
           directoryModel, volumeManager, metadataModel, fileOperationManager,
           fakeEntriesVisible);

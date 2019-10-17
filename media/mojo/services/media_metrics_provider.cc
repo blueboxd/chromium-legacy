@@ -14,6 +14,7 @@
 #include "media/learning/mojo/mojo_learning_task_controller_service.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -309,7 +310,8 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
 
 void MediaMetricsProvider::AcquireLearningTaskController(
     const std::string& taskName,
-    media::learning::mojom::LearningTaskControllerRequest request) {
+    mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
+        receiver) {
   learning::LearningSession* session = learning_session_cb_.Run();
   if (!session) {
     DVLOG(3) << __func__ << " Ignoring request, unable to get LearningSession.";
@@ -324,10 +326,10 @@ void MediaMetricsProvider::AcquireLearningTaskController(
     return;
   }
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<learning::MojoLearningTaskControllerService>(
           controller->GetLearningTask(), std::move(controller)),
-      std::move(request));
+      std::move(receiver));
 }
 
 void MediaMetricsProvider::AddBytesReceived(uint64_t bytes_received) {

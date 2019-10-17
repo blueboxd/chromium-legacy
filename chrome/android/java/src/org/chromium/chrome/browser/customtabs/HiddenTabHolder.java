@@ -117,8 +117,9 @@ public class HiddenTabHolder {
         Tab tab = new TabBuilder()
                           .setWindow(new WindowAndroid(context))
                           .setLaunchType(TabLaunchType.FROM_SPECULATIVE_BACKGROUND_CREATION)
+                          .setDelegateFactory(CustomTabDelegateFactory.createDummy())
+                          .setInitiallyHidden(true)
                           .build();
-        tab.initialize(null, CustomTabDelegateFactory.createDummy(), true, null, false);
 
         // Resize the webContent to avoid expensive post load resize when attaching the tab.
         Rect bounds = ExternalPrerenderHandler.estimateContentSize(context, false);

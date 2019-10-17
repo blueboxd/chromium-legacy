@@ -138,12 +138,20 @@ bool SpatialNavigationController::HandleArrowKeyboardEvent(
   if (direction == SpatialNavigationDirection::kNone)
     return false;
 
+  // If the focus has already moved by a previous handler, return false.
+  const Element* focused = GetFocusedElement();
+  if (focused && focused != event->target()) {
+    // SpatNav does not need to handle this arrow key because
+    // the webpage had a key-handler that already moved focus.
+    return false;
+  }
+
   // In focusless mode, the user must explicitly move focus in and out of an
   // editable so we can avoid advancing interest and we should swallow the
   // event. This prevents double-handling actions for things like search box
   // suggestions.
   if (RuntimeEnabledFeatures::FocuslessSpatialNavigationEnabled()) {
-    if (Element* focused = GetFocusedElement()) {
+    if (focused) {
       if (HasEditableStyle(*focused) || focused->IsTextControl())
         return true;
     }

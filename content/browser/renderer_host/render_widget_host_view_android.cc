@@ -395,7 +395,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
 
   if (!using_browser_compositor_) {
     // DevTools ScreenCast support for Android WebView.
-    last_devtools_frame_metadata_.emplace(metadata);
+    last_render_frame_metadata_ = metadata;
     // Android WebView ignores transparent background.
     is_transparent = false;
   }
@@ -1143,11 +1143,11 @@ void RenderWidgetHostViewAndroid::FrameTokenChangedForSynchronousCompositor(
     if (!in_sync_copy_contents_) {
       RenderFrameHost* frame_host =
           RenderViewHost::From(host())->GetMainFrame();
-      if (frame_host && last_devtools_frame_metadata_) {
+      if (frame_host && last_render_frame_metadata_) {
         // Update our |root_scroll_offset|, as changes to this value do not
         // trigger a new RenderFrameMetadata, and it may be out of date. This
         // is needed for devtools DOM node selection.
-        DevToolsFrameMetadata updated_metadata = *last_devtools_frame_metadata_;
+        cc::RenderFrameMetadata updated_metadata = *last_render_frame_metadata_;
         updated_metadata.root_scroll_offset =
             gfx::ScrollOffsetToVector2dF(root_scroll_offset);
         RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(

@@ -297,6 +297,7 @@ class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
   MOCK_METHOD1(ReportError, void(const ModelError&));
   MOCK_METHOD0(GetControllerDelegate,
                base::WeakPtr<ModelTypeControllerDelegate>());
+  MOCK_METHOD0(IsTrackingMetadata, bool());
 };
 
 class MockObserver : public SyncEncryptionHandler::Observer {
@@ -340,6 +341,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
 
     auto processor =
         std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
+    ON_CALL(*processor, IsTrackingMetadata()).WillByDefault(Return(true));
     processor_ = processor.get();
     auto storage = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
     storage_ = storage.get();
@@ -591,9 +593,14 @@ TEST_F(NigoriSyncBridgeImplTest,
 
   // We don't verify entire NigoriSpecifics here, because it requires too
   // complex matcher (NigoriSpecifics is not determenistic).
+  // Calling MergeSyncData() triggers a commit cycle but doesn't immediately
+  // expose the new state, until the commit completes.
   EXPECT_CALL(*processor(), Put(HasKeystoreNigori()));
   EXPECT_THAT(bridge()->MergeSyncData(std::move(default_entity_data)),
               Eq(base::nullopt));
+  EXPECT_THAT(bridge()->GetData(), HasKeystoreNigori());
+
+  EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetData(), HasKeystoreNigori());
   EXPECT_THAT(bridge()->GetKeystoreMigrationTime(), Not(NullTime()));
   EXPECT_EQ(bridge()->GetPassphraseTypeForTesting(),
@@ -887,6 +894,7 @@ TEST_F(NigoriSyncBridgeImplTest,
   ASSERT_THAT(bridge()->MergeSyncData(std::move(default_entity_data)),
               Eq(base::nullopt));
   ASSERT_THAT(bridge()->GetData(), Not(HasCustomPassphraseNigori()));
+  EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
 
   // Calling SetEncryptionPassphrase() triggers a commit cycle but doesn't
   // immediately expose the new state, until the commit completes.

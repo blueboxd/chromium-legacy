@@ -35,7 +35,7 @@
 namespace safe_browsing {
 
 const base::Feature kDeepScanningOfUploads{"DeepScanningOfUploads",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // TODO(rogerta): keeping this disabled by default until UX is finalized.
 const base::Feature kDeepScanningOfUploadsUI{"DeepScanningOfUploadsUI",

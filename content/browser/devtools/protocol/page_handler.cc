@@ -271,7 +271,7 @@ void PageHandler::Wire(UberDispatcher* dispatcher) {
 }
 
 void PageHandler::OnSynchronousSwapCompositorFrame(
-    const DevToolsFrameMetadata& frame_metadata) {
+    const cc::RenderFrameMetadata& frame_metadata) {
   // Cache |frame_metadata_| as InnerSwapCompositorFrame may also be called on
   // screencast start.
   frame_metadata_ = frame_metadata;
@@ -1104,8 +1104,8 @@ void PageHandler::InnerSwapCompositorFrame() {
       BuildScreencastFrameMetadata(
           surface_size, frame_metadata_->device_scale_factor,
           frame_metadata_->page_scale_factor,
-          frame_metadata_->root_scroll_offset, top_controls_height,
-          top_controls_shown_ratio);
+          frame_metadata_->root_scroll_offset.value_or(gfx::Vector2dF()),
+          top_controls_height, top_controls_shown_ratio);
   if (!page_metadata)
     return;
 

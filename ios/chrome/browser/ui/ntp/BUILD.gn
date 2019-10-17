@@ -191,6 +191,7 @@ source_set("unit_tests") {
 
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "new_tab_page_egtest.mm",
@@ -210,6 +211,29 @@ source_set("eg_tests") {
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "new_tab_page_egtest.mm",
+  ]
+  deps = [
+    "//base/test:test_support",
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ui/base",
+  ]
+  libs = [ "UIKit.framework" ]
 }
 
 source_set("perf_tests") {

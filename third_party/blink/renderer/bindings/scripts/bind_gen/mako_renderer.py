@@ -36,17 +36,17 @@ class MakoRenderer(object):
             caller: An object to be pushed onto the call stack.
         """
 
-        assert not (template_path is None and template_text is None)
-        assert not (template_path and template_text)
+        assert template_path is not None or template_text is not None
+        assert template_path is None or template_text is None
         assert isinstance(template_vars, dict)
         assert caller is not None
 
         self._caller_stack.append(caller)
 
         try:
-            if template_path:
+            if template_path is not None:
                 template = self._template_lookup.get_template(template_path)
-            elif template_text:
+            elif template_text is not None:
                 template = mako.template.Template(text=template_text)
             text = template.render(**template_vars)
         finally:

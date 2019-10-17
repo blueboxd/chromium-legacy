@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -109,6 +110,13 @@ void HTMLButtonElement::ParseAttribute(
 }
 
 void HTMLButtonElement::DefaultEventHandler(Event& event) {
+  DefaultEventHandlerInternal(event);
+
+  if (event.type() == event_type_names::kDOMActivate && formOwner())
+    formOwner()->DidActivateSubmitButton(this);
+}
+
+void HTMLButtonElement::DefaultEventHandlerInternal(Event& event) {
   if (event.type() == event_type_names::kDOMActivate &&
       !IsDisabledFormControl()) {
     if (Form() && type_ == SUBMIT) {
@@ -217,6 +225,18 @@ Node::InsertionNotificationRequest HTMLButtonElement::InsertedInto(
   LogAddElementIfIsolatedWorldAndInDocument("button", kTypeAttr,
                                             kFormmethodAttr, kFormactionAttr);
   return request;
+}
+
+EventDispatchHandlingState* HTMLButtonElement::PreDispatchEventHandler(
+    Event& event) {
+  if (Form() && CanBeSuccessfulSubmitButton())
+    Form()->WillActivateSubmitButton(this);
+  return nullptr;
+}
+
+void HTMLButtonElement::DidPreventDefault(const Event& event) {
+  if (auto* form = formOwner())
+    form->DidActivateSubmitButton(this);
 }
 
 }  // namespace blink

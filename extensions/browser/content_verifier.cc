@@ -288,7 +288,9 @@ class ContentVerifier::HashHelper {
       const IsCancelledCallback& is_cancelled,
       ContentHash::CreatedCallback created_callback) {
     ContentHash::Create(
-        std::move(fetch_key), is_cancelled,
+        std::move(fetch_key),
+        ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES,
+        is_cancelled,
         base::BindOnce(&HashHelper::ForwardToIO, std::move(created_callback)));
   }
 

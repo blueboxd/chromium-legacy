@@ -21,7 +21,8 @@
       </app-management-pin-to-shelf-item>
       <app-management-permission-item id="notifications-card"
         class="permission-card-row separated-row header-text"
-        permission-label="$i18n{notifications}" permission-type="NOTIFICATIONS"
+        permission-label="$i18n{appManagementNotificationsLabel}"
+        permission-type="NOTIFICATIONS"
         hidden$="[[!isArcSupported_]]">
       </app-management-permission-item>
       <div id="permissions-card"
@@ -30,32 +31,32 @@
         <div id="subpermission-expand-row"
           class="permission-section-header"
           hidden$="[[!isArcSupported_]]">
-          <div class="header-text">$i18n{permissions}</div>
+          <div class="header-text">$i18n{appManagementPermissionsLabel}</div>
         </div>
         <div class="permission-list indented-permission-block">
           <app-management-permission-item class="subpermission-row"
             icon="app-management:location"
-            permission-label="$i18n{location}"
+            permission-label="$i18n{appManagementLocationPermissionLabel}"
             permission-type="LOCATION">
           </app-management-permission-item>
           <app-management-permission-item class="subpermission-row"
             icon="app-management:camera"
-            permission-label="$i18n{camera}"
+            permission-label="$i18n{appManagementCameraPermissionLabel}"
             permission-type="CAMERA">
           </app-management-permission-item>
           <app-management-permission-item class="subpermission-row"
             icon="app-management:microphone"
-            permission-label="$i18n{microphone}"
+            permission-label="$i18n{appManagementMicrophonePermissionLabel}"
             permission-type="MICROPHONE">
           </app-management-permission-item>
           <app-management-permission-item class="subpermission-row"
             icon="app-management:contacts"
-            permission-label="$i18n{contacts}"
+            permission-label="$i18n{appManagementContactsPermissionLabel}"
             permission-type="CONTACTS">
           </app-management-permission-item>
           <app-management-permission-item class="subpermission-row"
             icon="app-management:storage"
-            permission-label="$i18n{storage}"
+            permission-label="$i18n{appManagementStoragePermissionLabel}"
             permission-type="STORAGE">
           </app-management-permission-item>
         </div>
@@ -63,7 +64,9 @@
       <div id="more-settings"
         class="permission-card-row separated-row header-text clickable"
         on-click="onClickNativeSettingsButton_">
-        <div id="label" class="header-text">$i18n{moreSettings}</div>
+        <div id="label" class="header-text">
+          $i18n{appManagementMoreSettingsLabel}
+        </div>
         <div class="permission-row-controls">
           <cr-icon-button class="native-settings-icon icon-external" role="link"
             tabindex="0" aria-labelledby="label">

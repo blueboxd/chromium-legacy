@@ -227,6 +227,9 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     }
   }
 
+  if (!has_floating_descendants_ && items_builder_)
+    has_floating_descendants_ = items_builder_->HasFloatingDescendants();
+
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       NGPhysicalBoxFragment::Create(this, block_or_line_writing_mode);
   fragment->CheckType();

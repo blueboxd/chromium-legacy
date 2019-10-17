@@ -46,8 +46,7 @@ void WebStateListObserver::WebStateActivatedAt(WebStateList* web_state_list,
                                                int active_index,
                                                int reason) {}
 
-void WebStateListObserver::WillCloseAllWebStates(WebStateList* web_state_list,
-                                                 bool user_action) {}
+void WebStateListObserver::WillBeginBatchOperation(
+    WebStateList* web_state_list) {}
 
-void WebStateListObserver::DidCloseAllWebStates(WebStateList* web_state_list,
-                                                bool user_action) {}
+void WebStateListObserver::BatchOperationEnded(WebStateList* web_state_list) {}

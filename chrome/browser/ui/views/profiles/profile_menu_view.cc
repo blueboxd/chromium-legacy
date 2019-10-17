@@ -592,12 +592,15 @@ void ProfileMenuView::BuildFeatureButtons() {
             base::Unretained(this)));
   }
 
-  AddFeatureButton(
-      ImageForMenu(kCloseAllIcon),
-      l10n_util::GetPluralStringFUTF16(IDS_PROFILES_CLOSE_X_WINDOWS_BUTTON,
-                                       CountBrowsersFor(profile)),
-      base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
-                          base::Unretained(this)));
+  int window_count = CountBrowsersFor(profile);
+  if (window_count > 1) {
+    AddFeatureButton(
+        ImageForMenu(vector_icons::kCloseIcon),
+        l10n_util::GetPluralStringFUTF16(IDS_PROFILES_CLOSE_X_WINDOWS_BUTTON,
+                                         window_count),
+        base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
+                            base::Unretained(this)));
+  }
 
   // The sign-out button is always at the bottom.
   if (has_unconsented_account && !has_primary_account) {

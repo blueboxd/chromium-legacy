@@ -296,6 +296,31 @@ bool operator!=(const Fourcc& lhs, uint32_t rhs) {
   return !(lhs == rhs);
 }
 
+bool Fourcc::IsMultiPlanar() const {
+  switch (value_) {
+    case INVALID:
+    case AR24:
+    case AB24:
+    case XR24:
+    case XB24:
+    case RGB4:
+    case YU12:
+    case YV12:
+    case YUYV:
+    case NV12:
+    case NV21:
+      return false;
+    case YM12:
+    case YM21:
+    case NM12:
+    case NM21:
+    case YM16:
+    case MT21:
+    case MM21:
+      return true;
+  }
+}
+
 std::string Fourcc::ToString() const {
   return FourccToString(static_cast<uint32_t>(value_));
 }

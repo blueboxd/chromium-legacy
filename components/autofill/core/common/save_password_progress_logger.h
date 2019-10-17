@@ -162,6 +162,7 @@ class SavePasswordProgressLogger {
     STRING_DID_NAVIGATE_MAIN_FRAME,
     STRING_NAVIGATION_NTP,
     STRING_SERVER_PREDICTIONS,
+    STRING_USERNAME_FIRST_FLOW_VOTE,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };

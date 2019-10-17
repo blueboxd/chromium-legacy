@@ -156,6 +156,9 @@ class MEDIA_GPU_EXPORT Fourcc {
   uint32_t ToVAFourCC() const;
 #endif  // BUILDFLAG(USE_VAAPI)
 
+  // Returns whether |value_| is multi planar format.
+  bool IsMultiPlanar() const;
+
   // Outputs human readable fourcc string, e.g. "NV12".
   std::string ToString() const;
 

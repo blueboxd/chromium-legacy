@@ -181,6 +181,7 @@ constexpr TabletModeController::TabletModeBehavior kOnBySensor{
     /*observe_external_pointer_device_events=*/true,
     /*block_internal_input_device=*/true,
     /*always_show_overview_button=*/false,
+    /*force_physical_tablet_state=*/false,
 };
 
 // Defines the behavior that sticks to the current mode. Used to
@@ -191,6 +192,7 @@ constexpr TabletModeController::TabletModeBehavior kLockInCurrentMode{
     /*observe_external_pointer_device_events=*/false,
     /*block_internal_input_device=*/false,
     /*always_show_overview_button=*/true,
+    /*force_physical_tablet_state=*/false,
 };
 
 // Defines the behavior used for testing. It prevents the device from
@@ -201,6 +203,7 @@ constexpr TabletModeController::TabletModeBehavior kOnForTest{
     /*observe_external_pointer_device_events=*/true,
     /*block_internal_input_device=*/true,
     /*always_show_overview_button=*/false,
+    /*force_physical_tablet_state=*/true,
 };
 
 // Used for development purpose (currently debug shortcut shift-ctrl-alt). This
@@ -212,6 +215,7 @@ constexpr TabletModeController::TabletModeBehavior kOnForDev{
     /*observe_external_pointer_device_events=*/true,
     /*block_internal_input_device=*/false,
     /*always_show_overview_button=*/true,
+    /*force_physical_tablet_state=*/true,
 };
 
 }  // namespace
@@ -423,10 +427,7 @@ bool TabletModeController::InTabletMode() const {
 void TabletModeController::SetEnabledForTest(bool enabled) {
   tablet_mode_behavior_ = enabled ? kOnForTest : kDefault;
 
-  SetTabletModeEnabledInternal(enabled);
-  // Notify observers to update the tray button.
-  for (auto& observer : tablet_mode_observers_)
-    observer.OnTabletModeEventsBlockingChanged();
+  SetIsInTabletPhysicalState(enabled);
 }
 
 void TabletModeController::OnShellInitialized() {
@@ -630,10 +631,7 @@ void TabletModeController::OnLayerAnimationScheduled(
 void TabletModeController::SetEnabledForDev(bool enabled) {
   tablet_mode_behavior_ = enabled ? kOnForDev : kDefault;
 
-  SetTabletModeEnabledInternal(enabled);
-  // Notify observers to update the tray button.
-  for (auto& observer : tablet_mode_observers_)
-    observer.OnTabletModeEventsBlockingChanged();
+  SetIsInTabletPhysicalState(enabled);
 }
 
 bool TabletModeController::ShouldShowOverviewButton() const {
@@ -1020,6 +1018,9 @@ bool TabletModeController::CalculateIsInTabletPhysicalState() const {
   if (!HasActiveInternalDisplay())
     return false;
 
+  if (tablet_mode_behavior_.force_physical_tablet_state)
+    return true;
+
   // For updated EC, the tablet mode switch activates at 200 degrees, and
   // deactivates at 160 degrees.
   // For old EC, the tablet mode switch activates at 300 degrees, so it's
@@ -1071,18 +1072,21 @@ void TabletModeController::SetIsInTabletPhysicalState(bool new_state) {
 
   is_in_tablet_physical_state_ = new_state;
 
-  // Even if we do not change the UI mode, we should update the input devices
-  // blocker as tablet mode events may come in because of the lid angle/or
-  // folio keyboard state changes but UI mode might still stay the same.
-  UpdateInternalInputDevicesEventBlocker();
+  // InputDeviceBlocker must always be updated, but don't update it here if the
+  // UI state has changed because it's already done.
+  if (UpdateUiTabletState())
+    return;
 
-  UpdateUiTabletState();
+  UpdateInternalInputDevicesEventBlocker();
 }
 
-void TabletModeController::UpdateUiTabletState() {
+bool TabletModeController::UpdateUiTabletState() {
   const bool should_be_in_tablet_mode = ShouldUiBeInTabletMode();
-  if (should_be_in_tablet_mode != InTabletMode())
-    SetTabletModeEnabledInternal(should_be_in_tablet_mode);
+  if (should_be_in_tablet_mode == InTabletMode())
+    return false;
+
+  SetTabletModeEnabledInternal(should_be_in_tablet_mode);
+  return true;
 }
 
 }  // namespace ash

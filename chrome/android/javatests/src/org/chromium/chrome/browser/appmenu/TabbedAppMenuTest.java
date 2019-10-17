@@ -18,7 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -49,62 +48,32 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class AppMenuTest {
+public class TabbedAppMenuTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     private static final String TEST_URL = UrlUtils.encodeHtmlDataUri("<html>foo</html>");
 
-    private AppMenu mAppMenu;
-    private AppMenuHandlerImpl mAppMenuHandler;
+    private AppMenuHandler mAppMenuHandler;
 
-    /**
-     * AppMenuHandlerImpl that will be used to intercept item selections for testing.
-     */
-    public static class AppMenuHandlerForTest extends AppMenuHandlerImpl {
-        int mLastSelectedItemId = -1;
-
-        /**
-         * AppMenuHandlerImpl for intercepting options item selections.
-         */
-        public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
-                AppMenuDelegate appMenuDelegate, int menuResourceId, View decorView,
-                ActivityLifecycleDispatcher activityLifecycleDispatcher,
-                ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
-            super(delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
-                    overviewModeBehaviorSupplier);
-        }
-
-        @Override
-        public void onOptionsItemSelected(MenuItem item) {
-            mLastSelectedItemId = item.getItemId();
-        }
-    }
+    int mLastSelectedItemId = -1;
+    private Callback<MenuItem> mItemSelectedCallback =
+            (item) -> mLastSelectedItemId = item.getItemId();
 
     @Before
     public void setUp() {
         // We need list selection; ensure we are not in touch mode.
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
 
-        AppMenuCoordinatorImpl.setAppMenuHandlerFactoryForTesting(
-                (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
-                        overviewModeBehaviorSupplier) -> {
-                    mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,
-                            menuResourceId, decorView, activityLifecycleDispatcher,
-                            overviewModeBehaviorSupplier);
-                    return mAppMenuHandler;
-                });
-
         mActivityTestRule.startMainActivityWithURL(TEST_URL);
 
+        AppMenuTestSupport.overrideOnOptionItemSelectedListener(
+                mActivityTestRule.getAppMenuCoordinator(), mItemSelectedCallback);
+        mAppMenuHandler = mActivityTestRule.getAppMenuCoordinator().getAppMenuHandler();
+
         showAppMenuAndAssertMenuShown();
-        mAppMenu = ((AppMenuCoordinatorImpl) mActivityTestRule.getActivity()
-                            .getRootUiCoordinatorForTesting()
-                            .getAppMenuCoordinatorForTesting())
-                           .getAppMenuHandlerImplForTesting()
-                           .getAppMenu();
-        PostTask.runOrPostTask(
-                UiThreadTaskTraits.DEFAULT, () -> mAppMenu.getListView().setSelection(0));
+
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> getListView().setSelection(0));
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> getCurrentFocusedRow()));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
@@ -247,7 +216,7 @@ public class AppMenuTest {
                 };
 
         // App menu is shown during setup.
-        Assert.assertTrue("App menu should be showing.", mAppMenu.isShowing());
+        Assert.assertTrue("App menu should be showing.", mAppMenuHandler.isAppMenuShowing());
         Assert.assertFalse("Overview shouldn't be showing.",
                 mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
 
@@ -260,10 +229,11 @@ public class AppMenuTest {
 
         Assert.assertTrue("Overview should be showing.",
                 mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
-        Assert.assertFalse("App menu shouldn't be showing.", mAppMenu.isShowing());
+        Assert.assertFalse("App menu shouldn't be showing.", mAppMenuHandler.isAppMenuShowing());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertTrue(
-                    "App menu should be allowed to show.", mAppMenuHandler.shouldShowAppMenu());
+            Assert.assertTrue("App menu should be allowed to show.",
+                    AppMenuTestSupport.shouldShowAppMenu(
+                            mActivityTestRule.getAppMenuCoordinator()));
         });
         showAppMenuAndAssertMenuShown();
 
@@ -271,12 +241,14 @@ public class AppMenuTest {
                 () -> mActivityTestRule.getActivity().getLayoutManager().hideOverview(false));
         Assert.assertFalse("Overview shouldn't be showing.",
                 mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
-        Assert.assertFalse("App menu shouldn't be showing.", mAppMenu.isShowing());
+        Assert.assertFalse("App menu shouldn't be showing.", mAppMenuHandler.isAppMenuShowing());
     }
 
     private void showAppMenuAndAssertMenuShown() {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                () -> { mAppMenuHandler.showAppMenu(null, false, false); });
+                ()
+                        -> AppMenuTestSupport.showAppMenu(
+                                mActivityTestRule.getAppMenuCoordinator(), null, false, false));
         CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not show") {
             @Override
             public boolean isSatisfied() {
@@ -310,16 +282,16 @@ public class AppMenuTest {
         // Try moving past it by one.
         if (movePast) {
             pressKey(towardsTop ? KeyEvent.KEYCODE_DPAD_UP : KeyEvent.KEYCODE_DPAD_DOWN);
-            CriteriaHelper.pollInstrumentationThread(Criteria.equals(end,
-                    () -> getCurrentFocusedRow()));
+            CriteriaHelper.pollInstrumentationThread(
+                    Criteria.equals(end, () -> getCurrentFocusedRow()));
         }
 
         // The menu should stay open.
-        Assert.assertTrue(mAppMenu.isShowing());
+        Assert.assertTrue(mAppMenuHandler.isAppMenuShowing());
     }
 
     private void pressKey(final int keycode) {
-        final View view = mAppMenu.getListView();
+        final View view = getListView();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keycode));
             view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
@@ -328,14 +300,18 @@ public class AppMenuTest {
     }
 
     private int getCurrentFocusedRow() {
-        ListView listView = mAppMenu.getListView();
+        ListView listView = getListView();
         if (listView == null) return ListView.INVALID_POSITION;
         return listView.getSelectedItemPosition();
     }
 
     private int getCount() {
-        ListView listView = mAppMenu.getListView();
+        ListView listView = getListView();
         if (listView == null) return 0;
         return listView.getCount();
+    }
+
+    private ListView getListView() {
+        return AppMenuTestSupport.getListView(mActivityTestRule.getAppMenuCoordinator());
     }
 }

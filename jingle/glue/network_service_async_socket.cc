@@ -166,7 +166,7 @@ bool NetworkServiceAsyncSocket::Connect(const net::HostPortPair& address) {
   socket_factory_->CreateProxyResolvingSocket(
       GURL("https://" + address.ToString()), std::move(options),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation_),
-      mojo::MakeRequest(&socket_), std::move(socket_observer),
+      socket_.BindNewPipeAndPassReceiver(), std::move(socket_observer),
       base::BindOnce(&NetworkServiceAsyncSocket::ProcessConnectDone,
                      base::Unretained(this),
                      std::move(socket_observer_receiver)));
@@ -451,7 +451,7 @@ void NetworkServiceAsyncSocket::DoClose() {
   write_watcher_.reset();
   write_close_watcher_.reset();
 
-  socket_ = nullptr;
+  socket_.reset();
   tls_socket_.reset();
   socket_observer_receiver_.reset();
   socket_factory_ = nullptr;

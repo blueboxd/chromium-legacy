@@ -90,6 +90,12 @@ class WebAppInstallTask : content::WebContentsObserver {
       WebappInstallSource install_source,
       InstallManager::OnceInstallCallback callback);
 
+  void UpdateWebAppFromInfo(
+      content::WebContents* web_contents,
+      const AppId& app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      InstallManager::OnceInstallCallback callback);
+
   // WebContentsObserver:
   void WebContentsDestroyed() override;
 
@@ -146,6 +152,9 @@ class WebAppInstallTask : content::WebContentsObserver {
       std::unique_ptr<WebApplicationInfo> web_app_info,
       ForInstallableSite for_installable_site,
       IconsMap icons_map);
+  void OnIconsRetrievedFinalizeUpdate(
+      std::unique_ptr<WebApplicationInfo> web_app_info,
+      IconsMap icons_map);
   void OnDialogCompleted(ForInstallableSite for_installable_site,
                          bool user_accepted,
                          std::unique_ptr<WebApplicationInfo> web_app_info);
@@ -163,7 +172,8 @@ class WebAppInstallTask : content::WebContentsObserver {
   base::Optional<InstallManager::InstallParams> install_params_;
   bool background_installation_ = false;
 
-  // The mechanism via which the app creation was triggered.
+  // The mechanism via which the app creation was triggered, will stay as
+  // kNoInstallSource for updates.
   static constexpr WebappInstallSource kNoInstallSource =
       WebappInstallSource::COUNT;
   WebappInstallSource install_source_ = kNoInstallSource;

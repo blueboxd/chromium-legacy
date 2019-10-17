@@ -1228,8 +1228,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
   NSString* fieldTrialValueKey =
       base::SysUTF8ToNSString(app_group::kChromeExtensionFieldTrialPreference);
-  NSNumber* copiedContentBehaviorValue = [NSNumber
-      numberWithBool:base::FeatureList::IsEnabled(kCopiedContentBehavior)];
 
   // Add other field trial values here if they are needed by extensions.
   // The general format is
@@ -1240,10 +1238,6 @@ enum class EnterTabSwitcherSnapshotResult {
   //   }
   // }
   NSDictionary* fieldTrialValues = @{
-    base::SysUTF8ToNSString(kCopiedContentBehavior.name) : @{
-      kFieldTrialValueKey : copiedContentBehaviorValue,
-      kFieldTrialVersionKey : kCopiedContentBehaviorVersion
-    }
   };
   [sharedDefaults setObject:fieldTrialValues forKey:fieldTrialValueKey];
 }

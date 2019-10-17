@@ -17,10 +17,6 @@
 #include "components/favicon_base/favicon_types.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace favicon {
 class FaviconService;
 }  // namespace favicon
@@ -30,9 +26,11 @@ class PasswordManagerDriver;
 struct CredentialPair;
 }  // namespace password_manager
 
+class ChromePasswordManagerClient;
+
 class TouchToFillController {
  public:
-  TouchToFillController(content::WebContents* web_contents,
+  TouchToFillController(ChromePasswordManagerClient* web_contents,
                         favicon::FaviconService* favicon_service);
   TouchToFillController(const TouchToFillController&) = delete;
   TouchToFillController& operator=(const TouchToFillController&) = delete;
@@ -46,6 +44,10 @@ class TouchToFillController {
   // FillSuggestion() and TouchToFillDismissed() on |driver_|. No-op if invoked
   // repeatedly.
   void OnCredentialSelected(const password_manager::CredentialPair& credential);
+
+  // Informs the controller that the user has tapped the "Manage Passwords"
+  // button. This will open the password preferences.
+  void OnManagePasswordsSelected();
 
   // Informs the controller that the user has dismissed the sheet. Invokes
   // TouchToFillDismissed() on |driver_|. No-op if invoked repeatedly.
@@ -67,10 +69,8 @@ class TouchToFillController {
 #endif
 
  private:
-  // Weak pointer to the current WebContents. This is safe because the lifetime
-  // of this class is tied to ChromePasswordManagerClient, which implements
-  // WebContentsUserData.
-  content::WebContents* web_contents_ = nullptr;
+  // Weak pointer to the ChromePasswordManagerClient this class is tied to.
+  ChromePasswordManagerClient* password_client_ = nullptr;
 
   // Driver passed to the latest invocation of Show(). Gets cleared when
   // OnCredentialSelected() or OnDismissed() gets called.

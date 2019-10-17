@@ -283,8 +283,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
                                                                   : "";
   replacements["cookieControlsTitle"] =
       l10n_util::GetStringUTF8(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE);
-  replacements["cookieControlsDescription"] =
-      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_COOKIE_CONTROLS_DESCRIPTION);
+  replacements["cookieControlsDescription"] = l10n_util::GetStringUTF8(
+      IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL);
   replacements["cookieControlsToggleChecked"] =
       CookieControlsHandler::GetToggleCheckedValue(profile_) ? "checked" : "";
 

@@ -202,7 +202,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
 
 inline const HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
     const Node& node) {
-  if (auto* slot = ToHTMLSlotElementOrNull(node)) {
+  if (auto* slot = DynamicTo<HTMLSlotElement>(node)) {
     if (slot->SupportsAssignment())
       return slot;
   }

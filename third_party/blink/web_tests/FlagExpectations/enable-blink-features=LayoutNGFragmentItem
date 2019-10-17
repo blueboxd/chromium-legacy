@@ -533,7 +533,6 @@ crbug.com/982194 external/wpt/compat/webkit-text-fill-color-property-002.html [ 
 crbug.com/982194 external/wpt/contacts/contacts-select.https.window.html [ Failure ]
 crbug.com/982194 external/wpt/css/CSS2/cascade-import/cascade-import-dynamic-002.xht [ Failure ]
 crbug.com/982194 external/wpt/css/CSS2/cascade-import/cascade-import-dynamic-004.xht [ Failure ]
-crbug.com/982194 external/wpt/css/CSS2/floats/float-nowrap-5.html [ Failure ]
 crbug.com/982194 external/wpt/css/CSS2/floats/floats-placement-001.html [ Failure ]
 crbug.com/982194 external/wpt/css/CSS2/floats/floats-placement-002.html [ Failure ]
 crbug.com/982194 external/wpt/css/CSS2/floats/intrinsic-size-float-and-line.html [ Failure ]

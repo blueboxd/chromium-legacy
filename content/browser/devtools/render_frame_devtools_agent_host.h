@@ -28,6 +28,10 @@
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 
+namespace cc {
+class RenderFrameMetadata;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -35,7 +39,6 @@ class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
-struct DevToolsFrameMetadata;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -65,9 +68,12 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   static void WebContentsCreated(WebContents* web_contents);
 
+#if defined(OS_ANDROID)
   static void SignalSynchronousSwapCompositorFrame(
       RenderFrameHost* frame_host,
-      const DevToolsFrameMetadata& frame_metadata);
+      const cc::RenderFrameMetadata& frame_metadata);
+#endif
+
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
   // DevToolsAgentHost overrides.
@@ -129,14 +135,14 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
+  void SynchronousSwapCompositorFrame(
+      const cc::RenderFrameMetadata& frame_metadata);
 #endif
 
-  void SynchronousSwapCompositorFrame(
-      const DevToolsFrameMetadata& frame_metadata);
   void UpdateResourceLoaderFactories();
 
-  std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
+  std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 

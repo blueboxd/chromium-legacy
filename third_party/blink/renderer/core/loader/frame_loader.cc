@@ -595,8 +595,8 @@ static mojom::RequestContextType DetermineRequestContextFromNavigationType(
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   WebFrameLoadType frame_load_type) {
   CHECK(!IsBackForwardLoadType(frame_load_type));
-  DCHECK(passed_request.TriggeringEventInfo() !=
-         WebTriggeringEventInfo::kUnknown);
+  DCHECK(passed_request.GetTriggeringEventInfo() !=
+         TriggeringEventInfo::kUnknown);
   DCHECK(frame_->GetDocument());
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
@@ -655,14 +655,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     document_loader_->CommitSameDocumentNavigation(
         url, frame_load_type, nullptr, request.ClientRedirect(),
         origin_document,
-        request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent,
+        request.GetTriggeringEventInfo() != TriggeringEventInfo::kNotFromEvent,
         nullptr /* extra_data */);
     return;
   }
 
   WebNavigationType navigation_type = DetermineNavigationType(
       frame_load_type, resource_request.HttpBody() || request.Form(),
-      request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent);
+      request.GetTriggeringEventInfo() != TriggeringEventInfo::kNotFromEvent);
   resource_request.SetRequestContext(
       DetermineRequestContextFromNavigationType(navigation_type));
   request.SetFrameType(frame_->IsMainFrame()
@@ -767,7 +767,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       nullptr /* document_loader */, navigation_type,
       request.GetNavigationPolicy(), has_transient_activation, frame_load_type,
       request.ClientRedirect() == ClientRedirectPolicy::kClientRedirect,
-      request.TriggeringEventInfo(), request.Form(),
+      request.GetTriggeringEventInfo(), request.Form(),
       request.ShouldCheckMainWorldContentSecurityPolicy(),
       request.GetBlobURLToken(), request.GetInputStartTime(),
       request.HrefTranslate().GetString(), std::move(initiator_csp),

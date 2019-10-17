@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.datareduction.DataReductionMainMenuItem;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
@@ -31,9 +32,10 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
             AppMenuDelegate appMenuDelegate,
-            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
-                toolbarManager, decorView, overviewModeBehaviorSupplier);
+                toolbarManager, decorView, overviewModeBehaviorSupplier, bookmarkBridgeSupplier);
         mAppMenuDelegate = appMenuDelegate;
     }
 

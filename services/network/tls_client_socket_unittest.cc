@@ -16,7 +16,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
@@ -62,12 +61,12 @@ class TLSClientSocketTestBase {
   // One of the two fields will be set, depending on the mode.
   struct SocketHandle {
     mojo::Remote<mojom::TCPConnectedSocket> tcp_socket;
-    mojom::ProxyResolvingSocketPtr proxy_socket;
+    mojo::Remote<mojom::ProxyResolvingSocket> proxy_socket;
   };
 
   struct SocketRequest {
     mojo::PendingReceiver<mojom::TCPConnectedSocket> tcp_socket_receiver;
-    mojom::ProxyResolvingSocketRequest proxy_socket_request;
+    mojo::PendingReceiver<mojom::ProxyResolvingSocket> proxy_socket_receiver;
   };
 
   // Initializes the test fixture. If |use_mock_sockets|, mock client socket
@@ -118,7 +117,8 @@ class TLSClientSocketTestBase {
       result.tcp_socket_receiver =
           handle->tcp_socket.BindNewPipeAndPassReceiver();
     else
-      result.proxy_socket_request = mojo::MakeRequest(&handle->proxy_socket);
+      result.proxy_socket_receiver =
+          handle->proxy_socket.BindNewPipeAndPassReceiver();
     return result;
   }
 
@@ -136,7 +136,7 @@ class TLSClientSocketTestBase {
           std::move(request.tcp_socket_receiver), remote_addr);
     } else {
       return CreateProxyResolvingSocketSync(
-          std::move(request.proxy_socket_request), remote_addr);
+          std::move(request.proxy_socket_receiver), remote_addr);
     }
   }
 
@@ -166,15 +166,16 @@ class TLSClientSocketTestBase {
     return net_error;
   }
 
-  int CreateProxyResolvingSocketSync(mojom::ProxyResolvingSocketRequest request,
-                                     const net::IPEndPoint& remote_addr) {
+  int CreateProxyResolvingSocketSync(
+      mojo::PendingReceiver<mojom::ProxyResolvingSocket> receiver,
+      const net::IPEndPoint& remote_addr) {
     GURL url("https://" + remote_addr.ToString());
     base::RunLoop run_loop;
     int net_error = net::ERR_FAILED;
     proxy_resolving_factory_->CreateProxyResolvingSocket(
         url, nullptr /* options */,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        std::move(request), mojo::NullRemote() /* observer */,
+        std::move(receiver), mojo::NullRemote() /* observer */,
         base::BindLambdaForTesting(
             [&](int result,
                 const base::Optional<net::IPEndPoint>& actual_local_addr,

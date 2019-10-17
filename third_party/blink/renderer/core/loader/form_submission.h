@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FORM_SUBMISSION_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -132,7 +132,7 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
   scoped_refptr<EncodedFormData> form_data_;
   String boundary_;
   NavigationPolicy navigation_policy_;
-  WebTriggeringEventInfo triggering_event_info_;
+  TriggeringEventInfo triggering_event_info_;
   String result_;
 };
 

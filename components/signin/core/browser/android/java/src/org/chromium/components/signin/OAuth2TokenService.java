@@ -173,10 +173,29 @@ public final class OAuth2TokenService
      */
     @MainThread
     public void getAccessToken(Account account, String scope, GetAccessTokenCallback callback) {
+        getAccessTokenWithFacade(mAccountManagerFacade, account, scope, callback);
+    }
+
+    /**
+     * Call this method to retrieve an OAuth2 access token for the given account and scope. Please
+     * note that this method expects a scope with 'oauth2:' prefix.
+     *
+     * @deprecated Use getAccessToken instead. crbug.com/1014098: This method is available as a
+     *         workaround for a callsite where native is not initialized yet.
+     *
+     * @param accountManagerFacade AccountManagerFacade to request the access token from.
+     * @param account the account to get the access token for.
+     * @param scope The scope to get an auth token for (with Android-style 'oauth2:' prefix).
+     * @param callback called on successful and unsuccessful fetching of auth token.
+     */
+    @MainThread
+    @Deprecated
+    public static void getAccessTokenWithFacade(AccountManagerFacade accountManagerFacade,
+            Account account, String scope, GetAccessTokenCallback callback) {
         ConnectionRetry.runAuthTask(new AuthTask<String>() {
             @Override
             public String run() throws AuthException {
-                return mAccountManagerFacade.getAccessToken(account, scope);
+                return accountManagerFacade.getAccessToken(account, scope);
             }
             @Override
             public void onSuccess(String token) {

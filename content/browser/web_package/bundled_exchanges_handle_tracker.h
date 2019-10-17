@@ -25,7 +25,8 @@ class BundledExchangesHandleTracker {
   // if the bundled exchanges file contains the matching response. Otherwise
   // returns null.
   std::unique_ptr<BundledExchangesHandle> MaybeCreateBundledExchangesHandle(
-      const GURL& url);
+      const GURL& url,
+      int frame_tree_node_id);
 
  private:
   scoped_refptr<BundledExchangesReader> reader_;

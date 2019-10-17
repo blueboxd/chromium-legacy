@@ -3119,7 +3119,7 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
       slot->DidSlotChange(slot_change_type);
   } else if (IsInV1ShadowTree()) {
     // Checking for fallback content if the node is in a v1 shadow tree.
-    if (auto* parent_slot = ToHTMLSlotElementOrNull(parentElement())) {
+    if (auto* parent_slot = DynamicTo<HTMLSlotElement>(parentElement())) {
       DCHECK(parent_slot->SupportsAssignment());
       // The parent_slot's assigned nodes might not be calculated because they
       // are lazy evaluated later at UpdateDistribution() so we have to check it

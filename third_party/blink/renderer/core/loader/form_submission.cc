@@ -160,12 +160,12 @@ inline FormSubmission::FormSubmission(SubmitMethod method,
       boundary_(boundary) {
   if (event) {
     triggering_event_info_ = event->isTrusted()
-                                 ? WebTriggeringEventInfo::kFromTrustedEvent
-                                 : WebTriggeringEventInfo::kFromUntrustedEvent;
+                                 ? TriggeringEventInfo::kFromTrustedEvent
+                                 : TriggeringEventInfo::kFromUntrustedEvent;
     if (event->UnderlyingEvent())
       event = event->UnderlyingEvent();
   } else {
-    triggering_event_info_ = WebTriggeringEventInfo::kNotFromEvent;
+    triggering_event_info_ = TriggeringEventInfo::kNotFromEvent;
   }
   navigation_policy_ = NavigationPolicyFromEvent(event);
 }

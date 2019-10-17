@@ -10,14 +10,17 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
 import androidx.annotation.Px;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
@@ -29,10 +32,16 @@ import java.util.List;
  * Contains the logic for the TouchToFill component. It sets the state of the model and reacts to
  * events like clicks.
  */
-class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
+class TouchToFillMediator {
+    static final String UMA_TOUCH_TO_FILL_DISMISSAL_REASON =
+            "PasswordManager.TouchToFill.DismissalReason";
+    static final String UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX =
+            "PasswordManager.TouchToFill.CredentialIndex";
+
     private TouchToFillComponent.Delegate mDelegate;
     private PropertyModel mModel;
     private @Px int mDesiredFaviconSize;
+    private List<Credential> mCredentials;
 
     void initialize(TouchToFillComponent.Delegate delegate, PropertyModel model,
             @Px int desiredFaviconSize) {
@@ -45,6 +54,7 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
     void showCredentials(
             String formattedUrl, boolean isOriginSecure, List<Credential> credentials) {
         assert credentials != null;
+        mModel.set(ON_CLICK_MANAGE, this::onManagePasswordSelected);
         mModel.set(VISIBLE, true);
 
         ListModel<ListItem> sheetItems = mModel.get(SHEET_ITEMS);
@@ -56,6 +66,7 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
                         .with(ORIGIN_SECURE, isOriginSecure)
                         .build()));
 
+        mCredentials = credentials;
         for (Credential credential : credentials) {
             PropertyModel propertyModel =
                     new PropertyModel.Builder(CredentialProperties.ALL_KEYS)
@@ -74,12 +85,25 @@ class TouchToFillMediator implements TouchToFillProperties.ViewEventListener {
     private void onSelectedCredential(Credential credential) {
         mModel.set(VISIBLE, false);
         mDelegate.onCredentialSelected(credential);
+        if (mCredentials.size() > 1) {
+            // We only record this histogram in case multiple credentials were shown to the user.
+            // Otherwise the single credential case where position should always be 0 will dominate
+            // the recording.
+            RecordHistogram.recordCount100Histogram(
+                    UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX, mCredentials.indexOf(credential));
+        }
     }
 
-    @Override
-    public void onDismissed() {
+    public void onDismissed(@StateChangeReason int reason) {
         if (!mModel.get(VISIBLE)) return; // Dismiss only if not dismissed yet.
         mModel.set(VISIBLE, false);
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_TOUCH_TO_FILL_DISMISSAL_REASON, reason, StateChangeReason.MAX_VALUE + 1);
         mDelegate.onDismissed();
+    }
+
+    private void onManagePasswordSelected() {
+        mModel.set(VISIBLE, false);
+        mDelegate.onManagePasswordsSelected();
     }
 }

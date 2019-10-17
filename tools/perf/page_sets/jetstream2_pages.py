@@ -66,7 +66,7 @@ class Jetstream2Story(press_story.PressStory):
           benchmark, 'score', v['Score'],
           description='Geometric mean of the iterations')
       self.AddMeasurement(
-          '%s.Iterations' % benchmark, 'number', v['Iterations'],
+          '%s.Iterations' % benchmark, 'count', v['Iterations'],
           description='Total number of iterations')
       for sub_k, sub_v in v['SubResults'].iteritems():
         self.AddMeasurement('%s.%s' % (benchmark, sub_k), 'score', sub_v)

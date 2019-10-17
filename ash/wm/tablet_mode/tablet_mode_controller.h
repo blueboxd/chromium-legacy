@@ -181,6 +181,7 @@ class ASH_EXPORT TabletModeController
     bool observe_external_pointer_device_events = true;
     bool block_internal_input_device = false;
     bool always_show_overview_button = false;
+    bool force_physical_tablet_state = false;
   };
 
  private:
@@ -296,8 +297,9 @@ class ASH_EXPORT TabletModeController
   void SetIsInTabletPhysicalState(bool new_state);
 
   // Updates the UI by either entering or exiting UI tablet mode if necessary
-  // based on the current state.
-  void UpdateUiTabletState();
+  // based on the current state. Returns true if there's a change in the UI
+  // tablet mode state, false otherwise.
+  bool UpdateUiTabletState();
 
   // The tablet window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;

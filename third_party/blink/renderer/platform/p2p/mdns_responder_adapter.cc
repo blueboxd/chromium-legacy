@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "services/network/public/mojom/mdns_responder.mojom-blink.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

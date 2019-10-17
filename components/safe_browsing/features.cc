@@ -39,7 +39,7 @@ const base::Feature kCommittedSBInterstitials{
     "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDeepScanningOfDownloads{
-    "SafeBrowsingDeepScanningOfDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SafeBrowsingDeepScanningOfDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kForceUseAPDownloadProtection{
     "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};

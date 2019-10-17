@@ -20,12 +20,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
-#include "content/browser/devtools/devtools_frame_metadata.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -584,9 +584,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // TODO(ericrk): Make this more robust.
   bool in_sync_copy_contents_ = false;
 
-  // A cached copy of the most up to date DevToolsFrameMetadata, computed from
-  // either RenderFrameMetadata or CompositorFrameMetadata.
-  base::Optional<DevToolsFrameMetadata> last_devtools_frame_metadata_;
+  // A cached copy of the most up to date RenderFrameMetadata.
+  base::Optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
 
   WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
 

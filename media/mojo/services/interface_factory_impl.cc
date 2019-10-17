@@ -62,7 +62,7 @@ InterfaceFactoryImpl::~InterfaceFactoryImpl() {
 // mojom::InterfaceFactory implementation.
 
 void InterfaceFactoryImpl::CreateAudioDecoder(
-    mojo::InterfaceRequest<mojom::AudioDecoder> request) {
+    mojo::PendingReceiver<mojom::AudioDecoder> receiver) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
@@ -75,10 +75,10 @@ void InterfaceFactoryImpl::CreateAudioDecoder(
     return;
   }
 
-  audio_decoder_bindings_.AddBinding(
+  audio_decoder_receivers_.Add(
       std::make_unique<MojoAudioDecoderService>(&cdm_service_context_,
                                                 std::move(audio_decoder)),
-      std::move(request));
+      std::move(receiver));
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 }
 
@@ -228,7 +228,7 @@ void InterfaceFactoryImpl::OnDestroyPending(base::OnceClosure destroy_cb) {
 
 bool InterfaceFactoryImpl::IsEmpty() {
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
-  if (!audio_decoder_bindings_.empty())
+  if (!audio_decoder_receivers_.empty())
     return false;
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
@@ -266,7 +266,7 @@ void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
       &InterfaceFactoryImpl::OnBindingConnectionError, base::Unretained(this));
 
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
-  audio_decoder_bindings_.set_connection_error_handler(connection_error_cb);
+  audio_decoder_receivers_.set_disconnect_handler(connection_error_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)

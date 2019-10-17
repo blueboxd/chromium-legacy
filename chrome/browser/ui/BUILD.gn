@@ -9,7 +9,6 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
-import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/feature_engagement/features.gni")
@@ -28,17 +27,7 @@ import("//ui/views/features.gni")
 
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
-jumbo_split_static_library("ui") {
-  # Split into multiple static libraries on Windows builds. We have hit size
-  # limits on Windows official builds and on goma builds when symbol_level = 2
-  # is selected. Always splitting on Windows builds is simpler than trying to
-  # perfectly calculate the scenarios where it is required.
-  if (is_win) {
-    split_count = 5
-  } else {
-    split_count = 1
-  }
-
+jumbo_static_library("ui") {
   sources = [
     "accelerator_utils.h",
     "app_list/app_list_util.cc",

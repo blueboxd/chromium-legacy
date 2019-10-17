@@ -455,8 +455,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
                       WebFeature::kHTMLAnchorElementHrefTranslateAttribute);
   }
   frame_request.SetTriggeringEventInfo(
-      event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
-                        : WebTriggeringEventInfo::kFromUntrustedEvent);
+      event.isTrusted() ? TriggeringEventInfo::kFromTrustedEvent
+                        : TriggeringEventInfo::kFromUntrustedEvent);
   frame_request.SetInputStartTime(event.PlatformTimeStamp());
 
   frame->MaybeLogAdClickNavigation();

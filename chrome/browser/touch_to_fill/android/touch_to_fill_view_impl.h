@@ -39,6 +39,7 @@ class TouchToFillViewImpl : public TouchToFillView {
   void OnCredentialSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& credential);
+  void OnManagePasswordsSelected(JNIEnv* env);
   void OnDismiss(JNIEnv* env);
 
  private:

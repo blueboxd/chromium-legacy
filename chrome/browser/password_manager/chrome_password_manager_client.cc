@@ -68,6 +68,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
@@ -611,8 +612,8 @@ ChromePasswordManagerClient::GetOrCreatePasswordAccessory() {
 TouchToFillController*
 ChromePasswordManagerClient::GetOrCreateTouchToFillController() {
   if (!touch_to_fill_controller_) {
-    touch_to_fill_controller_ = std::make_unique<TouchToFillController>(
-        web_contents(), GetFaviconService());
+    touch_to_fill_controller_ =
+        std::make_unique<TouchToFillController>(this, GetFaviconService());
   }
 
   return touch_to_fill_controller_.get();
@@ -1100,6 +1101,18 @@ void ChromePasswordManagerClient::BindCredentialManager(
   // pipe to be closed, which will raise a connection error on the peer side.
   if (!instance)
     return;
+
+  // Disable BackForwardCache for this page.
+  // This is necessary because ContentCredentialManager::DisconnectBinding()
+  // will be called when the page is navigated away from, leaving it
+  // in an unusable state if the page is restored from the BackForwardCache.
+  //
+  // It looks like in order to remove this workaround, we probably just need to
+  // make the CredentialManager mojo API rebind on the renderer side when the
+  // next call is made, if it has become disconnected.
+  // TODO(https://crbug.com/1015358): Remove this workaround.
+  content::BackForwardCache::DisableForRenderFrameHost(
+      render_frame_host, "ChromePasswordManagerClient::BindCredentialManager");
 
   instance->content_credential_manager_.BindRequest(std::move(receiver));
 }

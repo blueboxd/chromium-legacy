@@ -128,6 +128,11 @@ struct OfflineItem {
   // information.
   bool ignore_visuals;
 
+  // A score in the range of 0 to 1.0 showing how relevant the content is for
+  // the user. Higher score is an indication that the item will be ranked higher
+  // in the UI surfaces.
+  double content_quality_score;
+
   // TODO(dtrainor): Build out custom per-item icon support.
 
   // Content Metadata.

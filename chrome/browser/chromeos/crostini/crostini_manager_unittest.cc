@@ -1587,4 +1587,92 @@ TEST_F(CrostiniManagerTest, StartContainerWithAnsibleInfraSuccess) {
   run_loop()->Run();
 }
 
+class CrostiniManagerUpgradeContainerTest
+    : public CrostiniManagerTest,
+      public UpgradeContainerProgressObserver {
+ public:
+  void SetUp() override {
+    CrostiniManagerTest::SetUp();
+    progress_signal_.set_owner_id(CryptohomeIdForProfile(profile()));
+    progress_signal_.set_vm_name(kVmName);
+    progress_signal_.set_container_name(kContainerName);
+    progress_run_loop_ = std::make_unique<base::RunLoop>();
+    crostini_manager()->AddUpgradeContainerProgressObserver(this);
+  }
+
+  void TearDown() override {
+    crostini_manager()->RemoveUpgradeContainerProgressObserver(this);
+    progress_run_loop_.reset();
+    CrostiniManagerTest::TearDown();
+  }
+
+  void RunUntilUpgradeDone(UpgradeContainerProgressStatus final_status) {
+    final_status_ = final_status;
+    progress_run_loop_->Run();
+  }
+
+  void SendProgressSignal() {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &chromeos::FakeCiceroneClient::NotifyUpgradeContainerProgress,
+            base::Unretained(fake_cicerone_client_), progress_signal_));
+  }
+
+ protected:
+  // UpgradeContainerProgressObserver
+  void OnUpgradeContainerProgress(
+      const ContainerId& container_id,
+      UpgradeContainerProgressStatus status,
+      const std::vector<std::string>& messages) override {
+    if (status == final_status_) {
+      progress_run_loop_->Quit();
+    }
+  }
+
+  ContainerId container_id_ = ContainerId(kVmName, kContainerName);
+
+  UpgradeContainerProgressStatus final_status_ =
+      UpgradeContainerProgressStatus::FAILED;
+
+  vm_tools::cicerone::UpgradeContainerProgressSignal progress_signal_;
+  // must be created on UI thread
+  std::unique_ptr<base::RunLoop> progress_run_loop_;
+};
+
+TEST_F(CrostiniManagerUpgradeContainerTest, UpgradeContainerSuccess) {
+  crostini_manager()->UpgradeContainer(
+      container_id_, ContainerVersion::STRETCH, ContainerVersion::BUSTER,
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  run_loop()->Run();
+
+  progress_signal_.set_status(
+      vm_tools::cicerone::UpgradeContainerProgressSignal::SUCCEEDED);
+
+  SendProgressSignal();
+  RunUntilUpgradeDone(UpgradeContainerProgressStatus::SUCCEEDED);
+}
+
+TEST_F(CrostiniManagerUpgradeContainerTest, CancelUpgradeContainerSuccess) {
+  crostini_manager()->UpgradeContainer(
+      container_id_, ContainerVersion::STRETCH, ContainerVersion::BUSTER,
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::SUCCESS));
+
+  progress_signal_.set_status(
+      vm_tools::cicerone::UpgradeContainerProgressSignal::IN_PROGRESS);
+
+  SendProgressSignal();
+  run_loop()->Run();
+
+  base::RunLoop run_loop2;
+  crostini_manager()->CancelUpgradeContainer(
+      container_id_,
+      base::BindOnce(&ExpectCrostiniResult, run_loop2.QuitClosure(),
+                     CrostiniResult::SUCCESS));
+  run_loop2.Run();
+}
+
 }  // namespace crostini

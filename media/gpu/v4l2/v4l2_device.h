@@ -410,9 +410,6 @@ class MEDIA_GPU_EXPORT V4L2Device
   static base::Optional<VideoFrameLayout> V4L2FormatToVideoFrameLayout(
       const struct v4l2_format& format);
 
-  // Returns whether |pix_fmt| is multi planar.
-  static bool IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt);
-
   // Returns number of planes of |pix_fmt|.
   static size_t GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt);
 

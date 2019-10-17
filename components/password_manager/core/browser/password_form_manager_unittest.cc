@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
@@ -29,6 +30,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/vote_uploads_test_matchers.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2045,6 +2047,9 @@ TEST_F(PasswordFormManagerTest, UpdateGeneratedPasswordBeforePresaving) {
 // Tests that username is taken during username first flow.
 TEST_F(PasswordFormManagerTest, UsernameFirstFlow) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
+
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
@@ -2066,6 +2071,9 @@ TEST_F(PasswordFormManagerTest, UsernameFirstFlow) {
 // Tests that username is not taken when a possible username is not valid.
 TEST_F(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
+
   CreateFormManager(observed_form_only_password_fields_);
   fetcher_->NotifyFetchCompleted();
   base::string16 possible_username = ASCIIToUTF16("possible_username");

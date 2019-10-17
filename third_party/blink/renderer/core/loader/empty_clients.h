@@ -299,7 +299,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       bool,
       WebFrameLoadType,
       bool,
-      WebTriggeringEventInfo,
+      TriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition,
       mojo::PendingRemote<mojom::blink::BlobURLToken>,

@@ -91,14 +91,19 @@ public abstract class SingleTabActivity extends ChromeActivity {
             tab = TabBuilder.createFromFrozenState()
                           .setId(tabId)
                           .setWindow(getWindowAndroid())
+                          .setDelegateFactory(createTabDelegateFactory())
+                          .setTabState(tabState)
+                          .setUnfreeze(unfreeze)
                           .build();
         } else {
             tab = new TabBuilder()
                           .setWindow(getWindowAndroid())
                           .setLaunchType(TabLaunchType.FROM_CHROME_UI)
+                          .setDelegateFactory(createTabDelegateFactory())
+                          .setTabState(tabState)
+                          .setUnfreeze(unfreeze)
                           .build();
         }
-        tab.initialize(null, createTabDelegateFactory(), false, tabState, unfreeze);
         return tab;
     }
 

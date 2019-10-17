@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/synchronization/waitable_event.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"

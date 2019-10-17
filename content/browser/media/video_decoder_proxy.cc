@@ -31,7 +31,7 @@ void VideoDecoderProxy::Add(media::mojom::InterfaceFactoryRequest request) {
 }
 
 void VideoDecoderProxy::CreateAudioDecoder(
-    media::mojom::AudioDecoderRequest request) {}
+    mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) {}
 
 void VideoDecoderProxy::CreateVideoDecoder(
     media::mojom::VideoDecoderRequest request) {

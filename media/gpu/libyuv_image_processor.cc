@@ -126,12 +126,12 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   }
 
   auto processor = base::WrapUnique(new LibYUVImageProcessor(
-      ImageProcessor::PortConfig(input_config.fourcc, input_config.size, {},
-                                 input_config.visible_size,
+      ImageProcessor::PortConfig(input_config.fourcc, input_config.size,
+                                 input_config.planes, input_config.visible_size,
                                  {input_storage_type}),
-      ImageProcessor::PortConfig(output_config.fourcc, output_config.size, {},
-                                 output_config.visible_size,
-                                 {output_storage_type}),
+      ImageProcessor::PortConfig(
+          output_config.fourcc, output_config.size, output_config.planes,
+          output_config.visible_size, {output_storage_type}),
       std::move(video_frame_mapper),
       media::BindToCurrentLoop(std::move(error_cb))));
   if (res == SupportResult::SupportedWithPivot) {

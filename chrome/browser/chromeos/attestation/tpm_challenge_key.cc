@@ -227,7 +227,8 @@ bool TpmChallengeKeyImpl::IsRemoteAttestationEnabledForUser() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   PrefService* prefs = profile_->GetPrefs();
-  if (prefs && prefs->IsManagedPreference(prefs::kAttestationEnabled)) {
+  // TODO(crbug.com/1000589): Check it's mandatory after fixing corp policy.
+  if (prefs) {
     return prefs->GetBoolean(prefs::kAttestationEnabled);
   }
   return false;

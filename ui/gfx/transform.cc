@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform_util.h"
 
@@ -482,6 +483,14 @@ bool Transform::TransformRectReverse(RectF* rect) const {
   SkRect src = RectFToSkRect(*rect);
   matrix.mapRect(&src);
   *rect = SkRectToRectF(src);
+  return true;
+}
+
+bool Transform::TransformRRectF(RRectF* rrect) const {
+  SkRRect result;
+  if (!SkRRect(*rrect).transform(matrix_, &result))
+    return false;
+  *rrect = gfx::RRectF(result);
   return true;
 }
 

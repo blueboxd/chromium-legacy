@@ -4004,20 +4004,37 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
   CheckThatCredentialsStored("temp", "random");
 }
 
+// Test that if the credentials API is used, it makes the page ineligible for
+// caching in the BackForwardCache.
+//
+// See where content::BackForwardCache::DisableForRenderFrameHost is called
+// in chrome_password_manager_client.cc for explanation.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
-                       CallAPIOnRestoredPage) {
+                       NotCachedIfCredentialsAPIUsed) {
   // Navigate to a page with a password form.
   NavigateToFile("/password/password_form.html");
   content::RenderFrameHost* rfh = WebContents()->GetMainFrame();
   content::RenderFrameDeletedObserver rfh_deleted_observer(rfh);
 
-  // Make sure the password manager API works.
+  // Use the password manager API, this should make the page uncacheable.
   EXPECT_TRUE(IsGetCredentialsSuccessful());
 
-  // Navigate away so that the password form page is stored in the cache.
+  // Navigate away.
   EXPECT_TRUE(NavigateToURL(
       WebContents(), embedded_test_server()->GetURL("a.com", "/title1.html")));
-  EXPECT_FALSE(rfh_deleted_observer.deleted());
+  // The page should not have been cached.
+  rfh_deleted_observer.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
+                       CredentialsAPIOnlyCalledOnRestoredPage) {
+  // Navigate to a page with a password form.
+  NavigateToFile("/password/password_form.html");
+  content::RenderFrameHost* rfh = WebContents()->GetMainFrame();
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      WebContents(), embedded_test_server()->GetURL("b.com", "/title1.html")));
   EXPECT_TRUE(content::IsInBackForwardCache(rfh));
 
   // Restore the cached page.
@@ -4025,10 +4042,12 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(WebContents()));
   EXPECT_EQ(rfh, WebContents()->GetMainFrame());
 
-  // Make sure the password manager API still works now that the page has been
-  // stored/restored.
-  // TODO(https://crbug.com/1012707): This is currently broken.
-  EXPECT_FALSE(IsGetCredentialsSuccessful());
+  // Make sure the password manager API works. Since it was never connected, it
+  // shouldn't have been affected by the
+  // ContentCredentialManager::DisconnectBinding call in
+  // ChromePasswordManagerClient::DidFinishNavigation, (this GetCredentials call
+  // will establish the mojo connection for the first time).
+  EXPECT_TRUE(IsGetCredentialsSuccessful());
 }
 
 }  // namespace

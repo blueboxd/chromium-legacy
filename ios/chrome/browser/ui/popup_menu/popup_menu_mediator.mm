@@ -705,32 +705,23 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   // represent a section in the popup menu. Having one sub array means having
   // all the items in the same section.
   PopupMenuToolsItem* copiedContentItem = nil;
-  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
-    ClipboardRecentContent* clipboardRecentContent =
-        ClipboardRecentContent::GetInstance();
+  ClipboardRecentContent* clipboardRecentContent =
+      ClipboardRecentContent::GetInstance();
 
-    if (search_engines::SupportsSearchByImage(self.templateURLService) &&
-        clipboardRecentContent->GetRecentImageFromClipboard()) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
-          PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",
-          kToolsMenuCopiedImageSearch);
-    } else if (clipboardRecentContent->GetRecentURLFromClipboard()) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
-          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-    } else if (clipboardRecentContent->GetRecentTextFromClipboard()) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
-          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-    }
-  } else {
-    NSString* pasteboardString = [UIPasteboard generalPasteboard].string;
-    if (pasteboardString) {
-      copiedContentItem = CreateTableViewItem(
-          IDS_IOS_TOOLS_MENU_PASTE_AND_GO, PopupMenuActionPasteAndGo,
-          @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
-    }
+  if (search_engines::SupportsSearchByImage(self.templateURLService) &&
+      clipboardRecentContent->GetRecentImageFromClipboard()) {
+    copiedContentItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE,
+        PopupMenuActionSearchCopiedImage, @"popup_menu_paste_and_go",
+        kToolsMenuCopiedImageSearch);
+  } else if (clipboardRecentContent->GetRecentURLFromClipboard()) {
+    copiedContentItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK, PopupMenuActionPasteAndGo,
+        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
+  } else if (clipboardRecentContent->GetRecentTextFromClipboard()) {
+    copiedContentItem = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT, PopupMenuActionPasteAndGo,
+        @"popup_menu_paste_and_go", kToolsMenuPasteAndGo);
   }
   if (copiedContentItem) {
     if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {

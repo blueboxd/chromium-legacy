@@ -150,6 +150,14 @@ void WebAppInstallFinalizer::UninstallExternalWebApp(
   NOTIMPLEMENTED();
 }
 
+void WebAppInstallFinalizer::FinalizeUpdate(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  // TODO(crbug.com/926083): Implement update logic, this requires updating
+  // WebAppIconManager to clean out the existing icons and write new ones.
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
                                              UninstallWebAppCallback) {
   // TODO(loyso): Implement The Unified Uninstall API. Expose Source as an

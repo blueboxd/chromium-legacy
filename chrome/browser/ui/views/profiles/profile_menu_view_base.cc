@@ -257,8 +257,6 @@ void ProfileMenuViewBase::SetHeading(const base::string16& heading,
   const SkColor kBackgroundColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
-  const int kCornerRadius =
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
 
   heading_container_->RemoveAllChildViews(/*delete_children=*/true);
   views::BoxLayout* heading_layout = heading_container_->SetLayoutManager(
@@ -267,7 +265,7 @@ void ProfileMenuViewBase::SetHeading(const base::string16& heading,
                       gfx::Insets(kInsidePadding)));
   if (!heading.empty()) {
     heading_container_->SetBackground(
-        views::CreateRoundedRectBackground(kBackgroundColor, kCornerRadius));
+        views::CreateSolidBackground(kBackgroundColor));
   }
 
   // Add the label even if |heading| is empty. This needs to be done so the icon

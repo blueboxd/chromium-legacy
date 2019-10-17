@@ -145,11 +145,13 @@ class VideoCaptureTest : public testing::Test,
       base::RunLoop run_loop;
       MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
       devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+      MediaDeviceSaltAndOrigin salt_and_origin =
+          GetMediaDeviceSaltAndOrigin(render_process_id, render_frame_id);
       media_stream_manager_->media_devices_manager()->EnumerateDevices(
           devices_to_enumerate,
           base::BindOnce(&VideoInputDevicesEnumerated, run_loop.QuitClosure(),
-                         browser_context_.GetMediaDeviceIDSalt(),
-                         security_origin, &video_devices));
+                         salt_and_origin.device_id_salt, salt_and_origin.origin,
+                         &video_devices));
       run_loop.Run();
     }
     ASSERT_FALSE(video_devices.empty());
@@ -161,9 +163,7 @@ class VideoCaptureTest : public testing::Test,
           render_process_id, render_frame_id, requester_id, page_request_id,
           video_devices[0].device_id,
           blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
-          MediaDeviceSaltAndOrigin{browser_context_.GetMediaDeviceIDSalt(),
-                                   browser_context_.GetMediaDeviceIDSalt(),
-                                   security_origin},
+          GetMediaDeviceSaltAndOrigin(render_process_id, render_frame_id),
           base::BindOnce(&VideoCaptureTest::OnDeviceOpened,
                          base::Unretained(this), run_loop.QuitClosure()),
           MediaStreamManager::DeviceStoppedCallback());

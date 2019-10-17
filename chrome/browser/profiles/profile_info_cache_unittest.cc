@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -108,6 +109,11 @@ ProfileInfoCacheTest::~ProfileInfoCacheTest() {
 void ProfileInfoCacheTest::SetUp() {
   ASSERT_TRUE(testing_profile_manager_.SetUp());
   testing_profile_manager_.profile_info_cache()->AddObserver(&name_observer_);
+}
+
+void ProfileInfoCacheTest::RemoveObserver() {
+  testing_profile_manager_.profile_info_cache()->RemoveObserver(
+      &name_observer_);
 }
 
 void ProfileInfoCacheTest::TearDown() {
@@ -798,6 +804,58 @@ TEST_F(ProfileInfoCacheTest, EntriesInAttributesStorage) {
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+TEST_F(ProfileInfoCacheTest, RecomputeProfileNamesIfNeeded) {
+  // Duplicate profile names causes the observer to crash.
+  RemoveObserver();
+  EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
+
+  base::FilePath path_1 = GetProfilePath("path_1");
+  base::string16 name_1 = ASCIIToUTF16("Person 3");
+  GetCache()->AddProfileToCache(path_1, name_1, std::string(), base::string16(),
+                                false, 0, std::string(), EmptyAccountId());
+  base::FilePath path_2 = GetProfilePath("path_2");
+  GetCache()->AddProfileToCache(path_2, ASCIIToUTF16("Person 1"), std::string(),
+                                base::string16(), false, 1, std::string(),
+                                EmptyAccountId());
+  base::FilePath path_3 = GetProfilePath("path_3");
+  GetCache()->AddProfileToCache(path_3, ASCIIToUTF16("Person 2"), std::string(),
+                                base::string16(), false, 2, std::string(),
+                                EmptyAccountId());
+  base::FilePath path_4 = GetProfilePath("path_4");
+  GetCache()->AddProfileToCache(path_4, ASCIIToUTF16("Person 1"), std::string(),
+                                base::string16(), false, 3, std::string(),
+                                EmptyAccountId());
+  base::string16 name_5 = ASCIIToUTF16("Smith");
+  base::FilePath path_5 = GetProfilePath("path_5");
+  GetCache()->AddProfileToCache(path_5, name_5, std::string(), base::string16(),
+                                false, 2, std::string(), EmptyAccountId());
+  base::FilePath path_6 = GetProfilePath("path_6");
+  GetCache()->AddProfileToCache(path_6, ASCIIToUTF16("Person 2"), std::string(),
+                                base::string16(), false, 2, std::string(),
+                                EmptyAccountId());
+
+  EXPECT_EQ(6U, GetCache()->GetNumberOfProfiles());
+
+  ResetCache();
+  // Check non-duplicate profile name is not changed.
+  EXPECT_EQ(name_1, GetCache()->GetNameToDisplayOfProfileAtIndex(
+                        GetCache()->GetIndexOfProfileWithPath(path_1)));
+  // Check nondefault profile name is not changed.
+  EXPECT_EQ(name_5, GetCache()->GetNameToDisplayOfProfileAtIndex(
+                        GetCache()->GetIndexOfProfileWithPath(path_5)));
+
+  // Check there is no duplicate profile name.
+  std::vector<ProfileAttributesEntry*> entries =
+      GetCache()->GetAllProfilesAttributes();
+  for (size_t index = 1; index < entries.size(); index++) {
+    base::string16 name = entries[index - 1]->GetLocalProfileName();
+    EXPECT_TRUE(std::none_of(entries.begin() + index, entries.end(),
+                             [name](ProfileAttributesEntry* entry) {
+                               return entry->GetLocalProfileName() == name;
+                             }));
+  }
+}
+
 TEST_F(ProfileInfoCacheTest, MigrateLegacyProfileNamesWithNewAvatarMenu) {
   EXPECT_EQ(0U, GetCache()->GetNumberOfProfiles());
 

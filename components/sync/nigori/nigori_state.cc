@@ -9,6 +9,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/keystore_keys_cryptographer.h"
 #include "components/sync/protocol/nigori_local_data.pb.h"
 
 namespace syncer {
@@ -116,53 +117,7 @@ void UpdateSpecificsFromKeyDerivationParams(
   }
 }
 
-bool EncryptKeystoreDecryptorToken(
-    const CryptographerImpl& cryptographer,
-    sync_pb::EncryptedData* keystore_decryptor_token,
-    const std::vector<std::string>& keystore_keys) {
-  DCHECK(keystore_decryptor_token);
-
-  const sync_pb::NigoriKey default_key = cryptographer.ExportDefaultKey();
-
-  std::unique_ptr<Cryptographer> keystore_cryptographer =
-      CreateCryptographerFromKeystoreKeys(keystore_keys);
-  if (!keystore_cryptographer) {
-    return false;
-  }
-
-  return keystore_cryptographer->EncryptString(default_key.SerializeAsString(),
-                                               keystore_decryptor_token);
-}
-
 }  // namespace
-
-std::unique_ptr<CryptographerImpl> CreateCryptographerFromKeystoreKeys(
-    const std::vector<std::string>& keystore_keys) {
-  std::unique_ptr<CryptographerImpl> cryptographer =
-      CryptographerImpl::CreateEmpty();
-
-  if (keystore_keys.empty()) {
-    return cryptographer;
-  }
-
-  std::string last_key_name;
-  for (const std::string& key : keystore_keys) {
-    last_key_name =
-        cryptographer->EmplaceKey(key, KeyDerivationParams::CreateForPbkdf2());
-    // TODO(crbug.com/922900): possible behavioral change. Old implementation
-    // fails only if we failed to add current keystore key. Failing to add any
-    // of these keys doesn't seem valid. This line seems to be a good candidate
-    // for UMA, as it's not a normal situation, if we fail to add any key.
-    if (last_key_name.empty()) {
-      return nullptr;
-    }
-  }
-
-  DCHECK(!last_key_name.empty());
-  cryptographer->SelectDefaultEncryptionKey(last_key_name);
-
-  return cryptographer;
-}
 
 // static
 NigoriState NigoriState::CreateFromLocalProto(
@@ -187,9 +142,20 @@ NigoriState NigoriState::CreateFromLocalProto(
             proto.custom_passphrase_key_derivation_params());
   }
   state.encrypt_everything = proto.encrypt_everything();
-  for (int i = 0; i < proto.keystore_key_size(); ++i) {
-    state.keystore_keys.push_back(proto.keystore_key(i));
+
+  std::vector<std::string> keystore_keys;
+  for (const std::string& keystore_key : proto.keystore_key()) {
+    keystore_keys.push_back(keystore_key);
   }
+  state.keystore_keys_cryptographer =
+      KeystoreKeysCryptographer::FromKeystoreKeys(keystore_keys);
+  if (!state.keystore_keys_cryptographer) {
+    // Crypto error occurs, create empty |keystore_keys_cryptographer|.
+    // Effectively it resets keystore keys.
+    state.keystore_keys_cryptographer =
+        KeystoreKeysCryptographer::CreateEmpty();
+  }
+
   if (proto.has_pending_keystore_decryptor_token()) {
     state.pending_keystore_decryptor_token =
         proto.pending_keystore_decryptor_token();
@@ -200,7 +166,8 @@ NigoriState NigoriState::CreateFromLocalProto(
 NigoriState::NigoriState()
     : cryptographer(CryptographerImpl::CreateEmpty()),
       passphrase_type(kInitialPassphraseType),
-      encrypt_everything(kInitialEncryptEverything) {}
+      encrypt_everything(kInitialEncryptEverything),
+      keystore_keys_cryptographer(KeystoreKeysCryptographer::CreateEmpty()) {}
 
 NigoriState::NigoriState(NigoriState&& other) = default;
 
@@ -214,6 +181,8 @@ sync_pb::NigoriModel NigoriState::ToLocalProto() const {
   if (pending_keys.has_value()) {
     *proto.mutable_pending_keys() = *pending_keys;
   }
+  const std::vector<std::string>& keystore_keys =
+      keystore_keys_cryptographer->keystore_keys();
   if (!keystore_keys.empty()) {
     proto.set_current_keystore_key_name(
         ComputePbkdf2KeyName(keystore_keys.back()));
@@ -284,10 +253,12 @@ sync_pb::NigoriSpecifics NigoriState::ToSpecificsProto() const {
       *specifics.mutable_keystore_decryptor_token() =
           *pending_keystore_decryptor_token;
     } else {
-      DCHECK(!keystore_keys.empty());
-      EncryptKeystoreDecryptorToken(
-          *cryptographer, specifics.mutable_keystore_decryptor_token(),
-          keystore_keys);
+      // TODO(crbug.com/922900): error handling (crypto errors, which could
+      // cause empty |keystore_keys_cryptographer| or can occur during
+      // encryption).
+      keystore_keys_cryptographer->EncryptKeystoreDecryptorToken(
+          cryptographer->ExportDefaultKey(),
+          specifics.mutable_keystore_decryptor_token());
     }
   }
   if (!keystore_migration_time.is_null()) {
@@ -313,7 +284,7 @@ NigoriState NigoriState::Clone() const {
   result.custom_passphrase_key_derivation_params =
       custom_passphrase_key_derivation_params;
   result.encrypt_everything = encrypt_everything;
-  result.keystore_keys = keystore_keys;
+  result.keystore_keys_cryptographer = keystore_keys_cryptographer->Clone();
   result.pending_keystore_decryptor_token = pending_keystore_decryptor_token;
   return result;
 }

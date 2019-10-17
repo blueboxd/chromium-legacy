@@ -23,7 +23,7 @@
 #include "ipc/ipc_message.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -113,8 +113,8 @@ struct CONTENT_EXPORT OpenURLParams {
 
   // Whether the call to OpenURL was triggered by an Event, and what the
   // isTrusted flag of the event was.
-  blink::WebTriggeringEventInfo triggering_event_info =
-      blink::WebTriggeringEventInfo::kUnknown;
+  blink::TriggeringEventInfo triggering_event_info =
+      blink::TriggeringEventInfo::kUnknown;
 
   // Indicates whether this navigation was started via context menu.
   bool started_from_context_menu;

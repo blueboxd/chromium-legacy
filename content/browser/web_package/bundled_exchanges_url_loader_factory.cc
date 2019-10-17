@@ -12,6 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -58,6 +60,19 @@ network::ResourceResponseHead CreateResourceResponse(
   return response_head;
 }
 
+void AddResponseParseErrorMessageToConsole(
+    int frame_tree_node_id,
+    const data_decoder::mojom::BundleResponseParseErrorPtr& error) {
+  WebContents* web_contents =
+      WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (!web_contents)
+    return;
+  web_contents->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kError,
+      std::string("Failed to read response header of Web Bundle file: ") +
+          error->message);
+}
+
 }  // namespace
 
 // TODO(crbug.com/966753): Consider security models, i.e. plausible CORS
@@ -67,8 +82,11 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
  public:
   EntryLoader(base::WeakPtr<BundledExchangesURLLoaderFactory> factory,
               mojo::PendingRemote<network::mojom::URLLoaderClient> client,
-              const network::ResourceRequest& resource_request)
-      : factory_(std::move(factory)), loader_client_(std::move(client)) {
+              const network::ResourceRequest& resource_request,
+              int frame_tree_node_id)
+      : factory_(std::move(factory)),
+        loader_client_(std::move(client)),
+        frame_tree_node_id_(frame_tree_node_id) {
     DCHECK(factory_);
 
     // Parse the Range header if any.
@@ -100,13 +118,16 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
   void PauseReadingBodyFromNet() override {}
   void ResumeReadingBodyFromNet() override {}
 
-  void OnResponseReady(data_decoder::mojom::BundleResponsePtr response) {
+  void OnResponseReady(data_decoder::mojom::BundleResponsePtr response,
+                       data_decoder::mojom::BundleResponseParseErrorPtr error) {
     if (!factory_ || !loader_client_.is_connected())
       return;
 
     // TODO(crbug.com/990733): For the initial implementation, we allow only
     // net::HTTP_OK, but we should clarify acceptable status code in the spec.
     if (!response || response->response_code != net::HTTP_OK) {
+      if (error)
+        AddResponseParseErrorMessageToConsole(frame_tree_node_id_, error);
       loader_client_->OnComplete(network::URLLoaderCompletionStatus(
           net::ERR_INVALID_BUNDLED_EXCHANGES));
       return;
@@ -170,6 +191,7 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
 
   base::WeakPtr<BundledExchangesURLLoaderFactory> factory_;
   mojo::Remote<network::mojom::URLLoaderClient> loader_client_;
+  const int frame_tree_node_id_;
   base::Optional<net::HttpByteRange> byte_range_;
 
   base::WeakPtrFactory<EntryLoader> weak_factory_{this};
@@ -178,8 +200,9 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
 };
 
 BundledExchangesURLLoaderFactory::BundledExchangesURLLoaderFactory(
-    scoped_refptr<BundledExchangesReader> reader)
-    : reader_(std::move(reader)) {}
+    scoped_refptr<BundledExchangesReader> reader,
+    int frame_tree_node_id)
+    : reader_(std::move(reader)), frame_tree_node_id_(frame_tree_node_id) {}
 
 BundledExchangesURLLoaderFactory::~BundledExchangesURLLoaderFactory() = default;
 
@@ -199,9 +222,9 @@ void BundledExchangesURLLoaderFactory::CreateLoaderAndStart(
   if (base::EqualsCaseInsensitiveASCII(resource_request.method,
                                        net::HttpRequestHeaders::kGetMethod) &&
       reader_->HasEntry(resource_request.url)) {
-    auto loader = std::make_unique<EntryLoader>(weak_factory_.GetWeakPtr(),
-                                                loader_client.PassInterface(),
-                                                resource_request);
+    auto loader = std::make_unique<EntryLoader>(
+        weak_factory_.GetWeakPtr(), loader_client.PassInterface(),
+        resource_request, frame_tree_node_id_);
     std::unique_ptr<network::mojom::URLLoader> url_loader = std::move(loader);
     mojo::MakeSelfOwnedReceiver(
         std::move(url_loader), mojo::PendingReceiver<network::mojom::URLLoader>(

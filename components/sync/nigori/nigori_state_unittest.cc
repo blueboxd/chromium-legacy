@@ -6,6 +6,7 @@
 
 #include "components/sync/base/time.h"
 #include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/keystore_keys_cryptographer.h"
 #include "components/sync/nigori/nigori.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +59,9 @@ TEST(NigoriStateTest, ShouldConvertKeystoreStateToSpecifics) {
   const std::string kDefaultEncryptionKey = "defaultkey";
 
   NigoriState state;
-  state.keystore_keys = {kKeystoreKey1, kKeystoreKey2};
+  state.keystore_keys_cryptographer =
+      KeystoreKeysCryptographer::FromKeystoreKeys(
+          {kKeystoreKey1, kKeystoreKey2});
   state.passphrase_type = NigoriSpecifics::KEYSTORE_PASSPHRASE;
   state.keystore_migration_time = now;
   state.cryptographer = CryptographerImpl::CreateEmpty();

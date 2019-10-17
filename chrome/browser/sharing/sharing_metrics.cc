@@ -18,34 +18,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SharingMessageType {
-  kUnknownMessage = 0,
-  kPingMessage = 1,
-  kAckMessage = 2,
-  kClickToCallMessage = 3,
-  kSharedClipboardMessage = 4,
-  kMaxValue = kSharedClipboardMessage,
-};
-
-SharingMessageType PayloadCaseToMessageType(
-    chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
-  switch (payload_case) {
-    case chrome_browser_sharing::SharingMessage::PAYLOAD_NOT_SET:
-      return SharingMessageType::kUnknownMessage;
-    case chrome_browser_sharing::SharingMessage::kPingMessage:
-      return SharingMessageType::kPingMessage;
-    case chrome_browser_sharing::SharingMessage::kAckMessage:
-      return SharingMessageType::kAckMessage;
-    case chrome_browser_sharing::SharingMessage::kClickToCallMessage:
-      return SharingMessageType::kClickToCallMessage;
-    case chrome_browser_sharing::SharingMessage::kSharedClipboardMessage:
-      return SharingMessageType::kSharedClipboardMessage;
-  }
-}
-
 const char* GetEnumStringValue(SharingFeatureName feature) {
   DCHECK(feature != SharingFeatureName::kUnknown)
       << "Feature needs to be specified for metrics logging.";
@@ -59,12 +31,54 @@ const char* GetEnumStringValue(SharingFeatureName feature) {
       return "SharedClipboard";
   }
 }
+
+const std::string& MessageTypeToMessageSuffix(
+    chrome_browser_sharing::MessageType message_type) {
+  // For proto3 enums unrecognized enum values are kept when parsing and their
+  // name is an empty string. We don't want to use that as a histogram suffix.
+  // The returned values must match the values of the SharingMessage suffixes
+  // defined in histograms.xml.
+  if (!chrome_browser_sharing::MessageType_IsValid(message_type)) {
+    return chrome_browser_sharing::MessageType_Name(
+        chrome_browser_sharing::UNKNOWN_MESSAGE);
+  }
+  return chrome_browser_sharing::MessageType_Name(message_type);
+}
 }  // namespace
 
-void LogSharingMessageReceived(
+chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
-  base::UmaHistogramEnumeration("Sharing.MessageReceivedType",
-                                PayloadCaseToMessageType(payload_case));
+  switch (payload_case) {
+    case chrome_browser_sharing::SharingMessage::PAYLOAD_NOT_SET:
+      return chrome_browser_sharing::UNKNOWN_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kPingMessage:
+      return chrome_browser_sharing::PING_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kAckMessage:
+      return chrome_browser_sharing::ACK_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kClickToCallMessage:
+      return chrome_browser_sharing::CLICK_TO_CALL_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kSharedClipboardMessage:
+      return chrome_browser_sharing::SHARED_CLIPBOARD_MESSAGE;
+  }
+  // For proto3 enums unrecognized enum values are kept when parsing, and a new
+  // payload case received over the network would not default to
+  // PAYLOAD_NOT_SET. Explicitly return UNKNOWN_MESSAGE here to handle this
+  // case.
+  return chrome_browser_sharing::UNKNOWN_MESSAGE;
+}
+
+void LogSharingMessageReceived(
+    chrome_browser_sharing::MessageType original_message_type,
+    chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
+  chrome_browser_sharing::MessageType actual_message_type =
+      SharingPayloadCaseToMessageType(payload_case);
+  base::UmaHistogramExactLinear("Sharing.MessageReceivedType",
+                                actual_message_type,
+                                chrome_browser_sharing::MessageType_ARRAYSIZE);
+  base::UmaHistogramExactLinear(
+      base::StrCat({"Sharing.MessageReceivedType.",
+                    MessageTypeToMessageSuffix(original_message_type)}),
+      actual_message_type, chrome_browser_sharing::MessageType_ARRAYSIZE);
 }
 
 void LogSharingRegistrationResult(SharingDeviceRegistrationResult result) {
@@ -150,8 +164,13 @@ void LogSharingSelectedAppIndex(SharingFeatureName feature,
       /*value_max=*/20);
 }
 
-void LogSharingMessageAckTime(base::TimeDelta time) {
+void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
+                              base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.MessageAckTime", time);
+  base::UmaHistogramMediumTimes(
+      base::StrCat({"Sharing.MessageAckTime.",
+                    MessageTypeToMessageSuffix(message_type)}),
+      time);
 }
 
 void LogSharingDialogShown(SharingFeatureName feature, SharingDialogType type) {
@@ -164,12 +183,24 @@ void LogClickToCallHelpTextClicked(SharingDialogType type) {
   base::UmaHistogramEnumeration("Sharing.ClickToCallHelpTextClicked", type);
 }
 
-void LogSendSharingMessageResult(SharingSendMessageResult result) {
+void LogSendSharingMessageResult(
+    chrome_browser_sharing::MessageType message_type,
+    SharingSendMessageResult result) {
   base::UmaHistogramEnumeration("Sharing.SendMessageResult", result);
+  base::UmaHistogramEnumeration(
+      base::StrCat({"Sharing.SendMessageResult.",
+                    MessageTypeToMessageSuffix(message_type)}),
+      result);
 }
 
-void LogSendSharingAckMessageResult(SharingSendMessageResult result) {
+void LogSendSharingAckMessageResult(
+    chrome_browser_sharing::MessageType message_type,
+    SharingSendMessageResult result) {
   base::UmaHistogramEnumeration("Sharing.SendAckMessageResult", result);
+  base::UmaHistogramEnumeration(
+      base::StrCat({"Sharing.SendAckMessageResult.",
+                    MessageTypeToMessageSuffix(message_type)}),
+      result);
 }
 
 void LogClickToCallUKM(content::WebContents* web_contents,

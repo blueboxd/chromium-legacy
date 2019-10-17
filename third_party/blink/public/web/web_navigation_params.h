@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -35,7 +36,6 @@
 #include "third_party/blink/public/web/web_navigation_timings.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_origin_policy.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
 
 #if INSIDE_BLINK
 #include "base/memory/scoped_refptr.h"
@@ -99,9 +99,8 @@ struct BLINK_EXPORT WebNavigationInfo {
   // |BlockingDownloadsInSandboxWithoutUserActivation| is enabled.
   bool blocking_downloads_in_sandbox_without_user_activation_enabled = false;
 
-  // Event information. See WebTriggeringEventInfo.
-  WebTriggeringEventInfo triggering_event_info =
-      WebTriggeringEventInfo::kUnknown;
+  // Event information. See TriggeringEventInfo.
+  TriggeringEventInfo triggering_event_info = TriggeringEventInfo::kUnknown;
 
   // If the navigation is a result of form submit, the form element is provided.
   WebFormElement form;

@@ -363,14 +363,23 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileNotFoundBrowserTest,
   if (!original_client_)
     return;
 
+  WebContents* web_contents = shell()->web_contents();
+  ConsoleObserverDelegate console_delegate(web_contents, "*");
+  web_contents->SetDelegate(&console_delegate);
   base::RunLoop run_loop;
-  FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
+  FinishNavigationObserver finish_navigation_observer(web_contents,
                                                       run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url()));
+  EXPECT_FALSE(NavigateToURL(web_contents, test_data_url()));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());
   EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
             *finish_navigation_observer.error_code());
+  if (console_delegate.messages().empty())
+    console_delegate.Wait();
+
+  EXPECT_FALSE(console_delegate.messages().empty());
+  EXPECT_EQ("Failed to read metadata of Web Bundle file: FILE_ERROR_FAILED",
+            console_delegate.message());
 }
 
 class BundledExchangesFileBrowserTest
@@ -478,14 +487,83 @@ IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest,
   const GURL test_data_url =
       GetTestUrlForFile(GetTestDataPath("invalid_bundled_exchanges.wbn"));
 
+  WebContents* web_contents = shell()->web_contents();
+  ConsoleObserverDelegate console_delegate(web_contents, "*");
+  web_contents->SetDelegate(&console_delegate);
+
   base::RunLoop run_loop;
-  FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
+  FinishNavigationObserver finish_navigation_observer(web_contents,
                                                       run_loop.QuitClosure());
-  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url));
+  EXPECT_FALSE(NavigateToURL(web_contents, test_data_url));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());
   EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
             *finish_navigation_observer.error_code());
+
+  if (console_delegate.messages().empty())
+    console_delegate.Wait();
+
+  EXPECT_FALSE(console_delegate.messages().empty());
+  EXPECT_EQ("Failed to read metadata of Web Bundle file: Wrong magic bytes.",
+            console_delegate.message());
+}
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest,
+                       ResponseParseErrorInMainResource) {
+  const GURL test_data_url = GetTestUrlForFile(
+      GetTestDataPath("broken_bundle_broken_first_entry.wbn"));
+
+  WebContents* web_contents = shell()->web_contents();
+  ConsoleObserverDelegate console_delegate(web_contents, "*");
+  web_contents->SetDelegate(&console_delegate);
+
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(web_contents,
+                                                      run_loop.QuitClosure());
+  EXPECT_FALSE(NavigateToURL(web_contents, test_data_url));
+  run_loop.Run();
+  ASSERT_TRUE(finish_navigation_observer.error_code());
+  EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
+            *finish_navigation_observer.error_code());
+
+  if (console_delegate.messages().empty())
+    console_delegate.Wait();
+
+  EXPECT_FALSE(console_delegate.messages().empty());
+  EXPECT_EQ(
+      "Failed to read response header of Web Bundle file: Response headers map "
+      "must have exactly one pseudo-header, :status.",
+      console_delegate.message());
+}
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest,
+                       ResponseParseErrorInSubresource) {
+  const GURL test_data_url = GetTestUrlForFile(
+      GetTestDataPath("broken_bundle_broken_script_entry.wbn"));
+  NavigateToBundleAndWaitForReady(
+      test_data_url,
+      bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+          test_data_url, GURL(kTestPageUrl)));
+
+  WebContents* web_contents = shell()->web_contents();
+  ConsoleObserverDelegate console_delegate(web_contents, "*");
+  web_contents->SetDelegate(&console_delegate);
+
+  ExecuteScriptAndWaitForTitle(R"(
+    const script = document.createElement("script");
+    script.onerror = () => { document.title = "load failed";};
+    script.src = "script.js";
+    document.body.appendChild(script);)",
+                               "load failed");
+
+  if (console_delegate.messages().empty())
+    console_delegate.Wait();
+
+  EXPECT_FALSE(console_delegate.messages().empty());
+  EXPECT_EQ(
+      "Failed to read response header of Web Bundle file: Response headers map "
+      "must have exactly one pseudo-header, :status.",
+      console_delegate.message());
 }
 
 IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, NoLocalFileScheme) {

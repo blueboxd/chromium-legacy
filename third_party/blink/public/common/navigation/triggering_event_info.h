@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_TRIGGERING_EVENT_INFO_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_TRIGGERING_EVENT_INFO_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_NAVIGATION_TRIGGERING_EVENT_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_NAVIGATION_TRIGGERING_EVENT_INFO_H_
 
 namespace blink {
 
-// Extra info sometimes associated with a navigation. Mirrors
-// theWebTriggeringEventInfoEnum.
-enum class WebTriggeringEventInfo {
+// Extra info sometimes associated with a navigation.
+enum class TriggeringEventInfo {
   kUnknown,
 
   // The navigation was not triggered via a JS Event.
@@ -26,4 +25,4 @@ enum class WebTriggeringEventInfo {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_TRIGGERING_EVENT_INFO_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_NAVIGATION_TRIGGERING_EVENT_INFO_H_

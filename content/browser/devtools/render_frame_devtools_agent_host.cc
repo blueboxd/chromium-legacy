@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
@@ -63,6 +62,7 @@
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -333,16 +333,13 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 #endif  // !defined(OS_ANDROID)
 
   if (sessions().empty()) {
-    bool use_video_capture_api = true;
 #ifdef OS_ANDROID
-    // Video capture API cannot be used on Android WebView.
+    // With video capture API snapshots happen in TracingHandler. However, the
+    // video capture API cannot be used with Android WebView so
+    // DevToolsFrameTraceRecorder takes snapshots.
     if (!CompositorImpl::IsInitialized())
-      use_video_capture_api = false;
-#endif
-    // When video capture API is used, don't instantiate
-    // DevToolsFrameTraceRecorder. Taking snapshots happens in TracingHandler.
-    if (!use_video_capture_api)
       frame_trace_recorder_ = std::make_unique<DevToolsFrameTraceRecorder>();
+#endif
     UpdateRawHeadersAccess(nullptr, frame_host_);
 #if defined(OS_ANDROID)
     GetWakeLock()->RequestWakeLock();
@@ -354,7 +351,9 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
 void RenderFrameDevToolsAgentHost::DetachSession(DevToolsSession* session) {
   // Destroying session automatically detaches in renderer.
   if (sessions().empty()) {
+#if defined(OS_ANDROID)
     frame_trace_recorder_.reset();
+#endif
     UpdateRawHeadersAccess(frame_host_, nullptr);
 #if defined(OS_ANDROID)
     GetWakeLock()->CancelWakeLock();
@@ -737,9 +736,10 @@ base::TimeTicks RenderFrameDevToolsAgentHost::GetLastActivityTime() {
   return base::TimeTicks();
 }
 
+#if defined(OS_ANDROID)
 void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
     RenderFrameHost* frame_host,
-    const DevToolsFrameMetadata& frame_metadata) {
+    const cc::RenderFrameMetadata& frame_metadata) {
   scoped_refptr<RenderFrameDevToolsAgentHost> dtah(FindAgentHost(
       static_cast<RenderFrameHostImpl*>(frame_host)->frame_tree_node()));
   if (dtah) {
@@ -753,7 +753,7 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
 }
 
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
-    const DevToolsFrameMetadata& frame_metadata) {
+    const cc::RenderFrameMetadata& frame_metadata) {
   for (auto* page : protocol::PageHandler::ForAgentHost(this))
     page->OnSynchronousSwapCompositorFrame(frame_metadata);
 
@@ -767,6 +767,7 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
                                                             frame_metadata);
   }
 }
+#endif
 
 void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
   mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgent> agent_remote;

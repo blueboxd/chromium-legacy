@@ -14,6 +14,14 @@ cr.define('cr.ui', function() {
   const INDENT = 20;
 
   /**
+   * A custom rowElement depth (indent) style handler where undefined uses the
+   * default depth INDENT styling, see cr.ui.TreeItem.setDepth_().
+   *
+   * @type {function(!cr.ui.TreeItem,number)|undefined}
+   */
+  let customRowElementDepthStyleHandler = undefined;
+
+  /**
    * Returns the computed style for an element.
    * @param {!Element} el The element to get the computed style for.
    * @return {!CSSStyleDeclaration} The computed style.
@@ -62,6 +70,25 @@ cr.define('cr.ui', function() {
       if (!this.hasAttribute('role')) {
         this.setAttribute('role', 'tree');
       }
+    },
+
+    /**
+     * Returns the tree item rowElement style handler.
+     *
+     * @return {function(!cr.ui.TreeItem,number)|undefined}
+     */
+    get rowElementDepthStyleHandler() {
+      return customRowElementDepthStyleHandler;
+    },
+
+    /**
+     * Sets a tree item rowElement style handler, which allows Tree users to
+     * customize the depth (indent) style of tree item rowElements.
+     *
+     * @param {function(!cr.ui.TreeItem,number)|undefined} handler
+     */
+    set rowElementDepthStyleHandler(handler) {
+      customRowElementDepthStyleHandler = handler;
     },
 
     /**
@@ -325,8 +352,13 @@ cr.define('cr.ui', function() {
      */
     setDepth_: function(depth) {
       if (depth != this.depth_) {
-        this.rowElement.style.paddingInlineStart =
-            Math.max(0, depth - 1) * INDENT + 'px';
+        const rowDepth = Math.max(0, depth - 1);
+        if (!customRowElementDepthStyleHandler) {
+          this.rowElement.style.paddingInlineStart = rowDepth * INDENT + 'px';
+        } else {
+          customRowElementDepthStyleHandler(this, rowDepth);
+        }
+
         this.depth_ = depth;
         const items = this.items;
         for (let i = 0, item; item = items[i]; i++) {

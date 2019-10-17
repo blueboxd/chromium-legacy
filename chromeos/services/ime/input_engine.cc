@@ -4,8 +4,6 @@
 
 #include "chromeos/services/ime/input_engine.h"
 
-#include "base/json/json_reader.h"
-#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,10 +39,9 @@ mojom::KeypressResponseForRulebasedPtr GenerateKeypressResponseForRulebased(
       mojom::KeypressResponseForRulebased::New();
   keypress_response->result = process_key_result.key_handled;
   if (!process_key_result.commit_text.empty()) {
-    std::string commit_text;
-    base::EscapeJSONString(process_key_result.commit_text, false, &commit_text);
     keypress_response->operations.push_back(mojom::OperationForRulebased::New(
-        mojom::OperationMethodForRulebased::COMMIT_TEXT, commit_text));
+        mojom::OperationMethodForRulebased::COMMIT_TEXT,
+        process_key_result.commit_text));
   }
   // Need to add the setComposition operation to the result when the key is
   // handled and commit_text and composition_text are both empty.
@@ -53,11 +50,9 @@ mojom::KeypressResponseForRulebasedPtr GenerateKeypressResponseForRulebased(
   if (!process_key_result.composition_text.empty() ||
       (process_key_result.key_handled &&
        process_key_result.commit_text.empty())) {
-    std::string composition_text;
-    base::EscapeJSONString(process_key_result.composition_text, false,
-                           &composition_text);
     keypress_response->operations.push_back(mojom::OperationForRulebased::New(
-        mojom::OperationMethodForRulebased::SET_COMPOSITION, composition_text));
+        mojom::OperationMethodForRulebased::SET_COMPOSITION,
+        process_key_result.composition_text));
   }
   return keypress_response;
 }

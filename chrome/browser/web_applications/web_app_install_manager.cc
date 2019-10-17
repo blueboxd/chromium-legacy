@@ -134,12 +134,20 @@ void WebAppInstallManager::InstallWebAppFromSync(
   EnqueueTask(std::move(task), std::move(start_task));
 }
 
-void WebAppInstallManager::UpdateWebAppFromManifest(
+void WebAppInstallManager::UpdateWebAppFromInfo(
     const AppId& app_id,
-    blink::Manifest manifest,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
-  // TODO(crbug.com/926083): Implement this.
-  std::move(callback).Run(app_id, InstallResultCode::kFailedUnknownReason);
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), finalizer(), data_retriever_factory_.Run());
+
+  base::OnceClosure start_task = base::BindOnce(
+      &WebAppInstallTask::UpdateWebAppFromInfo, base::Unretained(task.get()),
+      EnsureWebContentsCreated(), app_id, std::move(web_application_info),
+      base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
+                     base::Unretained(this), task.get(), std::move(callback)));
+
+  EnqueueTask(std::move(task), std::move(start_task));
 }
 
 void WebAppInstallManager::Shutdown() {

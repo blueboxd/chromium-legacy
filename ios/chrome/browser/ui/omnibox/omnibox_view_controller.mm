@@ -92,24 +92,16 @@ const CGFloat kClearButtonSize = 28.0f;
 
   // Add Paste and Go option to the editing menu
   UIMenuController* menu = [UIMenuController sharedMenuController];
-  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
-    UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_IMAGE)
-               action:@selector(searchCopiedImage:)];
-    UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
-               action:@selector(visitCopiedLink:)];
-    UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
-               action:@selector(searchCopiedText:)];
-    [menu
-        setMenuItems:@[ searchCopiedImage, visitCopiedLink, searchCopiedText ]];
-  } else {
-    UIMenuItem* pasteAndGo = [[UIMenuItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_IOS_PASTE_AND_GO)
-               action:NSSelectorFromString(@"pasteAndGo:")];
-    [menu setMenuItems:@[ pasteAndGo ]];
-  }
+  UIMenuItem* searchCopiedImage = [[UIMenuItem alloc]
+      initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_IMAGE)
+             action:@selector(searchCopiedImage:)];
+  UIMenuItem* visitCopiedLink = [[UIMenuItem alloc]
+      initWithTitle:l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK)
+             action:@selector(visitCopiedLink:)];
+  UIMenuItem* searchCopiedText = [[UIMenuItem alloc]
+      initWithTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_COPIED_TEXT)
+             action:@selector(searchCopiedText:)];
+  [menu setMenuItems:@[ searchCopiedImage, visitCopiedLink, searchCopiedText ]];
 
   self.textField.placeholderTextColor = [self placeholderAndClearButtonColor];
   self.textField.placeholder = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
@@ -309,12 +301,6 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - UIMenuItem
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  // Remove with flag kCopiedContentBehavior
-  if (action == @selector(pasteAndGo:)) {
-    DCHECK(!base::FeatureList::IsEnabled(kCopiedContentBehavior));
-    return UIPasteboard.generalPasteboard.string.length > 0;
-  }
-
   if (action == @selector(searchCopiedImage:) ||
       action == @selector(visitCopiedLink:) ||
       action == @selector(searchCopiedText:)) {
@@ -336,7 +322,6 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 - (void)searchCopiedImage:(id)sender {
-  DCHECK(base::FeatureList::IsEnabled(kCopiedContentBehavior));
   if (base::Optional<gfx::Image> optionalImage =
           ClipboardRecentContent::GetInstance()
               ->GetRecentImageFromClipboard()) {
@@ -358,18 +343,14 @@ const CGFloat kClearButtonSize = 28.0f;
 // so we need two different selectors.
 - (void)pasteAndGo:(id)sender {
   NSString* query;
-  if (base::FeatureList::IsEnabled(kCopiedContentBehavior)) {
-    ClipboardRecentContent* clipboardRecentContent =
-        ClipboardRecentContent::GetInstance();
-    if (base::Optional<GURL> optionalUrl =
-            clipboardRecentContent->GetRecentURLFromClipboard()) {
-      query = base::SysUTF8ToNSString(optionalUrl.value().spec());
-    } else if (base::Optional<base::string16> optionalText =
-                   clipboardRecentContent->GetRecentTextFromClipboard()) {
-      query = base::SysUTF16ToNSString(optionalText.value());
-    }
-  } else {
-    query = UIPasteboard.generalPasteboard.string;
+  ClipboardRecentContent* clipboardRecentContent =
+      ClipboardRecentContent::GetInstance();
+  if (base::Optional<GURL> optionalUrl =
+          clipboardRecentContent->GetRecentURLFromClipboard()) {
+    query = base::SysUTF8ToNSString(optionalUrl.value().spec());
+  } else if (base::Optional<base::string16> optionalText =
+                 clipboardRecentContent->GetRecentTextFromClipboard()) {
+    query = base::SysUTF16ToNSString(optionalText.value());
   }
   [self.dispatcher loadQuery:query immediately:YES];
   [self.dispatcher cancelOmniboxEdit];

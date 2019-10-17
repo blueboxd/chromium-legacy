@@ -309,8 +309,7 @@ void NavigateClientOnUI(const GURL& url,
           url, Referrer(script_url, network::mojom::ReferrerPolicy::kDefault)),
       WindowOpenDisposition::CURRENT_TAB,
       false /* should_replace_current_entry */, false /* user_gesture */,
-      blink::WebTriggeringEventInfo::kUnknown,
-      std::string() /* href_translate */,
+      blink::TriggeringEventInfo::kUnknown, std::string() /* href_translate */,
       nullptr /* blob_url_loader_factory */);
   new OpenURLObserver(web_contents, frame_tree_node_id, std::move(callback));
 }

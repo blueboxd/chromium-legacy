@@ -1232,8 +1232,9 @@ void StyleEngine::ScheduleInvalidationsForRuleSets(
   Element* element = ElementTraversal::FirstChild(*stay_within);
   while (element) {
     ScheduleRuleSetInvalidationsForElement(*element, rule_sets);
-    if (invalidate_slotted && IsHTMLSlotElement(element))
-      InvalidateSlottedElements(ToHTMLSlotElement(*element));
+    auto* html_slot_element = DynamicTo<HTMLSlotElement>(element);
+    if (html_slot_element && invalidate_slotted)
+      InvalidateSlottedElements(*html_slot_element);
 
     if (invalidation_scope == kInvalidateAllScopes) {
       if (ShadowRoot* shadow_root = element->GetShadowRoot()) {

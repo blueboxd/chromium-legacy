@@ -24,7 +24,8 @@ class CONTENT_EXPORT BundledExchangesURLLoaderFactory final
     : public network::mojom::URLLoaderFactory {
  public:
   explicit BundledExchangesURLLoaderFactory(
-      scoped_refptr<BundledExchangesReader> reader);
+      scoped_refptr<BundledExchangesReader> reader,
+      int frame_tree_node_id);
   ~BundledExchangesURLLoaderFactory() override;
 
   // Set a |network::mojom::URLLoaderFactory| remote interface used for requests
@@ -55,6 +56,7 @@ class CONTENT_EXPORT BundledExchangesURLLoaderFactory final
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
   scoped_refptr<BundledExchangesReader> reader_;
+  const int frame_tree_node_id_;
   mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory_;
 
   base::WeakPtrFactory<BundledExchangesURLLoaderFactory> weak_factory_{this};

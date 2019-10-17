@@ -180,6 +180,25 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
                      is_locally_installed));
 }
 
+void WebAppInstallTask::UpdateWebAppFromInfo(
+    content::WebContents* web_contents,
+    const AppId& app_id,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    InstallManager::OnceInstallCallback callback) {
+  Observe(web_contents);
+  install_callback_ = std::move(callback);
+  background_installation_ = true;
+
+  std::vector<GURL> icon_urls =
+      GetValidIconUrlsToDownload(*web_application_info, /*data=*/nullptr);
+
+  data_retriever_->GetIcons(
+      web_contents, std::move(icon_urls),
+      /*skip_page_fav_icons=*/true, WebAppIconDownloader::Histogram::kForUpdate,
+      base::BindOnce(&WebAppInstallTask::OnIconsRetrievedFinalizeUpdate,
+                     base::Unretained(this), std::move(web_application_info)));
+}
+
 void WebAppInstallTask::WebContentsDestroyed() {
   CallInstallCallback(AppId(), InstallResultCode::kWebContentsDestroyed);
 }
@@ -212,7 +231,6 @@ void WebAppInstallTask::CallInstallCallback(const AppId& app_id,
   Observe(nullptr);
   dialog_callback_.Reset();
 
-  DCHECK(install_source_ != kNoInstallSource);
   install_source_ = kNoInstallSource;
 
   DCHECK(install_callback_);
@@ -394,9 +412,9 @@ void WebAppInstallTask::OnIconsRetrieved(
   DCHECK(web_app_info);
 
   // Installing from sync should not change icon links.
-  // TODO(loyso): Limit this only to WebappInstallSource::SYNC.
-  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
-                                      /*is_for_sync*/ true);
+  FilterAndResizeIconsGenerateMissing(
+      web_app_info.get(), &icons_map,
+      /*is_for_sync=*/install_source_ == WebappInstallSource::SYNC);
 
   InstallFinalizer::FinalizeOptions options;
   options.install_source = install_source_;
@@ -417,8 +435,9 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
 
   DCHECK(web_app_info);
 
-  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
-                                      /*is_for_sync*/ false);
+  FilterAndResizeIconsGenerateMissing(
+      web_app_info.get(), &icons_map,
+      /*is_for_sync=*/install_source_ == WebappInstallSource::SYNC);
 
   if (background_installation_) {
     DCHECK(!dialog_callback_);
@@ -432,6 +451,23 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
                             weak_ptr_factory_.GetWeakPtr(),
                             for_installable_site));
   }
+}
+
+void WebAppInstallTask::OnIconsRetrievedFinalizeUpdate(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    IconsMap icons_map) {
+  if (ShouldStopInstall())
+    return;
+
+  DCHECK(web_app_info);
+
+  // TODO(crbug.com/926083): Abort update if icons fail to download.
+  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
+                                      /*is_for_sync=*/false);
+
+  install_finalizer_->FinalizeUpdate(
+      *web_app_info, base::BindOnce(&WebAppInstallTask::OnInstallFinalized,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppInstallTask::OnDialogCompleted(

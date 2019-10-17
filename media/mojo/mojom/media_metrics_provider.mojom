@@ -64,7 +64,8 @@ interface MediaMetricsProvider {
 
   // Returns a LearningTaskController for the given |taskName|.
   AcquireLearningTaskController(
-    string taskName, media.learning.mojom.LearningTaskController& controller);
+    string taskName,
+    pending_receiver<media.learning.mojom.LearningTaskController> controller);
 
   // Reports that bytes have been received by the media player.
   AddBytesReceived(uint64 bytes_received);

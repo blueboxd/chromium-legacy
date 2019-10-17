@@ -56,7 +56,7 @@ html[screen=gaia-signin] {
   --oobe-dialog-side-margin: 0px;
 }
 
-@media screen and (max-width: 864px) {
+@media screen and (max-width: 864px), (max-height: 736px) {
   html[screen=oobe] {
     --oobe-dialog-footer-height: 80px;
     --oobe-dialog-footer-padding: 24px;

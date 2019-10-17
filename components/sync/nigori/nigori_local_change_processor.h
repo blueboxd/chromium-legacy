@@ -69,6 +69,12 @@ class NigoriLocalChangeProcessor {
   virtual base::WeakPtr<ModelTypeControllerDelegate>
   GetControllerDelegate() = 0;
 
+  // Returns a boolean representing whether the processor's metadata is
+  // currently up to date and accurately tracking the model type's data. If
+  // false, and ModelReadyToSync() has already been called, then Put and Delete
+  // will no-op and can be omitted by bridge.
+  virtual bool IsTrackingMetadata() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NigoriLocalChangeProcessor);
 };

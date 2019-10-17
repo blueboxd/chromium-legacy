@@ -6,9 +6,9 @@ import unittest
 
 from .code_node import LiteralNode
 from .code_node import SequenceNode
-from .code_node import SimpleNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
+from .code_node import TextNode
 from .mako_renderer import MakoRenderer
 
 
@@ -36,9 +36,24 @@ class CodeNodeTest(unittest.TestCase):
         etc) are not processed.
         """
         renderer = MakoRenderer()
-        text = "% for ${x}"
-        root = LiteralNode(text, renderer=renderer)
-        self.assertRenderResult(root, text)
+        root = LiteralNode("<% x = 42 %>${x}", renderer=renderer)
+        self.assertRenderResult(root, "<% x = 42 %>${x}")
+
+    def test_empty_literal_node(self):
+        renderer = MakoRenderer()
+        root = LiteralNode("", renderer=renderer)
+        self.assertRenderResult(root, "")
+
+    def test_text_node(self):
+        """Tests that the template language works in TextNode."""
+        renderer = MakoRenderer()
+        root = TextNode("<% x = 42 %>${x}", renderer=renderer)
+        self.assertRenderResult(root, "42")
+
+    def test_empty_text_node(self):
+        renderer = MakoRenderer()
+        root = TextNode("", renderer=renderer)
+        self.assertRenderResult(root, "")
 
     def test_list_operations_of_sequence_node(self):
         """
@@ -83,14 +98,14 @@ class CodeNodeTest(unittest.TestCase):
         root = SymbolScopeNode(renderer=renderer)
 
         root.register_code_symbols([
-            SymbolNode("var1", "int var1 = ${var2} + ${var3};"),
-            SymbolNode("var2", "int var2 = ${var5};"),
-            SymbolNode("var3", "int var3 = ${var4};"),
-            SymbolNode("var4", "int var4 = 1;"),
-            SymbolNode("var5", "int var5 = 2;"),
+            SymbolNode("var1", "int ${var1} = ${var2} + ${var3};"),
+            SymbolNode("var2", "int ${var2} = ${var5};"),
+            SymbolNode("var3", "int ${var3} = ${var4};"),
+            SymbolNode("var4", "int ${var4} = 1;"),
+            SymbolNode("var5", "int ${var5} = 2;"),
         ])
 
-        root.append(SimpleNode(template_text="(void)${var1};"))
+        root.append(TextNode("(void)${var1};"))
 
         self.assertRenderResult(
             root, """

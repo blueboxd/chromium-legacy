@@ -1050,10 +1050,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                  const gfx::RectF& active_rect);
 #endif
 
-  // Returns a base salt used to generate group IDs for media-device
-  // enumerations.
-  const std::string& GetMediaDeviceGroupIDSaltBase() const;
-
 #if defined(OS_ANDROID)
   // Called by WebContentsAndroid to send the Display Cutout safe area to
   // DisplayCutoutHostImpl.
@@ -1839,8 +1835,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 
   PageImportanceSignals page_importance_signals_;
-
-  std::string media_device_group_id_salt_base_;
 
 #if !defined(OS_ANDROID)
   bool page_scale_factor_is_one_;

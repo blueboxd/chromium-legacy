@@ -23,7 +23,9 @@
 #include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/services/mojo_audio_decoder_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,12 +61,12 @@ class MojoAudioDecoderTest : public ::testing::Test {
     service_task_runner_ = service_thread_.task_runner();
 
     // Setup the mojo connection.
-    mojom::AudioDecoderPtr remote_audio_decoder;
+    mojo::PendingRemote<mojom::AudioDecoder> remote_audio_decoder;
     service_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&MojoAudioDecoderTest::ConnectToService,
                        base::Unretained(this),
-                       base::Passed(mojo::MakeRequest(&remote_audio_decoder))));
+                       remote_audio_decoder.InitWithNewPipeAndPassReceiver()));
     mojo_audio_decoder_.reset(
         new MojoAudioDecoder(task_environment_.GetMainThreadTaskRunner(),
                              std::move(remote_audio_decoder)));
@@ -106,7 +108,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
     run_loop_->QuitWhenIdle();
   }
 
-  void ConnectToService(mojom::AudioDecoderRequest request) {
+  void ConnectToService(mojo::PendingReceiver<mojom::AudioDecoder> receiver) {
     DCHECK(service_task_runner_->BelongsToCurrentThread());
 
     std::unique_ptr<StrictMock<MockAudioDecoder>> mock_audio_decoder(
@@ -123,10 +125,10 @@ class MojoAudioDecoderTest : public ::testing::Test {
     EXPECT_CALL(*mock_audio_decoder_, Reset_(_))
         .WillRepeatedly(RunOnceCallback<0>());
 
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<MojoAudioDecoderService>(
             &mojo_cdm_service_context_, std::move(mock_audio_decoder)),
-        std::move(request));
+        std::move(receiver));
   }
 
   void SetWriterCapacity(uint32_t capacity) {

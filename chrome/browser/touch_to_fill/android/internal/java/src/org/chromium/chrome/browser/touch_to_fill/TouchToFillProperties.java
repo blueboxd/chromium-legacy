@@ -27,14 +27,15 @@ class TouchToFillProperties {
     static final PropertyModel
             .ReadableObjectPropertyKey<ListModel<MVCListAdapter.ListItem>> SHEET_ITEMS =
             new PropertyModel.ReadableObjectPropertyKey<>("sheet_items");
-    static final PropertyModel.ReadableObjectPropertyKey<ViewEventListener> VIEW_EVENT_LISTENER =
-            new PropertyModel.ReadableObjectPropertyKey<>("view_event_listener");
-
-    static PropertyModel createDefaultModel(ViewEventListener listener) {
-        return new PropertyModel.Builder(VISIBLE, SHEET_ITEMS, VIEW_EVENT_LISTENER)
+    static final PropertyModel.ReadableObjectPropertyKey<Callback<Integer>> DISMISS_HANDLER =
+            new PropertyModel.ReadableObjectPropertyKey<>("dismiss_handler");
+    static final PropertyModel.WritableObjectPropertyKey<Runnable> ON_CLICK_MANAGE =
+            new PropertyModel.WritableObjectPropertyKey<>("on_click_manage");
+    static PropertyModel createDefaultModel(Callback<Integer> handler) {
+        return new PropertyModel.Builder(VISIBLE, SHEET_ITEMS, DISMISS_HANDLER, ON_CLICK_MANAGE)
                 .with(VISIBLE, false)
                 .with(SHEET_ITEMS, new ListModel<>())
-                .with(VIEW_EVENT_LISTENER, listener)
+                .with(DISMISS_HANDLER, handler)
                 .build();
     }
 
@@ -70,16 +71,6 @@ class TouchToFillProperties {
         static final PropertyKey[] ALL_KEYS = {FORMATTED_URL, ORIGIN_SECURE};
 
         private HeaderProperties() {}
-    }
-
-    /**
-     * This interface is used by the view to communicate events back to the mediator. It abstracts
-     * from the view by stripping information like parents, id or context.
-     */
-    interface ViewEventListener {
-
-        /** Called if the user dismissed the view. */
-        void onDismissed();
     }
 
     @IntDef({ItemType.HEADER, ItemType.CREDENTIAL})

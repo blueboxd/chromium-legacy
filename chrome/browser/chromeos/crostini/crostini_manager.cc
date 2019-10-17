@@ -1307,6 +1307,82 @@ void CrostiniManager::CancelImportLxdContainer(ContainerId key) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(key)));
 }
 
+namespace {
+vm_tools::cicerone::UpgradeContainerRequest::Version ConvertVersion(
+    ContainerVersion from) {
+  switch (from) {
+    case ContainerVersion::STRETCH:
+      return vm_tools::cicerone::UpgradeContainerRequest::DEBIAN_STRETCH;
+    case ContainerVersion::BUSTER:
+      return vm_tools::cicerone::UpgradeContainerRequest::DEBIAN_BUSTER;
+    case ContainerVersion::UNKNOWN:
+    default:
+      return vm_tools::cicerone::UpgradeContainerRequest::UNKNOWN;
+  }
+}
+
+}  // namespace
+
+void CrostiniManager::UpgradeContainer(const ContainerId& key,
+                                       ContainerVersion source_version,
+                                       ContainerVersion target_version,
+                                       CrostiniResultCallback callback) {
+  const auto& vm_name = key.vm_name;
+  const auto& container_name = key.container_name;
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  if (!GetCiceroneClient()->IsUpgradeContainerProgressSignalConnected()) {
+    // Technically we could still start the upgrade, but we wouldn't be able to
+    // detect when the upgrade completes, successfully or otherwise.
+    LOG(ERROR)
+        << "Attempted to upgrade container when progress signal not connected.";
+    std::move(callback).Run(CrostiniResult::UPGRADE_CONTAINER_FAILED);
+    return;
+  }
+  vm_tools::cicerone::UpgradeContainerRequest request;
+  request.set_owner_id(owner_id_);
+  request.set_vm_name(vm_name);
+  request.set_container_name(container_name);
+  request.set_source_version(ConvertVersion(source_version));
+  request.set_target_version(ConvertVersion(target_version));
+  GetCiceroneClient()->UpgradeContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnUpgradeContainer,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void CrostiniManager::CancelUpgradeContainer(const ContainerId& key,
+                                             CrostiniResultCallback callback) {
+  const auto& vm_name = key.vm_name;
+  const auto& container_name = key.container_name;
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  vm_tools::cicerone::CancelUpgradeContainerRequest request;
+  request.set_owner_id(owner_id_);
+  request.set_vm_name(vm_name);
+  request.set_container_name(container_name);
+  GetCiceroneClient()->CancelUpgradeContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnCancelUpgradeContainer,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CrostiniManager::LaunchContainerApplication(
     std::string vm_name,
     std::string container_name,
@@ -1750,6 +1826,16 @@ void CrostiniManager::RemoveImportContainerProgressObserver(
   import_container_progress_observers_.RemoveObserver(observer);
 }
 
+void CrostiniManager::AddUpgradeContainerProgressObserver(
+    UpgradeContainerProgressObserver* observer) {
+  upgrade_container_progress_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveUpgradeContainerProgressObserver(
+    UpgradeContainerProgressObserver* observer) {
+  upgrade_container_progress_observers_.RemoveObserver(observer);
+}
+
 void CrostiniManager::AddVmShutdownObserver(VmShutdownObserver* observer) {
   vm_shutdown_observers_.AddObserver(observer);
 }
@@ -2144,6 +2230,41 @@ void CrostiniManager::OnApplyAnsiblePlaybookProgress(
   // TODO(okalitova): Add an observer.
   AnsibleManagementService::GetForProfile(profile_)
       ->OnApplyAnsiblePlaybookProgress(signal.status());
+}
+
+void CrostiniManager::OnUpgradeContainerProgress(
+    const vm_tools::cicerone::UpgradeContainerProgressSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+
+  UpgradeContainerProgressStatus status;
+  switch (signal.status()) {
+    case vm_tools::cicerone::UpgradeContainerProgressSignal::SUCCEEDED:
+      status = UpgradeContainerProgressStatus::SUCCEEDED;
+      break;
+    case vm_tools::cicerone::UpgradeContainerProgressSignal::UNKNOWN:
+    case vm_tools::cicerone::UpgradeContainerProgressSignal::FAILED:
+      status = UpgradeContainerProgressStatus::FAILED;
+      LOG(ERROR) << "Upgrade failed: " << signal.failure_reason();
+      break;
+    case vm_tools::cicerone::UpgradeContainerProgressSignal::IN_PROGRESS:
+      status = UpgradeContainerProgressStatus::UPGRADING;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  std::vector<std::string> progress_messages;
+  progress_messages.reserve(signal.progress_messages().size());
+  for (const auto& msg : signal.progress_messages()) {
+    progress_messages.push_back(msg);
+  }
+
+  ContainerId container_id(signal.vm_name(), signal.container_name());
+  for (auto& observer : upgrade_container_progress_observers_) {
+    observer.OnUpgradeContainerProgress(container_id, status,
+                                        progress_messages);
+  }
 }
 
 void CrostiniManager::OnUninstallPackageOwningFile(
@@ -2807,6 +2928,66 @@ void CrostiniManager::OnCancelImportLxdContainer(
                << " status=" << response->status()
                << ", failure_reason=" << response->failure_reason();
   }
+}
+
+void CrostiniManager::OnUpgradeContainer(
+    CrostiniResultCallback callback,
+    base::Optional<vm_tools::cicerone::UpgradeContainerResponse> response) {
+  if (!response) {
+    LOG(ERROR) << "Failed to start upgrading container. Empty response";
+    std::move(callback).Run(CrostiniResult::UPGRADE_CONTAINER_FAILED);
+    return;
+  }
+  CrostiniResult result = CrostiniResult::SUCCESS;
+  switch (response->status()) {
+    case vm_tools::cicerone::UpgradeContainerResponse::STARTED:
+      break;
+    case vm_tools::cicerone::UpgradeContainerResponse::ALREADY_RUNNING:
+      result = CrostiniResult::UPGRADE_CONTAINER_ALREADY_RUNNING;
+      LOG(ERROR) << "Upgrade already running. Nothing to do.";
+      break;
+    case vm_tools::cicerone::UpgradeContainerResponse::ALREADY_UPGRADED:
+      LOG(ERROR) << "Container already upgraded. Nothing to do.";
+      result = CrostiniResult::UPGRADE_CONTAINER_ALREADY_UPGRADED;
+      break;
+    case vm_tools::cicerone::UpgradeContainerResponse::NOT_SUPPORTED:
+      result = CrostiniResult::UPGRADE_CONTAINER_NOT_SUPPORTED;
+      break;
+    case vm_tools::cicerone::UpgradeContainerResponse::UNKNOWN:
+    case vm_tools::cicerone::UpgradeContainerResponse::FAILED:
+    default:
+      LOG(ERROR) << "Upgrade container failed. Failure reason "
+                 << response->failure_reason();
+      result = CrostiniResult::UPGRADE_CONTAINER_FAILED;
+      break;
+  }
+  std::move(callback).Run(result);
+}
+
+void CrostiniManager::OnCancelUpgradeContainer(
+    CrostiniResultCallback callback,
+    base::Optional<vm_tools::cicerone::CancelUpgradeContainerResponse>
+        response) {
+  if (!response) {
+    LOG(ERROR) << "Failed to cancel upgrading container. Empty response";
+    std::move(callback).Run(CrostiniResult::CANCEL_UPGRADE_CONTAINER_FAILED);
+    return;
+  }
+  CrostiniResult result = CrostiniResult::SUCCESS;
+  switch (response->status()) {
+    case vm_tools::cicerone::CancelUpgradeContainerResponse::CANCELLED:
+    case vm_tools::cicerone::CancelUpgradeContainerResponse::NOT_RUNNING:
+      break;
+
+    case vm_tools::cicerone::CancelUpgradeContainerResponse::UNKNOWN:
+    case vm_tools::cicerone::CancelUpgradeContainerResponse::FAILED:
+    default:
+      LOG(ERROR) << "Cancel upgrade container failed. Failure reason "
+                 << response->failure_reason();
+      result = CrostiniResult::CANCEL_UPGRADE_CONTAINER_FAILED;
+      break;
+  }
+  std::move(callback).Run(result);
 }
 
 void CrostiniManager::OnPendingAppListUpdates(

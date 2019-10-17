@@ -118,6 +118,12 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   unsigned UniqueRendererFormId() const { return unique_renderer_form_id_; }
 
+  // TODO(crbug.com/1013385): Remove WillActivateSubmitButton,
+  //   DidActivateSubmitButton, and RemovedAssociatedControlElement. They are
+  //   here temporarily to fix form double-submit.
+  void WillActivateSubmitButton(HTMLFormControlElement* element);
+  void DidActivateSubmitButton(HTMLFormControlElement* element);
+
  private:
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
@@ -136,7 +142,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void SubmitDialog(FormSubmission*);
   void Submit(Event*, HTMLFormControlElement* submit_button);
 
-  void ScheduleFormSubmission(FormSubmission*);
+  void SubmitForm(FormSubmission*);
 
   void CollectListedElements(Node& root, ListedElement::List&) const;
   void CollectImageElements(Node& root, HeapVector<Member<HTMLImageElement>>&);
@@ -182,6 +188,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   bool has_elements_associated_by_form_attribute_ : 1;
   bool did_finish_parsing_children_ : 1;
   bool is_in_reset_function_ : 1;
+
+  Member<HTMLFormControlElement> activated_submit_button_;
 };
 
 }  // namespace blink

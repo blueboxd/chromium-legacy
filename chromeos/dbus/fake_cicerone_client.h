@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   bool IsImportLxdContainerProgressSignalConnected() override;
   bool IsPendingAppListUpdatesSignalConnected() override;
   bool IsApplyAnsiblePlaybookProgressSignalConnected() override;
+  bool IsUpgradeContainerProgressSignalConnected() override;
   void LaunchContainerApplication(
       const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
       DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -105,6 +106,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::ApplyAnsiblePlaybookRequest& request,
       DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
           callback) override;
+  void UpgradeContainer(
+      const vm_tools::cicerone::UpgradeContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::UpgradeContainerResponse> callback)
+      override;
+  void CancelUpgradeContainer(
+      const vm_tools::cicerone::CancelUpgradeContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CancelUpgradeContainerResponse>
+          callback) override;
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
 
@@ -151,6 +160,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   }
   void set_import_lxd_container_progress_signal_connected(bool connected) {
     is_import_lxd_container_progress_signal_connected_ = connected;
+  }
+  void set_upgrade_container_progress_signal_connected(bool connected) {
+    is_upgrade_container_progress_signal_connected_ = connected;
   }
   void set_launch_container_application_response(
       const vm_tools::cicerone::LaunchContainerApplicationResponse&
@@ -245,6 +257,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
           apply_ansible_playbook_response) {
     apply_ansible_playbook_response_ = apply_ansible_playbook_response;
   }
+  void set_upgrade_container_response(
+      vm_tools::cicerone::UpgradeContainerResponse upgrade_container_response) {
+    upgrade_container_response_ = std::move(upgrade_container_response);
+  }
+  void set_cancel_upgrade_container_response(
+      vm_tools::cicerone::CancelUpgradeContainerResponse
+          cancel_upgrade_container_response) {
+    cancel_upgrade_container_response_ =
+        std::move(cancel_upgrade_container_response);
+  }
 
   // Additional functions to allow tests to trigger Signals.
   void NotifyLxdContainerCreated(
@@ -269,6 +291,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::PendingAppListUpdatesSignal& signal);
   void NotifyApplyAnsiblePlaybookProgress(
       const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal);
+  void NotifyUpgradeContainerProgress(
+      const vm_tools::cicerone::UpgradeContainerProgressSignal& signal);
 
  protected:
   void Init(dbus::Bus* bus) override {}
@@ -286,6 +310,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   bool is_export_lxd_container_progress_signal_connected_ = true;
   bool is_import_lxd_container_progress_signal_connected_ = true;
   bool is_apply_ansible_playbook_progress_signal_connected_ = true;
+  bool is_upgrade_container_progress_signal_connected_ = true;
 
   std::string last_container_username_;
   bool send_container_started_signal_ = true;
@@ -327,6 +352,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       cancel_import_lxd_container_response_;
   vm_tools::cicerone::ApplyAnsiblePlaybookResponse
       apply_ansible_playbook_response_;
+  vm_tools::cicerone::UpgradeContainerResponse upgrade_container_response_;
+  vm_tools::cicerone::CancelUpgradeContainerResponse
+      cancel_upgrade_container_response_;
 
   vm_tools::cicerone::OsRelease lxd_container_os_release_;
 

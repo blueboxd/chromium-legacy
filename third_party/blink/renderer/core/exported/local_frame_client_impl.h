@@ -124,7 +124,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       bool has_transient_activation,
       WebFrameLoadType,
       bool is_client_redirect,
-      WebTriggeringEventInfo,
+      TriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition should_bypass_main_world_csp,
       mojo::PendingRemote<mojom::blink::BlobURLToken>,

@@ -118,7 +118,8 @@ autofill::FormData GenerateWithDataAccessor(
   if (predictions) {
     predictions->driver_id = static_cast<int>(accessor->ConsumeNumber(32));
     predictions->form_signature =
-        static_cast<uint64_t>(accessor->ConsumeNumber(64));
+        (static_cast<uint64_t>(accessor->ConsumeNumber(32)) << 32) +
+        accessor->ConsumeNumber(32);
   }
 
   // And finally do the same for all the fields.

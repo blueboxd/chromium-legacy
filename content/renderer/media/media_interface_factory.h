@@ -34,7 +34,8 @@ class CONTENT_EXPORT MediaInterfaceFactory
   ~MediaInterfaceFactory() final;
 
   // media::mojom::InterfaceFactory implementation.
-  void CreateAudioDecoder(media::mojom::AudioDecoderRequest request) final;
+  void CreateAudioDecoder(
+      mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) final;
   void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              media::mojom::RendererRequest request) final;

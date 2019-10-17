@@ -3,3 +3,46 @@
 #
 # Expectations in this file must apply to wpt_internal/webgpu/cts.html, NOT
 # external/wpt/webgpu/cts.html, as the latter is not run.
+
+#
+# Platform-independent failures
+#
+
+crbug.com/1014734 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type~{"bindingType":"readonly-storage-buffer"} [ Failure ]
+
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type~{"bindingType":"storage-texture"} [ Failure ]
+
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"storage-texture"} [ Failure ]
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"storage-texture"} [ Failure ]
+
+crbug.com/1014735 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroup:texture+binding+must+have+correct+usage={"type":"storage-texture"} [ Failure ]
+
+crbug.com/1014734 wpt_internal/webgpu/cts.html?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"readonly-storage-buffer","success":true} [ Failure ]
+
+crbug.com/dawn/243 wpt_internal/webgpu/cts.html?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":4,"arrayLayerCount":2,"success":true} [ Failure ]
+
+crbug.com/1014750 wpt_internal/webgpu/cts.html?q=cts:validation/createView:it+is+invalid+to+use+a+texture+view+created+from+a+destroyed+texture= [ Failure ]
+
+#
+# Mac (Metal) specific
+#
+# TODO(crbug.com/1014785): Theses should be [ Mac ], but that doesn't work right now under the mac10.14 config that we run on dawn-mac-x64-deps-rel.
+#
+
+crbug.com/1014744 wpt_internal/webgpu/cts.html?q=cts:command_buffer/render/storeop:storeOp+controls+whether+1x1+drawn+quad+is+stored={"storeOp":"clear","expected":0} [ Failure ]
+
+#
+# Linux (Vulkan) specific
+#
+
+crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?q=cts:buffers/map_oom:mapWriteAsync= [ Failure ]
+crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?q=cts:buffers/map_oom:mapReadAsync= [ Failure ]
+
+#
+# Windows (D3D12) specific
+#
+
+crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=cts:buffers/map_oom:mapWriteAsync= [ Failure ]
+crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=cts:buffers/map_oom:mapReadAsync= [ Failure ]

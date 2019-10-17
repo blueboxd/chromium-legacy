@@ -215,6 +215,30 @@ public class RootUiCoordinator
                         @Override
                         public void onOverviewModeStartedShowing(boolean showToolbar) {
                             if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
+                            hideAppMenu();
+                        }
+
+                        @Override
+                        public void onOverviewModeFinishedShowing() {
+                            // Ideally we wouldn't allow the app menu to show while animating the
+                            // overview mode. This is hard to track, however, because in some
+                            // instances #onOverviewModeStartedShowing is called after
+                            // #onOverviewModeFinishedShowing (see https://crbug.com/969047).
+                            // Once that bug is fixed, we can remove this call to hide in favor of
+                            // disallowing app menu shows during animation. Alternatively, we
+                            // could expose a way to query whether an animation is in progress.
+                            hideAppMenu();
+                        }
+
+                        @Override
+                        public void onOverviewModeStartedHiding(
+                                boolean showToolbar, boolean delayAnimation) {
+                            hideAppMenu();
+                        }
+
+                        @Override
+                        public void onOverviewModeFinishedHiding() {
+                            hideAppMenu();
                         }
                     };
                 }
@@ -231,8 +255,7 @@ public class RootUiCoordinator
         if (mActivity.supportsAppMenu()) {
             mAppMenuCoordinator = AppMenuCoordinatorFactory.createAppMenuCoordinator(mActivity,
                     mActivity.getLifecycleDispatcher(), mActivity.getToolbarManager(), mActivity,
-                    mActivity.getWindow().getDecorView(),
-                    mActivity.getOverviewModeBehaviorSupplier());
+                    mActivity.getWindow().getDecorView());
             mActivity.getToolbarManager().onAppMenuInitialized(
                     mAppMenuCoordinator.getAppMenuHandler(),
                     mAppMenuCoordinator.getAppMenuPropertiesDelegate());
@@ -241,6 +264,10 @@ public class RootUiCoordinator
         } else if (mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().getToolbar().disableMenuButton();
         }
+    }
+
+    private void hideAppMenu() {
+        if (mAppMenuCoordinator != null) mAppMenuCoordinator.getAppMenuHandler().hideAppMenu();
     }
 
     private void initFindToolbarManager() {

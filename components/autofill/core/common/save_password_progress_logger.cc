@@ -456,6 +456,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Navigation to New Tab page";
     case STRING_SERVER_PREDICTIONS:
       return "Server predictions";
+    case STRING_USERNAME_FIRST_FLOW_VOTE:
+      return "Username first flow vote";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

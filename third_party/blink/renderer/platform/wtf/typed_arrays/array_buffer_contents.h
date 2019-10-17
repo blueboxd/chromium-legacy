@@ -64,7 +64,7 @@ class WTF_EXPORT ArrayBufferContents {
                DataDeleter deleter,
                void* deleter_info)
         : data_(data),
-          data_length_(length),
+          data_length_(data ? length : 0),
           deleter_(deleter),
           deleter_info_(deleter_info) {}
     // Move constructor

@@ -595,8 +595,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       audio_stream_monitor_(this),
       media_web_contents_observer_(
           std::make_unique<MediaWebContentsObserver>(this)),
-      media_device_group_id_salt_base_(
-          BrowserContext::CreateRandomMediaDeviceIDSalt()),
 #if !defined(OS_ANDROID)
       page_scale_factor_is_one_(true),
 #endif  // !defined(OS_ANDROID)
@@ -1335,10 +1333,6 @@ bool WebContentsImpl::IsFullAccessibilityModeForTesting() {
 
 const PageImportanceSignals& WebContentsImpl::GetPageImportanceSignals() {
   return page_importance_signals_;
-}
-
-const std::string& WebContentsImpl::GetMediaDeviceGroupIDSaltBase() const {
-  return media_device_group_id_salt_base_;
 }
 
 #if defined(OS_ANDROID)

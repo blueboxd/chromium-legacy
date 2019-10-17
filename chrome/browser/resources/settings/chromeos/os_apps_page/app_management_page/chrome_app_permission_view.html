@@ -18,10 +18,6 @@
         border-top: none;
       }
 
-      #pin-to-shelf-setting {
-        border-top: var(--card-separator);
-      }
-
     </style>
     <div>
       <div class="permission-list">
@@ -33,12 +29,12 @@
 
         <div id="permissions-card" class="permission-card-row">
           <div class="permission-section-header">
-            <div class="header-text">$i18n{permissions}</div>
+            <div class="header-text">$i18n{appManagementPermissionsLabel}</div>
           </div>
           <template is="dom-if" if="[[!hasPermissions_(messages_)]]">
             <div id="no-permissions" class="indented-permission-block">
               <div class="permission-text-row">
-                $i18n{appNoPermission}
+                $i18n{appManagementNoPermissions}
               </div>
             </div>
           </template>
@@ -75,7 +71,9 @@
           class="permission-card-row separated-row header-text clickable"
           on-click="onClickExtensionsSettingsButton_"
           hidden$="[[app_.hideMoreSettings]]">
-          <div id="label" class="header-text">$i18n{moreSettings}</div>
+          <div id="label" class="header-text">
+            $i18n{appManagementMoreSettingsLabel}
+          </div>
           <div class="permission-row-controls">
             <cr-icon-button class="native-settings-icon icon-external" role="link"
               tabindex="0" aria-labelledby="label">

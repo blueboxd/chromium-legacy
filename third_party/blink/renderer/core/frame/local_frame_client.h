@@ -39,6 +39,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink-forward.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
@@ -163,7 +163,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       bool has_transient_activation,
       WebFrameLoadType,
       bool is_client_redirect,
-      WebTriggeringEventInfo,
+      TriggeringEventInfo,
       HTMLFormElement*,
       ContentSecurityPolicyDisposition
           should_check_main_world_content_security_policy,

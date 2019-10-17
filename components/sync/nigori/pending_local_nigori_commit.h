@@ -24,6 +24,8 @@ class PendingLocalNigoriCommit {
       const std::string& passphrase,
       const base::RepeatingCallback<std::string()>& random_salt_generator);
 
+  static std::unique_ptr<PendingLocalNigoriCommit> ForKeystoreInitialization();
+
   PendingLocalNigoriCommit() = default;
   virtual ~PendingLocalNigoriCommit() = default;
 

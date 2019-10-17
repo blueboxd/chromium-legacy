@@ -34,8 +34,8 @@ import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -557,6 +557,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
     @Override
     public Tab createTab(int id, boolean incognito) {
-        return new TabBuilder().setId(id).setIncognito(incognito).build();
+        return MockTab.createAndInitialize(id, incognito);
     }
 }

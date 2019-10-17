@@ -30,11 +30,13 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormStructure;
 using autofill::NEW_PASSWORD;
+using autofill::NOT_USERNAME;
 using autofill::PASSWORD;
 using autofill::PasswordAttribute;
 using autofill::PasswordForm;
 using autofill::ServerFieldType;
 using autofill::ServerFieldTypeSet;
+using autofill::SINGLE_USERNAME;
 using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 using testing::_;
@@ -371,6 +373,48 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_NonAsciiPassword) {
         form_structure.get_password_attributes_vote();
 
     EXPECT_FALSE(vote.has_value()) << password;
+  }
+}
+
+TEST_F(VotesUploaderTest, NoSingleUsernameDataNoUpload) {
+  VotesUploader votes_uploader(&client_, false);
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(_, _, _, _, _, _))
+      .Times(0);
+  votes_uploader.MaybeSendSingleUsernameVote(true /* credentials_saved */);
+}
+
+TEST_F(VotesUploaderTest, UploadSingleUsername) {
+  for (bool credentials_saved : {false, true}) {
+    SCOPED_TRACE(testing::Message("credentials_saved = ") << credentials_saved);
+    VotesUploader votes_uploader(&client_, false);
+    constexpr uint32_t kUsernameRendererId = 101;
+    constexpr uint32_t kUsernameFieldSignature = 1234;
+    constexpr uint64_t kFormSignature = 1000;
+
+    FormPredictions form_predictions;
+    form_predictions.form_signature = kFormSignature;
+    // Add a non-username field.
+    form_predictions.fields.emplace_back();
+    form_predictions.fields.back().renderer_id = kUsernameRendererId - 1;
+    form_predictions.fields.back().signature = kUsernameFieldSignature - 1;
+
+    // Add the username field.
+    form_predictions.fields.emplace_back();
+    form_predictions.fields.back().renderer_id = kUsernameRendererId;
+    form_predictions.fields.back().signature = kUsernameFieldSignature;
+
+    votes_uploader.set_single_username_vote_data(kUsernameRendererId,
+                                                 &form_predictions);
+
+    ServerFieldTypeSet expected_types = {credentials_saved ? SINGLE_USERNAME
+                                                           : NOT_USERNAME};
+    EXPECT_CALL(mock_autofill_download_manager_,
+                StartUploadRequest(SignatureIs(kFormSignature), false,
+                                   expected_types, std::string(), true,
+                                   /* pref_service= */ nullptr));
+
+    votes_uploader.MaybeSendSingleUsernameVote(credentials_saved);
   }
 }
 

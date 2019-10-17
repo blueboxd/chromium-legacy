@@ -39,12 +39,12 @@
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_resource_timing_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -797,7 +797,7 @@ void RenderFrameProxy::Navigate(
   params.disposition = WindowOpenDisposition::CURRENT_TAB;
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = request.HasUserGesture();
-  params.triggering_event_info = blink::WebTriggeringEventInfo::kUnknown;
+  params.triggering_event_info = blink::TriggeringEventInfo::kUnknown;
   params.blob_url_token = blob_url_token.release();
 
   // Note: For the AdFrame download policy here it only covers the case where

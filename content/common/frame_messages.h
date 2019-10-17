@@ -59,6 +59,7 @@
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/common/sudden_termination_disabler_type.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -74,7 +75,6 @@
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -138,8 +138,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FeaturePolicyFeature,
                           blink::mojom::FeaturePolicyFeature::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDisposition,
                           content::CSPDisposition::LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTriggeringEventInfo,
-                          blink::WebTriggeringEventInfo::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::TriggeringEventInfo,
+                          blink::TriggeringEventInfo::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
@@ -502,7 +502,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
   IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
   IPC_STRUCT_MEMBER(bool, user_gesture)
-  IPC_STRUCT_MEMBER(blink::WebTriggeringEventInfo, triggering_event_info)
+  IPC_STRUCT_MEMBER(blink::TriggeringEventInfo, triggering_event_info)
   IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, blob_url_token)
   IPC_STRUCT_MEMBER(std::string, href_translate)
   IPC_STRUCT_MEMBER(content::NavigationDownloadPolicy, download_policy)

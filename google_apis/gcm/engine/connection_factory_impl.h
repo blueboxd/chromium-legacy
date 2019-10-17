@@ -16,6 +16,7 @@
 #include "google_apis/gcm/engine/connection_event_tracker.h"
 #include "google_apis/gcm/engine/connection_handler.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/backoff_entry.h"
 #include "net/log/net_log_with_source.h"
@@ -138,7 +139,7 @@ class GCM_EXPORT ConnectionFactoryImpl
   GetProxyResolvingFactoryCallback get_socket_factory_callback_;
   network::mojom::ProxyResolvingSocketFactoryPtr socket_factory_;
   // The handle to the socket for the current connection, if one exists.
-  network::mojom::ProxyResolvingSocketPtr socket_;
+  mojo::Remote<network::mojom::ProxyResolvingSocket> socket_;
   // Peer address of |socket_|.
   net::IPEndPoint peer_addr_;
 

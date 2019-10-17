@@ -3254,6 +3254,8 @@ TEST_F(PasswordManagerTest,
 
 // Checks that username is saved on username first flow.
 TEST_F(PasswordManagerTest, UsernameFirstFlow) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
 

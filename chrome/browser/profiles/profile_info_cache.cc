@@ -106,6 +106,8 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   // profile names.
   if (!disable_avatar_download_for_testing_)
     MigrateLegacyProfileNamesAndDownloadAvatars();
+
+  RecomputeProfileNamesIfNeeded();
 }
 
 ProfileInfoCache::~ProfileInfoCache() {
@@ -787,6 +789,28 @@ const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
       profiles::GetPathOfHighResAvatarAtIndex(avatar_index);
   return LoadAvatarPictureFromPath(GetPathOfProfileAtIndex(index), file_name,
                                    image_path);
+}
+
+void ProfileInfoCache::RecomputeProfileNamesIfNeeded() {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  std::vector<ProfileAttributesEntry*> entries = GetAllProfilesAttributes();
+  if (entries.size() < 2)
+    return;
+
+  for (size_t i = 0; i < entries.size() - 1; i++) {
+    base::string16 name = entries[i]->GetLocalProfileName();
+    if (!IsDefaultProfileName(name))
+      continue;
+
+    for (size_t j = i + 1; j < entries.size(); j++) {
+      if (name == entries[j]->GetLocalProfileName()) {
+        entries[j]->SetLocalProfileName(
+            ChooseNameForNewProfile(entries[j]->GetAvatarIconIndex()));
+        UpdateSortForProfileIndex(entries[j]->profile_index());
+      }
+    }
+  }
+#endif
 }
 
 void ProfileInfoCache::MigrateLegacyProfileNamesAndDownloadAvatars() {

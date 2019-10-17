@@ -39,8 +39,7 @@ class ImageSkia;
 // AppService, which transfers control to the publisher to uninstall the app.
 //
 // TODO(crbug.com/1009248):
-// 1. Add Crostini uninstall function.
-// 2. Add an interface to the uninstall, like what is done by
+// 1. Add an interface to the uninstall, like what is done by
 // extension_uninstall_dialog_->ConfirmUninstallByExtension.
 class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
                                views::BubbleDialogDelegateView {
@@ -48,6 +47,7 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   AppUninstallDialogView(Profile* profile,
                          apps::mojom::AppType app_type,
                          const std::string& app_id,
+                         const std::string& app_name,
                          gfx::ImageSkia image,
                          apps::UninstallDialog* uninstall_dialog);
   ~AppUninstallDialogView() override = default;
@@ -68,18 +68,24 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   void InitializeViewForExtension(Profile* profile, const std::string& app_id);
 #if defined(OS_CHROMEOS)
   void InitializeViewForArcApp(Profile* profile, const std::string& app_id);
+  void InitializeViewForCrostiniApp(Profile* profile,
+                                    const std::string& app_id);
 #endif
   void InitializeView(Profile* profile,
                       const std::string& app_id);
 
+  // The type of apps, e.g. Extension-backed app, Android app.
   apps::mojom::AppType app_type_;
+
+  // The name of apps, e.g. Camera.
+  const std::string app_name_;
+
+  // Whether app represents a shortcut. |shortcut_| is available for the ARC
+  // apps only.
+  bool shortcut_ = false;
 
   views::Checkbox* report_abuse_checkbox_ = nullptr;
   views::Checkbox* clear_site_data_checkbox_ = nullptr;
-
-  // TODO(crbug.com/1009248): Remove these fields to use the consistent title
-  // and button.
-  base::string16 window_title_;
 
   DISALLOW_COPY_AND_ASSIGN(AppUninstallDialogView);
 };

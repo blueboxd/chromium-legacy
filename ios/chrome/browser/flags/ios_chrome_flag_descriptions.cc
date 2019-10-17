@@ -124,12 +124,6 @@ const char kConfirmInfobarMessagesUIName[] = "Confirm Infobars Messages UI";
 const char kConfirmInfobarMessagesUIDescription[] =
     "When enabled Confirm Infobars use the new Messages UI.";
 
-const char kCopiedContentBehaviorName[] =
-    "Enable differentiating between copied urls, text, and images";
-const char kCopiedContentBehaviorDescription[] =
-    "When enabled, places that handled copied urls (omnibox long-press, toolbar"
-    "menus) will differentiate between copied urls, text, and images.";
-
 const char kCreditCardScannerName[] = "Enable the 'Use Camera' button";
 const char kCreditCardScannerDescription[] =
     "Allow a user to scan a credit card using the credit card camera scanner."
@@ -346,6 +340,12 @@ const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
+
+const char kSyncDeviceInfoInTransportModeName[] =
+    "Enable syncing DeviceInfo in transport-only sync mode.";
+const char kSyncDeviceInfoInTransportModeDescription[] =
+    "When enabled, allows syncing DeviceInfo datatype for users who are "
+    "signed-in but not necessary sync-ing.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =

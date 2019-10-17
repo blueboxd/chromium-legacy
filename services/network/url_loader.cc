@@ -477,6 +477,20 @@ URLLoader::URLLoader(
   if (keepalive_ && keepalive_statistics_recorder_)
     keepalive_statistics_recorder_->OnLoadStarted(factory_params_->process_id);
 
+  if (keepalive_) {
+    const size_t url_size = request.url.spec().size();
+    size_t headers_size = 0;
+    for (const auto& pair : merged_headers.GetHeaderVector()) {
+      headers_size += (pair.key.size() + pair.value.size());
+    }
+
+    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.UrlSize", url_size);
+    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.HeadersSize",
+                               headers_size);
+    UMA_HISTOGRAM_COUNTS_10000("Net.KeepaliveRequest.UrlPlusHeadersSize",
+                               url_size + headers_size);
+  }
+
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {
     OpenFilesForUpload(request);

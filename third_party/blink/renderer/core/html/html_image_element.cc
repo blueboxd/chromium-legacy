@@ -626,9 +626,9 @@ bool HTMLImageElement::complete() const {
 }
 
 void HTMLImageElement::DidMoveToNewDocument(Document& old_document) {
-  SelectSourceURL(ImageLoader::kUpdateIgnorePreviousError);
   GetImageLoader().ElementDidMoveToNewDocument();
   HTMLElement::DidMoveToNewDocument(old_document);
+  SelectSourceURL(ImageLoader::kUpdateIgnorePreviousError);
 }
 
 bool HTMLImageElement::IsServerMap() const {

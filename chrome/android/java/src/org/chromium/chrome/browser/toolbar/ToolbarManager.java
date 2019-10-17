@@ -24,6 +24,8 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.ObservableSupplier;
+import org.chromium.base.ObservableSupplierImpl;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.RecordHistogram;
@@ -97,6 +99,7 @@ import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.top.tab_switcher_action_menu.TabSwitcherActionMenuCoordinator;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.chrome.browser.translate.TranslateUtils;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
@@ -172,6 +175,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private MenuDelegatePhone mMenuDelegatePhone;
     private final LocationBarModel mLocationBarModel;
     private Profile mCurrentProfile;
+    private final ObservableSupplierImpl<BookmarkBridge> mBookmarkBridgeSupplier;
     private BookmarkBridge mBookmarkBridge;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private LocationBar mLocationBar;
@@ -241,6 +245,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mUrlFocusChangedCallback = urlFocusChangedCallback;
 
         mToolbarActionModeCallback = new ToolbarActionModeCallback();
+        mBookmarkBridgeSupplier = new ObservableSupplierImpl<>();
 
         mLocationBarFocusObserver = new UrlFocusChangeListener() {
             /** The params used to control how the scrim behaves when shown for the omnibox. */
@@ -884,8 +889,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (tab == null) return;
         ChromeActivity activity = tab.getActivity();
 
-        if (mAppMenuPropertiesDelegate == null
-                || !mAppMenuPropertiesDelegate.isTranslateMenuItemVisible(tab)
+        if (mAppMenuPropertiesDelegate == null || !TranslateUtils.canTranslateCurrentTab(tab)
                 || !TranslateBridge.shouldShowManualTranslateIPH(tab)) {
             return;
         }
@@ -1089,6 +1093,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
+     * @return An {@link ObservableSupplier} that supplies the {@link BookmarksBridge}.
+     */
+    public ObservableSupplier<BookmarkBridge> getBookmarkBridgeSupplier() {
+        return mBookmarkBridgeSupplier;
+    }
+
+    /**
      * @return The toolbar interface that this manager handles.
      */
     public Toolbar getToolbar() {
@@ -1182,6 +1193,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mBookmarkBridge != null) {
             mBookmarkBridge.destroy();
             mBookmarkBridge = null;
+            mBookmarkBridgeSupplier.set(null);
         }
         if (mTemplateUrlObserver != null) {
             TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
@@ -1849,15 +1861,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             if (profile != null) {
                 mBookmarkBridge = new BookmarkBridge(profile);
                 mBookmarkBridge.addObserver(mBookmarksObserver);
-                if (mAppMenuPropertiesDelegate != null) {
-                    mAppMenuPropertiesDelegate.setBookmarkBridge(mBookmarkBridge);
-                }
                 mLocationBar.setAutocompleteProfile(profile);
                 mLocationBar.setShowIconsWhenUrlFocused(
                         SearchEngineLogoUtils.shouldShowSearchEngineLogo(
                                 mLocationBarModel.isIncognito()));
             }
             mCurrentProfile = profile;
+            mBookmarkBridgeSupplier.set(mBookmarkBridge);
         }
 
         updateButtonStatus();

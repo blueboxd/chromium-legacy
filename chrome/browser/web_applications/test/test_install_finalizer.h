@@ -28,6 +28,8 @@ class TestInstallFinalizer final : public InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
+  void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                      InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(const GURL& app_url,
                                UninstallWebAppCallback callback) override;
   void UninstallWebApp(const AppId& app_id,
@@ -72,6 +74,10 @@ class TestInstallFinalizer final : public InstallFinalizer {
   }
 
  private:
+  void Finalize(const WebApplicationInfo& web_app_info,
+                InstallResultCode code,
+                InstallFinalizedCallback callback);
+
   std::unique_ptr<WebApplicationInfo> web_app_info_copy_;
   std::vector<FinalizeOptions> finalize_options_list_;
   std::vector<GURL> uninstall_external_web_app_urls_;

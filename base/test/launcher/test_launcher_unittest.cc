@@ -231,7 +231,6 @@ TEST_F(TestLauncherTest, UsingCommandLineFilter) {
                  {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("gtest_filter", "Test*.first*");
-  using ::testing::_;
   std::vector<std::string> tests_names = {"Test.firstTest"};
   using ::testing::_;
   EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
@@ -706,13 +705,13 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   // will need to change accordingly.
   std::string file_name = "../../base/test/launcher/test_launcher_unittest.cc";
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_PassTest", file_name, 660));
+      val, "MockUnitTests.DISABLED_PassTest", file_name, 659));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_FailTest", file_name, 664));
+      val, "MockUnitTests.DISABLED_FailTest", file_name, 663));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_CrashTest", file_name, 668));
+      val, "MockUnitTests.DISABLED_CrashTest", file_name, 667));
   EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_NoRunTest", file_name, 672));
+      val, "MockUnitTests.DISABLED_NoRunTest", file_name, 671));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);

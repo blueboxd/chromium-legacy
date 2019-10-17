@@ -35,6 +35,8 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
+  void FinalizeUpdate(const WebApplicationInfo& web_app_info,
+                      InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(const GURL& app_url,
                                UninstallWebAppCallback callback) override;
   void UninstallWebApp(const web_app::AppId& app_id,
@@ -56,13 +58,17 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   // May return nullptr if app_id is not found or extension is disabled.
   const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
-  void OnExtensionInstalled(
-      const GURL& app_url,
-      LaunchType launch_type,
-      bool is_locally_installed,
-      web_app::InstallFinalizer::InstallFinalizedCallback callback,
-      scoped_refptr<CrxInstaller> crx_installer,
-      const base::Optional<CrxInstallError>& error);
+  void OnExtensionInstalled(const GURL& app_url,
+                            LaunchType launch_type,
+                            bool is_locally_installed,
+                            InstallFinalizedCallback callback,
+                            scoped_refptr<CrxInstaller> crx_installer,
+                            const base::Optional<CrxInstallError>& error);
+
+  void OnExtensionUpdated(const web_app::AppId& expected_app_id,
+                          InstallFinalizedCallback callback,
+                          scoped_refptr<CrxInstaller> crx_installer,
+                          const base::Optional<CrxInstallError>& error);
 
   CrxInstallerFactory crx_installer_factory_;
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;

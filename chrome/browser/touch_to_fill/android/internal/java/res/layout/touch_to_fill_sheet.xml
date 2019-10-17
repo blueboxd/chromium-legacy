@@ -7,17 +7,18 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:minHeight="340dp"
+    android:orientation="vertical">
 
     <ImageView
         android:id="@+id/drag_handlebar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_marginEnd="@dimen/touch_to_fill_sheet_margin"
+        android:layout_marginStart="@dimen/touch_to_fill_sheet_margin"
         android:layout_marginTop="6dp"
         android:layout_marginBottom="6dp"
         android:importantForAccessibility="no"
@@ -26,11 +27,31 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/sheet_item_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:minHeight="200dp"
-        android:layout_marginTop="24dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="@dimen/touch_to_fill_sheet_margin"
+        android:layout_marginStart="@dimen/touch_to_fill_sheet_margin"
         android:clipToPadding="false"
         android:paddingBottom="16dp"
         android:divider="@null"
         tools:listitem="@layout/touch_to_fill_credential_item"/>
+
+    <View style="@style/HorizontalDivider"
+        android:layout_height="@dimen/divider_height"
+        android:layout_marginBottom="8dp"
+        android:layout_width="match_parent"/>
+
+    <TextView
+        android:id="@+id/touch_to_fill_sheet_manage_passwords"
+        android:text="@string/manage_passwords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:paddingStart="@dimen/touch_to_fill_sheet_margin"
+        android:paddingEnd="@dimen/touch_to_fill_sheet_margin"
+        android:minHeight="48dp"
+        android:gravity="center_vertical|start"
+        android:textAppearance="@style/TextAppearance.BlackTitle1"
+        android:background="?android:attr/selectableItemBackground"/>
 </LinearLayout>

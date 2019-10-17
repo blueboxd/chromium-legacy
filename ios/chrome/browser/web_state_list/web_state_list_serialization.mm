@@ -27,47 +27,12 @@ namespace {
 // the WebStates stored in the WebStateList.
 NSString* const kOpenerIndexKey = @"OpenerIndex";
 NSString* const kOpenerNavigationIndexKey = @"OpenerNavigationIndex";
-}  // namespace
 
-SessionWindowIOS* SerializeWebStateList(WebStateList* web_state_list) {
-  NSMutableArray<CRWSessionStorage*>* serialized_session =
-      [NSMutableArray arrayWithCapacity:web_state_list->count()];
-
-  for (int index = 0; index < web_state_list->count(); ++index) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(index);
-    WebStateOpener opener = web_state_list->GetOpenerOfWebStateAt(index);
-
-    web::SerializableUserDataManager* user_data_manager =
-        web::SerializableUserDataManager::FromWebState(web_state);
-
-    int opener_index = WebStateList::kInvalidIndex;
-    if (opener.opener) {
-      opener_index = web_state_list->GetIndexOfWebState(opener.opener);
-      DCHECK_NE(opener_index, WebStateList::kInvalidIndex);
-      user_data_manager->AddSerializableData(@(opener_index), kOpenerIndexKey);
-      user_data_manager->AddSerializableData(@(opener.navigation_index),
-                                             kOpenerNavigationIndexKey);
-    } else {
-      user_data_manager->AddSerializableData([NSNull null], kOpenerIndexKey);
-      user_data_manager->AddSerializableData([NSNull null],
-                                             kOpenerNavigationIndexKey);
-    }
-
-    [serialized_session addObject:web_state->BuildSessionStorage()];
-  }
-
-  NSUInteger selectedIndex =
-      web_state_list->active_index() != WebStateList::kInvalidIndex
-          ? static_cast<NSUInteger>(web_state_list->active_index())
-          : static_cast<NSUInteger>(NSNotFound);
-
-  return [[SessionWindowIOS alloc] initWithSessions:[serialized_session copy]
-                                      selectedIndex:selectedIndex];
-}
-
-void DeserializeWebStateList(WebStateList* web_state_list,
-                             SessionWindowIOS* session_window,
-                             const WebStateFactory& web_state_factory) {
+// Helper for DeserializeWebStateList allowing the mutation to appears as a
+// single batched operation.
+void DeserializeWebStateListHelper(SessionWindowIOS* session_window,
+                                   const WebStateFactory& web_state_factory,
+                                   WebStateList* web_state_list) {
   const int old_count = web_state_list->count();
   for (CRWSessionStorage* session in session_window.sessions) {
     std::unique_ptr<web::WebState> web_state = web_state_factory.Run(session);
@@ -109,4 +74,49 @@ void DeserializeWebStateList(WebStateList* web_state_list,
     web_state_list->ActivateWebStateAt(
         old_count + static_cast<int>(session_window.selectedIndex));
   }
+}
+}  // namespace
+
+SessionWindowIOS* SerializeWebStateList(WebStateList* web_state_list) {
+  NSMutableArray<CRWSessionStorage*>* serialized_session =
+      [NSMutableArray arrayWithCapacity:web_state_list->count()];
+
+  for (int index = 0; index < web_state_list->count(); ++index) {
+    web::WebState* web_state = web_state_list->GetWebStateAt(index);
+    WebStateOpener opener = web_state_list->GetOpenerOfWebStateAt(index);
+
+    web::SerializableUserDataManager* user_data_manager =
+        web::SerializableUserDataManager::FromWebState(web_state);
+
+    int opener_index = WebStateList::kInvalidIndex;
+    if (opener.opener) {
+      opener_index = web_state_list->GetIndexOfWebState(opener.opener);
+      DCHECK_NE(opener_index, WebStateList::kInvalidIndex);
+      user_data_manager->AddSerializableData(@(opener_index), kOpenerIndexKey);
+      user_data_manager->AddSerializableData(@(opener.navigation_index),
+                                             kOpenerNavigationIndexKey);
+    } else {
+      user_data_manager->AddSerializableData([NSNull null], kOpenerIndexKey);
+      user_data_manager->AddSerializableData([NSNull null],
+                                             kOpenerNavigationIndexKey);
+    }
+
+    [serialized_session addObject:web_state->BuildSessionStorage()];
+  }
+
+  NSUInteger selectedIndex =
+      web_state_list->active_index() != WebStateList::kInvalidIndex
+          ? static_cast<NSUInteger>(web_state_list->active_index())
+          : static_cast<NSUInteger>(NSNotFound);
+
+  return [[SessionWindowIOS alloc] initWithSessions:[serialized_session copy]
+                                      selectedIndex:selectedIndex];
+}
+
+void DeserializeWebStateList(WebStateList* web_state_list,
+                             SessionWindowIOS* session_window,
+                             const WebStateFactory& web_state_factory) {
+  web_state_list->PerformBatchOperation(
+      base::BindOnce(&DeserializeWebStateListHelper,
+                     base::Unretained(session_window), web_state_factory));
 }

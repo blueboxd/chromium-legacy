@@ -17,6 +17,7 @@
 #include "content/common/page_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
@@ -190,6 +191,8 @@ std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
       return "No: BackForwardCache::DisableForRenderFrameHost() was called";
     case Reason::kDomainNotAllowed:
       return "No: This domain is not allowed to be stored in BackForwardCache";
+    case Reason::kHTTPMethodNotGET:
+      return "No: HTTP method is not GET";
   }
 }
 
@@ -291,6 +294,12 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (rfh->last_http_status_code() != net::HTTP_OK) {
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::CanNotStoreDocumentReason::kHTTPStatusNotOK);
+  }
+
+  // Only store documents that were fetched via HTTP GET method.
+  if (rfh->last_http_method() != net::HttpRequestHeaders::kGetMethod) {
+    return CanStoreDocumentResult::No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::kHTTPMethodNotGET);
   }
 
   // Do not store main document with non HTTP/HTTPS URL scheme. In particular,

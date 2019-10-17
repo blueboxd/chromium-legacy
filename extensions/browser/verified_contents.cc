@@ -199,8 +199,7 @@ std::unique_ptr<VerifiedContents> VerifiedContents::Create(
 
 bool VerifiedContents::HasTreeHashRoot(
     const base::FilePath& relative_path) const {
-  base::FilePath::StringType path = base::ToLowerASCII(
-      relative_path.NormalizePathSeparatorsTo('/').value());
+  base::FilePath::StringType path = NormalizeResourcePath(relative_path);
   if (base::Contains(root_hashes_, path))
     return true;
 
@@ -215,7 +214,7 @@ bool VerifiedContents::HasTreeHashRoot(
 bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
                                           const std::string& expected) const {
   base::FilePath::StringType normalized_relative_path =
-      base::ToLowerASCII(relative_path.NormalizePathSeparatorsTo('/').value());
+      NormalizeResourcePath(relative_path);
   if (TreeHashRootEqualsImpl(normalized_relative_path, expected))
     return true;
 
@@ -227,6 +226,13 @@ bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
   }
 #endif  // defined(OS_WIN)
   return false;
+}
+
+// static
+base::FilePath::StringType VerifiedContents::NormalizeResourcePath(
+    const base::FilePath& relative_path) {
+  return base::ToLowerASCII(
+      relative_path.NormalizePathSeparatorsTo('/').value());
 }
 
 // We're loosely following the "JSON Web Signature" draft spec for signing

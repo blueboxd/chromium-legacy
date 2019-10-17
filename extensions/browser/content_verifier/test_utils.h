@@ -176,13 +176,16 @@ class ContentHashWaiter {
   ~ContentHashWaiter();
 
   std::unique_ptr<ContentHashResult> CreateAndWaitForCallback(
-      ContentHash::FetchKey key);
+      ContentHash::FetchKey key,
+      ContentVerifierDelegate::VerifierSourceType source_type);
 
  private:
   void CreatedCallback(scoped_refptr<ContentHash> content_hash,
                        bool was_cancelled);
 
-  void CreateContentHash(ContentHash::FetchKey key);
+  void CreateContentHash(
+      ContentHash::FetchKey key,
+      ContentVerifierDelegate::VerifierSourceType source_type);
 
   scoped_refptr<base::SequencedTaskRunner> reply_task_runner_;
   base::RunLoop run_loop_;

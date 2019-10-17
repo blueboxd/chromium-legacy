@@ -210,7 +210,7 @@ class NetworkServiceAsyncSocket : public jingle_xmpp::AsyncSocket,
   network::mojom::ProxyResolvingSocketFactoryPtr socket_factory_;
   // The handle to the proxy resolving socket for the current connection, if one
   // exists.
-  network::mojom::ProxyResolvingSocketPtr socket_;
+  mojo::Remote<network::mojom::ProxyResolvingSocket> socket_;
   // TLS socket, if StartTls has been called.
   mojo::Remote<network::mojom::TLSClientSocket> tls_socket_;
 

@@ -127,7 +127,8 @@ class _MobileStartupSharedState(story_module.SharedState):
     self.platform.StartActivity(
         intent.Intent(package=self._possible_browser.settings.package,
                       activity=self._possible_browser.settings.activity,
-                      action=None, data=url),
+                      data=url,
+                      action='android.intent.action.VIEW'),
         blocking=True)
 
   def LaunchCCT(self, url):
@@ -140,20 +141,21 @@ class _MobileStartupSharedState(story_module.SharedState):
     self.platform.StartActivity(
         intent.Intent(package=self._possible_browser.settings.package,
                       activity=self._possible_browser.settings.activity,
-                      action=None, data=url, extras=cct_extras),
+                      data=url, extras=cct_extras,
+                      action='android.intent.action.VIEW'),
         blocking=True)
 
   def LaunchMapsPwa(self):
     # Launches a bound webapk. The APK should be installed by the shared state
     # constructor. Upon launch, Chrome extracts the icon and the URL from the
     # APK.
+    self.platform.WaitForBatteryTemperature(_MAX_BATTERY_TEMP)
     self.platform.StartActivity(
         intent.Intent(package='org.chromium.maps_go_webapk',
                       activity='org.chromium.webapk.shell_apk.MainActivity',
                       category='android.intent.category.LAUNCHER',
                       action='android.intent.action.MAIN'),
         blocking=True)
-    self.platform.WaitForBatteryTemperature(_MAX_BATTERY_TEMP)
 
   @contextlib.contextmanager
   def FindBrowser(self):

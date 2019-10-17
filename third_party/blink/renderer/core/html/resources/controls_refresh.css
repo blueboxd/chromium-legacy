@@ -92,19 +92,21 @@ meter::-webkit-meter-bar {
   box-sizing: border-box;
 }
 
+meter::-internal-meter-clip {
+  clip-path: inset(0px round 20px);
+  height: 100%;
+}
+
 meter::-webkit-meter-optimum-value {
   background: #107c10;
-  border-radius: 20px 0px 0px 20px;
 }
 
 meter::-webkit-meter-suboptimum-value {
   background: #ffb900;
-  border-radius: 20px 0px 0px 20px;
 }
 
 meter::-webkit-meter-even-less-good-value {
   background: #d83b01;
-  border-radius: 20px 0px 0px 20px;
 }
 
 input[type="date" i]::-webkit-calendar-picker-indicator,

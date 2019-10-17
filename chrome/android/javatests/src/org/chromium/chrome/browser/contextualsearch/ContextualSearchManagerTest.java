@@ -1790,9 +1790,7 @@ public class ContextualSearchManagerTest {
                 Criteria.equals(isVisible, new Callable<Boolean>() {
                     @Override
                     public Boolean call() {
-                        return mActivityTestRule.getActivity()
-                                .getRootUiCoordinatorForTesting()
-                                .getAppMenuCoordinatorForTesting()
+                        return mActivityTestRule.getAppMenuCoordinator()
                                 .getAppMenuHandler()
                                 .isAppMenuShowing();
                     }

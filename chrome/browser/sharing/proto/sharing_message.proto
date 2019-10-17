@@ -12,6 +12,18 @@ package chrome_browser_sharing;
 // Required in Chrome.
 option optimize_for = LITE_RUNTIME;
 
+// Enum for identifying a message type.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Keep this in sync with
+// SharingMessageType in enums.xml.
+enum MessageType {
+  UNKNOWN_MESSAGE = 0;
+  PING_MESSAGE = 1;
+  ACK_MESSAGE = 2;
+  CLICK_TO_CALL_MESSAGE = 3;
+  SHARED_CLIPBOARD_MESSAGE = 4;
+}
+
 // Message for sending between devices in Sharing.
 message SharingMessage {
   // Identifier of sender. required.
@@ -41,6 +53,9 @@ message PingMessage {
 message AckMessage {
   // required.
   string original_message_id = 1;
+
+  // The type of message that this is acknowledging. optional.
+  MessageType original_message_type = 2;
 }
 
 // Message for data necessary to send an AckMessage to the sender.

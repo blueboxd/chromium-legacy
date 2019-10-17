@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
@@ -41,6 +42,16 @@ class FakeGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
   std::vector<uint8_t> data_;
   gfx::GpuMemoryBufferHandle handle_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(FakeGpuMemoryBuffer);
+};
+
+class FakeGpuMemoryBufferSupport : public gpu::GpuMemoryBufferSupport {
+ public:
+  std::unique_ptr<gpu::GpuMemoryBufferImpl> CreateGpuMemoryBufferImplFromHandle(
+      gfx::GpuMemoryBufferHandle handle,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      gpu::GpuMemoryBufferImpl::DestructionCallback callback) override;
 };
 
 }  // namespace media

@@ -504,6 +504,27 @@ void NGBoxFragmentPainter::PaintInlineFloatingChildren(
   }
 }
 
+void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info) {
+  DCHECK(items_);
+  DCHECK(PhysicalFragment().HasFloatingDescendants());
+
+  for (const std::unique_ptr<NGFragmentItem>& item : items_->Items()) {
+    const NGPhysicalBoxFragment* child_fragment = item->BoxFragment();
+    if (!child_fragment || child_fragment->HasSelfPaintingLayer() ||
+        !child_fragment->IsFloating())
+      continue;
+    // TODO(kojii): The float is outside of the inline formatting context and
+    // that it maybe another NG inline formatting context, NG block layout, or
+    // legacy. NGBoxFragmentPainter can handle only the first case. In order
+    // to cover more tests for other two cases, we always fallback to legacy,
+    // which will forward back to NGBoxFragmentPainter if the float is for
+    // NGBoxFragmentPainter. We can shortcut this for the first case when
+    // we're more stable.
+    ObjectPainter(*child_fragment->GetLayoutObject())
+        .PaintAllPhasesAtomically(paint_info);
+  }
+}
+
 void NGBoxFragmentPainter::PaintBlockFloatingChildren(
     const NGPhysicalContainerFragment& container,
     const PaintInfo& paint_info) {
@@ -538,6 +559,10 @@ void NGBoxFragmentPainter::PaintFloats(const PaintInfo& paint_info) {
     float_paint_info.phase = PaintPhase::kForeground;
   if (paint_fragment_) {
     PaintInlineFloatingChildren(paint_fragment_->Children(), float_paint_info);
+    return;
+  }
+  if (items_) {
+    PaintFloatingItems(float_paint_info);
     return;
   }
   PaintBlockFloatingChildren(PhysicalFragment(), float_paint_info);
@@ -762,9 +787,21 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
   }
 
   if (box_decoration_data.ShouldPaintShadow()) {
-    PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
-                                      border_edges.line_left,
-                                      border_edges.line_right);
+    if (layout_box.IsTableCell()) {
+      PhysicalRect inner_rect = paint_rect;
+      inner_rect.Contract(layout_box.BorderBoxOutsets());
+      // PaintInsetBoxShadowWithInnerRect doesn't subtract borders before
+      // painting. We have to use it here after subtracting collapsed borders
+      // above. PaintInsetBoxShadowWithBorderRect below subtracts the borders
+      // specified on the style object, which doesn't account for border
+      // collapsing.
+      BoxPainterBase::PaintInsetBoxShadowWithInnerRect(paint_info, inner_rect,
+                                                       style);
+    } else {
+      PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
+                                        border_edges.line_left,
+                                        border_edges.line_right);
+    }
   }
 
   // The theme will tell us whether or not we should also paint the CSS

@@ -303,8 +303,9 @@ void StyleInvalidator::Invalidate(Element& element, SiblingData& sibling_data) {
     // styles but we do it. If we ever stop doing that then this code and the
     // PushInvalidationSetsForContainerNode above need to move out of the
     // if-block.
-    if (InvalidatesSlotted() && IsHTMLSlotElement(element))
-      InvalidateSlotDistributedElements(ToHTMLSlotElement(element));
+    auto* html_slot_element = DynamicTo<HTMLSlotElement>(element);
+    if (html_slot_element && InvalidatesSlotted())
+      InvalidateSlotDistributedElements(*html_slot_element);
 
     if (InsertionPointCrossing() && element.IsV0InsertionPoint()) {
       element.SetNeedsStyleRecalc(kSubtreeStyleChange,

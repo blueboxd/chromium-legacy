@@ -29,24 +29,16 @@ void TestInstallFinalizer::FinalizeInstall(
     const WebApplicationInfo& web_app_info,
     const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
-  AppId app_id = GetAppIdForUrl(web_app_info.app_url);
-  if (next_app_id_.has_value()) {
-    app_id = next_app_id_.value();
-    next_app_id_.reset();
-  }
-
-  InstallResultCode code = InstallResultCode::kSuccessNewInstall;
-  if (next_result_code_.has_value()) {
-    code = next_result_code_.value();
-    next_result_code_.reset();
-  }
-
-  // Store input data copies for inspecting in tests.
-  web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
   finalize_options_list_.push_back(options);
+  Finalize(web_app_info, InstallResultCode::kSuccessNewInstall,
+           std::move(callback));
+}
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
+void TestInstallFinalizer::FinalizeUpdate(
+    const WebApplicationInfo& web_app_info,
+    InstallFinalizedCallback callback) {
+  Finalize(web_app_info, InstallResultCode::kSuccessAlreadyInstalled,
+           std::move(callback));
 }
 
 void TestInstallFinalizer::UninstallExternalWebApp(
@@ -126,6 +118,27 @@ void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
     bool uninstalled) {
   DCHECK(!base::Contains(next_uninstall_external_web_app_results_, app_url));
   next_uninstall_external_web_app_results_[app_url] = uninstalled;
+}
+
+void TestInstallFinalizer::Finalize(const WebApplicationInfo& web_app_info,
+                                    InstallResultCode code,
+                                    InstallFinalizedCallback callback) {
+  AppId app_id = GetAppIdForUrl(web_app_info.app_url);
+  if (next_app_id_.has_value()) {
+    app_id = next_app_id_.value();
+    next_app_id_.reset();
+  }
+
+  if (next_result_code_.has_value()) {
+    code = next_result_code_.value();
+    next_result_code_.reset();
+  }
+
+  // Store input data copies for inspecting in tests.
+  web_app_info_copy_ = std::make_unique<WebApplicationInfo>(web_app_info);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
 }
 
 }  // namespace web_app

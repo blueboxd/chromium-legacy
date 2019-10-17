@@ -20,11 +20,11 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/accessibility/ax_mode.h"
 
 namespace blink {

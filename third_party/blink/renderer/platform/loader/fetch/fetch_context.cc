@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {

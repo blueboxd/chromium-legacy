@@ -19,6 +19,7 @@ js_type_check("compile_resources") {
   deps = [
     ":background",
     ":intent",
+    ":metrics",
     ":nav",
     ":resolution_event_broker",
     ":state",
@@ -31,6 +32,12 @@ js_type_check("compile_resources") {
 js_library("intent") {
   deps = [
     "mojo:chrome_helper",
+  ]
+}
+
+js_library("metrics") {
+  deps = [
+    "externs:chrome_platform_analytics",
   ]
 }
 

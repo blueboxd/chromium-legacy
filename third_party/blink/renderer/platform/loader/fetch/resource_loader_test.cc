@@ -10,6 +10,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"

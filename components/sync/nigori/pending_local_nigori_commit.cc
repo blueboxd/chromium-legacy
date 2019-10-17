@@ -10,6 +10,7 @@
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/keystore_keys_cryptographer.h"
 #include "components/sync/nigori/nigori_state.h"
 
 namespace syncer {
@@ -129,6 +130,39 @@ class CustomPassphraseSetter : public PendingLocalNigoriCommit {
   DISALLOW_COPY_AND_ASSIGN(CustomPassphraseSetter);
 };
 
+class KeystoreInitializer : public PendingLocalNigoriCommit {
+ public:
+  KeystoreInitializer() = default;
+  ~KeystoreInitializer() override = default;
+
+  bool TryApply(NigoriState* state) const override {
+    DCHECK(!state->keystore_keys_cryptographer->IsEmpty());
+    if (state->passphrase_type != NigoriSpecifics::UNKNOWN) {
+      return false;
+    }
+
+    state->passphrase_type = NigoriSpecifics::KEYSTORE_PASSPHRASE;
+    state->keystore_migration_time = base::Time::Now();
+    state->cryptographer =
+        state->keystore_keys_cryptographer->ToCryptographerImpl();
+    return true;
+  }
+
+  void OnSuccess(const NigoriState& state,
+                 SyncEncryptionHandler::Observer* observer) override {
+    // Note: |passphrase_time| isn't populated for keystore passphrase.
+    observer->OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase,
+                                      /*passphrase_time=*/base::Time());
+    observer->OnCryptographerStateChanged(state.cryptographer.get(),
+                                          /*has_pending_keys=*/false);
+  }
+
+  void OnFailure(SyncEncryptionHandler::Observer* observer) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeystoreInitializer);
+};
+
 }  // namespace
 
 // static
@@ -138,6 +172,12 @@ PendingLocalNigoriCommit::ForSetCustomPassphrase(
     const base::RepeatingCallback<std::string()>& random_salt_generator) {
   return std::make_unique<CustomPassphraseSetter>(passphrase,
                                                   random_salt_generator);
+}
+
+// static
+std::unique_ptr<PendingLocalNigoriCommit>
+PendingLocalNigoriCommit::ForKeystoreInitialization() {
+  return std::make_unique<KeystoreInitializer>();
 }
 
 }  // namespace syncer

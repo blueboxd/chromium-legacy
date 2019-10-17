@@ -54,6 +54,7 @@ class ProfileInfoCacheTest : public testing::Test {
   ProfileInfoCache* GetCache();
   base::FilePath GetProfilePath(const std::string& base_name);
   void ResetCache();
+  void RemoveObserver();
 
  private:
   // BrowserTaskEnvironment needs to be up through the destruction of the

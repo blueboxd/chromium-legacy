@@ -174,7 +174,7 @@ class GCMConnectionHandlerImplTest : public testing::Test {
   // Runs the message loop until a message is received.
   void WaitForMessage();
 
-  network::mojom::ProxyResolvingSocketPtr mojo_socket_ptr_;
+  mojo::Remote<network::mojom::ProxyResolvingSocket> mojo_socket_remote_;
 
  private:
   void ReadContinuation(ScopedMessage* dst_proto, ScopedMessage new_proto);
@@ -246,10 +246,12 @@ void GCMConnectionHandlerImplTest::BuildSocket(const ReadList& read_list,
   network::mojom::ProxyResolvingSocketOptionsPtr options =
       network::mojom::ProxyResolvingSocketOptions::New();
   options->use_tls = true;
+  mojo_socket_remote_.reset();
   mojo_socket_factory_ptr_->CreateProxyResolvingSocket(
       kDestination, std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-      mojo::MakeRequest(&mojo_socket_ptr_), mojo::NullRemote() /* observer */,
+      mojo_socket_remote_.BindNewPipeAndPassReceiver(),
+      mojo::NullRemote() /* observer */,
       base::BindLambdaForTesting(
           [&](int result, const base::Optional<net::IPEndPoint>& local_addr,
               const base::Optional<net::IPEndPoint>& peer_addr,
@@ -755,7 +757,7 @@ TEST_F(GCMConnectionHandlerImplTest, SendMsgSocketDisconnected) {
   WaitForMessage();  // The login send.
   WaitForMessage();  // The login response.
   EXPECT_TRUE(connection_handler()->CanSendMessage());
-  mojo_socket_ptr_.reset();
+  mojo_socket_remote_.reset();
   mcs_proto::DataMessageStanza data_message;
   data_message.set_from(kDataMsgFrom);
   data_message.set_category(kDataMsgCategory);

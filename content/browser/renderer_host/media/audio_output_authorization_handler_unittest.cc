@@ -42,10 +42,6 @@ const char kInvalidDeviceId[] = "invalid-device-id";
 using MockAuthorizationCallback = base::MockCallback<
     AudioOutputAuthorizationHandler::AuthorizationCompletedCallback>;
 
-url::Origin SecurityOrigin() {
-  return url::Origin::Create(GURL(kSecurityOriginString));
-}
-
 // TestBrowserContext has a URLRequestContextGetter which uses a NullTaskRunner.
 // This causes it to be destroyed on the wrong thread. This BrowserContext
 // instead uses the IO thread task runner for the URLRequestContextGetter.
@@ -229,8 +225,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 TEST_F(AudioOutputAuthorizationHandlerTest,
        AuthorizeNondefaultDeviceIdWithoutPermission_NotAuthorized) {
   std::string raw_nondefault_id = GetRawNondefaultId();
+  MediaDeviceSaltAndOrigin salt_and_origin = GetMediaDeviceSaltAndOrigin(
+      process()->GetID(), main_rfh()->GetRoutingID());
   std::string hashed_id = MediaStreamManager::GetHMACForMediaDeviceID(
-      browser_context()->GetMediaDeviceIDSalt(), SecurityOrigin(),
+      salt_and_origin.device_id_salt, salt_and_origin.origin,
       raw_nondefault_id);
 
   MockAuthorizationCallback listener;
@@ -263,8 +261,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 TEST_F(AudioOutputAuthorizationHandlerTest,
        AuthorizeNondefaultDeviceIdWithPermission_Ok) {
   std::string raw_nondefault_id = GetRawNondefaultId();
+  MediaDeviceSaltAndOrigin salt_and_origin = GetMediaDeviceSaltAndOrigin(
+      process()->GetID(), main_rfh()->GetRoutingID());
   std::string hashed_id = MediaStreamManager::GetHMACForMediaDeviceID(
-      browser_context()->GetMediaDeviceIDSalt(), SecurityOrigin(),
+      salt_and_origin.device_id_salt, salt_and_origin.origin,
       raw_nondefault_id);
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
@@ -376,8 +376,10 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 TEST_F(AudioOutputAuthorizationHandlerTest,
        AuthorizeNondefaultDeviceIdAfterSaltChange_NotFound) {
   std::string raw_nondefault_id = GetRawNondefaultId();
+  MediaDeviceSaltAndOrigin salt_and_origin = GetMediaDeviceSaltAndOrigin(
+      process()->GetID(), main_rfh()->GetRoutingID());
   std::string hashed_id = MediaStreamManager::GetHMACForMediaDeviceID(
-      browser_context()->GetMediaDeviceIDSalt(), SecurityOrigin(),
+      salt_and_origin.device_id_salt, salt_and_origin.origin,
       raw_nondefault_id);
   MockAuthorizationCallback listener;
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =

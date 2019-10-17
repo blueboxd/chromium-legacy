@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BIG_STRING_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "mojo/public/mojom/base/big_string.mojom-blink.h"
+#include "mojo/public/mojom/base/big_string.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 

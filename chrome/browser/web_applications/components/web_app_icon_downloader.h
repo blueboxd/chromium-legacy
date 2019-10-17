@@ -35,6 +35,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   enum class Histogram {
     kForCreate,
     kForSync,
+    kForUpdate,
   };
 
   using WebAppIconDownloaderCallback =

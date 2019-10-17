@@ -9,7 +9,7 @@
 <!doctype html>
 <title>WebGPU CTS</title>
 <meta charset=utf-8>
-<link rel="help" href="https://gpuweb.github.io/gpuweb/">
+<link rel=help href='https://gpuweb.github.io/gpuweb/'>
 
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
@@ -22,17 +22,197 @@
 </style>
 
 <textarea id=results></textarea>
-<script type=module src="/webgpu/runtime/wpt.js"></script>
+<script type=module src=/webgpu/runtime/wpt.js></script>
 
-<meta name='variant' content='?q=cts:buffers/create_mapped:'>
-<meta name='variant' content='?q=cts:buffers/map:'>
-<meta name='variant' content='?q=cts:buffers/map_detach:'>
-<meta name='variant' content='?q=cts:buffers/map_oom:'>
-<meta name='variant' content='?q=cts:canvas/context_creation:'>
-<meta name='variant' content='?q=cts:command_buffer/basic:'>
-<meta name='variant' content='?q=cts:command_buffer/compute/basic:'>
-<meta name='variant' content='?q=cts:command_buffer/copies:'>
-<meta name='variant' content='?q=cts:command_buffer/render/basic:'>
-<meta name='variant' content='?q=cts:command_buffer/render/rendering:'>
-<meta name='variant' content='?q=cts:examples:'>
-<meta name='variant' content='?q=cts:fences:'>
+<meta name=variant content='?q=cts:buffers/create_mapped:'>
+<meta name=variant content='?q=cts:buffers/map:'>
+<meta name=variant content='?q=cts:buffers/map_detach:'>
+
+<meta name=variant content='?q=cts:buffers/map_oom:mapWriteAsync='>
+<meta name=variant content='?q=cts:buffers/map_oom:mapReadAsync='>
+<meta name=variant content='?q=cts:buffers/map_oom:createBufferMapped='>
+<meta name=variant content='?q=cts:buffers/map_oom:createBufferAsync='>
+
+<meta name=variant content='?q=cts:canvas/context_creation:'>
+<meta name=variant content='?q=cts:command_buffer/basic:'>
+<meta name=variant content='?q=cts:command_buffer/compute/basic:'>
+<meta name=variant content='?q=cts:command_buffer/copies:'>
+<meta name=variant content='?q=cts:command_buffer/render/basic:'>
+<meta name=variant content='?q=cts:command_buffer/render/rendering:'>
+
+<meta name=variant content='?q=cts:command_buffer/render/storeop:storeOp+controls+whether+1x1+drawn+quad+is+stored={"storeOp":"clear","expected":0}'>
+<meta name=variant content='?q=cts:command_buffer/render/storeop:storeOp+controls+whether+1x1+drawn+quad+is+stored={"storeOp":"store","expected":255}'>
+
+<meta name=variant content='?q=cts:examples:'>
+<meta name=variant content='?q=cts:fences:'>
+
+<meta name=variant content='?q=cts:validation/createBindGroup:binding+count+mismatch='>
+<meta name=variant content='?q=cts:validation/createBindGroup:binding+must+be+present+in+layout='>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"error"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"uniform-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"storage-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"sampler"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"sampled-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"uniform-buffer","resourceType":"storage-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"error"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"uniform-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"storage-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"sampler"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"sampled-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"storage-buffer","resourceType":"storage-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type~{"bindingType":"readonly-storage-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"error"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"uniform-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"storage-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"sampler"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"sampled-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampler","resourceType":"storage-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"error"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"uniform-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"storage-buffer"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"sampler"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"sampled-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type={"bindingType":"sampled-texture","resourceType":"storage-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+binding+must+contain+exactly+one+buffer+of+its+type~{"bindingType":"storage-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:texture+binding+must+have+correct+usage={"type":"sampled-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:texture+binding+must+have+correct+usage={"type":"storage-texture"}'>
+<meta name=variant content='?q=cts:validation/createBindGroup:texture+must+have+correct+component+type~'>
+<meta name=variant content='?q=cts:validation/createBindGroup:texture+must+have+correct+dimension='>
+<meta name=variant content='?q=cts:validation/createBindGroup:buffer+offset+and+size+for+bind+groups+match~'>
+
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:some+binding+index+was+specified+more+than+once='>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:negative+binding+index='>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:Visibility+of+bindings+can+be+0='>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:number+of+dynamic+buffers+exceeds+the+maximum+value~'>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"uniform-buffer","success":true}'>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"storage-buffer","success":true}'>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"readonly-storage-buffer","success":true}'>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"sampler","success":false}'>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"sampled-texture","success":false}'>
+<meta name=variant content='?q=cts:validation/createBindGroupLayout:dynamic+set+to+true+is+allowed+only+for+buffers={"type":"storage-texture","success":false}'>
+
+<meta name=variant content='?q=cts:validation/createPipelineLayout:'>
+
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":0,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":2,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":3,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":4,"success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":8,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":16,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":4,"mipLevelCount":2,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+sampleCount={"sampleCount":4,"arrayLayerCount":2,"success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+mipLevelCount={"width":32,"height":32,"mipLevelCount":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+mipLevelCount={"width":32,"height":32,"mipLevelCount":0,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+mipLevelCount={"width":32,"height":32,"mipLevelCount":6,"success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+mipLevelCount={"width":31,"height":32,"mipLevelCount":7,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+mipLevelCount={"width":32,"height":31,"mipLevelCount":7,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+mipLevelCount={"width":32,"height":32,"mipLevelCount":100,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:validation+of+mipLevelCount={"width":32,"height":8,"mipLevelCount":6,"success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+valid+to+destroy+a+texture='>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+valid+to+destroy+a+destroyed+texture='>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+submit+a+destroyed+texture+before+and+after+encode={"destroyBeforeEncode":false,"destroyAfterEncode":false,"success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+submit+a+destroyed+texture+before+and+after+encode={"destroyBeforeEncode":true,"destroyAfterEncode":false,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+submit+a+destroyed+texture+before+and+after+encode={"destroyBeforeEncode":false,"destroyAfterEncode":true,"success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r8unorm","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r8snorm","success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r8uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r8sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r16uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r16sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r16float","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg8unorm","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg8snorm","success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg8uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg8sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r32uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r32sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"r32float","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg16uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg16sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg16float","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba8unorm","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba8unorm-srgb","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba8snorm","success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba8uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba8sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"bgra8unorm","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"bgra8unorm-srgb","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgb10a2unorm","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg11b10float","success":false}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg32uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg32sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rg32float","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba16uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba16sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba16float","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba32uint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba32sint","success":true}'>
+<meta name=variant content='?q=cts:validation/createTexture:it+is+invalid+to+have+an+output+attachment+texture+with+non+renderable+format={"format":"rgba32float","success":true}'>
+
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"arrayLayerCount":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"arrayLayerCount":2,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"dimension":"2d-array","arrayLayerCount":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":1,"baseMipLevel":5,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":2,"baseMipLevel":4,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":0,"baseMipLevel":0,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":0,"baseMipLevel":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":0,"baseMipLevel":5,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":0,"baseMipLevel":6,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":7,"baseMipLevel":0,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":6,"baseMipLevel":1,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":2,"baseMipLevel":5,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+non+array+texture={"mipLevelCount":1,"baseMipLevel":6,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"dimension":"2d","arrayLayerCount":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":6,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":0,"baseArrayLayer":0,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":0,"baseArrayLayer":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":0,"baseArrayLayer":5,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":0,"baseArrayLayer":6,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":7,"baseArrayLayer":0,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":6,"baseArrayLayer":1,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":2,"baseArrayLayer":5,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+texture+view+on+a+2D+array+texture={"arrayLayerCount":1,"baseArrayLayer":6,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"format":"rgba8unorm","success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"format":"r8unorm","success":false}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"dimension":"2d-array","success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"dimension":"2d","success":false}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"arrayLayerCount":6,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"arrayLayerCount":6,"dimension":"2d-array","success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+more+than+1+array+layer={"arrayLayerCount":6,"dimension":"2d-array","mipLevelCount":6,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"format":"rgba8unorm","success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"format":"r8unorm","success":false}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"dimension":"2d-array","success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"dimension":"2d","success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"arrayLayerCount":0,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"arrayLayerCount":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"arrayLayerCount":2,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"mipLevelCount":6,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:Using+defaults+validates+the+same+as+setting+values+for+only+1+array+layer={"mipLevelCount":1,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube","arrayLayerCount":6,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube","arrayLayerCount":3,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube","arrayLayerCount":7,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube","arrayLayerCount":12,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube","success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube-array","arrayLayerCount":12,"success":true}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube-array","arrayLayerCount":11,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view={"dimension":"cube-array","arrayLayerCount":13,"success":false}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view+with+a+non+square+texture={"dimension":"cube","arrayLayerCount":6}'>
+<meta name=variant content='?q=cts:validation/createView:creating+cube+map+texture+view+with+a+non+square+texture={"dimension":"cube-array","arrayLayerCount":12}'>
+<meta name=variant content='?q=cts:validation/createView:test+the+format+compatibility+rules+when+creating+a+texture+view='>
+<meta name=variant content='?q=cts:validation/createView:it+is+invalid+to+use+a+texture+view+created+from+a+destroyed+texture='>
+
+<meta name=variant content='?q=cts:validation/error_scope:'>
+<meta name=variant content='?q=cts:validation/fences:'>
+<meta name=variant content='?q=cts:validation/queue_submit:'>
+<meta name=variant content='?q=cts:validation/render_pass:'>
+<meta name=variant content='?q=cts:validation/render_pass_descriptor:'>
+<meta name=variant content='?q=cts:validation/setBindGroup:'>
+<meta name=variant content='?q=cts:validation/setBlendColor:'>
+<meta name=variant content='?q=cts:validation/setScissorRect:'>
+<meta name=variant content='?q=cts:validation/setStencilReference:'>
+<meta name=variant content='?q=cts:validation/setViewport:'>

@@ -14,6 +14,7 @@
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -24,7 +25,7 @@
 namespace drivefs {
 namespace {
 
-void ConnectAsync(mojom::FakeDriveFsLauncherRequest request,
+void ConnectAsync(mojo::PendingReceiver<mojom::FakeDriveFsLauncher> receiver,
                   mojo::NamedPlatformChannel::ServerName server_name) {
   mojo::PlatformChannelEndpoint endpoint =
       mojo::NamedPlatformChannel::ConnectToServer(server_name);
@@ -33,7 +34,7 @@ void ConnectAsync(mojom::FakeDriveFsLauncherRequest request,
 
   mojo::OutgoingInvitation invitation;
   mojo::FuseMessagePipes(invitation.AttachMessagePipe("drivefs-launcher"),
-                         request.PassMessagePipe());
+                         receiver.PassPipe());
   mojo::OutgoingInvitation::Send(std::move(invitation),
                                  base::kNullProcessHandle, std::move(endpoint));
 }
@@ -59,7 +60,7 @@ FakeDriveFsLauncherClient::FakeDriveFsLauncherClient(
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&ConnectAsync, mojo::MakeRequest(&launcher_),
+      base::BindOnce(&ConnectAsync, launcher_.BindNewPipeAndPassReceiver(),
                      socket_path_.value()));
 
   chromeos::DBusThreadManager* dbus_thread_manager =

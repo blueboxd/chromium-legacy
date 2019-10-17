@@ -303,5 +303,60 @@ TEST_F(ImeServiceTest, RuleBasedDevaPhone) {
   EXPECT_EQ(response.operations, expected_operations);
 }
 
+// Tests escapable characters. See https://crbug.com/1014384.
+TEST_F(ImeServiceTest, RuleBasedDoesNotEscapeCharacters) {
+  bool success = false;
+  TestClientChannel test_channel;
+  mojo::Remote<mojom::InputChannel> to_engine_remote;
+
+  remote_manager_->ConnectToImeEngine(
+      "m17n:deva_phone", to_engine_remote.BindNewPipeAndPassReceiver(),
+      test_channel.CreatePendingRemote(), extra,
+      base::BindOnce(&ConnectCallback, &success));
+  remote_manager_.FlushForTesting();
+  EXPECT_TRUE(success);
+
+  mojom::KeypressResponseForRulebased response;
+
+  // Test Shift+Quote ('"').
+  to_engine_remote->ProcessKeypressForRulebased(
+      mojom::KeypressInfoForRulebased::New("keydown", "Quote", true, false,
+                                           false, false, false),
+      base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
+  to_engine_remote.FlushForTesting();
+
+  EXPECT_EQ(response.result, true);
+  ASSERT_EQ(1U, response.operations.size());
+  EXPECT_EQ(mojom::OperationMethodForRulebased::COMMIT_TEXT,
+            response.operations[0]->method);
+  EXPECT_EQ("\"", response.operations[0]->arguments);
+
+  // Backslash.
+  to_engine_remote->ProcessKeypressForRulebased(
+      mojom::KeypressInfoForRulebased::New("keydown", "Backslash", false, false,
+                                           false, false, false),
+      base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
+  to_engine_remote.FlushForTesting();
+
+  EXPECT_EQ(response.result, true);
+  ASSERT_EQ(1U, response.operations.size());
+  EXPECT_EQ(mojom::OperationMethodForRulebased::COMMIT_TEXT,
+            response.operations[0]->method);
+  EXPECT_EQ("\\", response.operations[0]->arguments);
+
+  // Shift+Comma ('<')
+  to_engine_remote->ProcessKeypressForRulebased(
+      mojom::KeypressInfoForRulebased::New("keydown", "Comma", true, false,
+                                           false, false, false),
+      base::BindOnce(&TestProcessKeypressForRulebasedCallback, &response));
+  to_engine_remote.FlushForTesting();
+
+  EXPECT_EQ(response.result, true);
+  ASSERT_EQ(1U, response.operations.size());
+  EXPECT_EQ(mojom::OperationMethodForRulebased::COMMIT_TEXT,
+            response.operations[0]->method);
+  EXPECT_EQ("<", response.operations[0]->arguments);
+}
+
 }  // namespace ime
 }  // namespace chromeos

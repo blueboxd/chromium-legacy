@@ -1562,7 +1562,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
           BuildArrayForDistributedNodes(insertion_point));
       force_push_children = true;
     }
-    if (auto* slot = ToHTMLSlotElementOrNull(*element)) {
+    if (auto* slot = DynamicTo<HTMLSlotElement>(*element)) {
       if (node->IsInShadowTree()) {
         value->setDistributedNodes(BuildDistributedNodesForSlot(slot));
         force_push_children = true;

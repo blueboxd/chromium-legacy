@@ -5,4 +5,5 @@
 
 <resources>
     <dimen name="touch_to_fill_favicon_size">24dp</dimen>
+    <dimen name="touch_to_fill_sheet_margin">16dp</dimen>
 </resources>

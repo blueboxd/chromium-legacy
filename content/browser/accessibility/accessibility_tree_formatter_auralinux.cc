@@ -323,7 +323,9 @@ const char* const kRoleNames[] = {
     "math root",
     "subscript",
     "superscript",
-    "footnote",  // ATK_ROLE_FOOTNOTE = 122.
+    "footnote",           // ATK_ROLE_FOOTNOTE = 122.
+    "content deletion",   // ATK_ROLE_CONTENT_DELETION = 123.
+    "content insertion",  // ATK_ROLE_CONTENT_DELETION = 124.
 };
 
 void AccessibilityTreeFormatterAuraLinux::AddTextProperties(

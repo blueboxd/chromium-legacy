@@ -819,6 +819,10 @@ class CORE_EXPORT Node : public EventTarget {
   }
   virtual void PostDispatchEventHandler(Event&, EventDispatchHandlingState*) {}
 
+  // TODO(crbug.com/1013385): Remove DidPreventDefault. It is here as a
+  //   temporary fix for form double-submit.
+  virtual void DidPreventDefault(const Event&) {}
+
   void DispatchScopedEvent(Event&);
 
   virtual void HandleLocalEvents(Event&);

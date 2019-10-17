@@ -1016,4 +1016,12 @@ bool ContentBrowserClient::ShouldLoadExtraIcuDataFile() {
   return false;
 }
 
+bool ContentBrowserClient::ArePersistentMediaDeviceIDsAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& scope,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) {
+  return false;
+}
+
 }  // namespace content

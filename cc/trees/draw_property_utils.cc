@@ -713,14 +713,13 @@ std::pair<gfx::RRectF, bool> GetRoundedCornerRRect(
   if (!property_trees->GetToTarget(node->transform_id, target_id, &to_target))
     return kEmptyRoundedCornerInfo;
 
-  DCHECK(to_target.Preserves2dAxisAlignment());
+  auto result =
+      std::make_pair(node->rounded_corner_bounds, node->is_fast_rounded_corner);
 
-  SkRRect result;
-  if (!SkRRect(node->rounded_corner_bounds)
-           .transform(to_target.matrix(), &result)) {
+  if (!to_target.TransformRRectF(&result.first))
     return kEmptyRoundedCornerInfo;
-  }
-  return std::make_pair(gfx::RRectF(result), node->is_fast_rounded_corner);
+
+  return result;
 }
 
 void UpdateRenderTarget(EffectTree* effect_tree) {

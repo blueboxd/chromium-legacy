@@ -221,10 +221,12 @@ ContentHashWaiter::ContentHashWaiter()
 ContentHashWaiter::~ContentHashWaiter() = default;
 
 std::unique_ptr<ContentHashResult> ContentHashWaiter::CreateAndWaitForCallback(
-    ContentHash::FetchKey key) {
+    ContentHash::FetchKey key,
+    ContentVerifierDelegate::VerifierSourceType source_type) {
   GetExtensionFileTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ContentHashWaiter::CreateContentHash,
-                                base::Unretained(this), std::move(key)));
+      FROM_HERE,
+      base::BindOnce(&ContentHashWaiter::CreateContentHash,
+                     base::Unretained(this), std::move(key), source_type));
   run_loop_.Run();
   DCHECK(result_);
   return std::move(result_);
@@ -248,8 +250,11 @@ void ContentHashWaiter::CreatedCallback(scoped_refptr<ContentHash> content_hash,
   run_loop_.QuitWhenIdle();
 }
 
-void ContentHashWaiter::CreateContentHash(ContentHash::FetchKey key) {
-  ContentHash::Create(std::move(key), ContentHash::IsCancelledCallback(),
+void ContentHashWaiter::CreateContentHash(
+    ContentHash::FetchKey key,
+    ContentVerifierDelegate::VerifierSourceType source_type) {
+  ContentHash::Create(std::move(key), source_type,
+                      ContentHash::IsCancelledCallback(),
                       base::BindOnce(&ContentHashWaiter::CreatedCallback,
                                      base::Unretained(this)));
 }

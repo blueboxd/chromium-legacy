@@ -1362,10 +1362,10 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
                                         bool should_scroll) {
   // We want to create the anchor even if we don't need to scroll. This ensures
   // all the side effects like setting CSS :target are correctly set.
-  FragmentAnchor* anchor =
-      FragmentAnchor::TryCreate(url, *frame_, same_document_navigation);
+  FragmentAnchor* anchor = FragmentAnchor::TryCreate(
+      url, *frame_, same_document_navigation, should_scroll);
 
-  if (anchor && should_scroll) {
+  if (anchor) {
     fragment_anchor_ = anchor;
     fragment_anchor_->Installed();
 

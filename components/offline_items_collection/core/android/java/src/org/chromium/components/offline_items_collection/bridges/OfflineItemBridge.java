@@ -54,7 +54,7 @@ public final class OfflineItemBridge {
             @FailState int failState, @PendingState int pendingState, boolean isResumable,
             boolean allowMetered, long receivedBytes, long progressValue, long progressMax,
             @OfflineItemProgressUnit int progressUnit, long timeRemainingMs, boolean isDangerous,
-            boolean canRename, boolean ignoreVisuals) {
+            boolean canRename, boolean ignoreVisuals, double contentQualityScore) {
         OfflineItem item = new OfflineItem();
         item.id.namespace = nameSpace;
         item.id.id = id;
@@ -88,6 +88,7 @@ public final class OfflineItemBridge {
         item.isDangerous = isDangerous;
         item.canRename = canRename;
         item.ignoreVisuals = ignoreVisuals;
+        item.contentQualityScore = contentQualityScore;
         if (list != null) list.add(item);
         return item;
     }

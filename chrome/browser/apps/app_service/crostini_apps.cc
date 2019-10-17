@@ -8,6 +8,7 @@
 
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
+#include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -159,7 +160,8 @@ void CrostiniApps::PromptUninstall(const std::string& app_id) {
 void CrostiniApps::Uninstall(const std::string& app_id,
                              bool clear_site_data,
                              bool report_abuse) {
-  NOTIMPLEMENTED();
+  crostini::CrostiniPackageService::GetForProfile(profile_)
+      ->QueueUninstallApplication(app_id);
 }
 
 void CrostiniApps::OpenNativeSettings(const std::string& app_id) {

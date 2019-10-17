@@ -79,10 +79,12 @@ class ContentHashFetcherTest : public ExtensionsTest {
         url_loader_factory_ptr.PassInterface();
 
     std::unique_ptr<ContentHashResult> result =
-        ContentHashWaiter().CreateAndWaitForCallback(ContentHash::FetchKey(
-            extension_->id(), extension_->path(), extension_->version(),
-            std::move(url_loader_factory_ptr_info), fetch_url_,
-            delegate_->GetPublicKey()));
+        ContentHashWaiter().CreateAndWaitForCallback(
+            ContentHash::FetchKey(extension_->id(), extension_->path(),
+                                  extension_->version(),
+                                  std::move(url_loader_factory_ptr_info),
+                                  fetch_url_, delegate_->GetPublicKey()),
+            ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES);
 
     delegate_.reset();
 

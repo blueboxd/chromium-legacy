@@ -509,7 +509,6 @@ source_set("blink_headers") {
     "web/web_text_decoration_type.h",
     "web/web_text_direction.h",
     "web/web_tree_scope_type.h",
-    "web/web_triggering_event_info.h",
     "web/web_user_gesture_indicator.h",
     "web/web_user_gesture_token.h",
     "web/web_user_media_request.h",

@@ -3674,7 +3674,7 @@
     Block third-party cookies
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox.">
-    Prevent third-party websites from saving and reading cookie data
+    When turned on, sites can't use cookies that track you across the web. Some websites might break.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ADOBE_FLASH_SETTINGS" desc="The text for the link that points the user to the Adobe Flash Player Storage settings on the web">
     Adobe Flash Player Storage settings

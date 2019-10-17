@@ -54,12 +54,11 @@ class NigoriModelTypeProcessor : public ModelTypeProcessor,
   NigoriMetadataBatch GetMetadata() override;
   void ReportError(const ModelError& error) override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;
+  bool IsTrackingMetadata() override;
 
   bool IsConnectedForTest() const;
 
  private:
-  bool IsTrackingMetadata();
-
   // Returns true if the handshake with sync thread is complete.
   bool IsConnected() const;
 

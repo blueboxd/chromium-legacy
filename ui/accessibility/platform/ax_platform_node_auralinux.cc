@@ -61,6 +61,10 @@
 #define ATK_230
 #endif
 
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 34, 0)
+#define ATK_234
+#endif
+
 namespace ui {
 
 namespace {
@@ -143,6 +147,14 @@ constexpr AtkRole kSuperscriptRole = ATK_ROLE_TEXT;
 constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_FOOTNOTE;
 #else
 constexpr AtkRole kAtkFootnoteRole = ATK_ROLE_LIST_ITEM;
+#endif
+
+#if defined(ATK_234)
+constexpr AtkRole kAtkRoleContentDeletion = ATK_ROLE_CONTENT_DELETION;
+constexpr AtkRole kAtkRoleContentInsertion = ATK_ROLE_CONTENT_INSERTION;
+#else
+constexpr AtkRole kAtkRoleContentDeletion = ATK_ROLE_SECTION;
+constexpr AtkRole kAtkRoleContentInsertion = ATK_ROLE_SECTION;
 #endif
 
 AXPlatformNodeAuraLinux* AtkObjectToAXPlatformNodeAuraLinux(
@@ -2341,9 +2353,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
     case ax::mojom::Role::kComplementary:
       return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kContentDeletion:
+      return kAtkRoleContentDeletion;
     case ax::mojom::Role::kContentInsertion:
-      // TODO(accessibility) https://github.com/w3c/html-aam/issues/141
-      return ATK_ROLE_SECTION;
+      return kAtkRoleContentInsertion;
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kFooter:
       return ATK_ROLE_LANDMARK;

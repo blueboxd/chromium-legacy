@@ -760,6 +760,7 @@ android_library("chrome_test_java") {
 
   deps = [
     ":browser_java_test_support",
+    ":chrome_public_test_apk_resources",
     ":chrome_test_util_java",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",
@@ -1071,6 +1072,14 @@ if (enable_vr || enable_arcore) {
       ]
     }
   }
+}
+
+android_resources("chrome_public_test_apk_resources") {
+  resource_dirs = [ "javatests/res" ]
+  deps = [
+    ":chrome_app_java_resources",
+  ]
+  custom_package = "org.chromium.chrome.test"
 }
 
 # Overrides icon / name defined in chrome_app_java_resources.

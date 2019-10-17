@@ -82,10 +82,12 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
 
     for (auto& item : message.array_buffer_contents_array) {
       mojo_base::BigBuffer& big_buffer = item->contents;
-      auto handle = WTF::ArrayBufferContents::CreateDataHandle(
-          big_buffer.size(), WTF::ArrayBufferContents::kZeroInitialize);
-      WTF::ArrayBufferContents contents(std::move(handle),
-                                        WTF::ArrayBufferContents::kNotShared);
+      WTF::ArrayBufferContents contents(
+          big_buffer.size(), 1, WTF::ArrayBufferContents::kNotShared,
+          WTF::ArrayBufferContents::kDontInitialize);
+      // Check if we allocated the backing store of the ArrayBufferContents
+      // correctly.
+      CHECK_EQ(contents.DataLength(), big_buffer.size());
       memcpy(contents.Data(), big_buffer.data(), big_buffer.size());
       array_buffer_contents_array.push_back(std::move(contents));
     }

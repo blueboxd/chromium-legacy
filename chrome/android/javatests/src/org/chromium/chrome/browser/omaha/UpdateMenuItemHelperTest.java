@@ -222,7 +222,8 @@ public class UpdateMenuItemHelperTest {
 
     private void showAppMenuAndAssertMenuShown() {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            AppMenuTestSupport.showAppMenu(mActivityTestRule.getActivity(), null, false, false);
+            AppMenuTestSupport.showAppMenu(
+                    mActivityTestRule.getAppMenuCoordinator(), null, false, false);
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
@@ -238,18 +239,12 @@ public class UpdateMenuItemHelperTest {
 
     private void hideAppMenuAndAssertMenuShown() {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            mActivityTestRule.getActivity()
-                    .getRootUiCoordinatorForTesting()
-                    .getAppMenuCoordinatorForTesting()
-                    .getAppMenuHandler()
-                    .hideAppMenu();
+            mActivityTestRule.getAppMenuCoordinator().getAppMenuHandler().hideAppMenu();
         });
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !mActivityTestRule.getActivity()
-                                .getRootUiCoordinatorForTesting()
-                                .getAppMenuCoordinatorForTesting()
+                return !mActivityTestRule.getAppMenuCoordinator()
                                 .getAppMenuHandler()
                                 .isAppMenuShowing();
             }

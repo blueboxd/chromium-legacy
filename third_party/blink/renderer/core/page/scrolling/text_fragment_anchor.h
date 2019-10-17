@@ -36,11 +36,13 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   static TextFragmentAnchor* TryCreateFragmentDirective(
       const KURL& url,
       LocalFrame& frame,
-      bool same_document_navigation);
+      bool same_document_navigation,
+      bool should_scroll);
 
   TextFragmentAnchor(
       const Vector<TextFragmentSelector>& text_fragment_selectors,
-      LocalFrame& frame);
+      LocalFrame& frame,
+      bool should_scroll);
   ~TextFragmentAnchor() override = default;
 
   bool Invoke() override;
@@ -89,6 +91,10 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // Whether the text fragment anchor has been dismissed yet. This should be
   // kept alive until dismissed so we can remove text highlighting.
   bool dismissed_ = false;
+  // Whether we should scroll the anchor into view. This will be false for
+  // history navigations and reloads, where we want to restore the highlight but
+  // not scroll into view again.
+  bool should_scroll_ = false;
 
   Member<TextFragmentAnchorMetrics> metrics_;
 

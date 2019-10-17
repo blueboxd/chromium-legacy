@@ -1184,6 +1184,7 @@ fyi_builder(
 # OS shouldn't matter.
 fyi_builder(
     name = 'mac-osxbeta-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
@@ -1247,6 +1248,7 @@ fyi_coverage_builder(
 fyi_coverage_builder(
     name = 'mac-code-coverage-generation',
     cores = 24,
+    goma_backend = goma.backend.RBE_PROD,
     os = None,
     use_clang_coverage = True,
 )
@@ -1345,10 +1347,12 @@ fyi_mac_builder(
 fyi_mac_builder(
     name = 'mac-hermetic-upgrade-rel',
     cores = 8,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
     name = 'mac-mojo-rel',
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 
@@ -1801,6 +1805,7 @@ gpu_builder(
 gpu_builder(
     name = 'GPU Mac Builder',
     cores = None,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 
@@ -2000,10 +2005,12 @@ def mac_builder(*, name, cores=None, os=os.MAC_DEFAULT, **kwargs):
 
 mac_builder(
     name = 'Mac Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'Mac Builder (dbg)',
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 

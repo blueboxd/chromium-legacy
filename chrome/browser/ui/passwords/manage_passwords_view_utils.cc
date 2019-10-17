@@ -212,6 +212,7 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
       case ManagePasswordsReferrer::kProfileChooser:
         return "profile_chooser";
       case ManagePasswordsReferrer::kPasswordsAccessorySheet:
+      case ManagePasswordsReferrer::kTouchToFill:
         NOTREACHED();
     }
 

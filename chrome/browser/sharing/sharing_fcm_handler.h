@@ -76,9 +76,11 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   void SendAckMessage(const SharingMessage& original_message,
                       const std::string& original_message_id);
 
-  void OnAckMessageSent(const std::string& original_message_id,
-                        SharingSendMessageResult result,
-                        base::Optional<std::string> message_id);
+  void OnAckMessageSent(
+      const std::string& original_message_id,
+      chrome_browser_sharing::MessageType original_message_type,
+      SharingSendMessageResult result,
+      base::Optional<std::string> message_id);
 
   gcm::GCMDriver* const gcm_driver_;
   SharingFCMSender* sharing_fcm_sender_;

@@ -7034,6 +7034,16 @@ Unknown properties are collapsed to zero. -->
   </details>
 </enum>
 
+<enum name="BottomSheet.StateChangeReason">
+  <int value="0" label="None"/>
+  <int value="1" label="Swipe"/>
+  <int value="2" label="Back press"/>
+  <int value="3" label="Tap scrim"/>
+  <int value="4" label="Navigation"/>
+  <int value="5" label="Composited UI"/>
+  <int value="6" label="VR"/>
+</enum>
+
 <enum name="BrokenAlternateProtocolLocation">
   <int value="0" label="HTTP_STREAM_FACTORY_JOB"/>
   <int value="1" label="QUIC_STREAM_FACTORY"/>
@@ -36112,6 +36122,7 @@ from previous Chrome versions.
   <int value="-810684526"
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
   <int value="-808486493" label="NewWallpaperPicker:disabled"/>
+  <int value="-806480547" label="SyncDeviceInfoInTransportMode:enabled"/>
   <int value="-803233334" label="AutofillRefreshStyleAndroid:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-799931058" label="UseMultiloginEndpoint:disabled"/>
@@ -36161,6 +36172,7 @@ from previous Chrome versions.
       label="AssistantEnableMediaSessionIntegration:enabled"/>
   <int value="-747463111" label="ContentSuggestionsNotifications:disabled"/>
   <int value="-746328467" label="ExpensiveBackgroundTimerThrottling:disabled"/>
+  <int value="-745082968" label="SyncDeviceInfoInTransportMode:disabled"/>
   <int value="-744159181" label="disable-spdy-proxy-dev-auth-origin"/>
   <int value="-743590125" label="TabEngagementReportingAndroid:enabled"/>
   <int value="-743103250" label="enable-linkable-ephemeral-apps"/>
@@ -64002,6 +64014,18 @@ Full version information for the fingerprint enum values:
   <int value="13" label="Policy-install on Chrome OS"/>
   <int value="14" label="System default app on Chrome OS"/>
   <int value="15" label="Install icon in the Omnibox"/>
+</enum>
+
+<enum name="WebAppManifestUpdateResult">
+  <int value="0" label="No app in scope"/>
+  <int value="1" label="Updating throttled"/>
+  <int value="2" label="WebContents destroyed"/>
+  <int value="3" label="App uninstalled during update"/>
+  <int value="4" label="App is placeholder"/>
+  <int value="5" label="App is up to date"/>
+  <int value="6" label="App manifest invalid"/>
+  <int value="7" label="App update failed"/>
+  <int value="8" label="App updated"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">

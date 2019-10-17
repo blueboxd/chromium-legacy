@@ -106,7 +106,7 @@ void EmptyLocalFrameClient::BeginNavigation(
     bool,
     WebFrameLoadType,
     bool,
-    WebTriggeringEventInfo,
+    TriggeringEventInfo,
     HTMLFormElement*,
     ContentSecurityPolicyDisposition,
     mojo::PendingRemote<mojom::blink::BlobURLToken>,

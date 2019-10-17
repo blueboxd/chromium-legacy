@@ -936,9 +936,13 @@ void WizardController::OnEnrollmentDone() {
           policy::EnrollmentConfig::MODE_RECOVERY ||
       prescribed_enrollment_config_.mode ==
           policy::EnrollmentConfig::MODE_ENROLLED_ROLLBACK) {
+    LOG(WARNING) << "Restart Chrome to pick up the policy changes";
     chrome::AttemptRestart();
     return;
   }
+
+  // We need a log to understand when the device finished enrollment.
+  VLOG(1) << "Enrollment done";
 
   if (KioskAppManager::Get()->IsAutoLaunchEnabled())
     AutoLaunchKioskApp();

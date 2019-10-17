@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/media_switches.h"
 
 namespace {
@@ -114,7 +115,8 @@ FakeVideoCaptureDeviceFactory::~FakeVideoCaptureDeviceFactory() = default;
 // static
 std::unique_ptr<VideoCaptureDevice>
 FakeVideoCaptureDeviceFactory::CreateDeviceWithSettings(
-    const FakeVideoCaptureDeviceSettings& settings) {
+    const FakeVideoCaptureDeviceSettings& settings,
+    std::unique_ptr<gpu::GpuMemoryBufferSupport> gmb_support) {
   if (settings.supported_formats.empty())
     return CreateErrorDevice();
 
@@ -147,8 +149,8 @@ FakeVideoCaptureDeviceFactory::CreateDeviceWithSettings(
 
   return std::make_unique<FakeVideoCaptureDevice>(
       settings.supported_formats,
-      std::make_unique<FrameDelivererFactory>(settings.delivery_mode,
-                                              device_state.get()),
+      std::make_unique<FrameDelivererFactory>(
+          settings.delivery_mode, device_state.get(), std::move(gmb_support)),
       std::move(photo_device), std::move(device_state));
 }
 
@@ -157,13 +159,14 @@ std::unique_ptr<VideoCaptureDevice>
 FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
     VideoPixelFormat pixel_format,
     FakeVideoCaptureDevice::DeliveryMode delivery_mode,
-    float frame_rate) {
+    float frame_rate,
+    std::unique_ptr<gpu::GpuMemoryBufferSupport> gmb_support) {
   FakeVideoCaptureDeviceSettings settings;
   settings.delivery_mode = delivery_mode;
   for (const gfx::Size& resolution : kDefaultResolutions)
     settings.supported_formats.emplace_back(resolution, frame_rate,
                                             pixel_format);
-  return CreateDeviceWithSettings(settings);
+  return CreateDeviceWithSettings(settings, std::move(gmb_support));
 }
 
 // static

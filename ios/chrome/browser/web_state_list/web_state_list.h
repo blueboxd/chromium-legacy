@@ -159,6 +159,12 @@ class WebStateList {
   // Removes an observer from the model.
   void RemoveObserver(WebStateListObserver* observer);
 
+  // Performs mutating operations on the WebStateList as batched operation.
+  // The observers will be notified by WillBeginBatchOperation() before the
+  // |operation| callback is executed and by BatchOperationEnded() after it
+  // has completed.
+  void PerformBatchOperation(base::OnceCallback<void(WebStateList*)> operation);
+
   // Invalid index.
   static const int kInvalidIndex = -1;
 

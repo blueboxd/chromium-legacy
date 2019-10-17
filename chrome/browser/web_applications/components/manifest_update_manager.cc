@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/components/manifest_update_manager.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
 
@@ -101,6 +102,11 @@ void ManifestUpdateManager::SetResultCallbackForTesting(
 
 void ManifestUpdateManager::NotifyResult(const GURL& url,
                                          ManifestUpdateResult result) {
+  // Don't log kNoAppInScope because it will be far too noisy (most page loads
+  // will hit it).
+  if (result != ManifestUpdateResult::kNoAppInScope) {
+    UMA_HISTOGRAM_ENUMERATION("Webapp.Update.ManifestUpdateResult", result);
+  }
   if (result_callback_for_testing_)
     std::move(result_callback_for_testing_).Run(url, result);
 }

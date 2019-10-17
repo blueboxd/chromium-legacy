@@ -596,28 +596,27 @@ base::Optional<KURL> ImportMap::ResolveImportsMatchInternal(
   return NullURL();
 }
 
-String ImportMap::ToString() const {
-  StringBuilder builder;
+static void SpecifierMapToString(StringBuilder& builder,
+                                 bool support_builtin_modules,
+                                 const ImportMap::SpecifierMap& specifier_map) {
   builder.Append("{");
   bool is_first_key = true;
-  for (const auto& it : imports_) {
+  for (const auto& it : specifier_map) {
     if (!is_first_key)
       builder.Append(",");
     is_first_key = false;
-    builder.Append("\n  ");
     builder.Append(it.key.EncodeForDebugging());
-    builder.Append(": ");
-    if (support_builtin_modules_) {
+    builder.Append(":");
+    if (support_builtin_modules) {
       builder.Append("[");
       bool is_first_value = true;
       for (const auto& v : it.value) {
         if (!is_first_value)
           builder.Append(",");
         is_first_value = false;
-        builder.Append("\n    ");
         builder.Append(v.GetString().EncodeForDebugging());
       }
-      builder.Append("\n  ]");
+      builder.Append("]");
     } else {
       if (it.value.size() == 0) {
         builder.Append("[]");
@@ -627,7 +626,30 @@ String ImportMap::ToString() const {
       }
     }
   }
-  builder.Append("\n}\n");
+  builder.Append("}");
+}
+
+String ImportMap::ToString() const {
+  StringBuilder builder;
+  builder.Append("{\"imports\":");
+  SpecifierMapToString(builder, support_builtin_modules_, imports_);
+
+  builder.Append(",\"scopes\":{");
+
+  bool is_first_scope = true;
+  for (const auto& entry : scopes_) {
+    if (!is_first_scope)
+      builder.Append(",");
+    is_first_scope = false;
+    builder.Append(entry.first.EncodeForDebugging());
+    builder.Append(":");
+    SpecifierMapToString(builder, support_builtin_modules_, entry.second);
+  }
+
+  builder.Append("}");
+
+  builder.Append("}");
+
   return builder.ToString();
 }
 

@@ -55,6 +55,7 @@ class UninstallDialog {
     static void Create(Profile* profile,
                        apps::mojom::AppType app_type,
                        const std::string& app_id,
+                       const std::string& app_name,
                        gfx::ImageSkia image,
                        UninstallDialog* uninstall_dialog);
 
@@ -82,6 +83,7 @@ class UninstallDialog {
   UninstallDialog(Profile* profile,
                   apps::mojom::AppType app_type,
                   const std::string& app_id,
+                  const std::string& app_name,
                   apps::mojom::IconKeyPtr icon_key,
                   IconLoader* icon_loader,
                   UninstallCallback uninstall_callback);
@@ -98,6 +100,7 @@ class UninstallDialog {
   Profile* profile_;
   apps::mojom::AppType app_type_;
   const std::string app_id_;
+  const std::string app_name_;
   UninstallCallback uninstall_callback_;
 
   base::WeakPtrFactory<UninstallDialog> weak_ptr_factory_{this};

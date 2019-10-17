@@ -8,10 +8,11 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.Cr
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FAVICON;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.FORMATTED_ORIGIN;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties.ON_CLICK_LISTENER;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.DISMISS_HANDLER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.FORMATTED_URL;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties.ORIGIN_SECURE;
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ON_CLICK_MANAGE;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.SHEET_ITEMS;
-import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 import static org.chromium.chrome.browser.util.UrlUtilities.stripScheme;
 
@@ -42,10 +43,12 @@ class TouchToFillViewBinder {
      */
     static void bindTouchToFillView(
             PropertyModel model, TouchToFillView view, PropertyKey propertyKey) {
-        if (propertyKey == VIEW_EVENT_LISTENER) {
-            view.setEventListener(model.get(VIEW_EVENT_LISTENER));
+        if (propertyKey == DISMISS_HANDLER) {
+            view.setDismissHandler(model.get(DISMISS_HANDLER));
         } else if (propertyKey == VISIBLE) {
             view.setVisible(model.get(VISIBLE));
+        } else if (propertyKey == ON_CLICK_MANAGE) {
+            view.setOnManagePasswordClick(model.get(ON_CLICK_MANAGE));
         } else if (propertyKey == SHEET_ITEMS) {
             view.setSheetItemListAdapter(
                     new RecyclerViewAdapter<>(new SimpleRecyclerViewMcp<>(model.get(SHEET_ITEMS),

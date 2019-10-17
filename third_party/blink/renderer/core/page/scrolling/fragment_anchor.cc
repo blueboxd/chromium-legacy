@@ -15,7 +15,8 @@ namespace blink {
 
 FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
                                           LocalFrame& frame,
-                                          bool same_document_navigation) {
+                                          bool same_document_navigation,
+                                          bool should_scroll) {
   DCHECK(frame.GetDocument());
 
   FragmentAnchor* anchor = nullptr;
@@ -28,7 +29,7 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
   bool text_fragment_anchor_created = false;
   if (text_fragment_identifiers_enabled) {
     anchor = TextFragmentAnchor::TryCreateFragmentDirective(
-        url, frame, same_document_navigation);
+        url, frame, same_document_navigation, should_scroll);
     text_fragment_anchor_created = anchor;
   }
 
@@ -60,7 +61,7 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
 
   bool element_id_anchor_found = false;
   if (!anchor) {
-    anchor = ElementFragmentAnchor::TryCreate(url, frame);
+    anchor = ElementFragmentAnchor::TryCreate(url, frame, should_scroll);
     element_id_anchor_found = anchor;
   }
 

@@ -90,3 +90,7 @@
   --iron-icon-width: 32px;
   --iron-icon-fill-color: var(--google-blue-600);
 }
+
+.slot-container {
+  position: relative;
+}

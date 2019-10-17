@@ -110,6 +110,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                       const PhysicalOffset& paint_offset);
   void PaintInlineFloatingChildren(NGPaintFragment::ChildList,
                                    const PaintInfo&);
+  void PaintFloatingItems(const PaintInfo&);
   void PaintBlockFloatingChildren(const NGPhysicalContainerFragment&,
                                   const PaintInfo&);
   void PaintFloats(const PaintInfo&);

@@ -17,11 +17,13 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObservableSupplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -40,7 +42,7 @@ import java.util.Map;
  * App menu properties delegate for {@link CustomTabActivity}.
  */
 public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateImpl {
-    private final static String CUSTOM_MENU_ITEM_ID_KEY = "CustomMenuItemId";
+    private static final String CUSTOM_MENU_ITEM_ID_KEY = "CustomMenuItemId";
 
     private final @CustomTabsUiType int mUiType;
     private final boolean mShowShare;
@@ -61,10 +63,11 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             ActivityTabProvider activityTabProvider,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
             @CustomTabsUiType final int uiType, List<String> menuEntries, boolean isOpenedByChrome,
             boolean showShare, boolean showStar, boolean showDownload, boolean isIncognito) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
-                toolbarManager, decorView, null);
+                toolbarManager, decorView, null, bookmarkBridgeSupplier);
         mUiType = uiType;
         mMenuEntries = menuEntries;
         mIsOpenedByChrome = isOpenedByChrome;

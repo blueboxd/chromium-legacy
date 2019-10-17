@@ -38,8 +38,8 @@ class WebStateListTestObserver : public WebStateListObserver {
     web_state_replaced_called_ = false;
     web_state_detached_called_ = false;
     web_state_activated_called_ = false;
-    will_close_all_webstates_called_ = false;
-    did_close_all_webstates_called_ = false;
+    batch_operation_started_ = false;
+    batch_operation_ended_ = false;
   }
 
   // Returns whether WebStateInsertedAt was invoked.
@@ -59,15 +59,11 @@ class WebStateListTestObserver : public WebStateListObserver {
     return web_state_activated_called_;
   }
 
-  // Returns whether WillCloseAllWebStates was invoked.
-  bool will_close_all_webstates_called() const {
-    return will_close_all_webstates_called_;
-  }
+  // Returns whether WillBeginBatchOperation was invoked.
+  bool batch_operation_started() const { return batch_operation_started_; }
 
-  // Returns whether DidCloseAllWebStates was invoked.
-  bool did_close_all_webstates_called() const {
-    return did_close_all_webstates_called_;
-  }
+  // Returns whether BatchOperationEnded was invoked.
+  bool batch_operation_ended() const { return batch_operation_ended_; }
 
   // WebStateListObserver implementation.
   void WebStateInsertedAt(WebStateList* web_state_list,
@@ -108,14 +104,12 @@ class WebStateListTestObserver : public WebStateListObserver {
     web_state_activated_called_ = true;
   }
 
-  void WillCloseAllWebStates(WebStateList* web_state_list,
-                             bool user_action) override {
-    will_close_all_webstates_called_ = true;
+  void WillBeginBatchOperation(WebStateList* web_state_list) override {
+    batch_operation_started_ = true;
   }
 
-  void DidCloseAllWebStates(WebStateList* web_state_list,
-                            bool user_action) override {
-    did_close_all_webstates_called_ = true;
+  void BatchOperationEnded(WebStateList* web_state_list) override {
+    batch_operation_ended_ = true;
   }
 
  private:
@@ -124,8 +118,8 @@ class WebStateListTestObserver : public WebStateListObserver {
   bool web_state_replaced_called_ = false;
   bool web_state_detached_called_ = false;
   bool web_state_activated_called_ = false;
-  bool will_close_all_webstates_called_ = false;
-  bool did_close_all_webstates_called_ = false;
+  bool batch_operation_started_ = false;
+  bool batch_operation_ended_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListTestObserver);
 };
@@ -733,8 +727,8 @@ TEST_F(WebStateListTest, CloseAllWebStates) {
   EXPECT_EQ(0, web_state_list_.count());
 
   EXPECT_TRUE(observer_.web_state_detached_called());
-  EXPECT_TRUE(observer_.will_close_all_webstates_called());
-  EXPECT_TRUE(observer_.did_close_all_webstates_called());
+  EXPECT_TRUE(observer_.batch_operation_started());
+  EXPECT_TRUE(observer_.batch_operation_ended());
 }
 
 // Test closing one webstate.
@@ -751,6 +745,28 @@ TEST_F(WebStateListTest, CloseWebState) {
 
   EXPECT_EQ(2, web_state_list_.count());
   EXPECT_TRUE(observer_.web_state_detached_called());
-  EXPECT_FALSE(observer_.will_close_all_webstates_called());
-  EXPECT_FALSE(observer_.did_close_all_webstates_called());
+  EXPECT_FALSE(observer_.batch_operation_started());
+  EXPECT_FALSE(observer_.batch_operation_ended());
+}
+
+// Test that batch operation can be empty.
+TEST_F(WebStateListTest, PerformBatchOperation_EmptyCallback) {
+  observer_.ResetStatistics();
+
+  web_state_list_.PerformBatchOperation({});
+
+  EXPECT_TRUE(observer_.batch_operation_started());
+  EXPECT_TRUE(observer_.batch_operation_ended());
+}
+
+// Test that batch operation WebStateList is the correct one.
+TEST_F(WebStateListTest, PerformBatchOperation_CorrectWebStateList) {
+  WebStateList* captured_web_state_list = nullptr;
+  web_state_list_.PerformBatchOperation(base::BindOnce(
+      [](WebStateList** captured_web_state_list, WebStateList* web_state_list) {
+        *captured_web_state_list = web_state_list;
+      },
+      &captured_web_state_list));
+
+  EXPECT_EQ(captured_web_state_list, &web_state_list_);
 }

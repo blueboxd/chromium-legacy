@@ -155,6 +155,7 @@ builder.
   * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
   * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
   * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+  * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
@@ -165,6 +166,7 @@ builder.
   * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
   * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
   * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+  * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
@@ -175,6 +177,7 @@ builder.
   * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
   * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
   * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+  * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 
@@ -185,6 +188,7 @@ builder.
   * [`//testing/buildbot/chromium.dawn.json`](https://cs.chromium.org/search?q=package:%5Echromium$+file:testing/buildbot/chromium.dawn.json)
   * [`//third_party/blink/renderer/modules/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/webgpu/)
   * [`//third_party/blink/web_tests/external/wpt/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/webgpu/)
+  * [`//third_party/blink/web_tests/wpt_internal/webgpu/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/wpt_internal/webgpu/)
   * [`//third_party/blink/web_tests/WebGPUExpectations`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/WebGPUExpectations)
   * [`//third_party/dawn/.+`](https://cs.chromium.org/chromium/src/third_party/dawn/)
 

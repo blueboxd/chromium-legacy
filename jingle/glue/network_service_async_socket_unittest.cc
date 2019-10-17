@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
@@ -192,23 +193,23 @@ class MockProxyResolvingSocketFactory
       const GURL& url,
       network::mojom::ProxyResolvingSocketOptionsPtr options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      network::mojom::ProxyResolvingSocketRequest request,
+      mojo::PendingReceiver<network::mojom::ProxyResolvingSocket> receiver,
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
       CreateProxyResolvingSocketCallback callback) override {
     auto socket = std::make_unique<MockProxyResolvingSocket>();
     socket_raw_ = socket.get();
-    proxy_resolving_socket_bindings_.AddBinding(std::move(socket),
-                                                std::move(request));
+    proxy_resolving_socket_receivers_.Add(std::move(socket),
+                                          std::move(receiver));
     socket_raw_->Connect(std::move(observer), std::move(callback));
   }
 
   MockProxyResolvingSocket* socket() { return socket_raw_; }
 
  private:
-  mojo::StrongBindingSet<network::mojom::ProxyResolvingSocket>
-      proxy_resolving_socket_bindings_;
+  mojo::UniqueReceiverSet<network::mojom::ProxyResolvingSocket>
+      proxy_resolving_socket_receivers_;
 
-  // Owned by |proxy_resolving_socket_bindings_|.
+  // Owned by |proxy_resolving_socket_receivers_|.
   MockProxyResolvingSocket* socket_raw_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProxyResolvingSocketFactory);

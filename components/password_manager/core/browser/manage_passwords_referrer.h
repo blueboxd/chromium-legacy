@@ -32,9 +32,12 @@ enum class ManagePasswordsReferrer {
   kProfileChooser = 5,
   // Corresponds to the passwords accessory sheet on Android, triggered by
   // tapping on the key icon above in the keyboard accessory bar.
-  // Only used on Android
+  // Only used on Android.
   kPasswordsAccessorySheet = 6,
-  kMaxValue = kPasswordsAccessorySheet,
+  // Corresponds to the touch to fill bottom sheet that replaces the dropdown.
+  // Only used on Android.
+  kTouchToFill = 7,
+  kMaxValue = kTouchToFill,
 };
 
 }  // namespace password_manager

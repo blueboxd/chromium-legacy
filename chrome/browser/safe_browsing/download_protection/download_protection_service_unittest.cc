@@ -29,6 +29,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -67,6 +68,7 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_item_utils.h"
@@ -226,6 +228,11 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+    // Enable the feature early to prevent race condition trying to access
+    // the enabled features set.  This happens for example when the history
+    // service is started below.
+    EnableFeature(kDeepScanningOfDownloads);
+
     in_process_utility_thread_helper_ =
         std::make_unique<content::InProcessUtilityThreadHelper>();
 
@@ -311,6 +318,11 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     in_process_utility_thread_helper_ = nullptr;
 
     ChromeRenderViewHostTestHarness::TearDown();
+  }
+
+  void EnableFeature(const base::Feature& feature) {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitAndEnableFeature(feature);
   }
 
   void SetWhitelistedDownloadSampleRate(double target_rate) {
@@ -617,6 +629,8 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   void CheckClientDownloadReportCorruptArchive(ArchiveType type);
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   // This will effectively mask the global Singleton while this is in scope.
   FileTypePoliciesTestOverlay policies_;
 

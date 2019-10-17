@@ -121,6 +121,9 @@ void WebAppIconDownloader::DidDownloadFavicon(
       case Histogram::kForSync:
         histogram_name = "WebApp.Icon.HttpStatusCodeClassOnSync";
         break;
+      case Histogram::kForUpdate:
+        histogram_name = "WebApp.Icon.HttpStatusCodeClassOnUpdate";
+        break;
     }
     DCHECK_LE(100, http_status_code);
     DCHECK_GT(600, http_status_code);

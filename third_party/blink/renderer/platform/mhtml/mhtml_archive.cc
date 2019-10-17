@@ -33,6 +33,7 @@
 #include <stddef.h>
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 #include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

@@ -77,7 +77,8 @@ bool CheckSecurityRestrictions(LocalFrame& frame,
 TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
     const KURL& url,
     LocalFrame& frame,
-    bool same_document_navigation) {
+    bool same_document_navigation,
+    bool should_scroll) {
   DCHECK(RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
       frame.GetDocument()));
 
@@ -96,13 +97,16 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
     return nullptr;
   }
 
-  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
+  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame,
+                                                  should_scroll);
 }
 
 TextFragmentAnchor::TextFragmentAnchor(
     const Vector<TextFragmentSelector>& text_fragment_selectors,
-    LocalFrame& frame)
+    LocalFrame& frame,
+    bool should_scroll)
     : frame_(&frame),
+      should_scroll_(should_scroll),
       metrics_(MakeGarbageCollected<TextFragmentAnchorMetrics>(
           frame_->GetDocument())) {
   DCHECK(!text_fragment_selectors.IsEmpty());
@@ -134,7 +138,7 @@ bool TextFragmentAnchor::Invoke() {
   if (user_scrolled_ && !did_scroll_into_view_)
     metrics_->ScrollCancelled();
 
-  first_match_needs_scroll_ = !user_scrolled_;
+  first_match_needs_scroll_ = should_scroll_ && !user_scrolled_;
 
   {
     // FindMatch might cause scrolling and set user_scrolled_ so reset it when
@@ -263,8 +267,8 @@ void TextFragmentAnchor::DidFinishSearch() {
     dismissed_ = true;
 
     DCHECK(!element_fragment_anchor_);
-    element_fragment_anchor_ =
-        ElementFragmentAnchor::TryCreate(frame_->GetDocument()->Url(), *frame_);
+    element_fragment_anchor_ = ElementFragmentAnchor::TryCreate(
+        frame_->GetDocument()->Url(), *frame_, should_scroll_);
     if (element_fragment_anchor_) {
       // Schedule a frame so we can invoke the element anchor in
       // PerformPreRafActions.
@@ -284,7 +288,7 @@ bool TextFragmentAnchor::Dismiss() {
   if (!did_find_match_ || dismissed_)
     return true;
 
-  DCHECK(did_scroll_into_view_ || user_scrolled_);
+  DCHECK(!should_scroll_ || did_scroll_into_view_ || user_scrolled_);
 
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextFragment());

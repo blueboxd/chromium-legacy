@@ -1609,20 +1609,10 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
 }
 
 // static
-bool V4L2Device::IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt) {
-  constexpr uint32_t kMultiV4L2PixFmts[] = {
-      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_MM21,
-      V4L2_PIX_FMT_YUV420M, V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
-  };
-  return std::find(std::cbegin(kMultiV4L2PixFmts), std::cend(kMultiV4L2PixFmts),
-                   pix_fmt) != std::cend(kMultiV4L2PixFmts);
-}
-
-// static
 size_t V4L2Device::GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
-  if (IsMultiPlanarV4L2PixFmt(pix_fmt)) {
-    return VideoFrame::NumPlanes(
-        Fourcc::FromV4L2PixFmt(pix_fmt).ToVideoPixelFormat());
+  Fourcc fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
+  if (fourcc.IsMultiPlanar()) {
+    return VideoFrame::NumPlanes(fourcc.ToVideoPixelFormat());
   }
   return 1u;
 }

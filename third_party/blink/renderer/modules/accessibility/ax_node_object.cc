@@ -519,7 +519,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (IsHTMLSummaryElement(*GetNode())) {
     ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
-    if (parent && IsHTMLSlotElement(parent))
+    if (IsA<HTMLSlotElement>(parent))
       parent = LayoutTreeBuilderTraversal::Parent(*parent);
     if (parent && IsA<HTMLDetailsElement>(parent))
       return ax::mojom::Role::kDisclosureTriangle;

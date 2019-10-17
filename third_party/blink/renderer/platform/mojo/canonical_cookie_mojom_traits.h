@@ -7,7 +7,7 @@
 
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
 #include "third_party/blink/public/platform/web_string.h"
 

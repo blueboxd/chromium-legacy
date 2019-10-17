@@ -35,6 +35,7 @@
 #include "base/stl_util.h"
 #include "net/base/url_util.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
+#include "services/network/public/mojom/cors_origin_pattern.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"

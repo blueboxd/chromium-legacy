@@ -34,7 +34,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -236,7 +236,7 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
       ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
   params.user_gesture = true;
   params.triggering_event_info =
-      blink::WebTriggeringEventInfo::kFromUntrustedEvent;
+      blink::TriggeringEventInfo::kFromUntrustedEvent;
 
   NavigateParams nav_params(profile(), popup_url, ui::PAGE_TRANSITION_LINK);
   nav_params.FillNavigateParamsFromOpenURLParams(params);
@@ -263,8 +263,7 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
       popup_url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
   params.user_gesture = true;
-  params.triggering_event_info =
-      blink::WebTriggeringEventInfo::kFromTrustedEvent;
+  params.triggering_event_info = blink::TriggeringEventInfo::kFromTrustedEvent;
 
   NavigateParams nav_params(profile(), popup_url, ui::PAGE_TRANSITION_LINK);
   nav_params.FillNavigateParamsFromOpenURLParams(params);

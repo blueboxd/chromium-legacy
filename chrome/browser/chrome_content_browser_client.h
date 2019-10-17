@@ -618,6 +618,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool ShouldLoadExtraIcuDataFile() override;
 
+  bool ArePersistentMediaDeviceIDsAllowed(
+      content::BrowserContext* browser_context,
+      const GURL& scope,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) override;
+
   content::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
       content::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,

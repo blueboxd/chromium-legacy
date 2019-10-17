@@ -90,6 +90,14 @@ class ImportContainerProgressObserver {
       uint64_t minimum_required_space) = 0;
 };
 
+class UpgradeContainerProgressObserver {
+ public:
+  virtual void OnUpgradeContainerProgress(
+      const ContainerId& container_id,
+      UpgradeContainerProgressStatus status,
+      const std::vector<std::string>& messages) = 0;
+};
+
 class InstallerViewStatusObserver : public base::CheckedObserver {
  public:
   // Called when the CrostiniInstallerView is opened or closed.
@@ -275,6 +283,19 @@ class CrostiniManager : public KeyedService,
   // CiceroneClient::CancelImportLxdContainer.
   void CancelImportLxdContainer(ContainerId key);
 
+  // Checks the arguments for upgrading an existing container via
+  // CiceroneClient::UpgradeContainer. An UpgradeProgressObserver should be used
+  // to monitor further results.
+  void UpgradeContainer(const ContainerId& key,
+                        ContainerVersion source_version,
+                        ContainerVersion target_version,
+                        CrostiniResultCallback callback);
+
+  // Checks the arguments for canceling the upgrade of an existing container via
+  // CiceroneClient::CancelUpgradeContainer.
+  void CancelUpgradeContainer(const ContainerId& key,
+                              CrostiniResultCallback callback);
+
   // Asynchronously launches an app as specified by its desktop file id.
   void LaunchContainerApplication(std::string vm_name,
                                   std::string container_name,
@@ -420,6 +441,12 @@ class CrostiniManager : public KeyedService,
   void RemoveImportContainerProgressObserver(
       ImportContainerProgressObserver* observer);
 
+  // Add/remove observers for container upgrade
+  void AddUpgradeContainerProgressObserver(
+      UpgradeContainerProgressObserver* observer);
+  void RemoveUpgradeContainerProgressObserver(
+      UpgradeContainerProgressObserver* observer);
+
   // Add/remove vm shutdown observers.
   void AddVmShutdownObserver(VmShutdownObserver* observer);
   void RemoveVmShutdownObserver(VmShutdownObserver* observer);
@@ -463,6 +490,9 @@ class CrostiniManager : public KeyedService,
       const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) override;
   void OnApplyAnsiblePlaybookProgress(
       const vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal& signal)
+      override;
+  void OnUpgradeContainerProgress(
+      const vm_tools::cicerone::UpgradeContainerProgressSignal& signal)
       override;
 
   // chromeos::PowerManagerClient::Observer overrides:
@@ -641,6 +671,17 @@ class CrostiniManager : public KeyedService,
       base::Optional<vm_tools::cicerone::CancelImportLxdContainerResponse>
           response);
 
+  // Callback for CiceroneClient::UpgradeContainer.
+  void OnUpgradeContainer(
+      CrostiniResultCallback callback,
+      base::Optional<vm_tools::cicerone::UpgradeContainerResponse> response);
+
+  // Callback for CiceroneClient::CancelUpgradeContainer.
+  void OnCancelUpgradeContainer(
+      CrostiniResultCallback callback,
+      base::Optional<vm_tools::cicerone::CancelUpgradeContainerResponse>
+          response);
+
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
       BoolCallback callback,
@@ -770,6 +811,9 @@ class CrostiniManager : public KeyedService,
       export_container_progress_observers_;
   base::ObserverList<ImportContainerProgressObserver>::Unchecked
       import_container_progress_observers_;
+
+  base::ObserverList<UpgradeContainerProgressObserver>::Unchecked
+      upgrade_container_progress_observers_;
 
   base::ObserverList<VmShutdownObserver> vm_shutdown_observers_;
 

@@ -9,15 +9,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-import androidx.annotation.Nullable;
 
-import org.chromium.base.ObservableSupplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 
 /** A UI coordinator the app menu. */
 class AppMenuCoordinatorImpl implements AppMenuCoordinator {
@@ -25,7 +21,7 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
      * Factory which creates the AppMenuHandlerImpl.
      */
     @VisibleForTesting
-    public interface AppMenuHandlerFactory {
+    interface AppMenuHandlerFactory {
         /**
          * @param delegate Delegate used to check the desired AppMenu properties on show.
          * @param appMenuDelegate The AppMenuDelegate to handle menu item selection.
@@ -35,21 +31,18 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
          *            It is assumed to have back_menu_id, forward_menu_id, bookmark_this_page_id.
          * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the
          *         containing activity.
-         * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
-         *         {@link OverviewModeBehavior} associated with the containing activity.
          * @return AppMenuHandlerImpl for the given activity and menu resource id.
          */
         AppMenuHandlerImpl get(AppMenuPropertiesDelegate delegate, AppMenuDelegate appMenuDelegate,
                 int menuResourceId, View decorView,
-                ActivityLifecycleDispatcher activityLifecycleDispatcher,
-                @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier);
+                ActivityLifecycleDispatcher activityLifecycleDispatcher);
     }
 
     /**
      * @param factory The {@link AppMenuHandlerFactory} for creating {@link #mAppMenuHandler}
      */
     @VisibleForTesting
-    public static void setAppMenuHandlerFactoryForTesting(AppMenuHandlerFactory factory) {
+    static void setAppMenuHandlerFactoryForTesting(AppMenuHandlerFactory factory) {
         sAppMenuHandlerFactory = factory;
     }
 
@@ -60,27 +53,24 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandlerImpl mAppMenuHandler;
 
-    private static AppMenuHandlerFactory sAppMenuHandlerFactory = (delegate, appMenuDelegate,
-            menuResourceId, decorView, activityLifecycleDispatcher, overviewModeBehaviorSupplier)
+    private static AppMenuHandlerFactory sAppMenuHandlerFactory =
+            (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher)
             -> new AppMenuHandlerImpl(delegate, appMenuDelegate, menuResourceId, decorView,
-                    activityLifecycleDispatcher, overviewModeBehaviorSupplier);
+                    activityLifecycleDispatcher);
 
     /**
      * Construct a new AppMenuCoordinatorImpl.
      * @param context The activity context.
      * @param activityLifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the containing
      *         activity.
-     * @param buttonDelegate The {@link ToolbarManager} for the containing activity.
+     * @param buttonDelegate The {@link MenuButtonDelegate} for the containing activity.
      * @param appMenuDelegate The {@link AppMenuDelegate} for the containing activity.
      * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the containing
      *         activity.
-     * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
-     *         {@link OverviewModeBehavior} associated with the containing activity.
      */
     public AppMenuCoordinatorImpl(Context context,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
-            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView,
-            @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView) {
         mContext = context;
         mButtonDelegate = buttonDelegate;
         mAppMenuDelegate = appMenuDelegate;
@@ -88,7 +78,7 @@ class AppMenuCoordinatorImpl implements AppMenuCoordinator {
 
         mAppMenuHandler = sAppMenuHandlerFactory.get(mAppMenuPropertiesDelegate, mAppMenuDelegate,
                 mAppMenuPropertiesDelegate.getAppMenuLayoutId(), decorView,
-                activityLifecycleDispatcher, overviewModeBehaviorSupplier);
+                activityLifecycleDispatcher);
 
         // TODO(twellington): Move to UpdateMenuItemHelper or common UI coordinator parent?
         mAppMenuHandler.addObserver(new AppMenuObserver() {

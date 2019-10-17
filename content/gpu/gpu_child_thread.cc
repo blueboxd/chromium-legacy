@@ -32,6 +32,8 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -383,17 +385,19 @@ std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const base::UnguessableToken& routing_token,
     media::AndroidOverlayConfig config) {
-  media::mojom::AndroidOverlayProviderPtr overlay_provider;
+  mojo::PendingRemote<media::mojom::AndroidOverlayProvider> overlay_provider;
   if (main_task_runner->RunsTasksInCurrentSequence()) {
-    ChildThread::Get()->BindHostReceiver(mojo::MakeRequest(&overlay_provider));
+    ChildThread::Get()->BindHostReceiver(
+        overlay_provider.InitWithNewPipeAndPassReceiver());
   } else {
     main_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](media::mojom::AndroidOverlayProviderRequest request) {
-              ChildThread::Get()->BindHostReceiver(std::move(request));
+            [](mojo::PendingReceiver<media::mojom::AndroidOverlayProvider>
+                   receiver) {
+              ChildThread::Get()->BindHostReceiver(std::move(receiver));
             },
-            mojo::MakeRequest(&overlay_provider)));
+            overlay_provider.InitWithNewPipeAndPassReceiver()));
   }
 
   return std::make_unique<media::MojoAndroidOverlay>(

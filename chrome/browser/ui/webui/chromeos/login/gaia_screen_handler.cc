@@ -560,7 +560,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   if (public_saml_url_fetcher_) {
     params.SetBoolean("startsOnSamlPage", true);
-    CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kPublicAccountsSamlAclUrl));
     std::string saml_acl_url =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

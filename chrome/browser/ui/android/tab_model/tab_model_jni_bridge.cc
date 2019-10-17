@@ -72,6 +72,9 @@ void TabModelJniBridge::TabAddedToModel(JNIEnv* env,
   TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
   if (tab)
     tab->SetWindowSessionID(GetSessionId());
+
+  if (IsOffTheRecord())
+    UMA_HISTOGRAM_COUNTS_100("Tab.Count.Incognito", GetTabCount());
 }
 
 int TabModelJniBridge::GetTabCount() const {

@@ -83,9 +83,14 @@ ContentHash::FetchKey& ContentHash::FetchKey::operator=(
     ContentHash::FetchKey&& other) = default;
 
 // static
-void ContentHash::Create(FetchKey key,
-                         const IsCancelledCallback& is_cancelled,
-                         CreatedCallback created_callback) {
+void ContentHash::Create(
+    FetchKey key,
+    ContentVerifierDelegate::VerifierSourceType source_type,
+    const IsCancelledCallback& is_cancelled,
+    CreatedCallback created_callback) {
+  // TODO(https://crbug.com/958794): Add support for unsigned hashes.
+  DCHECK_EQ(ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES,
+            source_type);
   // Step 1/2: verified_contents.json:
   std::unique_ptr<VerifiedContents> verified_contents = GetVerifiedContents(
       key,
@@ -134,6 +139,14 @@ ContentHash::TreeHashVerificationResult ContentHash::VerifyTreeHashRoot(
 const ComputedHashes::Reader& ContentHash::computed_hashes() const {
   DCHECK(succeeded_ && computed_hashes_);
   return *computed_hashes_;
+}
+
+// static
+std::string ContentHash::ComputeTreeHashForContent(const std::string& contents,
+                                                   int block_size) {
+  std::vector<std::string> hashes;
+  ComputedHashes::ComputeHashesForContent(contents, block_size, &hashes);
+  return ComputeTreeHashRoot(hashes, block_size / crypto::kSHA256Length);
 }
 
 ContentHash::ContentHash(

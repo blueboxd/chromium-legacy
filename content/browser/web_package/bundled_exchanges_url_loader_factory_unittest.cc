@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
 #include "content/browser/web_package/mock_bundled_exchanges_reader_factory.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -34,8 +35,8 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
     mock_factory_ = MockBundledExchangesReaderFactory::Create();
     auto reader = mock_factory_->CreateReader(body_);
     reader_ = reader.get();
-    loader_factory_ =
-        std::make_unique<BundledExchangesURLLoaderFactory>(std::move(reader));
+    loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
+        std::move(reader), FrameTreeNode::kFrameTreeNodeInvalidId);
 
     base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
     data_decoder::mojom::BundleIndexValuePtr item =

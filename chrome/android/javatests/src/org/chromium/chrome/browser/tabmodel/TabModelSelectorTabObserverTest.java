@@ -16,8 +16,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -135,9 +135,7 @@ public class TabModelSelectorTabObserverTest {
     }
 
     private Tab createTestTab(boolean incognito) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(
-                new TabBuilder().setIncognito(incognito).setWindow(
-                        mTestRule.getWindowAndroid())::build);
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> new MockTab(0, incognito));
     }
 
     private static void addTab(TabModel tabModel, Tab tab) {

@@ -15,6 +15,8 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
@@ -257,6 +260,14 @@ void SearchController::Train(AppLaunchData&& app_launch_data) {
           RemoveAppShortcutLabel(NormalizeId(app_launch_data.id));
     }
   }
+
+  // CrOS action recorder.
+  CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
+      {base::StrCat(
+          {"SearchResultLaunched-", NormalizeId(app_launch_data.id)})},
+      {{"ResultType", static_cast<int>(app_launch_data.ranking_item_type)},
+       {"Query", static_cast<int>(
+                     base::HashMetricName(base::UTF16ToUTF8(last_query_)))}});
 
   for (const auto& provider : providers_)
     provider->Train(app_launch_data.id, app_launch_data.ranking_item_type);

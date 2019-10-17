@@ -3,41 +3,27 @@
 # found in the LICENSE file.
 
 import os
-import shutil
-import tempfile
 
 from telemetry import decorators
-from telemetry.testing import options_for_unittests
-from telemetry.testing import page_test_test_case
+from telemetry.testing import legacy_page_test_case
 from telemetry.util import image_util
 from contrib.cluster_telemetry import screenshot
 
-class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):
 
-  def setUp(self):
-    self._png_outdir = tempfile.mkdtemp('_png_test')
-    self._options = options_for_unittests.GetRunOptions(
-        output_dir=self._png_outdir)
-
-  def tearDown(self):
-    shutil.rmtree(self._png_outdir)
-
+class ScreenshotUnitTest(legacy_page_test_case.LegacyPageTestCase):
   @decorators.Enabled('linux')
   def testScreenshot(self):
     # Screenshots for Cluster Telemetry purposes currently only supported on
     # Linux platform.
-    story_set = self.CreateStorySetFromFileInUnittestDataDir(
-      'screenshot_test.html')
-    measurement = screenshot.Screenshot(self._png_outdir)
-    self.RunMeasurement(measurement, story_set, run_options=self._options)
+    screenshot_test = screenshot.Screenshot(self.options.output_dir)
+    self.RunPageTest(screenshot_test, 'file://screenshot_test.html')
 
-    path = os.path.join(
-        self._png_outdir, story_set.stories[0].file_safe_name + '.png')
-    self.assertTrue(os.path.exists(path))
-    self.assertTrue(os.path.isfile(path))
-    self.assertTrue(os.access(path, os.R_OK))
+    filepath = os.path.join(self.options.output_dir, 'screenshot_test.png')
+    self.assertTrue(os.path.exists(filepath))
+    self.assertTrue(os.path.isfile(filepath))
+    self.assertTrue(os.access(filepath, os.R_OK))
 
-    image = image_util.FromPngFile(path)
+    image = image_util.FromPngFile(filepath)
     screenshot_pixels = image_util.Pixels(image)
     special_colored_pixel = bytearray([217, 115, 43])
     self.assertTrue(special_colored_pixel in screenshot_pixels)

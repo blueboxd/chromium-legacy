@@ -123,6 +123,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("network", "test")
           .RequireCapability(mojom::kRendererServiceName, "browser")
           .RequireCapability("media", "media:media")
+          .RequireCapability("media_renderer", "media:media")
           .RequireCapability("*", "app")
           .RequireCapability("content", "navigation")
           .RequireCapability("resource_coordinator", "service_callbacks")

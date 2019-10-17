@@ -201,19 +201,19 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   void StartPlayback() {
     // The test HTML files used in these tests contain "play()" functions that
     // play the video.
-    GetWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
+    GetActiveWebContents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("play()"), base::NullCallback());
   }
 
   void WaitForStart() {
     content::MediaStartStopObserver observer(
-        GetWebContents(), content::MediaStartStopObserver::Type::kStart);
+        GetActiveWebContents(), content::MediaStartStopObserver::Type::kStart);
     observer.Wait();
   }
 
   void WaitForStop() {
     content::MediaStartStopObserver observer(
-        GetWebContents(), content::MediaStartStopObserver::Type::kStop);
+        GetActiveWebContents(), content::MediaStartStopObserver::Type::kStop);
     observer.Wait();
   }
 
@@ -238,6 +238,18 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(MediaDialogView::IsShowing());
     ClickButton(GetButtonForAction(MediaSessionAction::kPlay));
+  }
+
+  void ClickNotificationByTitle(const base::string16& title) {
+    ASSERT_TRUE(MediaDialogView::IsShowing());
+    MediaNotificationContainerImplView* notification =
+        GetNotificationByTitle(title);
+    ASSERT_NE(nullptr, notification);
+    ClickButton(notification);
+  }
+
+  content::WebContents* GetActiveWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
  private:
@@ -275,8 +287,18 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
     return nullptr;
   }
 
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
+  // Finds a MediaNotificationContainerImplView by title.
+  MediaNotificationContainerImplView* GetNotificationByTitle(
+      const base::string16& title) {
+    for (const auto notification_pair :
+         MediaDialogView::GetDialogViewForTesting()
+             ->GetNotificationsForTesting()) {
+      const media_message_center::MediaNotificationView* view =
+          notification_pair.second->view_for_testing();
+      if (view->title_label_for_testing()->GetText() == title)
+        return notification_pair.second;
+    }
+    return nullptr;
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -349,4 +371,40 @@ IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest, ShowsMultipleMediaSessions) {
   WaitForDialogToContainText(base::ASCIIToUTF16("Blender Foundation"));
   WaitForDialogToContainText(base::ASCIIToUTF16("Different Title"));
   WaitForDialogToContainText(base::ASCIIToUTF16("Another Artist"));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaDialogViewBrowserTest,
+                       ClickingOnNotificationGoesBackToTab) {
+  // Open a tab and play media.
+  OpenTestURL();
+  StartPlayback();
+  WaitForStart();
+
+  // Pointer to the first tab.
+  content::WebContents* first_web_contents = GetActiveWebContents();
+
+  // Open another tab and play different media.
+  OpenDifferentMetadataURLInNewTab();
+  StartPlayback();
+  WaitForStart();
+
+  // Now the active web contents is the second tab.
+  content::WebContents* second_web_contents = GetActiveWebContents();
+  ASSERT_NE(first_web_contents, second_web_contents);
+
+  // Open the media dialog.
+  ClickToolbarIcon();
+  WaitForDialogOpened();
+  EXPECT_TRUE(IsDialogVisible());
+
+  // Wait for the dialog to be populated.
+  WaitForDialogToContainText(base::ASCIIToUTF16("Big Buck Bunny"));
+  WaitForDialogToContainText(base::ASCIIToUTF16("Different Title"));
+
+  // The second tab should be the active tab.
+  EXPECT_EQ(second_web_contents, GetActiveWebContents());
+
+  // Clicking the first notification should make the first tab active.
+  ClickNotificationByTitle(base::ASCIIToUTF16("Big Buck Bunny"));
+  EXPECT_EQ(first_web_contents, GetActiveWebContents());
 }

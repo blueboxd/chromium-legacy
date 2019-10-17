@@ -5351,29 +5351,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_LOCATION_ICON" desc="The tooltip for location icon in the omnibox">
         View site information
       </message>
-      <if expr="not use_titlecase">
-        <message name="IDS_TOOLTIP_NEW_TAB" desc="The tooltip for the new tab button">
-          New tab
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_TOOLTIP_NEW_TAB" desc="The tooltip for the new tab button">
-          New Tab
-        </message>
-       </if>
+      <message name="IDS_TOOLTIP_NEW_TAB" desc="The tooltip for the new tab button">
+        New tab
+      </message>
       <message name="IDS_TOOLTIP_MIC_SEARCH" desc="The tooltip for search-by-voice button">
         Search by voice
       </message>
-      <if expr="not use_titlecase">
-        <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="The tooltip for the icon that shows the save credit card bubble">
-          Save credit card
-        </message>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="In Title Case: The tooltip for the icon that shows the save card bubble">
-          Save Card
-        </message>
-       </if>
+      <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="The tooltip for the icon that shows the save credit card bubble">
+        Save credit card
+      </message>
       <message name="IDS_TOOLTIP_MIGRATE_LOCAL_CARD" desc="Tooltip for the credit card icon that appears in the address bar. Icon is shown when a user has a credit card stored locally in Chrome but not in Google Pay.">
         Save payment method
       </message>

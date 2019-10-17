@@ -27,12 +27,12 @@ const char UI[] = R"UI_Definition(
         <placeholder/>
       </child>
       <child internal-child="vbox">
-        <object class="GtkBox">
+        <object class="GtkBox" id="layout_box">
           <property name="can_focus">False</property>
           <property name="orientation">vertical</property>
           <property name="spacing">2</property>
           <child internal-child="action_area">
-            <object class="GtkButtonBox">
+            <object class="GtkButtonBox" id="button_box">
               <property name="can_focus">False</property>
               <property name="layout_style">end</property>
               <child>
@@ -69,7 +69,7 @@ const char UI[] = R"UI_Definition(
             </packing>
           </child>
           <child>
-            <object class="GtkScrolledWindow">
+            <object class="GtkScrolledWindow" id="scroll_container">
               <property name="visible">True</property>
               <property name="can_focus">True</property>
               <property name="shadow_type">in</property>
@@ -79,14 +79,14 @@ const char UI[] = R"UI_Definition(
                   <property name="can_focus">True</property>
                   <property name="model">session_store</property>
                   <child internal-child="selection">
-                    <object class="GtkTreeSelection">
+                    <object class="GtkTreeSelection" id="session_selection">
                       <property name="mode">browse</property>
                     </object>
                   </child>
                   <child>
                     <object class="GtkTreeViewColumn" id="name_column">
                       <child>
-                        <object class="GtkCellRendererText"/>
+                        <object class="GtkCellRendererText" id="name_text"/>
                         <attributes>
                           <attribute name="text">1</attribute>
                         </attributes>
@@ -96,7 +96,7 @@ const char UI[] = R"UI_Definition(
                   <child>
                     <object class="GtkTreeViewColumn" id="comment_column">
                       <child>
-                        <object class="GtkCellRendererText"/>
+                        <object class="GtkCellRendererText" id="comment_text"/>
                         <attributes>
                           <attribute name="text">2</attribute>
                         </attributes>

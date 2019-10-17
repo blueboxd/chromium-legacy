@@ -78,6 +78,19 @@ public final class StatusMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_showGoogleLogo_whenScrolled() {
+        setupSearchEngineLogoForTesting(true, false, false, false);
+
+        mMediator.setUrlHasFocus(false);
+        mMediator.setShowIconsWhenUrlFocused(true);
+        mMediator.setUrlFocusChangePercent(1f);
+        mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
+        Assert.assertEquals(
+                R.drawable.ic_logo_googleg_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showGoogleLogo_searchLoupeEverywhere() {
         setupSearchEngineLogoForTesting(true, true, true, false);
 

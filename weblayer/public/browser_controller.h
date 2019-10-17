@@ -17,6 +17,7 @@ class WebView;
 
 namespace weblayer {
 class BrowserObserver;
+class FullscreenDelegate;
 class Profile;
 class NavigationController;
 
@@ -30,6 +31,10 @@ class BrowserController {
 #endif
 
   virtual ~BrowserController() {}
+
+  // Sets the FullscreenDelegate. Setting a non-null value implicitly enables
+  // fullscreen.
+  virtual void SetFullscreenDelegate(FullscreenDelegate* delegate) = 0;
 
   virtual void AddObserver(BrowserObserver* observer) = 0;
 

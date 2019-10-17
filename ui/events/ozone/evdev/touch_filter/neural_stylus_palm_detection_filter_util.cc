@@ -116,6 +116,14 @@ void Stroke::SetTrackingId(int tracking_id) {
   tracking_id_ = tracking_id;
 }
 
+float Stroke::MaxMajorRadius() const {
+  float maximum = 0.0;
+  for (const auto& sample : samples_) {
+    maximum = std::max(maximum, sample.major_radius);
+  }
+  return maximum;
+}
+
 float Stroke::BiggestSize() const {
   float biggest = 0;
   for (const auto& sample : samples_) {

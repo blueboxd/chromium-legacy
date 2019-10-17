@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
-import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -193,25 +192,33 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
 
         @Override
         public void maybeResizeImage(Drawable drawable) {
-            if (!(drawable instanceof BitmapDrawable)) return;
+            Matrix matrix = null;
 
-            Matrix matrix = upscaleBitmapIfNecessary(((BitmapDrawable) drawable).getBitmap());
+            if (drawable instanceof BitmapDrawable) {
+                matrix = upscaleBitmapIfNecessary((BitmapDrawable) drawable);
+            }
+
             mImageView.setImageMatrix(matrix);
             mImageView.setScaleType(
                     matrix == null ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.MATRIX);
         }
 
-        private Matrix upscaleBitmapIfNecessary(Bitmap bitmap) {
-            if (bitmap == null) return null;
+        private Matrix upscaleBitmapIfNecessary(BitmapDrawable drawable) {
+            if (drawable == null) return null;
 
-            float scale = computeScaleFactor(bitmap);
+            int width = drawable.getBitmap().getWidth();
+            int height = drawable.getBitmap().getHeight();
+
+            float scale = computeScaleFactor(width, height);
             if (scale <= 1.f) return null;
 
             // Compute the required matrix to scale and center the bitmap.
+            float dx = (mImageView.getWidth() - width * scale) / 2.f;
+            float dy = (mImageView.getHeight() - height * scale) / 2.f;
+
             Matrix matrix = new Matrix();
-            matrix.setScale(scale, scale);
-            matrix.postTranslate((mImageView.getWidth() - scale * bitmap.getWidth()) * 0.5f,
-                    (mImageView.getHeight() - scale * bitmap.getHeight()) * 0.5f);
+            matrix.postScale(scale, scale);
+            matrix.postTranslate(dx, dy);
             return matrix;
         }
 
@@ -220,9 +227,9 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
          * dimensions. The scaled bitmap will be centered inside the view. No scaling if the
          * dimensions are comparable.
          */
-        private float computeScaleFactor(Bitmap bitmap) {
-            float widthRatio = (float) mImageView.getWidth() / bitmap.getWidth();
-            float heightRatio = (float) mImageView.getHeight() / bitmap.getHeight();
+        private float computeScaleFactor(int width, int height) {
+            float widthRatio = (float) mImageView.getWidth() / width;
+            float heightRatio = (float) mImageView.getHeight() / height;
 
             UmaUtils.recordImageViewRequiredStretch(widthRatio, heightRatio, mFilter);
             if (Math.max(widthRatio, heightRatio) < IMAGE_VIEW_MAX_SCALE_FACTOR) return 1.f;

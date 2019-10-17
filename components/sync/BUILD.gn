@@ -331,6 +331,7 @@ jumbo_static_library("rest_of_sync") {
     "nigori/nigori_sync_bridge.h",
     "nigori/nigori_sync_bridge_impl.cc",
     "nigori/nigori_sync_bridge_impl.h",
+    "nigori/pending_local_nigori_commit.cc",
     "nigori/pending_local_nigori_commit.h",
     "syncable/base_node.cc",
     "syncable/base_node.h",

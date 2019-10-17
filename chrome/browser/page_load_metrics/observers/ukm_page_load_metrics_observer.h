@@ -9,7 +9,7 @@
 #include "base/metrics/ukm_source_id.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "net/http/http_response_info.h"
 #include "services/metrics/public/cpp/ukm_source.h"

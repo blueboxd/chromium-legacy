@@ -90,6 +90,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->credentials_mode = mojom::CredentialsMode::kOmit;
   preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
+  preflight_request->resource_type = request.resource_type;
   preflight_request->fetch_window_id = request.fetch_window_id;
   preflight_request->render_frame_id = request.render_frame_id;
 
@@ -190,6 +191,7 @@ class PreflightController::PreflightLoader final {
   PreflightLoader(PreflightController* controller,
                   CompletionCallback completion_callback,
                   const ResourceRequest& request,
+                  WithTrustedHeaderClient with_trusted_header_client,
                   bool tainted,
                   const net::NetworkTrafficAnnotationTag& annotation_tag)
       : controller_(controller),
@@ -200,6 +202,11 @@ class PreflightController::PreflightLoader final {
         CreatePreflightRequest(request, tainted,
                                controller->extra_safelisted_header_names()),
         annotation_tag);
+    uint32_t options = mojom::kURLLoadOptionAsCorsPreflight;
+    if (with_trusted_header_client) {
+      options |= mojom::kURLLoadOptionUseHeaderClient;
+    }
+    loader_->SetURLLoaderFactoryOptions(options);
   }
 
   void Request(mojom::URLLoaderFactory* loader_factory) {
@@ -210,8 +217,6 @@ class PreflightController::PreflightLoader final {
     loader_->SetOnResponseStartedCallback(base::BindRepeating(
         &PreflightLoader::HandleResponseHeader, base::Unretained(this)));
 
-    // TODO(yhirano): Set kURLLoadOptionAsCorsPreflight.
-    // TODO(yhirano): Set kURLLoadOptionUseHeaderClient.
     loader_->DownloadToString(
         loader_factory,
         base::BindOnce(&PreflightLoader::HandleResponseBody,
@@ -331,6 +336,7 @@ PreflightController::~PreflightController() = default;
 void PreflightController::PerformPreflightCheck(
     CompletionCallback callback,
     const ResourceRequest& request,
+    WithTrustedHeaderClient with_trusted_header_client,
     bool tainted,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     mojom::URLLoaderFactory* loader_factory) {
@@ -346,7 +352,8 @@ void PreflightController::PerformPreflightCheck(
   }
 
   auto emplaced_pair = loaders_.emplace(std::make_unique<PreflightLoader>(
-      this, std::move(callback), request, tainted, annotation_tag));
+      this, std::move(callback), request, with_trusted_header_client, tainted,
+      annotation_tag));
   (*emplaced_pair.first)->Request(loader_factory);
 }
 

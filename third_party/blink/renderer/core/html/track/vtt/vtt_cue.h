@@ -75,6 +75,26 @@ class VTTCueBox final : public HTMLDivElement {
   float snap_to_lines_position_;
 };
 
+class VTTCueBackgroundBox final : public HTMLDivElement {
+ public:
+  explicit VTTCueBackgroundBox(Document&);
+  bool IsVTTCueBackgroundBox() const override { return true; }
+  void SetTrack(TextTrack*);
+  void Trace(Visitor*) override;
+
+  const TextTrack* GetTrack() const { return track_; }
+
+ private:
+  Member<TextTrack> track_;
+};
+
+template <>
+struct DowncastTraits<VTTCueBackgroundBox> {
+  static bool AllowFrom(const Element& element) {
+    return element.IsVTTCueBackgroundBox();
+  }
+};
+
 class VTTCue final : public TextTrackCue {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -192,7 +212,7 @@ class VTTCue final : public TextTrackCue {
 
   Member<VTTRegion> region_;
   Member<DocumentFragment> vtt_node_tree_;
-  Member<HTMLDivElement> cue_background_box_;
+  Member<VTTCueBackgroundBox> cue_background_box_;
   Member<VTTCueBox> display_tree_;
 
   bool snap_to_lines_ : 1;

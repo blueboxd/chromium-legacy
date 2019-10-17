@@ -95,7 +95,7 @@ class TestProvider : public AutocompleteProvider {
  public:
   TestProvider(int relevance,
                const base::string16& prefix,
-               const base::string16 match_keyword,
+               const base::string16& match_keyword,
                AutocompleteProviderClient* client)
       : AutocompleteProvider(AutocompleteProvider::TYPE_SEARCH),
         listener_(nullptr),
@@ -249,7 +249,7 @@ class AutocompleteProviderTest : public testing::Test {
   };
 
   // Registers a test TemplateURL under the given keyword.
-  void RegisterTemplateURL(const base::string16 keyword,
+  void RegisterTemplateURL(const base::string16& keyword,
                            const std::string& template_url,
                            const std::string& image_url,
                            const std::string& image_url_post_params);
@@ -335,7 +335,7 @@ AutocompleteProviderTest::~AutocompleteProviderTest() {
 }
 
 void AutocompleteProviderTest::RegisterTemplateURL(
-    const base::string16 keyword,
+    const base::string16& keyword,
     const std::string& template_url,
     const std::string& image_url = "",
     const std::string& image_url_post_params = "") {

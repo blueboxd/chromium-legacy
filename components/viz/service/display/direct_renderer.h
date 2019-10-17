@@ -116,6 +116,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   }
   bool OverlayNeedsSurfaceOccludingDamageRect() const;
 
+  gfx::Rect GetLastRootScissorRectForTesting() const {
+    return last_root_render_pass_scissor_rect_;
+  }
+
  protected:
   friend class BspWalkActionDrawPolygon;
 
@@ -258,6 +262,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       render_pass_backdrop_filters_;
   base::flat_map<RenderPassId, base::Optional<gfx::RRectF>>
       render_pass_backdrop_filter_bounds_;
+  base::flat_map<RenderPassId, gfx::Rect> backdrop_filter_output_rects_;
 
   bool visible_ = false;
   bool disable_color_checks_for_testing_ = false;
@@ -286,6 +291,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 #if DCHECK_IS_ON()
   bool overdraw_feedback_support_missing_logged_once_ = false;
 #endif
+  gfx::Rect last_root_render_pass_scissor_rect_;
   gfx::Size enlarge_pass_texture_amount_;
 
   // The current drawing frame is valid only during the duration of the

@@ -75,8 +75,6 @@ class CC_ANIMATION_EXPORT ScrollOffsetAnimationsImpl
                                base::TimeTicks animation_start_time,
                                std::unique_ptr<AnimationCurve> curve) override {
   }
-  void NotifyLocalTimeUpdated(
-      base::Optional<base::TimeDelta> local_time) override {}
 
   bool IsAnimating() const;
 

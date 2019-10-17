@@ -164,17 +164,6 @@ bool DialogDelegate::Close() {
   return Accept();
 }
 
-void DialogDelegate::UpdateButton(LabelButton* button, ui::DialogButton type) {
-  button->SetText(GetDialogButtonLabel(type));
-  button->SetEnabled(IsDialogButtonEnabled(type));
-  bool is_default = type == GetDefaultDialogButton();
-  if (!PlatformStyle::kDialogDefaultButtonCanBeCancel &&
-      type == ui::DIALOG_BUTTON_CANCEL) {
-    is_default = false;
-  }
-  button->SetIsDefault(is_default);
-}
-
 View* DialogDelegate::GetInitiallyFocusedView() {
   // Focus the default button if any.
   const DialogClientView* dcv = GetDialogClientView();
@@ -248,6 +237,18 @@ DialogClientView* DialogDelegate::GetDialogClientView() {
   return GetWidget()->client_view()->AsDialogClientView();
 }
 
+views::LabelButton* DialogDelegate::GetOkButton() {
+  DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
+  auto* client = GetDialogClientView();
+  return client ? client->ok_button() : nullptr;
+}
+
+views::LabelButton* DialogDelegate::GetCancelButton() {
+  DCHECK(GetWidget()) << "Don't call this before OnDialogInitialized";
+  auto* client = GetDialogClientView();
+  return client ? client->cancel_button() : nullptr;
+}
+
 void DialogDelegate::AddObserver(DialogObserver* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -268,6 +269,10 @@ DialogDelegate::~DialogDelegate() {
 
 ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
+}
+
+void DialogDelegate::OnWidgetInitialized() {
+  OnDialogInitialized();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

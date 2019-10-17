@@ -125,10 +125,22 @@ MediaInterfaceProxy::MediaInterfaceProxy(
   DCHECK(render_frame_host_);
   DCHECK(!error_handler.is_null());
 
+  auto create_interface_provider_cb =
+      base::BindRepeating(&MediaInterfaceProxy::GetFrameServices,
+                          base::Unretained(this), base::Token(), std::string());
+  media_interface_factory_ptr_ = std::make_unique<MediaInterfaceFactoryHolder>(
+      media::mojom::kMediaServiceName, create_interface_provider_cb);
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  media_renderer_interface_factory_ptr_ =
+      std::make_unique<MediaInterfaceFactoryHolder>(
+          media::mojom::kMediaRendererServiceName,
+          std::move(create_interface_provider_cb));
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+
   binding_.set_connection_error_handler(std::move(error_handler));
 
-  // |interface_factory_ptr_| and |cdm_factory_map_| will be lazily
-  // connected in GetMediaInterfaceFactory() and GetCdmFactory().
+  // |cdm_factory_map_| will be lazily connected in GetCdmFactory().
 }
 
 MediaInterfaceProxy::~MediaInterfaceProxy() {
@@ -139,7 +151,7 @@ MediaInterfaceProxy::~MediaInterfaceProxy() {
 void MediaInterfaceProxy::CreateAudioDecoder(
     media::mojom::AudioDecoderRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = media_interface_factory_ptr_->Get();
   if (factory)
     factory->CreateAudioDecoder(std::move(request));
 }
@@ -147,7 +159,7 @@ void MediaInterfaceProxy::CreateAudioDecoder(
 void MediaInterfaceProxy::CreateVideoDecoder(
     media::mojom::VideoDecoderRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = media_interface_factory_ptr_->Get();
   if (factory)
     factory->CreateVideoDecoder(std::move(request));
 }
@@ -157,7 +169,7 @@ void MediaInterfaceProxy::CreateDefaultRenderer(
     media::mojom::RendererRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = media_interface_factory_ptr_->Get();
   if (factory)
     factory->CreateDefaultRenderer(audio_device_id, std::move(request));
 }
@@ -168,7 +180,8 @@ void MediaInterfaceProxy::CreateCastRenderer(
     media::mojom::RendererRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  // CastRenderer is always hosted in "media_renderer" service.
+  InterfaceFactory* factory = media_renderer_interface_factory_ptr_->Get();
   if (factory)
     factory->CreateCastRenderer(overlay_plane_id, std::move(request));
 }
@@ -217,21 +230,25 @@ void MediaInterfaceProxy::CreateCdm(
     const std::string& key_system,
     media::mojom::ContentDecryptionModuleRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
-#if !BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  auto* factory = GetMediaInterfaceFactory();
-  if (factory)
-    factory->CreateCdm(key_system, std::move(request));
-#else
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   auto* factory = GetCdmFactory(key_system);
+#elif BUILDFLAG(ENABLE_CAST_RENDERER)
+  // CDM service lives together with renderer service if cast renderer is
+  // enabled, because cast renderer creates its own audio/video decoder.
+  auto* factory = media_renderer_interface_factory_ptr_->Get();
+#else
+  // CDM service lives together with audio/video decoder service.
+  auto* factory = media_interface_factory_ptr_->Get();
+#endif
+
   if (factory)
     factory->CreateCdm(key_system, std::move(request));
-#endif
 }
 
 void MediaInterfaceProxy::CreateDecryptor(
     int cdm_id,
     mojo::PendingReceiver<media::mojom::Decryptor> receiver) {
-  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = media_interface_factory_ptr_->Get();
   if (factory)
     factory->CreateDecryptor(cdm_id, std::move(receiver));
 }
@@ -282,42 +299,6 @@ MediaInterfaceProxy::GetFrameServices(const base::Token& cdm_guid,
   media_registries_.push_back(std::move(provider));
 
   return interfaces;
-}
-
-media::mojom::InterfaceFactory*
-MediaInterfaceProxy::GetMediaInterfaceFactory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!interface_factory_ptr_)
-    ConnectToMediaService();
-
-  return interface_factory_ptr_.get();
-}
-
-void MediaInterfaceProxy::ConnectToMediaService() {
-  DVLOG(1) << __func__;
-  DCHECK(!interface_factory_ptr_);
-
-  media::mojom::MediaServicePtr media_service;
-
-  // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
-  GetSystemConnector()->BindInterface(media::mojom::kMediaServiceName,
-                                      &media_service);
-
-  media_service->CreateInterfaceFactory(
-      MakeRequest(&interface_factory_ptr_),
-      GetFrameServices(base::Token{}, std::string()));
-
-  interface_factory_ptr_.set_connection_error_handler(
-      base::BindOnce(&MediaInterfaceProxy::OnMediaServiceConnectionError,
-                     base::Unretained(this)));
-}
-
-void MediaInterfaceProxy::OnMediaServiceConnectionError() {
-  DVLOG(1) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  interface_factory_ptr_.reset();
 }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -409,7 +390,7 @@ void MediaInterfaceProxy::CreateCdmProxyInternal(
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  InterfaceFactory* factory = GetMediaInterfaceFactory();
+  InterfaceFactory* factory = media_interface_factory_ptr_->Get();
   if (factory)
     factory->CreateCdmProxy(cdm_guid, std::move(receiver));
 }

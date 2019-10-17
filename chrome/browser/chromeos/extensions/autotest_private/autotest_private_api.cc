@@ -345,7 +345,7 @@ ash::WindowStateType GetExpectedWindowState(
   switch (event_type) {
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTNORMAL:
       return ash::WindowStateType::kNormal;
-    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXMIZE:
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXIMIZE:
       return ash::WindowStateType::kMaximized;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMINIMIZE:
       return ash::WindowStateType::kMinimized;
@@ -365,7 +365,7 @@ ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
   switch (event_type) {
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTNORMAL:
       return ash::WMEventType::WM_EVENT_NORMAL;
-    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXMIZE:
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXIMIZE:
       return ash::WMEventType::WM_EVENT_MAXIMIZE;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMINIMIZE:
       return ash::WMEventType::WM_EVENT_MINIMIZE;

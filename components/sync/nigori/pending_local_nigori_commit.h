@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_SYNC_NIGORI_PENDING_LOCAL_NIGORI_COMMIT_H_
 #define COMPONENTS_SYNC_NIGORI_PENDING_LOCAL_NIGORI_COMMIT_H_
 
+#include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 
@@ -18,6 +20,10 @@ struct NigoriState;
 // is pending a commit to the sync server.
 class PendingLocalNigoriCommit {
  public:
+  static std::unique_ptr<PendingLocalNigoriCommit> ForSetCustomPassphrase(
+      const std::string& passphrase,
+      const base::RepeatingCallback<std::string()>& random_salt_generator);
+
   PendingLocalNigoriCommit() = default;
   virtual ~PendingLocalNigoriCommit() = default;
 

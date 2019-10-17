@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -136,6 +137,12 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     }
 
     // Layout implementation.
+    @Override
+    public void setTabModelSelector(TabModelSelector modelSelector, TabContentManager manager) {
+        super.setTabModelSelector(modelSelector, manager);
+        mSceneLayer.setTabModelSelector(modelSelector);
+    }
+
     @Override
     public LayoutTab getLayoutTab(int id) {
         return mDummyLayoutTab;

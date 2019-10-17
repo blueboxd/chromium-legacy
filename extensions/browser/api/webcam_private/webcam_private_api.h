@@ -176,10 +176,10 @@ class WebcamPrivateGetFunction : public ExtensionFunction {
   int min_focus_;
   int max_focus_;
   int focus_;
-  bool get_pan_;
-  bool get_tilt_;
-  bool get_zoom_;
-  bool get_focus_;
+  bool got_pan_;
+  bool got_tilt_;
+  bool got_zoom_;
+  bool got_focus_;
   bool success_;
 
   DISALLOW_COPY_AND_ASSIGN(WebcamPrivateGetFunction);

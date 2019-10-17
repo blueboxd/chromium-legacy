@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.ntp.cards;
 import android.content.Context;
 import android.graphics.Region;
 
-import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;

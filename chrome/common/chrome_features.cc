@@ -749,13 +749,6 @@ const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
 const base::Feature kHeavyAdBlocklist{"HeavyAdBlocklist",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-// Enables or disables usage time state notifier for supervised accounts on
-// Chrome OS.
-const base::Feature kUsageTimeStateNotifier{"UsageTimeStateNotifier",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_ANDROID)
 const base::Feature kUseDisplayWideColorGamut{"UseDisplayWideColorGamut",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

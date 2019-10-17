@@ -72,12 +72,13 @@ public class LocationBarVoiceRecognitionHandler {
     // VoiceInteractionEventSource defined in tools/metrics/histograms/enums.xml.
     // Do not reorder or remove items, only add new items before HISTOGRAM_BOUNDARY.
     @IntDef({VoiceInteractionSource.OMNIBOX, VoiceInteractionSource.NTP,
-            VoiceInteractionSource.SEARCH_WIDGET})
+            VoiceInteractionSource.SEARCH_WIDGET, VoiceInteractionSource.TASKS_SURFACE})
     public @interface VoiceInteractionSource {
         int OMNIBOX = 0;
         int NTP = 1;
         int SEARCH_WIDGET = 2;
-        int HISTOGRAM_BOUNDARY = 3;
+        int TASKS_SURFACE = 3;
+        int HISTOGRAM_BOUNDARY = 4;
     }
 
     /**

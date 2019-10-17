@@ -872,7 +872,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   const ui::NativeTheme* GetNativeTheme() const;
 
   // Sets the native theme and informs descendants.
-  void SetNativeTheme(ui::NativeTheme* theme);
+  void SetNativeThemeForTesting(ui::NativeTheme* theme);
 
   // RTL painting --------------------------------------------------------------
 

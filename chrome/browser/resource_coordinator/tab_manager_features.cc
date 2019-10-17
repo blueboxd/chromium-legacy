@@ -28,12 +28,6 @@ const base::Feature kProactiveTabFreezeAndDiscard{
     resource_coordinator::kProactiveTabFreezeAndDiscardFeatureName,
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables prioritization of sites that communicate with the user while in the
-// background (email, chat, calendar, etc) during session restore.
-const base::Feature kSessionRestorePrioritizesBackgroundUseCases{
-    "SessionRestorePrioritizesBackgroundUseCases",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the site characteristics database.
 const base::Feature kSiteCharacteristicsDatabase{
     "SiteCharacteristicsDatabase", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -1286,10 +1286,8 @@ void WebContentsImpl::SetUserAgentOverride(const std::string& override,
 
   renderer_preferences_.user_agent_override = override;
 
-  // Send the new override string to the renderer.
-  RenderViewHost* host = GetRenderViewHost();
-  if (host)
-    host->SyncRendererPrefs();
+  // Send the new override string to all renderers in the current page.
+  SyncRendererPrefs();
 
   // Reload the page if a load is currently in progress to avoid having
   // different parts of the page loaded using different user agents.
@@ -2020,6 +2018,14 @@ void WebContentsImpl::NotifyPreferencesChanged() {
 
   for (RenderViewHost* render_view_host : render_view_host_set)
     render_view_host->OnWebkitPreferencesChanged();
+}
+
+void WebContentsImpl::SyncRendererPrefs() {
+  blink::mojom::RendererPreferences renderer_preferences =
+      GetRendererPrefs(GetBrowserContext());
+  RenderViewHostImpl::GetPlatformSpecificPrefs(&renderer_preferences);
+  SendPageMessage(
+      new PageMsg_SetRendererPrefs(MSG_ROUTING_NONE, renderer_preferences));
 }
 
 void WebContentsImpl::OnCookiesRead(const GURL& url,
@@ -7235,13 +7241,6 @@ RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
   if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
     return web_contents->GetMainFrame();
   return nullptr;
-}
-
-bool WebContentsImpl::IsFrameLowPriority(
-    const RenderFrameHost* render_frame_host) {
-  if (!delegate_)
-    return false;
-  return delegate_->IsFrameLowPriority(this, render_frame_host);
 }
 
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {

@@ -63,7 +63,8 @@ namespace {
 const char kIconSourceUmaClientName[] = "NtpIconSource";
 
 // The color of the letter drawn for a fallback icon.  Changing this may require
-// changing the algorithm in RenderIconBitmap() that guarantees contrast.
+// changing the algorithm in ReturnRenderedIconForRequest() that guarantees
+// contrast.
 constexpr SkColor kFallbackIconLetterColor = SK_ColorWHITE;
 
 const char kShowFallbackMonogramParam[] = "show_fallback_monogram";
@@ -222,50 +223,6 @@ SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
   return SkColorSetRGB(hash[0], hash[1], hash[2]);
 }
 
-// For the given |icon_url|, will render |favicon|. If |favicon| is not
-// specified, will use a colored circular monogram instead.
-std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
-                                            const SkBitmap& favicon,
-                                            int icon_size,
-                                            int fallback_size,
-                                            bool show_fallback_monogram,
-                                            float device_scale_factor) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(icon_size, icon_size, false);
-  cc::SkiaPaintCanvas paint_canvas(bitmap);
-  gfx::Canvas canvas(&paint_canvas, 1.f);
-  canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
-
-  // If necessary, draw the colored fallback monogram.
-  if (favicon.empty()) {
-    if (show_fallback_monogram) {
-      SkColor fallback_color =
-          color_utils::BlendForMinContrast(GetBackgroundColorForUrl(icon_url),
-                                           kFallbackIconLetterColor)
-              .color;
-
-      int offset = (icon_size - fallback_size) / 2;
-      DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
-      DrawFallbackIconLetter(icon_url, icon_size, &canvas);
-    } else {
-      const auto* default_favicon = favicon::GetDefaultFavicon().ToImageSkia();
-      const auto& rep = default_favicon->GetRepresentation(device_scale_factor);
-      gfx::ImageSkia scaled_image(rep);
-      const auto resized = gfx::ImageSkiaOperations::CreateResizedImage(
-          scaled_image, skia::ImageOperations::RESIZE_BEST,
-          gfx::Size(fallback_size, fallback_size));
-      DrawFavicon(*resized.bitmap(), &canvas, icon_size);
-    }
-  } else {
-    DrawFavicon(favicon, &canvas, icon_size);
-  }
-
-  std::vector<unsigned char> bitmap_data;
-  bool result = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
-  DCHECK(result);
-  return bitmap_data;
-}
-
 }  // namespace
 
 struct NtpIconSource::NtpIconRequest {
@@ -384,7 +341,7 @@ void NtpIconSource::OnLocalFaviconAvailable(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (bitmap_result.is_valid()) {
     // A local favicon was found. Decode it to an SkBitmap so it can eventually
-    // be passed as valid image data to RenderIconBitmap.
+    // be passed as valid image data to ReturnRenderedIconForRequest.
     SkBitmap bitmap;
     bool result =
         gfx::PNGCodec::Decode(bitmap_result.bitmap_data.get()->front(),
@@ -470,7 +427,7 @@ void NtpIconSource::OnServerFaviconAvailable(
     // The received server icon bitmap may still be bigger than our desired
     // size, so resize it.
     fetched_bitmap = skia::ImageOperations::Resize(
-        fetched_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+        fetched_bitmap, skia::ImageOperations::RESIZE_BEST,
         request.icon_size_in_pixels, request.icon_size_in_pixels);
   }
 
@@ -478,16 +435,47 @@ void NtpIconSource::OnServerFaviconAvailable(
 }
 
 void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
-                                                 const SkBitmap& bitmap) {
+                                                 const SkBitmap& favicon) {
   // Only use even pixel sizes to avoid issues when centering the fallback
   // monogram.
-  int desired_overall_size_in_pixel =
+  const int icon_size =
       std::round(kIconSizeDip * request.device_scale_factor * 0.5) * 2.0;
-  int desired_fallback_size_in_pixel =
+  const int fallback_size =
       std::round(kFallbackSizeDip * request.device_scale_factor * 0.5) * 2.0;
-  std::vector<unsigned char> bitmap_data = RenderIconBitmap(
-      request.path, bitmap, desired_overall_size_in_pixel,
-      desired_fallback_size_in_pixel, request.show_fallback_monogram,
-      request.device_scale_factor);
+
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(icon_size, icon_size, false);
+  cc::SkiaPaintCanvas paint_canvas(bitmap);
+  gfx::Canvas canvas(&paint_canvas, 1.f);
+  canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+
+  // If necessary, draw the colored fallback monogram.
+  if (favicon.empty()) {
+    if (request.show_fallback_monogram) {
+      SkColor fallback_color =
+          color_utils::BlendForMinContrast(
+              GetBackgroundColorForUrl(request.path), kFallbackIconLetterColor)
+              .color;
+
+      int offset = (icon_size - fallback_size) / 2;
+      DrawCircleInCanvas(&canvas, fallback_size, offset, fallback_color);
+      DrawFallbackIconLetter(request.path, icon_size, &canvas);
+    } else {
+      const auto* default_favicon = favicon::GetDefaultFavicon().ToImageSkia();
+      const auto& rep =
+          default_favicon->GetRepresentation(request.device_scale_factor);
+      gfx::ImageSkia scaled_image(rep);
+      const auto resized = gfx::ImageSkiaOperations::CreateResizedImage(
+          scaled_image, skia::ImageOperations::RESIZE_BEST,
+          gfx::Size(fallback_size, fallback_size));
+      DrawFavicon(*resized.bitmap(), &canvas, icon_size);
+    }
+  } else {
+    DrawFavicon(favicon, &canvas, icon_size);
+  }
+
+  std::vector<unsigned char> bitmap_data;
+  bool result = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
+  DCHECK(result);
   request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }

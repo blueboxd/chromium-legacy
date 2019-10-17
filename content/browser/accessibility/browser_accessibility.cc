@@ -1998,6 +1998,10 @@ base::Optional<int> BrowserAccessibility::GetSetSize() const {
   return node()->GetSetSize();
 }
 
+std::string BrowserAccessibility::ToString() const {
+  return GetData().ToString();
+}
+
 bool BrowserAccessibility::SetHypertextSelection(int start_offset,
                                                  int end_offset) {
   manager()->SetSelection(
@@ -2174,6 +2178,11 @@ bool BrowserAccessibility::HasInvalidAttribute(
                       [](const ui::TextAttribute& attribute) {
                         return attribute.first == "invalid";
                       }) != attributes.end();
+}
+
+std::ostream& operator<<(std::ostream& stream,
+                         const BrowserAccessibility& object) {
+  return stream << object.ToString();
 }
 
 }  // namespace content

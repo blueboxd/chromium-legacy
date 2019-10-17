@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
+import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -36,7 +38,7 @@ import org.chromium.ui.base.PageTransition;
  * Central class for ephemeral tab, responsible for spinning off other classes necessary to display
  * the preview tab UI.
  */
-public class EphemeralTabCoordinator {
+public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     /** The delay (four video frames) after which the hide progress will be hidden. */
     private static final long HIDE_PROGRESS_BAR_DELAY_MS = (1000 / 60) * 4;
 
@@ -78,10 +80,7 @@ public class EphemeralTabCoordinator {
     public void requestOpenSheet(String url, String title, boolean isIncognito) {
         mUrl = url;
         mIsIncognito = isIncognito;
-        if (mSheetContent == null) {
-            mSheetContent = new EphemeralTabSheetContent(
-                    mActivity, () -> openInNewTab(), () -> onToolbarClick());
-        }
+        if (mSheetContent == null) mSheetContent = createSheetContent();
 
         getContent().loadUrl(url, true);
         getContent().updateBrowserControlsState(true);
@@ -119,6 +118,8 @@ public class EphemeralTabCoordinator {
             mWebContentsObserver.destroy();
             mWebContentsObserver = null;
         }
+
+        mActivity.getWindow().getDecorView().removeOnLayoutChangeListener(this);
     }
 
     private void openInNewTab() {
@@ -144,6 +145,28 @@ public class EphemeralTabCoordinator {
     private void onFaviconAvailable(Drawable drawable) {
         if (mSheetContent == null) return;
         mSheetContent.startFaviconAnimation(drawable);
+    }
+
+    private EphemeralTabSheetContent createSheetContent() {
+        mSheetContent = new EphemeralTabSheetContent(
+                mActivity, () -> openInNewTab(), () -> onToolbarClick(), getMaxSheetHeight());
+
+        mActivity.getWindow().getDecorView().addOnLayoutChangeListener(this);
+        return mSheetContent;
+    }
+
+    @Override
+    public void onLayoutChange(View view, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
+        if (mSheetContent == null) return;
+        if ((oldBottom - oldTop) == (bottom - top)) return;
+        mSheetContent.updateContentHeight(getMaxSheetHeight());
+    }
+
+    private int getMaxSheetHeight() {
+        Tab tab = mActivity.getActivityTabProvider().get();
+        if (tab == null) return 0;
+        return (int) (tab.getHeight() * 0.9f);
     }
 
     private WebContentsObserver createWebContentsObserver() {
@@ -196,6 +219,7 @@ public class EphemeralTabCoordinator {
 
         @Override
         public void onSSLStateUpdated() {
+            if (mSheetContent == null) return;
             int securityLevel = SecurityStateModel.getSecurityLevelForWebContents(
                     mPanelContent.getWebContents());
             mSheetContent.setSecurityIcon(getSecurityIconResource(securityLevel));
@@ -258,9 +282,15 @@ public class EphemeralTabCoordinator {
          */
         public void loadFavicon(final String url, Callback<Drawable> callback) {
             FaviconHelper.FaviconImageCallback imageCallback = (bitmap, iconUrl) -> {
-                Drawable drawable =
-                        FaviconUtils.getIconDrawableWithFilter(bitmap, url, mIconGenerator,
-                                mDefaultFaviconHelper, mContext.getResources(), mFaviconSize);
+                Drawable drawable;
+                if (bitmap != null) {
+                    drawable = FaviconUtils.createRoundedBitmapDrawable(
+                            mContext.getResources(), bitmap);
+                } else {
+                    drawable = mDefaultFaviconHelper.getDefaultFaviconDrawable(
+                            mContext.getResources(), iconUrl, true);
+                }
+
                 callback.onResult(drawable);
             };
 

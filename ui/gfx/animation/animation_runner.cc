@@ -18,20 +18,39 @@ class DefaultAnimationRunner : public gfx::AnimationRunner {
   ~DefaultAnimationRunner() override = default;
 
   // gfx::AnimationRunner:
-  void Stop() override { timer_.Stop(); }
+  void Stop() override;
 
  protected:
   // gfx::AnimationRunner:
-  void OnStart(base::TimeDelta min_interval) override {
-    timer_.Start(FROM_HERE, min_interval, this,
-                 &DefaultAnimationRunner::OnTimerTick);
-  }
+  void OnStart(base::TimeDelta min_interval, base::TimeDelta elapsed) override;
 
  private:
-  void OnTimerTick() { Step(base::TimeTicks::Now()); }
+  void OnTimerTick();
 
-  base::RepeatingTimer timer_;
+  base::OneShotTimer timer_;
+  base::TimeDelta min_interval_;
 };
+
+void DefaultAnimationRunner::Stop() {
+  timer_.Stop();
+}
+
+void DefaultAnimationRunner::OnStart(base::TimeDelta min_interval,
+                                     base::TimeDelta elapsed) {
+  min_interval_ = min_interval;
+  timer_.Start(FROM_HERE, min_interval - elapsed, this,
+               &DefaultAnimationRunner::OnTimerTick);
+}
+
+void DefaultAnimationRunner::OnTimerTick() {
+  // This is effectively a RepeatingTimer.  It's possible to use a true
+  // RepeatingTimer for this, but since OnStart() may need to use a OneShotTimer
+  // anyway (when |elapsed| is nonzero), it's just more complicated.
+  timer_.Start(FROM_HERE, min_interval_, this,
+               &DefaultAnimationRunner::OnTimerTick);
+  // Call Step() after timer_.Start() in case Step() calls Stop().
+  Step(base::TimeTicks::Now());
+}
 
 }  // namespace
 
@@ -47,9 +66,10 @@ AnimationRunner::~AnimationRunner() = default;
 
 void AnimationRunner::Start(
     base::TimeDelta min_interval,
+    base::TimeDelta elapsed,
     base::RepeatingCallback<void(base::TimeTicks)> step) {
   step_ = std::move(step);
-  OnStart(min_interval);
+  OnStart(min_interval, elapsed);
 }
 
 AnimationRunner::AnimationRunner() = default;

@@ -84,7 +84,7 @@ int ReasonCompare(const char* reason1, const char* reason2);
 class PriorityAndReason {
  public:
   PriorityAndReason() = default;
-  PriorityAndReason(base::TaskPriority priority, const char* reason)
+  constexpr PriorityAndReason(base::TaskPriority priority, const char* reason)
       : priority_(priority), reason_(reason) {}
   PriorityAndReason(const PriorityAndReason&) = default;
   PriorityAndReason& operator=(const PriorityAndReason&) = default;

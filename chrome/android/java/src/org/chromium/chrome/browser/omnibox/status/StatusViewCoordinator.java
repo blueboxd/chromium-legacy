@@ -95,6 +95,14 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
     }
 
     /**
+     * Set the url focus change percent.
+     * @param percent The current focus percent.
+     */
+    public void setUrlFocusChangePercent(float percent) {
+        mMediator.setUrlFocusChangePercent(percent);
+    }
+
+    /**
      * @param useDarkColors Whether dark colors should be for the status icon and text.
      */
     public void setUseDarkColors(boolean useDarkColors) {

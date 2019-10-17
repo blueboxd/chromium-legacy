@@ -20,6 +20,10 @@ for use with the corresponding arguments to `builder`.
 """
 
 
+################################################################################
+# Constants for use with the builder function                                  #
+################################################################################
+
 # The cpu constants to be used with the builder function
 cpu = struct(
     X86 = 'x86',
@@ -95,6 +99,10 @@ goma = struct(
 )
 
 
+################################################################################
+# Implementation details                                                       #
+################################################################################
+
 _DEFAULT_BUILDERLESS_OSES = [os.LINUX_TRUSTY, os.LINUX_XENIAL]
 
 
@@ -144,6 +152,10 @@ def _code_coverage_property(*, use_clang_coverage, use_java_coverage):
 
   return code_coverage or None
 
+
+################################################################################
+# Builder defaults and function                                                #
+################################################################################
 
 # The module-level defaults to use with the builder function
 defaults = struct(
@@ -256,10 +268,10 @@ def builder(
       to be used by the builder. Sets the 'jobs' field of the '$build/goma'
       property will be set according to the enum member. By default, the 'jobs'
       considered None.
-    * use_clang_covergae - a boolean indicating whether clang coverage should be
+    * use_clang_coverage - a boolean indicating whether clang coverage should be
       used. If True, the 'use_clang_coverage" field will be set in the
       '$build/code_coverage' property. By default, considered False.
-    * use_java_covergae - a boolean indicating whether java coverage should be
+    * use_java_coverage - a boolean indicating whether java coverage should be
       used. If True, the 'use_java_coverage" field will be set in the
       '$build/code_coverage' property. By default, considered False.
     * kwargs - Additional keyword arguments to forward on to `luci.builder`.
@@ -274,13 +286,13 @@ def builder(
 
   properties = kwargs.pop('properties', {})
   if '$kitchen' in properties:
-    fail('Explicitly specifying "$kitchen" property is not supported: '
+    fail('Setting "$kitchen" property is not supported: '
          + 'use configure_kitchen instead')
   if '$build/goma' in properties:
-    fail('Explicitly specifying "$build/goma" property is not supported: '
+    fail('Setting "$build/goma" property is not supported: '
          + 'use goma_backend, goma_dbug, goma_enable_ats and goma_jobs instead')
   if '$build/code_coverage' in properties:
-    fail('Explicitly specifying "$build/code_coverage" property is not supported: '
+    fail('Setting "$build/code_coverage" property is not supported: '
          + 'use use_clang_coverage and use_java_coverage instead')
   properties = dict(properties)
 

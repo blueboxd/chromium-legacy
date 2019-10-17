@@ -17,6 +17,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -29,12 +30,12 @@ import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
+import org.chromium.weblayer.FullscreenDelegate;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -130,6 +131,43 @@ public class WebLayerShellActivity extends FragmentActivity {
 
         mFragment = getOrCreateBrowserFragment(savedInstanceState);
         mBrowserFragmentController = mFragment.getController();
+        mBrowserFragmentController.getBrowserController().setFullscreenDelegate(
+                new FullscreenDelegate() {
+                    private int mSystemVisibilityToRestore;
+
+                    @Override
+                    public void enterFullscreen(Runnable exitFullscreenRunnable) {
+                        // This comes from Chrome code to avoid an extra resize.
+                        final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                        attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                        getWindow().setAttributes(attrs);
+
+                        View decorView = getWindow().getDecorView();
+                        // Caching the system ui visibility is ok for shell, but likely not ok for
+                        // real code.
+                        mSystemVisibilityToRestore = decorView.getSystemUiVisibility();
+                        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                                | View.SYSTEM_UI_FLAG_LOW_PROFILE
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    }
+
+                    @Override
+                    public void exitFullscreen() {
+                        View decorView = getWindow().getDecorView();
+                        decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
+
+                        final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                        if ((attrs.flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+                                != 0) {
+                            attrs.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                            getWindow().setAttributes(attrs);
+                        }
+                    }
+                });
         mProfile = mBrowserFragmentController.getProfile();
 
         mBrowserFragmentController.setTopView(mTopContentsContainer);
@@ -172,8 +210,7 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         }
 
-        File profile = new File(getDataDir(), "defaultProfile");
-        BrowserFragment fragment = WebLayer.createBrowserFragment(profile.getPath());
+        BrowserFragment fragment = WebLayer.createBrowserFragment(null);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 

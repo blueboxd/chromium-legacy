@@ -356,11 +356,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "bundled-exchanges",
-    "owners": [ "toyoshim", "ksakamoto", "horo", "kinuko" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "BundledConnectionHelp",
     "owners": [ "carlosil" ],
     "expiry_milestone": 76
@@ -1122,6 +1117,11 @@
     "name": "enable-credit-card-assist",
     "owners": [ "ftirelo", "gogerald" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "enable-cros-action-recorder",
+    "owners": [ "charleszhao", "tby" ],
+    "expiry_milestone": 84
   },
   {
     "name": "enable-cros-ime-input-logic-fst",
@@ -2939,8 +2939,8 @@
   },
   {
     "name": "reduced-referrer-granularity",
-    "owners": [ "jochen", "mkwst" ],
-    "expiry_milestone": 78
+    "owners": [ "davidvc", "mkwst", "jochen" ],
+    "expiry_milestone": 81
   },
   {
     "name": "release-notes",
@@ -2991,11 +2991,6 @@
     "name": "security-interstitials-dark-mode",
     "owners": ["estark"],
     "expiry_milestone": 79
-  },
-  {
-    "name": "session-restore-prioritizes-background-use-cases",
-    "owners": [ "chrisha" ],
-    "expiry_milestone": 76
   },
   {
     "name": "set-market-url-for-testing",
@@ -3433,6 +3428,11 @@
     // This flag is used by testing teams to run Google Payments calls against
     // the development server environment.
     "expiry_milestone": -1
+  },
+  {
+    "name": "web-bundles",
+    "owners": [ "toyoshim", "ksakamoto", "horo", "kinuko" ],
+    "expiry_milestone": 83
   },
   {
     "name": "web-contents-occlusion",

@@ -9,6 +9,8 @@
 
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -65,6 +67,14 @@ void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
   if (command_id == ash::UNINSTALL) {
+    if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
+      apps::AppServiceProxy* proxy =
+          apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
+      DCHECK(proxy);
+      proxy->Uninstall(item().id.app_id);
+      return;
+    }
+
     arc::ShowArcAppUninstallDialog(controller()->profile(),
                                    nullptr /* controller */, item().id.app_id);
     return;

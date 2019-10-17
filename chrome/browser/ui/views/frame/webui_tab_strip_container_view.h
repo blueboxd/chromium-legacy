@@ -43,6 +43,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
 
  private:
   // TabStripUI::Embedder:
+  void CloseContainer() override;
   void ShowContextMenuAtPoint(
       gfx::Point point,
       std::unique_ptr<ui::MenuModel> menu_model) override;

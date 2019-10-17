@@ -146,21 +146,21 @@ class HistoryQuickProviderTest : public testing::Test {
   // Runs an autocomplete query on |text| and checks to see that the returned
   // results' destination URLs match those provided. |expected_urls| does not
   // need to be in sorted order.
-  void RunTest(const base::string16 text,
+  void RunTest(const base::string16& text,
                bool prevent_inline_autocomplete,
-               std::vector<std::string> expected_urls,
+               const std::vector<std::string>& expected_urls,
                bool can_inline_top_result,
-               base::string16 expected_fill_into_edit,
-               base::string16 autocompletion);
+               const base::string16& expected_fill_into_edit,
+               const base::string16& autocompletion);
 
   // As above, simply with a cursor position specified.
-  void RunTestWithCursor(const base::string16 text,
+  void RunTestWithCursor(const base::string16& text,
                          const size_t cursor_position,
                          bool prevent_inline_autocomplete,
-                         std::vector<std::string> expected_urls,
+                         const std::vector<std::string>& expected_urls,
                          bool can_inline_top_result,
-                         base::string16 expected_fill_into_edit,
-                         base::string16 autocompletion);
+                         const base::string16& expected_fill_into_edit,
+                         const base::string16& autocompletion);
 
   // TODO(shess): From history_service.h in reference to history_backend:
   // > This class has most of the implementation and runs on the 'thread_'.
@@ -297,25 +297,25 @@ void HistoryQuickProviderTest::SetShouldContain::operator()(
 }
 
 void HistoryQuickProviderTest::RunTest(
-    const base::string16 text,
+    const base::string16& text,
     bool prevent_inline_autocomplete,
-    std::vector<std::string> expected_urls,
+    const std::vector<std::string>& expected_urls,
     bool can_inline_top_result,
-    base::string16 expected_fill_into_edit,
-    base::string16 expected_autocompletion) {
+    const base::string16& expected_fill_into_edit,
+    const base::string16& expected_autocompletion) {
   RunTestWithCursor(text, base::string16::npos, prevent_inline_autocomplete,
                     expected_urls, can_inline_top_result,
                     expected_fill_into_edit, expected_autocompletion);
 }
 
 void HistoryQuickProviderTest::RunTestWithCursor(
-    const base::string16 text,
+    const base::string16& text,
     const size_t cursor_position,
     bool prevent_inline_autocomplete,
-    std::vector<std::string> expected_urls,
+    const std::vector<std::string>& expected_urls,
     bool can_inline_top_result,
-    base::string16 expected_fill_into_edit,
-    base::string16 expected_autocompletion) {
+    const base::string16& expected_fill_into_edit,
+    const base::string16& expected_autocompletion) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
   base::RunLoop().RunUntilIdle();
   AutocompleteInput input(text, cursor_position,

@@ -38,7 +38,6 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool Accept() override;
   bool Cancel() override;

@@ -50,6 +50,9 @@ const base::Feature kEnableFuzzyAppSearch{"EnableFuzzyAppSearch",
 const base::Feature kEnableAggregatedMlSearchRanking{
     "EnableAggregatedMlSearchRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableCrOSActionRecorder{
+    "EnableCrOSActionRecorder", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
   // Do not show answer card if the embedded Assistant UI is enabled.
@@ -126,6 +129,10 @@ bool IsAggregatedMlSearchRankingEnabled() {
   return base::FeatureList::IsEnabled(kEnableAggregatedMlSearchRanking);
 }
 
+bool IsCrOSActionRecorderEnabled() {
+  return base::FeatureList::IsEnabled(kEnableCrOSActionRecorder);
+}
+
 std::string AnswerServerUrl() {
   const std::string experiment_url =
       base::GetFieldTrialParamValueByFeature(kEnableAnswerCard, "ServerUrl");
@@ -145,6 +152,11 @@ std::string AppSearchResultRankerPredictorName() {
   if (!predictor_name.empty())
     return predictor_name;
   return std::string("MrfuAppLaunchPredictor");
+}
+
+int GetCrOSActionRecorderType() {
+  return base::GetFieldTrialParamByFeatureAsInt(kEnableCrOSActionRecorder,
+                                                "CrOSActionRecorderType", 0);
 }
 
 bool IsAppListLaunchRecordingEnabled() {

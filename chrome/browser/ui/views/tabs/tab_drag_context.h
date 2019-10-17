@@ -52,10 +52,6 @@ class TabDragContext {
   // operation.
   virtual void DestroyDragController() = 0;
 
-  // Return true if this tab strip is compatible with the provided tab strip.
-  // Compatible tab strips can transfer tabs during drag and drop.
-  virtual bool IsCompatibleWith(TabDragContext* other) const = 0;
-
   // Returns true if a drag session is currently active.
   virtual bool IsDragSessionActive() const = 0;
 

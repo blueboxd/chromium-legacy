@@ -303,11 +303,9 @@ void DrmThread::CheckOverlayCapabilities(
                             const OverlayStatusList&)> callback) {
   TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilities");
 
-  auto params = CreateParamsFromOverlaySurfaceCandidate(overlays);
   std::move(callback).Run(
       widget, overlays,
-      CreateOverlayStatusListFrom(
-          screen_manager_->GetWindow(widget)->TestPageFlip(params)));
+      screen_manager_->GetWindow(widget)->TestPageFlip(overlays));
 }
 
 void DrmThread::GetDeviceCursor(

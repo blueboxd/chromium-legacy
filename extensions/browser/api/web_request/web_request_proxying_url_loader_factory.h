@@ -46,6 +46,7 @@ class WebRequestProxyingURLLoaderFactory
                             public network::mojom::URLLoaderClient,
                             public network::mojom::TrustedHeaderClient {
    public:
+    // For usual requests
     InProgressRequest(
         WebRequestProxyingURLLoaderFactory* factory,
         uint64_t request_id,
@@ -56,6 +57,10 @@ class WebRequestProxyingURLLoaderFactory
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
         network::mojom::URLLoaderRequest loader_request,
         network::mojom::URLLoaderClientPtr client);
+    // For CORS preflights
+    InProgressRequest(WebRequestProxyingURLLoaderFactory* factory,
+                      uint64_t request_id,
+                      const network::ResourceRequest& request);
     ~InProgressRequest() override;
 
     void Restart();
@@ -128,10 +133,10 @@ class WebRequestProxyingURLLoaderFactory
     WebRequestProxyingURLLoaderFactory* const factory_;
     network::ResourceRequest request_;
     const base::Optional<url::Origin> original_initiator_;
-    const uint64_t request_id_;
-    const int32_t network_service_request_id_;
-    const int32_t routing_id_;
-    const uint32_t options_;
+    const uint64_t request_id_ = 0;
+    const int32_t network_service_request_id_ = 0;
+    const int32_t routing_id_ = 0;
+    const uint32_t options_ = 0;
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
     mojo::Binding<network::mojom::URLLoader> proxied_loader_binding_;
     network::mojom::URLLoaderClientPtr target_client_;
@@ -154,6 +159,7 @@ class WebRequestProxyingURLLoaderFactory
     // lifetime.
     base::Optional<net::AuthCredentials> auth_credentials_;
 
+    const bool for_cors_preflight_ = false;
     bool request_completed_ = false;
 
     // If |has_any_extra_headers_listeners_| is set to true, the request will be

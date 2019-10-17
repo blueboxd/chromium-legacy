@@ -24,8 +24,6 @@ class LenientMockProcessNodeObserver : public ProcessNode::ObserverDefaultImpl {
   LenientMockProcessNodeObserver() = default;
   ~LenientMockProcessNodeObserver() override = default;
 
-  virtual bool ShouldObserve(const NodeBase* node) { return false; }
-
   MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
 
  private:

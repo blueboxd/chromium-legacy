@@ -53,7 +53,6 @@ class WebView;
 enum class WebSandboxFlags;
 struct FramePolicy;
 struct WebFrameOwnerProperties;
-struct WebRect;
 
 // Frames may be rendered in process ('local') or out of process ('remote').
 // A remote frame is always cross-site; a local frame may be either same-site or
@@ -118,14 +117,6 @@ class BLINK_EXPORT WebFrame {
   // TODO(dcheng): Currently, the update only takes effect on next frame
   // navigation.  This matches the in-process frame behavior.
   void SetFrameOwnerProperties(const WebFrameOwnerProperties&);
-
-  // Geometry -----------------------------------------------------------
-
-  // NOTE: These routines do not force page layout so their results may
-  // not be accurate if the page layout is out-of-date.
-
-  // Returns the visible content rect (minus scrollbars, in absolute coordinate)
-  virtual WebRect VisibleContentRect() const = 0;
 
   // Whether to collapse the frame's owner element in the embedder document,
   // that is, to remove it from the layout as if it did not exist. Only works

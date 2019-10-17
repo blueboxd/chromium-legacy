@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.FAKE_SEAR
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -16,6 +17,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 
+import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -23,20 +28,22 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class TasksSurfaceMediator {
     @Nullable
-    private final TasksSurface.FakeSearchBoxDelegate mFakeSearchBoxDelegate;
+    private final FakeboxDelegate mFakeboxDelegate;
     private final PropertyModel mModel;
 
-    TasksSurfaceMediator(Context context, PropertyModel model,
-            TasksSurface.FakeSearchBoxDelegate fakeSearchBoxDelegate, boolean isTabCarousel) {
-        mFakeSearchBoxDelegate = fakeSearchBoxDelegate;
-        assert mFakeSearchBoxDelegate != null;
+    TasksSurfaceMediator(Context context, PropertyModel model, FakeboxDelegate fakeboxDelegate,
+            boolean isTabCarousel) {
+        mFakeboxDelegate = fakeboxDelegate;
+        assert mFakeboxDelegate != null;
 
         mModel = model;
         mModel.set(IS_TAB_CAROUSEL, isTabCarousel);
         mModel.set(FAKE_SEARCH_BOX_CLICK_LISTENER, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mFakeSearchBoxDelegate.requestUrlFocus(null);
+                mFakeboxDelegate.setUrlBarFocus(
+                        true, null, LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_TAP);
+                RecordUserAction.record("TasksSurface.FakeBox.Tapped");
             }
         });
         mModel.set(FAKE_SEARCH_BOX_TEXT_WATCHER, new TextWatcher() {
@@ -49,10 +56,20 @@ class TasksSurfaceMediator {
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() == 0) return;
-                mFakeSearchBoxDelegate.requestUrlFocus(s.toString());
+                mFakeboxDelegate.setUrlBarFocus(true, s.toString(),
+                        LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS);
+                RecordUserAction.record("TasksSurface.FakeBox.LongPressed");
 
                 // This won't cause infinite loop since we checked s.length() == 0 above.
                 s.clear();
+            }
+        });
+        model.set(VOICE_SEARCH_BUTTON_CLICK_LISTENER, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mFakeboxDelegate.getLocationBarVoiceRecognitionHandler().startVoiceRecognition(
+                        LocationBarVoiceRecognitionHandler.VoiceInteractionSource.TASKS_SURFACE);
+                RecordUserAction.record("TasksSurface.FakeBox.VoiceSearch");
             }
         });
 

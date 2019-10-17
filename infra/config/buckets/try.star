@@ -24,6 +24,8 @@ luci.bucket(
     ],
 )
 
+exec('./try/cq.star')
+
 luci.recipe.defaults.cipd_package.set('infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
 
 defaults.bucket.set('try')
@@ -118,6 +120,10 @@ android_builder(
 
 android_builder(
     name = 'android-marshmallow-x86-fyi-rel',
+)
+
+android_builder(
+    name = 'android-opus-kitkat-arm-rel',
 )
 
 android_builder(

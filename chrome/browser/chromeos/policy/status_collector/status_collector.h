@@ -12,10 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/session_manager/core/session_manager_observer.h"
 
 class PrefRegistrySimple;
 class Profile;
@@ -75,9 +72,7 @@ class StatusCollector {
       chromeos::system::StatisticsProvider* statistics_provider);
 
   StatusCollector(chromeos::system::StatisticsProvider* provider,
-                  chromeos::CrosSettings* cros_settings,
-                  chromeos::PowerManagerClient* power_manager,
-                  session_manager::SessionManager* session_manager);
+                  chromeos::CrosSettings* cros_settings);
   virtual ~StatusCollector();
 
   // Gathers status information and calls the passed response callback.
@@ -123,12 +118,6 @@ class StatusCollector {
   chromeos::system::StatisticsProvider* const statistics_provider_;
 
   chromeos::CrosSettings* const cros_settings_;
-
-  // Power manager client. Used to listen to suspend and idle events.
-  chromeos::PowerManagerClient* const power_manager_;
-
-  // Session manager. Used to listen to session state changes.
-  session_manager::SessionManager* const session_manager_;
 
   // Cached values of the reporting settings.
   bool report_version_info_ = false;

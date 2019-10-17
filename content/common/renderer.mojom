@@ -174,24 +174,14 @@ struct UpdateSystemColorInfoParams {
   map<SystemThemeColor, uint32> colors;
 };
 
-// The background state for the render process.  When backgrounded the process's
-// priority will be lower (via base::Process::SetProcessBackgrounded()) if
-// allowed on the current platform (as determined by
-// base::Process::CanBackgroundProcesses()).
-enum RenderProcessBackgroundState {
-  // The renderer process has not been backgrounded, a hidden renderer may still
-  // be foregrounded, e.g. when it is playing audio.
-  kForegrounded,
-  // The renderer process has been backgrounded, a visible renderer may still
-  // be backgrounded, e.g. when it is hosting only low priority frames.
-  kBackgrounded,
-};
-
-// The visibility state for the renderer process, indicating whether or not any
-// of the frames associated with the renderer process are visible.
-enum RenderProcessVisibleState {
+enum RenderProcessState {
   kVisible,
+  // Hidden render processes can still be foregrounded. For example, a hidden
+  // renderer playing audio would be foregrounded.
   kHidden,
+  // Refers to a renderer that is hidden and running at background process
+  // priority.
+  kBackgrounded,
 };
 
 // The primordial Channel-associated interface implemented by a render process.
@@ -273,8 +263,7 @@ interface Renderer {
 
 
   // Tells the renderer process of a change in visibility or background state.
-  SetProcessState(RenderProcessBackgroundState background_state,
-                  RenderProcessVisibleState visible_state);
+  SetProcessState(RenderProcessState process_state);
 
   // Tells the scheduler about "keep-alive" state which can be due to:
   // service workers, shared workers, or fetch keep-alive.

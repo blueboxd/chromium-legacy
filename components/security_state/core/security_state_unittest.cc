@@ -347,6 +347,24 @@ TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureDisabled) {
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
+// Tests that WARNING is set on normal http pages regardless of form edits
+// when kMarkHttpAsFeature is set to mark non-secure connections with grey
+// triangle icon.
+TEST(SecurityStateTest, AlwaysWarningWhenFeatureMarksWithTriangleWarning) {
+  TestSecurityStateHelper helper;
+  helper.SetUrl(GURL(kHttpUrl));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      security_state::features::kMarkHttpAsFeature,
+      {{security_state::features::kMarkHttpAsFeatureParameterName,
+        security_state::features::kMarkHttpAsParameterDangerWarning}});
+
+  EXPECT_EQ(WARNING, helper.GetSecurityLevel());
+
+  helper.set_insecure_field_edit(true);
+  EXPECT_EQ(WARNING, helper.GetSecurityLevel());
+}
+
 // Tests that DANGEROUS is set on normal http pages regardless of form edits
 // when kMarkHttpAsFeature is set to always DANGEROUS
 TEST(SecurityStateTest, AlwaysDangerousWhenFeatureMarksAllAsDangerous) {

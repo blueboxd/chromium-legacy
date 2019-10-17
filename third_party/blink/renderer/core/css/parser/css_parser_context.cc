@@ -46,7 +46,8 @@ CSSParserContext::CSSParserContext(const CSSParserContext* other,
                        other->use_legacy_background_size_shorthand_behavior_,
                        other->secure_context_mode_,
                        other->should_check_content_security_policy_,
-                       use_counter_document) {}
+                       use_counter_document,
+                       other->resource_fetch_restriction_) {}
 
 CSSParserContext::CSSParserContext(
     const CSSParserContext* other,
@@ -67,7 +68,8 @@ CSSParserContext::CSSParserContext(
           other->use_legacy_background_size_shorthand_behavior_,
           other->secure_context_mode_,
           other->should_check_content_security_policy_,
-          use_counter_document) {}
+          use_counter_document,
+          other->resource_fetch_restriction_) {}
 
 CSSParserContext::CSSParserContext(CSSParserMode mode,
                                    SecureContextMode secure_context_mode,
@@ -84,7 +86,8 @@ CSSParserContext::CSSParserContext(CSSParserMode mode,
                        false,
                        secure_context_mode,
                        kDoNotCheckContentSecurityPolicy,
-                       use_counter_document) {}
+                       use_counter_document,
+                       ResourceFetchRestriction::kNone) {}
 
 CSSParserContext::CSSParserContext(const Document& document)
     : CSSParserContext(document,
@@ -100,7 +103,8 @@ CSSParserContext::CSSParserContext(
     bool origin_clean,
     network::mojom::ReferrerPolicy referrer_policy_override,
     const WTF::TextEncoding& charset,
-    SelectorProfile profile)
+    SelectorProfile profile,
+    enum ResourceFetchRestriction resource_fetch_restriction)
     : CSSParserContext(
           base_url_override,
           origin_clean,
@@ -123,7 +127,8 @@ CSSParserContext::CSSParserContext(
           ContentSecurityPolicy::ShouldBypassMainWorld(&document)
               ? kDoNotCheckContentSecurityPolicy
               : kCheckContentSecurityPolicy,
-          &document) {}
+          &document,
+          resource_fetch_restriction) {}
 
 CSSParserContext::CSSParserContext(const ExecutionContext& context)
     : CSSParserContext(context.Url(),
@@ -140,7 +145,8 @@ CSSParserContext::CSSParserContext(const ExecutionContext& context)
                        ContentSecurityPolicy::ShouldBypassMainWorld(&context)
                            ? kDoNotCheckContentSecurityPolicy
                            : kCheckContentSecurityPolicy,
-                       DynamicTo<Document>(context)) {}
+                       DynamicTo<Document>(context),
+                       ResourceFetchRestriction::kNone) {}
 
 CSSParserContext::CSSParserContext(
     const KURL& base_url,
@@ -154,7 +160,8 @@ CSSParserContext::CSSParserContext(
     bool use_legacy_background_size_shorthand_behavior,
     SecureContextMode secure_context_mode,
     ContentSecurityPolicyDisposition policy_disposition,
-    const Document* use_counter_document)
+    const Document* use_counter_document,
+    enum ResourceFetchRestriction resource_fetch_restriction)
     : base_url_(base_url),
       should_check_content_security_policy_(policy_disposition),
       origin_clean_(origin_clean),
@@ -167,7 +174,8 @@ CSSParserContext::CSSParserContext(
           use_legacy_background_size_shorthand_behavior),
       secure_context_mode_(secure_context_mode),
       charset_(charset),
-      document_(use_counter_document) {}
+      document_(use_counter_document),
+      resource_fetch_restriction_(resource_fetch_restriction) {}
 
 bool CSSParserContext::operator==(const CSSParserContext& other) const {
   return base_url_ == other.base_url_ && origin_clean_ == other.origin_clean_ &&
@@ -176,7 +184,8 @@ bool CSSParserContext::operator==(const CSSParserContext& other) const {
          is_html_document_ == other.is_html_document_ &&
          use_legacy_background_size_shorthand_behavior_ ==
              other.use_legacy_background_size_shorthand_behavior_ &&
-         secure_context_mode_ == other.secure_context_mode_;
+         secure_context_mode_ == other.secure_context_mode_ &&
+         resource_fetch_restriction_ == other.resource_fetch_restriction_;
 }
 
 const CSSParserContext* StrictCSSParserContext(

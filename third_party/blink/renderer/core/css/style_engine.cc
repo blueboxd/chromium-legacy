@@ -392,12 +392,48 @@ void StyleEngine::MediaQueryAffectingValueChanged(
   }
 }
 
+void StyleEngine::AddTextTrack(TextTrack* text_track) {
+  text_tracks_.insert(text_track);
+}
+
+void StyleEngine::RemoveTextTrack(TextTrack* text_track) {
+  text_tracks_.erase(text_track);
+}
+
+void StyleEngine::MediaQueryAffectingValueChanged(
+    HeapHashSet<Member<TextTrack>>& text_tracks) {
+  if (text_tracks.IsEmpty())
+    return;
+
+  for (auto text_track : text_tracks) {
+    bool style_needs_recalc = false;
+    auto style_sheets = text_track->GetCSSStyleSheets();
+    for (const auto& sheet : style_sheets) {
+      StyleSheetContents* contents = sheet->Contents();
+      if (contents->HasMediaQueries()) {
+        style_needs_recalc = true;
+        contents->ClearRuleSet();
+      }
+    }
+
+    if (style_needs_recalc) {
+      // Use kSubtreeTreeStyleChange instead of RuleSet style invalidation
+      // because it won't be expensive for tracks and we won't have dynamic
+      // changes.
+      text_track->Owner()->SetNeedsStyleRecalc(
+          kSubtreeStyleChange,
+          StyleChangeReasonForTracing::Create(style_change_reason::kShadow));
+    }
+  }
+}
+
 void StyleEngine::MediaQueryAffectingValueChanged() {
   if (ClearMediaQueryDependentRuleSets(active_user_style_sheets_))
     MarkUserStyleDirty();
   if (GetDocumentStyleSheetCollection().MediaQueryAffectingValueChanged())
     SetNeedsActiveStyleUpdate(GetDocument());
   MediaQueryAffectingValueChanged(active_tree_scopes_);
+  MediaQueryAffectingValueChanged(text_tracks_);
   if (resolver_)
     resolver_->UpdateMediaType();
 }
@@ -2017,6 +2053,7 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   visitor->Trace(sheet_to_text_cache_);
   visitor->Trace(tracker_);
   visitor->Trace(meta_color_scheme_);
+  visitor->Trace(text_tracks_);
   FontSelectorClient::Trace(visitor);
 }
 

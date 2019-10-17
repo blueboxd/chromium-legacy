@@ -116,8 +116,7 @@ namespace blink {
 AXLayoutObject::AXLayoutObject(LayoutObject* layout_object,
                                AXObjectCacheImpl& ax_object_cache)
     : AXNodeObject(layout_object->GetNode(), ax_object_cache),
-      layout_object_(layout_object),
-      is_autofill_available_(false) {
+      layout_object_(layout_object) {
 // TODO(aleventhal) Get correct current state of autofill.
 #if DCHECK_IS_ON()
   layout_object_->SetHasAXObject(true);
@@ -2347,11 +2346,15 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
   }
 }
 
-void AXLayoutObject::HandleAutofillStateChanged(bool available) {
-  if (is_autofill_available_ != available) {
-    is_autofill_available_ = available;
-    AXObjectCache().MarkAXObjectDirty(this, false);
-  }
+bool AXLayoutObject::IsAutofillAvailable() const {
+  // Autofill state is stored in AXObjectCache.
+  WebAXAutofillState state = AXObjectCache().GetAutofillState(AXObjectID());
+  return state == WebAXAutofillState::kAutofillAvailable;
+}
+
+void AXLayoutObject::HandleAutofillStateChanged(WebAXAutofillState state) {
+  // Autofill state is stored in AXObjectCache.
+  AXObjectCache().SetAutofillState(AXObjectID(), state);
 }
 
 void AXLayoutObject::TextChanged() {

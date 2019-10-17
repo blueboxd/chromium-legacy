@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/fake_owner.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -35,8 +36,10 @@
 class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    feature_list.InitAndDisableFeature(
-        blink::features::kMixedContentAutoupgrade);
+    feature_list.InitWithFeatures(
+        /* enabled_features */ {},
+        /* disabled_features */ {blink::features::kMixedContentAutoupgrade,
+                                 features::kMixedContentSiteSetting});
   }
 
  protected:
@@ -300,6 +303,7 @@ class ContentSettingBubbleModelMixedScriptOopifTest
     : public ContentSettingBubbleModelMixedScriptTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentSettingBubbleModelMixedScriptTest::SetUpCommandLine(command_line);
     content::IsolateAllSitesForTesting(command_line);
   }
 

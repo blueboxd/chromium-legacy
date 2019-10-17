@@ -1332,15 +1332,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(
       SitePerProcessBrowserTest,
       IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            UnloadHandlersArePowerful);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessSSLBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            UnloadHandlersArePowerfulGrandChild);
 
   class DroppedInterfaceRequestLogger;
-
-  // Update the RenderProcessHost priority when a navigation occurs.
-  void UpdateRenderProcessHostFramePriorities();
 
   // IPC Message handlers.
   void OnDetach();
@@ -1978,11 +1975,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Track this frame's last committed URL.
   GURL last_committed_url_;
-
-  // Track the frame priority of the last committed document, which is nullopt
-  // prior to the first commit.
-  base::Optional<RenderProcessHostImpl::FramePriority>
-      last_committed_document_priority_;
 
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;

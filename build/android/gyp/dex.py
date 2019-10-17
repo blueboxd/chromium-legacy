@@ -404,7 +404,10 @@ def main(args):
     final_dex_inputs = list(options.class_inputs)
   final_dex_inputs += options.dex_inputs
 
-  dex_cmd = ['java', '-jar', options.r8_jar_path, 'd8', '--no-desugaring']
+  dex_cmd = [
+      build_utils.JAVA_PATH, '-jar', options.r8_jar_path, 'd8',
+      '--no-desugaring'
+  ]
   if options.release:
     dex_cmd += ['--release']
   if options.min_api:

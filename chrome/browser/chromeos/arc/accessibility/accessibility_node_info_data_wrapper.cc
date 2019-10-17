@@ -299,13 +299,6 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
 
   GetProperty(AXStringProperty::PANE_TITLE, &pane_title);
 
-  // If it exists, set tooltip value as description on node.
-  std::string tooltip;
-  if (GetProperty(AXStringProperty::TOOLTIP, &tooltip)) {
-    out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                 tooltip);
-  }
-
   if (!text.empty() || !content_description.empty() || !label.empty() ||
       !pane_title.empty()) {
     // Append non empty properties to name attribute.
@@ -360,6 +353,11 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kPlaceholder,
                                  place_holder);
   }
+
+  // If it exists, set tooltip value as on node.
+  std::string tooltip;
+  if (GetProperty(AXStringProperty::TOOLTIP, &tooltip))
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kTooltip, tooltip);
 
   // Int properties.
   int traversal_before = -1, traversal_after = -1;

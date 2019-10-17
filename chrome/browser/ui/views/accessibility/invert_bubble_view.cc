@@ -58,7 +58,6 @@ class InvertBubbleView : public views::BubbleDialogDelegateView,
   // Overridden from views::BubbleDialogDelegateView:
   std::unique_ptr<views::View> CreateExtraView() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
 
   // Overridden from views::WidgetDelegate:
@@ -86,6 +85,8 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
       browser_(browser),
       high_contrast_(nullptr),
       dark_theme_(nullptr) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   l10n_util::GetStringUTF16(IDS_DONE));
   set_margins(gfx::Insets());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INVERT);
 }
@@ -104,12 +105,6 @@ std::unique_ptr<views::View> InvertBubbleView::CreateExtraView() {
 
 int InvertBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 InvertBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK_EQ(button, ui::DialogButton::DIALOG_BUTTON_OK);
-  return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
 void InvertBubbleView::Init() {

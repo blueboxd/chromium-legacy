@@ -78,7 +78,8 @@ class ContentAutofillDriver : public AutofillDriver,
   void RendererShouldFillFieldWithValue(const base::string16& value) override;
   void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
-  void RendererShouldSetSuggestionAvailability(bool available) override;
+  void RendererShouldSetSuggestionAvailability(
+      const mojom::AutofillState state) override;
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;

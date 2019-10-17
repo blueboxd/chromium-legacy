@@ -147,6 +147,7 @@ enum PrintSettingsBuckets {
   DEFAULT_DPI,
   NON_DEFAULT_DPI,
   PIN,
+  FIT_TO_PAPER,
   PRINT_SETTINGS_BUCKET_BOUNDARY
 };
 
@@ -358,8 +359,11 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
     ReportPrintSettingHistogram(SCALING);
   }
 
-  if (is_pdf && scaling_type == ScalingType::FIT_TO_PAGE) {
-    ReportPrintSettingHistogram(FIT_TO_PAGE);
+  if (is_pdf) {
+    if (scaling_type == ScalingType::FIT_TO_PAGE)
+      ReportPrintSettingHistogram(FIT_TO_PAGE);
+    else if (scaling_type == ScalingType::FIT_TO_PAPER)
+      ReportPrintSettingHistogram(FIT_TO_PAPER);
   }
 
   if (print_settings.FindIntKey(kSettingDpiHorizontal).value_or(0) > 0 &&

@@ -49,7 +49,7 @@ void FakeDeviceSync::InvokePendingFindEligibleDevicesCallback(
 
 void FakeDeviceSync::InvokePendingGetDevicesActivityStatusCallback(
     mojom::NetworkRequestResult result_code,
-    std::vector<mojom::DeviceActivityStatusPtr>
+    base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>
         get_devices_activity_status_response) {
   std::move(get_devices_activity_status_callback_queue_.front())
       .Run(result_code, std::move(get_devices_activity_status_response));

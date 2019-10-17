@@ -1019,7 +1019,7 @@ void SyncTest::SetUpOnMainThread() {
   // Allows google.com as well as country-specific TLDs.
   host_resolver()->AllowDirectLookup("*.google.com");
   host_resolver()->AllowDirectLookup("accounts.google.*");
-
+  host_resolver()->AllowDirectLookup("*.googleusercontent.com");
   // Allow connection to googleapis.com for oauth token requests in E2E tests.
   host_resolver()->AllowDirectLookup("*.googleapis.com");
 

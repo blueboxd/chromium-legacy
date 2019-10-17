@@ -307,4 +307,37 @@ TEST_F(ScrollableShelfViewTest, VerifyTappableAppIndices) {
   CheckFirstAndLastTappableIconsBounds();
 }
 
+TEST_F(ScrollableShelfViewTest, ShowTooltipForArrowButtons) {
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Check the initial state of |tooltip_manager|.
+  ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+
+  // Verifies that tooltip should show for a visible shelf item.
+  views::View* right_arrow = scrollable_shelf_view_->right_arrow();
+  GetEventGenerator()->MoveMouseTo(
+      right_arrow->GetBoundsInScreen().CenterPoint());
+  tooltip_manager->ShowTooltip(right_arrow);
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Click right arrow button to scroll the shelf and show left arrow button.
+  GetEventGenerator()->ClickLeftButton();
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Reset |tooltip_manager|.
+  GetEventGenerator()->MoveMouseTo(gfx::Point());
+  tooltip_manager->Close();
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+
+  views::View* left_arrow = scrollable_shelf_view_->left_arrow();
+  GetEventGenerator()->MoveMouseTo(
+      left_arrow->GetBoundsInScreen().CenterPoint());
+  tooltip_manager->ShowTooltip(left_arrow);
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+}
+
 }  // namespace ash

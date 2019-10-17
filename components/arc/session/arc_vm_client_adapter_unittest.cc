@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -98,6 +100,7 @@ class ArcVmClientAdapterTest : public testing::Test,
     adapter_ = CreateArcVmClientAdapter();
     arc_instance_stopped_called_ = false;
     adapter_->AddObserver(this);
+    ASSERT_TRUE(dir_.CreateUniqueTempDir());
 
     // The fake client returns VM_STATUS_STARTING by default. Change it
     // to VM_STATUS_RUNNING which is used by ARCVM.
@@ -177,6 +180,8 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   base::RunLoop* run_loop() { return run_loop_.get(); }
   ArcClientAdapter* adapter() { return adapter_.get(); }
+  const base::FilePath& GetTempDir() const { return dir_.GetPath(); }
+
   bool arc_instance_stopped_called() const {
     return arc_instance_stopped_called_;
   }
@@ -199,6 +204,7 @@ class ArcVmClientAdapterTest : public testing::Test,
   bool arc_instance_stopped_called_;
 
   content::BrowserTaskEnvironment browser_task_environment_;
+  base::ScopedTempDir dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapterTest);
 };
@@ -436,6 +442,51 @@ TEST_F(ArcVmClientAdapterTest, CrosvmAndConciergeCrashes) {
   SendNameOwnerChangedSignal();
   run_loop()->RunUntilIdle();
   EXPECT_FALSE(arc_instance_stopped_called());
+}
+
+// Tests if androidboot.debuggable is set properly.
+TEST_F(ArcVmClientAdapterTest, IsAndroidDebuggable) {
+  constexpr const char kAndroidDebuggableTrueJson[] = R"json({
+    "ANDROID_DEBUGGABLE": true
+  })json";
+  constexpr const char kAndroidDebuggableFalseJson[] = R"json({
+    "ANDROID_DEBUGGABLE": false
+  })json";
+  constexpr const char kInvalidTypeJson[] = R"json([
+    42
+  ])json";
+  constexpr const char kInvalidJson[] = R"json({
+    "ANDROID_DEBUGGABLE": true,
+  })json";
+  constexpr const char kKeyNotFoundJson[] = R"json({
+    "BADKEY": "a"
+  })json";
+  constexpr const char kNonBooleanValue[] = R"json({
+    "ANDROID_DEBUGGABLE": "a"
+  })json";
+  constexpr const char kBadKeyType[] = R"json({
+    42: true
+  })json";
+
+  auto test = [](const base::FilePath& dir, const std::string& str) {
+    base::FilePath path;
+    if (!CreateTemporaryFileInDir(dir, &path))
+      return false;
+    base::WriteFile(path, str.data(), str.size());
+    return IsAndroidDebuggableForTesting(path);
+  };
+
+  EXPECT_TRUE(test(GetTempDir(), kAndroidDebuggableTrueJson));
+  EXPECT_FALSE(test(GetTempDir(), kAndroidDebuggableFalseJson));
+  EXPECT_FALSE(test(GetTempDir(), kInvalidTypeJson));
+  EXPECT_FALSE(test(GetTempDir(), kInvalidJson));
+  EXPECT_FALSE(test(GetTempDir(), kKeyNotFoundJson));
+  EXPECT_FALSE(test(GetTempDir(), kNonBooleanValue));
+  EXPECT_FALSE(test(GetTempDir(), kBadKeyType));
+
+  // TODO(yusukes): Change this to _FALSE later.
+  EXPECT_TRUE(
+      IsAndroidDebuggableForTesting(base::FilePath("/nonexistent-path")));
 }
 
 }  // namespace

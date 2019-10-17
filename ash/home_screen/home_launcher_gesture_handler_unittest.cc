@@ -16,6 +16,8 @@
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/rounded_label_widget.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -691,8 +693,8 @@ TEST_F(HomeLauncherGestureHandlerTest, MinimizedWindowsShowInOverview) {
 
 // Test that in kDragWindowToHomeOrOverview mode, when swiping up from the
 // shelf, we only open overview when the y scroll delta (velocity) decrease to
-// kShowOverviewThreshold or less.
-TEST_F(HomeLauncherGestureHandlerTest, ShowOverviewWhenHold) {
+// kOpenOverviewThreshold or less.
+TEST_F(HomeLauncherGestureHandlerTest, OpenOverviewWhenHold) {
   UpdateDisplay("400x400");
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
@@ -702,12 +704,12 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowOverviewWhenHold) {
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(
       gfx::Point(200, 200), 0.f,
-      DragWindowFromShelfController::kShowOverviewThreshold + 1);
+      DragWindowFromShelfController::kOpenOverviewThreshold + 1);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnScrollEvent(
       gfx::Point(200, 200), 0.f,
-      DragWindowFromShelfController::kShowOverviewThreshold);
+      DragWindowFromShelfController::kOpenOverviewThreshold);
   EXPECT_TRUE(overview_controller->InOverviewSession());
   GetGestureHandler()->OnReleaseEvent(gfx::Point(200, 200), base::nullopt);
 }
@@ -920,12 +922,31 @@ TEST_F(HomeLauncherGestureHandlerTest, HideOverviewDuringDragging) {
   GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
                                     shelf_bounds.CenterPoint());
   GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.5f, 0.5f);
-  base::RunLoop().RunUntilIdle();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->InOverviewSession());
+  // We test the visibility of overview by testing the drop target widget's
+  // visibility in the overview.
+  OverviewGrid* current_grid =
+      overview_controller->overview_session()->GetGridWithRootWindow(
+          window1->GetRootWindow());
+  OverviewItem* drop_target_item = current_grid->GetDropTarget();
+  EXPECT_TRUE(drop_target_item);
+  EXPECT_EQ(drop_target_item->GetWindow()->layer()->GetTargetOpacity(), 1.f);
 
-  GetGestureHandler()->OnReleaseEvent(shelf_bounds.CenterPoint(),
+  GetGestureHandler()->OnScrollEvent(
+      gfx::Point(200, 200), 0.5f,
+      DragWindowFromShelfController::kShowOverviewThreshold + 1);
+  // Test overview should be invisble.
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_EQ(drop_target_item->GetWindow()->layer()->GetTargetOpacity(), 0.f);
+
+  GetGestureHandler()->OnReleaseEvent(gfx::Point(200, 200),
                                       /*velocity_y=*/base::nullopt);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  // |window1| should have added to overview. Test its visibility.
+  EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
+      window1.get()));
+  EXPECT_EQ(window1->layer()->GetTargetOpacity(), 1.f);
 }
 
 // Test that in kDragWindowToHomeOrOverview mode, we do not show drag-to-snap
@@ -953,6 +974,59 @@ TEST_F(HomeLauncherGestureHandlerTest, NoDragToSnapIndicator) {
 
   GetGestureHandler()->OnReleaseEvent(shelf_bounds.CenterPoint(),
                                       /*velocity_y=*/base::nullopt);
+}
+
+// Test there is no black backdrop behind the dragged window if we're doing the
+// scale down animation for the dragged window.
+TEST_F(HomeLauncherGestureHandlerTest, NoBackdropDuringWindowScaleDown) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  auto window = CreateWindowForTesting();
+  EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_NE(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
+
+  GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
+                                    shelf_bounds.CenterPoint());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(0, 200), 0.f, 10.f);
+  GetGestureHandler()->OnReleaseEvent(
+      shelf_bounds.CenterPoint(),
+      base::make_optional(
+          -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
+  EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
+}
+
+// Test that if drag is cancelled, overview should be dismissed and other
+// hidden windows should restore to its previous visibility state.
+TEST_F(HomeLauncherGestureHandlerTest, CancelDragDismissOverview) {
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+  auto window3 = CreateWindowForTesting();
+  auto window2 = CreateWindowForTesting();
+  auto window1 = CreateWindowForTesting();
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+
+  GetGestureHandler()->OnPressEvent(Mode::kDragWindowToHomeOrOverview,
+                                    shelf_bounds.CenterPoint());
+  GetGestureHandler()->OnScrollEvent(gfx::Point(200, 200), 0.5f, 0.5f);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_FALSE(window3->IsVisible());
+
+  GetGestureHandler()->Cancel();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
 }
 
 class HomeLauncherModeGestureHandlerTest

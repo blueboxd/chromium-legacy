@@ -27,7 +27,7 @@ struct FrameSinkManagerParams {
   pending_receiver<FrameSinkManager> frame_sink_manager;
 
   // Viz to host interface.
-  FrameSinkManagerClient frame_sink_manager_client;
+  pending_remote<FrameSinkManagerClient> frame_sink_manager_client;
 };
 
 struct VizDevToolsParams {

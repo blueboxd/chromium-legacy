@@ -239,13 +239,6 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     ++num_reveal_appshim_calls_;
   }
 
-  bool CanSkipAppUpdateForSync(
-      const AppId& app_id,
-      const WebApplicationInfo& web_app_info) const override {
-    NOTIMPLEMENTED();
-    return true;
-  }
-
   bool CanUserUninstallFromSync(const AppId& app_id) const override {
     NOTIMPLEMENTED();
     return false;

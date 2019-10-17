@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
+import android.support.annotation.IdRes;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -144,5 +145,18 @@ public class BaseSuggestionView extends SimpleHorizontalLayoutView {
     /** Return widget holding action icon. */
     ImageView getActionImageView() {
         return mActionView;
+    }
+
+    /**
+     * Find content view by view id.
+     *
+     * Scoped {@link #findViewById(int)} search for the view specified in
+     * {@link #setContentView(View)}.
+     *
+     * @param id View ID of the sought view.
+     * @return View with the specified ID or null, if view could not be found.
+     */
+    public <T extends View> T findContentView(@IdRes int id) {
+        return mContentView.findContentView(id);
     }
 }

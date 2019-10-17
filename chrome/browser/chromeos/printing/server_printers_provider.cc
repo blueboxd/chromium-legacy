@@ -41,6 +41,7 @@ class ServerPrintersProviderImpl
       : servers_provider_(
             PrintServersProviderFactory::Get()->GetForProfile(profile)) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    servers_provider_->SetProfile(profile);
     servers_provider_->AddObserver(this);
   }
 

@@ -153,10 +153,10 @@ bool AutofillExternalDelegate::HasActiveScreenReader() const {
 }
 
 void AutofillExternalDelegate::OnAutofillAvailabilityEvent(
-    bool has_suggestions) {
+    const mojom::AutofillState state) {
   // Availability of suggestions should be communicated to Blink because
   // accessibility objects live in both the renderer and browser processes.
-  driver_->RendererShouldSetSuggestionAvailability(has_suggestions);
+  driver_->RendererShouldSetSuggestionAvailability(state);
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(

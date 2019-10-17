@@ -311,15 +311,14 @@ base::Time VariationsSeedStore::GetLastFetchTime() const {
   return local_state_->GetTime(prefs::kVariationsLastFetchTime);
 }
 
-void VariationsSeedStore::RecordLastFetchTime() {
-  base::Time now = base::Time::Now();
-  local_state_->SetTime(prefs::kVariationsLastFetchTime, now);
+void VariationsSeedStore::RecordLastFetchTime(base::Time fetch_time) {
+  local_state_->SetTime(prefs::kVariationsLastFetchTime, fetch_time);
 
   // If the latest and safe seeds are identical, update the fetch time for the
   // safe seed as well.
   if (local_state_->GetString(prefs::kVariationsCompressedSeed) ==
       kIdenticalToSafeSeedSentinel) {
-    local_state_->SetTime(prefs::kVariationsSafeSeedFetchTime, now);
+    local_state_->SetTime(prefs::kVariationsSafeSeedFetchTime, fetch_time);
   }
 }
 

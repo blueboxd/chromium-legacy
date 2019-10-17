@@ -601,6 +601,10 @@ class WebContents : public PageNavigator,
   // an IPC to all the renderer processes associated with this WebContents.
   virtual void NotifyPreferencesChanged() = 0;
 
+  // Sends the current preferences to all renderer processes for the current
+  // page.
+  virtual void SyncRendererPrefs() = 0;
+
   // Notifies WebContents that an attempt has been made to read the cookies in
   // |cookie_list|.
   virtual void OnCookiesRead(const GURL& url,

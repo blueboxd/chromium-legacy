@@ -4,13 +4,16 @@
 
 #include "weblayer/browser/browser_controller_impl.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/browser_observer.h"
+#include "weblayer/public/fullscreen_delegate.h"
 
 #if !defined(OS_ANDROID)
 #include "ui/views/controls/webview/webview.h"
@@ -26,6 +29,14 @@ namespace weblayer {
 
 namespace {
 
+// Pointer value of this is used as a key in base::SupportsUserData for
+// WebContents. Value of the key is an instance of |UserData|.
+constexpr int kWebContentsUserDataKey = 0;
+
+struct UserData : public base::SupportsUserData::Data {
+  BrowserControllerImpl* controller = nullptr;
+};
+
 #if defined(OS_ANDROID)
 BrowserController* g_last_browser_controller;
 #endif
@@ -40,6 +51,9 @@ BrowserControllerImpl::BrowserControllerImpl(ProfileImpl* profile)
   content::WebContents::CreateParams create_params(
       profile_->GetBrowserContext());
   web_contents_ = content::WebContents::Create(create_params);
+  std::unique_ptr<UserData> user_data = std::make_unique<UserData>();
+  user_data->controller = this;
+  web_contents_->SetUserData(&kWebContentsUserDataKey, std::move(user_data));
 
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
@@ -51,6 +65,36 @@ BrowserControllerImpl::~BrowserControllerImpl() {
   // Destruct this now to avoid it calling back when this object is partially
   // destructed.
   web_contents_.reset();
+}
+
+// static
+BrowserControllerImpl* BrowserControllerImpl::FromWebContents(
+    content::WebContents* web_contents) {
+  return reinterpret_cast<UserData*>(
+             web_contents->GetUserData(&kWebContentsUserDataKey))
+      ->controller;
+}
+
+void BrowserControllerImpl::SetFullscreenDelegate(
+    FullscreenDelegate* delegate) {
+  if (delegate == fullscreen_delegate_)
+    return;
+
+  const bool had_delegate = (fullscreen_delegate_ != nullptr);
+  const bool has_delegate = (delegate != nullptr);
+
+  // If currently fullscreen, and the delegate is being set to null, force an
+  // exit now (otherwise the delegate can't take us out of fullscreen).
+  if (is_fullscreen_ && fullscreen_delegate_ && had_delegate != has_delegate)
+    OnExitFullscreen();
+
+  fullscreen_delegate_ = delegate;
+  // Whether fullscreen is enabled depends upon whether there is a delegate. If
+  // having a delegate changed, then update the renderer (which is where
+  // fullscreen enabled is tracked).
+  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
+  if (had_delegate != has_delegate && host)
+    host->OnWebkitPreferencesChanged();
 }
 
 void BrowserControllerImpl::AddObserver(BrowserObserver* observer) {
@@ -134,6 +178,39 @@ bool BrowserControllerImpl::DoBrowserControlsShrinkRendererSize(
   return true;
 }
 
+bool BrowserControllerImpl::EmbedsFullscreenWidget() {
+  return true;
+}
+
+void BrowserControllerImpl::EnterFullscreenModeForTab(
+    content::WebContents* web_contents,
+    const GURL& origin,
+    const blink::mojom::FullscreenOptions& options) {
+  // TODO: support |options|.
+  is_fullscreen_ = true;
+  auto exit_fullscreen_closure = base::BindOnce(
+      &BrowserControllerImpl::OnExitFullscreen, weak_ptr_factory_.GetWeakPtr());
+  base::AutoReset<bool> reset(&processing_enter_fullscreen_, true);
+  fullscreen_delegate_->EnterFullscreen(std::move(exit_fullscreen_closure));
+}
+
+void BrowserControllerImpl::ExitFullscreenModeForTab(
+    content::WebContents* web_contents) {
+  is_fullscreen_ = false;
+  fullscreen_delegate_->ExitFullscreen();
+}
+
+bool BrowserControllerImpl::IsFullscreenForTabOrPending(
+    const content::WebContents* web_contents) {
+  return is_fullscreen_;
+}
+
+blink::mojom::DisplayMode BrowserControllerImpl::GetDisplayMode(
+    const content::WebContents* web_contents) {
+  return is_fullscreen_ ? blink::mojom::DisplayMode::kFullscreen
+                        : blink::mojom::DisplayMode::kBrowser;
+}
+
 void BrowserControllerImpl::DidFirstVisuallyNonEmptyPaint() {
   for (auto& observer : observers_)
     observer.FirstContentfulPaint();
@@ -154,6 +231,15 @@ void BrowserControllerImpl::DidFinishNavigation(
                                      false);
   }
 #endif
+}
+
+void BrowserControllerImpl::OnExitFullscreen() {
+  // If |processing_enter_fullscreen_| is true, it means the callback is being
+  // called while processing EnterFullscreenModeForTab(). WebContents doesn't
+  // deal well with this. FATAL as Android generally doesn't run with DCHECKs.
+  LOG_IF(FATAL, !processing_enter_fullscreen_)
+      << "exiting fullscreen while entering fullscreen is not supported";
+  web_contents_->ExitFullscreen(/* will_cause_resize */ false);
 }
 
 std::unique_ptr<BrowserController> BrowserController::Create(Profile* profile) {

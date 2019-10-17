@@ -27,8 +27,7 @@ class WebContents;
 
 namespace resource_coordinator {
 
-class InterventionPolicyDatabase;
-class TabLifecylesEnterprisePreferenceMonitor;
+class TabFreezingEnabledPreferenceMonitor;
 class TabLifecycleObserver;
 class TabLifecycleStateObserver;
 class TabLifecycleUnitExternal;
@@ -43,7 +42,6 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   class LifecycleStateObserver;
 
   TabLifecycleUnitSource(
-      InterventionPolicyDatabase* intervention_policy_database,
       UsageClock* usage_clock);
   ~TabLifecycleUnitSource() override;
 
@@ -64,14 +62,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // Pretend that |tab_strip| is the TabStripModel of the focused window.
   void SetFocusedTabStripModelForTesting(TabStripModel* tab_strip);
 
-  InterventionPolicyDatabase* intervention_policy_database() const {
-    return intervention_policy_database_;
-  }
-
   // Returns the state of the tab lifecycles feature enterprise control. This
   // returns true if the feature should be enabled, false otherwise.
   bool tab_lifecycles_enterprise_policy() const {
-    return tab_lifecycles_enterprise_policy_;
+    return tab_freezing_enabled_enterprise_policy_;
   }
 
   // Returns the state of the MemoryLimitMbEnabled enterprise policy.
@@ -184,40 +178,36 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // changes.
   base::ObserverList<TabLifecycleObserver>::Unchecked tab_lifecycle_observers_;
 
-  // The intervention policy database used to assist freezing/discarding
-  // decisions.
-  InterventionPolicyDatabase* intervention_policy_database_;
-
   // A clock that advances when Chrome is in use.
   UsageClock* const usage_clock_;
 
-  // The enterprise policy for overriding the tab lifecycles feature.
-  bool tab_lifecycles_enterprise_policy_ = true;
+  // The enterprise policy for overriding the tab freezing feature.
+  bool tab_freezing_enabled_enterprise_policy_ = true;
 
   // The enterprise policy for setting a limit on total physical memory usage.
   bool memory_limit_enterprise_policy_ = false;
 
   // In official production builds this monitors policy settings and reflects
-  // them in |tab_lifecycles_enterprise_policy_|.
-  std::unique_ptr<TabLifecylesEnterprisePreferenceMonitor>
-      tab_lifecycles_enterprise_preference_monitor_;
+  // them in |tab_freezing_enabled_enterprise_policy_|.
+  std::unique_ptr<TabFreezingEnabledPreferenceMonitor>
+      tab_freezing_enabled_enterprise_preference_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSource);
 };
 
 // Helper class used for getting and monitoring enterprise-policy controlled
-// preferences that can control the tab lifecycles feature. Exposed for testing.
-class TabLifecylesEnterprisePreferenceMonitor {
+// preferences that can control the tab freezing feature. Exposed for testing.
+class TabFreezingEnabledPreferenceMonitor {
  public:
   using OnPreferenceChangedCallback = base::RepeatingCallback<void(bool)>;
 
   // Creates a preference monitor that monitors the provided PrefService. When
   // the preference is initially checked or changed its value is provided via
   // the provided callback.
-  TabLifecylesEnterprisePreferenceMonitor(PrefService* pref_service,
-                                          OnPreferenceChangedCallback callback);
+  TabFreezingEnabledPreferenceMonitor(PrefService* pref_service,
+                                      OnPreferenceChangedCallback callback);
 
-  ~TabLifecylesEnterprisePreferenceMonitor();
+  ~TabFreezingEnabledPreferenceMonitor();
 
  private:
   void GetPref();
@@ -226,7 +216,7 @@ class TabLifecylesEnterprisePreferenceMonitor {
   OnPreferenceChangedCallback callback_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabLifecylesEnterprisePreferenceMonitor);
+  DISALLOW_COPY_AND_ASSIGN(TabFreezingEnabledPreferenceMonitor);
 };
 
 }  // namespace resource_coordinator

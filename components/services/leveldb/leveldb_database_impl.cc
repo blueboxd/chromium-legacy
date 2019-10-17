@@ -66,7 +66,7 @@ void LevelDBDatabaseImpl::Put(const std::vector<uint8_t>& key,
       base::BindOnce(
           [](const std::vector<uint8_t>& key, const std::vector<uint8_t>& value,
              const storage::DomStorageDatabase& db) {
-            return LeveldbStatusToError(db.Put(key, value));
+            return db.Put(key, value);
           },
           key, value),
       std::move(callback));
@@ -74,13 +74,12 @@ void LevelDBDatabaseImpl::Put(const std::vector<uint8_t>& key,
 
 void LevelDBDatabaseImpl::Delete(const std::vector<uint8_t>& key,
                                  StatusCallback callback) {
-  RunDatabaseTask(base::BindOnce(
-                      [](const std::vector<uint8_t>& key,
-                         const storage::DomStorageDatabase& db) {
-                        return LeveldbStatusToError(db.Delete(key));
-                      },
-                      key),
-                  std::move(callback));
+  RunDatabaseTask(
+      base::BindOnce(
+          [](const std::vector<uint8_t>& key,
+             const storage::DomStorageDatabase& db) { return db.Delete(key); },
+          key),
+      std::move(callback));
 }
 
 void LevelDBDatabaseImpl::DeletePrefixed(const std::vector<uint8_t>& key_prefix,
@@ -91,8 +90,8 @@ void LevelDBDatabaseImpl::DeletePrefixed(const std::vector<uint8_t>& key_prefix,
                         WriteBatch batch;
                         Status status = db.DeletePrefixed(prefix, &batch);
                         if (!status.ok())
-                          return LeveldbStatusToError(status);
-                        return LeveldbStatusToError(db.Commit(&batch));
+                          return status;
+                        return db.Commit(&batch);
                       },
                       key_prefix),
                   std::move(callback));
@@ -108,8 +107,7 @@ void LevelDBDatabaseImpl::RewriteDB(StatusCallback callback) {
              storage::DomStorageDatabase* db) {
             callback_task_runner->PostTask(
                 FROM_HERE,
-                base::BindOnce(std::move(callback),
-                               LeveldbStatusToError(db->RewriteDB())));
+                base::BindOnce(std::move(callback), db->RewriteDB()));
           },
           std::move(callback), base::SequencedTaskRunnerHandle::Get()));
 }
@@ -148,7 +146,7 @@ void LevelDBDatabaseImpl::Write(
                 }
               }
             }
-            return LeveldbStatusToError(db.Commit(&batch));
+            return db.Commit(&batch);
           },
           std::move(operations)),
       std::move(callback));
@@ -170,8 +168,7 @@ void LevelDBDatabaseImpl::Get(const std::vector<uint8_t>& key,
                       key),
                   base::BindOnce(
                       [](GetCallback callback, GetResult result) {
-                        std::move(callback).Run(
-                            LeveldbStatusToError(result.status), result.value);
+                        std::move(callback).Run(result.status, result.value);
                       },
                       std::move(callback)));
 }
@@ -197,8 +194,7 @@ void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
             std::vector<mojom::KeyValuePtr> entries;
             for (auto& entry : result.entries)
               entries.push_back(mojom::KeyValue::New(entry.key, entry.value));
-            std::move(callback).Run(LeveldbStatusToError(result.status),
-                                    std::move(entries));
+            std::move(callback).Run(result.status, std::move(entries));
           },
           std::move(callback)));
 }
@@ -215,8 +211,8 @@ void LevelDBDatabaseImpl::CopyPrefixed(
                         Status status =
                             db.CopyPrefixed(prefix, new_prefix, &batch);
                         if (!status.ok())
-                          return LeveldbStatusToError(status);
-                        return LeveldbStatusToError(db.Commit(&batch));
+                          return status;
+                        return db.Commit(&batch);
                       },
                       source_key_prefix, destination_key_prefix),
                   std::move(callback));
@@ -233,7 +229,7 @@ void LevelDBDatabaseImpl::OnDatabaseOpened(
     for (auto& task : tasks)
       database_.PostTaskWithThisObject(FROM_HERE, std::move(task));
   }
-  std::move(callback).Run(LeveldbStatusToError(status));
+  std::move(callback).Run(status);
 }
 
 }  // namespace leveldb

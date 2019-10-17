@@ -19,16 +19,16 @@ AnimationContainer::~AnimationContainer() {
   if (observer_)
     observer_->AnimationContainerShuttingDown(this);
 
-  // The animations own us and stop themselves before being deleted. If
-  // elements_ is not empty, something is wrong.
-  DCHECK(elements_.empty());
+  // The animations own us and stop themselves before being deleted. If they're
+  // still running, something is wrong.
+  DCHECK(!is_running());
 }
 
 void AnimationContainer::Start(AnimationContainerElement* element) {
   DCHECK(elements_.count(element) == 0);  // Start should only be invoked if the
                                           // element isn't running.
 
-  if (elements_.empty()) {
+  if (!is_running()) {
     last_tick_time_ = base::TimeTicks::Now();
     SetMinTimerInterval(element->GetTimerInterval());
     min_timer_interval_count_ = 1;
@@ -49,7 +49,7 @@ void AnimationContainer::Stop(AnimationContainerElement* element) {
   base::TimeDelta interval = element->GetTimerInterval();
   elements_.erase(element);
 
-  if (elements_.empty()) {
+  if (!is_running()) {
     runner_->Stop();
     min_timer_interval_count_ = 0;
     if (observer_)
@@ -76,6 +76,8 @@ void AnimationContainer::SetAnimationRunner(
   runner_ = has_custom_animation_runner_
                 ? std::move(runner)
                 : AnimationRunner::CreateDefaultAnimationRunner();
+  if (is_running())
+    RestartTimer(base::TimeTicks::Now() - last_tick_time_);
 }
 
 void AnimationContainer::Run(base::TimeTicks current_time) {
@@ -107,14 +109,18 @@ void AnimationContainer::SetMinTimerInterval(base::TimeDelta delta) {
   // that shouldn't be a problem for uses of Animation/AnimationContainer.
   runner_->Stop();
   min_timer_interval_ = delta;
+  RestartTimer(base::TimeDelta());
+}
+
+void AnimationContainer::RestartTimer(base::TimeDelta elapsed) {
   runner_->Start(
-      min_timer_interval_,
+      min_timer_interval_, elapsed,
       base::BindRepeating(&AnimationContainer::Run, base::Unretained(this)));
 }
 
 std::pair<TimeDelta, size_t> AnimationContainer::GetMinIntervalAndCount()
     const {
-  DCHECK(!elements_.empty());
+  DCHECK(is_running());
 
   // Find the minimum interval and the number of elements sharing that same
   // interval. It is tempting to create a map of intervals -> counts in order to

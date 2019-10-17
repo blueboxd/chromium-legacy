@@ -325,8 +325,9 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
               if (!ReadUint32(&is_premultiplied) || is_premultiplied > 1)
                 return nullptr;
               break;
-            default:
-              NOTREACHED();
+            case ImageSerializationTag::kImageDataStorageFormatTag:
+              // Does not apply to ImageBitmap.
+              return nullptr;
           }
         } while (!is_done);
       } else if (!ReadUint32(&origin_clean) || origin_clean > 1 ||
@@ -384,8 +385,12 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
                       &image_data_storage_format))
                 return nullptr;
               break;
-            default:
-              NOTREACHED();
+            case ImageSerializationTag::kCanvasPixelFormatTag:
+            case ImageSerializationTag::kOriginCleanTag:
+            case ImageSerializationTag::kIsPremultipliedTag:
+            case ImageSerializationTag::kCanvasOpacityModeTag:
+              // Does not apply to ImageData.
+              return nullptr;
           }
         } while (!is_done);
       }

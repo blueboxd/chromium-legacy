@@ -63,7 +63,6 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   ui::ModalType GetModalType() const override;
   void WindowClosing() override;
   std::unique_ptr<views::View> CreateExtraView() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
 
   // Overridden from views::LinkListener:

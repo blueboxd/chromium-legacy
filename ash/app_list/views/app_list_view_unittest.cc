@@ -322,12 +322,12 @@ class AppListViewTest : public views::ViewsTestBase,
     EXPECT_EQ(gfx::Rect(expected_horizontal_margin, kExpectedGridTop,
                         kExpectedGridWidth, kExpectedGridHeight),
               apps_grid_view()->bounds());
-    EXPECT_EQ(
-        gfx::Rect(kExpectedGridWidth + expected_horizontal_margin +
-                      kPageSwitcherSpacing,
-                  kExpectedGridTop, PageSwitcher::kPreferredButtonStripWidth,
-                  kExpectedGridHeight),
-        page_switcher_view()->bounds());
+    EXPECT_EQ(gfx::Rect(kExpectedGridWidth + expected_horizontal_margin +
+                            kPageSwitcherSpacing,
+                        kExpectedGridTop,
+                        2 * PageSwitcher::kMaxButtonRadiusForRootGrid,
+                        kExpectedGridHeight),
+              page_switcher_view()->bounds());
 
     // Horizontal offset between app list item views.
     const int kHorizontalOffset = GridItemSizeWithMargins(

@@ -635,7 +635,8 @@ TEST_F(BundledExchangeParserTest, NoManifest) {
                       "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
 }
 
 TEST_F(BundledExchangeParserTest, InvalidManifestURL) {

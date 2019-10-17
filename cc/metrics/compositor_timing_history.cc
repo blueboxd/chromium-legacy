@@ -48,12 +48,14 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddDrawDuration(base::TimeDelta duration) = 0;
   virtual void AddSubmitToAckLatency(base::TimeDelta duration) = 0;
 
-  // crbug.com/758439: the following 3 functions are used to report timing in
+  // crbug.com/758439: the following functions are used to report timing in
   // certain conditions targeting blink / compositor animations.
   // Only the renderer would get the meaningful data.
   virtual void AddDrawIntervalWithCompositedAnimations(
       base::TimeDelta duration) = 0;
   virtual void AddDrawIntervalWithMainThreadAnimations(
+      base::TimeDelta duration) = 0;
+  virtual void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta duration) = 0;
 
   // Synchronization measurements
@@ -329,6 +331,13 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.DrawIntervalWithMainThreadAnimations", interval);
   }
 
+  void AddDrawIntervalWithCustomPropertyAnimations(
+      base::TimeDelta interval) override {
+    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
+        "Scheduling.Renderer.DrawIntervalWithCustomPropertyAnimations",
+        interval);
+  }
+
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Renderer.BeginImplFrameLatency", delta);
@@ -432,6 +441,9 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawIntervalWithMainThreadAnimations(
       base::TimeDelta interval) override {}
 
+  void AddDrawIntervalWithCustomPropertyAnimations(
+      base::TimeDelta interval) override {}
+
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_DURATION(
         "Scheduling.Browser.BeginImplFrameLatency", delta);
@@ -506,6 +518,8 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddDrawIntervalWithCompositedAnimations(
       base::TimeDelta inverval) override {}
   void AddDrawIntervalWithMainThreadAnimations(
+      base::TimeDelta inverval) override {}
+  void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta inverval) override {}
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {}
   void AddBeginMainFrameQueueDurationCriticalDuration(
@@ -964,7 +978,8 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
                                       size_t composited_animations_count,
                                       size_t main_thread_animations_count,
                                       bool current_frame_had_raf,
-                                      bool next_frame_has_pending_raf) {
+                                      bool next_frame_has_pending_raf,
+                                      bool has_custom_property_animations) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();
   base::TimeDelta draw_duration = draw_end_time - draw_start_time_;
@@ -989,8 +1004,13 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
     if (composited_animations_count > 0 &&
         previous_frame_had_composited_animations_)
       uma_reporter_->AddDrawIntervalWithCompositedAnimations(draw_interval);
+    if (has_custom_property_animations &&
+        previous_frame_had_custom_property_animations_)
+      uma_reporter_->AddDrawIntervalWithCustomPropertyAnimations(draw_interval);
   }
   previous_frame_had_composited_animations_ = composited_animations_count > 0;
+  previous_frame_had_custom_property_animations_ =
+      has_custom_property_animations;
   draw_end_time_prev_ = draw_end_time;
 
   if (used_new_active_tree) {

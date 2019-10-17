@@ -422,6 +422,7 @@ const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
 
 #endif  // OS_ANDROID
 
+#if !defined(OS_CHROMEOS)
 const FeatureEntry::FeatureParam kForceDark_SimpleHsl[] = {
     {"inversion_method", "hsl_based"},
     {"image_behavior", "none"},
@@ -473,6 +474,7 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
     {"with selective inversion of everything",
      kForceDark_SelectiveGeneralInversion,
      base::size(kForceDark_SelectiveGeneralInversion), nullptr}};
+#endif  // !OS_CHROMEOS
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_4Hours[] = {
@@ -1353,6 +1355,18 @@ const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
     {" even for ServiceWorker-controlled pages",
      kBackForwardCache_ServiceWorkerSupport, 1, nullptr},
 };
+
+#if defined(OS_CHROMEOS)
+const FeatureEntry::FeatureParam kCrOSActionRecorderLogWithHash[] = {
+    {"CrOSActionRecorderType", "1"}};
+const FeatureEntry::FeatureParam kCrOSActionRecorderLogWithoutHash[] = {
+    {"CrOSActionRecorderType", "2"}};
+const FeatureEntry::FeatureVariation kCrOSActionRecorderVariations[] = {
+    {"Log with Hash", kCrOSActionRecorderLogWithHash,
+     base::size(kCrOSActionRecorderLogWithHash), nullptr},
+    {"Log without Hash", kCrOSActionRecorderLogWithoutHash,
+     base::size(kCrOSActionRecorderLogWithoutHash), nullptr}};
+#endif  // defined(OS_CHROMEOS)
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -2433,11 +2447,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordEditingAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordEditingAndroid)},
 #endif  // OS_ANDROID
+#if !defined(OS_CHROMEOS)
+    // TODO(https://crbug.com/1011696): Investigate crash reports and re-enable
+    // for ChromeOS.
     {"enable-force-dark", flag_descriptions::kForceWebContentsDarkModeName,
-     flag_descriptions::kForceWebContentsDarkModeDescription, kOsAll,
+     flag_descriptions::kForceWebContentsDarkModeDescription,
+     kOsWin | kOsLinux | kOsMac | kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kForceWebContentsDarkMode,
                                     kForceDarkVariations,
                                     "ForceDarkVariations")},
+#endif  // !OS_CHROMEOS
 #if defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
     {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
@@ -3497,12 +3516,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if !defined(OS_ANDROID)
-    {"session-restore-prioritizes-background-use-cases",
-     flag_descriptions::kSessionRestorePrioritizesBackgroundUseCasesName,
-     flag_descriptions::kSessionRestorePrioritizesBackgroundUseCasesDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         features::kSessionRestorePrioritizesBackgroundUseCases)},
     {"proactive-tab-freeze", flag_descriptions::kTabFreezeName,
      flag_descriptions::kTabFreezeDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
@@ -4468,9 +4481,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kTabSwitcherLongpressMenu)},
 #endif  // defined(OS_ANDROID)
 
-    {"bundled-exchanges", flag_descriptions::kBundledHTTPExchangesName,
-     flag_descriptions::kBundledHTTPExchangesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBundledHTTPExchanges)},
+    {"web-bundles", flag_descriptions::kWebBundlesName,
+     flag_descriptions::kWebBundlesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebBundles)},
 
 #if defined(OS_ANDROID)
     {"darken-websites-checkbox-in-themes-setting",
@@ -4642,6 +4655,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-de-jelly", flag_descriptions::kEnableDeJellyName,
      flag_descriptions::kEnableDeJellyDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableDeJelly)},
+
+#if defined(OS_CHROMEOS)
+    {"enable-cros-action-recorder",
+     flag_descriptions::kEnableCrOSActionRecorderName,
+     flag_descriptions::kEnableCrOSActionRecorderDescription, kOsCrOS,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         app_list_features::kEnableCrOSActionRecorder,
+         kCrOSActionRecorderVariations,
+         "CrOSActionRecorderTypeVariations")},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

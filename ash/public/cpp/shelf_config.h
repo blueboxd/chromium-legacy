@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
-#include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -21,7 +20,6 @@ namespace ash {
 // values could change at runtime.
 class ASH_EXPORT ShelfConfig : public TabletModeObserver,
                                public AppListControllerObserver,
-                               public OverviewObserver,
                                public display::DisplayObserver {
  public:
   class Observer : public base::CheckedObserver {
@@ -54,10 +52,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // AppListControllerObserver:
   void OnAppListVisibilityWillChange(bool shown, int64_t display_id) override;
-
-  // OverviewObserver:
-  void OnOverviewModeStartingAnimationComplete(bool canceled) override;
-  void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).

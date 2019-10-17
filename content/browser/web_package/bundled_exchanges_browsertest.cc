@@ -381,7 +381,7 @@ class BundledExchangesFileBrowserTest
   ~BundledExchangesFileBrowserTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitWithFeatures({features::kBundledHTTPExchanges}, {});
+    feature_list_.InitWithFeatures({features::kWebBundles}, {});
     BundledExchangesBrowserTestBase::SetUp();
   }
 

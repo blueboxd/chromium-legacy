@@ -442,6 +442,10 @@ This file contains the strings for ash.
                desc="The label used in the notification used to indicate that, the accessibility feature is being set as forced disabled.">
         deactivated
       </message>
+      <message name="IDS_ASH_ACCESSIBILITY_FEATURE_MANAGED"
+               desc="The label used to indicate that, the accessiblity feature is being managed by a policy.">
+        <ph name="FEATURE_NAME">$1<ex>Full-screen magnifier</ex></ph> This setting is enforced by your administrator.
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_IME_SHORT" desc="The short label used for IME button in system tray bubble.">
         Keyboard

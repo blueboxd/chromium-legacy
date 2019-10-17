@@ -27,6 +27,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -55,6 +56,27 @@ bool ShouldShowDenseLayout(int height,
            target_view_state == ash::AppListViewState::kFullscreenAllApps ||
            target_view_state == ash::AppListViewState::kFullscreenSearch));
 }
+
+// Notifies assistive technology that all schedules animations have completed on
+// this view and that a location change event has occurred. This should be used
+// for notifying a11y to update view locations after transformation animations.
+// This object will delete itself after running OnImplicitAnimationsCompleted.
+class AccessibilityAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit AccessibilityAnimationObserver(views::View* view) : view_(view) {}
+  ~AccessibilityAnimationObserver() override = default;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged, true);
+    delete this;
+  }
+
+ private:
+  views::View* const view_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityAnimationObserver);
+};
 
 }  // namespace
 
@@ -832,7 +854,8 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   // |layer| - The layer to transform.
   // |y_offset| - The initial vertical offset - the layer's vertical offset will
   //              be animated to 0.
-  auto animate_transform = [duration](ui::Layer* layer, int y_offset) {
+  auto animate_transform = [duration](views::View* view, int y_offset) {
+    ui::Layer* layer = view->layer();
     gfx::Transform transform;
     transform.Translate(0, y_offset);
     layer->SetTransform(transform);
@@ -843,6 +866,8 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
     settings->SetTransitionDuration(duration);
     settings->SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+    // Observer will delete itself after animation completes.
+    settings->AddObserver(new AccessibilityAnimationObserver(view));
 
     layer->SetTransform(gfx::Transform());
   };
@@ -894,7 +919,7 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   // For search box, animate the search_box view layer instead of the widget
   // layer to avoid conflict with pagination model transitions (which update the
   // search box widget layer transform as the transition progresses).
-  animate_transform(search_box->layer(), y_offset);
+  animate_transform(search_box, y_offset);
 
   // Update app list page bounds to their target values. This assumes that
   // potential in-progress pagination transition does not directly animate page
@@ -915,12 +940,12 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   expand_arrow_view()->SchedulePaint();
 
   // Animate contents view to the target bounds.
-  animate_transform(layer(), y_offset);
+  animate_transform(this, y_offset);
 
   // The expand arrow view should stay in the same place relative to the
   // app list bounds, so apply the inverse translation to the one set for
   // the contents view layer.
-  animate_transform(expand_arrow_view_->layer(), -y_offset);
+  animate_transform(expand_arrow_view_, -y_offset);
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {

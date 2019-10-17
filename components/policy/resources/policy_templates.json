@@ -987,6 +987,7 @@
         'PrintPreviewUseSystemDefaultPrinter',
         'UserNativePrintersAllowed',
         'ExternalPrintServers',
+        'ExternalPrintServersWhitelist',
       ]
     },
     {
@@ -5476,7 +5477,6 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabled',
-      'future': True,
       'owners': [ 'chlily@chromium.org', ],
       'type': 'int-enum',
       'schema': {
@@ -5514,7 +5514,6 @@
     },
     {
       'name': 'LegacySameSiteCookieBehaviorEnabledForDomainList',
-      'future': True,
       'owners': [ 'chlily@chromium.org', ],
       'type': 'list',
       'schema': {
@@ -15763,25 +15762,24 @@
       This policy does not apply for channel switches.''',
     },
     {
-      'name': 'TabLifecyclesEnabled',
-      'owners': ['chrisha@chromium.org', 'pastarmovj@chromium.org'],
+      'name': 'TabFreezingEnabled',
+      'owners': ['catan-team@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.win:69-'],
-      'future': True,
+      'supported_on': ['chrome.win:79-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
       'example_value': False,
       'id': 460,
-      'caption': '''Enables or disables tab lifecycles''',
+      'caption': '''Allow background tabs freeze''',
       'tags': [],
-      'desc': '''The tab lifecyles feature reclaims CPU and eventually memory associated with running tabs that have not been used in a long period of time, by first throttling them, then freezing them and finally discarding them.
+      'desc': '''Controls whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can freeze tabs that have been in the background for at least 5 minutes.
 
-      If the policy is set to false then tab lifecycles are disabled, and all tabs will be left running normally.
+      If the policy is set to true, tabs that have been in the background for at least 5 minutes may be frozen. Tab freezing reduces CPU, battery and memory usage. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses heuristics to avoid freezing tabs that do useful work in the background (e.g. display notifications, play sound, stream video). Web developers can also opt-out their site from freezing (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
-      If the policy is set to true or left unspecified then tab lifecycles are enabled.''',
+      If the policy is set to false, no tabs will be frozen.''',
     },
     {
       'name': 'UrlKeyedAnonymizedDataCollectionEnabled',
@@ -17811,7 +17809,7 @@
 
       This policy allows you to provide configuration of external print servers to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices as JSON file.
 
-      The size of the file must not exceed 1MB and must contain an array of records (JSON objects). Each record must contain fields "url" and "display_name".
+      The size of the file must not exceed 1MB and must contain an array of records (JSON objects). Each record must contain fields "id", "url" and "display_name" with strings as values. Values of "id" fields must be unique.
 
       The file is downloaded and cached. The cryptographic hash is used to verify the integrity of the download. The file will be re-downloaded whenever the URL or the hash changes.
 
@@ -18471,6 +18469,31 @@
       This policy will be removed after a couple of milestones.
 
       For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.'''
+    },
+    {
+      'name': 'ExternalPrintServersWhitelist',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'supported_on': ['chrome_os:79-'],
+      'id': 631,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Enabled external print servers''',
+      'tags': [],
+      'desc': '''Specifies the subset of print servers that will be queried for server printers.
+
+      If this policy is used, only the server printers with ids matching the values in this policy are available to the user.
+
+      The ids must correspond to the "id" field in the file specified in <ph name="EXTERNAL_PRINT_SERVERS_POLICY">ExternalPrintServers</ph>.
+
+      If this policy is not set, filtering is omitted and all print servers are taken into account.'''
     }
   ],
 
@@ -19293,6 +19316,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 630,
+  'highest_id_currently_used': 631,
   'highest_atomic_group_id_currently_used': 38
 }

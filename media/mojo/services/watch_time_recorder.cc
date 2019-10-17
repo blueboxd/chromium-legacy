@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_piece.h"
 #include "media/base/limits.h"
+#include "media/base/video_decoder.h"
 #include "media/base/watch_time_keys.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -26,24 +27,26 @@ constexpr base::TimeDelta kMinimumElapsedWatchTime =
 // List of known AudioDecoder implementations; recorded to UKM, always add new
 // values to the end and do not reorder or delete values from this list.
 enum class AudioDecoderName : int {
-  kUnknown = 0,     // Decoder name string is not recognized or n/a.
-  kFFmpeg = 1,      // FFmpegAudioDecoder
-  kMojo = 2,        // MojoAudioDecoder
-  kDecrypting = 3,  // DecryptingAudioDecoder
+  kUnknown = 0,      // Decoder name string is not recognized or n/a.
+  kFFmpeg = 1,       // FFmpegAudioDecoder
+  kMojo = 2,         // MojoAudioDecoder
+  kDecrypting = 3,   // DecryptingAudioDecoder
+  kMediaPlayer = 4,  // MediaPlayer
 };
 
 // List of known VideoDecoder implementations; recorded to UKM, always add new
 // values to the end and do not reorder or delete values from this list.
 enum class VideoDecoderName : int {
-  kUnknown = 0,     // Decoder name string is not recognized or n/a.
-  kGpu = 1,         // GpuVideoDecoder
-  kFFmpeg = 2,      // FFmpegVideoDecoder
-  kVpx = 3,         // VpxVideoDecoder
-  kAom = 4,         // AomVideoDecoder
-  kMojo = 5,        // MojoVideoDecoder
-  kDecrypting = 6,  // DecryptingVideoDecoder
-  kDav1d = 7,       // Dav1dVideoDecoder
-  kFuchsia = 8,     // FuchsiaVideoDecoder
+  kUnknown = 0,      // Decoder name string is not recognized or n/a.
+  kGpu = 1,          // GpuVideoDecoder
+  kFFmpeg = 2,       // FFmpegVideoDecoder
+  kVpx = 3,          // VpxVideoDecoder
+  kAom = 4,          // AomVideoDecoder
+  kMojo = 5,         // MojoVideoDecoder
+  kDecrypting = 6,   // DecryptingVideoDecoder
+  kDav1d = 7,        // Dav1dVideoDecoder
+  kFuchsia = 8,      // FuchsiaVideoDecoder
+  kMediaPlayer = 9,  // MediaPlayer
 };
 
 static AudioDecoderName ConvertAudioDecoderNameToEnum(const std::string& name) {
@@ -56,6 +59,8 @@ static AudioDecoderName ConvertAudioDecoderNameToEnum(const std::string& name) {
       return AudioDecoderName::kMojo;
     case 0xd39a2eda:
       return AudioDecoderName::kDecrypting;
+    case 0x667dc202:
+      return AudioDecoderName::kMediaPlayer;
     default:
       DLOG_IF(WARNING, !name.empty())
           << "Unknown decoder name encountered; metrics need updating: "
@@ -84,6 +89,8 @@ static VideoDecoderName ConvertVideoDecoderNameToEnum(const std::string& name) {
       return VideoDecoderName::kDav1d;
     case 0x27b31c6a:
       return VideoDecoderName::kFuchsia;
+    case 0x667dc202:
+      return VideoDecoderName::kMediaPlayer;
     default:
       DLOG_IF(WARNING, !name.empty())
           << "Unknown decoder name encountered; metrics need updating: "

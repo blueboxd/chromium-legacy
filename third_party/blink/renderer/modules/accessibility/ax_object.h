@@ -35,6 +35,7 @@
 #include <ostream>
 
 #include "base/macros.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
@@ -469,7 +470,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   }
 
   // Check object state.
-  virtual bool IsAutofillAvailable() { return false; }
+  virtual bool IsAutofillAvailable() const { return false; }
   virtual bool IsClickable() const;
   virtual AccessibilityExpanded IsExpanded() const {
     return kExpandedUndefined;
@@ -1000,7 +1001,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Notifications that this object may have changed.
   virtual void ChildrenChanged() {}
   virtual void HandleActiveDescendantChanged() {}
-  virtual void HandleAutofillStateChanged(bool) {}
+  virtual void HandleAutofillStateChanged(WebAXAutofillState) {}
   virtual void HandleAriaExpandedChanged() {}
   virtual void SelectionChanged();
   virtual void TextChanged() {}

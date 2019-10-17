@@ -61,6 +61,11 @@
 if (window.internals)
     internals.settings.setScrollAnimatorEnabled(false);
 
+// TODO(crbug.com/953847): Support other platforms or use calculated expectations.
+let platform = navigator.userAgent.includes("Linux") ? "linux" :
+               navigator.userAgent.includes("Windows") ? "win" :
+               (() => { throw "Platform unsupported. See crbug.com/953847"; })();
+
 window.onload = () => {
   const standardDivFast = document.getElementById("standard");
   const standardRectFast = standardDivFast.getBoundingClientRect();
@@ -134,27 +139,29 @@ window.onload = () => {
 
     // Testing forward scroll on vertical scrollbar.
     let x = standardRectFast.right - BUTTON_WIDTH / 2;
-    let y = standardRectFast.top + 50;
+    let y = standardRectFast.bottom - SCROLL_CORNER - BUTTON_WIDTH - 15;
     await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    assert_equals(standardDivFast.scrollTop, 617, "Shift + click forward didn't scroll.");
+    let forward_offset = {linux: 915, win: 794}[platform];
+    assert_equals(standardDivFast.scrollTop, forward_offset, "Shift + click forward didn't scroll.");
 
     // Testing backward scroll on vertical scrollbar.
     x = standardRectFast.right - BUTTON_WIDTH / 2;
-    y = standardRectFast.top + 30;
+    y = standardRectFast.top + BUTTON_WIDTH + 15;
+    let backward_offset = {linux: 0, win: 144}[platform];
     await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    assert_equals(standardDivFast.scrollTop, 160, "Shift + click backward didn't scroll.");
+    assert_equals(standardDivFast.scrollTop, backward_offset, "Shift + click backward didn't scroll.");
 
     // Testing forward scroll on horizontal scrollbar.
-    x = standardRectFast.left + 50;
+    x = standardRectFast.right - SCROLL_CORNER - BUTTON_WIDTH - 15;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    assert_equals(standardDivFast.scrollLeft, 617, "Shift + click forward didn't scroll.");
+    assert_equals(standardDivFast.scrollLeft, forward_offset, "Shift + click forward didn't scroll.");
 
     // Testing backward scroll on horizontal scrollbar.
-    x = standardRectFast.left + 30;
+    x = standardRectFast.left + BUTTON_WIDTH + 15;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    assert_equals(standardDivFast.scrollLeft, 160, "Shift + click backward didn't scroll.");
+    assert_equals(standardDivFast.scrollLeft, backward_offset, "Shift + click backward didn't scroll.");
   }, "Test shift + click on non-custom composited scrollbars.");
 
   promise_test (async () => {
@@ -220,9 +227,9 @@ window.onload = () => {
     let x = standardRectFast.right - TRACK_WIDTH / 2;
     let y = standardRectFast.top + BUTTON_WIDTH + 5;
     let asc_increments = [15, 10, 7, 6, 2];
-    let asc_offsets = [343, 571, 732, 869, 915];
+    let asc_offsets = {linux: [549, 915, 915, 915, 915], win: [361, 601, 770, 915, 915]}[platform];
     let desc_increments = [3, 2, 5, 9, 21];
-    let desc_offsets = [846, 800, 686, 480, 0];
+    let desc_offsets = {linux: [915, 915, 915, 768, 0], win: [890, 842, 722, 505, 0]}[platform];
 
     await mouseMoveTo(x, y);
     await mouseDownAt(x, y);
@@ -231,14 +238,17 @@ window.onload = () => {
     for (var i = 0; i < 5; i++){
       y += asc_increments[i];
       await mouseMoveTo(x, y);
-      assert_equals(standardDivFast.scrollTop, asc_offsets[i], "Vertical thumb drag downwards did not scroll as expected at "+asc_increments[i]+" - ");
+      // TODO(crbug.com/1009892): Sometimes there is 1px difference in threaded scrollbar scrolling mode.
+      // Change assert_approx_equals(..., 1, ...) to assert_equals(...) when the bug is fixed.
+      assert_approx_equals(standardDivFast.scrollTop, asc_offsets[i], 1, "Vertical thumb drag downwards did not scroll as expected at "+asc_increments[i]+" - ");
     };
 
     // Scroll up
     for (var i = 0; i < 5; i++){
       y -= desc_increments[i];
       await mouseMoveTo(x, y);
-      assert_equals(standardDivFast.scrollTop, desc_offsets[i], "Vertical thumb drag upwards did not scroll as expected at "+desc_increments[i]+" - ");
+      // TODO(crbug.com/1009892): Ditto.
+      assert_approx_equals(standardDivFast.scrollTop, desc_offsets[i], 1, "Vertical thumb drag upwards did not scroll as expected at "+desc_increments[i]+" - ");
     };
 
     await mouseUpAt(x, y);
@@ -255,14 +265,16 @@ window.onload = () => {
     for (var i = 0; i < 5; i++){
       x += asc_increments[i];
       await mouseMoveTo(x, y);
-      assert_equals(standardDivFast.scrollLeft, asc_offsets[i], "Horizontal thumb drag to the right did not scroll as expected at "+asc_increments[i]+" - ");
+      // TODO(crbug.com/1009892): Ditto.
+      assert_approx_equals(standardDivFast.scrollLeft, asc_offsets[i], 1, "Horizontal thumb drag to the right did not scroll as expected at "+asc_increments[i]+" - ");
     };
 
     // Scroll left
     for (var i = 0; i < 5; i++){
       x -= desc_increments[i];
       await mouseMoveTo(x, y);
-      assert_equals(standardDivFast.scrollLeft, desc_offsets[i], "Horizontal thumb drag to the left did not scroll as expected at "+desc_increments[i]+" - ");
+      // TODO(crbug.com/1009892): Ditto.
+      assert_approx_equals(standardDivFast.scrollLeft, desc_offsets[i], 1, "Horizontal thumb drag to the left did not scroll as expected at "+desc_increments[i]+" - ");
     };
 
     await mouseUpAt(x, y);

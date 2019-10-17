@@ -126,6 +126,11 @@ void DeviceSyncClientImpl::FindEligibleDevices(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void DeviceSyncClientImpl::GetDevicesActivityStatus(
+    mojom::DeviceSync::GetDevicesActivityStatusCallback callback) {
+  device_sync_ptr_->GetDevicesActivityStatus(std::move(callback));
+}
+
 void DeviceSyncClientImpl::GetDebugInfo(
     mojom::DeviceSync::GetDebugInfoCallback callback) {
   device_sync_ptr_->GetDebugInfo(std::move(callback));

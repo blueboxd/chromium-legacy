@@ -9,27 +9,11 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace leveldb {
 
 class Slice;
-class Status;
-
-// Builds a mojo mojom::DatabaseError from a leveldb::Status object.
-mojom::DatabaseError LeveldbStatusToError(const leveldb::Status& s);
-
-// Creates a leveldb Status object form a database error and two optional
-// messages. A mojoification of the various static leveldb::Status
-// constructors.
-leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
-                                      const Slice& msg,
-                                      const Slice& msg2);
-
-// Returns an UMA value for a mojom::DatabaseError.
-leveldb_env::LevelDBStatusValue GetLevelDBStatusUMAValue(
-    mojom::DatabaseError status);
 
 // Builds a Slice pointing to the data inside |a|. This is not a type-converter
 // as it is not a copy operation; the returned Slice points into |a| and must

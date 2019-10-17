@@ -12,6 +12,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
@@ -31,6 +32,8 @@ class TopControlsContainerView extends FrameLayout {
     // ID used with ViewResourceAdapter.
     private static final int TOP_CONTROLS_ID = 1001;
 
+    private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
+
     private long mNativeTopControlsContainerView;
 
     private ViewResourceAdapter mViewResourceAdapter;
@@ -49,6 +52,11 @@ class TopControlsContainerView extends FrameLayout {
 
     // True if scrolling.
     private boolean mInTopControlsScroll;
+
+    private boolean mIsFullscreen;
+
+    // Used to delay processing fullscreen requests.
+    private Runnable mSystemUiFullscreenResizeRunnable;
 
     // Used to  delay updating the image for the layer.
     private final Runnable mRefreshResourceIdRunnable = () -> {
@@ -76,7 +84,7 @@ class TopControlsContainerView extends FrameLayout {
                 });
         mNativeTopControlsContainerView =
                 TopControlsContainerViewJni.get().createTopControlsContainerView(
-                        webContents, contentViewRenderView.getNativeHandle());
+                        this, webContents, contentViewRenderView.getNativeHandle());
     }
 
     public void destroy() {
@@ -117,6 +125,7 @@ class TopControlsContainerView extends FrameLayout {
             view.layout(0, 0, getWidth(), getHeight());
             createAdapterAndLayer();
         }
+        if (mIsFullscreen) hideTopControls();
     }
 
     public View getView() {
@@ -128,6 +137,7 @@ class TopControlsContainerView extends FrameLayout {
      */
     public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY) {
         if (mView == null) return;
+        if (mIsFullscreen) return;
         if (topContentOffsetY == getHeight()) {
             finishTopControlsScroll(topContentOffsetY);
             return;
@@ -225,10 +235,35 @@ class TopControlsContainerView extends FrameLayout {
         if (mView != null) mView.setVisibility(View.VISIBLE);
     }
 
+    @CalledByNative
+    private void didToggleFullscreenModeForTab(final boolean isFullscreen) {
+        // Delay hiding until after the animation. This comes from Chrome code.
+        if (mSystemUiFullscreenResizeRunnable != null) {
+            getHandler().removeCallbacks(mSystemUiFullscreenResizeRunnable);
+        }
+        mSystemUiFullscreenResizeRunnable = () -> processFullscreenChanged(isFullscreen);
+        long delay = isFullscreen ? SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS : 0;
+        postDelayed(mSystemUiFullscreenResizeRunnable, delay);
+    }
+
+    private void processFullscreenChanged(boolean isFullscreen) {
+        mSystemUiFullscreenResizeRunnable = null;
+        if (mIsFullscreen == isFullscreen) return;
+        mIsFullscreen = isFullscreen;
+        if (mView == null) return;
+        if (mIsFullscreen) {
+            hideTopControls();
+            setTopControlsOffset(-mLastHeight, 0);
+        } else {
+            showTopControls();
+            setTopControlsOffset(0, mLastHeight);
+        }
+    }
+
     @NativeMethods
     interface Natives {
-        long createTopControlsContainerView(
-                WebContents webContents, long nativeContentViewRenderView);
+        long createTopControlsContainerView(TopControlsContainerView view, WebContents webContents,
+                long nativeContentViewRenderView);
         void deleteTopControlsContainerView(
                 long nativeTopControlsContainerView, TopControlsContainerView caller);
         void createTopControlsLayer(

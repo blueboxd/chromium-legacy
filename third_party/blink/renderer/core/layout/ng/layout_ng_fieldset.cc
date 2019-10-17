@@ -74,12 +74,16 @@ bool LayoutNGFieldset::IsOfType(LayoutObjectType type) const {
 }
 
 void LayoutNGFieldset::Paint(const PaintInfo& paint_info) const {
-  // TODO(kojii): This override shiould not be needed when painting fragment is
-  // enabled in parent classes.
-  if (const NGPhysicalBoxFragment* fragment = CurrentFragment())
-    NGBoxFragmentPainter(*fragment, PaintFragment()).Paint(paint_info);
-  else
-    LayoutNGBlockFlow::Paint(paint_info);
+  // TODO(crbug.com/988015): This override should not be needed when painting
+  // fragment is enabled in parent classes.
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled()) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      NGBoxFragmentPainter(*fragment, PaintFragment()).Paint(paint_info);
+      return;
+    }
+  }
+
+  LayoutNGBlockFlow::Paint(paint_info);
 }
 
 }  // namespace blink

@@ -73,6 +73,13 @@ enum WebAXRestriction {
   kWebAXRestrictionDisabled,
 };
 
+// Autofill state.
+enum WebAXAutofillState {
+  kNoSuggestions = 0,
+  kAutofillAvailable,
+  kAutocompleteAvailable,
+};
+
 //
 // Sparse accessibility attributes
 //

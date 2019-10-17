@@ -20,7 +20,6 @@ js_library("app") {
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":app_module" ]
 }
 
 js_library("browser_switch_proxy") {

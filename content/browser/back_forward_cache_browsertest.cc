@@ -2913,4 +2913,29 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Encoding) {
   EXPECT_EQ(web_contents()->GetEncoding(), "windows-1250");
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, RestoreWhilePendingCommit) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/main_document");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  const GURL url3(embedded_test_server()->GetURL("c.com", "/main_document"));
+
+  // Load a page and navigate away from it, so it is stored in the back-forward
+  // cache.
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  RenderFrameHost* rfh1 = current_frame_host();
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  // Try to navigate to a new page, but leave it in a pending state.
+  shell()->LoadURL(url3);
+  response.WaitForRequest();
+
+  // Navigate back and restore page from the cache, cancelling the previous
+  // navigation.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh1, current_frame_host());
+}
+
 }  // namespace content

@@ -54,7 +54,10 @@ const char kTestDefaultAppName[] = "default app name";
 const char kTestAppName[] = "app name";
 
 const gfx::Size kWidgetSize(500, 500);
-const gfx::Size kViewSize(400, 400);
+
+constexpr int kViewWidth = 400;
+constexpr int kViewArtworkWidth = kViewWidth * 0.4;
+const gfx::Size kViewSize(kViewWidth, 400);
 
 // Checks if the view class name is used by a media button.
 bool IsMediaButtonType(const char* class_name) {
@@ -303,7 +306,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
     auto view = std::make_unique<MediaNotificationView>(
         &container_, item_->GetWeakPtr(),
         nullptr /* header_row_controls_view */,
-        base::ASCIIToUTF16(kTestDefaultAppName));
+        base::ASCIIToUTF16(kTestDefaultAppName), kViewWidth);
     view->SetSize(kViewSize);
     view->set_owned_by_client();
 
@@ -791,6 +794,9 @@ TEST_F(MAYBE_MediaNotificationViewTest, UpdateArtworkFromItem) {
   // Ensure the title artist row has a small width than before now that we
   // have artwork.
   EXPECT_GT(title_artist_width, title_artist_row()->width());
+
+  // Ensure that the title artist row does not extend into the artwork bounds.
+  EXPECT_LE(kViewWidth - kViewArtworkWidth, title_artist_row()->width());
 
   // Ensure that the image is displayed in the background artwork and that the
   // size of the notification was not affected.

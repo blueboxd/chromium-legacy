@@ -878,6 +878,8 @@ INSTANTIATE_TEST_SUITE_P(Scrypt,
 // passphrase.
 TEST_F(NigoriSyncBridgeImplTest,
        ShouldPutAndNotifyObserversWhenSetEncryptionPassphrase) {
+  const std::string kCustomPassphrase = "passphrase";
+
   EntityData default_entity_data;
   *default_entity_data.specifics.mutable_nigori() =
       sync_pb::NigoriSpecifics::default_instance();
@@ -886,7 +888,13 @@ TEST_F(NigoriSyncBridgeImplTest,
               Eq(base::nullopt));
   ASSERT_THAT(bridge()->GetData(), Not(HasCustomPassphraseNigori()));
 
-  const std::string passphrase = "passphrase";
+  // Calling SetEncryptionPassphrase() triggers a commit cycle but doesn't
+  // immediately expose the new state, until the commit completes.
+  EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
+  bridge()->SetEncryptionPassphrase(kCustomPassphrase);
+  EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
+
+  // Mimic commit completion.
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
                                /*encrypted_types=*/EncryptableUserTypes(),
@@ -898,8 +906,7 @@ TEST_F(NigoriSyncBridgeImplTest,
                                       /*passphrase_time=*/Not(NullTime())));
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(Ne(std::string()),
                                                    PASSPHRASE_BOOTSTRAP_TOKEN));
-  EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
-  bridge()->SetEncryptionPassphrase(passphrase);
+  EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
 
   // TODO(crbug.com/922900): find a good way to get key derivation method and
@@ -1179,6 +1186,13 @@ TEST_F(NigoriSyncBridgeImplTest,
               Eq(sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE));
   ASSERT_THAT(bridge()->GetData(), Not(HasCustomPassphraseNigori()));
 
+  // Calling SetEncryptionPassphrase() triggers a commit cycle but doesn't
+  // immediately expose the new state, until the commit completes.
+  EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
+  bridge()->SetEncryptionPassphrase(kCustomPassphrase);
+  EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
+
+  // Mimic commit completion.
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
                                /*encrypted_types=*/EncryptableUserTypes(),
@@ -1190,8 +1204,7 @@ TEST_F(NigoriSyncBridgeImplTest,
                                       /*passphrase_time=*/Not(NullTime())));
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(Ne(std::string()),
                                                    PASSPHRASE_BOOTSTRAP_TOKEN));
-  EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
-  bridge()->SetEncryptionPassphrase(kCustomPassphrase);
+  EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
 }
 

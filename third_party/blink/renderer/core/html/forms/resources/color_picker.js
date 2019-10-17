@@ -874,7 +874,17 @@ class ColorPalette extends HTMLCanvasElement {
    * @param {number} y
    */
   hslImageDataAtPoint_(x, y) {
-    const offset = Math.round(y * this.width + x) * 3;
+    let offset = Math.round(y * this.width + x) * 3;
+    // It is possible that the computed offset is larger than the hslImageData
+    // array's length. This can happen at certain zoom levels (ex. 150%), where
+    // the height of the color well is not a round number. The getImageData API
+    // only works with integer values and will truncate decimal values. As
+    // such, if the color well's selection ring is placed at the bottom of the
+    // color well at such a zoom level, a valid data point for the ring's
+    // position will not be found in the hslImageData array. When this happens,
+    // we just report the color at the end of the hslImageData array. This will
+    // be the same color that is seen at the bottom of the color well (black).
+    offset = Math.min(offset, this.hslImageData.length - 3);
     return this.hslImageData.slice(offset, offset + 3);
   }
 

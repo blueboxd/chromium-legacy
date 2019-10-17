@@ -163,7 +163,6 @@ WebDocumentSubresourceFilterImpl::BuilderImpl::~BuilderImpl() {}
 std::unique_ptr<blink::WebDocumentSubresourceFilter>
 WebDocumentSubresourceFilterImpl::BuilderImpl::Build() {
   DCHECK(ruleset_file_.IsValid());
-  DCHECK(!main_task_runner_->BelongsToCurrentThread());
   scoped_refptr<MemoryMappedRuleset> ruleset =
       MemoryMappedRuleset::CreateAndInitialize(std::move(ruleset_file_));
   if (!ruleset)

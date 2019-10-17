@@ -70,7 +70,7 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  void UpdateButton(views::LabelButton* button, ui::DialogButton type) override;
+  void OnDialogInitialized() override;
   const char* GetClassName() const override;
 
   // views::ButtonListener:

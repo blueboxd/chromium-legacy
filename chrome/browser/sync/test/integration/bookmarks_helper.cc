@@ -1048,17 +1048,23 @@ bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied() {
   // Make a copy so we can remove bookmarks that were found.
   std::vector<ExpectedBookmark> expected = expected_bookmarks_;
   for (const sync_pb::SyncEntity& entity : entities) {
-    // If the cryptographer was provided, we expect the specifics to have
-    // encrypted data.
-    EXPECT_EQ(entity.specifics().has_encrypted(), cryptographer_ != nullptr);
-
     sync_pb::BookmarkSpecifics actual_specifics;
     if (entity.specifics().has_encrypted()) {
+      // If no cryptographer was provided, we expect the specifics to have
+      // unencrypted data.
+      if (!cryptographer_) {
+        return false;
+      }
       sync_pb::EntitySpecifics entity_specifics;
       EXPECT_TRUE(cryptographer_->Decrypt(entity.specifics().encrypted(),
                                           &entity_specifics));
       actual_specifics = entity_specifics.bookmark();
     } else {
+      // If the cryptographer was provided, we expect the specifics to have
+      // encrypted data.
+      if (cryptographer_) {
+        return false;
+      }
       actual_specifics = entity.specifics().bookmark();
     }
 

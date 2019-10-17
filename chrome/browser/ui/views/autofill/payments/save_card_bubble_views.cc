@@ -55,6 +55,10 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          SaveCardBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   controller->GetAcceptButtonText());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   controller->GetDeclineButtonText());
   DCHECK(controller);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);
 }
@@ -73,12 +77,6 @@ void SaveCardBubbleViews::Hide() {
     controller_->OnBubbleClosed();
   controller_ = nullptr;
   CloseBubble();
-}
-
-base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ? controller()->GetAcceptButtonText()
-                                        : controller()->GetDeclineButtonText();
 }
 
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {

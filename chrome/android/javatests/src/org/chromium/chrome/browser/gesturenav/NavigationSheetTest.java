@@ -107,9 +107,6 @@ public class NavigationSheetTest {
         public void navigateToIndex(int index) {
             mNavigationController.goToNavigationIndex(index);
         }
-
-        @Override
-        public void setTabCloseRunnable(Runnable runnable) {}
     }
 
     @Test

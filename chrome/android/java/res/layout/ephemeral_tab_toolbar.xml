@@ -33,8 +33,6 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginTop="12dp"
                 android:padding="12dp"
-                android:src="@drawable/ic_chrome"
-                app:tint="@color/default_icon_color_blue"
                 android:scaleType="fitCenter"
                 tools:ignore="ContentDescription" />
 

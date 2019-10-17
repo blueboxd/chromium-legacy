@@ -17,6 +17,7 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_request.h"
+#include "ui/ozone/public/overlay_surface_candidate.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 class SkBitmap;
@@ -31,8 +32,6 @@ namespace ui {
 class DrmDeviceManager;
 class DrmOverlayValidator;
 class HardwareDisplayController;
-struct OverlayCheck_Params;
-struct OverlayCheckReturn_Params;
 class ScreenManager;
 
 // The GPU object representing a window.
@@ -82,8 +81,8 @@ class DrmWindow {
   void SchedulePageFlip(std::vector<DrmOverlayPlane> planes,
                         SwapCompletionOnceCallback submission_callback,
                         PresentationOnceCallback presentation_callback);
-  std::vector<OverlayCheckReturn_Params> TestPageFlip(
-      const std::vector<OverlayCheck_Params>& overlay_params);
+  OverlayStatusList TestPageFlip(
+      const OverlaySurfaceCandidateList& overlay_params);
 
   // Returns the last buffer associated with this window.
   const DrmOverlayPlane* GetLastModesetBuffer() const;

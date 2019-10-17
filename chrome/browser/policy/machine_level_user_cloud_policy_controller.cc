@@ -23,9 +23,9 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_register_watcher.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/chrome_browser_cloud_management_helper.h"
-#include "chrome/browser/policy/machine_level_user_cloud_policy_register_watcher.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -204,8 +204,8 @@ void MachineLevelUserCloudPolicyController::Init(
       url_loader_factory);
 
   if (dm_token.empty()) {
-    policy_register_watcher_ =
-        std::make_unique<MachineLevelUserCloudPolicyRegisterWatcher>(this);
+    cloud_management_register_watcher_ =
+        std::make_unique<ChromeBrowserCloudManagementRegisterWatcher>(this);
 
     enrollment_start_time_ = base::Time::Now();
 
@@ -230,9 +230,9 @@ void MachineLevelUserCloudPolicyController::Init(
 
 bool MachineLevelUserCloudPolicyController::
     WaitUntilPolicyEnrollmentFinished() {
-  if (policy_register_watcher_) {
-    switch (
-        policy_register_watcher_->WaitUntilCloudPolicyEnrollmentFinished()) {
+  if (cloud_management_register_watcher_) {
+    switch (cloud_management_register_watcher_
+                ->WaitUntilCloudPolicyEnrollmentFinished()) {
       case RegisterResult::kNoEnrollmentNeeded:
       case RegisterResult::kEnrollmentSuccessBeforeDialogDisplayed:
       case RegisterResult::kEnrollmentFailedSilentlyBeforeDialogDisplayed:
@@ -263,8 +263,8 @@ void MachineLevelUserCloudPolicyController::RemoveObserver(Observer* observer) {
 }
 
 bool MachineLevelUserCloudPolicyController::IsEnterpriseStartupDialogShowing() {
-  return policy_register_watcher_ &&
-         policy_register_watcher_->IsDialogShowing();
+  return cloud_management_register_watcher_ &&
+         cloud_management_register_watcher_->IsDialogShowing();
 }
 
 void MachineLevelUserCloudPolicyController::NotifyPolicyRegisterFinished(

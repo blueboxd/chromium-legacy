@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -57,9 +58,7 @@ namespace content {
 
 namespace {
 
-const char kVersionKey[] = "VERSION";
-const char kOriginSeparator = '\x00';
-const char kDataPrefix[] = "_";
+constexpr base::StringPiece kVersionKey = "VERSION";
 const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
 const int64_t kMinSchemaVersion = 1;
 const int64_t kCurrentLocalStorageSchemaVersion = 1;
@@ -81,9 +80,9 @@ const size_t kMaxLocalStorageCacheSize = 20 * 1024 * 1024;
 static const uint8_t kUTF16Format = 0;
 static const uint8_t kLatin1Format = 1;
 
-std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
+storage::DomStorageDatabase::Key CreateMetaDataKey(const url::Origin& origin) {
   auto serialized_origin = leveldb::StdStringToUint8Vector(origin.Serialize());
-  std::vector<uint8_t> key;
+  storage::DomStorageDatabase::Key key;
   key.reserve(base::size(kMetaPrefix) + serialized_origin.size());
   key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));
   key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
@@ -94,8 +93,7 @@ void SuccessResponse(base::OnceClosure callback, bool success) {
   std::move(callback).Run();
 }
 
-void DatabaseErrorResponse(base::OnceClosure callback,
-                           leveldb::mojom::DatabaseError error) {
+void IgnoreStatus(base::OnceClosure callback, leveldb::Status status) {
   std::move(callback).Run();
 }
 
@@ -122,20 +120,36 @@ void CallMigrationCalback(StorageAreaImpl::ValueMapCallback callback,
   std::move(callback).Run(std::move(data));
 }
 
-void AddDeleteOriginOperations(
-    std::vector<leveldb::mojom::BatchedOperationPtr>* operations,
-    const url::Origin& origin) {
-  leveldb::mojom::BatchedOperationPtr item =
-      leveldb::mojom::BatchedOperation::New();
-  item->type = leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY;
-  item->key = leveldb::StdStringToUint8Vector(kDataPrefix + origin.Serialize() +
-                                              kOriginSeparator);
-  operations->push_back(std::move(item));
+storage::DomStorageDatabase::Key MakeOriginPrefix(const url::Origin& origin) {
+  const char kDataPrefix = '_';
+  const std::string serialized_origin = origin.Serialize();
+  const char kOriginSeparator = '\x00';
 
-  item = leveldb::mojom::BatchedOperation::New();
-  item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
-  item->key = CreateMetaDataKey(origin);
-  operations->push_back(std::move(item));
+  storage::DomStorageDatabase::Key prefix;
+  prefix.reserve(serialized_origin.size() + 2);
+  prefix.push_back(kDataPrefix);
+  prefix.insert(prefix.end(), serialized_origin.begin(),
+                serialized_origin.end());
+  prefix.push_back(kOriginSeparator);
+  return prefix;
+}
+
+void DeleteOrigins(leveldb::LevelDBDatabaseImpl* database,
+                   std::vector<url::Origin> origins,
+                   base::OnceCallback<void(leveldb::Status)> callback) {
+  database->RunDatabaseTask(
+      base::BindOnce(
+          [](std::vector<url::Origin> origins,
+             const storage::DomStorageDatabase& db) {
+            leveldb::WriteBatch batch;
+            for (const auto& origin : origins) {
+              db.DeletePrefixed(MakeOriginPrefix(origin), &batch);
+              batch.Delete(leveldb_env::MakeSlice(CreateMetaDataKey(origin)));
+            }
+            return db.Commit(&batch);
+          },
+          std::move(origins)),
+      std::move(callback));
 }
 
 enum class CachePurgeReason {
@@ -208,8 +222,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
     }
 #endif
     area_ = std::make_unique<StorageAreaImpl>(
-        context_->database_.get(),
-        kDataPrefix + origin_.Serialize() + kOriginSeparator, this, options);
+        context_->database_.get(), MakeOriginPrefix(origin_), this, options);
     area_ptr_ = area_.get();
   }
 
@@ -223,49 +236,45 @@ class LocalStorageContextMojo::StorageAreaHolder final
     storage_area()->ScheduleImmediateCommit();
   }
 
-  std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommit() override {
-    std::vector<leveldb::mojom::BatchedOperationPtr> operations;
-
+  void PrepareToCommit(std::vector<storage::DomStorageDatabase::KeyValuePair>*
+                           extra_entries_to_add,
+                       std::vector<storage::DomStorageDatabase::Key>*
+                           extra_keys_to_delete) override {
     // Write schema version if not already done so before.
     if (!context_->database_initialized_) {
-      leveldb::mojom::BatchedOperationPtr item =
-          leveldb::mojom::BatchedOperation::New();
-      item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
-      item->key = leveldb::StdStringToUint8Vector(kVersionKey);
-      item->value = leveldb::StdStringToUint8Vector(
-          base::NumberToString(kCurrentLocalStorageSchemaVersion));
-      operations.push_back(std::move(item));
+      const std::string version =
+          base::NumberToString(kCurrentLocalStorageSchemaVersion);
+      extra_entries_to_add->emplace_back(
+          storage::DomStorageDatabase::Key(kVersionKey.begin(),
+                                           kVersionKey.end()),
+          storage::DomStorageDatabase::Value(version.begin(), version.end()));
       context_->database_initialized_ = true;
     }
 
-    leveldb::mojom::BatchedOperationPtr item =
-        leveldb::mojom::BatchedOperation::New();
-    item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
-    item->key = CreateMetaDataKey(origin_);
+    storage::DomStorageDatabase::Key metadata_key = CreateMetaDataKey(origin_);
     if (storage_area()->empty()) {
-      item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
+      extra_keys_to_delete->push_back(std::move(metadata_key));
     } else {
-      item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
       LocalStorageOriginMetaData data;
       data.set_last_modified(base::Time::Now().ToInternalValue());
       data.set_size_bytes(storage_area()->storage_used());
-      item->value = leveldb::StdStringToUint8Vector(data.SerializeAsString());
+      std::string serialized_data = data.SerializeAsString();
+      extra_entries_to_add->emplace_back(
+          std::move(metadata_key),
+          storage::DomStorageDatabase::Value(serialized_data.begin(),
+                                             serialized_data.end()));
     }
-    operations.push_back(std::move(item));
-
-    return operations;
   }
 
-  void DidCommit(leveldb::mojom::DatabaseError error) override {
+  void DidCommit(leveldb::Status status) override {
     UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.CommitResult",
-                              leveldb::GetLevelDBStatusUMAValue(error),
+                              leveldb_env::GetLevelDBStatusUMAValue(status),
                               leveldb_env::LEVELDB_STATUS_MAX);
 
     // Delete any old database that might still exist if we successfully wrote
     // data to LevelDB, and our LevelDB is actually disk backed.
-    if (error == leveldb::mojom::DatabaseError::OK && !deleted_old_data_ &&
-        !context_->directory_.empty() && context_->task_runner_ &&
-        !context_->old_localstorage_path_.empty()) {
+    if (status.ok() && !deleted_old_data_ && !context_->directory_.empty() &&
+        context_->task_runner_ && !context_->old_localstorage_path_.empty()) {
       deleted_old_data_ = true;
       context_->task_runner_->PostShutdownBlockingTask(
           FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -273,7 +282,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
                          sql_db_path()));
     }
 
-    context_->OnCommitResult(error);
+    context_->OnCommitResult(status);
   }
 
   void MigrateData(StorageAreaImpl::ValueMapCallback callback) override {
@@ -341,11 +350,12 @@ class LocalStorageContextMojo::StorageAreaHolder final
     return changes;
   }
 
-  void OnMapLoaded(leveldb::mojom::DatabaseError error) override {
-    if (error != leveldb::mojom::DatabaseError::OK)
+  void OnMapLoaded(leveldb::Status status) override {
+    if (!status.ok()) {
       UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.MapLoadError",
-                                leveldb::GetLevelDBStatusUMAValue(error),
+                                leveldb_env::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
+    }
   }
 
   void Bind(mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
@@ -455,11 +465,11 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin,
         "\n", base::BindOnce(&SuccessResponse, std::move(callback)));
     found->second->storage_area()->ScheduleImmediateCommit();
   } else if (database_) {
-    std::vector<leveldb::mojom::BatchedOperationPtr> operations;
-    AddDeleteOriginOperations(&operations, origin);
-    database_->Write(
-        std::move(operations),
-        base::BindOnce(&DatabaseErrorResponse, std::move(callback)));
+    DeleteOrigins(
+        database_.get(), {std::move(origin)},
+        base::BindOnce([](base::OnceClosure callback,
+                          leveldb::Status) { std::move(callback).Run(); },
+                       std::move(callback)));
   } else {
     std::move(callback).Run();
   }
@@ -478,8 +488,7 @@ void LocalStorageContextMojo::PerformStorageCleanup(
     // an area is not ready to commit its changes, nothing breaks but the
     // rewrite doesn't remove all traces of old data.
     Flush();
-    database_->RewriteDB(
-        base::BindOnce(&DatabaseErrorResponse, std::move(callback)));
+    database_->RewriteDB(base::BindOnce(&IgnoreStatus, std::move(callback)));
   } else {
     std::move(callback).Run();
   }
@@ -510,7 +519,7 @@ void LocalStorageContextMojo::ShutdownAndDelete() {
   // Nothing to do if no connection to the database was ever finished.
   if (connection_state_ != CONNECTION_FINISHED) {
     connection_state_ = CONNECTION_SHUTDOWN;
-    OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
+    OnShutdownComplete(leveldb::Status::OK());
     return;
   }
 
@@ -531,7 +540,7 @@ void LocalStorageContextMojo::ShutdownAndDelete() {
   // Respect the content policy settings about what to
   // keep and what to discard.
   if (force_keep_session_state_) {
-    OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
+    OnShutdownComplete(leveldb::Status::OK());
     return;  // Keep everything.
   }
 
@@ -544,7 +553,7 @@ void LocalStorageContextMojo::ShutdownAndDelete() {
         base::BindOnce(&LocalStorageContextMojo::OnGotStorageUsageForShutdown,
                        base::Unretained(this)));
   } else {
-    OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
+    OnShutdownComplete(leveldb::Status::OK());
   }
 }
 
@@ -734,19 +743,18 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LocalStorageContextMojo::OnDatabaseOpened(
-    leveldb::mojom::DatabaseError status) {
-  if (status != leveldb::mojom::DatabaseError::OK) {
+void LocalStorageContextMojo::OnDatabaseOpened(leveldb::Status status) {
+  if (!status.ok()) {
     UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError",
-                              leveldb::GetLevelDBStatusUMAValue(status),
+                              leveldb_env::GetLevelDBStatusUMAValue(status),
                               leveldb_env::LEVELDB_STATUS_MAX);
     if (in_memory_) {
       UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError.Memory",
-                                leveldb::GetLevelDBStatusUMAValue(status),
+                                leveldb_env::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
     } else {
       UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DatabaseOpenError.Disk",
-                                leveldb::GetLevelDBStatusUMAValue(status),
+                                leveldb_env::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
     }
     LogDatabaseOpenResult(OpenResult::DATABASE_OPEN_FAILED);
@@ -759,7 +767,7 @@ void LocalStorageContextMojo::OnDatabaseOpened(
   // Verify DB schema version.
   if (database_) {
     database_->Get(
-        leveldb::StdStringToUint8Vector(kVersionKey),
+        std::vector<uint8_t>(kVersionKey.begin(), kVersionKey.end()),
         base::BindOnce(&LocalStorageContextMojo::OnGotDatabaseVersion,
                        weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -769,12 +777,12 @@ void LocalStorageContextMojo::OnDatabaseOpened(
 }
 
 void LocalStorageContextMojo::OnGotDatabaseVersion(
-    leveldb::mojom::DatabaseError status,
+    leveldb::Status status,
     const std::vector<uint8_t>& value) {
-  if (status == leveldb::mojom::DatabaseError::NOT_FOUND) {
+  if (status.IsNotFound()) {
     // New database, nothing more to do. Current version will get written
     // when first data is committed.
-  } else if (status == leveldb::mojom::DatabaseError::OK) {
+  } else if (status.ok()) {
     // Existing database, check if version number matches current schema
     // version.
     int64_t db_version;
@@ -792,7 +800,7 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
   } else {
     // Other read error. Possibly database corruption.
     UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.ReadVersionError",
-                              leveldb::GetLevelDBStatusUMAValue(status),
+                              leveldb_env::GetLevelDBStatusUMAValue(status),
                               leveldb_env::LEVELDB_STATUS_MAX);
     LogDatabaseOpenResult(OpenResult::VERSION_READ_ERROR);
     DeleteAndRecreateDatabase(
@@ -925,7 +933,7 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
 
 void LocalStorageContextMojo::OnGotMetaData(
     GetStorageUsageCallback callback,
-    leveldb::mojom::DatabaseError status,
+    leveldb::Status status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   std::vector<StorageUsageInfo> result;
   std::set<url::Origin> origins;
@@ -967,28 +975,25 @@ void LocalStorageContextMojo::OnGotMetaData(
 
 void LocalStorageContextMojo::OnGotStorageUsageForShutdown(
     std::vector<StorageUsageInfo> usage) {
-  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
+  std::vector<url::Origin> origins_to_delete;
   for (const auto& info : usage) {
     if (special_storage_policy_->IsStorageProtected(info.origin.GetURL()))
       continue;
     if (!special_storage_policy_->IsStorageSessionOnly(info.origin.GetURL()))
       continue;
-
-    AddDeleteOriginOperations(&operations, info.origin);
+    origins_to_delete.push_back(info.origin);
   }
 
-  if (!operations.empty()) {
-    database_->Write(
-        std::move(operations),
-        base::BindOnce(&LocalStorageContextMojo::OnShutdownComplete,
-                       base::Unretained(this)));
+  if (!origins_to_delete.empty()) {
+    DeleteOrigins(database_.get(), std::move(origins_to_delete),
+                  base::BindOnce(&LocalStorageContextMojo::OnShutdownComplete,
+                                 base::Unretained(this)));
   } else {
-    OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
+    OnShutdownComplete(leveldb::Status::OK());
   }
 }
 
-void LocalStorageContextMojo::OnShutdownComplete(
-    leveldb::mojom::DatabaseError error) {
+void LocalStorageContextMojo::OnShutdownComplete(leveldb::Status status) {
   delete this;
 }
 
@@ -1003,12 +1008,11 @@ void LocalStorageContextMojo::GetStatistics(size_t* total_cache_size,
   }
 }
 
-void LocalStorageContextMojo::OnCommitResult(
-    leveldb::mojom::DatabaseError error) {
+void LocalStorageContextMojo::OnCommitResult(leveldb::Status status) {
   DCHECK(connection_state_ == CONNECTION_FINISHED ||
          connection_state_ == CONNECTION_SHUTDOWN)
       << connection_state_;
-  if (error == leveldb::mojom::DatabaseError::OK) {
+  if (status.ok()) {
     commit_error_count_ = 0;
     return;
   }

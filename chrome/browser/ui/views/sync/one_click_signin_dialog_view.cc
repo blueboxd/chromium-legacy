@@ -74,6 +74,13 @@ OneClickSigninDialogView::OneClickSigninDialogView(
       confirmed_callback_(std::move(confirmed_callback)),
       advanced_link_(nullptr),
       learn_more_link_(nullptr) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON));
+
   DCHECK(!confirmed_callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
@@ -138,13 +145,6 @@ std::unique_ptr<views::View> OneClickSigninDialogView::CreateExtraView() {
   advanced_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   advanced_link_ = advanced_link.get();
   return advanced_link;
-}
-
-base::string16 OneClickSigninDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(
-      button == ui::DIALOG_BUTTON_OK ? IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON
-                                     : IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON);
 }
 
 void OneClickSigninDialogView::LinkClicked(views::Link* source,

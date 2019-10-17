@@ -4,10 +4,13 @@
  * found in the LICENSE file.
 -->
 <script>
+const params = (new URL(location.href)).searchParams;
 const hostname = 'cors.example.com';
 const origin = location.protocol + '//' + hostname + ':' + location.port;
-const path = location.search.substr('?path='.length);
+const path = params.get('path');
 const url = origin + '/extensions/api_test/webrequest/cors/' + path;
+const withPreflight = params.has('with-preflight');
+const headers = withPreflight? {'x-foo': 'x-bar'} : undefined;
 
-fetch(url);
+fetch(url, { headers, cache: 'no-store' });
 </script>

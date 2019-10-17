@@ -150,7 +150,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   // Connects to FrameSinkManager running in the Viz service.
   void ConnectFrameSinkManager(
       mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
-      mojom::FrameSinkManagerClientPtrInfo client);
+      mojo::PendingRemote<mojom::FrameSinkManagerClient> client);
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   // Connects to Viz DevTools running in the Viz service.

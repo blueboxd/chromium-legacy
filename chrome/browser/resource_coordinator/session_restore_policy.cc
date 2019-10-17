@@ -242,11 +242,8 @@ bool SessionRestorePolicy::ShouldLoad(content::WebContents* contents) const {
   // because they are only used very sporadically, but it is important that they
   // are loaded because if not loaded the user can miss important messages.
   bool enforce_site_engagement_score = true;
-  if (base::FeatureList::IsEnabled(
-          features::kSessionRestorePrioritizesBackgroundUseCases) &&
-      tab_data.used_in_bg) {
+  if (tab_data.used_in_bg)
     enforce_site_engagement_score = false;
-  }
 
   // Enforce a minimum site engagement score if applicable.
   if (enforce_site_engagement_score &&
@@ -390,30 +387,13 @@ bool SessionRestorePolicy::RescoreTabAfterDataLoaded(
 bool SessionRestorePolicy::ScoreTab(TabData* tab_data) {
   float score = 0.0f;
 
-  if (base::FeatureList::IsEnabled(
-          features::kSessionRestorePrioritizesBackgroundUseCases)) {
-    // Give higher priorities to tabs used in the background, and lowest
-    // priority to internal tabs. Apps and pinned tabs are simply treated as
-    // normal tabs.
-    if (tab_data->used_in_bg) {
-      score = 2;
-    } else if (!tab_data->is_internal) {
-      score = 1;
-    }
-  } else {
-    // Replicate the logic of the existing ordering mechanism:
-    // - apps
-    // - pinned tabs
-    // - normal tabs
-    // - internal tabs
-    // Within each category, restore newest tab first.
-    if (tab_data->is_app) {
-      score = 3;
-    } else if (tab_data->is_pinned) {
-      score = 2;
-    } else if (!tab_data->is_internal) {
-      score = 1;
-    }
+  // Give higher priorities to tabs used in the background, and lowest
+  // priority to internal tabs. Apps and pinned tabs are simply treated as
+  // normal tabs.
+  if (tab_data->used_in_bg) {
+    score = 2;
+  } else if (!tab_data->is_internal) {
+    score = 1;
   }
 
   // Refine the score using the age of the tab. More recently used tabs have

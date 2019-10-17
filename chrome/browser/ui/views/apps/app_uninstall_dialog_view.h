@@ -70,8 +70,9 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   void InitializeViewForArcApp(Profile* profile, const std::string& app_id);
 #endif
   void InitializeView(Profile* profile,
-                      apps::mojom::AppType app_type,
                       const std::string& app_id);
+
+  apps::mojom::AppType app_type_;
 
   views::Checkbox* report_abuse_checkbox_ = nullptr;
   views::Checkbox* clear_site_data_checkbox_ = nullptr;

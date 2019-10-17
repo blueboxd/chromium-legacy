@@ -1376,6 +1376,11 @@ unsigned AXNodeObject::HierarchicalLevel() const {
 }
 
 String AXNodeObject::AutoComplete() const {
+  // Check cache for auto complete state.
+  if (AXObjectCache().GetAutofillState(AXObjectID()) ==
+      WebAXAutofillState::kAutocompleteAvailable)
+    return "list";
+
   if (IsNativeTextControl() || IsARIATextControl()) {
     const AtomicString& aria_auto_complete =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)

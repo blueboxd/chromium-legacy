@@ -46,8 +46,8 @@
           type="chrome_html"
           compress="gzip"/>
       <structure
-          name="IDR_TAB_STRIP_VIEW_PROXY_JS"
-          file="tab_strip_view_proxy.js"
+          name="IDR_TAB_STRIP_EMBEDDER_PROXY_JS"
+          file="tab_strip_embedder_proxy.js"
           type="chrome_html"
           compress="gzip"/>
     </structures>

@@ -236,7 +236,7 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
   DCHECK(shelf_view_);
   DCHECK(GetShelf());
 
-  const int shelf_size = ShelfConfig::Get()->shelf_size() / 2;
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
   set_border_radius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MAXIMUM, {shelf_size, shelf_size}));
   SetArrow(views::BubbleBorder::NONE);

@@ -635,7 +635,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
                    .empty());
 }
 
-TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
+TEST_F(InstallManagerBookmarkAppTest, InstallWebAppFromSync) {
   CreateEmptyDataRetriever();
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
@@ -663,7 +663,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   {
     base::RunLoop run_loop;
 
-    provider->install_manager().InstallOrUpdateWebAppFromSync(
+    provider->install_manager().InstallWebAppFromSync(
         app_id, std::move(web_app_info),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
@@ -709,11 +709,11 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   {
     base::RunLoop run_loop;
 
-    provider->install_manager().InstallOrUpdateWebAppFromSync(
+    provider->install_manager().InstallWebAppFromSync(
         app_id, std::move(web_app_info2),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
-          EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
+          EXPECT_EQ(web_app::InstallResultCode::kSuccessAlreadyInstalled, code);
           EXPECT_EQ(app_id, installed_app_id);
           run_loop.Quit();
         }));
@@ -722,15 +722,16 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
   }
 
   {
+    // New fields from sync are not deployed as they are now managed by the
+    // ManifestUpdateManager.
     EXPECT_EQ(1u, registry()->enabled_extensions().size());
     const Extension* extension =
         registry()->enabled_extensions().begin()->get();
     EXPECT_TRUE(extension->from_bookmark());
-    EXPECT_EQ(kAlternativeAppTitle, extension->name());
+    EXPECT_EQ(kAppTitle, extension->name());
     EXPECT_EQ(kAppDescription, extension->description());
     EXPECT_EQ(kAppUrl, AppLaunchInfo::GetLaunchWebURL(extension));
-    EXPECT_EQ(GURL(kAppAlternativeScope),
-              GetScopeURLFromBookmarkApp(extension));
+    EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
     EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
                      extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY)
                      .empty());

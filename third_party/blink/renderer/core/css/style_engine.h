@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/css/style_recalc_root.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -109,6 +110,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
 
   CSSStyleSheet* InspectorStyleSheet() const { return inspector_style_sheet_; }
+
+  void AddTextTrack(TextTrack*);
+  void RemoveTextTrack(TextTrack*);
 
   const ActiveStyleSheetVector ActiveStyleSheetsForInspector();
 
@@ -395,6 +399,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   typedef HeapHashSet<Member<TreeScope>> UnorderedTreeScopeSet;
 
   void MediaQueryAffectingValueChanged(UnorderedTreeScopeSet&);
+  void MediaQueryAffectingValueChanged(HeapHashSet<Member<TextTrack>>&);
   const RuleFeatureSet& GetRuleFeatureSet() const {
     DCHECK(IsMaster());
     DCHECK(global_rule_set_);
@@ -575,6 +580,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   friend class NodeTest;
   friend class StyleEngineTest;
   friend class WhitespaceAttacherTest;
+
+  HeapHashSet<Member<TextTrack>> text_tracks_;
 };
 
 }  // namespace blink

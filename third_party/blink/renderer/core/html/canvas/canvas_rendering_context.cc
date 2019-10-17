@@ -116,10 +116,6 @@ void CanvasRenderingContext::DidDraw() {
   StartListeningForDidProcessTask();
 }
 
-void CanvasRenderingContext::NeedsFinalizeFrame() {
-  StartListeningForDidProcessTask();
-}
-
 void CanvasRenderingContext::DidProcessTask(
     const base::PendingTask& /* pending_task */) {
   StopListeningForDidProcessTask();

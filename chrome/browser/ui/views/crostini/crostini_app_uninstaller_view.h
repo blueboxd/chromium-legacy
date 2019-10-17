@@ -22,7 +22,6 @@ class CrostiniAppUninstallerView : public views::BubbleDialogDelegateView {
 
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   bool Accept() override;

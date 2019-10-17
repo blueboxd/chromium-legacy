@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.tab_ui.R;
@@ -27,7 +28,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private final TasksSurfaceMediator mMediator;
 
     public TasksSurfaceCoordinator(ChromeActivity activity, PropertyModel propertyModel,
-            TasksSurface.FakeSearchBoxDelegate fakeSearchBoxDelegate, boolean isTabCarousel) {
+            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
         mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
@@ -39,8 +40,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
                     activity, mView.getTabSwitcherContainer());
         }
 
-        mMediator = new TasksSurfaceMediator(
-                activity, propertyModel, fakeSearchBoxDelegate, isTabCarousel);
+        mMediator =
+                new TasksSurfaceMediator(activity, propertyModel, fakeboxDelegate, isTabCarousel);
 
         LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
         mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout, propertyModel);

@@ -342,17 +342,26 @@ void ExtensionFrameHelper::DidCommitProvisionalLoad(
 void ExtensionFrameHelper::DidCreateScriptContext(
     v8::Local<v8::Context> context,
     int32_t world_id) {
-  if (world_id == kMainWorldId &&
-      render_frame()->IsBrowserSideNavigationPending()) {
-    DCHECK(!delayed_main_world_script_initialization_);
-    // Defer initializing the extensions script context now because it depends
-    // on having the URL of the provisional load which isn't available at this
-    // point.
-    delayed_main_world_script_initialization_ = true;
-  } else {
-    extension_dispatcher_->DidCreateScriptContext(render_frame()->GetWebFrame(),
-                                                  context, world_id);
+  if (world_id == kMainWorldId) {
+    if (render_frame()->IsBrowserSideNavigationPending()) {
+      // Defer initializing the extensions script context now because it depends
+      // on having the URL of the provisional load which isn't available at this
+      // point.
+      // We can come here twice in the case of window.open(url): first for
+      // about:blank empty document, then possibly for the actual url load
+      // (depends on whoever triggers window proxy init), before getting
+      // ReadyToCommitNavigation.
+      delayed_main_world_script_initialization_ = true;
+      return;
+    }
+    // Sometimes DidCreateScriptContext comes before ReadyToCommitNavigation.
+    // In this case we don't have to wait until ReadyToCommitNavigation.
+    // TODO(dgozman): ensure consistent call order between
+    // DidCreateScriptContext and ReadyToCommitNavigation.
+    delayed_main_world_script_initialization_ = false;
   }
+  extension_dispatcher_->DidCreateScriptContext(render_frame()->GetWebFrame(),
+                                                context, world_id);
 }
 
 void ExtensionFrameHelper::WillReleaseScriptContext(

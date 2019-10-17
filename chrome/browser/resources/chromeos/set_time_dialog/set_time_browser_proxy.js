@@ -3,61 +3,57 @@
 // found in the LICENSE file.
 
 /** @fileoverview A helper object used by the "Set Time" dialog. */
-cr.define('settime', function() {
-  /** @interface */
-  class SetTimeBrowserProxy {
-    /** Notifies C++ code that it's safe to call JS functions. */
-    sendPageReady() {}
 
-    /** @param {number} timeInSeconds */
-    setTimeInSeconds(timeInSeconds) {}
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
-    /** @param {string} timezone */
-    setTimezone(timezone) {}
+/** @interface */
+export class SetTimeBrowserProxy {
+  /** Notifies C++ code that it's safe to call JS functions. */
+  sendPageReady() {}
 
-    /** Closes the dialog. */
-    dialogClose() {}
+  /** @param {number} timeInSeconds */
+  setTimeInSeconds(timeInSeconds) {}
 
-    /**
-     * Notifies C++ code that done button was clicked.
-     * @param {number} timeInSeconds Seconds since epoch representing the date
-     *     on the dialog inputs.
-     */
-    doneClicked(timeInSeconds) {}
+  /** @param {string} timezone */
+  setTimezone(timezone) {}
+
+  /** Closes the dialog. */
+  dialogClose() {}
+
+  /**
+   * Notifies C++ code that done button was clicked.
+   * @param {number} timeInSeconds Seconds since epoch representing the date
+   *     on the dialog inputs.
+   */
+  doneClicked(timeInSeconds) {}
+}
+
+/** @implements {SetTimeBrowserProxy} */
+export class SetTimeBrowserProxyImpl {
+  /** @override */
+  sendPageReady() {
+    chrome.send('setTimePageReady');
   }
 
-  /** @implements {settime.SetTimeBrowserProxy} */
-  class SetTimeBrowserProxyImpl {
-    /** @override */
-    sendPageReady() {
-      chrome.send('setTimePageReady');
-    }
-
-    /** @override */
-    setTimeInSeconds(timeInSeconds) {
-      chrome.send('setTimeInSeconds', [timeInSeconds]);
-    }
-
-    /** @override */
-    setTimezone(timezone) {
-      chrome.send('setTimezone', [timezone]);
-    }
-
-    /** @override */
-    dialogClose() {
-      chrome.send('dialogClose');
-    }
-
-    /** @override */
-    doneClicked(timeInSeconds) {
-      chrome.send('doneClicked', [timeInSeconds]);
-    }
+  /** @override */
+  setTimeInSeconds(timeInSeconds) {
+    chrome.send('setTimeInSeconds', [timeInSeconds]);
   }
 
-  cr.addSingletonGetter(SetTimeBrowserProxyImpl);
+  /** @override */
+  setTimezone(timezone) {
+    chrome.send('setTimezone', [timezone]);
+  }
 
-  return {
-    SetTimeBrowserProxy: SetTimeBrowserProxy,
-    SetTimeBrowserProxyImpl: SetTimeBrowserProxyImpl,
-  };
-});
+  /** @override */
+  dialogClose() {
+    chrome.send('dialogClose');
+  }
+
+  /** @override */
+  doneClicked(timeInSeconds) {
+    chrome.send('doneClicked', [timeInSeconds]);
+  }
+}
+
+addSingletonGetter(SetTimeBrowserProxyImpl);

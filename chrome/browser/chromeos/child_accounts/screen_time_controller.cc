@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/media_client_impl.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -81,8 +80,7 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
                        ->CreateDeepCopy()),
       time_limit_notifier_(context) {
   session_manager::SessionManager::Get()->AddObserver(this);
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
-    UsageTimeStateNotifier::GetInstance()->AddObserver(this);
+  UsageTimeStateNotifier::GetInstance()->AddObserver(this);
 
   system::TimezoneSettings::GetInstance()->AddObserver(this);
   chromeos::SystemClockClient::Get()->AddObserver(this);
@@ -101,8 +99,7 @@ ScreenTimeController::~ScreenTimeController() {
     parent_access::ParentAccessService::Get().RemoveObserver(this);
 
   session_manager::SessionManager::Get()->RemoveObserver(this);
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
-    UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
+  UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
 
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
   SystemClockClient::Get()->RemoveObserver(this);
@@ -191,8 +188,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
           notification_type.value(), remaining_time);
     }
 
-    if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
-      ScheduleUsageTimeLimitWarning(state);
+    ScheduleUsageTimeLimitWarning(state);
   }
 
   // Trigger policy update notifications.
@@ -283,16 +279,14 @@ void ScreenTimeController::OnScreenLockByPolicy(
   ScreenLocker::default_screen_locker()->DisableAuthForUser(
       account_id,
       ash::AuthDisabledData(ConvertLockReason(active_policy), next_unlock_time,
-                            GetScreenTimeDuration()));
+                            GetScreenTimeDuration(),
+                            true /*disable_lock_screen_media*/));
 
   // Add parent access code button.
   // TODO(agawronska): Once feature flag is removed, showing shelf button could
   // be moved to ash.
   if (base::FeatureList::IsEnabled(features::kParentAccessCode))
     ash::LoginScreen::Get()->ShowParentAccessButton(true);
-
-  // Prevent media from continuing to play after device is locked.
-  MediaClientImpl::Get()->SuspendMediaSessions();
 }
 
 void ScreenTimeController::OnScreenLockByPolicyEnd() {
@@ -507,25 +501,11 @@ ScreenTimeController::ConvertPolicyType(
 void ScreenTimeController::OnSessionStateChanged() {
   session_manager::SessionState session_state =
       session_manager::SessionManager::Get()->session_state();
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
-    base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
-    if (session_state == session_manager::SessionState::LOCKED && last_state &&
-        last_state->is_locked) {
-      OnScreenLockByPolicy(last_state->active_policy,
-                           last_state->next_unlock_time);
-    }
-    return;
-  }
-
-  if (session_state == session_manager::SessionState::LOCKED) {
-    base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
-    if (last_state && last_state->is_locked) {
-      OnScreenLockByPolicy(last_state->active_policy,
-                           last_state->next_unlock_time);
-    }
-    ResetInSessionTimers();
-  } else if (session_state == session_manager::SessionState::ACTIVE) {
-    CheckTimeLimit("OnSessionStateChanged");
+  base::Optional<usage_time_limit::State> last_state = GetLastStateFromPref();
+  if (session_state == session_manager::SessionState::LOCKED && last_state &&
+      last_state->is_locked) {
+    OnScreenLockByPolicy(last_state->active_policy,
+                         last_state->next_unlock_time);
   }
 }
 

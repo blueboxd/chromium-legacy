@@ -2102,10 +2102,6 @@ if (enable_java_templates) {
   #       Path for the generated map between original resource paths and
   #       shortend resource paths.
   #
-  #   srcjar_path: (optional)
-  #       Path to a generated .srcjar containing the generated R.java sources
-  #       for all dependent resource libraries.
-  #
   #   proguard_file: (optional)
   #       Path to proguard configuration file for this apk target.
   #
@@ -2119,10 +2115,12 @@ if (enable_java_templates) {
     if (defined(invoker.optimized_arsc_output)) {
       _optimized_arsc_output = invoker.optimized_arsc_output
     }
-    _srcjar_path = invoker.srcjar_path
+    _final_srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
+    _intermediate_srcjar_path = _final_srcjar_path
     if (defined(invoker.post_process_script)) {
       _compile_resources_target_name = "${target_name}__intermediate"
-      _srcjar_path = "${_srcjar_path}.intermediate.srcjar"
+      _intermediate_srcjar_path =
+          "${target_gen_dir}/${target_name}.intermediate.srcjar"
       _intermediate_path =
           get_path_info(_arsc_output, "dir") + "/" +
           get_path_info(_arsc_output, "name") + ".intermediate.ap_"
@@ -2177,13 +2175,13 @@ if (enable_java_templates) {
 
       inputs += [ invoker.android_manifest ]
       outputs = [
-        _srcjar_path,
+        _intermediate_srcjar_path,
       ]
       args += [
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
         "--srcjar-out",
-        rebase_path(_srcjar_path, root_build_dir),
+        rebase_path(_intermediate_srcjar_path, root_build_dir),
       ]
       if (defined(invoker.no_xml_namespaces) && invoker.no_xml_namespaces) {
         args += [ "--no-xml-namespaces" ]
@@ -2429,9 +2427,9 @@ if (enable_java_templates) {
           "--depfile",
           rebase_path(depfile, root_build_dir),
           "--srcjar-in",
-          rebase_path(_srcjar_path, root_build_dir),
+          rebase_path(_intermediate_srcjar_path, root_build_dir),
           "--srcjar-out",
-          rebase_path(invoker.srcjar_path, root_build_dir),
+          rebase_path(_final_srcjar_path, root_build_dir),
         ]
         if (defined(_optimized_arsc_output)) {
           _input_apk = _optimized_arsc_output
@@ -2456,14 +2454,14 @@ if (enable_java_templates) {
         }
         inputs = [
           _input_apk,
-          _srcjar_path,
+          _intermediate_srcjar_path,
         ]
         if (defined(invoker.post_process_script_inputs)) {
           inputs += invoker.post_process_script_inputs
         }
         outputs = [
           _output_apk,
-          invoker.srcjar_path,
+          _final_srcjar_path,
         ]
         public_deps = [
           ":${_compile_resources_target_name}",

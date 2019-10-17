@@ -383,7 +383,8 @@ class LockDebugView::DebugDataDispatcherTransformer
                            base::Time::Now() +
                                base::TimeDelta::FromHours(user_index) +
                                base::TimeDelta::FromHours(8),
-                           base::TimeDelta::FromMinutes(15)));
+                           base::TimeDelta::FromMinutes(15),
+                           true /*bool disable_lock_screen_media*/));
       UpdateAuthDisabledReason();
     }
   }

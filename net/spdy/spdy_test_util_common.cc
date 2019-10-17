@@ -967,7 +967,7 @@ spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(
 }
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyReplyError(int stream_id) {
-  return ConstructSpdyReplyError("500", nullptr, 0, 1);
+  return ConstructSpdyReplyError("500", nullptr, 0, stream_id);
 }
 
 spdy::SpdySerializedFrame SpdyTestUtil::ConstructSpdyGetReply(

@@ -342,11 +342,15 @@ void AXTableInfo::UpdateExtraMacNodes() {
   // The table header container is just a node with all of the headers in the
   // table as indirect children.
 
-  // Delete old extra nodes.
-  ClearExtraMacNodes();
+  if (!extra_mac_nodes.empty()) {
+    // Delete old extra nodes.
+    ClearExtraMacNodes();
+  }
 
+  // One node for each column, and one more for the table header container.
+  size_t extra_node_count = col_count + 1;
   // Resize.
-  extra_mac_nodes.resize(col_count + 1);
+  extra_mac_nodes.resize(extra_node_count);
 
   // Create column nodes.
   for (size_t i = 0; i < col_count; i++)

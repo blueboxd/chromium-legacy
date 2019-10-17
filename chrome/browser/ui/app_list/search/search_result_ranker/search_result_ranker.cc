@@ -506,6 +506,16 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
   } else if (model == Model::APPS && app_ranker_) {
     app_ranker_->Record(NormalizeAppId(app_launch_data.id));
   }
+
+  if (model == Model::MIXED_TYPES && app_launch_data.query.empty() &&
+      zero_state_group_ranker_) {
+    std::vector<std::string> weights;
+    for (const auto& pair : *zero_state_group_ranker_->GetTargetData())
+      weights.push_back(base::StrCat(
+          {pair.first, ":", base::NumberToString(pair.second.last_score)}));
+    VLOG(1) << "Zero state files model weights: ["
+            << base::JoinString(weights, ", ") << "]";
+  }
 }
 
 void SearchResultRanker::LogSearchResults(

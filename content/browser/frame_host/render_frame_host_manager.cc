@@ -657,6 +657,10 @@ void RenderFrameHostManager::ClearWebUIInstances() {
 void RenderFrameHostManager::DidCreateNavigationRequest(
     NavigationRequest* request) {
   if (request->IsServedFromBackForwardCache()) {
+    // Cleanup existing pending RenderFrameHost. This corresponds to what is
+    // done inside GetFrameHostForNavigation(request), but this isn't called
+    // with the back-forward cache.
+    CleanUpNavigation();
     // Since the frame from the back-forward cache is being committed to the
     // SiteInstance we already have, it is treated as current.
     request->set_associated_site_instance_type(

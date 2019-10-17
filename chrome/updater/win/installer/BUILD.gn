@@ -79,7 +79,9 @@ template("generate_installer") {
       "--setup_runtime_deps",
       rebase_path(updater_runtime_deps, root_build_dir),
       "--output_name=updater",
-      "--verbose",
+
+      # Optional argument for verbose archiving output.
+      #"--verbose",
     ]
 
     deps = [

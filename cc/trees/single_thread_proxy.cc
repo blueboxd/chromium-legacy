@@ -427,6 +427,10 @@ size_t SingleThreadProxy::MainThreadAnimationsCount() const {
   return 0;
 }
 
+bool SingleThreadProxy::HasCustomPropertyAnimations() const {
+  return false;
+}
+
 bool SingleThreadProxy::CurrentFrameHadRAF() const {
   return false;
 }

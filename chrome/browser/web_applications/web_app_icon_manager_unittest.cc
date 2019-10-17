@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -48,17 +49,18 @@ class WebAppIconManagerTest : public WebAppTest {
                   const std::vector<int>& sizes_px,
                   const std::vector<SkColor>& colors) {
     DCHECK_EQ(sizes_px.size(), colors.size());
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->icons.reserve(sizes_px.size());
+
+    std::vector<WebApplicationIconInfo> icon_infos;
+    icon_infos.reserve(sizes_px.size());
+
     for (size_t i = 0; i < sizes_px.size(); ++i) {
       std::string icon_name = base::StringPrintf("app-%d.ico", sizes_px[i]);
       GURL icon_url = app_url.Resolve(icon_name);
-      web_app_info->icons.push_back(
-          GenerateIconInfo(icon_url, sizes_px[i], colors[i]));
+      icon_infos.push_back(GenerateIconInfo(icon_url, sizes_px[i], colors[i]));
     }
 
     base::RunLoop run_loop;
-    icon_manager_->WriteData(app_id, std::move(web_app_info),
+    icon_manager_->WriteData(app_id, std::move(icon_infos),
                              base::BindLambdaForTesting([&](bool success) {
                                EXPECT_TRUE(success);
                                run_loop.Quit();

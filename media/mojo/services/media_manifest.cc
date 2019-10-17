@@ -45,4 +45,26 @@ const service_manager::Manifest& GetMediaManifest() {
   return *manifest;
 }
 
+const service_manager::Manifest& GetMediaRendererManifest() {
+  static base::NoDestructor<service_manager::Manifest> manifest {
+    service_manager::ManifestBuilder()
+        .WithServiceName(mojom::kMediaRendererServiceName)
+        .WithDisplayName("Media Renderer Service")
+        .WithOptions(
+            service_manager::ManifestOptionsBuilder()
+                .WithExecutionMode(
+                    service_manager::Manifest::ExecutionMode::kInProcessBuiltin)
+                .Build())
+        .ExposeCapability(
+            "media:media",
+            service_manager::Manifest::InterfaceList<mojom::MediaService>())
+#if defined(IS_CHROMECAST)
+        .RequireCapability(chromecast::mojom::kChromecastServiceName,
+                           "multizone")
+#endif
+        .Build()
+  };
+  return *manifest;
+}
+
 }  // namespace media

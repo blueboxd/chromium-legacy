@@ -6,6 +6,7 @@ package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
@@ -25,9 +26,11 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -50,21 +53,6 @@ class StartSurfaceMediator
         int TASKS_ONLY = 1;
         int TWO_PANES = 2;
         int SINGLE_PANE = 3;
-    }
-
-    /** The delegate to interact with the location bar. */
-    interface Delegate {
-        /**
-         * Add the given url focus change listener.
-         * @param listener The given listener.
-         */
-        void addUrlFocusChangeListener(UrlFocusChangeListener listener);
-
-        /**
-         * Remove the given url focus change listener.
-         * @param listener The given listener.
-         */
-        void removeUrlFocusChangeListener(UrlFocusChangeListener listener);
     }
 
     /** Interface to initialize a secondary tasks surface for more tabs. */
@@ -93,7 +81,7 @@ class StartSurfaceMediator
     private PropertyModel mSecondaryTasksSurfacePropertyModel;
     private boolean mIsIncognito;
     @Nullable
-    private Delegate mDelegate;
+    private FakeboxDelegate mFakeboxDelegate;
     private NightModeStateProvider mNightModeStateProvider;
     @Nullable
     UrlFocusChangeListener mUrlFocusChangeListener;
@@ -104,20 +92,20 @@ class StartSurfaceMediator
             @Nullable PropertyModel propertyModel,
             @Nullable ExploreSurfaceCoordinator.FeedSurfaceCreator feedSurfaceCreator,
             @Nullable SecondaryTasksSurfaceInitializer secondaryTasksSurfaceInitializer,
-            @SurfaceMode int surfaceMode, @Nullable Delegate delegate,
+            @SurfaceMode int surfaceMode, @Nullable FakeboxDelegate fakeboxDelegate,
             NightModeStateProvider nightModeStateProvider) {
         mController = controller;
         mPropertyModel = propertyModel;
         mFeedSurfaceCreator = feedSurfaceCreator;
         mSecondaryTasksSurfaceInitializer = secondaryTasksSurfaceInitializer;
         mSurfaceMode = surfaceMode;
-        mDelegate = delegate;
+        mFakeboxDelegate = fakeboxDelegate;
         mNightModeStateProvider = nightModeStateProvider;
 
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
                     || mSurfaceMode == SurfaceMode.TASKS_ONLY;
-            assert mDelegate != null;
+            assert mFakeboxDelegate != null;
 
             mIsIncognito = tabModelSelector.isIncognitoSelected();
             tabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
@@ -173,6 +161,11 @@ class StartSurfaceMediator
             }
             mPropertyModel.set(MV_TILES_VISIBLE, !mIsIncognito);
 
+            // Note that isVoiceSearchEnabled will return false in incognito mode.
+            mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+                    mFakeboxDelegate.getLocationBarVoiceRecognitionHandler()
+                            .isVoiceSearchEnabled());
+
             int toolbarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
@@ -202,8 +195,9 @@ class StartSurfaceMediator
         mSecondaryTasksSurfacePropertyModel.set(IS_INCOGNITO, mIsIncognito);
 
         // Secondary tasks surface is used for more Tabs or incognito mode single pane, where MV
-        // tiles should be invisible.
+        // tiles and voice recognition button should be invisible.
         mSecondaryTasksSurfacePropertyModel.set(MV_TILES_VISIBLE, false);
+        mSecondaryTasksSurfacePropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE, false);
     }
 
     void setStateChangeObserver(StartSurface.StateObserver observer) {
@@ -267,7 +261,7 @@ class StartSurfaceMediator
             }
 
             mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
-            mDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
+            mFakeboxDelegate.addUrlFocusChangeListener(mUrlFocusChangeListener);
         }
 
         mController.showOverview(animate);
@@ -323,7 +317,7 @@ class StartSurfaceMediator
     public void startedHiding() {
         if (mPropertyModel != null) {
             mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
-            mDelegate.removeUrlFocusChangeListener(mUrlFocusChangeListener);
+            mFakeboxDelegate.removeUrlFocusChangeListener(mUrlFocusChangeListener);
             destroyFeedSurfaceCoordinator();
         }
         for (StartSurface.OverviewModeObserver observer : mObservers) {
@@ -386,6 +380,16 @@ class StartSurfaceMediator
         mIsIncognito = isIncognito;
 
         mPropertyModel.set(MV_TILES_VISIBLE, !mIsIncognito);
+
+        // This is because LocationBarVoiceRecognitionHandler monitors incognito mode and returns
+        // false in incognito mode. However, when switching incognito mode, this class is notified
+        // earlier than the LocationBarVoiceRecognitionHandler, so isVoiceSearchEnabled returns
+        // incorrect state if check synchronously.
+        ThreadUtils.postOnUiThread(() -> {
+            mPropertyModel.set(IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+                    mFakeboxDelegate.getLocationBarVoiceRecognitionHandler()
+                            .isVoiceSearchEnabled());
+        });
 
         if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
             setExploreSurfaceVisibility(!mIsIncognito);

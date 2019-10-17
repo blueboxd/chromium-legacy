@@ -5,7 +5,7 @@
 #include "components/performance_manager/public/frame_priority/max_vote_aggregator.h"
 
 #include "base/rand_util.h"
-#include "components/performance_manager/frame_priority/unittest_util.h"
+#include "components/performance_manager/test_support/frame_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {

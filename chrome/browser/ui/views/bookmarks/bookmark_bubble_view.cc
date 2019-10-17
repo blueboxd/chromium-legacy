@@ -193,11 +193,10 @@ bool BookmarkBubbleView::Close() {
   return true;
 }
 
-void BookmarkBubbleView::UpdateButton(views::LabelButton* button,
-                                      ui::DialogButton type) {
-  LocationBarBubbleDelegateView::UpdateButton(button, type);
-  if (type == ui::DIALOG_BUTTON_CANCEL)
-    button->AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
+void BookmarkBubbleView::OnDialogInitialized() {
+  views::Button* cancel = GetCancelButton();
+  if (cancel)
+    cancel->AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
 }
 
 // views::View -----------------------------------------------------------------

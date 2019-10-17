@@ -28,6 +28,13 @@
 ConfirmBubbleViews::ConfirmBubbleViews(
     std::unique_ptr<ConfirmBubbleModel> model)
     : model_(std::move(model)), help_button_(nullptr) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_OK));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_CANCEL));
+
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
   views::GridLayout* layout =
@@ -55,19 +62,6 @@ ConfirmBubbleViews::ConfirmBubbleViews(
 }
 
 ConfirmBubbleViews::~ConfirmBubbleViews() {
-}
-
-base::string16 ConfirmBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_OK);
-    case ui::DIALOG_BUTTON_CANCEL:
-      return model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_CANCEL);
-    default:
-      NOTREACHED();
-      return DialogDelegateView::GetDialogButtonLabel(button);
-  }
 }
 
 bool ConfirmBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {

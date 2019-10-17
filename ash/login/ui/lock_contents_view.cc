@@ -80,13 +80,13 @@ namespace {
 // should not affect visual appearance.
 constexpr int kNonEmptyHeightDp = 30;
 
-// Horizontal distance between the auth user and the media controls.
-constexpr int kDistanceBetweenAuthUserAndMediaControlsLandscapeDp = 100;
-constexpr int kDistanceBetweenAuthUserAndMediaControlsPortraitDp = 50;
-
 // Horizontal distance between two users in the low density layout.
 constexpr int kLowDensityDistanceBetweenUsersInLandscapeDp = 118;
 constexpr int kLowDensityDistanceBetweenUsersInPortraitDp = 32;
+
+constexpr int kMediaControlsSpacingThreshold = 1280;
+constexpr int kMediaControlsSmallSpaceFactor = 3;
+constexpr int kMediaControlsLargeSpaceFactor = 5;
 
 // Margin left of the auth user in the medium density layout.
 constexpr int kMediumDensityMarginLeftOfAuthUserLandscapeDp = 98;
@@ -897,6 +897,11 @@ void LockContentsView::OnAuthDisabledForUser(
   disable_lock_screen_note_ = state->disable_auth;
   OnLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
 
+  if (auth_disabled_data.disable_lock_screen_media) {
+    Shell::Get()->media_controller()->SuspendMediaSessions();
+    HideMediaControlsLayout();
+  }
+
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
   if (big_user && big_user->auth_user()) {
@@ -1281,6 +1286,27 @@ void LockContentsView::SetLowDensitySpacing(views::View* spacing_middle,
                            std::min(available_width, desired_width));
 }
 
+void LockContentsView::SetMediaControlsSpacing(bool landscape) {
+  views::View* spacing_middle = media_controls_view_->GetMiddleSpacingView();
+
+  int total_width = GetPreferredSize().width();
+  int available_width =
+      total_width - (primary_big_view_->GetPreferredSize().width() +
+                     media_controls_view_->GetPreferredSize().width());
+  if (available_width <= 0) {
+    SetPreferredWidthForView(spacing_middle, 0);
+    return;
+  }
+
+  int desired_width;
+  if (!landscape || total_width <= kMediaControlsSpacingThreshold)
+    desired_width = available_width / kMediaControlsSmallSpaceFactor;
+  else
+    desired_width = available_width / kMediaControlsLargeSpaceFactor;
+
+  SetPreferredWidthForView(spacing_middle, desired_width);
+}
+
 bool LockContentsView::AreMediaControlsEnabled() const {
   return screen_type_ == LockScreen::ScreenType::kLock &&
          !expanded_view_->GetVisible() &&
@@ -1309,10 +1335,7 @@ void LockContentsView::CreateMediaControlsLayout() {
 
   // Set |spacing_middle|.
   AddDisplayLayoutAction(base::BindRepeating(
-      &LockContentsView::SetLowDensitySpacing, base::Unretained(this),
-      media_controls_view_->GetMiddleSpacingView(), media_controls_view_.get(),
-      kDistanceBetweenAuthUserAndMediaControlsLandscapeDp,
-      kDistanceBetweenAuthUserAndMediaControlsPortraitDp));
+      &LockContentsView::SetMediaControlsSpacing, base::Unretained(this)));
 
   Layout();
 }

@@ -144,34 +144,34 @@ TEST_F(PriorityQueueWithSequencesTest, RemoveSequence) {
 
   // Remove |sequence_a| from the PriorityQueue. |sequence_b| is still the
   // sequence with the highest priority.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_a).Unregister());
+  EXPECT_TRUE(pq.RemoveTaskSource(*sequence_a).Unregister());
   EXPECT_EQ(sort_key_b, pq.PeekSortKey());
   ExpectNumSequences(1U, 0U, 2U);
 
   // RemoveTaskSource() should return false if called on a sequence not in the
   // PriorityQueue.
-  EXPECT_FALSE(pq.RemoveTaskSource(sequence_a).Unregister());
+  EXPECT_FALSE(pq.RemoveTaskSource(*sequence_a).Unregister());
   ExpectNumSequences(1U, 0U, 2U);
 
   // Remove |sequence_b| from the PriorityQueue. |sequence_c| becomes the
   // sequence with the highest priority.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_b).Unregister());
+  EXPECT_TRUE(pq.RemoveTaskSource(*sequence_b).Unregister());
   EXPECT_EQ(sort_key_c, pq.PeekSortKey());
   ExpectNumSequences(1U, 0U, 1U);
 
   // Remove |sequence_d| from the PriorityQueue. |sequence_c| is still the
   // sequence with the highest priority.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_d).Unregister());
+  EXPECT_TRUE(pq.RemoveTaskSource(*sequence_d).Unregister());
   EXPECT_EQ(sort_key_c, pq.PeekSortKey());
   ExpectNumSequences(0U, 0U, 1U);
 
   // Remove |sequence_c| from the PriorityQueue, making it empty.
-  EXPECT_TRUE(pq.RemoveTaskSource(sequence_c).Unregister());
+  EXPECT_TRUE(pq.RemoveTaskSource(*sequence_c).Unregister());
   EXPECT_TRUE(pq.IsEmpty());
   ExpectNumSequences(0U, 0U, 0U);
 
   // Return false if RemoveTaskSource() is called on an empty PriorityQueue.
-  EXPECT_FALSE(pq.RemoveTaskSource(sequence_c).Unregister());
+  EXPECT_FALSE(pq.RemoveTaskSource(*sequence_c).Unregister());
   ExpectNumSequences(0U, 0U, 0U);
 }
 

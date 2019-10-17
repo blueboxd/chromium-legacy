@@ -44,25 +44,25 @@ DlcserviceClient* g_instance = nullptr;
 class DlcserviceErrorResponseHandler {
  public:
   explicit DlcserviceErrorResponseHandler(dbus::ErrorResponse* err_response)
-      : err(dlcservice::kErrorInternal) {
-    if (err_response && dbus::MessageReader(err_response).PopString(&err_msg) &&
-        DlcserviceErrorFromString(err_msg, &err)) {
-      VLOG(1) << "Handling error response err=" << err
-              << " err_msg=" << err_msg;
-    } else {
-      LOG(ERROR) << "Failed to set err based on error response "
-                 << "defaulted to kErrorInternal.";
+      : err_(dlcservice::kErrorInternal) {
+    if (!err_response) {
+      LOG(ERROR) << "Failed to set err since ErrorResponse is null.";
+      return;
     }
+    VerifyAndSetError(err_response);
+    VerifyAndSetErrorMessage(err_response);
+    VLOG(1) << "Handling err=" << err_ << " err_msg=" << err_msg_;
   }
 
   ~DlcserviceErrorResponseHandler() = default;
 
-  std::string get_err() { return err; }
+  std::string get_err() { return err_; }
 
-  std::string get_err_msg() { return err_msg; }
+  std::string get_err_msg() { return err_msg_; }
 
  private:
-  bool DlcserviceErrorFromString(const std::string& err_msg, std::string* err) {
+  void VerifyAndSetError(dbus::ErrorResponse* err_response) {
+    const std::string& err = err_response->GetErrorName();
     static const base::NoDestructor<std::unordered_set<std::string>> err_set({
         dlcservice::kErrorNone,
         dlcservice::kErrorInternal,
@@ -70,40 +70,28 @@ class DlcserviceErrorResponseHandler {
         dlcservice::kErrorNeedReboot,
         dlcservice::kErrorInvalidDlc,
     });
-    static const std::pair<std::string, std::string> delims = {"dlcservice/",
-                                                               ":"};
-
-    if (!err) {
-      LOG(ERROR) << "err passed is nullptr.";
-      return false;
+    // Lookup the dlcservice error code and provide default on invalid.
+    auto itr = err_set->find(err);
+    if (itr == err_set->end()) {
+      LOG(ERROR) << "Failed to set error based on ErrorResponse "
+                    "defaulted to kErrorInternal, was:" << err;
+      err_ = dlcservice::kErrorInternal;
+      return;
     }
+    err_ = *itr;
+  }
 
-    // Clear to empty out |err|.
-    err->clear();
-
-    // Verify dlcservice error code.
-    if (err_msg.find(delims.first) == std::string::npos) {
-      LOG(ERROR) << "Dlcservice did not send valid error message: " << err_msg;
-      *err = dlcservice::kErrorInternal;
-      return true;
+  void VerifyAndSetErrorMessage(dbus::ErrorResponse* err_response) {
+    if (!dbus::MessageReader(err_response).PopString(&err_msg_)) {
+      LOG(ERROR) << "Failed to set error message from ErrorResponse.";
     }
-
-    // Extract the dlcservice error code.
-    size_t padding = delims.first.size();
-    size_t second_idx = err_msg.find(delims.second, padding);
-    *err = err_msg.substr(padding, second_idx - padding);
-
-    // Lookup the dlcservice error code and provide default on failure.
-    auto itr = err_set->find(*err);
-    *err = itr != err_set->end() ? *itr : dlcservice::kErrorInternal;
-    return true;
   }
 
   // Holds the dlcservice specific error.
-  std::string err;
+  std::string err_;
 
   // Holds the entire error message from error response.
-  std::string err_msg;
+  std::string err_msg_;
 
   DISALLOW_COPY_AND_ASSIGN(DlcserviceErrorResponseHandler);
 };

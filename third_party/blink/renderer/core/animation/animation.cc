@@ -344,9 +344,9 @@ void Animation::SetCurrentTimeInternal(double new_current_time,
     if (!hold_time_ || hold_time_ != new_current_time)
       outdated = true;
     hold_time_ = new_current_time;
-    if (paused_ || !playback_rate_) {
+    if (paused_) {
       start_time_ = base::nullopt;
-    } else if (is_limited && !start_time_ &&
+    } else if (is_limited && !start_time_ && playback_rate_ &&
                reason == kTimingUpdateForAnimationFrame) {
       start_time_ = CalculateStartTime(new_current_time);
     }
@@ -762,11 +762,7 @@ Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   //    * both the start time of animation is unresolved and it does not have a
   //      pending play task,
   //    then paused.
-  // TODO(crbug.com/958433): Presently using a paused_ flag that tracks an
-  // animation being in a paused state (including a pending pause). The above
-  // rules do not yet work verbatim due to subtle timing discrepancies on when
-  // start_time gets resolved.
-  if (paused_)
+  if (pending_pause_ || (!start_time_ && !pending_play_))
     return kPaused;
 
   // 3.  For animation, current time is resolved and either of the following

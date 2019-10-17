@@ -14,8 +14,10 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.PopupWindow;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
@@ -27,21 +29,9 @@ class TabSelectionEditorLayout extends SelectableListLayout<Integer> {
     private final PopupWindow mWindow;
     private TabSelectionEditorToolbar mToolbar;
     private View mParentView;
-    private TabSelectionEditorLayoutPositionProvider mPositionProvider;
     private ViewTreeObserver.OnGlobalLayoutListener mParentLayoutListener;
+    private @Nullable Rect mPositionRect;
     private boolean mIsInitialized;
-
-    /**
-     * An interface to provide the {@link Rect} used to position the selection editor layout on
-     * screen.
-     */
-    public interface TabSelectionEditorLayoutPositionProvider {
-        /**
-         * This method fetches the {@link Rect} used to position the selection editor layout.
-         * @return The {@link Rect} indicates where to show the selection editor layout.
-         */
-        Rect getSelectionEditorPositionRect();
-    }
 
     // TODO(meiliang): inflates R.layout.tab_selection_editor_layout in
     // TabSelectionEditorCoordinator.
@@ -60,28 +50,15 @@ class TabSelectionEditorLayout extends SelectableListLayout<Integer> {
      * @param adapter The adapter that provides views that represent items in the recycler view.
      * @param selectionDelegate The {@link SelectionDelegate} that will inform the toolbar of
      *                            selection changes.
-     * @param positionProvider The {@link TabSelectionEditorLayoutPositionProvider} that provides
-     *         the position rect to show the selection editor layout.
      */
     void initialize(View parentView, RecyclerView recyclerView, RecyclerView.Adapter adapter,
-            SelectionDelegate<Integer> selectionDelegate,
-            @Nullable TabSelectionEditorLayoutPositionProvider positionProvider) {
+            SelectionDelegate<Integer> selectionDelegate) {
         mIsInitialized = true;
         initializeRecyclerView(adapter, recyclerView);
         mToolbar =
                 (TabSelectionEditorToolbar) initializeToolbar(R.layout.tab_selection_editor_toolbar,
                         selectionDelegate, 0, 0, 0, null, false, true);
         mParentView = parentView;
-        mPositionProvider = positionProvider;
-        // Re-fetch the position rect and re-show the selection editor in case there is a global
-        // layout change on parent view, e.g. re-layout caused by orientation change.
-        mParentLayoutListener = () -> {
-            if (mWindow.isShowing() && mPositionProvider != null) {
-                hide();
-                show();
-            }
-        };
-        mParentView.getViewTreeObserver().addOnGlobalLayoutListener(mParentLayoutListener);
     }
 
     /**
@@ -89,14 +66,14 @@ class TabSelectionEditorLayout extends SelectableListLayout<Integer> {
      */
     public void show() {
         assert mIsInitialized;
-        if (mPositionProvider == null) {
+        if (mPositionRect == null) {
             mWindow.showAtLocation(mParentView, Gravity.CENTER, 0, 0);
             return;
         }
-        Rect rect = mPositionProvider.getSelectionEditorPositionRect();
-        mWindow.setWidth(rect.width());
-        mWindow.setHeight(rect.height());
-        mWindow.showAtLocation(mParentView, Gravity.NO_GRAVITY, rect.left, rect.top);
+        mWindow.setWidth(mPositionRect.width());
+        mWindow.setHeight(mPositionRect.height());
+        mWindow.showAtLocation(
+                mParentView, Gravity.NO_GRAVITY, mPositionRect.left, mPositionRect.top);
     }
 
     /**
@@ -115,11 +92,42 @@ class TabSelectionEditorLayout extends SelectableListLayout<Integer> {
     }
 
     /**
+     * Register a {@link ViewTreeObserver.OnGlobalLayoutListener} handling TabSelectionEditor
+     * related changes when parent view global layout changed.
+     */
+    public void registerGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener listener) {
+        if (mParentView == null || listener == null) return;
+        if (mParentLayoutListener != null) {
+            mParentView.getViewTreeObserver().removeOnGlobalLayoutListener(mParentLayoutListener);
+        }
+        mParentLayoutListener = listener;
+        mParentView.getViewTreeObserver().addOnGlobalLayoutListener(listener);
+    }
+
+    /**
+     * Update the {@link Rect} used to show the selection editor. If the editor is currently
+     * showing, update its positioning.
+     * @param rect  The {@link Rect} to update mPositionRect.
+     */
+    public void updateTabSelectionEditorPositionRect(@NonNull Rect rect) {
+        assert rect != null;
+        mPositionRect = rect;
+        if (mWindow.isShowing()) {
+            mWindow.update(rect.left, rect.top, rect.width(), rect.height());
+        }
+    }
+
+    /**
      * Destroy any members that needs clean up.
      */
     public void destroy() {
         if (mParentView != null && mParentLayoutListener != null) {
             mParentView.getViewTreeObserver().removeOnGlobalLayoutListener(mParentLayoutListener);
         }
+    }
+
+    @VisibleForTesting
+    Rect getPositionRectForTesting() {
+        return mPositionRect;
     }
 }

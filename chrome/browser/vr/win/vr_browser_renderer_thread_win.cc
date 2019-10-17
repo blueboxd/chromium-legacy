@@ -173,6 +173,12 @@ void VRBrowserRendererThreadWin::SetFramesThrottled(bool throttled) {
   if (g_frame_timeout_ui_disabled_for_testing_)
     return;
 
+  // TODO(crbug.com/1014764): If we try to re-start the timeouts after UI has
+  // already been shown (e.g. a user takes their headset off for a permissions
+  // prompt). Then the prompt UI doesn't seem to be dismissed immediately.
+  if (!waiting_for_webxr_frame_)
+    return;
+
   if (frames_throttled_) {
     StopWebXrTimeout();
 

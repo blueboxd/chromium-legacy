@@ -24,7 +24,6 @@ import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInf
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -133,8 +132,7 @@ public class VariationsSeedHolderTest {
     // proceed. The written seed should match the mock seed.
     @Test
     @MediumTest
-    public void testUpdateAndWriteToStaleSeed()
-            throws IOException, TimeoutException, ParseException {
+    public void testUpdateAndWriteToStaleSeed() throws IOException, TimeoutException {
         try {
             SeedInfo mockSeed = VariationsTestUtils.createMockSeed();
             long mockDateMinusOneDay = mockSeed.date - TimeUnit.DAYS.toMillis(1);
@@ -158,8 +156,7 @@ public class VariationsSeedHolderTest {
     // a file. Pretend the file already contains an up-to-date seed, so no write should happen.
     @Test
     @MediumTest
-    public void testUpdateAndWriteToFreshSeed()
-            throws IOException, TimeoutException, ParseException {
+    public void testUpdateAndWriteToFreshSeed() throws IOException, TimeoutException {
         try {
             SeedInfo mockSeed = VariationsTestUtils.createMockSeed();
             TestHolder holder = new TestHolder();

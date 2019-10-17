@@ -1462,6 +1462,12 @@ void HTMLMediaElement::TextTrackModeChanged(TextTrack* track) {
   if (track->TrackType() == TextTrack::kTrackElement)
     track->SetHasBeenConfigured(true);
 
+  if (track->IsRendered()) {
+    GetDocument().GetStyleEngine().AddTextTrack(track);
+  } else {
+    GetDocument().GetStyleEngine().RemoveTextTrack(track);
+  }
+
   ConfigureTextTrackDisplay();
 
   DCHECK(textTracks()->Contains(track));

@@ -790,7 +790,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));
   DCHECK(!(allow_port_migration_ && go_away_on_path_degrading_));
 
-  quic::QuicSpdyClientSessionBase::set_max_allowed_push_id(max_allowed_push_id);
+  quic::QuicSpdyClientSessionBase::SetMaxAllowedPushId(max_allowed_push_id);
   default_network_ = default_network;
   auto* socket_raw = socket.get();
   sockets_.push_back(std::move(socket));
@@ -1204,25 +1204,49 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->cert_status = cert_verify_result_->cert_status;
   ssl_info->cert = cert_verify_result_->verified_cert;
 
-  // Map QUIC AEADs to the corresponding TLS 1.3 cipher. OpenSSL's cipher suite
-  // numbers begin with a stray 0x03, so mask them off.
-  quic::QuicTag aead = crypto_stream_->crypto_negotiated_params().aead;
+  ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
+  ssl_info->is_issued_by_known_root =
+      cert_verify_result_->is_issued_by_known_root;
+  ssl_info->pkp_bypassed = pkp_bypassed_;
+
+  ssl_info->client_cert_sent = false;
+  ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
+  ssl_info->pinning_failure_log = pinning_failure_log_;
+  ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
+
+  ssl_info->UpdateCertificateTransparencyInfo(*ct_verify_result_);
+
+  const auto& crypto_params = crypto_stream_->crypto_negotiated_params();
   uint16_t cipher_suite;
-  switch (aead) {
-    case quic::kAESG:
-      cipher_suite = TLS1_CK_AES_128_GCM_SHA256 & 0xffff;
-      break;
-    case quic::kCC20:
-      cipher_suite = TLS1_CK_CHACHA20_POLY1305_SHA256 & 0xffff;
-      break;
-    default:
-      NOTREACHED();
-      return false;
+  if (crypto_params.cipher_suite) {
+    cipher_suite = crypto_params.cipher_suite;
+  } else {
+    // Map QUIC AEADs to the corresponding TLS 1.3 cipher. OpenSSL's cipher
+    // suite numbers begin with a stray 0x03, so mask them off.
+    quic::QuicTag aead = crypto_params.aead;
+    switch (aead) {
+      case quic::kAESG:
+        cipher_suite = TLS1_CK_AES_128_GCM_SHA256 & 0xffff;
+        break;
+      case quic::kCC20:
+        cipher_suite = TLS1_CK_CHACHA20_POLY1305_SHA256 & 0xffff;
+        break;
+      default:
+        NOTREACHED();
+        return false;
+    }
   }
   int ssl_connection_status = 0;
   SSLConnectionStatusSetCipherSuite(cipher_suite, &ssl_connection_status);
   SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_QUIC,
                                 &ssl_connection_status);
+  ssl_info->connection_status = ssl_connection_status;
+
+  if (crypto_params.cipher_suite) {
+    ssl_info->key_exchange_group = crypto_params.key_exchange_group;
+    ssl_info->peer_signature_algorithm = crypto_params.peer_signature_algorithm;
+    return true;
+  }
 
   // Report the QUIC key exchange as the corresponding TLS curve.
   switch (crypto_stream_->crypto_negotiated_params().key_exchange) {
@@ -1257,19 +1281,6 @@ bool QuicChromiumClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
       NOTREACHED();
       return false;
   }
-
-  ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
-  ssl_info->is_issued_by_known_root =
-      cert_verify_result_->is_issued_by_known_root;
-  ssl_info->pkp_bypassed = pkp_bypassed_;
-
-  ssl_info->connection_status = ssl_connection_status;
-  ssl_info->client_cert_sent = false;
-  ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
-  ssl_info->pinning_failure_log = pinning_failure_log_;
-  ssl_info->is_fatal_cert_error = is_fatal_cert_error_;
-
-  ssl_info->UpdateCertificateTransparencyInfo(*ct_verify_result_);
 
   return true;
 }

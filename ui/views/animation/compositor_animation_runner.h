@@ -30,7 +30,7 @@ class CompositorAnimationRunner : public gfx::AnimationRunner,
 
  protected:
   // gfx::AnimationRunner:
-  void OnStart(base::TimeDelta min_interval) override;
+  void OnStart(base::TimeDelta min_interval, base::TimeDelta elapsed) override;
 
  private:
   // This observes Compositor's destruction and helps CompositorAnimationRunner

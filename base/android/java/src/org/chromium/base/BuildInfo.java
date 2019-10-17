@@ -137,7 +137,7 @@ public class BuildInfo {
             try {
                 gmsPackageInfo = pm.getPackageInfo("com.google.android.gms", 0);
             } catch (NameNotFoundException e) {
-                Log.d(TAG, "GMS package is not found.", e);
+                Log.d(TAG, "GMS package is not found.");
             }
             gmsVersionCode = gmsPackageInfo != null
                     ? String.valueOf(packageVersionCode(gmsPackageInfo))

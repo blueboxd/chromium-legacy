@@ -399,6 +399,9 @@ void Widget::Init(InitParams params) {
 #endif
   native_widget_initialized_ = true;
   native_widget_->OnWidgetInitDone();
+
+  if (delegate)
+    delegate->OnWidgetInitialized();
 }
 
 void Widget::ShowEmojiPanel() {

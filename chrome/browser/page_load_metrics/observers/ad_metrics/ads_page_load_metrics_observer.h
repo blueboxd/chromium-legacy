@@ -148,11 +148,16 @@ class AdsPageLoadMetricsObserver
 
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
+  void RecordAggregateHistogramsForCpuUsage();
   void RecordAggregateHistogramsForAdTagging(
       FrameData::FrameVisibility visibility);
-  void RecordAggregateHistogramsForCpuUsage();
+  void RecordAggregateHistogramsForHeavyAds();
+
+  // Should be called on all frames prior to recording any aggregate histograms.
+  void RecordPerFrameHistograms(const FrameData& ad_frame_data);
   void RecordPerFrameHistogramsForAdTagging(const FrameData& ad_frame_data);
   void RecordPerFrameHistogramsForCpuUsage(const FrameData& ad_frame_data);
+  void RecordPerFrameHistogramsForHeavyAds(const FrameData& ad_frame_data);
 
   // Checks to see if a resource is waiting for a navigation in the given
   // RenderFrameHost to commit before it can be processed. If so, call
@@ -247,6 +252,9 @@ class AdsPageLoadMetricsObserver
 
   // Whether the heavy ad blocklist feature is enabled.
   const bool heavy_ad_blocklist_enabled_;
+
+  // Whether there was a heavy ad on the page at some point.
+  bool heavy_ad_on_page_ = false;
 
   std::unique_ptr<HeavyAdThresholdNoiseProvider>
       heavy_ad_threshold_noise_provider_;

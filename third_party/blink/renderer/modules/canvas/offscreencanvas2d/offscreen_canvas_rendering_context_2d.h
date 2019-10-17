@@ -125,9 +125,6 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
  protected:
-  void NeedsFinalizeFrame() override {
-    CanvasRenderingContext::NeedsFinalizeFrame();
-  }
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,

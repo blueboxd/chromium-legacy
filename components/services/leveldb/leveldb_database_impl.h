@@ -27,7 +27,7 @@ namespace leveldb {
 // TODO(https://crbug.com/1000959): Delete this class.
 class LevelDBDatabaseImpl {
  public:
-  using StatusCallback = base::OnceCallback<void(mojom::DatabaseError)>;
+  using StatusCallback = base::OnceCallback<void(Status)>;
 
   ~LevelDBDatabaseImpl();
 
@@ -69,13 +69,12 @@ class LevelDBDatabaseImpl {
   void Write(std::vector<mojom::BatchedOperationPtr> operations,
              StatusCallback callback);
 
-  using GetCallback = base::OnceCallback<void(mojom::DatabaseError status,
-                                              const std::vector<uint8_t>&)>;
+  using GetCallback =
+      base::OnceCallback<void(Status status, const std::vector<uint8_t>&)>;
   void Get(const std::vector<uint8_t>& key, GetCallback callback);
 
   using GetPrefixedCallback =
-      base::OnceCallback<void(mojom::DatabaseError status,
-                              std::vector<mojom::KeyValuePtr>)>;
+      base::OnceCallback<void(Status status, std::vector<mojom::KeyValuePtr>)>;
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
                    GetPrefixedCallback callback);
 

@@ -81,10 +81,6 @@ class FindBarView : public views::View,
   void OnAfterUserAction(views::Textfield* sender) override;
   void OnAfterPaste() override;
 
- protected:
-  // views::View overrides:
-  void AddedToWidget() override;
-
  private:
   class FindBarButton;
   class MatchCountLabel;

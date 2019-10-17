@@ -19,9 +19,6 @@ js_type_check("closure_compile") {
 }
 
 js_library("nux_google_apps") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/welcome/google_apps/nux_google_apps.js",
-  ]
   deps = [
     ":google_app_proxy",
     ":google_apps_metrics_proxy",
@@ -35,7 +32,6 @@ js_library("nux_google_apps") {
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:util.m",
   ]
-  extra_deps = [ ":nux_google_apps_module" ]
 }
 
 js_library("google_app_proxy") {

@@ -19,7 +19,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
-#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/layout/box_layout.h"
@@ -31,13 +30,6 @@ namespace media_message_center {
 using media_session::mojom::MediaSessionAction;
 
 namespace {
-
-// The right padding is 1/5th the size of the notification.
-constexpr int kRightMarginSize = message_center::kNotificationWidth / 5;
-
-// The right padding is 1/3rd the size of the notification when the
-// notification is expanded.
-constexpr int kRightMarginExpandedSize = message_center::kNotificationWidth / 4;
 
 // The number of actions supported when the notification is expanded or not.
 constexpr size_t kMediaNotificationActionsCount = 3;
@@ -107,11 +99,13 @@ MediaNotificationView::MediaNotificationView(
     MediaNotificationContainer* container,
     base::WeakPtr<MediaNotificationItem> item,
     views::View* header_row_controls_view,
-    const base::string16& default_app_name)
+    const base::string16& default_app_name,
+    int notification_width)
     : container_(container),
       item_(std::move(item)),
       header_row_controls_view_(header_row_controls_view),
-      default_app_name_(default_app_name) {
+      default_app_name_(default_app_name),
+      notification_width_(notification_width) {
   DCHECK(container_);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -407,7 +401,9 @@ void MediaNotificationView::UpdateViewForExpandedState() {
             views::BoxLayout::Orientation::kVertical,
             gfx::Insets(
                 kDefaultMarginSize, kDefaultMarginSize, kDefaultMarginSize,
-                has_artwork_ ? kRightMarginExpandedSize : kDefaultMarginSize),
+                has_artwork_
+                    ? (notification_width_ * kMediaImageMaxWidthExpandedPct)
+                    : kDefaultMarginSize),
             kDefaultMarginSize))
         ->SetDefaultFlex(1);
   } else {
@@ -418,7 +414,9 @@ void MediaNotificationView::UpdateViewForExpandedState() {
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal,
             gfx::Insets(0, kDefaultMarginSize, 14,
-                        has_artwork_ ? kRightMarginSize : kDefaultMarginSize),
+                        has_artwork_
+                            ? (notification_width_ * kMediaImageMaxWidthPct)
+                            : kDefaultMarginSize),
             kDefaultMarginSize, true))
         ->SetFlexForView(title_artist_row_, 1);
   }

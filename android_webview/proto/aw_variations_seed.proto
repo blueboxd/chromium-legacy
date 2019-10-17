@@ -28,7 +28,7 @@ message AwVariationsSeed {
   optional bool is_gzip_compressed = 4;
   // The download body, itself a serialized VariationsSeed proto.
   optional bytes seed_data = 5;
-  // Date the seed was downloaded according to the Variations server in
+  // Date the seed was downloaded according to the device's clock in
   // milliseconds since UNIX epoch, GMT.
   optional int64 date = 6;
 }

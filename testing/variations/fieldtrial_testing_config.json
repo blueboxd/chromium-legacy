@@ -1511,6 +1511,19 @@
                     ]
                 }
             ]
+        },
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_V2",
+                    "enable_features": [
+                        "CertVerifierBuiltin"
+                    ]
+                }
+            ]
         }
     ],
     "ChromeCleanupDistribution": [
@@ -3479,6 +3492,24 @@
                     "name": "EnabledAll",
                     "enable_features": [
                         "AutoupgradeMixedContent"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MixedContentShieldRemoval": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MixedContentSiteSetting"
                     ]
                 }
             ]

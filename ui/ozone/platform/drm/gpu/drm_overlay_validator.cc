@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/files/platform_file.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/linux/drm_util_linux.h"
@@ -57,15 +58,15 @@ DrmOverlayValidator::DrmOverlayValidator(DrmWindow* window) : window_(window) {}
 
 DrmOverlayValidator::~DrmOverlayValidator() {}
 
-std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
-    const std::vector<OverlayCheck_Params>& params,
+OverlayStatusList DrmOverlayValidator::TestPageFlip(
+    const OverlaySurfaceCandidateList& params,
     const DrmOverlayPlaneList& last_used_planes) {
-  std::vector<OverlayCheckReturn_Params> returns(params.size());
+  OverlayStatusList returns(params.size());
   HardwareDisplayController* controller = window_->GetController();
   if (!controller) {
     // The controller is not yet installed.
     for (auto& param : returns)
-      param.status = OVERLAY_STATUS_NOT;
+      param = OVERLAY_STATUS_NOT;
 
     return returns;
   }
@@ -78,8 +79,8 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
     reusable_buffers.push_back(plane.buffer);
 
   for (size_t i = 0; i < params.size(); ++i) {
-    if (!params[i].is_overlay_candidate) {
-      returns[i].status = OVERLAY_STATUS_NOT;
+    if (!params[i].overlay_handled) {
+      returns[i] = OVERLAY_STATUS_NOT;
       continue;
     }
 
@@ -88,12 +89,13 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
         GetFourCCFormatFromBufferFormat(params[i].format), &reusable_buffers);
 
     DrmOverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
-                          params[i].display_rect, params[i].crop_rect,
+                          gfx::ToNearestRect(params[i].display_rect),
+                          params[i].crop_rect,
                           /* enable_blend */ true, /* gpu_fence */ nullptr);
     test_list.push_back(std::move(plane));
 
     if (buffer && controller->TestPageFlip(test_list)) {
-      returns[i].status = OVERLAY_STATUS_ABLE;
+      returns[i] = OVERLAY_STATUS_ABLE;
     } else {
       // If test failed here, platform cannot support this configuration
       // with current combination of layers. This is usually the case when this
@@ -101,7 +103,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
       // hardware resources and they might be already in use by other planes.
       // For example this plane has requested scaling capabilities and all
       // available scalars are already in use by other planes.
-      returns[i].status = OVERLAY_STATUS_NOT;
+      returns[i] = OVERLAY_STATUS_NOT;
       test_list.pop_back();
     }
   }

@@ -660,7 +660,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // GL_EXT_window_rectangles
   functions->fWindowRectangles = gl->glWindowRectanglesEXTFn;
 
-  // EXT_window_rectangles
+  // GL_QCOM_tiled_rendering
   functions->fStartTiling = gl->glStartTilingQCOMFn;
   functions->fEndTiling = gl->glEndTilingQCOMFn;
 

@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -78,7 +79,13 @@ class VTTElement final : public Element {
     return voice_attr;
   }
 
+  const TextTrack* GetTrack() const { return track_; }
+
+  void SetTrack(TextTrack*);
+  void Trace(blink::Visitor*) override;
+
  private:
+  Member<TextTrack> track_;
   unsigned is_past_node_ : 1;
   unsigned web_vtt_node_type_ : 4;
 

@@ -49,7 +49,6 @@ class TabCloseButton : public views::ImageButton,
  protected:
   // views::ImageButton:
   gfx::Size CalculatePreferredSize() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:

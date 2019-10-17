@@ -509,6 +509,36 @@ cr.define('preview_generation_test', function() {
               expectedScalingType: print_preview.ScalingType.DEFAULT,
             });
             nativeLayer.resetResolver('getPreview');
+            // DEFAULT -> FIT_TO_PAPER
+            page.setSetting(
+                'scalingTypePdf', print_preview.ScalingType.FIT_TO_PAPER);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            validateScalingChange({
+              printTicket: args.printTicket,
+              scalingTypeKey: 'scalingTypePdf',
+              expectedTicketId: 5,
+              expectedTicketScaleFactor: 100,
+              expectedScalingValue: '100',
+              expectedScalingType: print_preview.ScalingType.FIT_TO_PAPER,
+            });
+            nativeLayer.resetResolver('getPreview');
+            // FIT_TO_PAPER -> DEFAULT
+            page.setSetting(
+                'scalingTypePdf', print_preview.ScalingType.DEFAULT);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(args) {
+            validateScalingChange({
+              printTicket: args.printTicket,
+              scalingTypeKey: 'scalingTypePdf',
+              expectedTicketId: 6,
+              expectedTicketScaleFactor: 100,
+              expectedScalingValue: '100',
+              expectedScalingType: print_preview.ScalingType.DEFAULT,
+            });
+            nativeLayer.resetResolver('getPreview');
             // DEFAULT -> CUSTOM
             page.setSetting('scalingTypePdf', print_preview.ScalingType.CUSTOM);
             // Need to set custom value != 100 for preview to regenerate.
@@ -522,7 +552,7 @@ cr.define('preview_generation_test', function() {
             validateScalingChange({
               printTicket: args.printTicket,
               scalingTypeKey: 'scalingTypePdf',
-              expectedTicketId: 5,
+              expectedTicketId: 7,
               expectedTicketScaleFactor: 120,
               expectedScalingValue: '120',
               expectedScalingType: print_preview.ScalingType.CUSTOM,
@@ -537,7 +567,7 @@ cr.define('preview_generation_test', function() {
             validateScalingChange({
               printTicket: args.printTicket,
               scalingTypeKey: 'scalingTypePdf',
-              expectedTicketId: 6,
+              expectedTicketId: 8,
               expectedTicketScaleFactor: 100,
               expectedScalingValue: '120',
               expectedScalingType: print_preview.ScalingType.DEFAULT,

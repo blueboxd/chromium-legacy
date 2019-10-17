@@ -107,13 +107,6 @@ TEST_F(GlobalErrorBubbleViewTest, Basic) {
   view_->WindowClosing();
 
   EXPECT_CALL(*mock_global_error_with_standard_bubble_,
-              GetBubbleViewAcceptButtonLabel());
-  EXPECT_CALL(*mock_global_error_with_standard_bubble_,
-              ShouldAddElevationIconToAcceptButton())
-      .WillOnce(Return(false));
-  view_->UpdateButton(&button_, ui::DIALOG_BUTTON_OK);
-
-  EXPECT_CALL(*mock_global_error_with_standard_bubble_,
               ShouldShowCloseButton());
   view_->ShouldShowCloseButton();
 
@@ -142,7 +135,6 @@ TEST_F(GlobalErrorBubbleViewTest, ErrorIsNull) {
   view_->GetWindowTitle();
   view_->WindowClosing();
 
-  view_->UpdateButton(&button_, ui::DIALOG_BUTTON_OK);
   view_->ShouldShowCloseButton();
 
   EXPECT_EQ(base::string16(),

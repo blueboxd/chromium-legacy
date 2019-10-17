@@ -81,13 +81,19 @@ each `RenderFrameHostImpl` owns a `MediaInterfaceProxy`, which implements
 `MediaInterfaceProxy` is a central hub for handling media player mojo interface
 requests. By default it will forward all the requests to the
 [`MediaService`](#MediaService). But it also has the flexibility to handle some
-special or more complicated use cases. For example, on desktop platforms, when
-library CDM is enabled, the `media::mojom::ContentDecryptionModule` request will
-be forwarded to the [`CdmService`](#CdmService) running in its own CDM (utility)
-process. For another example, on Android, the `media::mojom::Renderer` request
-is handled in the `RenderFrameHostImpl` context directly by creating
-`MediaPlayerRenderer` in the browser process, even though the `MediaService` is
-configured to run in the GPU process.
+special or more complicated use cases. For example:
+* On desktop platforms, when library CDM is enabled, the
+  `media::mojom::ContentDecryptionModule` request will be forwarded to the
+  [`CdmService`](#CdmService) running in its own CDM (utility) process.
+* On Android, the `media::mojom::Renderer` request is handled in the
+  `RenderFrameHostImpl` context directly by creating `MediaPlayerRenderer` in
+  the browser process, even though the `MediaService` is configured to run in
+  the GPU process.
+* On Chromecast, the `media::mojom::Renderer` and
+  `media::mojom::ContentDecryptionModule` requests are handled by
+  [`MediaRendererService`](#MediaRendererService) which runs in the browser
+  process. The `media::mojom::VideoDecoder` request is handled by the default
+  `MediaService` which runs in the GPU process.
 
 Note that `media::mojom::InterfaceFactory` interface is reused in the
 communication between `MediaInterfaceProxy` and `MediaService` (see
@@ -243,6 +249,19 @@ registered to run in the utility process (with CDM sandbox type). `CdmService`
 also has additional support on library CDM, e.g. loading the library CDM etc.
 Note that `CdmService` only supports `media::mojom::CDM` and does NOT support
 other media player mojo interfaces.
+
+### MediaRendererService
+
+`MediaRendererService` supports `media::mojom::Renderer` and
+`media::mojom::CDM`. It's hosted in a different process than the default
+`MediaService`. It's registered in `ServiceManagerContext` using
+'kMediaRendererServiceName`. This allows to run `media::mojom::VideoDecoder` and
+`media::mojom::Renderer` in two different processes. Currently Chromecast use
+this to support `CastRenderer` `CDM` in browser process and GPU accelerated
+video decoder in GPU process. The main goals are:
+1. Allow two pages to hold their own video pipeline simultaneously, because
+   `CastRenderer` only support one video pipeline at a time.
+2. Support GPU accelerated video decoder for RTC path.
 
 ### Mojo CDM and Mojo Decryptor
 

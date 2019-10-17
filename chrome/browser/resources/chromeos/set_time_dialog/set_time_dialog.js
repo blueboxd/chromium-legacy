@@ -12,8 +12,19 @@
  * when the user changes the time or timezone.
  */
 
-(function() {
-'use strict';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import './strings.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SetTimeBrowserProxy, SetTimeBrowserProxyImpl} from './set_time_browser_proxy.js';
 
 /**
  * @return {!Array<!{id: string, name: string, selected: Boolean}>} Items for
@@ -103,6 +114,8 @@ function getTimezoneDelta(firstTimezoneId, secondsTimezoneId) {
 Polymer({
   is: 'set-time-dialog',
 
+  _template: html`{__html_template__}`,
+
   // Remove listeners on detach.
   behaviors: [WebUIListenerBehavior],
 
@@ -171,12 +184,12 @@ Polymer({
    */
   timeTimeoutId_: null,
 
-  /** @private {?settime.SetTimeBrowserProxy} */
+  /** @private {?SetTimeBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settime.SetTimeBrowserProxyImpl.getInstance();
+    this.browserProxy_ = SetTimeBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -339,4 +352,3 @@ Polymer({
     this.browserProxy_.dialogClose();
   },
 });
-})();

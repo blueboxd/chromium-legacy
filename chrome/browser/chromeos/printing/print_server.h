@@ -14,7 +14,10 @@ namespace chromeos {
 // Simple class representing Print Server.
 class PrintServer {
  public:
-  PrintServer(const GURL& url, const std::string& name);
+  PrintServer(const std::string& id, const GURL& url, const std::string& name);
+
+  // Returns server's id.
+  const std::string& GetId() const { return id_; }
 
   // Returns server's URL, used for communication over IPP protocol.
   const GURL& GetUrl() const { return url_; }
@@ -24,10 +27,11 @@ class PrintServer {
 
   // Comparison operator.
   bool operator==(const PrintServer& obj) const {
-    return url_ == obj.url_ && name_ == obj.name_;
+    return url_ == obj.url_ && id_ == obj.id_ && name_ == obj.name_;
   }
 
  private:
+  std::string id_;
   GURL url_;
   std::string name_;
 };

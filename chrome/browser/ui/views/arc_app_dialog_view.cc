@@ -63,7 +63,6 @@ class ArcAppDialogView : public views::DialogDelegateView,
   bool ShouldShowCloseButton() const override;
 
   // views::DialogDelegate:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 
@@ -84,8 +83,6 @@ class ArcAppDialogView : public views::DialogDelegateView,
 
   const std::string app_id_;
   const base::string16 window_title_;
-  const base::string16 confirm_button_text_;
-  const base::string16 cancel_button_text_;
   ArcAppConfirmCallback confirm_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppDialogView);
@@ -106,9 +103,11 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
     : profile_(profile),
       app_id_(app_id),
       window_title_(window_title),
-      confirm_button_text_(confirm_button_text),
-      cancel_button_text_(cancel_button_text),
       confirm_callback_(std::move(confirm_callback)) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, confirm_button_text);
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   cancel_button_text);
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -182,12 +181,6 @@ ui::ModalType ArcAppDialogView::GetModalType() const {
 
 bool ArcAppDialogView::ShouldShowCloseButton() const {
   return false;
-}
-
-base::string16 ArcAppDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_CANCEL ? cancel_button_text_
-                                            : confirm_button_text_;
 }
 
 bool ArcAppDialogView::Accept() {

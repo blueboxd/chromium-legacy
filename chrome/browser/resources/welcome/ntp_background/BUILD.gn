@@ -39,9 +39,6 @@ polymer_modulizer("nux_ntp_background") {
 }
 
 js_library("nux_ntp_background") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/welcome/ntp_background/nux_ntp_background.js",
-  ]
   deps = [
     ":ntp_background_metrics_proxy",
     ":ntp_background_proxy",
@@ -52,5 +49,4 @@ js_library("nux_ntp_background") {
     "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:util.m",
   ]
-  extra_deps = [ ":nux_ntp_background_module" ]
 }

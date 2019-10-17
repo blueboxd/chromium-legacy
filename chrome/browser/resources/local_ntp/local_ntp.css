@@ -240,16 +240,11 @@ body.hide-fakebox #fakebox {
   padding-inline-end: 48px;
 }
 
-#realbox-matches .search-icon {
-  -webkit-mask-size: 16px;
-}
-
-#realbox-matches .clock-icon {
-  -webkit-mask-image: url(icons/clock.svg);
+.clock-icon,
+.search-icon {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 16px;
-  background: 24px 24px rgb(117, 117, 117);
+  background-color: rgb(117, 117, 117);
   bottom: 0;
   left: 16px;
   position: absolute;
@@ -257,7 +252,18 @@ body.hide-fakebox #fakebox {
   width: 24px;
 }
 
-html[dir=rtl] #realbox-matches .clock-icon {
+.clock-icon {
+  -webkit-mask-image: url(icons/clock.svg);
+  -webkit-mask-size: 16px;
+}
+
+.search-icon {
+  -webkit-mask-image:
+      url(../../../../ui/webui/resources/images/icon_search.svg);
+  -webkit-mask-size: 20px;
+}
+
+html[dir=rtl] #realbox-matches :-webkit-any(.clock-icon, .search-icon) {
   right: 16px;
 }
 
@@ -330,24 +336,6 @@ html[dir=rtl] #realbox-matches .clock-icon {
 
 html[dir=rtl] #fakebox > input {
   right: 0;
-}
-
-.search-icon {
-  -webkit-mask-image:
-      url(../../../../ui/webui/resources/images/icon_search.svg);
-  -webkit-mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 100%;
-  background: 24px 24px rgb(117, 117, 117);
-  bottom: 0;
-  left: 16px;
-  position: absolute;
-  top: 0;
-  width: 24px;
-}
-
-html[dir=rtl] .search-icon {
-  right: 16px;
 }
 
 #fakebox-text {

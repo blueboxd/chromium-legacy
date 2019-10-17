@@ -1631,11 +1631,12 @@ void WebAXObject::Swap(WebAXObject& other) {
   other = temp;
 }
 
-void WebAXObject::HandleAutofillStateChanged(bool suggestions_available) const {
+void WebAXObject::HandleAutofillStateChanged(
+    const blink::WebAXAutofillState state) const {
   if (IsDetached() || !private_->IsAXLayoutObject())
     return;
 
-  private_->HandleAutofillStateChanged(suggestions_available);
+  private_->HandleAutofillStateChanged(state);
 }
 
 WebString WebAXObject::ToString() const {

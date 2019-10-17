@@ -3162,9 +3162,12 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   generator->MoveTouch(gfx::Point(x, closed_y));
   generator->PressTouch();
   generator->MoveTouch(gfx::Point(x, fullscreen_y));
+  generator->ReleaseTouch();
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Drag to shelf to close app list.
+  generator->MoveTouch(gfx::Point(x, fullscreen_y));
+  generator->PressTouch();
   generator->MoveTouch(gfx::Point(x, closed_y));
   generator->ReleaseTouch();
   GetAppListTestHelper()->WaitUntilIdle();

@@ -44,6 +44,9 @@ class VIEWS_EXPORT WidgetDelegate {
   // menu bars, etc.) changes in size.
   virtual void OnWorkAreaChanged();
 
+  // Called when the widget's initialization is complete.
+  virtual void OnWidgetInitialized() {}
+
   // Called when the window has been requested to close, after all other checks
   // have run. Returns whether the window should be allowed to close (default is
   // true).

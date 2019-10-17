@@ -10,63 +10,6 @@
 
 namespace leveldb {
 
-mojom::DatabaseError LeveldbStatusToError(const leveldb::Status& s) {
-  if (s.ok())
-    return mojom::DatabaseError::OK;
-  if (s.IsNotFound())
-    return mojom::DatabaseError::NOT_FOUND;
-  if (s.IsCorruption())
-    return mojom::DatabaseError::CORRUPTION;
-  if (s.IsNotSupportedError())
-    return mojom::DatabaseError::NOT_SUPPORTED;
-  if (s.IsIOError())
-    return mojom::DatabaseError::IO_ERROR;
-  return mojom::DatabaseError::INVALID_ARGUMENT;
-}
-
-leveldb::Status DatabaseErrorToStatus(mojom::DatabaseError e,
-                                      const Slice& msg,
-                                      const Slice& msg2) {
-  switch (e) {
-    case mojom::DatabaseError::OK:
-      return leveldb::Status::OK();
-    case mojom::DatabaseError::NOT_FOUND:
-      return leveldb::Status::NotFound(msg, msg2);
-    case mojom::DatabaseError::CORRUPTION:
-      return leveldb::Status::Corruption(msg, msg2);
-    case mojom::DatabaseError::NOT_SUPPORTED:
-      return leveldb::Status::NotSupported(msg, msg2);
-    case mojom::DatabaseError::INVALID_ARGUMENT:
-      return leveldb::Status::InvalidArgument(msg, msg2);
-    case mojom::DatabaseError::IO_ERROR:
-      return leveldb::Status::IOError(msg, msg2);
-  }
-
-  // This will never be reached, but we still have configurations which don't
-  // do switch enum checking.
-  return leveldb::Status::InvalidArgument(msg, msg2);
-}
-
-leveldb_env::LevelDBStatusValue GetLevelDBStatusUMAValue(
-    mojom::DatabaseError status) {
-  switch (status) {
-    case mojom::DatabaseError::OK:
-      return leveldb_env::LEVELDB_STATUS_OK;
-    case mojom::DatabaseError::NOT_FOUND:
-      return leveldb_env::LEVELDB_STATUS_NOT_FOUND;
-    case mojom::DatabaseError::CORRUPTION:
-      return leveldb_env::LEVELDB_STATUS_CORRUPTION;
-    case mojom::DatabaseError::NOT_SUPPORTED:
-      return leveldb_env::LEVELDB_STATUS_NOT_SUPPORTED;
-    case mojom::DatabaseError::INVALID_ARGUMENT:
-      return leveldb_env::LEVELDB_STATUS_INVALID_ARGUMENT;
-    case mojom::DatabaseError::IO_ERROR:
-      return leveldb_env::LEVELDB_STATUS_IO_ERROR;
-  }
-  NOTREACHED();
-  return leveldb_env::LEVELDB_STATUS_OK;
-}
-
 leveldb::Slice GetSliceFor(const std::vector<uint8_t>& key) {
   if (key.size() == 0)
     return leveldb::Slice();

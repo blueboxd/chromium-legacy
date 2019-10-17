@@ -888,7 +888,7 @@ bool VariationsService::CallMaybeRetryOverHTTPForTesting() {
 }
 
 void VariationsService::RecordSuccessfulFetch() {
-  field_trial_creator_.seed_store()->RecordLastFetchTime();
+  field_trial_creator_.seed_store()->RecordLastFetchTime(base::Time::Now());
   safe_seed_manager_.RecordSuccessfulFetch(field_trial_creator_.seed_store());
 }
 

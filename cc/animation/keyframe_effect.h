@@ -119,6 +119,8 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   bool HasTickingKeyframeModel() const;
   size_t TickingKeyframeModelsCount() const;
 
+  bool AffectsCustomProperty() const;
+
   bool HasNonDeletedKeyframeModel() const;
 
   bool AnimationsPreserveAxisAlignment() const;

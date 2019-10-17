@@ -67,67 +67,61 @@ std::string GetDeviceType(sync_pb::SyncEnums::DeviceType type) {
   return l10n_util::GetStringUTF8(device_type_message_id);
 }
 
-// Util function to get name for a single device. |is_full_name| determines
-// whether we should add the model name for the device.
-std::string GetDeviceName(const syncer::DeviceInfo* device, bool is_full_name) {
+struct DeviceNames {
+  std::string full_name;
+  std::string short_name;
+};
+
+// Returns full and short names for |device|.
+DeviceNames GetDeviceNames(const syncer::DeviceInfo* device) {
   DCHECK(device);
+  DeviceNames device_names;
 
   base::SysInfo::HardwareInfo hardware_info = device->hardware_info();
 
   // The model might be empty if other device is still on M78 or lower with sync
   // turned on.
-  if (hardware_info.model.empty())
-    return device->client_name();
+  if (hardware_info.model.empty()) {
+    device_names.full_name = device_names.short_name = device->client_name();
+    return device_names;
+  }
 
   sync_pb::SyncEnums::DeviceType type = device->device_type();
 
   // For chromeOS, return manufacturer + model.
   if (type == sync_pb::SyncEnums::TYPE_CROS) {
-    return base::StrCat({device->hardware_info().manufacturer, " ",
-                         device->hardware_info().model});
+    device_names.short_name = device_names.full_name =
+        base::StrCat({device->hardware_info().manufacturer, " ",
+                      device->hardware_info().model});
+    return device_names;
   }
 
   if (hardware_info.manufacturer == "Apple Inc.") {
-    if (is_full_name)
-      return hardware_info.model;
-
-    // Returns a more readable hardware model. Internal names of Apple devices
-    // are formatted as MacbookPro2,3 or iPhone2,1 or Ipad4,1.
-    return hardware_info.model.substr(
+    // Internal names of Apple devices are formatted as MacbookPro2,3 or
+    // iPhone2,1 or Ipad4,1.
+    device_names.short_name = hardware_info.model.substr(
         0, hardware_info.model.find_first_of("0123456789,"));
+    device_names.full_name = hardware_info.model;
+    return device_names;
   }
 
-  std::string device_name =
+  device_names.short_name =
       base::StrCat({hardware_info.manufacturer, " ", GetDeviceType(type)});
-  if (is_full_name)
-    base::StrAppend(&device_name, {" ", hardware_info.model});
-
-  return device_name;
+  device_names.full_name =
+      base::StrCat({device_names.short_name, " ", hardware_info.model});
+  return device_names;
 }
 
-// Util function to rename devices for Sharing.
-std::vector<std::unique_ptr<syncer::DeviceInfo>> RenameDevices(
-    const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices) {
-  std::map<std::string, int> similar_devices_counter;
-  for (const auto& device : devices)
-    similar_devices_counter[GetDeviceName(device.get(),
-                                          /*is_full_name=*/false)]++;
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> renamed_devices;
-  for (const auto& device : devices) {
-    bool is_full_name_required = similar_devices_counter[GetDeviceName(
-                                     device.get(), /*is_full_name=*/false)] > 1;
-    std::string device_name =
-        GetDeviceName(device.get(), is_full_name_required);
-
-    renamed_devices.push_back(std::make_unique<syncer::DeviceInfo>(
-        device->guid(), device_name, device->chrome_version(),
-        device->sync_user_agent(), device->device_type(),
-        device->signin_scoped_device_id(), device->hardware_info(),
-        device->last_updated_timestamp(),
-        device->send_tab_to_self_receiving_enabled(), device->sharing_info()));
-  }
-  return renamed_devices;
+// Clones device with new device name.
+std::unique_ptr<syncer::DeviceInfo> CloneDevice(
+    const syncer::DeviceInfo* device,
+    const std::string& device_name) {
+  return std::make_unique<syncer::DeviceInfo>(
+      device->guid(), device_name, device->chrome_version(),
+      device->sync_user_agent(), device->device_type(),
+      device->signin_scoped_device_id(), device->hardware_info(),
+      device->last_updated_timestamp(),
+      device->send_tab_to_self_receiving_enabled(), device->sharing_info());
 }
 }  // namespace
 
@@ -225,61 +219,16 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
   return device_info_tracker_->GetDeviceInfo(guid);
 }
 
-// TODO(crbug.com/1014107) - Simplify this function. The function does a number
-// of things and some calls are duplicated at the moment.
-std::vector<std::unique_ptr<syncer::DeviceInfo>>
-SharingService::GetDeviceCandidates(
+SharingService::SharingDeviceList SharingService::GetDeviceCandidates(
     sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
+  if (IsSyncDisabled() || !local_device_info_provider_->GetLocalDeviceInfo())
+    return {};
+
+  SharingDeviceList device_candidates =
       device_info_tracker_->GetAllDeviceInfo();
-  const syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
-
-  if (IsSyncDisabled() || all_devices.empty() || !local_device_info)
-    return device_candidates;
-
-  const base::Time min_updated_time = base::Time::Now() - kDeviceExpiration;
-
-  // Sort the DeviceInfo vector so the most recently modified devices are first.
-  std::sort(all_devices.begin(), all_devices.end(),
-            [](const auto& device1, const auto& device2) {
-              return device1->last_updated_timestamp() >
-                     device2->last_updated_timestamp();
-            });
-
-  std::unordered_set<std::string> full_device_names;
-  // To prevent adding candidates with same name as local device.
-  full_device_names.insert(
-      GetDeviceName(local_device_info, /*is_full_name=*/true));
-
-  for (auto& device : all_devices) {
-    // If the current device is considered expired for our purposes, stop here
-    // since the next devices in the vector are at least as expired than this
-    // one.
-    if (device->last_updated_timestamp() < min_updated_time)
-      break;
-
-    base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
-        sync_prefs_->GetSharingInfo(device.get());
-    if (!sharing_info ||
-        !sharing_info->enabled_features.count(required_feature)) {
-      continue;
-    }
-
-    // Only insert the first occurrence of each device name.
-    auto inserted = full_device_names.insert(
-        GetDeviceName(device.get(), /*is_full_name=*/true));
-    if (inserted.second)
-      device_candidates.push_back(std::move(device));
-  }
-
-  // TODO(knollr): Remove devices from |sync_prefs_| that are in
-  // |synced_devices| but not in |all_devices|?
-
-  device_candidates = RenameDevices(device_candidates);
-
-  return device_candidates;
+  device_candidates =
+      FilterDeviceCandidates(std::move(device_candidates), required_feature);
+  return RenameAndDeduplicateDevices(std::move(device_candidates));
 }
 
 void SharingService::AddDeviceCandidatesInitializedObserver(
@@ -589,4 +538,77 @@ syncer::ModelTypeSet SharingService::GetRequiredSyncDataTypes() const {
   }
 
   return required_data_types;
+}
+
+SharingService::SharingDeviceList SharingService::FilterDeviceCandidates(
+    SharingDeviceList devices,
+    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
+  const base::Time min_updated_time = base::Time::Now() - kDeviceExpiration;
+  SharingDeviceList filtered_devices;
+
+  for (auto& device : devices) {
+    // Checks if |last_updated_timestamp| is not too old.
+    if (device->last_updated_timestamp() < min_updated_time)
+      continue;
+
+    // Checks whether |device| supports |required_feature|.
+    base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+        sync_prefs_->GetSharingInfo(device.get());
+    if (!sharing_info ||
+        !sharing_info->enabled_features.count(required_feature)) {
+      continue;
+    }
+
+    filtered_devices.push_back(std::move(device));
+  }
+
+  return filtered_devices;
+}
+
+SharingService::SharingDeviceList SharingService::RenameAndDeduplicateDevices(
+    SharingDeviceList devices) const {
+  // Sort the devices so the most recently modified devices are first.
+  std::sort(devices.begin(), devices.end(),
+            [](const auto& device1, const auto& device2) {
+              return device1->last_updated_timestamp() >
+                     device2->last_updated_timestamp();
+            });
+
+  std::unordered_map<std::string, DeviceNames> device_candidate_names;
+  std::unordered_set<std::string> full_device_names;
+  std::unordered_map<std::string, int> short_device_name_counter;
+
+  // To prevent adding candidates with same full name as local device.
+  full_device_names.insert(
+      GetDeviceNames(local_device_info_provider_->GetLocalDeviceInfo())
+          .full_name);
+
+  for (const auto& device : devices) {
+    DeviceNames device_names = GetDeviceNames(device.get());
+
+    // Only insert the first occurrence of each device name.
+    auto inserted = full_device_names.insert(device_names.full_name);
+    if (!inserted.second)
+      continue;
+
+    short_device_name_counter[device_names.short_name]++;
+    device_candidate_names.insert({device->guid(), std::move(device_names)});
+  }
+
+  // Rename filtered devices.
+  SharingDeviceList device_candidates;
+  for (const auto& device : devices) {
+    auto it = device_candidate_names.find(device->guid());
+    if (it == device_candidate_names.end())
+      continue;
+
+    const DeviceNames& device_names = it->second;
+    bool is_short_name_unique =
+        short_device_name_counter[device_names.short_name] == 1;
+    device_candidates.push_back(CloneDevice(
+        device.get(), is_short_name_unique ? device_names.short_name
+                                           : device_names.full_name));
+  }
+
+  return device_candidates;
 }

@@ -192,6 +192,11 @@ IntersectionGeometry::RootGeometry::RootGeometry(const LayoutObject* root,
   if (!root || !root->GetNode() || !root->GetNode()->isConnected() ||
       !root->IsBox())
     return;
+  if (RuntimeEnabledFeatures::
+          IntersectionObserverDocumentScrollingElementRootEnabled() &&
+      root->GetNode() == root->GetDocument().scrollingElement()) {
+    root = root->GetDocument().GetLayoutView();
+  }
   zoom = root->StyleRef().EffectiveZoom();
   local_root_rect = InitializeRootRect(root, margin);
   TransformState transform_state(TransformState::kApplyTransformDirection);

@@ -5,6 +5,7 @@
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
 #include <wrl/client.h>
+#include <wrl/implements.h>
 
 #include <algorithm>
 #include <map>
@@ -1181,16 +1182,14 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
 
   // Multiple items are selected.
   LONG selected_count = static_cast<LONG>(selected_nodes.size());
-  auto* enum_variant = new base::win::EnumVariant(selected_count);
-  enum_variant->AddRef();
+  Microsoft::WRL::ComPtr<base::win::EnumVariant> enum_variant =
+      Microsoft::WRL::Make<base::win::EnumVariant>(selected_count);
   for (LONG i = 0; i < selected_count; ++i) {
     enum_variant->ItemAt(i)->vt = VT_DISPATCH;
     enum_variant->ItemAt(i)->pdispVal = selected_nodes[i].Detach();
   }
   selected->vt = VT_UNKNOWN;
-  HRESULT hr = enum_variant->QueryInterface(IID_PPV_ARGS(&V_UNKNOWN(selected)));
-  enum_variant->Release();
-  return hr;
+  return enum_variant.CopyTo(IID_PPV_ARGS(&V_UNKNOWN(selected)));
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::accSelect(LONG flagsSelect, VARIANT var_id) {

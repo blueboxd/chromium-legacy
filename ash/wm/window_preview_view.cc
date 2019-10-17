@@ -31,6 +31,8 @@ WindowPreviewView::WindowPreviewView(aura::Window* window,
 }
 
 WindowPreviewView::~WindowPreviewView() {
+  for (auto* window : unparented_transient_children_)
+    window->RemoveObserver(this);
   for (auto entry : mirror_views_)
     entry.first->RemoveObserver(this);
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
@@ -140,6 +142,14 @@ void WindowPreviewView::AddWindow(aura::Window* window) {
 }
 
 void WindowPreviewView::RemoveWindow(aura::Window* window) {
+  auto iter = unparented_transient_children_.find(window);
+  if (iter != unparented_transient_children_.end()) {
+    unparented_transient_children_.erase(iter);
+    window->RemoveObserver(this);
+    DCHECK(!mirror_views_.count(window));
+    return;
+  }
+
   auto it = mirror_views_.find(window);
   if (it == mirror_views_.end())
     return;

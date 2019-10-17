@@ -34,10 +34,15 @@
 #include "url/gurl.h"
 
 namespace content {
+
 namespace {
+
 using leveldb::StdStringToUint8Vector;
 using leveldb::Uint8VectorToStdString;
-using leveldb::mojom::DatabaseError;
+
+MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
+  return arg.ok();
+}
 
 class MockListener : public SessionStorageDataMap::Listener {
  public:
@@ -47,7 +52,7 @@ class MockListener : public SessionStorageDataMap::Listener {
                void(const std::vector<uint8_t>& map_id,
                     SessionStorageDataMap* map));
   MOCK_METHOD1(OnDataMapDestruction, void(const std::vector<uint8_t>& map_id));
-  MOCK_METHOD1(OnCommitResult, void(DatabaseError error));
+  MOCK_METHOD1(OnCommitResult, void(leveldb::Status));
 };
 
 class SessionStorageAreaImplTest : public testing::Test {
@@ -229,7 +234,7 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .Times(testing::AnyNumber());
   EXPECT_TRUE(test::PutSync(ss_leveldb2.get(), StdStringToUint8Vector("key2"),
                             StdStringToUint8Vector("data2"), base::nullopt,
@@ -349,7 +354,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
       .Times(1);
   // There should be no commits, as we don't actually have to change any data.
   // |ss_leveldb_impl1| should just switch to a new, empty map.
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(0);
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus())).Times(0);
   EXPECT_TRUE(test::DeleteAllSync(ss_leveldb1.get(), "source"));
 
   // The maps were forked on the above call.
@@ -379,7 +384,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBinding) {
       GetRegisterNewAreaMapCallback());
 
   base::RunLoop loop;
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
   EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
   ss_leveldb_impl1->data_map()->storage_area()->ScheduleImmediateCommit();
@@ -425,7 +430,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBindingOnShared) {
       .Times(1);
   // There should be no commits, as we don't actually have to change any data.
   // |ss_leveldb_impl1| should just switch to a new, empty map.
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(0);
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus())).Times(0);
   EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
 
   // The maps were forked on the above call.

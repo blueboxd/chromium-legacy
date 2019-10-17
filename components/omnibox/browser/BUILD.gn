@@ -7,6 +7,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 if (is_android) {
@@ -451,5 +452,18 @@ source_set("unit_tests") {
     "//ui/base:test_support",
     "//ui/gfx:test_support",
     "//url",
+  ]
+}
+
+fuzzer_test("autocomplete_input_fuzzer") {
+  sources = [
+    "autocomplete_input_fuzzer.cc",
+  ]
+  deps = [
+    ":browser",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//third_party/metrics_proto:metrics_proto",
   ]
 }

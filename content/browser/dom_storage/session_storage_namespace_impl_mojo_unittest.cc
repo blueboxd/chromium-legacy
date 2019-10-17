@@ -31,14 +31,19 @@
 #include "url/gurl.h"
 
 namespace content {
+
 namespace {
+
 using leveldb::StdStringToUint8Vector;
-using leveldb::mojom::DatabaseError;
 using NamespaceEntry = SessionStorageMetadata::NamespaceEntry;
 
 constexpr const int kTestProcessIdOrigin1 = 11;
 constexpr const int kTestProcessIdAllOrigins = 12;
 constexpr const int kTestProcessIdOrigin3 = 13;
+
+MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
+  return arg.ok();
+}
 
 class MockListener : public SessionStorageDataMap::Listener {
  public:
@@ -48,7 +53,7 @@ class MockListener : public SessionStorageDataMap::Listener {
                void(const std::vector<uint8_t>& map_id,
                     SessionStorageDataMap* map));
   MOCK_METHOD1(OnDataMapDestruction, void(const std::vector<uint8_t>& map_id));
-  MOCK_METHOD1(OnCommitResult, void(leveldb::mojom::DatabaseError error));
+  MOCK_METHOD1(OnCommitResult, void(leveldb::Status));
 };
 
 class SessionStorageNamespaceImplMojoTest
@@ -65,9 +70,9 @@ class SessionStorageNamespaceImplMojoTest
 
   void WriteBatch(std::vector<leveldb::mojom::BatchedOperationPtr> operations) {
     base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
-    database_->Write(std::move(operations),
-                     base::BindLambdaForTesting(
-                         [&](leveldb::mojom::DatabaseError) { loop.Quit(); }));
+    database_->Write(
+        std::move(operations),
+        base::BindLambdaForTesting([&](leveldb::Status) { loop.Quit(); }));
     loop.Run();
   }
 
@@ -77,8 +82,7 @@ class SessionStorageNamespaceImplMojoTest
     database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
         base::nullopt, "SessionStorageNamespaceImplMojoTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
-        base::BindLambdaForTesting(
-            [&](leveldb::mojom::DatabaseError) { loop.Quit(); }));
+        base::BindLambdaForTesting([&](leveldb::Status) { loop.Quit(); }));
     loop.Run();
 
     metadata_.SetupNewDatabase();
@@ -267,7 +271,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, MetadataLoadWithMapOperations) {
                          leveldb_1.BindNewEndpointAndPassReceiver());
 
   base::RunLoop commit_loop;
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .Times(1)
       .WillOnce(testing::Invoke([&](auto error) { commit_loop.Quit(); }));
   test::PutSync(leveldb_1.get(), StdStringToUint8Vector("key2"),
@@ -323,7 +327,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneBeforeBind) {
   // Do a put in the cloned namespace.
   base::RunLoop commit_loop;
   auto commit_callback = base::BarrierClosure(2, commit_loop.QuitClosure());
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .Times(2)
       .WillRepeatedly(
           testing::Invoke([&](auto error) { commit_callback.Run(); }));
@@ -397,7 +401,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
 
   // Do a put in the cloned namespace.
   base::RunLoop commit_loop;
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .Times(1)
       .WillOnce(testing::Invoke([&](auto error) { commit_loop.Quit(); }));
   test::PutSync(leveldb_n2_o2.get(), StdStringToUint8Vector("key2"),
@@ -458,7 +462,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginData) {
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
 
   base::RunLoop commit_loop;
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .Times(1)
       .WillOnce(testing::Invoke([&](auto error) { commit_loop.Quit(); }));
   namespace_impl->RemoveOriginData(test_origin1_, base::DoNothing());
@@ -489,7 +493,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, RemoveOriginDataWithoutBinding) {
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_));
 
   base::RunLoop loop;
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
   namespace_impl->RemoveOriginData(test_origin1_, base::DoNothing());
   loop.Run();

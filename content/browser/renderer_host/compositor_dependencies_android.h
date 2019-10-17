@@ -14,6 +14,7 @@
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace cc {
@@ -52,7 +53,7 @@ class CompositorDependenciesAndroid {
 
   static void ConnectVizFrameSinkManagerOnIOThread(
       mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
-      viz::mojom::FrameSinkManagerClientPtrInfo client);
+      mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client);
 
   CompositorDependenciesAndroid();
   ~CompositorDependenciesAndroid();

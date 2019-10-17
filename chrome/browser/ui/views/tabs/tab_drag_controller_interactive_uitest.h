@@ -38,6 +38,9 @@ class TabDragControllerTest : public InProcessBrowserTest {
   // the tabs in |browser|.
   void AddTabsAndResetBrowser(Browser* browser, int additional_tabs);
 
+  // Resizes browser1 and browser2 to be side by side.
+  void Resize(Browser* browser1, Browser* browser2);
+
   // Creates a new Browser and resizes browser() and the new browser to be side
   // by side.
   Browser* CreateAnotherBrowserAndResize();

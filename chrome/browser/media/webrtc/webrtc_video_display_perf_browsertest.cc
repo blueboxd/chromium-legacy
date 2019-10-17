@@ -21,7 +21,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/gl/gl_switches.h"
 
@@ -49,9 +49,41 @@ static const char kVsyncEventName[] = "Display::DrawAndSwap";
 static const char kVideoFrameSubmitterEventName[] = "VideoFrameSubmitter";
 
 static const char kEventMatchKey[] = "Timestamp";
-static const char kTestResultString[] = "TestVideoDisplayPerf";
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_video_display_perf_test.html";
+
+constexpr char kMetricPrefixVideoDisplayPerf[] = "WebRtcVideoDisplayPerf.";
+constexpr char kMetricSkippedFramesPercent[] = "skipped_frames";
+constexpr char kMetricPassingToRenderAlgoLatencyUs[] =
+    "passing_to_render_algorithm_latency";
+constexpr char kMetricRenderAlgoLatencyUs[] = "render_algorithm_latency";
+constexpr char kMetricCompositorPickingFrameLatencyUs[] =
+    "compositor_picking_frame_latency";
+constexpr char kMetricCompositorResourcePreparationLatencyUs[] =
+    "compositor_resource_preparation_latency";
+constexpr char kMetricVsyncLatencyUs[] = "vsync_latency";
+constexpr char kMetricTotalControlledLatencyUs[] = "total_controlled_latency";
+constexpr char kMetricTotalLatencyUs[] = "total_latency";
+constexpr char kMetricPostDecodeToRasterLatencyUs[] =
+    "post_decode_to_raster_latency";
+constexpr char kMetricWebRtcDecodeLatencyUs[] = "webrtc_decode_latency";
+
+perf_test::PerfResultReporter SetUpReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixVideoDisplayPerf, story);
+  reporter.RegisterImportantMetric(kMetricSkippedFramesPercent, "percent");
+  reporter.RegisterImportantMetric(kMetricPassingToRenderAlgoLatencyUs, "us");
+  reporter.RegisterImportantMetric(kMetricRenderAlgoLatencyUs, "us");
+  reporter.RegisterImportantMetric(kMetricCompositorPickingFrameLatencyUs,
+                                   "us");
+  reporter.RegisterImportantMetric(
+      kMetricCompositorResourcePreparationLatencyUs, "us");
+  reporter.RegisterImportantMetric(kMetricVsyncLatencyUs, "us");
+  reporter.RegisterImportantMetric(kMetricTotalControlledLatencyUs, "us");
+  reporter.RegisterImportantMetric(kMetricTotalLatencyUs, "us");
+  reporter.RegisterImportantMetric(kMetricPostDecodeToRasterLatencyUs, "us");
+  reporter.RegisterImportantMetric(kMetricWebRtcDecodeLatencyUs, "us");
+  return reporter;
+}
 
 struct VideoDisplayPerfTestConfig {
   int width;
@@ -60,36 +92,13 @@ struct VideoDisplayPerfTestConfig {
   bool disable_render_smoothness_algorithm;
 };
 
-void CalculateMeanAndMax(const std::vector<double>& inputs,
-                         double* mean,
-                         double* std_dev,
-                         double* max) {
-  double sum = 0.0;
-  double sqr_sum = 0.0;
-  double max_so_far = 0.0;
-  size_t count = inputs.size();
-  for (const auto& input : inputs) {
-    sum += input;
-    sqr_sum += input * input;
-    max_so_far = std::max(input, max_so_far);
+std::string VectorToString(const std::vector<double>& values) {
+  std::string ret = "";
+  for (double val : values) {
+    ret += base::StringPrintf("%.0lf,", val);
   }
-  *max = max_so_far;
-  *mean = sum / count;
-  *std_dev = sqrt(std::max(0.0, count * sqr_sum - sum * sum)) / count;
-}
-
-void PrintMeanAndMax(const std::string& var_name,
-                     const std::string& name_modifier,
-                     const std::vector<double>& vars) {
-  double mean = 0.0;
-  double std_dev = 0.0;
-  double max = 0.0;
-  CalculateMeanAndMax(vars, &mean, &std_dev, &max);
-  perf_test::PrintResultMeanAndError(
-      kTestResultString, name_modifier, var_name + " Mean",
-      base::StringPrintf("%.0lf,%.0lf", mean, std_dev), "μs", true);
-  perf_test::PrintResult(kTestResultString, name_modifier, var_name + " Max",
-                         base::StringPrintf("%.0lf", max), "μs", true);
+  // Strip of trailing comma.
+  return ret.substr(0, ret.length() - 1);
 }
 
 void FindEvents(trace_analyzer::TraceAnalyzer* analyzer,
@@ -402,35 +411,36 @@ class WebRtcVideoDisplayPerfBrowserTest
     std::string smoothness_indicator =
         test_config_.disable_render_smoothness_algorithm ? "_DisableSmoothness"
                                                          : "";
-    std::string name_modifier = base::StringPrintf(
+    std::string story = base::StringPrintf(
         "%s_%dp%df%s", video_codec.c_str(), test_config_.height,
         test_config_.fps, smoothness_indicator.c_str());
-    perf_test::PrintResult(
-        kTestResultString, name_modifier, "Skipped frames",
-        base::StringPrintf("%.2lf", skipped_frame_percentage_), "percent",
-        true);
+    auto reporter = SetUpReporter(story);
+    reporter.AddResult(kMetricSkippedFramesPercent,
+                       base::StringPrintf("%.2lf", skipped_frame_percentage_));
     // We identify intervals in a way that can help us easily bisect the source
     // of added latency in case of a regression. From these intervals, "Render
     // Algorithm" can take random amount of times based on the vsync cycle it is
     // closest to. Therefore, "Total Controlled Latency" refers to the total
     // times without that section for semi-consistent results.
-    PrintMeanAndMax("Passing to Render Algorithm Latency", name_modifier,
-                    enqueue_frame_durations_);
-    PrintMeanAndMax("Render Algorithm Latency", name_modifier,
-                    set_frame_durations_);
-    PrintMeanAndMax("Compositor Picking Frame Latency", name_modifier,
-                    get_frame_durations_);
-    PrintMeanAndMax("Compositor Resource Preparation Latency", name_modifier,
-                    resource_ready_durations_);
-    PrintMeanAndMax("Vsync Latency", name_modifier, vsync_durations_);
-    PrintMeanAndMax("Total Controlled Latency", name_modifier,
-                    total_controlled_durations_);
-    PrintMeanAndMax("Total Latency", name_modifier, total_durations_);
+    reporter.AddResultList(kMetricPassingToRenderAlgoLatencyUs,
+                           VectorToString(enqueue_frame_durations_));
+    reporter.AddResultList(kMetricRenderAlgoLatencyUs,
+                           VectorToString(set_frame_durations_));
+    reporter.AddResultList(kMetricCompositorPickingFrameLatencyUs,
+                           VectorToString(get_frame_durations_));
+    reporter.AddResultList(kMetricCompositorResourcePreparationLatencyUs,
+                           VectorToString(resource_ready_durations_));
+    reporter.AddResultList(kMetricVsyncLatencyUs,
+                           VectorToString(vsync_durations_));
+    reporter.AddResultList(kMetricTotalControlledLatencyUs,
+                           VectorToString(total_controlled_durations_));
+    reporter.AddResultList(kMetricTotalLatencyUs,
+                           VectorToString(total_durations_));
 
-    PrintMeanAndMax("Post-decode-to-raster latency", name_modifier,
-                    video_frame_submmitter_latencies_);
-    PrintMeanAndMax("WebRTC decode latency", name_modifier,
-                    webrtc_decode_latencies_);
+    reporter.AddResultList(kMetricPostDecodeToRasterLatencyUs,
+                           VectorToString(video_frame_submmitter_latencies_));
+    reporter.AddResultList(kMetricWebRtcDecodeLatencyUs,
+                           VectorToString(webrtc_decode_latencies_));
   }
 
   VideoDisplayPerfTestConfig test_config_;

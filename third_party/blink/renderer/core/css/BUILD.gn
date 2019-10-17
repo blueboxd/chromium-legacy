@@ -156,6 +156,7 @@ blink_core_sources("css") {
     "css_reflect_value.h",
     "css_reflection_direction.h",
     "css_resolution_units.h",
+    "css_resource_fetch_restriction.h",
     "css_rule.cc",
     "css_rule.h",
     "css_rule_list.h",

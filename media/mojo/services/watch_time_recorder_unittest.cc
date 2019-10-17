@@ -1247,7 +1247,7 @@ TEST_F(WatchTimeRecorderTest, DISABLED_PrintExpectedDecoderNameHashes) {
       "FFmpegAudioDecoder", "FFmpegVideoDecoder",     "GpuVideoDecoder",
       "MojoVideoDecoder",   "MojoAudioDecoder",       "VpxVideoDecoder",
       "AomVideoDecoder",    "DecryptingAudioDecoder", "DecryptingVideoDecoder",
-      "Dav1dVideoDecoder",  "FuchsiaVideoDecoder"};
+      "Dav1dVideoDecoder",  "FuchsiaVideoDecoder",    "MediaPlayer"};
   printf("%18s = 0\n", "None");
   for (const auto& name : kDecoderNames)
     printf("%18s = 0x%x\n", name.c_str(), base::PersistentHash(name));

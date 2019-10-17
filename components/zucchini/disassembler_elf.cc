@@ -211,14 +211,6 @@ bool DisassemblerElf<Traits>::ParseHeader() {
     if (section->sh_size == 0)
       continue;
 
-    // Be lax with RVAs: Assume they fit in int32_t, even for 64-bit. If
-    // assumption fails, simply skip the section with warning.
-    if (!RangeIsBounded(section->sh_addr, section->sh_size, kRvaBound) ||
-        !RangeIsBounded(section->sh_offset, section->sh_size, kOffsetBound)) {
-      LOG(WARNING) << "Section " << i << " does not fit in int32_t.";
-      continue;
-    }
-
     // Extract dimensions to 32-bit integers to facilitate conversion. Range of
     // values was ensured above when checking that the section is bounded.
     uint32_t sh_size = base::checked_cast<uint32_t>(section->sh_size);

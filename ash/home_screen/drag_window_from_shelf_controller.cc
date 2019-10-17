@@ -20,8 +20,11 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/numerics/ranges.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -36,6 +39,88 @@ constexpr float kMinimumWindowScaleDuringDragging = 0.2f;
 // window dragging.
 constexpr base::TimeDelta kShowOverviewTimeWhenDragSuspend =
     base::TimeDelta::FromMilliseconds(40);
+
+// The time to do window transform to scale up to its original position or
+// scale down to homescreen animation.
+constexpr base::TimeDelta kWindowScaleUpOrDownTime =
+    base::TimeDelta::FromMilliseconds(350);
+
+// The delay to do window opacity fade out when scaling down the dragged window.
+constexpr base::TimeDelta kWindowFadeOutDelay =
+    base::TimeDelta::FromMilliseconds(100);
+
+// The window scale down factor if we head to home screen after drag ends.
+constexpr float kWindowScaleDownFactor = 0.001f;
+
+// The class the does the dragged window scale down animation to home screen
+// after drag ends. The window will be minimized after animation complete.
+class WindowTransformToHomeScreenAnimation
+    : public ui::ImplicitAnimationObserver,
+      public aura::WindowObserver {
+ public:
+  WindowTransformToHomeScreenAnimation(
+      aura::Window* window,
+      base::Optional<BackdropWindowMode> original_backdrop_mode)
+      : window_(window), original_backdrop_mode_(original_backdrop_mode) {
+    window_->AddObserver(this);
+
+    ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());
+    settings.SetTransitionDuration(kWindowScaleUpOrDownTime);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    settings.AddObserver(this);
+    window_->layer()->GetAnimator()->SchedulePauseForProperties(
+        kWindowFadeOutDelay, ui::LayerAnimationElement::OPACITY);
+    window_->layer()->SetTransform(GetWindowTransformToHomeScreen());
+    window_->layer()->SetOpacity(0.f);
+  }
+
+  ~WindowTransformToHomeScreenAnimation() override {
+    if (window_)
+      window_->RemoveObserver(this);
+  }
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    // Minimize the dragged window after transform animation is completed.
+    ScopedAnimationDisabler disable(window_);
+    window_->Hide();
+    WindowState::Get(window_)->Minimize();
+
+    // Reset its transform to identity transform and its original backdrop mode.
+    window_->layer()->SetTransform(gfx::Transform());
+    window_->layer()->SetOpacity(1.f);
+    if (original_backdrop_mode_.has_value())
+      window_->SetProperty(kBackdropWindowMode, *original_backdrop_mode_);
+
+    delete this;
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    window_ = nullptr;
+    delete this;
+  }
+
+ private:
+  // Returns the transform that should be applied to the dragged window if we
+  // should head to homescreen after dragging.
+  gfx::Transform GetWindowTransformToHomeScreen() {
+    const gfx::Rect work_area =
+        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+            window_);
+    gfx::Transform transform;
+    transform.Translate(work_area.width() / 2, work_area.height() / 2);
+    transform.Scale(kWindowScaleDownFactor, kWindowScaleDownFactor);
+    return transform;
+  }
+
+  aura::Window* window_;
+  base::Optional<BackdropWindowMode> original_backdrop_mode_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTransformToHomeScreenAnimation);
+};
 
 }  // namespace
 
@@ -64,9 +149,9 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   UpdateDraggedWindow(location_in_screen);
 
   // Open overview if the window has been dragged far enough and the scroll
-  // delta has decreased to kShowOverviewThreshold or less.
+  // delta has decreased to kOpenOverviewThreshold or less.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (std::abs(scroll_y) <= kShowOverviewThreshold &&
+  if (std::abs(scroll_y) <= kOpenOverviewThreshold &&
       !overview_controller->InOverviewSession()) {
     overview_controller->StartOverview(
         OverviewSession::EnterExitOverviewType::kImmediateEnter);
@@ -127,20 +212,20 @@ void DragWindowFromShelfController::EndDrag(
       overview_controller->EndOverview(
           OverviewSession::EnterExitOverviewType::kImmediateExit);
     }
-    // TODO(crbug.com/997885): Add animation.
-    WindowState::Get(window_)->Minimize();
+    ScaleDownWindowAfterDrag();
   } else if (ShouldRestoreToOriginalBounds(location_in_screen)) {
     // TODO(crbug.com/997885): Add animation.
     SetTransform(window_, gfx::Transform());
+    window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
     if (!in_splitview && in_overview) {
       overview_controller->EndOverview(
           OverviewSession::EnterExitOverviewType::kImmediateExit);
     }
     ReshowHiddenWindowsOnDragEnd();
   } else if (!in_overview) {
-    // if overview is not active during the entire drag process, go to home
-    // screen.
-    WindowState::Get(window_)->Minimize();
+    // if overview is not active during the entire drag process, scale down the
+    // dragged window to go to home screen.
+    ScaleDownWindowAfterDrag();
   }
 
   OnDragEnded(location_in_screen,
@@ -157,6 +242,14 @@ void DragWindowFromShelfController::CancelDrag() {
   drag_started_ = false;
   // Reset the window's transform to identity transform.
   window_->SetTransform(gfx::Transform());
+  window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
+
+  // End overview if it was opened during dragging.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (overview_controller->InOverviewSession()) {
+    overview_controller->EndOverview(
+        OverviewSession::EnterExitOverviewType::kImmediateExit);
+  }
   ReshowHiddenWindowsOnDragEnd();
 
   OnDragEnded(previous_location_in_screen_,
@@ -243,7 +336,6 @@ void DragWindowFromShelfController::OnDragEnded(
   }
 
   WindowState::Get(window_)->DeleteDragDetails();
-  window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
   hidden_windows_.clear();
 }
 
@@ -404,6 +496,16 @@ void DragWindowFromShelfController::ShowOverviewDuringOrAfterDrag() {
 
   overview_controller->overview_session()->SetVisibleDuringWindowDragging(
       /*visible=*/true);
+}
+
+void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
+  // Do the scale-down transform for the entire transient tree.
+  for (auto* window : GetTransientTreeIterator(window_)) {
+    // self-destructed when window transform animation is done.
+    new WindowTransformToHomeScreenAnimation(
+        window, window == window_ ? base::make_optional(original_backdrop_mode_)
+                                  : base::nullopt);
+  }
 }
 
 }  // namespace ash

@@ -87,18 +87,18 @@ FrameSinkManagerImpl::~FrameSinkManagerImpl() {
 void FrameSinkManagerImpl::BindAndSetClient(
     mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    mojom::FrameSinkManagerClientPtr client) {
+    mojo::PendingRemote<mojom::FrameSinkManagerClient> client) {
   DCHECK(!client_);
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver), std::move(task_runner));
-  client_ptr_ = std::move(client);
-  client_ = client_ptr_.get();
+  client_remote_.Bind(std::move(client));
+  client_ = client_remote_.get();
 }
 
 void FrameSinkManagerImpl::SetLocalClient(
     mojom::FrameSinkManagerClient* client,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  DCHECK(!client_ptr_);
+  DCHECK(!client_remote_);
   DCHECK(!ui_task_runner_);
   client_ = client;
   ui_task_runner_ = ui_task_runner;
@@ -543,7 +543,7 @@ void FrameSinkManagerImpl::OnFrameTokenChangedDirect(
 
 void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                                                uint32_t frame_token) {
-  if (client_ptr_ || !ui_task_runner_) {
+  if (client_remote_ || !ui_task_runner_) {
     // This is a Mojo client or a locally-connected client *without* a task
     // runner. In this case, call directly.
     OnFrameTokenChangedDirect(frame_sink_id, frame_token);

@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -84,14 +85,14 @@ bool WriteIcon(FileUtilsWrapper* utils,
 
 bool WriteIcons(FileUtilsWrapper* utils,
                 const base::FilePath& app_dir,
-                const WebApplicationInfo& web_app_info) {
+                const std::vector<WebApplicationIconInfo>& icon_infos) {
   const base::FilePath icons_dir = app_dir.Append(kIconsDirectoryName);
   if (!utils->CreateDirectory(icons_dir)) {
     LOG(ERROR) << "Could not create icons directory.";
     return false;
   }
 
-  for (const WebApplicationIconInfo& icon_info : web_app_info.icons) {
+  for (const WebApplicationIconInfo& icon_info : icon_infos) {
     // Skip unfetched bitmaps.
     if (icon_info.data.colorType() == kUnknown_SkColorType)
       continue;
@@ -104,11 +105,11 @@ bool WriteIcons(FileUtilsWrapper* utils,
 }
 
 // Performs blocking I/O. May be called on another thread.
-// Returns true if no errors occured.
+// Returns true if no errors occurred.
 bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
                        base::FilePath web_apps_directory,
                        AppId app_id,
-                       std::unique_ptr<WebApplicationInfo> web_app_info) {
+                       std::vector<WebApplicationIconInfo> icon_infos) {
   const base::FilePath temp_dir = GetTempDir(utils.get(), web_apps_directory);
   if (temp_dir.empty()) {
     LOG(ERROR)
@@ -122,7 +123,7 @@ bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
     return false;
   }
 
-  if (!WriteIcons(utils.get(), app_temp_dir.GetPath(), *web_app_info))
+  if (!WriteIcons(utils.get(), app_temp_dir.GetPath(), icon_infos))
     return false;
 
   // Commit: move whole app data dir to final destination in one mv operation.
@@ -137,7 +138,7 @@ bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
 }
 
 // Performs blocking I/O. May be called on another thread.
-// Returns empty SkBitmap if any errors occured.
+// Returns empty SkBitmap if any errors occurred.
 SkBitmap ReadIconBlocking(std::unique_ptr<FileUtilsWrapper> utils,
                           base::FilePath web_apps_directory,
                           AppId app_id,
@@ -182,14 +183,14 @@ WebAppIconManager::~WebAppIconManager() = default;
 
 void WebAppIconManager::WriteData(
     AppId app_id,
-    std::unique_ptr<WebApplicationInfo> web_app_info,
+    std::vector<WebApplicationIconInfo> icon_infos,
     WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(WriteDataBlocking, utils_->Clone(), web_apps_directory_,
-                     std::move(app_id), std::move(web_app_info)),
+                     std::move(app_id), std::move(icon_infos)),
       std::move(callback));
 }
 

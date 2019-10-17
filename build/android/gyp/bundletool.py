@@ -13,6 +13,8 @@ import os
 import subprocess
 import sys
 
+from util import build_utils
+
 # Assume this is stored under build/android/gyp/
 BUNDLETOOL_DIR = os.path.abspath(os.path.join(
     __file__, '..', '..', '..', '..', 'third_party', 'android_build_tools',
@@ -24,7 +26,7 @@ BUNDLETOOL_JAR_PATH = os.path.join(
     BUNDLETOOL_DIR, 'bundletool-all-%s.jar' % BUNDLETOOL_VERSION)
 
 def RunBundleTool(args):
-  args = ['java', '-jar', BUNDLETOOL_JAR_PATH] + args
+  args = [build_utils.JAVA_PATH, '-jar', BUNDLETOOL_JAR_PATH] + args
   logging.debug(' '.join(args))
   subprocess.check_call(args)
 

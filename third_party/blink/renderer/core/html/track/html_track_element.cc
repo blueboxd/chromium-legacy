@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/track/html_track_element.h"
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -190,7 +191,7 @@ void HTMLTrackElement::LoadTimerFired(TimerBase*) {
     return;
 
   if (track_)
-    track_->RemoveAllCues();
+    track_->Reset();
 
   url_ = url;
 
@@ -286,6 +287,13 @@ void HTMLTrackElement::NewCuesAvailable(TextTrackLoader* loader) {
 
   HeapVector<Member<TextTrackCue>> new_cues;
   loader_->GetNewCues(new_cues);
+
+  HeapVector<Member<CSSStyleSheet>> new_sheets;
+  loader_->GetNewStyleSheets(new_sheets);
+
+  if (!new_sheets.IsEmpty()) {
+    track_->SetCSSStyleSheets(std::move(new_sheets));
+  }
 
   track_->AddListOfCues(new_cues);
 }

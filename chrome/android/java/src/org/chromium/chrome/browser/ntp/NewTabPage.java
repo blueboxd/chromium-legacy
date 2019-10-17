@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -150,30 +151,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     }
 
     /**
-     * Handles user interaction with the fakebox (the URL bar in the NTP).
-     */
-    public interface FakeboxDelegate {
-        /**
-         * @return Whether the URL bar is currently focused.
-         */
-        boolean isUrlBarFocused();
-
-        /**
-         * Focuses the URL bar when the user taps the fakebox, types in the fakebox, or pastes text
-         * into the fakebox.
-         *
-         * @param pastedText The text that was pasted or typed into the fakebox, or null if the user
-         *                   just tapped the fakebox.
-         */
-        void requestUrlFocusFromFakebox(String pastedText);
-
-        /**
-         * @return whether the provided native page is the one currently displayed to the user.
-         */
-        boolean isCurrentPage(NativePage nativePage);
-    }
-
-    /**
      * @param url The URL to check whether it is for the NTP.
      * @return Whether the passed in URL is used to render the NTP.
      */
@@ -230,7 +207,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 mVoiceRecognitionHandler.startVoiceRecognition(
                         LocationBarVoiceRecognitionHandler.VoiceInteractionSource.NTP);
             } else if (mFakeboxDelegate != null) {
-                mFakeboxDelegate.requestUrlFocusFromFakebox(pastedText);
+                mFakeboxDelegate.setUrlBarFocus(true, pastedText,
+                        pastedText == null ? OmniboxFocusReason.FAKE_BOX_TAP
+                                           : OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
             }
         }
 
@@ -591,14 +570,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             mNewTabPageLayout.setUrlFocusChangeAnimationPercent(
                     fakeboxDelegate.isUrlBarFocused() ? 1f : 0f);
         }
-    }
 
-    /**
-     * Sets the {@link LocationBarVoiceRecognitionHandler} this page interacts with.
-     */
-    public void setVoiceRecognitionHandler(
-            LocationBarVoiceRecognitionHandler voiceRecognitionHandler) {
-        mVoiceRecognitionHandler = voiceRecognitionHandler;
+        mVoiceRecognitionHandler = mFakeboxDelegate.getLocationBarVoiceRecognitionHandler();
         if (mVoiceRecognitionHandler != null) {
             mNewTabPageLayout.updateVoiceSearchButtonVisibility();
         }

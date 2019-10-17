@@ -31,6 +31,9 @@ class WebViewWebClientTest : public web::WebTest {
 TEST_F(WebViewWebClientTest, WKWebViewEarlyPageScriptAutofillController) {
   // WebView scripts rely on __gCrWeb object presence.
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, GetBrowserState());
+  // Add |web_view| to the windowed container to keep the WKWebView processes
+  // from being suspended.
+  [GetWebClient()->GetWindowedContainer() addSubview:web_view];
   web::test::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(std::make_unique<WebViewWebClient>());

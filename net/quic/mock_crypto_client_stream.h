@@ -79,6 +79,10 @@ class MockCryptoClientStream : public quic::QuicCryptoClientStream,
  private:
   void SetConfigNegotiated();
 
+  // Called from CryptoConnect to set appropriate values in
+  // |crypto_negotiated_params_|.
+  void FillCryptoParams();
+
   HandshakeMode handshake_mode_;
   bool encryption_established_;
   bool handshake_confirmed_;

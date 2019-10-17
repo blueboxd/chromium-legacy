@@ -55,6 +55,11 @@ class CrOSActionRecorder {
   // criteria is met.
   void MaybeFlushToDisk();
 
+  // Get CrOSActionRecorderType from
+  // app_list_features::kEnableCrOSActionRecorder and set |should_log_|,
+  // |should_hash_| accordingly.
+  void SetCrOSActionRecorderType();
+
   // Hashes the |input| if |should_hash| is true; otherwise return |input|.
   static std::string MaybeHashed(const std::string& input, bool should_hash);
 

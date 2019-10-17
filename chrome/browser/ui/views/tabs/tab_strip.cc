@@ -444,12 +444,6 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     return drag_controller_.release();
   }
 
-  bool IsCompatibleWith(TabDragContext* other) const override {
-    return static_cast<TabDragContextImpl*>(other)
-               ->tab_strip_->controller()
-               ->GetProfile() == tab_strip_->controller()->GetProfile();
-  }
-
   bool IsDragSessionActive() const override {
     return drag_controller_ != nullptr;
   }

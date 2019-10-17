@@ -378,7 +378,6 @@ base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {
     case BubbleType::SIGN_IN_PROMO:
     case BubbleType::FAILURE:
     case BubbleType::INACTIVE:
-      NOTREACHED();
       return base::string16();
   }
 }
@@ -418,7 +417,6 @@ base::string16 SaveCardBubbleControllerImpl::GetDeclineButtonText() const {
     case BubbleType::SIGN_IN_PROMO:
     case BubbleType::FAILURE:
     case BubbleType::INACTIVE:
-      NOTREACHED();
       return base::string16();
   }
 }

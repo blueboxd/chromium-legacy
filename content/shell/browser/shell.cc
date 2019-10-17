@@ -157,7 +157,7 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
   // RenderFrameCreated or RenderViewCreated instead.
   if (switches::IsRunWebTestsSwitchPresent()) {
     raw_web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
-    raw_web_contents->GetRenderViewHost()->SyncRendererPrefs();
+    raw_web_contents->SyncRendererPrefs();
   }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

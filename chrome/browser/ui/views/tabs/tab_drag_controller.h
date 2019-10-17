@@ -319,10 +319,6 @@ class TabDragController : public views::WidgetObserver {
   void StartMoveStackedTimerIfNecessary(const gfx::Point& point_in_screen,
                                         base::TimeDelta delay);
 
-  // Returns the TabDragContext for the specified window, or NULL if
-  // one doesn't exist or isn't compatible.
-  TabDragContext* GetContextForWindow(gfx::NativeWindow window);
-
   // Returns the compatible TabDragContext to drag to at the
   // specified point (screen coordinates), or nullptr if there is none.
   Liveness GetTargetTabStripForPoint(const gfx::Point& point_in_screen,
@@ -499,9 +495,11 @@ class TabDragController : public views::WidgetObserver {
 
   DragState current_state_;
 
-  // Whether a drag to |window| should be blocked (for example, if the window
-  // is showing a modal).
-  bool ShouldDisallowDrag(gfx::NativeWindow window);
+  // Tests whether a drag can be attached to a |window|.  Drags may be
+  // disallowed for reasons such as the target: does not support tabs, is
+  // showing a modal, has a different profile, is a different browser type
+  // (NORMAL vs APP).
+  bool CanAttachTo(gfx::NativeWindow window);
 
   // Helper method for TabDragController::MoveAttached to update the tab group
   // membership of selected tabs. UpdateGroupForDraggedTabs should be called

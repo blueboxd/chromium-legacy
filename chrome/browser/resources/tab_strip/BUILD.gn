@@ -11,7 +11,7 @@ js_type_check("closure_compile") {
     ":custom_element",
     ":tab",
     ":tab_list",
-    ":tab_strip_view_proxy",
+    ":tab_strip_embedder_proxy",
     ":tabs_api_proxy",
   ]
 }
@@ -38,7 +38,7 @@ js_library("tab") {
 js_library("tab_list") {
 }
 
-js_library("tab_strip_view_proxy") {
+js_library("tab_strip_embedder_proxy") {
   deps = [
     "//ui/webui/resources/js:cr.m",
   ]

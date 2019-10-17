@@ -101,6 +101,14 @@ class TasksView extends LinearLayout {
     }
 
     /**
+     * Set the voice recognition button click listener.
+     * @param listener The given listener.
+     */
+    void setVoiceRecognitionButtonClickListener(@Nullable View.OnClickListener listener) {
+        findViewById(R.id.voice_search_button).setOnClickListener(listener);
+    }
+
+    /**
      * Set the visibility of the Most Visited Tiles.
      */
     void setMostVisitedVisibility(int visibility) {

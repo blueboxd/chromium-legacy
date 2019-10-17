@@ -108,9 +108,13 @@ TEST_F(CaptureServiceReceiverTest, ReceiveValidMessage) {
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
   task_environment_.RunUntilIdle();
+  // Stop receiver to disconnect socket, since receiver doesn't own the IO
+  // task runner in unittests.
+  receiver_.Stop();
+  task_environment_.RunUntilIdle();
 }
 
-TEST_F(CaptureServiceReceiverTest, ReceiveInvalidMessage) {
+TEST_F(CaptureServiceReceiverTest, ReceiveEmptyMessage) {
   auto socket = std::make_unique<MockStreamSocket>();
   EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
   EXPECT_CALL(*socket, Read(_, _, _))
@@ -121,6 +125,29 @@ TEST_F(CaptureServiceReceiverTest, ReceiveInvalidMessage) {
         data_writer.WriteU16(14);  // header - data[0], in bytes.
         std::copy(header.data(), header.data() + header.size(), buf->data());
         return 16;
+      }));
+  EXPECT_CALL(audio_, OnError());
+
+  receiver_.StartWithSocket(&audio_, std::move(socket));
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(CaptureServiceReceiverTest, ReceiveInvalidMessage) {
+  auto socket = std::make_unique<MockStreamSocket>();
+  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
+  EXPECT_CALL(*socket, Read(_, _, _))
+      .WillOnce(Invoke([](net::IOBuffer* buf, int,
+                          net::CompletionOnceCallback) {
+        std::vector<char> header(16, 0);
+        base::BigEndianWriter data_writer(header.data(), header.size());
+        data_writer.WriteU16(334);  // 160 frames + header - data[0], in bytes.
+        data_writer.WriteU16(1);    // Mono channels.
+        data_writer.WriteU16(6);    // Invalid format.
+        data_writer.WriteU16(0);    // Padding zero.
+        data_writer.WriteU64(0);    // Timestamp.
+        std::copy(header.data(), header.data() + header.size(), buf->data());
+        // No need to fill audio frames.
+        return 336;
       }));
   EXPECT_CALL(audio_, OnError());
 
@@ -147,16 +174,6 @@ TEST_F(CaptureServiceReceiverTest, ReceiveEosMessage) {
 
   receiver_.StartWithSocket(&audio_, std::move(socket));
   task_environment_.RunUntilIdle();
-}
-
-TEST_F(CaptureServiceReceiverTest, ReceiveTimeout) {
-  auto socket = std::make_unique<MockStreamSocket>();
-  EXPECT_CALL(*socket, Connect(_)).WillOnce(Return(net::OK));
-  EXPECT_CALL(*socket, Read(_, _, _)).WillOnce(Return(net::ERR_IO_PENDING));
-  EXPECT_CALL(audio_, OnError());
-
-  receiver_.StartWithSocket(&audio_, std::move(socket));
-  task_environment_.FastForwardBy(CaptureServiceReceiver::kInactivityTimeout);
 }
 
 }  // namespace

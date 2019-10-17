@@ -4,15 +4,6 @@
 
 module leveldb.mojom;
 
-enum DatabaseError {
-  OK,
-  NOT_FOUND,
-  CORRUPTION,
-  NOT_SUPPORTED,
-  INVALID_ARGUMENT,
-  IO_ERROR
-};
-
 enum BatchOperationType {
   PUT_KEY,
   DELETE_KEY,

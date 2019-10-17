@@ -25,11 +25,11 @@
 #include "media/mojo/services/mojo_video_decoder_service.h"
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+#if BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "base/bind_helpers.h"
 #include "media/base/renderer.h"
 #include "media/mojo/services/mojo_renderer_service.h"
-#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
+#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/base/cdm_factory.h"
@@ -129,7 +129,6 @@ void InterfaceFactoryImpl::CreateCastRenderer(
     const base::UnguessableToken& overlay_plane_id,
     media::mojom::RendererRequest request) {
   DVLOG(2) << __func__;
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
   auto renderer = mojo_media_client_->CreateCastRenderer(
       host_interfaces_.get(), base::ThreadTaskRunnerHandle::Get(), &media_log_,
       overlay_plane_id);
@@ -153,7 +152,6 @@ void InterfaceFactoryImpl::CreateCastRenderer(
       base::IgnoreResult(
           &mojo::StrongBindingSet<mojom::Renderer>::RemoveBinding),
       base::Unretained(&renderer_bindings_), binding_id));
-#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 }
 #endif
 

@@ -57,7 +57,7 @@ class WebAppInstallManager final : public InstallManager,
                                const InstallParams& install_params,
                                WebappInstallSource install_source,
                                OnceInstallCallback callback) override;
-  void InstallOrUpdateWebAppFromSync(
+  void InstallWebAppFromSync(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;

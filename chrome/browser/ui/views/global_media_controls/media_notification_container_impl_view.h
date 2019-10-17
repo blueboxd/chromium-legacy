@@ -14,7 +14,7 @@
 #include "components/media_message_center/media_notification_view.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/view.h"
+#include "ui/views/focus/focus_manager.h"
 
 namespace media_message_center {
 class MediaNotificationItem;
@@ -30,21 +30,34 @@ class MediaNotificationContainerObserver;
 // within the MediaDialogView. The media notification shows metadata for a media
 // session and can control playback.
 class MediaNotificationContainerImplView
-    : public views::View,
+    : public views::Button,
       public media_message_center::MediaNotificationContainer,
       public MediaNotificationContainerImpl,
       public views::SlideOutControllerDelegate,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public views::FocusChangeListener {
  public:
   MediaNotificationContainerImplView(
       const std::string& id,
       base::WeakPtr<media_message_center::MediaNotificationItem> item);
   ~MediaNotificationContainerImplView() override;
 
+  // views::Button:
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+
+  // views::FocusChangeListener:
+  void OnWillChangeFocus(views::View* focused_before,
+                         views::View* focused_now) override {}
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override;
+
   // media_message_center::MediaNotificationContainer:
   void OnExpanded(bool expanded) override;
   void OnMediaSessionInfoChanged(
-      const media_session::mojom::MediaSessionInfoPtr& session_info) override;
+      const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
   void OnMediaSessionMetadataChanged() override;
   void OnVisibleActionsChanged(
       const std::set<media_session::mojom::MediaSessionAction>& actions)
@@ -77,6 +90,8 @@ class MediaNotificationContainerImplView
   void UpdateDismissButtonIcon();
 
   void UpdateDismissButtonBackground();
+
+  void UpdateDismissButtonVisibility();
 
   void DismissNotification();
 

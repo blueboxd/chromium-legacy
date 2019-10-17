@@ -415,7 +415,7 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
 #if BUILDFLAG(DFMIFY_DEV_UI)
-#include "chrome/browser/android/dev_ui/dev_ui_url_handler.h"
+#include "chrome/browser/dev_ui/android/dev_ui_loader_throttle.h"
 #endif  // BUILDFLAG(DFMIFY_DEV_UI)
 #elif defined(OS_POSIX)
 #include "chrome/browser/chrome_browser_main_posix.h"
@@ -1120,7 +1120,7 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
   registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
   registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
-  registry->RegisterBooleanPref(prefs::kTabLifecyclesEnabled, true);
+  registry->RegisterBooleanPref(prefs::kTabFreezingEnabled, true);
   registry->RegisterBooleanPref(prefs::kWebDriverOverridesIncompatiblePolicies,
                                 false);
 }
@@ -3349,12 +3349,6 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   // Handler to rewrite chrome://newtab on Android.
   handler->AddHandlerPair(&chrome::android::HandleAndroidNativePageURL,
                           BrowserURLHandler::null_handler());
-#if BUILDFLAG(DFMIFY_DEV_UI)
-  // Handler to rewrite chrome:// URLs in the DevUI DFM, if not installed.
-  handler->AddHandlerPair(&chrome::android::HandleDfmifiedDevUiPageURL,
-                          BrowserURLHandler::null_handler());
-#endif  // BUILDFLAG(DFMIFY_DEV_UI)
-
 #else   // defined(OS_ANDROID)
   // Handler to rewrite chrome://newtab for InstantExtended.
   handler->AddHandlerPair(&search::HandleNewTabURLRewrite,
@@ -3832,6 +3826,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
             handle, navigation_interception::SynchronyMode::kAsync));
   }
   throttles.push_back(InterceptOMADownloadNavigationThrottle::Create(handle));
+
+#if BUILDFLAG(DFMIFY_DEV_UI)
+  // If the DevUI DFM is already installed, then this is a no-op, except for the
+  // side effect of ensuring that the DevUI DFM is loaded.
+  MaybeAddThrottle(&throttles,
+                   dev_ui::DevUiLoaderThrottle::MaybeCreateThrottleFor(handle));
+#endif  // BUILDFLAG(DFMIFY_DEV_UI)
+
 #elif BUILDFLAG(ENABLE_EXTENSIONS)
   if (handle->IsInMainFrame()) {
     // Redirect some navigations to apps that have registered matching URL

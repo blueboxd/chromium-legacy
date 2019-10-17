@@ -383,7 +383,7 @@ class WebAXObject {
   BLINK_EXPORT WebString ToString() const;
 
   BLINK_EXPORT void HandleAutofillStateChanged(
-      bool suggestions_available) const;
+      const WebAXAutofillState state) const;
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);

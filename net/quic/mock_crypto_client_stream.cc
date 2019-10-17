@@ -14,6 +14,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using quic::CLIENT;
 using quic::ConnectionCloseBehavior;
@@ -102,8 +103,7 @@ bool MockCryptoClientStream::CryptoConnect() {
     case ZERO_RTT: {
       encryption_established_ = true;
       handshake_confirmed_ = false;
-      crypto_negotiated_params_->key_exchange = kC255;
-      crypto_negotiated_params_->aead = kAESG;
+      FillCryptoParams();
       if (proof_verify_details_) {
         reinterpret_cast<QuicSpdyClientSessionBase*>(session())
             ->OnProofVerifyDetailsAvailable(*proof_verify_details_);
@@ -143,8 +143,7 @@ bool MockCryptoClientStream::CryptoConnect() {
     case CONFIRM_HANDSHAKE: {
       encryption_established_ = true;
       handshake_confirmed_ = true;
-      crypto_negotiated_params_->key_exchange = kC255;
-      crypto_negotiated_params_->aead = kAESG;
+      FillCryptoParams();
       if (proof_verify_details_) {
         reinterpret_cast<QuicSpdyClientSessionBase*>(session())
             ->OnProofVerifyDetailsAvailable(*proof_verify_details_);
@@ -307,6 +306,19 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   ASSERT_EQ(QUIC_NO_ERROR, error);
   ASSERT_TRUE(session()->config()->negotiated());
   session()->OnConfigNegotiated();
+}
+
+void MockCryptoClientStream::FillCryptoParams() {
+  if (session()->connection()->version().handshake_protocol ==
+      quic::PROTOCOL_QUIC_CRYPTO) {
+    crypto_negotiated_params_->key_exchange = kC255;
+    crypto_negotiated_params_->aead = kAESG;
+    return;
+  }
+  crypto_negotiated_params_->cipher_suite = TLS1_CK_AES_128_GCM_SHA256 & 0xffff;
+  crypto_negotiated_params_->key_exchange_group = SSL_CURVE_X25519;
+  crypto_negotiated_params_->peer_signature_algorithm =
+      SSL_SIGN_ECDSA_SECP256R1_SHA256;
 }
 
 }  // namespace net

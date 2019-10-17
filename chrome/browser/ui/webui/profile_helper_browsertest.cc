@@ -69,6 +69,31 @@ class ExpectBrowserActivationForProfile : public BrowserListObserver {
   base::RunLoop loop_;
 };
 
+// An observer that returns back to test code after a new browser is added to
+// the BrowserList.
+class BrowserAddedObserver : public BrowserListObserver {
+ public:
+  BrowserAddedObserver() { BrowserList::AddObserver(this); }
+
+  ~BrowserAddedObserver() override { BrowserList::RemoveObserver(this); }
+
+  Browser* Wait() {
+    run_loop_.Run();
+    return browser_;
+  }
+
+ protected:
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override {
+    browser_ = browser;
+    run_loop_.Quit();
+  }
+
+ private:
+  Browser* browser_;
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
 using ProfileHelperTest = InProcessBrowserTest;
@@ -114,13 +139,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
 #endif
 }
 
-#if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)) && \
-    defined(NDEBUG)
-#define MAYBE_DeleteSoleProfile DISABLED_DeleteSoleProfile
-#else
-#define MAYBE_DeleteSoleProfile DeleteSoleProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteSoleProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =
@@ -132,12 +151,15 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteSoleProfile) {
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
 
   // Original browser will be closed, and browser with the new profile created.
+  BrowserAddedObserver added_observer;
   webui::DeleteProfileAtPath(original_browser->profile()->GetPath(),
                              ProfileMetrics::DELETE_PROFILE_SETTINGS);
   ui_test_utils::WaitForBrowserToClose(original_browser);
+  Browser* new_browser = added_observer.Wait();
 
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_FALSE(base::Contains(*browser_list, original_browser));
+  EXPECT_NE(new_browser, original_browser);
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
 }
 

@@ -437,7 +437,8 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ("running", animation->playState());
   SimulateAwaitReady();
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_EQ(0, animation->startTime());
 
   SimulateFrame(10000);
   EXPECT_EQ("running", animation->playState());

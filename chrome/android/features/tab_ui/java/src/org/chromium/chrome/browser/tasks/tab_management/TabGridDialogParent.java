@@ -31,6 +31,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -47,7 +48,7 @@ import java.lang.annotation.RetentionPolicy;
  * Parent for TabGridDialog component.
  */
 public class TabGridDialogParent
-        implements TabSelectionEditorLayout.TabSelectionEditorLayoutPositionProvider {
+        implements TabSelectionEditorMediator.TabSelectionEditorPositionProvider {
     private static final int DIALOG_ANIMATION_DURATION = 300;
     private static final int DIALOG_ALPHA_ANIMATION_DURATION = 150;
     private static final int CARD_FADE_ANIMATION_DURATION = 50;
@@ -654,19 +655,17 @@ public class TabGridDialogParent
     }
 
     /**
-     * {@link TabSelectionEditorLayout.TabSelectionEditorLayoutPositionProvider} implementation.
+     * {@link TabSelectionEditorMediator.TabSelectionEditorPositionProvider} implementation.
      * Returns a {@link Rect} that indicates the current position of dialog.
      */
     @Override
+    @NonNull
     public Rect getSelectionEditorPositionRect() {
-        Rect positionRect = new Rect();
-        mDialogContainerView.getGlobalVisibleRect(positionRect);
+        // Get the status bar height as offset.
         Rect parentRect = new Rect();
         mParent.getGlobalVisibleRect(parentRect);
-
-        // Offset by the status bar height.
-        positionRect.offset(0, parentRect.top);
-        return positionRect;
+        return new Rect(mSideMargin, mTopMargin + parentRect.top, mCurrentScreenWidth - mSideMargin,
+                mCurrentScreenHeight - mTopMargin);
     }
 
     /**

@@ -35,8 +35,11 @@ public class TasksSurfaceProperties {
             .WritableObjectPropertyKey<View.OnClickListener> MORE_TABS_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
     public static final PropertyModel.WritableBooleanPropertyKey MV_TILES_VISIBLE = IS_VISIBLE;
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {IS_FAKE_SEARCH_BOX_VISIBLE, IS_INCOGNITO, IS_TAB_CAROUSEL,
-                    IS_VOICE_RECOGNITION_BUTTON_VISIBLE, FAKE_SEARCH_BOX_CLICK_LISTENER,
-                    FAKE_SEARCH_BOX_TEXT_WATCHER, MORE_TABS_CLICK_LISTENER, MV_TILES_VISIBLE};
+    public static final PropertyModel
+            .WritableObjectPropertyKey<View.OnClickListener> VOICE_SEARCH_BUTTON_CLICK_LISTENER =
+            new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_FAKE_SEARCH_BOX_VISIBLE,
+            IS_INCOGNITO, IS_TAB_CAROUSEL, IS_VOICE_RECOGNITION_BUTTON_VISIBLE,
+            FAKE_SEARCH_BOX_CLICK_LISTENER, FAKE_SEARCH_BOX_TEXT_WATCHER, MORE_TABS_CLICK_LISTENER,
+            MV_TILES_VISIBLE, VOICE_SEARCH_BUTTON_CLICK_LISTENER};
 }

@@ -6622,7 +6622,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
       ->web_contents()
       ->GetMutableRendererPrefs()
       ->browser_handles_all_top_level_requests = true;
-  shell()->web_contents()->GetRenderViewHost()->SyncRendererPrefs();
+  shell()->web_contents()->SyncRendererPrefs();
 
   // Submit the form.
   TestNavigationObserver form_post_observer(shell()->web_contents(), 1);

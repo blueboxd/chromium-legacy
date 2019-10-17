@@ -270,13 +270,13 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                         viewController:viewController];
     return;
   }
-  _navigationController =
-      [SettingsNavigationController newImportDataController:browserState
-                                                   delegate:self
-                                         importDataDelegate:self
-                                                  fromEmail:lastSignedInEmail
-                                                    toEmail:[identity userEmail]
-                                                 isSignedIn:isSignedIn];
+  _navigationController = [SettingsNavigationController
+      importDataControllerForBrowserState:browserState
+                                 delegate:self
+                       importDataDelegate:self
+                                fromEmail:lastSignedInEmail
+                                  toEmail:[identity userEmail]
+                               isSignedIn:isSignedIn];
   [[_delegate presentingViewController]
       presentViewController:_navigationController
                    animated:YES

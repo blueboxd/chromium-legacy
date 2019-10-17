@@ -50,6 +50,7 @@ class FrameNodeImpl
       public TypedNodeBase<FrameNodeImpl, FrameNode, FrameNodeObserver>,
       public mojom::DocumentCoordinationUnit {
  public:
+  static const char kDefaultPriorityReason[];
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
 
   // Construct a frame node associated with a |process_node|, a |page_node| and
@@ -120,6 +121,7 @@ class FrameNodeImpl
   void SetPriorityAndReason(const PriorityAndReason& priority_and_reason);
 
  private:
+  friend class FramePriorityAccess;
   friend class PageNodeImpl;
   friend class ProcessNodeImpl;
 
@@ -247,11 +249,15 @@ class FrameNodeImpl
   // The child workers of this frame.
   base::flat_set<WorkerNodeImpl*> child_worker_nodes_;
 
-  // Frame priority information.
+  // Frame priority information. Set via FramePriorityDecorator.
   ObservedProperty::NotifiesOnlyOnChanges<
       PriorityAndReason,
       &FrameNodeObserver::OnPriorityAndReasonChanged>
-      priority_and_reason_;
+      priority_and_reason_{PriorityAndReason(base::TaskPriority::LOWEST,
+                                             kDefaultPriorityReason)};
+
+  // Inline storage for FramePriorityDecorator data.
+  frame_priority::AcceptedVote accepted_vote_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

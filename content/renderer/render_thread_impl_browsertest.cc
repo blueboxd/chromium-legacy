@@ -240,22 +240,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
  protected:
   IPC::Sender* sender() { return channel_.get(); }
 
-  void SetBackgroundState(
-      mojom::RenderProcessBackgroundState background_state) {
+  void SetProcessState(mojom::RenderProcessState process_state) {
     mojom::Renderer* renderer_interface = thread_;
-    const mojom::RenderProcessVisibleState visible_state =
-        RendererIsHidden() ? mojom::RenderProcessVisibleState::kHidden
-                           : mojom::RenderProcessVisibleState::kVisible;
-    renderer_interface->SetProcessState(background_state, visible_state);
-  }
-
-  void SetVisibleState(mojom::RenderProcessVisibleState visible_state) {
-    mojom::Renderer* renderer_interface = thread_;
-    const mojom::RenderProcessBackgroundState background_state =
-        RendererIsBackgrounded()
-            ? mojom::RenderProcessBackgroundState::kBackgrounded
-            : mojom::RenderProcessBackgroundState::kForegrounded;
-    renderer_interface->SetProcessState(background_state, visible_state);
+    renderer_interface->SetProcessState(process_state);
   }
 
   bool RendererIsBackgrounded() { return thread_->RendererIsBackgrounded(); }
@@ -317,18 +304,24 @@ TEST_F(RenderThreadImplBrowserTest,
 }
 
 TEST_F(RenderThreadImplBrowserTest, RendererIsBackgrounded) {
-  SetBackgroundState(mojom::RenderProcessBackgroundState::kBackgrounded);
+  SetProcessState(mojom::RenderProcessState::kBackgrounded);
   EXPECT_TRUE(RendererIsBackgrounded());
 
-  SetBackgroundState(mojom::RenderProcessBackgroundState::kForegrounded);
+  SetProcessState(mojom::RenderProcessState::kHidden);
+  EXPECT_FALSE(RendererIsBackgrounded());
+
+  SetProcessState(mojom::RenderProcessState::kVisible);
   EXPECT_FALSE(RendererIsBackgrounded());
 }
 
 TEST_F(RenderThreadImplBrowserTest, RendererIsHidden) {
-  SetVisibleState(mojom::RenderProcessVisibleState::kHidden);
+  SetProcessState(mojom::RenderProcessState::kBackgrounded);
   EXPECT_TRUE(RendererIsHidden());
 
-  SetVisibleState(mojom::RenderProcessVisibleState::kVisible);
+  SetProcessState(mojom::RenderProcessState::kHidden);
+  EXPECT_TRUE(RendererIsHidden());
+
+  SetProcessState(mojom::RenderProcessState::kVisible);
   EXPECT_FALSE(RendererIsHidden());
 }
 
@@ -339,24 +332,27 @@ TEST_F(RenderThreadImplBrowserTest, RendererStateTransitionVisible) {
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false));
   EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
-  SetVisibleState(mojom::RenderProcessVisibleState::kVisible);
+  SetProcessState(mojom::RenderProcessState::kVisible);
   testing::Mock::VerifyAndClear(main_thread_scheduler_);
 
   // Going from a hidden to a visible state should mark the renderer as visible.
-  SetVisibleState(mojom::RenderProcessVisibleState::kHidden);
+  // A hidden renderer is already foregrounded.
+  SetProcessState(mojom::RenderProcessState::kHidden);
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false));
   EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false)).Times(0);
   EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
-  SetVisibleState(mojom::RenderProcessVisibleState::kVisible);
+  SetProcessState(mojom::RenderProcessState::kVisible);
   testing::Mock::VerifyAndClear(main_thread_scheduler_);
 
-  // Going from a visible to a hidden state should mark the renderer as hidden.
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
+  // Going from a backgrounded to a visible state should mark the renderer as
+  // foregrounded and visible.
+  SetProcessState(mojom::RenderProcessState::kBackgrounded);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false));
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false));
   EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true));
-  SetVisibleState(mojom::RenderProcessVisibleState::kHidden);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
+  SetProcessState(mojom::RenderProcessState::kVisible);
   testing::Mock::VerifyAndClear(main_thread_scheduler_);
 
   testing::Mock::AllowLeak(main_thread_scheduler_);
@@ -369,7 +365,27 @@ TEST_F(RenderThreadImplBrowserTest, RendererStateTransitionHidden) {
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true));
   EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
-  SetVisibleState(mojom::RenderProcessVisibleState::kHidden);
+  SetProcessState(mojom::RenderProcessState::kHidden);
+  testing::Mock::VerifyAndClear(main_thread_scheduler_);
+
+  // Going from a visible to a hidden state should mark the renderer as hidden.
+  // A visible renderer is already foregrounded.
+  SetProcessState(mojom::RenderProcessState::kVisible);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true));
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false)).Times(0);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
+  SetProcessState(mojom::RenderProcessState::kHidden);
+  testing::Mock::VerifyAndClear(main_thread_scheduler_);
+
+  // Going from a backgrounded to a hidden state should mark the renderer as
+  // foregrounded and hidden.
+  SetProcessState(mojom::RenderProcessState::kBackgrounded);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false));
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
+  SetProcessState(mojom::RenderProcessState::kHidden);
   testing::Mock::VerifyAndClear(main_thread_scheduler_);
 
   testing::Mock::AllowLeak(main_thread_scheduler_);
@@ -377,43 +393,32 @@ TEST_F(RenderThreadImplBrowserTest, RendererStateTransitionHidden) {
 
 TEST_F(RenderThreadImplBrowserTest, RendererStateTransitionBackgrounded) {
   // Going from an unknown to a backgrounded state should mark the renderer as
-  // backgrounded but not hidden.
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true));
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false));
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false)).Times(0);
-  SetBackgroundState(mojom::RenderProcessBackgroundState::kBackgrounded);
-  testing::Mock::VerifyAndClear(main_thread_scheduler_);
-
-  // Going from a backgrounded to a foregrounded state should mark the renderer
-  // as foregrounded.
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false));
-  SetBackgroundState(mojom::RenderProcessBackgroundState::kForegrounded);
-  testing::Mock::VerifyAndClear(main_thread_scheduler_);
-
-  // Going from a foregrounded to a backgrounded state should mark the renderer
-  // as backgrounded.
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
+  // hidden and backgrounded.
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true));
   EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true));
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
   EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false)).Times(0);
-  SetBackgroundState(mojom::RenderProcessBackgroundState::kBackgrounded);
+  SetProcessState(mojom::RenderProcessState::kBackgrounded);
   testing::Mock::VerifyAndClear(main_thread_scheduler_);
 
-  testing::Mock::AllowLeak(main_thread_scheduler_);
-}
+  // Going from a visible to a backgrounded state should mark the renderer as
+  // hidden and backgrounded.
+  SetProcessState(mojom::RenderProcessState::kVisible);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true));
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true));
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false)).Times(0);
+  SetProcessState(mojom::RenderProcessState::kBackgrounded);
+  testing::Mock::VerifyAndClear(main_thread_scheduler_);
 
-TEST_F(RenderThreadImplBrowserTest, RendererStateTransitionForegrounded) {
-  // Going from an unknown to a foregrounded state should mark the renderer as
-  // foregrounded and visible.
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false));
+  // Going from a hidden state to a backgrounded state should mark the renderer
+  // backgrounded. A hidden renderer is already marked as hidden.
+  SetProcessState(mojom::RenderProcessState::kHidden);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true));
   EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(true)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(true)).Times(0);
-  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false));
-  SetBackgroundState(mojom::RenderProcessBackgroundState::kForegrounded);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererHidden(false)).Times(0);
+  EXPECT_CALL(*main_thread_scheduler_, SetRendererBackgrounded(false)).Times(0);
+  SetProcessState(mojom::RenderProcessState::kBackgrounded);
   testing::Mock::VerifyAndClear(main_thread_scheduler_);
 
   testing::Mock::AllowLeak(main_thread_scheduler_);

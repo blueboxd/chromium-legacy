@@ -379,6 +379,10 @@ size_t ProxyImpl::MainThreadAnimationsCount() const {
   return host_impl_->mutator_host()->MainThreadAnimationsCount();
 }
 
+bool ProxyImpl::HasCustomPropertyAnimations() const {
+  return host_impl_->mutator_host()->HasCustomPropertyAnimations();
+}
+
 bool ProxyImpl::CurrentFrameHadRAF() const {
   return host_impl_->mutator_host()->CurrentFrameHadRAF();
 }

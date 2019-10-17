@@ -36,7 +36,6 @@ class CrostiniForceCloseView : public views::BubbleDialogDelegateView {
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;
 

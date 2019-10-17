@@ -204,7 +204,6 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       // the certificate button subtitle.
       identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_EV_CERT;
       identity.connection_status = PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED;
-      identity.identity_status_description = "Issued to: Thawte Inc [US]";
       scoped_refptr<net::X509Certificate> ev_cert =
           net::X509Certificate::CreateFromBytes(
               reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der));
@@ -365,6 +364,13 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
         static_cast<PageInfoBubbleView*>(
             PageInfoBubbleView::GetPageInfoBubbleForTesting());
     return page_info_bubble_view->certificate_button_->title()->GetText();
+  }
+
+  base::string16 GetCertificateButtonSubtitle() const {
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    return page_info_bubble_view->certificate_button_->subtitle()->GetText();
   }
 
   const base::string16 GetPageInfoBubbleViewDetailText() {
@@ -743,6 +749,48 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, BlockedAndInvalidCert) {
   EXPECT_EQ(GetCertificateButtonTitle(),
             l10n_util::GetStringFUTF16(IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT,
                                        invalid_parens));
+}
+
+// Ensure a page that has an EV certificate *and* is blocked by Safe Browsing
+// shows the correct PageInfo UI. Regression test for crbug.com/1014240.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, MalwareAndEvCert) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/simple.html"));
+
+  // Generate a valid mock EV HTTPS identity, with an EV certificate. Must
+  // match conditions in PageInfoBubbleView::SetIdentityInfo() for setting
+  // the certificate button subtitle.
+  PageInfoUI::IdentityInfo identity;
+  identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_EV_CERT;
+  identity.connection_status = PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED;
+  scoped_refptr<net::X509Certificate> ev_cert =
+      net::X509Certificate::CreateFromBytes(
+          reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der));
+  ASSERT_TRUE(ev_cert);
+  identity.certificate = ev_cert;
+
+  // Have the page also trigger an SB malware warning.
+  identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
+
+  OpenPageInfoBubble(browser());
+  SetPageInfoBubbleIdentityInfo(identity);
+
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
+
+  // Verify bubble complains of malware...
+  EXPECT_EQ(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_MALWARE_SUMMARY));
+
+  // ...and has the correct organization details in the Certificate button.
+  EXPECT_EQ(GetCertificateButtonSubtitle(),
+            l10n_util::GetStringFUTF16(
+                IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED,
+                base::UTF8ToUTF16("Thawte Inc"), base::UTF8ToUTF16("US")));
 }
 
 namespace {

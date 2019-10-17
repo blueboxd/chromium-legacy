@@ -13,6 +13,10 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
+namespace test {
+class PageInfoBubbleViewTestApi;
+}  // namespace test
+
 namespace views {
 class ButtonListener;
 class Label;
@@ -66,6 +70,7 @@ class PageInfoHoverButton : public HoverButton {
 
  private:
   friend class PageInfoBubbleViewBrowserTest;
+  friend class test::PageInfoBubbleViewTestApi;
 
   void UpdateAccessibleName();
 

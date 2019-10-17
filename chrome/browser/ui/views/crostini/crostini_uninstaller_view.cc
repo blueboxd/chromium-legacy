@@ -63,14 +63,6 @@ int CrostiniUninstallerView::GetDialogButtons() const {
   return 0;
 }
 
-base::string16 CrostiniUninstallerView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_UNINSTALL_BUTTON);
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-}
-
 base::string16 CrostiniUninstallerView::GetWindowTitle() const {
   const base::string16 device_type = ui::GetChromeOSDeviceName();
   return l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_TITLE);
@@ -121,6 +113,10 @@ CrostiniUninstallerView* CrostiniUninstallerView::GetActiveViewForTesting() {
 
 CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
     : profile_(profile) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_UNINSTALL_BUTTON));
+
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

@@ -6,6 +6,12 @@ import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
 
 blink_platform_sources("instrumentation") {
+  visibility = []
+  visibility = [
+    "//third_party/blink/renderer/platform",
+    "//third_party/blink/renderer/platform/scheduler",
+  ]
+
   sources = [
     "histogram.cc",
     "histogram.h",

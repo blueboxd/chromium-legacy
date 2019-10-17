@@ -586,17 +586,7 @@ void AXNodeData::SetNameExplicitlyEmpty() {
 }
 
 void AXNodeData::SetDescription(const std::string& description) {
-  auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
-                           [](const auto& string_attribute) {
-                             return string_attribute.first ==
-                                    ax::mojom::StringAttribute::kDescription;
-                           });
-  if (iter == string_attributes.end()) {
-    string_attributes.push_back(
-        std::make_pair(ax::mojom::StringAttribute::kDescription, description));
-  } else {
-    iter->second = description;
-  }
+  AddStringAttribute(ax::mojom::StringAttribute::kDescription, description);
 }
 
 void AXNodeData::SetDescription(const base::string16& description) {
@@ -604,17 +594,7 @@ void AXNodeData::SetDescription(const base::string16& description) {
 }
 
 void AXNodeData::SetValue(const std::string& value) {
-  auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
-                           [](const auto& string_attribute) {
-                             return string_attribute.first ==
-                                    ax::mojom::StringAttribute::kValue;
-                           });
-  if (iter == string_attributes.end()) {
-    string_attributes.push_back(
-        std::make_pair(ax::mojom::StringAttribute::kValue, value));
-  } else {
-    iter->second = value;
-  }
+  AddStringAttribute(ax::mojom::StringAttribute::kValue, value);
 }
 
 void AXNodeData::SetValue(const base::string16& value) {

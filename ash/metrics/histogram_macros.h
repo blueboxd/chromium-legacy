@@ -19,16 +19,17 @@
       UMA_HISTOGRAM_PERCENTAGE(name, __VA_ARGS__);    \
   } while (0)
 
-#define UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(name, ...) \
-  do {                                                   \
-    if (ash::IsInSplitView())                            \
-      UMA_HISTOGRAM_PERCENTAGE(name, __VA_ARGS__);       \
+#define UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(in_split_view, name, ...) \
+  do {                                                                  \
+    if (in_split_view)                                                  \
+      UMA_HISTOGRAM_PERCENTAGE(name, __VA_ARGS__);                      \
   } while (0)
 
-#define UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(name, ...) \
-  do {                                                              \
-    if (ash::InTabletMode() && !ash::IsInSplitView())               \
-      UMA_HISTOGRAM_PERCENTAGE(name, __VA_ARGS__);                  \
+#define UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view, name, \
+                                                         ...)                 \
+  do {                                                                        \
+    if (ash::InTabletMode() && !in_split_view)                                \
+      UMA_HISTOGRAM_PERCENTAGE(name, __VA_ARGS__);                            \
   } while (0)
 
 #define UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(name, ...) \
@@ -40,7 +41,6 @@
 namespace ash {
 
 ASH_EXPORT bool InTabletMode();
-ASH_EXPORT bool IsInSplitView();
 
 }  // namespace ash
 

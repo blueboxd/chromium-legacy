@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +32,7 @@ namespace {
 
 class MockTabStripUIEmbedder : public TabStripUI::Embedder {
  public:
+  MOCK_METHOD(void, CloseContainer, (), (override));
   MOCK_METHOD(void,
               ShowContextMenuAtPoint,
               (gfx::Point point, std::unique_ptr<ui::MenuModel> menu_model),
@@ -74,12 +76,28 @@ class TabStripUIBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override { webui_contents_.reset(); }
 
  protected:
+  static const std::string tab_query_js;
+
   ::testing::NiceMock<MockTabStripUIEmbedder> mock_embedder_;
   std::unique_ptr<content::WebContents> webui_contents_;
 
  private:
   base::test::ScopedFeatureList feature_override_;
 };
+
+// static
+const std::string TabStripUIBrowserTest::tab_query_js(
+    "document.querySelector('tabstrip-tab-list')"
+    "    .shadowRoot.querySelector('tabstrip-tab')");
+
+IN_PROC_BROWSER_TEST_F(TabStripUIBrowserTest, ActivatingTabClosesEmbedder) {
+  const std::string activate_tab_js = tab_query_js + ".click()";
+
+  EXPECT_CALL(mock_embedder_, CloseContainer()).Times(1);
+  ASSERT_TRUE(content::ExecJs(webui_contents_.get(), activate_tab_js,
+                              content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                              ISOLATED_WORLD_ID_CHROME_INTERNAL));
+}
 
 // Checks that the contextmenu event on a tab gets forwarded to the
 // TabStripUI::Embedder.
@@ -89,10 +107,8 @@ IN_PROC_BROWSER_TEST_F(TabStripUIBrowserTest,
 
   const std::string invoke_menu_js =
       "const event ="
-      "    new MouseEvent('contextmenu', { clientX: 100, clientY: 50 });"
-      "document.querySelector('tabstrip-tab-list')"
-      "    .shadowRoot.querySelector('tabstrip-tab')"
-      "    .dispatchEvent(event)";
+      "    new MouseEvent('contextmenu', { clientX: 100, clientY: 50 });" +
+      tab_query_js + ".dispatchEvent(event)";
 
   EXPECT_CALL(mock_embedder_, ShowContextMenuAtPoint(gfx::Point(100, 50), _))
       .Times(1);

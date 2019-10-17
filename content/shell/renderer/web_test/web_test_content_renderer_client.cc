@@ -77,12 +77,6 @@ void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
   test_runner->Reset(false /* for_new_test */);
 }
 
-WebThemeEngine* WebTestContentRendererClient::OverrideThemeEngine() {
-  return WebTestRenderThreadObserver::GetInstance()
-      ->test_interfaces()
-      ->ThemeEngine();
-}
-
 std::unique_ptr<blink::WebMediaStreamRendererFactory>
 WebTestContentRendererClient::CreateMediaStreamRendererFactory() {
   return std::unique_ptr<blink::WebMediaStreamRendererFactory>(

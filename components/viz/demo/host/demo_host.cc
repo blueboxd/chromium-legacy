@@ -16,13 +16,13 @@ namespace demo {
 DemoHost::DemoHost(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
-    viz::mojom::FrameSinkManagerClientRequest client_request,
+    mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient> client_receiver,
     mojo::PendingRemote<viz::mojom::FrameSinkManager> frame_sink_manager_remote)
     : widget_(widget), size_(size), thread_("DemoHost") {
   CHECK(thread_.Start());
   thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&DemoHost::Initialize, base::Unretained(this),
-                                std::move(client_request),
+                                std::move(client_receiver),
                                 std::move(frame_sink_manager_remote)));
 }
 
@@ -113,9 +113,9 @@ void DemoHost::EmbedClients(DemoClient* embedder_client,
 }
 
 void DemoHost::Initialize(
-    viz::mojom::FrameSinkManagerClientRequest request,
+    mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient> receiver,
     mojo::PendingRemote<viz::mojom::FrameSinkManager> remote) {
-  host_frame_sink_manager_.BindAndSetManager(std::move(request), nullptr,
+  host_frame_sink_manager_.BindAndSetManager(std::move(receiver), nullptr,
                                              std::move(remote));
 
   display_client_ = std::make_unique<viz::HostDisplayClient>(widget_);

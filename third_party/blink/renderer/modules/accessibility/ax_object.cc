@@ -1212,11 +1212,6 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (!GetNode())
     return false;
 
-  // Disallow inert nodes from the tree to ensure the dialog is always the
-  // first child of the root.
-  if (GetNode()->IsInert())
-    return false;
-
   // If the node is part of the user agent shadow dom, or has the explicit
   // internal Role::kIgnored, they aren't interesting for paragraph navigation
   // or LabelledBy/DescribedBy relationships.
@@ -2562,8 +2557,10 @@ void AXObject::UpdateChildrenIfNecessary() {
 
 void AXObject::ClearChildren() {
   // Detach all weak pointers from objects to their parents.
-  for (const auto& child : children_)
-    child->DetachFromParent();
+  for (const auto& child : children_) {
+    if (child->parent_ == this)
+      child->DetachFromParent();
+  }
 
   children_.clear();
   have_children_ = false;

@@ -352,6 +352,9 @@ LocalCardMigrationDialogView::LocalCardMigrationDialogView(
     LocalCardMigrationDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, GetOkButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   GetCancelButtonLabel());
   set_close_on_deactivate(false);
   set_margins(gfx::Insets());
 }
@@ -393,12 +396,6 @@ int LocalCardMigrationDialogView::GetDialogButtons() const {
     return ui::DIALOG_BUTTON_OK;
 
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 LocalCardMigrationDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ? GetOkButtonLabel()
-                                        : GetCancelButtonLabel();
 }
 
 // TODO(crbug.com/867194): Update this method when adding feedback.

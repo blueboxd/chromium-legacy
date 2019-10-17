@@ -457,9 +457,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                    const base::Optional<SkColor>& theme_color) {
   }
 
-  // Determine if the frame is of a low priority.
-  virtual bool IsFrameLowPriority(const RenderFrameHost* render_frame_host);
-
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

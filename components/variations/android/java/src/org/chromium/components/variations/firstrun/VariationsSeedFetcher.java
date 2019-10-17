@@ -30,6 +30,7 @@ import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -139,6 +140,8 @@ public class VariationsSeedFetcher {
         public boolean isGzipCompressed;
         public byte[] seedData;
 
+        // TODO(crbug.com/1013390): Delete once Date header to timestamp migration is done (~M81).
+        @Deprecated
         public static long parseDateHeader(String header) throws ParseException {
             // The date field comes from the HTTP "Date" header, which has this format.
             // (See RFC 2616, sections 3.3.1 and 14.18.) SimpleDateFormat is weirdly not
@@ -186,7 +189,7 @@ public class VariationsSeedFetcher {
                         VariationsPlatform.ANDROID, restrictMode, milestone, channel);
                 VariationsSeedBridge.setVariationsFirstRunSeed(info.seedData, info.signature,
                         info.country, info.date, info.isGzipCompressed);
-            } catch (IOException | ParseException e) {
+            } catch (IOException e) {
                 Log.e(TAG, "Exception when fetching variations seed.", e);
                 // Exceptions are handled and logged in the downloadContent method, so we don't
                 // need any exception handling here. The only reason we need a catch-statement here
@@ -225,7 +228,6 @@ public class VariationsSeedFetcher {
      * @param milestone the milestone parameter to pass to the server via a URL param.
      * @param channel the channel parameter to pass to the server via a URL param.
      * @return the object holds the seed data and its related header fields.
-     * @throws ParseException when the seed response has an invalid Date header.
      * @throws SocketTimeoutException when fetching seed connection times out.
      * @throws UnknownHostException when fetching seed connection has an unknown host.
      * @throws IOException when response code is not HTTP_OK or transmission fails on the open
@@ -233,7 +235,7 @@ public class VariationsSeedFetcher {
      */
     public SeedInfo downloadContent(
             @VariationsPlatform int platform, String restrictMode, String milestone, String channel)
-            throws ParseException, SocketTimeoutException, UnknownHostException, IOException {
+            throws SocketTimeoutException, UnknownHostException, IOException {
         HttpURLConnection connection = null;
         try {
             long startTimeMillis = SystemClock.elapsedRealtime();
@@ -257,14 +259,10 @@ public class VariationsSeedFetcher {
             info.seedData = getRawSeed(connection);
             info.signature = getHeaderFieldOrEmpty(connection, "X-Seed-Signature");
             info.country = getHeaderFieldOrEmpty(connection, "X-Country");
-            info.date = SeedInfo.parseDateHeader(getHeaderFieldOrEmpty(connection, "Date"));
+            info.date = new Date().getTime();
             info.isGzipCompressed = getHeaderFieldOrEmpty(connection, "IM").equals("gzip");
             recordSeedFetchTime(SystemClock.elapsedRealtime() - startTimeMillis);
             return info;
-        } catch (ParseException e) {
-            recordFetchResultOrCode(SEED_FETCH_RESULT_INVALID_DATE_HEADER);
-            Log.e(TAG, "ParseException parsing Date header when fetching variations seed.", e);
-            throw e;
         } catch (SocketTimeoutException e) {
             recordFetchResultOrCode(SEED_FETCH_RESULT_TIMEOUT);
             Log.w(TAG, "SocketTimeoutException timeout when fetching variations seed.", e);

@@ -56,6 +56,7 @@ class ANIMATION_EXPORT AnimationContainer
   bool is_running() const { return !elements_.empty(); }
 
   void SetAnimationRunner(std::unique_ptr<AnimationRunner> runner);
+  AnimationRunner* animation_runner_for_testing() { return runner_.get(); }
   bool has_custom_animation_runner() const {
     return has_custom_animation_runner_;
   }
@@ -79,6 +80,10 @@ class ANIMATION_EXPORT AnimationContainer
 
   // Sets min_timer_interval_ and restarts the timer.
   void SetMinTimerInterval(base::TimeDelta delta);
+
+  // Restarts the timer, assuming |elapsed| has already elapsed out of the timer
+  // interval.
+  void RestartTimer(base::TimeDelta elapsed);
 
   // Returns the min timer interval of all the timers, and the count of timers
   // at that interval.

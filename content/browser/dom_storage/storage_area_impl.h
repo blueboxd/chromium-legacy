@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
+#include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -58,15 +59,17 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
    public:
     virtual ~Delegate();
     virtual void OnNoBindings() = 0;
-    virtual std::vector<leveldb::mojom::BatchedOperationPtr>
-    PrepareToCommit() = 0;
-    virtual void DidCommit(leveldb::mojom::DatabaseError error) = 0;
+    virtual void PrepareToCommit(
+        std::vector<storage::DomStorageDatabase::KeyValuePair>*
+            extra_entries_to_add,
+        std::vector<storage::DomStorageDatabase::Key>* extra_keys_to_delete);
+    virtual void DidCommit(leveldb::Status error) = 0;
     // Called during loading if no data was found. Needs to call |callback|.
     virtual void MigrateData(ValueMapCallback callback);
     // Called during loading to give delegate a chance to modify the data as
     // stored in the database.
     virtual std::vector<Change> FixUpData(const ValueMap& data);
-    virtual void OnMapLoaded(leveldb::mojom::DatabaseError error);
+    virtual void OnMapLoaded(leveldb::Status status);
   };
 
   enum class CacheMode {
@@ -285,7 +288,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   // Then if the |cache_mode_| is keys-only, it unloads the map to the
   // |keys_only_map_| and sets the |map_state_| to LOADED_KEYS_ONLY
   void LoadMap(base::OnceClosure completion_callback);
-  void OnMapLoaded(leveldb::mojom::DatabaseError status,
+  void OnMapLoaded(leveldb::Status status,
                    std::vector<leveldb::mojom::KeyValuePtr> data);
   void OnGotMigrationData(std::unique_ptr<ValueMap> data);
   void CalculateStorageAndMemoryUsed();
@@ -296,7 +299,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   base::TimeDelta ComputeCommitDelay() const;
 
   void CommitChanges();
-  void OnCommitComplete(leveldb::mojom::DatabaseError error);
+  void OnCommitComplete(leveldb::Status status);
 
   void UnloadMapIfPossible();
 

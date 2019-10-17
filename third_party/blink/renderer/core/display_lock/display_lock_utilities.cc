@@ -100,7 +100,8 @@ bool DisplayLockUtilities::ActivateSelectionRangeIfNeeded(
       elements_to_activate.insert(nearest_locked_ancestor);
   }
   for (Element* element : elements_to_activate) {
-    element->ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
+    element->ActivateDisplayLockIfNeeded(
+        DisplayLockActivationReason::kViewport);
   }
   return !elements_to_activate.IsEmpty();
 }

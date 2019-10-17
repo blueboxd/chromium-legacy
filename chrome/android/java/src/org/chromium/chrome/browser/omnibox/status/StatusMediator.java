@@ -92,6 +92,7 @@ class StatusMediator {
     private UrlBarEditingTextStateProvider mUrlBarEditingTextStateProvider;
     private String mUrlBarTextWithAutocomplete = "";
     private boolean mUrlBarTextIsValidUrl;
+    private float mUrlFocusPercent;
 
     StatusMediator(PropertyModel model, Resources resources,
             UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
@@ -228,6 +229,26 @@ class StatusMediator {
 
         mUrlHasFocus = urlHasFocus;
         updateStatusVisibility();
+        updateLocationBarIcon();
+    }
+
+    /**
+     * Set the url focus change percent.
+     * @param percent The current focus percent.
+     */
+    void setUrlFocusChangePercent(float percent) {
+        mUrlFocusPercent = percent;
+        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                    mToolbarCommonPropertiesModel.isIncognito())) {
+            return;
+        }
+
+        if (mToolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null
+                && mToolbarCommonPropertiesModel.getNewTabPageForCurrentTab()
+                           .isLocationBarShownInNTP()) {
+            mModel.set(StatusProperties.STATUS_ALPHA, percent);
+        }
+
         updateLocationBarIcon();
     }
 
@@ -405,7 +426,8 @@ class StatusMediator {
     boolean maybeUpdateStatusIconForSearchEngineIcon() {
         // When the search engine logo should be shown, but the engine isn't Google. In this case,
         // we download the icon on the fly.
-        boolean showFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
+        boolean showFocused =
+                (mUrlHasFocus || mUrlFocusPercent > 0) && mShowStatusIconWhenUrlFocused;
         // Show the logo unfocused if "Query in the omnibox" is active or we're on the NTP. Current
         // "Query in the omnibox" behavior makes it active for non-dse searches if you've just
         // changed your default search engine.The included workaround below

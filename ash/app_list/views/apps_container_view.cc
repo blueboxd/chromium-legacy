@@ -79,7 +79,7 @@ int AppsContainerView::GetMinimumGridHorizontalMargin() {
   // If ScalableAppList feature is enabled, there is no extra horizontal margin
   // between grid view and the page switcher.
   return kAppsGridPageSwitcherSpacing +
-         PageSwitcher::kPreferredButtonStripWidth +
+         PageSwitcher::kMaxButtonRadiusForRootGrid * 2 +
          (app_list_features::IsScalableAppListEnabled()
               ? 0
               : kAppsGridMinimumMargin);

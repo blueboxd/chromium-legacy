@@ -213,6 +213,22 @@ void MediaToolbarButtonController::LogMediaSessionActionButtonPressed(
                             IsWebContentsFocused(web_contents));
 }
 
+void MediaToolbarButtonController::OnContainerClicked(const std::string& id) {
+  auto it = sessions_.find(id);
+  if (it == sessions_.end())
+    return;
+
+  content::WebContents* web_contents = it->second.web_contents();
+  if (!web_contents)
+    return;
+
+  content::WebContentsDelegate* delegate = web_contents->GetDelegate();
+  if (!delegate)
+    return;
+
+  delegate->ActivateContents(web_contents);
+}
+
 void MediaToolbarButtonController::OnContainerDismissed(const std::string& id) {
   auto it = sessions_.find(id);
   if (it != sessions_.end())

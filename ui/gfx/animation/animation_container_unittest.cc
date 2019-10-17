@@ -11,6 +11,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/animation_container_observer.h"
+#include "ui/gfx/animation/animation_test_api.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
 
@@ -52,6 +53,8 @@ class TestAnimation : public LinearAnimation {
       : LinearAnimation(base::TimeDelta::FromMilliseconds(20), 20, delegate) {}
 
   void AnimateToState(double state) override {}
+
+  using LinearAnimation::duration;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAnimation);
@@ -141,6 +144,29 @@ TEST_F(AnimationContainerTest, Observer) {
   EXPECT_FALSE(container->is_running());
 
   container->set_observer(NULL);
+}
+
+// Tests that calling SetAnimationRunner() keeps running animations at their
+// current point.
+TEST_F(AnimationContainerTest, AnimationsRunAcrossRunnerChange) {
+  TestAnimationDelegate delegate;
+  auto container = base::MakeRefCounted<AnimationContainer>();
+  AnimationContainerTestApi test_api(container.get());
+  TestAnimation animation(&delegate);
+  animation.SetContainer(container.get());
+
+  animation.Start();
+  test_api.IncrementTime(animation.duration() / 2);
+  EXPECT_FALSE(delegate.finished());
+
+  container->SetAnimationRunner(nullptr);
+  AnimationRunner* runner = container->animation_runner_for_testing();
+  ASSERT_TRUE(runner);
+  ASSERT_FALSE(runner->step_is_null_for_testing());
+  EXPECT_FALSE(delegate.finished());
+
+  test_api.IncrementTime(animation.duration() / 2);
+  EXPECT_TRUE(delegate.finished());
 }
 
 }  // namespace gfx

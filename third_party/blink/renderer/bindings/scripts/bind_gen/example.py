@@ -15,25 +15,17 @@ def run_example(web_idl_database, output_dirs):
     filename = 'v8_example.cc'
     filepath = os.path.join(output_dirs['core'], filename)
 
-    root_node = code_node.SequenceNode(renderer=renderer)
+    root_node = code_node.SymbolScopeNode(renderer=renderer)
     root_node.extend([
         code_node.SimpleNode(template_text="${z} = ${x} + ${y};"),
         code_node.SimpleNode(template_text="print ${z};"),
     ])
 
-    def make_symbol(name, template_text):
-        def constructor(symbol_node):
-            return code_node.SymbolDefinitionNode(
-                symbol_node, template_text=template_text)
-
-        return code_node.SymbolNode(
-            name=name, definition_node_constructor=constructor)
-
-    root_node.add_template_vars({
-        'x': make_symbol('x', "int ${x} = 1;"),
-        'y': make_symbol('y', "int ${y} = 2;"),
-        'z': make_symbol('z', "int ${z};"),
-    })
+    root_node.register_code_symbols([
+        code_node.SymbolNode('x', "int ${x} = 1;"),
+        code_node.SymbolNode('y', "int ${y} = 2;"),
+        code_node.SymbolNode('z', "int ${z};"),
+    ])
 
     prev = ''
     current = str(root_node)

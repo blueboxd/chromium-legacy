@@ -26,9 +26,15 @@
 #include "url/gurl.h"
 
 namespace content {
+
 namespace {
+
 using leveldb::StdStringToUint8Vector;
 using leveldb::Uint8VectorToStdString;
+
+MATCHER(OKStatus, "Equality matcher for type OK leveldb::Status") {
+  return arg.ok();
+}
 
 base::span<const uint8_t> MakeBytes(base::StringPiece str) {
   return base::as_bytes(base::make_span(str));
@@ -42,7 +48,7 @@ class MockListener : public SessionStorageDataMap::Listener {
                void(const std::vector<uint8_t>& map_id,
                     SessionStorageDataMap* map));
   MOCK_METHOD1(OnDataMapDestruction, void(const std::vector<uint8_t>& map_id));
-  MOCK_METHOD1(OnCommitResult, void(leveldb::mojom::DatabaseError error));
+  MOCK_METHOD1(OnCommitResult, void(leveldb::Status status));
 };
 
 void GetAllDataCallback(bool* success_out,
@@ -92,8 +98,8 @@ class SessionStorageDataMapTest : public testing::Test {
     database_ = leveldb::LevelDBDatabaseImpl::OpenInMemory(
         base::nullopt, "SessionStorageDataMapTest",
         base::CreateSequencedTaskRunner({base::MayBlock(), base::ThreadPool()}),
-        base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError error) {
-          ASSERT_EQ(leveldb::mojom::DatabaseError::OK, error);
+        base::BindLambdaForTesting([&](leveldb::Status status) {
+          ASSERT_TRUE(status.ok());
           loop.Quit();
         }));
     loop.Run();
@@ -223,8 +229,7 @@ TEST_F(SessionStorageDataMapTest, Clone) {
               OnDataMapCreation(StdStringToUint8Vector("2"), testing::_))
       .Times(1);
   // One call on fork.
-  EXPECT_CALL(listener_, OnCommitResult(leveldb::mojom::DatabaseError::OK))
-      .Times(1);
+  EXPECT_CALL(listener_, OnCommitResult(OKStatus())).Times(1);
 
   scoped_refptr<SessionStorageDataMap> map2 =
       SessionStorageDataMap::CreateClone(

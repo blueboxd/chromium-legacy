@@ -198,8 +198,7 @@ class PerfettoTracingCoordinator::TracingSession : public perfetto::Consumer {
   void OnObservableEvents(const perfetto::ObservableEvents& events) override {
     for (const auto& state_change : events.instance_state_changes()) {
       if (state_change.state() !=
-          perfetto::ObservableEvents::DataSourceInstanceStateChange::
-              DATA_SOURCE_INSTANCE_STATE_STARTED) {
+          perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STARTED) {
         continue;
       }
 

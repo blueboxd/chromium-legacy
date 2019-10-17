@@ -299,9 +299,10 @@ void CaptionContainerView::Layout() {
     preview_view_->SetBoundsRect(preview_bounds);
   }
 
-  // Position the header at the top.
+  // Position the header at the top. The close button should be right aligned so
+  // that the edge of its icon, not the button itself lines up with the margins.
   const gfx::Rect header_bounds(kOverviewMargin, kOverviewMargin,
-                                GetLocalBounds().width() - kOverviewMargin,
+                                GetLocalBounds().width() - kWindowMargin,
                                 kHeaderHeightDp);
   header_view_->SetBoundsRect(header_bounds);
 }

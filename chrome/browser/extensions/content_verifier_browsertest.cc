@@ -432,6 +432,26 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
   EXPECT_FALSE(reasons);
 }
 
+// Tests that navigating to an extension resource with '.' at end does not
+// disable the extension.
+//
+// Regression test for https://crbug.com/696208.
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest,
+                       RemainsEnabledOnNavigateToPathEndingWithDot) {
+  const Extension* extension = InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("content_verifier/dot_slash_paths.crx"), 1);
+  ASSERT_TRUE(extension);
+  const ExtensionId kExtensionId = extension->id();
+
+  GURL page_url = extension->GetResourceURL("page.html.");
+  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+      browser(), page_url, 1, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  int reasons = prefs->GetDisableReasons(kExtensionId);
+  EXPECT_EQ(disable_reason::DISABLE_NONE, reasons);
+}
+
 class ContentVerifierPolicyTest : public ContentVerifierTest {
  public:
   // We need to do this work here because the force-install policy values are

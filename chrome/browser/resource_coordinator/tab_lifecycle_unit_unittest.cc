@@ -18,7 +18,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
-#include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
@@ -595,108 +594,6 @@ TEST_F(TabLifecycleUnitTest,
       DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION, nullptr);
 }
 
-TEST_F(TabLifecycleUnitTest, CannotProactivelyDiscardTabIfOriginOptedOut) {
-  InterventionPolicyDatabase* policy_db =
-      GetTabLifecycleUnitSource()->intervention_policy_database();
-  policy_db->AddOriginPoliciesForTesting(
-      url::Origin::Create(web_contents_->GetLastCommittedURL()),
-      {OriginInterventions::OPT_OUT, OriginInterventions::DEFAULT});
-
-  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
-                                      usage_clock_.get(), web_contents_,
-                                      tab_strip_model_.get());
-  // Advance time enough that the tab is urgent discardable.
-  test_clock_.Advance(kBackgroundUrgentProtectionTime);
-
-  // Proactive discarding shouldn't be possible, urgent and external discarding
-  // should still be possible.
-  {
-    DecisionDetails decision_details;
-    EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
-        LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
-    EXPECT_FALSE(decision_details.IsPositive());
-    EXPECT_EQ(DecisionFailureReason::GLOBAL_BLACKLIST,
-              decision_details.FailureReason());
-    EXPECT_EQ(1U, decision_details.reasons().size());
-  }
-  {
-    DecisionDetails decision_details;
-    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
-        LifecycleUnitDiscardReason::URGENT, &decision_details));
-    EXPECT_TRUE(decision_details.IsPositive());
-  }
-  {
-    DecisionDetails decision_details;
-    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
-        LifecycleUnitDiscardReason::EXTERNAL, &decision_details));
-    EXPECT_TRUE(decision_details.IsPositive());
-  }
-}
-
-TEST_F(TabLifecycleUnitTest, CannotFreezeTabIfOriginOptedOut) {
-  auto* policy_db = GetTabLifecycleUnitSource()->intervention_policy_database();
-  policy_db->AddOriginPoliciesForTesting(
-      url::Origin::Create(web_contents_->GetLastCommittedURL()),
-      InterventionPolicyDatabase::OriginInterventionPolicies(
-          OriginInterventions::DEFAULT, OriginInterventions::OPT_OUT));
-
-  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
-                                      usage_clock_.get(), web_contents_,
-                                      tab_strip_model_.get());
-  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
-                                                   LoadingState::LOADED);
-  DecisionDetails decision_details;
-  EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
-  EXPECT_FALSE(decision_details.IsPositive());
-  EXPECT_EQ(DecisionFailureReason::GLOBAL_BLACKLIST,
-            decision_details.FailureReason());
-}
-
-TEST_F(TabLifecycleUnitTest, OptInTabsGetsDiscarded) {
-  auto* policy_db = GetTabLifecycleUnitSource()->intervention_policy_database();
-  policy_db->AddOriginPoliciesForTesting(
-      url::Origin::Create(web_contents_->GetLastCommittedURL()),
-      InterventionPolicyDatabase::OriginInterventionPolicies(
-          OriginInterventions::OPT_IN, OriginInterventions::DEFAULT));
-
-  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
-                                      usage_clock_.get(), web_contents_,
-                                      tab_strip_model_.get());
-
-  // Mark the tab as recently audible, this should protect it from being
-  // discarded.
-  tab_lifecycle_unit.SetRecentlyAudible(true);
-
-  DecisionDetails decision_details;
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
-      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
-  EXPECT_EQ(DecisionSuccessReason::GLOBAL_WHITELIST,
-            decision_details.SuccessReason());
-}
-
-TEST_F(TabLifecycleUnitTest, CanFreezeOptedInTabs) {
-  auto* policy_db = GetTabLifecycleUnitSource()->intervention_policy_database();
-  policy_db->AddOriginPoliciesForTesting(
-      url::Origin::Create(web_contents_->GetLastCommittedURL()),
-      {OriginInterventions::DEFAULT, OriginInterventions::OPT_IN});
-
-  TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
-                                      usage_clock_.get(), web_contents_,
-                                      tab_strip_model_.get());
-  TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
-                                                   LoadingState::LOADED);
-
-  // Mark the tab as recently audible, this should protect it from being frozen.
-  tab_lifecycle_unit.SetRecentlyAudible(true);
-
-  DecisionDetails decision_details;
-  EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
-  EXPECT_EQ(DecisionSuccessReason::GLOBAL_WHITELIST,
-            decision_details.SuccessReason());
-}
-
 TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
   TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
@@ -885,12 +782,9 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
   EXPECT_TRUE(decision_details.IsPositive());
   decision_details.Clear();
 
-  // Use one of the heuristics on the tab to prevent it from being discarded.
-  InterventionPolicyDatabase* policy_db =
-      GetTabLifecycleUnitSource()->intervention_policy_database();
-  policy_db->AddOriginPoliciesForTesting(
-      url::Origin::Create(web_contents_->GetLastCommittedURL()),
-      {OriginInterventions::OPT_OUT, OriginInterventions::OPT_OUT});
+  // Use one of the heuristics on the tab to prevent it from being frozen or
+  // discarded.
+  ScopedEnterpriseOptOut enterprise_opt_out;
 
   EXPECT_FALSE(tab_lifecycle_unit.CanFreeze(&decision_details));
   EXPECT_FALSE(decision_details.IsPositive());

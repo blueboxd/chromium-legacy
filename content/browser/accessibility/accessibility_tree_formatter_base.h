@@ -34,7 +34,7 @@ namespace content {
 class CONTENT_EXPORT AccessibilityTreeFormatterBase
     : public AccessibilityTreeFormatter {
  public:
-  explicit AccessibilityTreeFormatterBase();
+  AccessibilityTreeFormatterBase();
   ~AccessibilityTreeFormatterBase() override;
 
   // AccessibilityTreeFormatter overrides.

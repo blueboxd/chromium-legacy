@@ -468,6 +468,13 @@ size_t KeyframeEffect::TickingKeyframeModelsCount() const {
   return ticking_keyframe_models_count;
 }
 
+bool KeyframeEffect::AffectsCustomProperty() const {
+  for (const auto& it : keyframe_models_)
+    if (it->target_property_id() == TargetProperty::CSS_CUSTOM_PROPERTY)
+      return true;
+  return false;
+}
+
 bool KeyframeEffect::HasNonDeletedKeyframeModel() const {
   for (const auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->run_state() != KeyframeModel::WAITING_FOR_DELETION)
@@ -1094,9 +1101,8 @@ void KeyframeEffect::GenerateEvent(AnimationEvents* events,
       animation_->NotifyKeyframeModelAborted(event);
       break;
     case AnimationEvent::TAKEOVER:
-    case AnimationEvent::TIME_UPDATED:
-      // We never expect to receive a TAKEOVER or TIME_UPDATED
-      // notifications on impl only animations.
+      // We never expect to receive a TAKEOVER notification on impl only
+      // animations.
       NOTREACHED();
       break;
   }

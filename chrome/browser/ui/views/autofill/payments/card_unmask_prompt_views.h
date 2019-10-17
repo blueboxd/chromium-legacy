@@ -61,7 +61,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   int GetDialogButtons() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
@@ -87,6 +86,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void SetInputsEnabled(bool enabled);
   void ShowNewCardLink();
   void ClosePrompt();
+
+  void UpdateButtonLabels();
 
   CardUnmaskPromptController* controller_;
   content::WebContents* web_contents_;

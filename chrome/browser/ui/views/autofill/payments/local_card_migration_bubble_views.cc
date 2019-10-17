@@ -50,6 +50,10 @@ LocalCardMigrationBubbleViews::LocalCardMigrationBubbleViews(
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
   DCHECK(controller);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL));
 }
 
 void LocalCardMigrationBubbleViews::Show(DisplayReason reason) {
@@ -85,13 +89,6 @@ bool LocalCardMigrationBubbleViews::Close() {
 
 int LocalCardMigrationBubbleViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
-}
-
-base::string16 LocalCardMigrationBubbleViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_OK);
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL);
 }
 
 gfx::Size LocalCardMigrationBubbleViews::CalculatePreferredSize() const {

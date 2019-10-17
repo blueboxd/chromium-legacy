@@ -189,8 +189,7 @@ MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
   for (const auto& source : data_source_names) {
     data_sources_.emplace_back(DataSourceStatus{
         source,
-        perfetto::ObservableEvents::DataSourceInstanceStateChange::
-            DataSourceInstanceState::DATA_SOURCE_INSTANCE_STATE_STOPPED});
+        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STOPPED});
   }
   CHECK(!data_sources_.empty());
   consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
@@ -282,8 +281,7 @@ void MockConsumer::WaitForAllDataSourcesStopped() {
 void MockConsumer::CheckForAllDataSourcesStarted() {
   for (auto& data_source_status : data_sources_) {
     if (data_source_status.state !=
-        perfetto::ObservableEvents::DataSourceInstanceStateChange::
-            DATA_SOURCE_INSTANCE_STATE_STARTED) {
+        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STARTED) {
       return;
     }
   }
@@ -296,8 +294,7 @@ void MockConsumer::CheckForAllDataSourcesStarted() {
 void MockConsumer::CheckForAllDataSourcesStopped() {
   for (auto& data_source_status : data_sources_) {
     if (data_source_status.state !=
-        perfetto::ObservableEvents::DataSourceInstanceStateChange::
-            DATA_SOURCE_INSTANCE_STATE_STOPPED) {
+        perfetto::ObservableEvents::DATA_SOURCE_INSTANCE_STATE_STOPPED) {
       return;
     }
   }

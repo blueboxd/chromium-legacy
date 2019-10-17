@@ -19,11 +19,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.graphics.drawable.shapes.Shape;
+import android.support.annotation.ColorInt;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 
 /**
@@ -41,20 +41,20 @@ import androidx.annotation.Nullable;
  * corners are used.
  */
 public class RoundedCornerImageView extends ImageView {
-    private Shape mRoundedRectangle;
-    private BitmapShader mShader;
-    private Paint mPaint;
+    private final RectF mTmpRect = new RectF();
+    private final Matrix mTmpMatrix = new Matrix();
 
-    private Paint mFillPaint;
+    private final Paint mRoundedBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Paint mRoundedContentPaint;
     private final Matrix mScaleMatrix = new Matrix();
     private boolean mRoundCorners;
+    // True, if constructor had a chance to run.
+    // This is needed, because ImageView's constructor may trigger updates on our end
+    // if certain attributes (eg. Drawable) are supplied via layout attributes.
+    private final boolean mIsInitialized;
 
-    // Object to avoid allocations during draw calls.
-    private final RectF mTmpRect = new RectF();
-
-    // Whether or not to apply the shader, if we have one. This might be set to false if the image
-    // is smaller than the view and does not need to have the corners rounded.
-    private boolean mApplyShader;
+    private Shape mRoundedRectangle;
+    private @ColorInt int mFillColor = Color.TRANSPARENT;
 
     public RoundedCornerImageView(Context context) {
         this(context, null, 0);
@@ -66,32 +66,69 @@ public class RoundedCornerImageView extends ImageView {
 
     public RoundedCornerImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+
+        // Set attribute indicating that all required objects are created.
+        mIsInitialized = true;
+
+        int radiusTopStart = 0;
+        int radiusTopEnd = 0;
+        int radiusBottomStart = 0;
+        int radiusBottomEnd = 0;
+        int color = Color.TRANSPARENT;
+
         if (attrs != null) {
             TypedArray a = getContext().obtainStyledAttributes(
                     attrs, R.styleable.RoundedCornerImageView, 0, 0);
-            int cornerRadiusTopStart = a.getDimensionPixelSize(
+            radiusTopStart = a.getDimensionPixelSize(
                     R.styleable.RoundedCornerImageView_cornerRadiusTopStart, 0);
-            int cornerRadiusTopEnd = a.getDimensionPixelSize(
+            radiusTopEnd = a.getDimensionPixelSize(
                     R.styleable.RoundedCornerImageView_cornerRadiusTopEnd, 0);
-            int cornerRadiusBottomStart = a.getDimensionPixelSize(
+            radiusBottomStart = a.getDimensionPixelSize(
                     R.styleable.RoundedCornerImageView_cornerRadiusBottomStart, 0);
-            int cornerRadiusBottomEnd = a.getDimensionPixelSize(
+            radiusBottomEnd = a.getDimensionPixelSize(
                     R.styleable.RoundedCornerImageView_cornerRadiusBottomEnd, 0);
-            if (a.hasValue(R.styleable.RoundedCornerImageView_roundedfillColor)) {
-                mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                mFillPaint.setColor(a.getColor(
-                        R.styleable.RoundedCornerImageView_roundedfillColor, Color.WHITE));
-            }
-            a.recycle();
 
-            setRoundedCorners(cornerRadiusTopStart, cornerRadiusTopEnd, cornerRadiusBottomStart,
-                    cornerRadiusBottomEnd);
+            color = a.getColor(
+                    R.styleable.RoundedCornerImageView_roundedfillColor, Color.TRANSPARENT);
+            a.recycle();
         }
+
+        setRoundedCorners(radiusTopStart, radiusTopEnd, radiusBottomStart, radiusBottomEnd);
+        setRoundedFillColor(color);
+        refreshState();
     }
 
     /**
-     * Updates the rounded corners, using the radius set in the layout.
+     * Sets the rounded corner fill color to {@code color}.  This can be used to make sure the
+     * rounded shape shows even if the actual content isn't full-bleed (e.g. icon with transparency
+     * or too small to reach the edges).
+     * @param color The color to use.  Setting to {@link Color#TRANSPARENT} will remove the color.
      */
+    public void setRoundedFillColor(@ColorInt int color) {
+        mFillColor = color;
+        mRoundedBackgroundPaint.setColor(color);
+        invalidate();
+    }
+
+    // ImageView implementation.
+    @Override
+    public void setImageDrawable(@Nullable Drawable drawable) {
+        super.setImageDrawable(drawable);
+        refreshState();
+    }
+
+    @Override
+    public void setImageResource(int resId) {
+        super.setImageResource(resId);
+        refreshState();
+    }
+
+    @Override
+    public void setImageBitmap(Bitmap bm) {
+        super.setImageBitmap(bm);
+        refreshState();
+    }
+
     public void setRoundedCorners(int cornerRadiusTopStart, int cornerRadiusTopEnd,
             int cornerRadiusBottomStart, int cornerRadiusBottomEnd) {
         mRoundCorners = (cornerRadiusTopStart != 0 || cornerRadiusTopEnd != 0
@@ -110,154 +147,84 @@ public class RoundedCornerImageView extends ImageView {
         }
 
         mRoundedRectangle = new RoundRectShape(radii, null, null);
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     }
 
-    @Override
-    public void setImageDrawable(@Nullable Drawable drawable) {
-        super.setImageDrawable(drawable);
-        reset();
-    }
-
-    @Override
-    public void setImageResource(int res) {
-        super.setImageResource(res);
-        reset();
-    }
-
-    @Override
-    public void setImageBitmap(Bitmap bm) {
-        super.setImageBitmap(bm);
-        reset();
-    }
-
-    private void reset() {
-        // Reset shaders.  We will need to recalculate them.
-        mShader = null;
-        mApplyShader = false;
-
-        // Reset shader in Paint to avoid retaining the old Bitmap.
-        if (mPaint != null) mPaint.setShader(null);
-
-        maybeCreateShader();
-        updateApplyShader();
-    }
-
-    /**
-     * Set the fill color resource.
-     * @param id The color resource id.
-     */
-    public void setRoundedFillColor(@ColorRes int id) {
-        mFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mFillPaint.setColor(getContext().getResources().getColor(id));
-    }
-
-    protected void maybeCreateShader() {
-        // Only create the shader if we have a rectangle to use as a mask.
+    private void refreshState() {
         Drawable drawable = getDrawable();
-        Bitmap bitmap = (drawable instanceof BitmapDrawable)
-                ? ((BitmapDrawable) drawable).getBitmap()
-                : null;
-        if (mRoundedRectangle != null && bitmap != null) {
-            mShader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
-        }
-    }
 
-    @Override
-    protected boolean setFrame(int l, int t, int r, int b) {
-        boolean changed = super.setFrame(l, t, r, b);
-        updateApplyShader();
-        return changed;
-    }
-
-    @Override
-    public void setScaleType(ScaleType scaleType) {
-        super.setScaleType(scaleType);
-        updateApplyShader();
-    }
-
-    /**
-     * Updates the flag to tell whether or not to apply the shader that produces the rounded
-     * corners. We should not apply the shader if the final image is smaller than the view, because
-     * it will try to tile the image, which is not desirable. This should be called when the image
-     * is changed, or the view bounds change.
-     */
-    private void updateApplyShader() {
-        Drawable drawable = getDrawable();
-        if (!(drawable instanceof BitmapDrawable) || (mShader == null) || (mPaint == null)) {
-            // In this state we wouldn't use the shader anyway.
-            mApplyShader = false;
+        // Do not update state if we were invoked from the ImageView's constructor
+        // (before we had the chance to initialize our own private data).
+        if (!mIsInitialized) {
             return;
         }
 
-        // Default to using the shader.
-        mApplyShader = true;
+        if (drawable instanceof ColorDrawable) {
+            mRoundedBackgroundPaint.setColor(((ColorDrawable) getDrawable()).getColor());
+            mRoundedContentPaint = null;
+        } else if (drawable instanceof BitmapDrawable) {
+            mRoundedBackgroundPaint.setColor(mFillColor);
+            mRoundedContentPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+
+            mRoundedContentPaint.setShader(
+                    new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
+        } else {
+            mRoundedBackgroundPaint.setColor(mFillColor);
+            mRoundedContentPaint = null;
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        final int width = getWidth() - getPaddingLeft() - getPaddingRight();
-        final int height = getHeight() - getPaddingTop() - getPaddingBottom();
-
-        Drawable drawable = getDrawable();
-        Shape localRoundedRect = mRoundedRectangle;
-        Paint localPaint = mPaint;
-
-        boolean drawFill = mFillPaint != null && localRoundedRect != null
-                && !(drawable instanceof ColorDrawable);
-        boolean drawContent = localPaint != null && localRoundedRect != null
-                && isSupportedDrawable(drawable) && mRoundCorners;
-
-        if (drawFill || drawContent) localRoundedRect.resize(width, height);
-
-        final int saveCount = canvas.save();
-        canvas.translate(getPaddingLeft(), getPaddingTop());
-
-        // First, fill the drawing area with the given fill paint.
-        if (drawFill) localRoundedRect.draw(canvas, mFillPaint);
-
-        if (!drawContent) {
-            // We probably have an unsupported drawable or we don't want rounded corners. Draw
-            // normally and return.
-            // Undo our modifications to canvas first. ImageView will re-apply these.
-            canvas.restoreToCount(saveCount);
+        if (!mRoundCorners) {
             super.onDraw(canvas);
             return;
         }
 
-        // We have a drawable to draw with rounded corners. Let's first set up the paint.
-        if (drawable instanceof ColorDrawable) {
-            ColorDrawable colorDrawable = (ColorDrawable) drawable;
-            localPaint.setColor(colorDrawable.getColor());
+        final int width = getWidth() - getPaddingLeft() - getPaddingRight();
+        final int height = getHeight() - getPaddingTop() - getPaddingBottom();
+        if (width <= 0 || height <= 0) return;
+
+        mRoundedRectangle.resize(width, height);
+
+        final int saveCount = canvas.save();
+        try {
+            canvas.translate(getPaddingLeft(), getPaddingTop());
+
+            if (mRoundedBackgroundPaint.getColor() != Color.TRANSPARENT) {
+                mRoundedRectangle.draw(canvas, mRoundedBackgroundPaint);
+                // Note: RoundedBackgroundPaint is also used as ColorDrawable.
+                if (getDrawable() instanceof ColorDrawable) {
+                    return;
+                }
+            }
+
+            if (mRoundedContentPaint == null) {
+                canvas.restoreToCount(saveCount);
+                super.onDraw(canvas);
+                return;
+            }
+
+            Shader shader = mRoundedContentPaint.getShader();
+            if (shader != null) {
+                Drawable drawable = getDrawable();
+
+                Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+                mTmpMatrix.set(getImageMatrix());
+                mTmpMatrix.preScale((float) drawable.getIntrinsicWidth() / bitmap.getWidth(),
+                        (float) drawable.getIntrinsicHeight() / bitmap.getHeight());
+
+                shader.setLocalMatrix(mTmpMatrix);
+
+                mTmpRect.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
+                mTmpMatrix.mapRect(mTmpRect);
+                canvas.clipRect(mTmpRect);
+            }
+
+            mRoundedRectangle.draw(canvas, mRoundedContentPaint);
+        } finally {
+            canvas.restoreToCount(saveCount);
         }
-
-        if (mApplyShader) {
-            assert mShader != null;
-
-            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-            mScaleMatrix.set(getImageMatrix());
-            mScaleMatrix.preScale(1.f * drawable.getIntrinsicWidth() / bitmap.getWidth(),
-                    1.f * drawable.getIntrinsicHeight() / bitmap.getHeight());
-            mShader.setLocalMatrix(mScaleMatrix);
-            localPaint.setShader(mShader);
-
-            // Find the desired bounding box where the bitmap is to be shown.
-            mTmpRect.set(getDrawable().getBounds());
-            getImageMatrix().mapRect(mTmpRect);
-        }
-
-        // Clip the canvas to the desired bounding box so that the shader isn't applied anywhere
-        // outside the desired area.
-        if (mApplyShader) canvas.clipRect(mTmpRect);
-
-        // Draw the rounded rectangle.
-        localRoundedRect.draw(canvas, localPaint);
-
-        // Remove the clip.
-        canvas.restoreToCount(saveCount);
-    }
-
-    private boolean isSupportedDrawable(Drawable drawable) {
-        return (drawable instanceof ColorDrawable) || (drawable instanceof BitmapDrawable);
     }
 }

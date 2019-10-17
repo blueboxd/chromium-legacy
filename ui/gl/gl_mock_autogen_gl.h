@@ -291,6 +291,7 @@ MOCK_METHOD2(DepthRange, void(GLclampd zNear, GLclampd zFar));
 MOCK_METHOD2(DepthRangef, void(GLclampf zNear, GLclampf zFar));
 MOCK_METHOD2(DetachShader, void(GLuint program, GLuint shader));
 MOCK_METHOD1(Disable, void(GLenum cap));
+MOCK_METHOD1(DisableExtensionANGLE, void(const char* name));
 MOCK_METHOD1(DisableVertexAttribArray, void(GLuint index));
 MOCK_METHOD3(DiscardFramebufferEXT,
              void(GLenum target,

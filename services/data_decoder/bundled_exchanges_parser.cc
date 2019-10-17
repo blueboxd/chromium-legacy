@@ -596,14 +596,10 @@ class BundledExchangesParser::MetadataParser
     // Step 23. "Assert: metadata has an entry with the key "primaryUrl"."
     DCHECK(!metadata_->primary_url.is_empty());
 
-    // Step 24. "If metadata doesn't have entries with keys "requests" and
-    // "manifest", return a "format error" with fallbackUrl."
+    // Step 24. "If metadata doesn't have an entry with the key "requests",
+    // return a "format error" with fallbackUrl."
     if (metadata_->requests.empty()) {
       RunErrorCallbackAndDestroy("Bundle must have an index section.");
-      return;
-    }
-    if (metadata_->manifest_url.is_empty()) {
-      RunErrorCallbackAndDestroy("Bundle must have a manifest URL.");
       return;
     }
 

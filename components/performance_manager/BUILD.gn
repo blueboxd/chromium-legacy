@@ -88,8 +88,6 @@ source_set("unit_tests") {
     "frame_priority/frame_priority_unittest.cc",
     "frame_priority/max_vote_aggregator_unittest.cc",
     "frame_priority/override_vote_aggregator_unittest.cc",
-    "frame_priority/unittest_util.cc",
-    "frame_priority/unittest_util.h",
     "graph/frame_node_impl_unittest.cc",
     "graph/graph_impl_operations_unittest.cc",
     "graph/graph_impl_unittest.cc",

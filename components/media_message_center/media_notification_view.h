@@ -65,7 +65,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
   MediaNotificationView(MediaNotificationContainer* container,
                         base::WeakPtr<MediaNotificationItem> item,
                         views::View* header_row_controls_view,
-                        const base::string16& default_app_name);
+                        const base::string16& default_app_name,
+                        int notification_width);
   ~MediaNotificationView() override;
 
   void SetExpanded(bool expanded);
@@ -126,6 +127,9 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
 
   // String to set as the app name of the header when there is no source title.
   base::string16 default_app_name_;
+
+  // Width of the notification in pixels. Used for calculating artwork bounds.
+  int notification_width_;
 
   bool has_artwork_ = false;
 

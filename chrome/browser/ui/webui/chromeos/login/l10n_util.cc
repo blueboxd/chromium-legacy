@@ -354,12 +354,8 @@ void ResolveLanguageListInThreadPool(
 
   std::string selected_language;
   if (!language_switch_result) {
-    if (!g_browser_process->GetApplicationLocale().empty()) {
-      selected_language = g_browser_process->GetApplicationLocale();
-    } else {
-      selected_language =
-          StartupCustomizationDocument::GetInstance()->initial_locale_default();
-    }
+    selected_language =
+        StartupCustomizationDocument::GetInstance()->initial_locale_default();
   } else {
     if (language_switch_result->success) {
       if (language_switch_result->requested_locale ==

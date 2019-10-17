@@ -118,7 +118,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_ui.h"
 #include "chrome/browser/ui/webui/offline/offline_internals_ui.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
@@ -128,9 +127,6 @@
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "chrome/browser/ui/webui/feed_internals/feed_internals_ui.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
-#if BUILDFLAG(DFMIFY_DEV_UI)
-#include "chrome/browser/ui/webui/android/dev_ui_loader/dev_ui_loader_ui.h"
-#endif  // BUILDFLAG(DFMIFY_DEV_UI)
 #else   // defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
@@ -263,15 +259,6 @@ WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
   return new T(web_ui);
 }
 
-#if defined(OS_ANDROID)
-#if BUILDFLAG(DFMIFY_DEV_UI)
-template <>
-WebUIController* NewWebUI<DevUiLoaderUI>(WebUI* web_ui, const GURL& url) {
-  return new DevUiLoaderUI(web_ui, url);
-}
-#endif  // BUILDFLAG(DFMIFY_DEV_UI)
-#endif  // defined(OS_ANDROID)
-
 #if !defined(OS_ANDROID)
 template <>
 WebUIController* NewWebUI<PageNotAvailableForGuestUI>(WebUI* web_ui,
@@ -343,13 +330,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       !url.SchemeIs(content::kChromeUIScheme)) {
     return nullptr;
   }
-
-#if defined(OS_ANDROID)
-#if BUILDFLAG(DFMIFY_DEV_UI)
-  if (url.host_piece() == chrome::kChromeUIDevUiLoaderHost)
-    return &NewWebUI<DevUiLoaderUI>;
-#endif  // BUILDFLAG(DFMIFY_DEV_UI)
-#endif  // defined(OS_ANDROID)
 
   // Please keep this in alphabetical order. If #ifs or special logics are
   // required, add it below in the appropriate section.

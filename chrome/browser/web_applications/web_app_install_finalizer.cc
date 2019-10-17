@@ -64,10 +64,11 @@ Source::Type InferSourceFromMetricsInstallSource(
   }
 }
 
-void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
+void SetWebAppIcons(const std::vector<WebApplicationIconInfo>& icon_infos,
+                    WebApp* web_app) {
   WebApp::Icons web_app_icons;
 
-  for (const WebApplicationIconInfo& icon_info : web_app_info.icons) {
+  for (const WebApplicationIconInfo& icon_info : icon_infos) {
     // Skip unfetched bitmaps.
     if (icon_info.data.colorType() == kUnknown_SkColorType)
       continue;
@@ -128,7 +129,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
                               : blink::mojom::DisplayMode::kBrowser);
   web_app->SetIsLocallyInstalled(options.locally_installed);
 
-  SetIcons(web_app_info, web_app.get());
+  SetWebAppIcons(web_app_info.icons, web_app.get());
 
   web_app->SetIsInSyncInstall(false);
   WebApp::SyncData sync_data;
@@ -137,7 +138,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetSyncData(std::move(sync_data));
 
   icon_manager_->WriteData(
-      std::move(app_id), std::make_unique<WebApplicationInfo>(web_app_info),
+      std::move(app_id), web_app_info.icons,
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(web_app)));
@@ -219,13 +220,6 @@ bool WebAppInstallFinalizer::CanRevealAppShim() const {
 void WebAppInstallFinalizer::RevealAppShim(const AppId& app_id) {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
-}
-
-bool WebAppInstallFinalizer::CanSkipAppUpdateForSync(
-    const AppId& app_id,
-    const WebApplicationInfo& web_app_info) const {
-  NOTIMPLEMENTED();
-  return true;
 }
 
 bool WebAppInstallFinalizer::CanUserUninstallFromSync(

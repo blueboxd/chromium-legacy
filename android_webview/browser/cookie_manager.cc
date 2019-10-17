@@ -25,6 +25,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -88,8 +90,19 @@ enum class SecureCookieAction {
   kMaxValue = kFixedUp,
 };
 
-GURL MaybeFixUpSchemeForSecureCookie(const GURL& host,
-                                     const std::string& value) {
+// Since this function parses the set-cookie line into a ParsedCookie, it is
+// convenient to hook into here to get the SameSite value from the parsed
+// cookie for histogramming.
+GURL MaybeFixUpSchemeForSecureCookieAndGetSameSite(
+    const GURL& host,
+    const std::string& value,
+    net::CookieSameSiteString* samesite_out) {
+  net::ParsedCookie parsed_cookie(value);
+
+  // Grab the SameSite value for histogramming.
+  DCHECK(samesite_out);
+  parsed_cookie.SameSite(samesite_out);
+
   // Log message for catching strict secure cookies related bugs.
   // TODO(ntfschr): try to remove this, based on UMA stats
   // (https://crbug.com/933981)
@@ -103,7 +116,6 @@ GURL MaybeFixUpSchemeForSecureCookie(const GURL& host,
                                   SecureCookieAction::kAlreadySecureScheme);
     return host;
   }
-  net::ParsedCookie parsed_cookie(value);
   if (!parsed_cookie.IsValid()) {
     base::UmaHistogramEnumeration(kSecureCookieHistogramName,
                                   SecureCookieAction::kInvalidCookie);
@@ -405,7 +417,12 @@ void CookieManager::SetCookieSync(JNIEnv* env,
 void CookieManager::SetCookieHelper(const GURL& host,
                                     const std::string& value,
                                     base::OnceCallback<void(bool)> callback) {
-  const GURL& new_host = MaybeFixUpSchemeForSecureCookie(host, value);
+  net::CookieSameSiteString samesite = net::CookieSameSiteString::kUnspecified;
+  const GURL& new_host =
+      MaybeFixUpSchemeForSecureCookieAndGetSameSite(host, value, &samesite);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Android.WebView.CookieManager.SameSiteAttributeValue", samesite);
 
   net::CanonicalCookie::CookieInclusionStatus status;
   std::unique_ptr<net::CanonicalCookie> cc(
@@ -415,6 +432,11 @@ void CookieManager::SetCookieHelper(const GURL& host,
   if (!cc) {
     MaybeRunCookieCallback(std::move(callback), false);
     return;
+  }
+
+  if (cc->SameSite() == net::CookieSameSite::NO_RESTRICTION) {
+    UMA_HISTOGRAM_BOOLEAN("Android.WebView.CookieManager.SameSiteNoneIsSecure",
+                          cc->IsSecure());
   }
 
   // Note: CookieStore and network::CookieManager have different signatures: one

@@ -80,6 +80,13 @@ WebUITabStripContainerView::CreateToggleButton() {
   return toggle_button;
 }
 
+void WebUITabStripContainerView::CloseContainer() {
+  if (!GetVisible())
+    return;
+  SetVisible(false);
+  InvalidateLayout();
+}
+
 void WebUITabStripContainerView::ShowContextMenuAtPoint(
     gfx::Point point,
     std::unique_ptr<ui::MenuModel> menu_model) {

@@ -42,7 +42,6 @@ namespace {
 using leveldb::StdStringToUint8Vector;
 using leveldb::String16ToUint8Vector;
 using leveldb::Uint8VectorToStdString;
-using leveldb::mojom::DatabaseError;
 using leveldb::mojom::KeyValuePtr;
 
 static const char kSessionStorageDirectory[] = "Session Storage";
@@ -997,9 +996,9 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   base::RunLoop loop;
   context()->DatabaseForTesting()->DeletePrefixed(
       leveldb::StringPieceToUint8Vector("map"),
-      base::BindLambdaForTesting([&](DatabaseError status) {
+      base::BindLambdaForTesting([&](leveldb::Status status) {
         loop.Quit();
-        EXPECT_EQ(DatabaseError::OK, status);
+        EXPECT_TRUE(status.ok());
       }));
   loop.Run();
 

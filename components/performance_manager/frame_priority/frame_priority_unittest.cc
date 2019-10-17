@@ -4,7 +4,7 @@
 
 #include "components/performance_manager/public/frame_priority/frame_priority.h"
 
-#include "components/performance_manager/frame_priority/unittest_util.h"
+#include "components/performance_manager/test_support/frame_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -93,12 +93,12 @@ TEST(FramePriorityTest, PriorityAndReason) {
 
   // Comparison with identical priorities, and different reason strings.
   PriorityAndReason par4(base::TaskPriority::LOWEST, kReason2);
-  EXPECT_FALSE(par1 == par2);
-  EXPECT_TRUE(par1 != par2);
-  EXPECT_TRUE(par1 <= par2);
-  EXPECT_FALSE(par1 >= par2);
-  EXPECT_TRUE(par1 < par2);
-  EXPECT_FALSE(par1 > par2);
+  EXPECT_FALSE(par1 == par4);
+  EXPECT_TRUE(par1 != par4);
+  EXPECT_TRUE(par1 <= par4);
+  EXPECT_FALSE(par1 >= par4);
+  EXPECT_TRUE(par1 < par4);
+  EXPECT_FALSE(par1 > par4);
 
   // Copy constructor.
   PriorityAndReason par5(par3);

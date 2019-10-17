@@ -579,9 +579,6 @@ class Browser : public TabStripModelObserver,
       bool did_start_load,
       bool did_finish_load) override;
   bool ShouldShowStaleContentOnEviction(content::WebContents* source) override;
-  bool IsFrameLowPriority(
-      const content::WebContents* web_contents,
-      const content::RenderFrameHost* render_frame_host) override;
 
   bool is_type_normal() const { return type_ == TYPE_NORMAL; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }

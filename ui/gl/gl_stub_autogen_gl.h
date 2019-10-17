@@ -332,6 +332,7 @@ void glDepthRangeFn(GLclampd zNear, GLclampd zFar) override {}
 void glDepthRangefFn(GLclampf zNear, GLclampf zFar) override {}
 void glDetachShaderFn(GLuint program, GLuint shader) override {}
 void glDisableFn(GLenum cap) override {}
+void glDisableExtensionANGLEFn(const char* name) override {}
 void glDisableVertexAttribArrayFn(GLuint index) override {}
 void glDiscardFramebufferEXTFn(GLenum target,
                                GLsizei numAttachments,

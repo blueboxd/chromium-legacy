@@ -6,6 +6,8 @@
 #define UI_ACCESSIBILITY_AX_RANGE_H_
 
 #include <memory>
+#include <ostream>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -123,6 +125,11 @@ class AXRange {
   bool IsNull() const {
     DCHECK(anchor_ && focus_);
     return anchor_->IsNullPosition() || focus_->IsNullPosition();
+  }
+
+  std::string ToString() const {
+    return "Range\nAnchor:" + anchor_->ToString() +
+           "\nFocus:" + focus_->ToString();
   }
 
   // We can decompose any given AXRange into multiple "leaf text ranges".
@@ -348,6 +355,12 @@ class AXRange {
   AXPositionInstance anchor_;
   AXPositionInstance focus_;
 };
+
+template <class AXPositionType>
+std::ostream& operator<<(std::ostream& stream,
+                         const AXRange<AXPositionType>& range) {
+  return stream << range.ToString();
+}
 
 }  // namespace ui
 

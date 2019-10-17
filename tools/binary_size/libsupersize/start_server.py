@@ -44,6 +44,7 @@ def Run(args, _parser):
 
   SupersizeHTTPRequestHandler.serve_from = static_files
   SupersizeHTTPRequestHandler.data_file_path = args.report_file
+  SupersizeHTTPRequestHandler.extensions_map['.wasm'] = 'application/wasm'
   httpd = BaseHTTPServer.HTTPServer(server_addr, SupersizeHTTPRequestHandler)
 
   sa = httpd.socket.getsockname()

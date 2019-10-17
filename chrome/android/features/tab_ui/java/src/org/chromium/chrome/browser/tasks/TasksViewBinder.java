@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CA
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
 import android.view.View;
 
@@ -38,6 +39,9 @@ class TasksViewBinder {
             view.setMoreTabsOnClickListener(model.get(MORE_TABS_CLICK_LISTENER));
         } else if (propertyKey == MV_TILES_VISIBLE) {
             view.setMostVisitedVisibility(model.get(MV_TILES_VISIBLE) ? View.VISIBLE : View.GONE);
+        } else if (propertyKey == VOICE_SEARCH_BUTTON_CLICK_LISTENER) {
+            view.setVoiceRecognitionButtonClickListener(
+                    model.get(VOICE_SEARCH_BUTTON_CLICK_LISTENER));
         }
     }
 }

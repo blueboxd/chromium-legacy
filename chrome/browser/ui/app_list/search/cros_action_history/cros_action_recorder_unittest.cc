@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_clock_override.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,12 +51,20 @@ class CrOSActionRecorderTest : public testing::Test {
     return CrOSActionRecorder::GetCrosActionRecorder()->actions_;
   }
 
-  void EnableLog() {
-    CrOSActionRecorder::GetCrosActionRecorder()->should_log_ = true;
+  void SetLogWithHash() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        app_list_features::kEnableCrOSActionRecorder,
+        {{"CrOSActionRecorderType", "1"}});
+
+    CrOSActionRecorder::GetCrosActionRecorder()->SetCrOSActionRecorderType();
   }
 
-  void DisableHash() {
-    CrOSActionRecorder::GetCrosActionRecorder()->should_hash_ = false;
+  void SetLogWithoutHash() {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        app_list_features::kEnableCrOSActionRecorder,
+        {{"CrOSActionRecorderType", "2"}});
+
+    CrOSActionRecorder::GetCrosActionRecorder()->SetCrOSActionRecorderType();
   }
 
   // Read and Parse log from |day|-th file.
@@ -93,6 +103,7 @@ class CrOSActionRecorderTest : public testing::Test {
   base::FilePath profile_path_;
   int64_t save_internal_secs_ = 0;
   base::ScopedMockClockOverride time_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::DEFAULT,
       base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
@@ -104,9 +115,9 @@ TEST_F(CrOSActionRecorderTest, NoLogAsDefault) {
   EXPECT_TRUE(GetCrOSActionHistory().actions().empty());
 }
 
-// Log is hashed by default.
-TEST_F(CrOSActionRecorderTest, HashActionNameByDefault) {
-  EnableLog();
+// Log is hashed if CrOSActionRecorderType == 1.
+TEST_F(CrOSActionRecorderTest, HashActionNameAndConditionName) {
+  SetLogWithHash();
   CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
       {actions_[0]}, {{conditions_[0], kConditionValue}});
   const CrOSActionHistoryProto& action_history = GetCrOSActionHistory();
@@ -115,10 +126,10 @@ TEST_F(CrOSActionRecorderTest, HashActionNameByDefault) {
   ExpectCrOSAction(action_history.actions(0), 0, 0);
 }
 
-// DisableHash will log action name and condition name explicitly.
+// Log action name and condition name explicitly if
+// CrOSActionRecorderType == 2.
 TEST_F(CrOSActionRecorderTest, DisableHashToLogExplicitly) {
-  EnableLog();
-  DisableHash();
+  SetLogWithoutHash();
   CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
       {actions_[0]}, {{conditions_[0], kConditionValue}});
   const CrOSActionHistoryProto& action_history = GetCrOSActionHistory();
@@ -128,7 +139,7 @@ TEST_F(CrOSActionRecorderTest, DisableHashToLogExplicitly) {
 
 // Check a new file is written every day for expected values.
 TEST_F(CrOSActionRecorderTest, WriteToNewFileEveryDay) {
-  EnableLog();
+  SetLogWithHash();
   time_.Advance(base::TimeDelta::FromSeconds(save_internal_secs_));
   CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
       {actions_[0]}, {{conditions_[0], kConditionValue}});
@@ -158,7 +169,7 @@ TEST_F(CrOSActionRecorderTest, WriteToNewFileEveryDay) {
 
 // Check that the result is appended to previous log within a day.
 TEST_F(CrOSActionRecorderTest, AppendToFileEverySaveInAday) {
-  EnableLog();
+  SetLogWithHash();
   time_.Advance(base::TimeDelta::FromSeconds(save_internal_secs_));
   CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
       {actions_[0]}, {{conditions_[0], kConditionValue}});

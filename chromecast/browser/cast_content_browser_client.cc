@@ -85,11 +85,11 @@
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
 
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "chromecast/media/service/cast_mojo_media_client.h"
 #include "media/mojo/mojom/constants.mojom.h"  // nogncheck
-#include "media/mojo/services/media_service.h"      // nogncheck
-#endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
+#include "media/mojo/services/media_service.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
@@ -102,7 +102,6 @@
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/app/crashpad.h"
-#include "media/mojo/services/android_mojo_media_client.h"
 #if !BUILDFLAG(USE_CHROMECAST_CDMS)
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "url/origin.h"
@@ -146,11 +145,10 @@ namespace chromecast {
 namespace shell {
 
 namespace {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
 static void CreateMediaService(CastContentBrowserClient* browser_client,
                                service_manager::mojom::ServiceRequest request) {
   std::unique_ptr<::media::MediaService> service;
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
   auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
       browser_client->GetCmaBackendFactory(),
       base::Bind(&CastContentBrowserClient::CreateCdmFactory,
@@ -160,15 +158,9 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
       browser_client->media_resource_tracker());
   service = std::make_unique<::media::MediaService>(
       std::move(mojo_media_client), std::move(request));
-#elif defined(OS_ANDROID)
-  service = std::make_unique<::media::MediaService>(
-      std::make_unique<::media::AndroidMojoMediaClient>(), std::move(request));
-#else
-#error "Unsupported configuration."
-#endif  // defined(ENABLE_CAST_RENDERER)
   service_manager::Service::RunAsyncUntilTermination(std::move(service));
 }
-#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
@@ -348,11 +340,8 @@ bool CastContentBrowserClient::OverridesAudioManager() {
 #if BUILDFLAG(USE_CHROMECAST_CDMS)
 std::unique_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* host_interfaces) {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   return std::make_unique<media::CastCdmFactory>(GetMediaTaskRunner(),
                                                  media_resource_tracker());
-#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  return nullptr;
 }
 #endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
@@ -792,15 +781,15 @@ void CastContentBrowserClient::GetApplicationMediaInfo(
 void CastContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (identity.name() == ::media::mojom::kMediaServiceName) {
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  if (identity.name() == ::media::mojom::kMediaRendererServiceName) {
     service_manager::mojom::ServiceRequest request(std::move(*receiver));
     GetMediaTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&CreateMediaService, this, std::move(request)));
     return;
   }
-#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
   if (identity.name() == external_mojo::BrokerService::kServiceName) {

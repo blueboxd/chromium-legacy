@@ -32,6 +32,8 @@ class TabStripUI : public content::WebUIController {
     Embedder() = default;
     virtual ~Embedder() {}
 
+    virtual void CloseContainer() = 0;
+
     virtual void ShowContextMenuAtPoint(
         gfx::Point point,
         std::unique_ptr<ui::MenuModel> menu_model) = 0;

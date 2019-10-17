@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
 
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
@@ -19,6 +21,12 @@ namespace app_list {
 namespace {
 
 constexpr int kSecondsPerDay = 86400;
+
+enum CrOSActionRecorderType {
+  kDefault = 0,
+  kLogWithHash = 1,
+  kLogWithoutHash = 2,
+};
 
 void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
                               const base::FilePath action_filepath) {
@@ -54,6 +62,9 @@ CrOSActionRecorder::CrOSActionRecorder()
       should_hash_(true),
       last_save_timestamp_(base::Time::Now()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  SetCrOSActionRecorderType();
+
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (profile) {
     profile_path_ = profile->GetPath();
@@ -118,9 +129,24 @@ void CrOSActionRecorder::MaybeFlushToDisk() {
   }
 }
 
+void CrOSActionRecorder::SetCrOSActionRecorderType() {
+  if (!app_list_features::IsCrOSActionRecorderEnabled())
+    return;
+  const CrOSActionRecorderType type = static_cast<CrOSActionRecorderType>(
+      app_list_features::GetCrOSActionRecorderType());
+  if (type == CrOSActionRecorderType::kLogWithHash) {
+    should_log_ = true;
+    should_hash_ = true;
+  } else if (type == CrOSActionRecorderType::kLogWithoutHash) {
+    should_log_ = true;
+    should_hash_ = false;
+  }
+}
+
 std::string CrOSActionRecorder::MaybeHashed(const std::string& input,
                                             const bool should_hash) {
   return should_hash ? base::NumberToString(base::HashMetricName(input))
                      : input;
 }
+
 }  // namespace app_list

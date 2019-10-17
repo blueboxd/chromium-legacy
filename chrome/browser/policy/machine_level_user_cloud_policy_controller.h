@@ -29,7 +29,7 @@ class ChromeBrowserCloudManagementRegistrar;
 class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
-class MachineLevelUserCloudPolicyRegisterWatcher;
+class ChromeBrowserCloudManagementRegisterWatcher;
 
 // A class that setups and manages MachineLevelUserCloudPolicy.
 class MachineLevelUserCloudPolicyController {
@@ -109,8 +109,8 @@ class MachineLevelUserCloudPolicyController {
   std::unique_ptr<MachineLevelUserCloudPolicyFetcher> policy_fetcher_;
     // This is an observer of the controller and needs to be declared after the
     // |observers_|.
-  std::unique_ptr<MachineLevelUserCloudPolicyRegisterWatcher>
-      policy_register_watcher_;
+  std::unique_ptr<ChromeBrowserCloudManagementRegisterWatcher>
+      cloud_management_register_watcher_;
 
   // Time at which the enrollment process was started.  Used to log UMA metric.
   base::Time enrollment_start_time_;

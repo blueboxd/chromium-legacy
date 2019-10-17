@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_H_
 
 #include <dawn/dawn.h>
+#include <dawn/dawn_proc_table.h>
 
 #include "gpu/command_buffer/client/interface_base.h"
 #include "gpu/command_buffer/common/webgpu_cmd_enums.h"

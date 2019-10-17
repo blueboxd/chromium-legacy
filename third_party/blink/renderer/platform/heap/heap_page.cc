@@ -1299,18 +1299,20 @@ void FreeList::CollectStatistics(
             std::move(free_size)};
 }
 
-BasePage::BasePage(PageMemory* storage, BaseArena* arena)
+BasePage::BasePage(PageMemory* storage, BaseArena* arena, PageType page_type)
     : magic_(GetMagic()),
       storage_(storage),
       arena_(arena),
-      swept_(true) {
+      thread_state_(arena->GetThreadState()),
+      page_type_(page_type) {
 #if DCHECK_IS_ON()
   DCHECK(IsPageHeaderAddress(reinterpret_cast<Address>(this)));
 #endif
 }
 
 NormalPage::NormalPage(PageMemory* storage, BaseArena* arena)
-    : BasePage(storage, arena), object_start_bit_map_(Payload()) {
+    : BasePage(storage, arena, PageType::kNormalPage),
+      object_start_bit_map_(Payload()) {
 #if DCHECK_IS_ON()
   DCHECK(IsPageHeaderAddress(reinterpret_cast<Address>(this)));
 #endif  // DCHECK_IS_ON()
@@ -1710,7 +1712,8 @@ Address ObjectStartBitmap::FindHeader(
   return object_offset + offset_;
 }
 
-HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
+HeapObjectHeader* NormalPage::ConservativelyFindHeaderFromAddress(
+    Address address) {
   if (!ContainedInObjectPayload(address))
     return nullptr;
   if (ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address))
@@ -1720,6 +1723,17 @@ HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
   DCHECK(header->IsValidOrZapped());
   if (header->IsFree())
     return nullptr;
+  DCHECK_LT(0u, header->GcInfoIndex());
+  DCHECK_GT(header->PayloadEnd(), address);
+  return header;
+}
+
+HeapObjectHeader* NormalPage::FindHeaderFromAddress(Address address) {
+  DCHECK(ContainedInObjectPayload(address));
+  DCHECK(!ArenaForNormalPage()->IsInCurrentAllocationPointRegion(address));
+  HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(
+      object_start_bit_map()->FindHeader(address));
+  DCHECK(header->IsValid());
   DCHECK_LT(0u, header->GcInfoIndex());
   DCHECK_GT(header->PayloadEnd(), address);
   return header;
@@ -1765,7 +1779,7 @@ bool NormalPage::Contains(Address addr) {
 LargeObjectPage::LargeObjectPage(PageMemory* storage,
                                  BaseArena* arena,
                                  size_t object_size)
-    : BasePage(storage, arena),
+    : BasePage(storage, arena, PageType::kLargeObjectPage),
       object_size_(object_size)
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
       ,

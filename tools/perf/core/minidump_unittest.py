@@ -17,9 +17,9 @@ import py_utils
 
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
-  # ChromeOS and Android are currently hard coded to return None for minidump
-  # paths, so disable on those platforms.
-  @decorators.Disabled('android')
+  # Android is currently hard coded to return None for minidump paths.
+  # Flakes on chromeos: crbug.com/1014754
+  @decorators.Disabled('android', 'chromeos')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
@@ -92,7 +92,8 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertTrue(crash_function in sections[4] or match is not None)
 
   @decorators.Isolated
-  @decorators.Disabled('android')
+  # Flakes on chromeos: crbug.com/1014754
+  @decorators.Disabled('android', 'chromeos')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')

@@ -21,6 +21,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -42,6 +43,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     private WebContents mWebContents;
     private BrowserObserverProxy mBrowserObserverProxy;
     private NavigationControllerImpl mNavigationController;
+    private FullscreenDelegateProxy mFullscreenDelegateProxy;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -127,13 +129,34 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         mBrowserObserverProxy = new BrowserObserverProxy(mNativeBrowserController, client);
     }
 
+    @Override
+    public void setFullscreenDelegateClient(IFullscreenDelegateClient client) {
+        if (client != null) {
+            if (mFullscreenDelegateProxy == null) {
+                mFullscreenDelegateProxy =
+                        new FullscreenDelegateProxy(mNativeBrowserController, client);
+            } else {
+                mFullscreenDelegateProxy.setClient(client);
+            }
+        } else if (mFullscreenDelegateProxy != null) {
+            mFullscreenDelegateProxy.destroy();
+            mFullscreenDelegateProxy = null;
+        }
+    }
+
     public void destroy() {
         BrowserControllerImplJni.get().setTopControlsContainerView(
                 mNativeBrowserController, BrowserControllerImpl.this, 0);
         mTopControlsContainerView.destroy();
         mContentViewRenderView.destroy();
-        if (mBrowserObserverProxy != null) mBrowserObserverProxy.destroy();
-        mBrowserObserverProxy = null;
+        if (mBrowserObserverProxy != null) {
+            mBrowserObserverProxy.destroy();
+            mBrowserObserverProxy = null;
+        }
+        if (mFullscreenDelegateProxy != null) {
+            mFullscreenDelegateProxy.destroy();
+            mFullscreenDelegateProxy = null;
+        }
         mNavigationController = null;
         BrowserControllerImplJni.get().deleteBrowserController(mNativeBrowserController);
         mNativeBrowserController = 0;

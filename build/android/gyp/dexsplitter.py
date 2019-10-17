@@ -49,7 +49,7 @@ def _ParseOptions(args):
 
 def _RunDexsplitter(options, output_dir):
   cmd = [
-      'java',
+      build_utils.JAVA_PATH,
       '-jar',
       options.r8_path,
       'dexsplitter',

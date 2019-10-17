@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/sync/base/encryptor.h"
@@ -52,36 +53,6 @@ NigoriSpecifics MakeDefaultKeystoreNigori(
   state.cryptographer = CreateCryptographerFromKeystoreKeys(keystore_keys);
 
   return state.ToSpecificsProto();
-}
-
-// Returns the key derivation method to be used when a user sets a new
-// custom passphrase.
-KeyDerivationMethod GetDefaultKeyDerivationMethodForCustomPassphrase() {
-  if (base::FeatureList::IsEnabled(
-          switches::kSyncUseScryptForNewCustomPassphrases) &&
-      !base::FeatureList::IsEnabled(
-          switches::kSyncForceDisableScryptForCustomPassphrase)) {
-    return KeyDerivationMethod::SCRYPT_8192_8_11;
-  }
-
-  return KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003;
-}
-
-KeyDerivationParams CreateKeyDerivationParamsForCustomPassphrase(
-    const base::RepeatingCallback<std::string()>& random_salt_generator) {
-  KeyDerivationMethod method =
-      GetDefaultKeyDerivationMethodForCustomPassphrase();
-  switch (method) {
-    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return KeyDerivationParams::CreateForPbkdf2();
-    case KeyDerivationMethod::SCRYPT_8192_8_11:
-      return KeyDerivationParams::CreateForScrypt(random_salt_generator.Run());
-    case KeyDerivationMethod::UNSUPPORTED:
-      break;
-  }
-
-  NOTREACHED();
-  return KeyDerivationParams::CreateWithUnsupportedMethod();
 }
 
 KeyDerivationMethod GetKeyDerivationMethodFromSpecifics(
@@ -525,68 +496,9 @@ bool NigoriSyncBridgeImpl::Init() {
 void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(crbug.com/922900): Adopt QueuePendingLocalCommit().
-  switch (state_.passphrase_type) {
-    case NigoriSpecifics::UNKNOWN:
-      NOTREACHED();
-      return;
-    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
-    case NigoriSpecifics::CUSTOM_PASSPHRASE:
-      // Attempt to set the explicit passphrase when one was already set. It's
-      // possible if we received new NigoriSpecifics during the passphrase
-      // setup.
-      DVLOG(1) << "Attempt to set explicit passphrase failed, because one was "
-                  "already set.";
-      // TODO(crbug.com/922900): investigate whether we need to call
-      // OnPassphraseRequired() to prompt for decryption passphrase.
-      return;
-    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
-    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
-    case NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE:
-      if (state_.pending_keys.has_value()) {
-        // TODO(crbug.com/922900): investigate whether we need to call
-        // MaybeNotifyOfPendingKeys() to prompt for decryption passphrase.
-        DVLOG(1) << "Attempt to set explicit passphrase failed, because there "
-                 << "are pending keys.";
-        return;
-      }
-      break;
-  }
-  DCHECK(!state_.pending_keys.has_value());
-  DCHECK(state_.cryptographer->CanEncrypt());
 
-  const KeyDerivationParams custom_passphrase_key_derivation_params =
-      CreateKeyDerivationParamsForCustomPassphrase(random_salt_generator_);
-
-  const std::string default_key_name = state_.cryptographer->EmplaceKey(
-      passphrase, custom_passphrase_key_derivation_params);
-  if (default_key_name.empty()) {
-    DLOG(ERROR) << "Failed to set encryption passphrase";
-    return;
-  }
-
-  state_.cryptographer->SelectDefaultEncryptionKey(default_key_name);
-  state_.pending_keystore_decryptor_token.reset();
-  state_.passphrase_type = NigoriSpecifics::CUSTOM_PASSPHRASE;
-  state_.custom_passphrase_key_derivation_params =
-      custom_passphrase_key_derivation_params;
-
-  state_.encrypt_everything = true;
-  state_.custom_passphrase_time = base::Time::Now();
-  processor_->Put(GetData());
-  storage_->StoreData(SerializeAsNigoriLocalData());
-
-  broadcasting_observer_->OnPassphraseAccepted();
-  broadcasting_observer_->OnPassphraseTypeChanged(
-      PassphraseType::kCustomPassphrase, state_.custom_passphrase_time);
-  broadcasting_observer_->OnCryptographerStateChanged(
-      state_.cryptographer.get(), state_.pending_keys.has_value());
-  broadcasting_observer_->OnEncryptedTypesChanged(EncryptableUserTypes(),
-                                                  state_.encrypt_everything);
-
-  UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
-  // OnLocalSetPassphraseEncryption() is intentionally not called here, because
-  // it's needed only for the Directory implementation unit tests.
+  QueuePendingLocalCommit(PendingLocalNigoriCommit::ForSetCustomPassphrase(
+      passphrase, random_salt_generator_));
 }
 
 void NigoriSyncBridgeImpl::SetDecryptionPassphrase(

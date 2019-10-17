@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -140,16 +142,17 @@ class DemoWindow : public ui::PlatformWindowDelegate {
     mojo::PendingReceiver<viz::mojom::FrameSinkManager>
         frame_sink_manager_receiver =
             frame_sink_manager.InitWithNewPipeAndPassReceiver();
-    viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
-    viz::mojom::FrameSinkManagerClientRequest
-        frame_sink_manager_client_request =
-            mojo::MakeRequest(&frame_sink_manager_client);
+    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient>
+        frame_sink_manager_client;
+    mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient>
+        frame_sink_manager_client_receiver =
+            frame_sink_manager_client.InitWithNewPipeAndPassReceiver();
 
     // Next, create the host and the service, and pass them the right ends of
     // the message-pipes.
     host_ = std::make_unique<demo::DemoHost>(
         widget_, platform_window_->GetBounds().size(),
-        std::move(frame_sink_manager_client_request),
+        std::move(frame_sink_manager_client_receiver),
         std::move(frame_sink_manager));
 
     service_ = std::make_unique<demo::DemoService>(

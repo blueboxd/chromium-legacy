@@ -31,8 +31,12 @@ class DragWindowFromShelfController {
   // will snap back to its original position.
   static constexpr float kReturnToMaximizedThreshold = 116;
 
-  // The deceleration threshold to show overview during window dragging when
-  // dragging a window up from the shelf.
+  // The deceleration threshold to open overview behind the dragged window
+  // when swiping up from the shelf to drag the active window.
+  static constexpr float kOpenOverviewThreshold = 10.f;
+
+  // The deceleration threshold to show or hide overview during window dragging
+  // when dragging a window up from the shelf.
   static constexpr float kShowOverviewThreshold = 50.f;
 
   // The upward velocity threshold to take the user to the home launcher screen
@@ -100,6 +104,10 @@ class DragWindowFromShelfController {
   // Calls when the user resumes or ends window dragging. Overview should show
   // up and split view indicators should be updated.
   void ShowOverviewDuringOrAfterDrag();
+
+  // Called when the dragged window should scale down and fade out to home
+  // screen after drag ends.
+  void ScaleDownWindowAfterDrag();
 
   aura::Window* const window_;
   gfx::Point initial_location_in_screen_;

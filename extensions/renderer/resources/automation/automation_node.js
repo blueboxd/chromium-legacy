@@ -1164,6 +1164,7 @@ var stringAttributes = [
     'placeholder',
     'roleDescription',
     'textInputType',
+    'tooltip',
     'url',
     'value'];
 

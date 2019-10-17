@@ -12,7 +12,6 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/common/features.h"
@@ -43,10 +42,8 @@
   [[EarlGrey selectElementWithMatcher:newTabButtonMatcher]
       performAction:grey_tap()];
 
-  // Get tab count.
-  NSUInteger tabCount =
-      [[GREYHostApplicationDistantObject sharedInstance] GetMainTabCount];
-  GREYAssertEqual(2, tabCount, @"Expected 2 tabs.");
+  // Wait until tab opened and test if there're 2 tabs in total.
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that helpers from chrome_matchers.h are available for use in tests.

@@ -31,12 +31,12 @@
     "indicator_selector": "A CSS selector that locates the controlled setting indicator directly affected by the policy. This is appended to the selector 'span.controlled-setting-indicator'."
   },
 
-  "TabLifecyclesEnabled": {
+  "TabFreezingEnabled": {
     "os": ["win"],
     "official_only": true,
-    "test_policy": { "TabLifecyclesEnabled": false },
+    "test_policy": { "TabFreezingEnabled": false },
     "pref_mappings": [
-      { "pref": "tab_lifecycles_enabled",
+      { "pref": "tab_freezing_enabled",
         "local_state": true
       }
     ]
@@ -431,10 +431,21 @@
     "os": ["chromeos"],
     "test_policy": {
       "ExternalPrintServers": {
+        "id": "id123",
         "url": "https://example.com/policyfile",
         "hash": "deadbeefdeadbeefdeadbeef"
       }
     }
+  },
+
+  "ExternalPrintServersWhitelist": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "ExternalPrintServersWhitelist":  ["id4", "id7", "id10"]
+    },
+    "pref_mappings": [
+      { "pref": "native_printing.external_print_servers_whitelist" }
+    ]
   },
 
   "NativePrinters": {

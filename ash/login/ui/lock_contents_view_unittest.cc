@@ -100,6 +100,15 @@ void SimulateMediaSessionChanged(
   media_controls->MediaSessionInfoChanged(std::move(session_info));
 }
 
+// Returns sample AuthDisabledData to be used in tests, if the details are not
+// important.
+AuthDisabledData GetTestDisabledAuthData() {
+  return AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                          base::Time::Now() + base::TimeDelta::FromHours(8),
+                          base::TimeDelta::FromHours(1),
+                          true /*disable_lock_screen_media*/);
+}
+
 }  // namespace
 
 using LockContentsViewUnitTest = LoginTestBase;
@@ -1844,11 +1853,8 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   EXPECT_FALSE(pin_view->GetVisible());
   EXPECT_FALSE(disabled_auth_message->GetVisible());
   // Setting auth disabled will hide the password field and show the message.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
-                       base::Time::Now() + base::TimeDelta::FromHours(8),
-                       base::TimeDelta::FromHours(1)));
+  DataDispatcher()->DisableAuthForUser(kFirstUserAccountId,
+                                       GetTestDisabledAuthData());
   EXPECT_FALSE(password_view->GetVisible());
   EXPECT_FALSE(pin_view->GetVisible());
   EXPECT_TRUE(disabled_auth_message->GetVisible());
@@ -1859,11 +1865,8 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   EXPECT_FALSE(disabled_auth_message->GetVisible());
 
   // Set auth disabled again.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
-                       base::Time::Now() + base::TimeDelta::FromHours(8),
-                       base::TimeDelta::FromHours(1)));
+  DataDispatcher()->DisableAuthForUser(kFirstUserAccountId,
+                                       GetTestDisabledAuthData());
   EXPECT_FALSE(password_view->GetVisible());
   EXPECT_FALSE(pin_view->GetVisible());
   EXPECT_TRUE(disabled_auth_message->GetVisible());
@@ -1898,22 +1901,16 @@ TEST_F(LockContentsViewUnitTest,
 
   EXPECT_TRUE(note_action_button->GetVisible());
   // Setting auth disabled hides the note action button.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
-                       base::Time::Now() + base::TimeDelta::FromHours(8),
-                       base::TimeDelta::FromHours(1)));
+  DataDispatcher()->DisableAuthForUser(kFirstUserAccountId,
+                                       GetTestDisabledAuthData());
   EXPECT_FALSE(note_action_button->GetVisible());
   // Setting auth enabled shows the note action button.
   DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
   EXPECT_TRUE(note_action_button->GetVisible());
 
   // Set auth disabled again.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
-                       base::Time::Now() + base::TimeDelta::FromHours(8),
-                       base::TimeDelta::FromHours(1)));
+  DataDispatcher()->DisableAuthForUser(kFirstUserAccountId,
+                                       GetTestDisabledAuthData());
   EXPECT_FALSE(note_action_button->GetVisible());
   // Set the lock screen note state to |kNotAvailable| while the note action
   // button is hidden.
@@ -1939,11 +1936,8 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
   LoginUserView* user_view = auth_test_api.user_view();
 
   // The message is visible after disabling auth and it receives initial focus.
-  DataDispatcher()->DisableAuthForUser(
-      kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
-                       base::Time::Now() + base::TimeDelta::FromHours(8),
-                       base::TimeDelta::FromHours(1)));
+  DataDispatcher()->DisableAuthForUser(kFirstUserAccountId,
+                                       GetTestDisabledAuthData());
   EXPECT_TRUE(disabled_auth_message->GetVisible());
   EXPECT_TRUE(HasFocusInAnyChildView(disabled_auth_message));
   // Tabbing from the message will move focus to the user view.
@@ -1961,6 +1955,66 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
           ->GetStatusAreaWidget()
           ->GetContentsView();
   EXPECT_TRUE(HasFocusInAnyChildView(status_area));
+}
+
+TEST_F(LockContentsViewUnitTest, DisableAuthAndMediaControls) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
+
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
+  LockContentsView::TestApi lock_contents(contents);
+
+  // Simulate playing media session.
+  SimulateMediaSessionChanged(
+      lock_contents.media_controls_view(),
+      media_session::mojom::MediaPlaybackState::kPlaying);
+  EXPECT_TRUE(lock_contents.media_controls_view()->IsDrawn());
+
+  // Disable auth and media.
+  DataDispatcher()->DisableAuthForUser(
+      kFirstUserAccountId,
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1),
+                       true /*disable_lock_screen_media*/));
+  EXPECT_FALSE(lock_contents.media_controls_view()->IsDrawn());
+}
+
+TEST_F(LockContentsViewUnitTest, DisableAuthAllowMediaControls) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
+
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  SetUserCount(1);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  const AccountId& kFirstUserAccountId = users()[0].basic_user_info.account_id;
+  LockContentsView::TestApi lock_contents(contents);
+
+  // Simulate playing media session.
+  SimulateMediaSessionChanged(
+      lock_contents.media_controls_view(),
+      media_session::mojom::MediaPlaybackState::kPlaying);
+  EXPECT_TRUE(lock_contents.media_controls_view()->IsDrawn());
+
+  // Disable auth, but allow media.
+  DataDispatcher()->DisableAuthForUser(
+      kFirstUserAccountId,
+      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+                       base::Time::Now() + base::TimeDelta::FromHours(8),
+                       base::TimeDelta::FromHours(1),
+                       false /*disable_lock_screen_media*/));
+  EXPECT_TRUE(lock_contents.media_controls_view()->IsDrawn());
 }
 
 // Tests parent access dialog showing/hiding and focus behavior.
@@ -2020,11 +2074,7 @@ TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
   SetWidget(CreateWidgetWithContent(contents));
 
   // Simulate initial state - user auth disabled and button shown.
-  DataDispatcher()->DisableAuthForUser(
-      child_id,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
-                       base::Time::Now() + base::TimeDelta::FromHours(8),
-                       base::TimeDelta::FromHours(1)));
+  DataDispatcher()->DisableAuthForUser(child_id, GetTestDisabledAuthData());
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
   EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
 

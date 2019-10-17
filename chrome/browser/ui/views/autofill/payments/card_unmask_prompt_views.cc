@@ -71,6 +71,7 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
+  UpdateButtonLabels();
 }
 
 CardUnmaskPromptViews::~CardUnmaskPromptViews() {
@@ -92,6 +93,7 @@ void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   controls_container_->SetVisible(false);
   overlay_->SetVisible(true);
   progress_throbber_->Start();
+  UpdateButtonLabels();
   DialogModelChanged();
   Layout();
 }
@@ -153,6 +155,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
       layout->AddView(std::move(error_icon));
       layout->AddView(std::move(error_label));
     }
+    UpdateButtonLabels();
     DialogModelChanged();
   }
 
@@ -172,6 +175,7 @@ void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
   input_row_->InvalidateLayout();
   cvc_input_->SetInvalid(false);
   cvc_input_->SetText(base::string16());
+  UpdateButtonLabels();
   DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
   instructions_->SetText(controller_->GetInstructionsMessage());
@@ -284,14 +288,6 @@ int CardUnmaskPromptViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
-base::string16 CardUnmaskPromptViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return controller_->GetOkButtonLabel();
-
-  return DialogDelegateView::GetDialogButtonLabel(button);
-}
-
 bool CardUnmaskPromptViews::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_CANCEL)
@@ -339,6 +335,7 @@ void CardUnmaskPromptViews::ContentsChanged(
   if (controller_->InputCvcIsValid(new_contents))
     cvc_input_->SetInvalid(false);
 
+  UpdateButtonLabels();
   DialogModelChanged();
 }
 
@@ -359,6 +356,7 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
   }
 
+  UpdateButtonLabels();
   DialogModelChanged();
 }
 
@@ -489,6 +487,11 @@ bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
 
 void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
+}
+
+void CardUnmaskPromptViews::UpdateButtonLabels() {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   controller_->GetOkButtonLabel());
 }
 
 CardUnmaskPromptView* CreateCardUnmaskPromptView(

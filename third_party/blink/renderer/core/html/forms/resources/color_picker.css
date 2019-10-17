@@ -199,9 +199,14 @@ submission-button:hover {
   }
   color-well {
     border-bottom: 1px solid WindowText;
+    border-radius: 0;
   }
   color-selection-ring {
     forced-color-adjust: none;
+  }
+  color-picker {
+    border: 1px solid WindowText;
+    border-radius: 2px;
   }
   format-toggler {
     border: 1px solid WindowText;

@@ -22,6 +22,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/bsp_walk_action.h"
 #include "components/viz/service/display/output_surface.h"
@@ -308,6 +309,11 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       render_pass_backdrop_filters_[pass->id] = &pass->backdrop_filters;
       render_pass_backdrop_filter_bounds_[pass->id] =
           pass->backdrop_filter_bounds;
+      if (pass->backdrop_filters.HasFilterThatMovesPixels()) {
+        backdrop_filter_output_rects_[pass->id] =
+            cc::MathUtil::MapEnclosingClippedRect(
+                pass->transform_to_root_target, pass->output_rect);
+      }
     }
   }
 
@@ -403,6 +409,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   render_pass_backdrop_filters_.clear();
   render_pass_backdrop_filter_bounds_.clear();
   render_pass_bypass_quads_.clear();
+  backdrop_filter_output_rects_.clear();
 
   current_frame_valid_ = false;
 }
@@ -581,8 +588,9 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   const gfx::Rect surface_rect_in_draw_space = OutputSurfaceRectInDrawSpace();
   gfx::Rect render_pass_scissor_in_draw_space = surface_rect_in_draw_space;
 
-  if (current_frame()->current_render_pass ==
-      current_frame()->root_render_pass) {
+  bool is_root_render_pass =
+      current_frame()->current_render_pass == current_frame()->root_render_pass;
+  if (is_root_render_pass) {
     render_pass_scissor_in_draw_space.Intersect(
         DeviceViewportRectInDrawSpace());
   }
@@ -591,9 +599,6 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
     render_pass_scissor_in_draw_space.Intersect(
         ComputeScissorRectForRenderPass(current_frame()->current_render_pass));
   }
-
-  bool is_root_render_pass =
-      current_frame()->current_render_pass == current_frame()->root_render_pass;
 
   bool render_pass_is_clipped =
       !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
@@ -626,6 +631,9 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
 
   PrepareSurfaceForPass(
       mode, MoveFromDrawToWindowSpace(render_pass_scissor_in_draw_space));
+
+  if (is_root_render_pass)
+    last_root_render_pass_scissor_rect_ = render_pass_scissor_in_draw_space;
 
   const QuadList& quad_list = render_pass->quad_list;
   base::circular_deque<std::unique_ptr<DrawPolygon>> poly_list;
@@ -743,6 +751,22 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
 
   if (render_pass == root_render_pass) {
     root_damage_rect.Union(output_surface_->GetCurrentFramebufferDamage());
+    // If the root damage rect intersects any child render pass that has a
+    // pixel-moving backdrop-filter, expand the damage to include the entire
+    // child pass. See crbug.com/986206 for context.
+    if (!backdrop_filter_output_rects_.empty() && !root_damage_rect.IsEmpty()) {
+      for (auto* quad : render_pass->quad_list) {
+        if (quad->material == DrawQuad::Material::kRenderPass) {
+          auto iter = backdrop_filter_output_rects_.find(
+              RenderPassDrawQuad::MaterialCast(quad)->render_pass_id);
+          if (iter != backdrop_filter_output_rects_.end()) {
+            auto this_output_rect = iter->second;
+            if (root_damage_rect.Intersects(this_output_rect))
+              root_damage_rect.Union(this_output_rect);
+          }
+        }
+      }
+    }
     return root_damage_rect;
   }
 

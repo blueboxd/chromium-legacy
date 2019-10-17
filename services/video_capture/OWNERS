@@ -1,6 +1,7 @@
-chfremer@chromium.org
+guidou@chromium.org
 
-# Original (legacy) owner.
+# Original (legacy) owners.
+chfremer@chromium.org
 per-file *video*=mcasas@chromium.org
 
 # COMPONENT: Blink>GetUserMedia

@@ -181,9 +181,9 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void OnDataMapCreation(const std::vector<uint8_t>& map_prefix,
                          SessionStorageDataMap* map) override;
   void OnDataMapDestruction(const std::vector<uint8_t>& map_prefix) override;
-  void OnCommitResult(leveldb::mojom::DatabaseError error) override;
+  void OnCommitResult(leveldb::Status status) override;
   void OnCommitResultWithCallback(base::OnceClosure callback,
-                                  leveldb::mojom::DatabaseError error);
+                                  leveldb::Status status);
 
   // SessionStorageNamespaceImplMojo::Delegate implementation:
   scoped_refptr<SessionStorageDataMap> MaybeGetExistingDataMapForId(
@@ -206,7 +206,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
-  void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
+  void OnDatabaseOpened(leveldb::Status status);
 
   struct DatabaseMetadataResult {
     DatabaseMetadataResult();
@@ -242,10 +242,10 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void OnDBDestroyed(bool recreate_in_memory, leveldb::Status status);
 
   void OnGotMetaData(GetStorageUsageCallback callback,
-                     leveldb::mojom::DatabaseError status,
+                     leveldb::Status status,
                      std::vector<leveldb::mojom::KeyValuePtr> data);
 
-  void OnShutdownComplete(leveldb::mojom::DatabaseError error);
+  void OnShutdownComplete(leveldb::Status status);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_areas_count);
 

@@ -46,14 +46,15 @@ TestImageTransportFactory::TestImageTransportFactory()
     mojo::PendingReceiver<viz::mojom::FrameSinkManager>
         frame_sink_manager_receiver =
             frame_sink_manager.InitWithNewPipeAndPassReceiver();
-    viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
-    viz::mojom::FrameSinkManagerClientRequest
-        frame_sink_manager_client_request =
-            mojo::MakeRequest(&frame_sink_manager_client);
+    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient>
+        frame_sink_manager_client;
+    mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient>
+        frame_sink_manager_client_receiver =
+            frame_sink_manager_client.InitWithNewPipeAndPassReceiver();
 
     // Bind endpoints in HostFrameSinkManager.
     host_frame_sink_manager_.BindAndSetManager(
-        std::move(frame_sink_manager_client_request), nullptr,
+        std::move(frame_sink_manager_client_receiver), nullptr,
         std::move(frame_sink_manager));
 
     // Bind endpoints in TestFrameSinkManagerImpl. For non-tests there would be

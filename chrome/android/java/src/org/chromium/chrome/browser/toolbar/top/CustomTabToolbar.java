@@ -46,9 +46,11 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
@@ -806,16 +808,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         @Override
-        public void setUrlBarFocus(boolean shouldBeFocused, @Nullable String pastedText,
-                @LocationBar.OmniboxFocusReason int reason) {}
-
-        @Override
         public void showUrlBarCursorWithoutFocusAnimations() {}
-
-        @Override
-        public boolean isUrlBarFocused() {
-            return false;
-        }
 
         @Override
         public void selectAll() {}
@@ -846,5 +839,25 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         @Override
         public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
                 boolean isSearchEngineGoogle, String searchEngineUrl) {}
+
+        // Implements FakeBoxDelegate.
+        @Override
+        public boolean isUrlBarFocused() {
+            return false;
+        }
+
+        @Override
+        public void setUrlBarFocus(boolean shouldBeFocused, @Nullable String pastedText,
+                @LocationBar.OmniboxFocusReason int reason) {}
+
+        @Override
+        public boolean isCurrentPage(NativePage nativePage) {
+            return false;
+        }
+
+        @Override
+        public LocationBarVoiceRecognitionHandler getLocationBarVoiceRecognitionHandler() {
+            return null;
+        }
     }
 }

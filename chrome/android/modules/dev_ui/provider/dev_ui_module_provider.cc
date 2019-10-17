@@ -12,16 +12,20 @@
 
 namespace dev_ui {
 
-// static
-DevUiModuleProvider* DevUiModuleProvider::test_instance_ = nullptr;
+namespace {
+
+// Global DevUiModuleProvider instance for testing.
+DevUiModuleProvider* g_test_instance = nullptr;
+
+}  // namespace
 
 // Destructor is public to enable management by std::unique_ptr<>.
 DevUiModuleProvider::~DevUiModuleProvider() = default;
 
 // static
 DevUiModuleProvider* DevUiModuleProvider::GetInstance() {
-  if (test_instance_)
-    return test_instance_;
+  if (g_test_instance)
+    return g_test_instance;
 
   static DevUiModuleProvider instance;
   return &instance;
@@ -29,7 +33,7 @@ DevUiModuleProvider* DevUiModuleProvider::GetInstance() {
 
 // static
 void DevUiModuleProvider::SetTestInstance(DevUiModuleProvider* test_instance) {
-  test_instance_ = test_instance;
+  g_test_instance = test_instance;
 }
 
 bool DevUiModuleProvider::ModuleInstalled() {

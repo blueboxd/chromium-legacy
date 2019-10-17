@@ -146,12 +146,6 @@ int OutdatedUpgradeBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 OutdatedUpgradeBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(auto_update_enabled_ ? IDS_REINSTALL_APP
-                                                        : IDS_REENABLE_UPDATES);
-}
-
 void OutdatedUpgradeBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   auto text_label = std::make_unique<views::Label>(
@@ -174,5 +168,9 @@ OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       auto_update_enabled_(auto_update_enabled),
       navigator_(navigator) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(auto_update_enabled_ ? IDS_REINSTALL_APP
+                                                     : IDS_REENABLE_UPDATES));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::OUTDATED_UPGRADE);
 }

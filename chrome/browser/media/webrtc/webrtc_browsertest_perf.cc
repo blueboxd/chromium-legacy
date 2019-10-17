@@ -9,7 +9,106 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
+
+namespace {
+
+constexpr char kMetricPrefixAudioReceive[] = "WebRtcAudioReceive.";
+constexpr char kMetricPrefixAudioSend[] = "WebRtcAudioSend.";
+constexpr char kMetricPrefixVideoSend[] = "WebRtcVideoSend.";
+constexpr char kMetricPrefixVideoRecieve[] = "WebRtcVideoReceive.";
+constexpr char kMetricPrefixBwe[] = "WebRtcBwe.";
+constexpr char kMetricPacketsLostFrames[] = "packets_lost";
+constexpr char kMetricGoogJitterRecvMs[] = "goog_jitter_recv";
+constexpr char kMetricGoogExpandRatePercent[] = "goog_expand_rate";
+constexpr char kMetricGoogSpeechExpandRatePercent[] = "goog_speech_expand_rate";
+constexpr char kMetricGoogSecondaryDecodeRatePercent[] =
+    "goog_secondary_decode_rate";
+constexpr char kMetricGoogRttMs[] = "goog_rtt";
+constexpr char kMetricPacketsPerSecondPackets[] = "packets_per_second";
+constexpr char kMetricGoogFpsSentFps[] = "goog_frame_rate_sent";
+constexpr char kMetricGoogFpsInputFps[] = "goog_frame_rate_input";
+constexpr char kMetricGoogFirsReceivedUnitless[] = "goog_firs_recv";
+constexpr char kMetricGoogNacksReceivedUnitless[] = "goog_nacks_recv";
+constexpr char kMetricGoogFrameWidthCount[] = "goog_frame_width";
+constexpr char kMetricGoogFrameHeightCount[] = "goog_frame_height";
+constexpr char kMetricGoogAvgEncodeMs[] = "goog_avg_encode";
+constexpr char kMetricGoogEncodeCpuUsagePercent[] = "goog_encode_cpu_usage";
+constexpr char kMetricGoogFpsRecvFps[] = "goog_frame_rate_recv";
+constexpr char kMetricGoogFpsOutputFps[] = "goog_frame_rate_output";
+constexpr char kMetricGoogActualDelayMs[] = "goog_actual_delay";
+constexpr char kMetricGoogTargetDelayMs[] = "goog_target_delay";
+constexpr char kMetricGoogDecodeTimeMs[] = "goog_decode_time";
+constexpr char kMetricGoogMaxDecodeTimeMs[] = "goog_max_decode_time";
+constexpr char kMetricGoogJitterBufferMs[] = "goog_jitter_buffer";
+constexpr char kMetricGoogRenderDelayMs[] = "goog_render_delay";
+constexpr char kMetricAvailableSendBandwidthBitsPerS[] = "available_send_bw";
+constexpr char kMetricAvailableRecvBandwidthBitsPerS[] = "available_recv_bw";
+constexpr char kMetricTargetEncodeBitrateBitsPerS[] = "target_encode_bitrate";
+constexpr char kMetricActualEncodeBitrateBitsPerS[] = "actual_encode_bitrate";
+constexpr char kMetricTransmitBitrateBitsPerS[] = "transmit_bitrate";
+
+perf_test::PerfResultReporter SetUpAudioReceiveReporter(
+    const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixAudioReceive, story);
+  reporter.RegisterFyiMetric(kMetricPacketsLostFrames, "frames");
+  reporter.RegisterFyiMetric(kMetricGoogJitterRecvMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogExpandRatePercent, "%");
+  reporter.RegisterFyiMetric(kMetricGoogSpeechExpandRatePercent, "%");
+  reporter.RegisterFyiMetric(kMetricGoogSecondaryDecodeRatePercent, "%");
+  return reporter;
+}
+
+perf_test::PerfResultReporter SetUpAudioSendReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixAudioSend, story);
+  reporter.RegisterFyiMetric(kMetricGoogJitterRecvMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogRttMs, "ms");
+  reporter.RegisterFyiMetric(kMetricPacketsPerSecondPackets, "packets");
+  return reporter;
+}
+
+perf_test::PerfResultReporter SetUpVideoSendReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixVideoSend, story);
+  reporter.RegisterFyiMetric(kMetricGoogFpsSentFps, "fps");
+  reporter.RegisterFyiMetric(kMetricGoogFpsInputFps, "fps");
+  reporter.RegisterFyiMetric(kMetricGoogFirsReceivedUnitless, "unitless");
+  reporter.RegisterFyiMetric(kMetricGoogNacksReceivedUnitless, "unitless");
+  reporter.RegisterFyiMetric(kMetricGoogFrameWidthCount, "count");
+  reporter.RegisterFyiMetric(kMetricGoogFrameHeightCount, "count");
+  reporter.RegisterFyiMetric(kMetricGoogAvgEncodeMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogRttMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogEncodeCpuUsagePercent, "%");
+  return reporter;
+}
+
+perf_test::PerfResultReporter SetUpVideoReceiveReporter(
+    const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixVideoRecieve, story);
+  reporter.RegisterFyiMetric(kMetricGoogFpsRecvFps, "fps");
+  reporter.RegisterFyiMetric(kMetricGoogFpsOutputFps, "fps");
+  reporter.RegisterFyiMetric(kMetricPacketsLostFrames, "frames");
+  reporter.RegisterFyiMetric(kMetricGoogFrameWidthCount, "count");
+  reporter.RegisterFyiMetric(kMetricGoogFrameHeightCount, "count");
+  reporter.RegisterFyiMetric(kMetricGoogActualDelayMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogTargetDelayMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogDecodeTimeMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogMaxDecodeTimeMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogJitterBufferMs, "ms");
+  reporter.RegisterFyiMetric(kMetricGoogRenderDelayMs, "ms");
+  return reporter;
+}
+
+perf_test::PerfResultReporter SetUpBweReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixBwe, story);
+  reporter.RegisterFyiMetric(kMetricAvailableSendBandwidthBitsPerS, "bits/s");
+  reporter.RegisterFyiMetric(kMetricAvailableRecvBandwidthBitsPerS, "bits/s");
+  reporter.RegisterFyiMetric(kMetricTargetEncodeBitrateBitsPerS, "bits/s");
+  reporter.RegisterFyiMetric(kMetricActualEncodeBitrateBitsPerS, "bits/s");
+  reporter.RegisterFyiMetric(kMetricTransmitBitrateBitsPerS, "bits/s");
+  return reporter;
+}
+
+}  // namespace
 
 static std::string Statistic(const std::string& statistic,
                              const std::string& bucket) {
@@ -23,59 +122,53 @@ static std::string Statistic(const std::string& statistic,
 }
 
 static void MaybePrintResultsForAudioReceive(
-    const std::string& ssrc, const base::DictionaryValue& pc_dict,
-    const std::string& modifier) {
+    const std::string& ssrc,
+    const base::DictionaryValue& pc_dict,
+    const std::string& story) {
   std::string value;
   if (!pc_dict.GetString(Statistic("audioOutputLevel", ssrc), &value)) {
     // Not an audio receive stream.
     return;
   }
 
+  auto reporter = SetUpAudioReceiveReporter(story);
   EXPECT_TRUE(pc_dict.GetString(Statistic("packetsLost", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_misc", modifier, "packets_lost", value, "frames", false);
+  reporter.AddResult(kMetricPacketsLostFrames, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterReceived", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_rx", modifier, "goog_jitter_recv", value, "ms", false);
+  reporter.AddResult(kMetricGoogJitterRecvMs, value);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("googExpandRate", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_rates", modifier, "goog_expand_rate", value, "%", false);
+  reporter.AddResult(kMetricGoogExpandRatePercent, value);
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googSpeechExpandRate", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_rates", modifier, "goog_speech_expand_rate", value, "%", false);
+  reporter.AddResult(kMetricGoogSpeechExpandRatePercent, value);
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googSecondaryDecodedRate", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_rates", modifier, "goog_secondary_decoded_rate", value, "%",
-      false);
+  reporter.AddResult(kMetricGoogSecondaryDecodeRatePercent, value);
 }
 
-static void MaybePrintResultsForAudioSend(
-    const std::string& ssrc, const base::DictionaryValue& pc_dict,
-    const std::string& modifier) {
+static void MaybePrintResultsForAudioSend(const std::string& ssrc,
+                                          const base::DictionaryValue& pc_dict,
+                                          const std::string& story) {
   std::string value;
   if (!pc_dict.GetString(Statistic("audioInputLevel", ssrc), &value)) {
     // Not an audio send stream.
     return;
   }
 
+  auto reporter = SetUpAudioSendReporter(story);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterReceived", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_tx", modifier, "goog_jitter_recv", value, "ms", false);
+  reporter.AddResult(kMetricGoogJitterRecvMs, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_tx", modifier, "goog_rtt", value, "ms", false);
+  reporter.AddResult(kMetricGoogRttMs, value);
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("packetsSentPerSecond", ssrc), &value));
-  perf_test::PrintResult("audio_tx", modifier, "packets_sent_per_second", value,
-                         "packets", false);
+  reporter.AddResult(kMetricPacketsPerSecondPackets, value);
 }
 
-static void MaybePrintResultsForVideoSend(
-    const std::string& ssrc, const base::DictionaryValue& pc_dict,
-    const std::string& modifier) {
+static void MaybePrintResultsForVideoSend(const std::string& ssrc,
+                                          const base::DictionaryValue& pc_dict,
+                                          const std::string& story) {
   std::string value;
   if (!pc_dict.GetString(Statistic("googFrameRateSent", ssrc), &value)) {
     // Not a video send stream.
@@ -85,86 +178,70 @@ static void MaybePrintResultsForVideoSend(
   // Graph these by unit: the dashboard expects all stats in one graph to have
   // the same unit (e.g. ms, fps, etc). Most graphs, like video_fps, will also
   // be populated by the counterparts on the video receiving side.
-  perf_test::PrintResult(
-      "video_fps", modifier, "goog_frame_rate_sent", value, "fps", false);
+  auto reporter = SetUpVideoSendReporter(story);
+  reporter.AddResult(kMetricGoogFpsSentFps, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googFrameRateInput", ssrc), &value));
-  perf_test::PrintResult(
-      "video_fps", modifier, "goog_frame_rate_input", value, "fps", false);
+  reporter.AddResult(kMetricGoogFpsInputFps, value);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("googFirsReceived", ssrc), &value));
-  perf_test::PrintResult(
-      "video_misc", modifier, "goog_firs_recv", value, "", false);
+  reporter.AddResult(kMetricGoogFirsReceivedUnitless, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googNacksReceived", ssrc), &value));
-  perf_test::PrintResult(
-      "video_misc", modifier, "goog_nacks_recv", value, "", false);
+  reporter.AddResult(kMetricGoogNacksReceivedUnitless, value);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("googFrameWidthSent", ssrc), &value));
-  perf_test::PrintResult("video_resolution", modifier, "goog_frame_width_sent",
-                         value, "pixels", false);
+  reporter.AddResult(kMetricGoogFrameWidthCount, value);
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googFrameHeightSent", ssrc), &value));
-  perf_test::PrintResult("video_resolution", modifier, "goog_frame_height_sent",
-                         value, "pixels", false);
+  reporter.AddResult(kMetricGoogFrameHeightCount, value);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("googAvgEncodeMs", ssrc), &value));
-  perf_test::PrintResult(
-      "video_tx", modifier, "goog_avg_encode_ms", value, "ms", false);
+  reporter.AddResult(kMetricGoogAvgEncodeMs, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
-  perf_test::PrintResult("video_tx", modifier, "goog_rtt", value, "ms", false);
+  reporter.AddResult(kMetricGoogRttMs, value);
 
   EXPECT_TRUE(pc_dict.GetString(
       Statistic("googEncodeUsagePercent", ssrc), &value));
-  perf_test::PrintResult("video_cpu_usage", modifier,
-                         "goog_encode_usage_percent", value, "%", false);
+  reporter.AddResult(kMetricGoogEncodeCpuUsagePercent, value);
 }
 
 static void MaybePrintResultsForVideoReceive(
-    const std::string& ssrc, const base::DictionaryValue& pc_dict,
-    const std::string& modifier) {
+    const std::string& ssrc,
+    const base::DictionaryValue& pc_dict,
+    const std::string& story) {
   std::string value;
   if (!pc_dict.GetString(Statistic("googFrameRateReceived", ssrc), &value)) {
     // Not a video receive stream.
     return;
   }
 
-  perf_test::PrintResult(
-      "video_fps", modifier, "goog_frame_rate_recv", value, "fps", false);
+  auto reporter = SetUpVideoReceiveReporter(story);
+  reporter.AddResult(kMetricGoogFpsRecvFps, value);
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googFrameRateOutput", ssrc), &value));
-  perf_test::PrintResult(
-      "video_fps", modifier, "goog_frame_rate_output", value, "fps", false);
+  reporter.AddResult(kMetricGoogFpsOutputFps, value);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("packetsLost", ssrc), &value));
-  perf_test::PrintResult("video_misc", modifier, "packets_lost", value,
-                         "frames", false);
+  reporter.AddResult(kMetricPacketsLostFrames, value);
 
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googFrameWidthReceived", ssrc), &value));
-  perf_test::PrintResult("video_resolution", modifier, "goog_frame_width_recv",
-                         value, "pixels", false);
+  reporter.AddResult(kMetricGoogFrameWidthCount, value);
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googFrameHeightReceived", ssrc), &value));
-  perf_test::PrintResult("video_resolution", modifier, "goog_frame_height_recv",
-                         value, "pixels", false);
+  reporter.AddResult(kMetricGoogFrameHeightCount, value);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("googCurrentDelayMs", ssrc), &value));
-  perf_test::PrintResult(
-      "video_rx", modifier, "goog_current_delay_ms", value, "ms", false);
+  reporter.AddResult(kMetricGoogActualDelayMs, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googTargetDelayMs", ssrc), &value));
-  perf_test::PrintResult(
-      "video_rx", modifier, "goog_target_delay_ms", value, "ms", false);
+  reporter.AddResult(kMetricGoogTargetDelayMs, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googDecodeMs", ssrc), &value));
-  perf_test::PrintResult("video_rx", modifier, "goog_decode_ms", value, "ms",
-                         false);
+  reporter.AddResult(kMetricGoogDecodeTimeMs, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googMaxDecodeMs", ssrc), &value));
-  perf_test::PrintResult(
-      "video_rx", modifier, "goog_max_decode_ms", value, "ms", false);
+  reporter.AddResult(kMetricGoogMaxDecodeTimeMs, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterBufferMs", ssrc), &value));
-  perf_test::PrintResult(
-      "video_rx", modifier, "goog_jitter_buffer_ms", value, "ms", false);
+  reporter.AddResult(kMetricGoogJitterBufferMs, value);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRenderDelayMs", ssrc), &value));
-  perf_test::PrintResult(
-      "video_rx", modifier, "goog_render_delay_ms", value, "ms", false);
+  reporter.AddResult(kMetricGoogRenderDelayMs, value);
 }
 
 static std::string ExtractSsrcIdentifier(const std::string& key) {
@@ -195,30 +272,26 @@ namespace test {
 void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict,
                              const std::string& modifier,
                              const std::string& video_codec) {
-  std::string video_modifier =
-      video_codec.empty() ? modifier : modifier + "_" + video_codec;
+  std::string story = video_codec.empty() ? "baseline_story" : video_codec;
+  story += modifier;
   const std::string kBweStatsKey = "bweforvideo";
   std::string value;
+  auto reporter = SetUpBweReporter(story);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googAvailableSendBandwidth", kBweStatsKey), &value));
-  perf_test::PrintResult("bwe_stats", video_modifier, "available_send_bw",
-                         value, "bit/s", false);
+  reporter.AddResult(kMetricAvailableSendBandwidthBitsPerS, value);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googAvailableReceiveBandwidth", kBweStatsKey), &value));
-  perf_test::PrintResult("bwe_stats", video_modifier, "available_recv_bw",
-                         value, "bit/s", false);
+  reporter.AddResult(kMetricAvailableRecvBandwidthBitsPerS, value);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googTargetEncBitrate", kBweStatsKey), &value));
-  perf_test::PrintResult("bwe_stats", video_modifier, "target_enc_bitrate",
-                         value, "bit/s", false);
+  reporter.AddResult(kMetricTargetEncodeBitrateBitsPerS, value);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googActualEncBitrate", kBweStatsKey), &value));
-  perf_test::PrintResult("bwe_stats", video_modifier, "actual_enc_bitrate",
-                         value, "bit/s", false);
+  reporter.AddResult(kMetricActualEncodeBitrateBitsPerS, value);
   ASSERT_TRUE(pc_dict.GetString(
       Statistic("googTransmitBitrate", kBweStatsKey), &value));
-  perf_test::PrintResult("bwe_stats", video_modifier, "transmit_bitrate", value,
-                         "bit/s", false);
+  reporter.AddResult(kMetricTransmitBitrateBitsPerS, value);
 }
 
 void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
@@ -231,8 +304,8 @@ void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
 void PrintMetricsForSendStreams(const base::DictionaryValue& pc_dict,
                                 const std::string& modifier,
                                 const std::string& video_codec) {
-  std::string video_modifier =
-      video_codec.empty() ? modifier : modifier + "_" + video_codec;
+  std::string story = video_codec.empty() ? "baseline_story" : video_codec;
+  story += modifier;
   const base::DictionaryValue* stats_dict;
   ASSERT_TRUE(pc_dict.GetDictionary("stats", &stats_dict));
   std::set<std::string> ssrc_identifiers = FindAllSsrcIdentifiers(*stats_dict);
@@ -240,16 +313,16 @@ void PrintMetricsForSendStreams(const base::DictionaryValue& pc_dict,
   auto ssrc_iterator = ssrc_identifiers.begin();
   for (; ssrc_iterator != ssrc_identifiers.end(); ++ssrc_iterator) {
     const std::string& ssrc = *ssrc_iterator;
-    MaybePrintResultsForAudioSend(ssrc, pc_dict, modifier);
-    MaybePrintResultsForVideoSend(ssrc, pc_dict, video_modifier);
+    MaybePrintResultsForAudioSend(ssrc, pc_dict, story);
+    MaybePrintResultsForVideoSend(ssrc, pc_dict, story);
   }
 }
 
 void PrintMetricsForRecvStreams(const base::DictionaryValue& pc_dict,
                                 const std::string& modifier,
                                 const std::string& video_codec) {
-  std::string video_modifier =
-      video_codec.empty() ? modifier : modifier + "_" + video_codec;
+  std::string story = video_codec.empty() ? "baseline_story" : video_codec;
+  story += modifier;
   const base::DictionaryValue* stats_dict;
   ASSERT_TRUE(pc_dict.GetDictionary("stats", &stats_dict));
   std::set<std::string> ssrc_identifiers = FindAllSsrcIdentifiers(*stats_dict);
@@ -257,8 +330,8 @@ void PrintMetricsForRecvStreams(const base::DictionaryValue& pc_dict,
   auto ssrc_iterator = ssrc_identifiers.begin();
   for (; ssrc_iterator != ssrc_identifiers.end(); ++ssrc_iterator) {
     const std::string& ssrc = *ssrc_iterator;
-    MaybePrintResultsForAudioReceive(ssrc, pc_dict, modifier);
-    MaybePrintResultsForVideoReceive(ssrc, pc_dict, video_modifier);
+    MaybePrintResultsForAudioReceive(ssrc, pc_dict, story);
+    MaybePrintResultsForVideoReceive(ssrc, pc_dict, story);
   }
 }
 

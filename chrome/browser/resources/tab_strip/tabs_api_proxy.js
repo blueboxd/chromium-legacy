@@ -85,15 +85,6 @@ export class TabsApiProxy {
   trackThumbnailForTab(tabId) {
     chrome.send('addTrackedTab', [tabId]);
   }
-
-  /**
-   * @param {number} tabId
-   * @param {number} locationX
-   * @param {number} locationY
-   */
-  showTabContextMenu(tabId, locationX, locationY) {
-    chrome.send('showTabContextMenu', [tabId, locationX, locationY]);
-  }
 }
 
 addSingletonGetter(TabsApiProxy);

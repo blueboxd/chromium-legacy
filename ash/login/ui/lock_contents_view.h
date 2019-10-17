@@ -247,6 +247,9 @@ class ASH_EXPORT LockContentsView
                             int portrait_dist,
                             bool landscape);
 
+  // Set |spacing_middle| for media controls.
+  void SetMediaControlsSpacing(bool landscape);
+
   // 1-2 users.
   void CreateLowDensityLayout(const std::vector<LoginUserInfo>& users);
   // 3-6 users.

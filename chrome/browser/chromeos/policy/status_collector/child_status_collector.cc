@@ -38,8 +38,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -53,8 +51,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -136,10 +132,7 @@ ChildStatusCollector::ChildStatusCollector(
     chromeos::system::StatisticsProvider* provider,
     const AndroidStatusFetcher& android_status_fetcher,
     TimeDelta activity_day_start)
-    : StatusCollector(provider,
-                      chromeos::CrosSettings::Get(),
-                      chromeos::PowerManagerClient::Get(),
-                      session_manager::SessionManager::Get()),
+    : StatusCollector(provider, chromeos::CrosSettings::Get()),
       pref_service_(pref_service),
       android_status_fetcher_(android_status_fetcher) {
   // protected fields of `StatusCollector`.
@@ -167,12 +160,7 @@ ChildStatusCollector::ChildStatusCollector(
       chromeos::kReportDeviceBootMode, callback);
 
   // Watch for changes on the device state to calculate the child's active time.
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
-    chromeos::UsageTimeStateNotifier::GetInstance()->AddObserver(this);
-  } else {
-    power_manager_->AddObserver(this);
-    session_manager_->AddObserver(this);
-  }
+  chromeos::UsageTimeStateNotifier::GetInstance()->AddObserver(this);
 
   // Fetch the current values of the policies.
   UpdateReportingSettings();
@@ -193,12 +181,7 @@ ChildStatusCollector::ChildStatusCollector(
 }
 
 ChildStatusCollector::~ChildStatusCollector() {
-  if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
-    chromeos::UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
-  } else {
-    power_manager_->RemoveObserver(this);
-    session_manager_->RemoveObserver(this);
-  }
+  chromeos::UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
 }
 
 TimeDelta ChildStatusCollector::GetActiveChildScreenTime() {
@@ -231,50 +214,11 @@ void ChildStatusCollector::UpdateReportingSettings() {
                              &report_boot_mode_);
 }
 
-void ChildStatusCollector::OnSessionStateChanged() {
-  UpdateChildUsageTime();
-  last_state_active_ =
-      session_manager::SessionManager::Get()->session_state() ==
-      session_manager::SessionState::ACTIVE;
-}
-
 void ChildStatusCollector::OnUsageTimeStateChange(
     chromeos::UsageTimeStateNotifier::UsageTimeState state) {
-  DCHECK(base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier));
-
   UpdateChildUsageTime();
   last_state_active_ =
       state == chromeos::UsageTimeStateNotifier::UsageTimeState::ACTIVE;
-}
-
-void ChildStatusCollector::ScreenIdleStateChanged(
-    const power_manager::ScreenIdleState& state) {
-  DCHECK(!base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier));
-
-  UpdateChildUsageTime();
-  // It is active if screen is on and if the session is also active.
-  last_state_active_ =
-      !state.off() && session_manager_->session_state() ==
-                          session_manager::SessionState::ACTIVE;
-}
-
-void ChildStatusCollector::SuspendImminent(
-    power_manager::SuspendImminent::Reason reason) {
-  DCHECK(!base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier));
-
-  UpdateChildUsageTime();
-  // Device is going to be suspended, so it won't be active.
-  last_state_active_ = false;
-}
-
-void ChildStatusCollector::SuspendDone(const base::TimeDelta& sleep_duration) {
-  DCHECK(!base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier));
-
-  UpdateChildUsageTime();
-  // Device is returning from suspension, so it is considered active if the
-  // session is also active.
-  last_state_active_ = session_manager_->session_state() ==
-                       session_manager::SessionState::ACTIVE;
 }
 
 void ChildStatusCollector::UpdateChildUsageTime() {

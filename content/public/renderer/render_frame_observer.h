@@ -76,6 +76,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Each navigation starts with a DidStartNavigation call. Then it may be
   // followed by a ReadyToCommitNavigation (if the navigation has succeeded),
   // and should always end with a DidFinishNavigation.
+  // TODO(dgozman): ReadyToCommitNavigation will be removed soon.
   //
   // Unfortunately, this is currently a mess. For example, some started
   // navigations which did not commit won't receive any further notifications.
@@ -94,8 +95,11 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) {}
 
-  // Called when a navigation is about to be committed and |document_loader|
+  // Called when a navigation has just committed and |document_loader|
   // will start loading a new document in the RenderFrame.
+  // TODO(dgozman): the name does not match functionality anymore, we should
+  // merge this with DidCommitProvisionalLoad, which will become
+  // DidFinishNavigation.
   virtual void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) {}
 

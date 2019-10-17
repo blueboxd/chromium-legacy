@@ -1008,10 +1008,13 @@ void AutofillManager::OnFocusNoLongerOnForm() {
 #if defined(OS_CHROMEOS)
   // There is no way of determining whether ChromeVox is in use, so assume it's
   // being used.
-  external_delegate_->OnAutofillAvailabilityEvent(false);
+  external_delegate_->OnAutofillAvailabilityEvent(
+      mojom::AutofillState::kNoSuggestions);
 #else
-  if (external_delegate_->HasActiveScreenReader())
-    external_delegate_->OnAutofillAvailabilityEvent(false);
+  if (external_delegate_->HasActiveScreenReader()) {
+    external_delegate_->OnAutofillAvailabilityEvent(
+        mojom::AutofillState::kNoSuggestions);
+  }
 #endif
 }
 
@@ -1033,8 +1036,10 @@ void AutofillManager::OnFocusOnFormFieldImpl(const FormData& form,
   GetAvailableSuggestions(form, field, &suggestions, &context);
 
   external_delegate_->OnAutofillAvailabilityEvent(
-      context.suppress_reason == SuppressReason::kNotSuppressed &&
-      !suggestions.empty());
+      (context.suppress_reason == SuppressReason::kNotSuppressed &&
+       !suggestions.empty())
+          ? mojom::AutofillState::kAutofillAvailable
+          : mojom::AutofillState::kNoSuggestions);
 }
 
 void AutofillManager::OnSelectControlDidChangeImpl(
@@ -1370,6 +1375,9 @@ void AutofillManager::OnSuggestionsReturned(
     int query_id,
     bool autoselect_first_suggestion,
     const std::vector<Suggestion>& suggestions) {
+  external_delegate_->OnAutofillAvailabilityEvent(
+      !suggestions.empty() ? mojom::AutofillState::kAutocompleteAvailable
+                           : mojom::AutofillState::kNoSuggestions);
   external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                             autoselect_first_suggestion);
 }

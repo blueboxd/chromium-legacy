@@ -759,7 +759,7 @@ TEST_F(HistoryURLProviderTest, AutocompleteOnTrailingWhitespace) {
 
   auto TestAutocompletion =
       [this](std::string input_text, bool input_prevent_inline_autocomplete,
-             std::vector<AutocompletionExpectation> expectations) {
+             const std::vector<AutocompletionExpectation>& expectations) {
         const std::string debug = base::StringPrintf(
             "input text [%s], prevent inline [%d]", input_text.c_str(),
             input_prevent_inline_autocomplete);

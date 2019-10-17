@@ -100,7 +100,7 @@ def InitWidthRelatedLineMatchers():
 # This pattern is used to find shared library offset in APK.
 # Example:
 #    (offset 0x568000)
-_SHARED_LIB_OFFSET_IN_APK = re.compile(' \(offset 0x(?P<offset>[0-9a-f]{0,16})\)$')
+_SHARED_LIB_OFFSET_IN_APK = re.compile(' \(offset 0x(?P<offset>[0-9a-f]{0,16})\)')
 
 def PrintTraceLines(trace_lines):
   """Print back trace."""

@@ -148,10 +148,10 @@
       Headers and footers
     </message>
     <message name="IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAGE" desc="Dropdown option shown in print preview page to auto fit the PDF page to the paper's printable area.">
-      Fit to page
+      Fit to printable area
     </message>
     <message name="IDS_PRINT_PREVIEW_OPTION_FIT_TO_PAPER" desc="Dropdown option shown in print preview page to auto fit the PDF page to the paper size.">
-      Fit to paper size
+      Fit to paper
     </message>
     <message name="IDS_PRINT_PREVIEW_OPTION_BACKGROUND_COLORS_AND_IMAGES" desc="Checkbox label shown in print preview page to print webpage backgrounds.">
       Background graphics

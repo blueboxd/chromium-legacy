@@ -55,7 +55,6 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;

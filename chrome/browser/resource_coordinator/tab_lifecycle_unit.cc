@@ -17,7 +17,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
@@ -1027,22 +1026,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CanFreezeHeuristicsChecks(
         DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
   }
 
-  // Apply intervention database opt-in/opt-out (policy is per origin).
-  auto intervention_policy =
-      GetTabSource()->intervention_policy_database()->GetFreezingPolicy(
-          url::Origin::Create(web_contents()->GetLastCommittedURL()));
-
-  switch (intervention_policy) {
-    case OriginInterventions::OPT_IN:
-      decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
-      break;
-    case OriginInterventions::OPT_OUT:
-      decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
-      break;
-    case OriginInterventions::DEFAULT:
-      break;
-  }
-
   // Apply origin trial opt-in/opt-out (policy is per page).
   switch (origin_trial_freeze_policy_) {
     case performance_manager::mojom::InterventionPolicy::kUnknown:
@@ -1069,21 +1052,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::
   if (!GetTabSource()->tab_lifecycles_enterprise_policy()) {
     decision_details->AddReason(
         DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
-  }
-
-  auto intervention_policy =
-      GetTabSource()->intervention_policy_database()->GetDiscardingPolicy(
-          url::Origin::Create(web_contents()->GetLastCommittedURL()));
-
-  switch (intervention_policy) {
-    case OriginInterventions::OPT_IN:
-      decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
-      break;
-    case OriginInterventions::OPT_OUT:
-      decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
-      break;
-    case OriginInterventions::DEFAULT:
-      break;
   }
 }
 

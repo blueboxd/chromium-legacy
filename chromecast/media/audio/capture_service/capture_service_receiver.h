@@ -31,10 +31,6 @@ class CaptureServiceReceiver {
   static constexpr base::TimeDelta kConnectTimeout =
       base::TimeDelta::FromSeconds(1);
 
-  // The timeout for a connected socket to disconnect due to inactivity.
-  static constexpr base::TimeDelta kInactivityTimeout =
-      base::TimeDelta::FromSeconds(5);
-
   explicit CaptureServiceReceiver(const ::media::AudioParameters& audio_params);
   ~CaptureServiceReceiver();
 

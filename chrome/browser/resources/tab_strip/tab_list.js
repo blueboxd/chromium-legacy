@@ -9,7 +9,7 @@ import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 
 import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
-import {TabStripViewProxy} from './tab_strip_view_proxy.js';
+import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {TabData, TabsApiProxy} from './tabs_api_proxy.js';
 
 /**
@@ -59,8 +59,8 @@ class TabListElement extends CustomElement {
     /** @private {!Element} */
     this.scrollingParent_ = document.documentElement;
 
-    /** @private {!TabStripViewProxy} */
-    this.tabStripViewProxy_ = TabStripViewProxy.getInstance();
+    /** @private {!TabStripEmbedderProxy} */
+    this.tabStripEmbedderProxy_ = TabStripEmbedderProxy.getInstance();
 
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxy.getInstance();
@@ -71,7 +71,7 @@ class TabListElement extends CustomElement {
             this.shadowRoot.querySelector('#tabsContainer'));
 
     addWebUIListener('theme-changed', () => this.fetchAndUpdateColors_());
-    this.tabStripViewProxy_.observeThemeChanges();
+    this.tabStripEmbedderProxy_.observeThemeChanges();
 
     addWebUIListener(
         'tab-thumbnail-updated', this.tabThumbnailUpdated_.bind(this));
@@ -133,7 +133,7 @@ class TabListElement extends CustomElement {
 
   /** @private */
   fetchAndUpdateColors_() {
-    this.tabStripViewProxy_.getColors().then(colors => {
+    this.tabStripEmbedderProxy_.getColors().then(colors => {
       for (const [cssVariable, rgbaValue] of Object.entries(colors)) {
         this.style.setProperty(cssVariable, rgbaValue);
       }
@@ -178,7 +178,7 @@ class TabListElement extends CustomElement {
       return;
     }
 
-    if (!this.tabStripViewProxy_.isVisible() && !activeTab.tab.pinned &&
+    if (!this.tabStripEmbedderProxy_.isVisible() && !activeTab.tab.pinned &&
         this.tabsContainerElement_.firstChild !== activeTab) {
       this.tabsApi_.moveTab(
           activeTab.tab.id, this.pinnedTabsContainerElement_.childElementCount);

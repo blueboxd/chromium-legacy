@@ -1881,14 +1881,14 @@ ash::AppListViewState AppListView::CalculateStateAfterShelfDrag(
   ash::AppListViewState app_list_state = ash::AppListViewState::kPeeking;
   if (event_in_screen.type() == ui::ET_SCROLL_FLING_START &&
       fabs(event_in_screen.AsGestureEvent()->details().velocity_y()) >
-          kDragVelocityThreshold) {
+          kDragVelocityFromShelfThreshold) {
     // If the scroll sequence terminates with a fling, show the fullscreen app
     // list if the fling was fast enough and in the correct direction, otherwise
-    // close it.
+    // go to peeking.
     app_list_state =
         event_in_screen.AsGestureEvent()->details().velocity_y() < 0
             ? ash::AppListViewState::kFullscreenAllApps
-            : ash::AppListViewState::kClosed;
+            : ash::AppListViewState::kPeeking;
   } else {
     // Snap the app list to corresponding state according to the snapping
     // thresholds.

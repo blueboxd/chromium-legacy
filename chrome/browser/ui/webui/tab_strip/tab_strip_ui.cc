@@ -205,6 +205,9 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
         "removeTrackedTab", base::Bind(&TabStripUIHandler::RemoveTrackedTab,
                                        base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
+        "closeContainer", base::Bind(&TabStripUIHandler::HandleCloseContainer,
+                                     base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
         "showTabContextMenu",
         base::Bind(&TabStripUIHandler::HandleShowTabContextMenu,
                    base::Unretained(this)));
@@ -304,6 +307,11 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                              ui::NativeTheme::kColorId_ProminentButtonColor)));
 
     ResolveJavascriptCallback(callback_id, colors);
+  }
+
+  void HandleCloseContainer(const base::ListValue* args) {
+    DCHECK(embedder_);
+    embedder_->CloseContainer();
   }
 
   void HandleShowTabContextMenu(const base::ListValue* args) {

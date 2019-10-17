@@ -973,10 +973,10 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
   state_changed_ = window_state->GetStateType() != pending_window_state_;
   if (!state_changed_) {
     // Animate PIP window movement unless it is being dragged.
-    if (window_state->IsPip() && !window_state->is_dragged()) {
-      client_controlled_state_->set_next_bounds_change_animation_type(
-          ash::ClientControlledState::kAnimationAnimated);
-    }
+    client_controlled_state_->set_next_bounds_change_animation_type(
+        window_state->IsPip() && !window_state->is_dragged()
+            ? ash::ClientControlledState::kAnimationAnimated
+            : ash::ClientControlledState::kAnimationNone);
     return true;
   }
 

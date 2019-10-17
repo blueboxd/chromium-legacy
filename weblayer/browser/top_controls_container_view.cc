@@ -20,12 +20,15 @@ using base::android::AttachCurrentThread;
 namespace weblayer {
 
 TopControlsContainerView::TopControlsContainerView(
+    const base::android::JavaParamRef<jobject>&
+        java_top_controls_container_view,
     content::WebContents* web_contents,
     ContentViewRenderView* content_view_render_view)
-    : content_view_render_view_(content_view_render_view),
-      web_contents_(web_contents) {
+    : java_top_controls_container_view_(java_top_controls_container_view),
+      content_view_render_view_(content_view_render_view) {
   DCHECK(content_view_render_view_);
-  DCHECK(web_contents_);
+  DCHECK(web_contents);
+  Observe(web_contents);
 }
 
 TopControlsContainerView::~TopControlsContainerView() = default;
@@ -70,7 +73,7 @@ void TopControlsContainerView::SetTopControlsOffset(
     int top_content_offset_y) {
   DCHECK(top_controls_layer_);
   top_controls_layer_->SetPosition(gfx::PointF(0, top_controls_offset_y));
-  web_contents_->GetNativeView()->GetLayer()->SetPosition(
+  web_contents()->GetNativeView()->GetLayer()->SetPosition(
       gfx::PointF(0, top_content_offset_y));
 }
 
@@ -96,11 +99,22 @@ void TopControlsContainerView::UpdateTopControlsResource(
       top_controls_resource->ui_resource()->id());
 }
 
+void TopControlsContainerView::DidToggleFullscreenModeForTab(
+    bool entered_fullscreen,
+    bool will_cause_resize) {
+  Java_TopControlsContainerView_didToggleFullscreenModeForTab(
+      AttachCurrentThread(), java_top_controls_container_view_,
+      entered_fullscreen);
+}
+
 static jlong JNI_TopControlsContainerView_CreateTopControlsContainerView(
     JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&
+        java_top_controls_container_view,
     const base::android::JavaParamRef<jobject>& web_contents,
     jlong native_content_view_render_view) {
   return reinterpret_cast<jlong>(new TopControlsContainerView(
+      java_top_controls_container_view,
       content::WebContents::FromJavaWebContents(web_contents),
       reinterpret_cast<ContentViewRenderView*>(
           native_content_view_render_view)));

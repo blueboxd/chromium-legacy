@@ -51,7 +51,7 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
     renderer_prefs->can_accept_load_drops = false;
     renderer_prefs->browser_handles_all_top_level_requests =
         params.suppress_navigations;
-    web_contents_->GetRenderViewHost()->SyncRendererPrefs();
+    web_contents_->SyncRendererPrefs();
   }
 
   ~NavigableContentsDelegateImpl() override {

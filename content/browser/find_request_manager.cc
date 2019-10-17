@@ -409,6 +409,11 @@ void FindRequestManager::RemoveFrame(RenderFrameHost* rfh) {
   if (current_session_id_ == kInvalidId || !CheckFrame(rfh))
     return;
 
+  // Make sure to always clear the highlighted selection. It is useful in case
+  // the user goes back to the same page using the BackForwardCache.
+  static_cast<RenderFrameHostImpl*>(rfh)->GetFindInPage()->StopFinding(
+      blink::mojom::StopFindAction::kStopFindActionClearSelection);
+
   // If matches are counted for the frame that is being removed, decrement the
   // match total before erasing that entry.
   auto it = find_in_page_clients_.find(rfh);

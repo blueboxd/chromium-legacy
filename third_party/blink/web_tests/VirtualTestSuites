@@ -1123,5 +1123,10 @@
     "prefix": "out-of-blink-frame-ancestors",
     "base": "external/wpt/content-security-policy/frame-ancestors",
     "args": ["--enable-features=OutOfBlinkFrameAncestors"]
+  },
+  {
+    "prefix": "import-maps-without-builtin-modules",
+    "base": "external/wpt/import-maps",
+    "args": ["--enable-blink-features=ImportMaps", "--disable-blink-features=ExperimentalProductivityFeatures"]
   }
 ]

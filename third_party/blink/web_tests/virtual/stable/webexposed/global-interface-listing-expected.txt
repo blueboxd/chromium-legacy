@@ -8773,6 +8773,7 @@ interface XRFrame
     method getViewerPose
 interface XRInputSource
     attribute @@toStringTag
+    getter gamepad
     getter gripSpace
     getter handedness
     getter profiles

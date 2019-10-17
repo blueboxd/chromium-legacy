@@ -14,6 +14,7 @@
 #include "base/token.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "content/browser/media/media_interface_factory_holder.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
@@ -84,15 +85,6 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
       const base::Token& cdm_guid,
       const std::string& cdm_file_system_id);
 
-  // Gets the MediaService |interface_factory_ptr_|. Returns null if unexpected
-  // error happened.
-  InterfaceFactory* GetMediaInterfaceFactory();
-
-  void ConnectToMediaService();
-
-  // Callback for connection error from |interface_factory_ptr_|.
-  void OnMediaServiceConnectionError();
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Gets a CdmFactory pointer for |key_system|. Returns null if unexpected
   // error happened.
@@ -134,7 +126,16 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // in the service named kMediaServiceName hosted in the process specified by
   // the "mojo_media_host" gn argument. Available options are browser, GPU and
   // utility processes.
-  media::mojom::InterfaceFactoryPtr interface_factory_ptr_;
+  std::unique_ptr<MediaInterfaceFactoryHolder> media_interface_factory_ptr_;
+
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  // InterfacePtr to the remote InterfaceFactory implementation
+  // in the service named kMediaRendererServiceName hosted. It provides the
+  // remote implementation of media::Renderer and
+  // media::ContentDecryptionModule.
+  std::unique_ptr<MediaInterfaceFactoryHolder>
+      media_renderer_interface_factory_ptr_;
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // CDM GUID to CDM InterfaceFactoryPtr mapping, where the InterfaceFactory

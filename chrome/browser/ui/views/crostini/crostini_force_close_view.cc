@@ -65,14 +65,6 @@ bool CrostiniForceCloseView::ShouldShowCloseButton() const {
   return false;
 }
 
-base::string16 CrostiniForceCloseView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_ACCEPT_BUTTON);
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-}
-
 base::string16 CrostiniForceCloseView::GetWindowTitle() const {
   return app_name_.empty()
              ? l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_TITLE_UNKNOWN)
@@ -92,6 +84,10 @@ CrostiniForceCloseView::CrostiniForceCloseView(
     base::OnceClosure force_close_callback)
     : app_name_(base::UTF8ToUTF16(app_name)),
       force_close_callback_(std::move(force_close_callback)) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_ACCEPT_BUTTON));
+
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

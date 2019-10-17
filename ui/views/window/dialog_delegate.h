@@ -73,6 +73,16 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
                                                       gfx::NativeView parent,
                                                       const gfx::Rect& bounds);
 
+  // Called when the DialogDelegate and its frame have finished initializing but
+  // not been shown yet. Override this to perform customizations to the dialog
+  // that need to happen after the dialog's widget, border, buttons, and so on
+  // are ready.
+  //
+  // Overrides of this method should be quite rare - prefer to do dialog
+  // customization before the frame/widget/etc are ready if at all possible, via
+  // other setters on this class.
+  virtual void OnDialogInitialized() {}
+
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: Dialogs with just an OK button are frowned upon.
   virtual int GetDialogButtons() const;
@@ -120,11 +130,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // must remain open.
   virtual bool Close();
 
-  // Updates the properties and appearance of |button| which has been created
-  // for type |type|. Override to do special initialization above and beyond
-  // the typical.
-  virtual void UpdateButton(LabelButton* button, ui::DialogButton type);
-
   // Overridden from WidgetDelegate:
   View* GetInitiallyFocusedView() override;
   DialogDelegate* AsDialogDelegate() override;
@@ -140,6 +145,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // delegate's Window.
   const DialogClientView* GetDialogClientView() const;
   DialogClientView* GetDialogClientView();
+
+  // Helpers for accessing parts of the DialogClientView without needing to know
+  // about DialogClientView. Do not call these before OnDialogInitialized.
+  views::LabelButton* GetOkButton();
+  views::LabelButton* GetCancelButton();
 
   // Add or remove an observer notified by calls to DialogModelChanged().
   void AddObserver(DialogObserver* observer);
@@ -168,6 +178,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   const Params& GetParams() const { return params_; }
 
  private:
+  // Overridden from WidgetDelegate. If you need to hook after widget
+  // initialization, use OnDialogInitialized above.
+  void OnWidgetInitialized() final;
+
   // The margins between the content and the inside of the border.
   // TODO(crbug.com/733040): Most subclasses assume they must set their own
   // margins explicitly, so we set them to 0 here for now to avoid doubled

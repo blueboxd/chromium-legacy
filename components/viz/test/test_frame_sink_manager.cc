@@ -4,6 +4,8 @@
 
 #include "components/viz/test/test_frame_sink_manager.h"
 
+#include <utility>
+
 namespace viz {
 
 TestFrameSinkManagerImpl::TestFrameSinkManagerImpl() = default;
@@ -12,9 +14,9 @@ TestFrameSinkManagerImpl::~TestFrameSinkManagerImpl() = default;
 
 void TestFrameSinkManagerImpl::BindReceiver(
     mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
-    mojom::FrameSinkManagerClientPtr client) {
+    mojo::PendingRemote<mojom::FrameSinkManagerClient> client) {
   receiver_.Bind(std::move(receiver));
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 }
 
 }  // namespace viz

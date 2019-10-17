@@ -464,7 +464,7 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() {
     return gfx::ImageSkia();
 
   if (!identity_manager->HasPrimaryAccount())
-    return ColoredImageForMenu(kSyncPausedCircleIcon, gfx::kGoogleGrey400);
+    return ColoredImageForMenu(kSyncPausedIcon, gfx::kGoogleGrey500);
 
   const gfx::VectorIcon* icon = nullptr;
   ui::NativeTheme::ColorId color_id;
@@ -472,11 +472,11 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() {
   switch (
       sync_ui_util::GetMessagesForAvatarSyncError(profile, &unused, &unused)) {
     case sync_ui_util::NO_SYNC_ERROR:
-      icon = &kSyncCircleIcon;
+      icon = &kSyncIcon;
       color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
       break;
     case sync_ui_util::AUTH_ERROR:
-      icon = &kSyncPausedCircleIcon;
+      icon = &kSyncPausedIcon;
       color_id = ui::NativeTheme::kColorId_ProminentButtonColor;
       break;
     case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
@@ -484,7 +484,7 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() {
     case sync_ui_util::UPGRADE_CLIENT_ERROR:
     case sync_ui_util::PASSPHRASE_ERROR:
     case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
-      icon = &kSyncPausedCircleIcon;
+      icon = &kSyncPausedIcon;
       color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
       break;
   }

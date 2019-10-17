@@ -10,16 +10,14 @@ import {TestSyncConfirmationBrowserProxy} from './test_sync_confirmation_browser
 suite('SigninSyncConfirmationTest', function() {
   let app;
   setup(function() {
+    const browserProxy = new TestSyncConfirmationBrowserProxy();
+    SyncConfirmationBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     app = document.createElement('sync-confirmation-app');
-    let accountImageRequested = false;
-    registerMessageCallback('accountImageRequest', this, function() {
-      accountImageRequested = true;
-    });
     document.body.append(app);
     // Check that the account image is requested when the app element is
     // attached to the document.
-    assertTrue(accountImageRequested);
+    return browserProxy.whenCalled('requestAccountImage');
   });
 
   // Tests that no DCHECKS are thrown during initialization of the UI.

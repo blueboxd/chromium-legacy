@@ -840,9 +840,9 @@ class MockOnPrefChanged {
 
 }  // namespace
 
-TEST(TabLifecylesEnterprisePreferenceMonitor, ObservesChanges) {
+TEST(TabFreezingEnabledPreferenceMonitor, ObservesChanges) {
   TestingPrefServiceSimple pref_service;
-  pref_service.registry()->RegisterBooleanPref(prefs::kTabLifecyclesEnabled,
+  pref_service.registry()->RegisterBooleanPref(prefs::kTabFreezingEnabled,
                                                true);
 
   ::testing::StrictMock<MockOnPrefChanged> obs;
@@ -850,7 +850,7 @@ TEST(TabLifecylesEnterprisePreferenceMonitor, ObservesChanges) {
   // Create a monitor that dispatches to the mock. The constructor should have
   // checked the value and it should return the default.
   EXPECT_CALL(obs, OnPrefChanged(true));
-  TabLifecylesEnterprisePreferenceMonitor monitor(
+  TabFreezingEnabledPreferenceMonitor monitor(
       &pref_service, base::BindRepeating(&MockOnPrefChanged::OnPrefChanged,
                                          base::Unretained(&obs)));
   ::testing::Mock::VerifyAndClear(&obs);
@@ -858,19 +858,19 @@ TEST(TabLifecylesEnterprisePreferenceMonitor, ObservesChanges) {
   // Set the preference in an unmanaged way to false. The preference should
   // still be true.
   EXPECT_CALL(obs, OnPrefChanged(true));
-  pref_service.SetUserPref(prefs::kTabLifecyclesEnabled,
+  pref_service.SetUserPref(prefs::kTabFreezingEnabled,
                            std::make_unique<base::Value>(false));
   ::testing::Mock::VerifyAndClear(&obs);
 
   // Set the preference in a managed way to false.
   EXPECT_CALL(obs, OnPrefChanged(false));
-  pref_service.SetManagedPref(prefs::kTabLifecyclesEnabled,
+  pref_service.SetManagedPref(prefs::kTabFreezingEnabled,
                               std::make_unique<base::Value>(false));
   ::testing::Mock::VerifyAndClear(&obs);
 
   // Set the preference in a managed way to true.
   EXPECT_CALL(obs, OnPrefChanged(true));
-  pref_service.SetManagedPref(prefs::kTabLifecyclesEnabled,
+  pref_service.SetManagedPref(prefs::kTabFreezingEnabled,
                               std::make_unique<base::Value>(true));
   ::testing::Mock::VerifyAndClear(&obs);
 }

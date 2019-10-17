@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/timer/timer.h"
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/capture_service/constants.h"
 #include "chromecast/media/audio/capture_service/message_parsing_util.h"
@@ -66,7 +65,6 @@ class CaptureServiceReceiver::Socket : public SmallMessageSocket {
   const int channels_;
 
   ::media::AudioInputStream::AudioInputCallback* input_callback_;
-  base::OneShotTimer inactivity_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Socket);
 };
@@ -86,23 +84,14 @@ CaptureServiceReceiver::Socket::~Socket() = default;
 void CaptureServiceReceiver::Socket::Start(
     ::media::AudioInputStream::AudioInputCallback* input_callback) {
   input_callback_ = input_callback;
-  inactivity_timer_.Start(FROM_HERE, CaptureServiceReceiver::kInactivityTimeout,
-                          this,
-                          &CaptureServiceReceiver::Socket::OnInactivityTimeout);
   ReceiveMessages();
 }
 
 void CaptureServiceReceiver::Socket::ReportErrorAndStop() {
-  inactivity_timer_.Stop();
   if (input_callback_) {
     input_callback_->OnError();
   }
   input_callback_ = nullptr;
-}
-
-void CaptureServiceReceiver::Socket::OnInactivityTimeout() {
-  LOG(ERROR) << "Timed out " << this << " due to inactivity";
-  ReportErrorAndStop();
 }
 
 void CaptureServiceReceiver::Socket::OnError(int error) {
@@ -125,11 +114,6 @@ bool CaptureServiceReceiver::Socket::OnMessage(char* data, int size) {
     ReportErrorAndStop();
     return false;
   }
-
-  if (input_callback_) {
-    inactivity_timer_.Reset();
-  }
-
   return HandleAudio(std::move(audio.value()), timestamp);
 }
 
@@ -152,7 +136,6 @@ bool CaptureServiceReceiver::Socket::HandleAudio(
 
 // static
 constexpr base::TimeDelta CaptureServiceReceiver::kConnectTimeout;
-constexpr base::TimeDelta CaptureServiceReceiver::kInactivityTimeout;
 
 CaptureServiceReceiver::CaptureServiceReceiver(
     const ::media::AudioParameters& audio_params)

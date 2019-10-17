@@ -47,7 +47,7 @@ Browser* CreateWebApplicationWindow(Profile* profile,
 
 void SetWebAppPrefsForWebContents(content::WebContents* web_contents) {
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  web_contents->GetRenderViewHost()->SyncRendererPrefs();
+  web_contents->SyncRendererPrefs();
   web_contents->NotifyPreferencesChanged();
 }
 

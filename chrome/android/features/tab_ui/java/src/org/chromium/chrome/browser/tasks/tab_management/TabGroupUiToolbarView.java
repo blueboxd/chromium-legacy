@@ -103,6 +103,9 @@ public class TabGroupUiToolbarView extends FrameLayout {
         ApiCompatibilityUtils.setImageTintList(mLeftButton, tint);
         ApiCompatibilityUtils.setImageTintList(mRightButton, tint);
         if (mTitleTextView != null) mTitleTextView.setTextColor(tint);
+        if (mMenuButton != null) {
+            ApiCompatibilityUtils.setImageTintList(mMenuButton, tint);
+        }
     }
 
     /**

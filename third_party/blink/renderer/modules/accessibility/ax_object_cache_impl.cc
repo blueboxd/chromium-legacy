@@ -646,7 +646,7 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
   if (!ax_id)
     return;
 
-  // first fetch object to operate some cleanup functions on it
+  // First, fetch object to operate some cleanup functions on it.
   AXObject* obj = objects_.at(ax_id);
   if (!obj)
     return;
@@ -654,7 +654,7 @@ void AXObjectCacheImpl::Remove(AXID ax_id) {
   obj->Detach();
   RemoveAXID(obj);
 
-  // finally remove the object
+  // Finally, remove the object.
   if (!objects_.Take(ax_id))
     return;
 
@@ -744,6 +744,7 @@ void AXObjectCacheImpl::RemoveAXID(AXObject* object) {
   DCHECK(ids_in_use_.Contains(obj_id));
   object->SetAXObjectID(0);
   ids_in_use_.erase(obj_id);
+  autofill_state_map_.erase(obj_id);
 
   relation_cache_->RemoveAXID(obj_id);
 }
@@ -1906,6 +1907,21 @@ ax::mojom::EventFrom AXObjectCacheImpl::ComputeEventFrom() {
   }
 
   return ax::mojom::EventFrom::kPage;
+}
+
+WebAXAutofillState AXObjectCacheImpl::GetAutofillState(AXID id) const {
+  auto iter = autofill_state_map_.find(id);
+  if (iter == autofill_state_map_.end())
+    return WebAXAutofillState::kNoSuggestions;
+  return iter->value;
+}
+
+void AXObjectCacheImpl::SetAutofillState(AXID id, WebAXAutofillState state) {
+  WebAXAutofillState previous_state = GetAutofillState(id);
+  if (state != previous_state) {
+    autofill_state_map_.Set(id, state);
+    MarkAXObjectDirty(ObjectFromAXID(id), false);
+  }
 }
 
 }  // namespace blink

@@ -471,6 +471,10 @@ enum class FinalizeType : uint8_t { kInlined, kDeferred };
 // |SweepResult| indicates if page turned out to be empty after sweeping.
 enum class SweepResult : uint8_t { kPageEmpty, kPageNotEmpty };
 
+// |PageType| indicates whether a page is used for normal objects or whether it
+// holds a large object.
+enum class PageType : uint8_t { kNormalPage, kLargeObjectPage };
+
 // |BasePage| is a base class for |NormalPage| and |LargeObjectPage|.
 //
 // - |NormalPage| is a page whose size is |kBlinkPageSize|. A |NormalPage| can
@@ -487,7 +491,7 @@ class BasePage {
   DISALLOW_NEW();
 
  public:
-  BasePage(PageMemory*, BaseArena*);
+  BasePage(PageMemory*, BaseArena*, PageType);
   virtual ~BasePage() = default;
 
   // Virtual methods are slow. So performance-sensitive methods should be
@@ -514,13 +518,14 @@ class BasePage {
   virtual bool Contains(Address) = 0;
 #endif
   virtual size_t size() = 0;
-  virtual bool IsLargeObjectPage() { return false; }
 
   Address GetAddress() { return reinterpret_cast<Address>(this); }
   PageMemory* Storage() const { return storage_; }
   BaseArena* Arena() const { return arena_; }
+  ThreadState* thread_state() const { return thread_state_; }
 
-  // Returns true if this page has been swept by the ongoing lazy sweep.
+  // Returns true if this page has been swept by the ongoing sweep; false
+  // otherwise.
   bool HasBeenSwept() const { return swept_; }
 
   void MarkAsSwept() {
@@ -531,6 +536,11 @@ class BasePage {
   void MarkAsUnswept() {
     DCHECK(swept_);
     swept_ = false;
+  }
+
+  // Returns true  if this page is a large object page; false otherwise.
+  bool IsLargeObjectPage() const {
+    return page_type_ == PageType::kLargeObjectPage;
   }
 
   // Returns true if magic number is valid.
@@ -545,10 +555,13 @@ class BasePage {
   uint32_t const magic_;
   PageMemory* const storage_;
   BaseArena* const arena_;
+  ThreadState* const thread_state_;
 
   // Track the sweeping state of a page. Set to false at the start of a sweep,
-  // true  upon completion of lazy sweeping.
-  bool swept_;
+  // true upon completion of sweeping that page.
+  bool swept_ = true;
+
+  PageType page_type_;
 
   friend class BaseArena;
 };
@@ -738,6 +751,11 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
   // Uses the object_start_bit_map_ to find an object for a given address. The
   // returned header is either nullptr, indicating that no object could be
   // found, or it is pointing to valid object or free list entry.
+  HeapObjectHeader* ConservativelyFindHeaderFromAddress(Address);
+
+  // Uses the object_start_bit_map_ to find an object for a given address. It is
+  // assumed that the address points into a valid heap object. Use the
+  // conservative version if that assumption does not hold.
   HeapObjectHeader* FindHeaderFromAddress(Address);
 
   void VerifyMarking() override;
@@ -829,8 +847,6 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
 
   void CollectStatistics(
       ThreadState::Statistics::ArenaStatistics* arena_stats) override;
-
-  bool IsLargeObjectPage() override { return true; }
 
   void VerifyMarking() override;
 

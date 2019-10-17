@@ -49,7 +49,7 @@ class BASE_EXPORT PriorityQueue {
   // RegisteredTaskSource which evaluates to true if successful, or false if
   // |task_source| is not currently in the PriorityQueue or the PriorityQueue is
   // empty.
-  RegisteredTaskSource RemoveTaskSource(scoped_refptr<TaskSource> task_source);
+  RegisteredTaskSource RemoveTaskSource(const TaskSource& task_source);
 
   // Updates the sort key of the TaskSource in |transaction| to
   // match its current traits. No-ops if the TaskSource is not in the

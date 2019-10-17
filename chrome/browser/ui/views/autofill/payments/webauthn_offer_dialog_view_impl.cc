@@ -30,6 +30,11 @@ WebauthnOfferDialogViewImpl::WebauthnOfferDialogViewImpl(
   sheet_view_ =
       AddChildView(CreateSheetViewForAutofillWebAuthn(std::move(model)));
   sheet_view_->ReInitChildViews();
+
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   model_->GetAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   model_->GetCancelButtonLabel());
 }
 
 WebauthnOfferDialogViewImpl::~WebauthnOfferDialogViewImpl() {
@@ -104,12 +109,6 @@ int WebauthnOfferDialogViewImpl::GetDialogButtons() const {
              : ui::DIALOG_BUTTON_CANCEL;
 }
 
-base::string16 WebauthnOfferDialogViewImpl::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return button == ui::DIALOG_BUTTON_OK ? model_->GetAcceptButtonLabel()
-                                        : model_->GetCancelButtonLabel();
-}
-
 bool WebauthnOfferDialogViewImpl::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return button == ui::DIALOG_BUTTON_OK ? model_->IsAcceptButtonEnabled()
@@ -146,6 +145,10 @@ void WebauthnOfferDialogViewImpl::Hide() {
 void WebauthnOfferDialogViewImpl::RefreshContent() {
   sheet_view_->ReInitChildViews();
   sheet_view_->InvalidateLayout();
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   model_->GetAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   model_->GetCancelButtonLabel());
   DialogModelChanged();
   Layout();
 

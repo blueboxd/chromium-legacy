@@ -14,6 +14,8 @@ enum class InfobarType {
   kInfobarTypePasswordSave = 1,
   // Message Infobar for Updating a password.
   kInfobarTypePasswordUpdate = 2,
+  // Message Infobar for Saving a Credit Card.
+  kInfobarTypeSaveCard = 3,
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_TYPE_H_

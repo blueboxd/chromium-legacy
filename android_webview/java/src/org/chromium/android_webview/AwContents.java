@@ -152,9 +152,6 @@ public class AwContents implements SmartClipProvider {
     private static final String SAMSUNG_WORKAROUND_BASE_URL = "email://";
     private static final int SAMSUNG_WORKAROUND_DELAY = 200;
 
-    public static final String DATA_URI_HISTOGRAM_NAME =
-            "Android.WebView.LoadUrl.DataUriHasOctothorpe";
-
     @VisibleForTesting
     public static final String DATA_BASE_URL_SCHEME_HISTOGRAM_NAME =
             "Android.WebView.LoadDataWithBaseUrl.BaseUrl";
@@ -1705,11 +1702,6 @@ public class AwContents implements SmartClipProvider {
             params.setExtraHeaders(new HashMap<String, String>(additionalHttpHeaders));
         }
 
-        final String dataScheme = "data:";
-        if (url.startsWith(dataScheme) && url.contains("#")) {
-            RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
-        }
-
         loadUrl(params);
     }
 
@@ -1781,7 +1773,6 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s loadData", this);
         if (isDestroyed(WARN)) return;
         if (data != null && data.contains("#")) {
-            RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
             if (!BuildInfo.targetsAtLeastQ() && !isBase64Encoded(encoding)) {
                 // As of Chromium M72, data URI parsing strictly enforces encoding of '#'. To
                 // support WebView applications which were not expecting this change, we do it for
@@ -1873,10 +1864,6 @@ public class AwContents implements SmartClipProvider {
         recordBaseUrl(schemeForUrl(baseUrl));
 
         if (baseUrl.startsWith("data:")) {
-            // We record only for this branch, because the other branch assumes unencoded content.
-            if (data != null && data.contains("#")) {
-                RecordHistogram.recordBooleanHistogram(DATA_URI_HISTOGRAM_NAME, true);
-            }
             // For backwards compatibility with WebViewClassic, we use the value of |encoding|
             // as the charset, as long as it's not "base64".
             boolean isBase64 = isBase64Encoded(encoding);

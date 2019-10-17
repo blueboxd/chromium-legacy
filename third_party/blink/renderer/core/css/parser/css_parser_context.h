@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_resource_fetch_restriction.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
@@ -55,7 +56,9 @@ class CORE_EXPORT CSSParserContext final
                    bool origin_clean,
                    network::mojom::ReferrerPolicy referrer_policy_override,
                    const WTF::TextEncoding& charset = WTF::TextEncoding(),
-                   SelectorProfile = kLiveProfile);
+                   SelectorProfile = kLiveProfile,
+                   ResourceFetchRestriction resource_fetch_restriction =
+                       ResourceFetchRestriction::kNone);
 
   // This is used for workers, where we don't have a document.
   CSSParserContext(const ExecutionContext& context);
@@ -71,7 +74,8 @@ class CORE_EXPORT CSSParserContext final
                    bool use_legacy_background_size_shorthand_behavior,
                    SecureContextMode,
                    ContentSecurityPolicyDisposition,
-                   const Document* use_counter_document);
+                   const Document* use_counter_document,
+                   ResourceFetchRestriction resource_fetch_restriction);
 
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {
@@ -84,6 +88,9 @@ class CORE_EXPORT CSSParserContext final
   const WTF::TextEncoding& Charset() const { return charset_; }
   const Referrer& GetReferrer() const { return referrer_; }
   bool IsHTMLDocument() const { return is_html_document_; }
+  enum ResourceFetchRestriction ResourceFetchRestriction() const {
+    return resource_fetch_restriction_;
+  }
   bool IsLiveProfile() const { return profile_ == kLiveProfile; }
 
   bool IsOriginClean() const;
@@ -148,6 +155,10 @@ class CORE_EXPORT CSSParserContext final
   WTF::TextEncoding charset_;
 
   WeakMember<const Document> document_;
+
+  // Flag indicating whether images with a URL scheme other than "data" are
+  // allowed.
+  const enum ResourceFetchRestriction resource_fetch_restriction_;
 };
 
 CORE_EXPORT const CSSParserContext* StrictCSSParserContext(SecureContextMode);

@@ -465,6 +465,7 @@ const char kAssistantPrivacyInfoDismissedInLauncher[] =
     "ash.launcher.assistant_privacy_info_dismissed";
 
 // A boolean pref that indicates whether lock screen media controls are enabled.
+// Controlled by user policy.
 const char kLockScreenMediaControlsEnabled[] =
     "ash.lock_screen_media_controls_enabled";
 

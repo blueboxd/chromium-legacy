@@ -94,6 +94,7 @@ class ContextMenuControllerTest : public testing::Test {
         web_view_helper_.LocalMainFrame()->GetDocument());
   }
 
+  WebView* GetWebView() { return web_view_helper_.GetWebView(); }
   Page* GetPage() { return web_view_helper_.GetWebView()->GetPage(); }
   WebLocalFrameImpl* LocalMainFrame() {
     return web_view_helper_.LocalMainFrame();
@@ -541,6 +542,50 @@ TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
   EXPECT_EQ(context_menu_data.media_type, WebContextMenuData::kMediaTypeNone);
   EXPECT_EQ(context_menu_data.edit_flags, WebContextMenuData::kCanCopy);
   EXPECT_EQ(context_menu_data.selected_text, "Blue text");
+}
+
+TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
+  GetDocument()->documentElement()->SetInnerHTMLFromString(
+      "<input id='sample' type='text' size='5' value='Sample Input Text'>");
+
+  Document* document = GetDocument();
+  Element* input_element = document->getElementById("sample");
+  document->UpdateStyleAndLayout();
+
+  // Select the 'Sample' of |input|.
+  DOMRect* rect = input_element->getBoundingClientRect();
+  WebGestureEvent gesture_event(
+      WebInputEvent::kGestureLongPress, WebInputEvent::kNoModifiers,
+      base::TimeTicks::Now(), WebGestureDevice::kTouchscreen);
+  gesture_event.SetPositionInWidget(WebFloatPoint(rect->left(), rect->top()));
+  GetWebView()->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(gesture_event));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.selected_text, "Sample");
+
+  // Adjust the selection from the start of |input| to the middle.
+  LayoutPoint middle_point((rect->left() + rect->right()) / 2,
+                           (rect->top() + rect->bottom()) / 2);
+  LocalMainFrame()->MoveRangeSelectionExtent(
+      WebPoint(middle_point.X().ToInt(), middle_point.Y().ToInt()));
+  GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
+
+  context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_NE(context_menu_data.selected_text, "");
+
+  // Scroll the value of |input| to end.
+  input_element->setScrollLeft(input_element->scrollWidth());
+
+  // Select all the value of |input| to ensure the start of selection is
+  // invisible.
+  LocalMainFrame()->MoveRangeSelectionExtent(
+      WebPoint(rect->right(), rect->bottom()));
+  GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
+
+  context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.selected_text, "Sample Input Text");
 }
 
 }  // namespace blink

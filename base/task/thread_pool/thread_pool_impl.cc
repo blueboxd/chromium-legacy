@@ -431,7 +431,7 @@ void ThreadPoolImpl::RemoveJobTaskSource(
   auto transaction = task_source->BeginTransaction();
   ThreadGroup* const current_thread_group =
       GetThreadGroupForTraits(transaction.traits());
-  current_thread_group->RemoveTaskSource(std::move(task_source));
+  current_thread_group->RemoveTaskSource(*task_source);
 }
 
 bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
@@ -466,7 +466,7 @@ void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
     // |task_source| is changing thread groups; remove it from its current
     // thread group and reenqueue it.
     auto registered_task_source =
-        current_thread_group->RemoveTaskSource(task_source);
+        current_thread_group->RemoveTaskSource(*task_source);
     if (registered_task_source) {
       DCHECK(task_source);
       new_thread_group->PushTaskSourceAndWakeUpWorkers(

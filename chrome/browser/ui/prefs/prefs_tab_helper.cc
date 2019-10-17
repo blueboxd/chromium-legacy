@@ -451,7 +451,7 @@ void PrefsTabHelper::UpdateRendererPreferences() {
   blink::mojom::RendererPreferences* prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile_);
-  web_contents_->GetRenderViewHost()->SyncRendererPrefs();
+  web_contents_->SyncRendererPrefs();
 }
 
 void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {

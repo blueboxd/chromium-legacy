@@ -115,6 +115,13 @@ void MediaPlayerRendererClient::OnRemoteRendererInitialized(
     renderer_extension_ptr_->InitiateScopedSurfaceRequest(
         base::Bind(&MediaPlayerRendererClient::OnScopedSurfaceRequested,
                    weak_factory_.GetWeakPtr()));
+
+    // Signal that we're using MediaPlayer so that we can properly differentiate
+    // within our metrics.
+    media::PipelineStatistics stats;
+    stats.video_decoder_info =
+        stats.audio_decoder_info = {true, false, "MediaPlayer"};
+    client_->OnStatisticsUpdate(stats);
   }
   std::move(init_cb_).Run(status);
 }

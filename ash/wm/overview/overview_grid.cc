@@ -119,8 +119,10 @@ template <const char* clamshell_single_name,
 class OverviewFpsCounter : public FpsCounter {
  public:
   OverviewFpsCounter(ui::Compositor* compositor,
+                     bool in_split_view,
                      bool single_animation_in_clamshell)
       : FpsCounter(compositor),
+        in_split_view_(in_split_view),
         single_animation_in_clamshell_(single_animation_in_clamshell) {}
   ~OverviewFpsCounter() override {
     int smoothness = ComputeSmoothness();
@@ -130,11 +132,15 @@ class OverviewFpsCounter : public FpsCounter {
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_single_name, smoothness);
     else
       UMA_HISTOGRAM_PERCENTAGE_IN_CLAMSHELL(clamshell_multi_name, smoothness);
-    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(tablet_name, smoothness);
-    UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(splitview_name, smoothness);
+    UMA_HISTOGRAM_PERCENTAGE_IN_TABLET_NON_SPLITVIEW(in_split_view_,
+                                                     tablet_name, smoothness);
+    UMA_HISTOGRAM_PERCENTAGE_IN_SPLITVIEW(in_split_view_, splitview_name,
+                                          smoothness);
   }
 
  private:
+  bool in_split_view_;
+
   // True if only top window animates upon enter/exit overview in clamshell.
   bool single_animation_in_clamshell_;
 
@@ -155,8 +161,9 @@ using OverviewExitFpsCounter =
 class ShutdownAnimationFpsCounterObserver : public OverviewObserver {
  public:
   ShutdownAnimationFpsCounterObserver(ui::Compositor* compositor,
+                                      bool in_split_view,
                                       bool single_animation)
-      : fps_counter_(compositor, single_animation) {
+      : fps_counter_(compositor, in_split_view, single_animation) {
     Shell::Get()->overview_controller()->AddObserver(this);
   }
   ~ShutdownAnimationFpsCounterObserver() override {
@@ -493,12 +500,14 @@ void OverviewGrid::Shutdown() {
       (animate_count == 1 && !has_non_cover_animating) &&
       !Shell::Get()->tablet_mode_controller()->InTabletMode();
 
+  const bool in_split_view =
+      SplitViewController::Get(root_window_)->InSplitViewMode();
   // OverviewGrid in splitscreen does not include the window to be activated.
-  if (!window_list_.empty() ||
-      SplitViewController::Get(root_window_)->InSplitViewMode()) {
+  if (!window_list_.empty() || in_split_view) {
     // The following instance self-destructs when shutdown animation ends.
     new ShutdownAnimationFpsCounterObserver(
-        root_window_->layer()->GetCompositor(), single_animation_in_clamshell);
+        root_window_->layer()->GetCompositor(), in_split_view,
+        single_animation_in_clamshell);
   }
 
   while (!window_list_.empty())
@@ -598,6 +607,7 @@ void OverviewGrid::PositionWindows(
         !Shell::Get()->tablet_mode_controller()->InTabletMode();
     fps_counter_ = std::make_unique<OverviewEnterFpsCounter>(
         window_list_[0]->GetWindow()->layer()->GetCompositor(),
+        SplitViewController::Get(root_window_)->InSplitViewMode(),
         single_animation_in_clamshell);
   }
 

@@ -17,14 +17,15 @@ lucicfg.config(
 # Copy the not-yet migrated files to the generated outputs
 # TODO(https://crbug.com/1011908) Migrate the configuration in these files to starlark
 [lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
-    'cr-buildbucket-dev.cfg',
     'luci-milo-dev.cfg',
     'luci-scheduler-dev.cfg',
 )]
 
 luci.project(
     name = 'chromium',
+    buildbucket = 'cr-buildbucket-dev.appspot.com',
     logdog = 'luci-logdog-dev.appspot.com',
+    swarming = 'chromium-swarm-dev.appspot.com',
     acls = [
         acl.entry(
             roles = [
@@ -43,3 +44,7 @@ luci.project(
 luci.logdog(
     gs_bucket = 'chromium-luci-logdog',
 )
+
+exec('//dev/buckets/ci.star')
+exec('//dev/buckets/cron.star')
+exec('//dev/buckets/try.star')

@@ -303,3 +303,16 @@ struct ParsingResult {
   uint32 new_password_renderer_id;
   uint32 confirm_password_renderer_id;
 };
+
+// Represents the autofill state.
+enum AutofillState {
+  // There are no available suggestions, neither autofill nor autocomplete, for
+  // the input.
+  kNoSuggestions,
+  // There are available autofill suggestions for the input. Autofill fills in
+  // an entire form.
+  kAutofillAvailable,
+  // There are available autocomplete suggestions for the input. Autocomplete
+  // only fills in a single input.
+  kAutocompleteAvailable,
+};

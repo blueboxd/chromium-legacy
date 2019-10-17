@@ -116,8 +116,7 @@ void VizCompositorThreadRunnerWebView::BindFrameSinkManagerOnViz(
 
   frame_sink_manager_->BindAndSetClient(
       std::move(params->frame_sink_manager), viz_task_runner_,
-      viz::mojom::FrameSinkManagerClientPtr(
-          std::move(params->frame_sink_manager_client)));
+      std::move(params->frame_sink_manager_client));
 }
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)

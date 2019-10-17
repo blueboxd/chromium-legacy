@@ -92,7 +92,7 @@ def main(argv):
 
   with build_utils.AtomicOutput(args.output) as output:
     cmd = [
-        'java',
+        build_utils.JAVA_PATH,
         '-cp',
         classpath,
         _MANIFEST_MERGER_MAIN_CLASS,

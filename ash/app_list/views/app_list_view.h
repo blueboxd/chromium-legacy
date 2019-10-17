@@ -108,8 +108,12 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // The snapping thresholds for dragging app list from shelf in laptop mode,
   // measured in DIPs.
-  static constexpr int kDragSnapToClosedThreshold = 144;
+  static constexpr int kDragSnapToClosedThreshold = 120;
   static constexpr int kDragSnapToPeekingThreshold = 561;
+
+  // The velocity the app list must be dragged from the shelf in order to
+  // transition to the next state, measured in DIPs/event.
+  static constexpr int kDragVelocityFromShelfThreshold = 120;
 
   // The velocity the app list must be dragged in order to transition to the
   // next state, measured in DIPs/event.

@@ -322,6 +322,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // was added to the ResourceRequest passed to Create() by the consumer.
   virtual void SetRetryOptions(int max_retries, int retry_mode) = 0;
 
+  // Sets options for URLLoaderFactory::CreateLoaderAndStart. See
+  // //network/public/mojom/url_loader_factory.mojom. This should be
+  // called before the request is started.
+  virtual void SetURLLoaderFactoryOptions(uint32_t options) = 0;
+
   // The amount of time to wait before giving up on a given network request and
   // considering it an error. If not set, then the request is allowed to take
   // as much time as it wants.

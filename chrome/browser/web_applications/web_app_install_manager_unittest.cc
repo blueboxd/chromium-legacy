@@ -87,7 +87,7 @@ class WebAppInstallManagerTest : public WebAppTest {
 };
 
 TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_TwoConcurrentInstallsAreRunInOrder) {
+       InstallWebAppFromSync_TwoConcurrentInstallsAreRunInOrder) {
   const GURL url1{"https://example.com/path"};
   const AppId app1_id = GenerateAppIdFromURL(url1);
 
@@ -154,7 +154,7 @@ TEST_F(WebAppInstallManagerTest,
   EXPECT_FALSE(install_manager().has_web_contents_for_testing());
 
   // Enqueue a request to install the 1st app.
-  install_manager().InstallOrUpdateWebAppFromSync(
+  install_manager().InstallWebAppFromSync(
       app1_id, CreateWebAppInfo(url1),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -170,7 +170,7 @@ TEST_F(WebAppInstallManagerTest,
 
   // Immediately enqueue a request to install the 2nd app, WebContents is not
   // ready.
-  install_manager().InstallOrUpdateWebAppFromSync(
+  install_manager().InstallWebAppFromSync(
       app2_id, CreateWebAppInfo(url2),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -206,7 +206,7 @@ TEST_F(WebAppInstallManagerTest,
 }
 
 TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_InstallManagerDestroyed) {
+       InstallWebAppFromSync_InstallManagerDestroyed) {
   const GURL app_url("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(app_url);
   NavigateAndCommit(app_url);
@@ -232,7 +232,7 @@ TEST_F(WebAppInstallManagerTest,
         return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
       }));
 
-  install_manager().InstallOrUpdateWebAppFromSync(
+  install_manager().InstallWebAppFromSync(
       app_id, CreateWebAppInfo(app_url),
       base::BindLambdaForTesting([](const web_app::AppId& installed_app_id,
                                     web_app::InstallResultCode code) {
@@ -246,26 +246,6 @@ TEST_F(WebAppInstallManagerTest,
 
   // Simulate Profile getting destroyed.
   DestroyManagers();
-}
-
-TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_CanSkipAppUpdateForSync) {
-  const GURL app_url("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(app_url);
-  NavigateAndCommit(app_url);
-
-  finalizer().SetNextCanSkipAppUpdateForSync(true);
-
-  base::RunLoop run_loop;
-  install_manager().InstallOrUpdateWebAppFromSync(
-      app_id, CreateWebAppInfo(app_url),
-      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
-                                     web_app::InstallResultCode code) {
-        EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
-        EXPECT_EQ(app_id, installed_app_id);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
 }
 
 }  // namespace web_app

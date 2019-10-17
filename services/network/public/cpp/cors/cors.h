@@ -153,10 +153,6 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
 // this implementation internally.
 COMPONENT_EXPORT(NETWORK_CPP) bool IsForbiddenMethod(const std::string& name);
 
-// Checks forbidden header in the fetch spec.
-// See https://fetch.spec.whatwg.org/#forbidden-header-name.
-COMPONENT_EXPORT(NETWORK_CPP) bool IsForbiddenHeader(const std::string& name);
-
 // https://fetch.spec.whatwg.org/#ok-status aka a successful 2xx status code,
 // https://tools.ietf.org/html/rfc7231#section-6.3 . We opt to use the Fetch
 // term in naming the predicate.

@@ -6,13 +6,18 @@ package org.chromium.weblayer;
 
 import android.net.Uri;
 import android.os.RemoteException;
+import android.webkit.ValueCallback;
 
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
+import org.chromium.weblayer_private.aidl.IObjectWrapper;
+import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 public final class BrowserController {
     private final IBrowserController mImpl;
+    private FullscreenDelegateClientImpl mFullscreenDelegateClient;
     private final NavigationController mNavigationController;
     private final ObserverList<BrowserObserver> mObservers;
 
@@ -26,6 +31,23 @@ public final class BrowserController {
 
         mObservers = new ObserverList<BrowserObserver>();
         mNavigationController = NavigationController.create(mImpl);
+    }
+
+    public void setFullscreenDelegate(FullscreenDelegate delegate) {
+        try {
+            if (delegate != null) {
+                mFullscreenDelegateClient = new FullscreenDelegateClientImpl(delegate);
+                mImpl.setFullscreenDelegateClient(mFullscreenDelegateClient);
+            } else {
+                mImpl.setFullscreenDelegateClient(null);
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public FullscreenDelegate getFullscreenDelegate() {
+        return mFullscreenDelegateClient != null ? mFullscreenDelegateClient.getDelegate() : null;
     }
 
     @Override
@@ -70,6 +92,30 @@ public final class BrowserController {
             for (BrowserObserver observer : mObservers) {
                 observer.loadProgressChanged(progress);
             }
+        }
+    }
+
+    private final class FullscreenDelegateClientImpl extends IFullscreenDelegateClient.Stub {
+        private FullscreenDelegate mDelegate;
+
+        /* package */ FullscreenDelegateClientImpl(FullscreenDelegate delegate) {
+            mDelegate = delegate;
+        }
+
+        public FullscreenDelegate getDelegate() {
+            return mDelegate;
+        }
+
+        @Override
+        public void enterFullscreen(IObjectWrapper exitFullscreenWrapper) {
+            ValueCallback<Void> exitFullscreenCallback = (ValueCallback<Void>) ObjectWrapper.unwrap(
+                    exitFullscreenWrapper, ValueCallback.class);
+            mDelegate.enterFullscreen(() -> exitFullscreenCallback.onReceiveValue(null));
+        }
+
+        @Override
+        public void exitFullscreen() {
+            mDelegate.exitFullscreen();
         }
     }
 }

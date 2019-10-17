@@ -68,8 +68,11 @@ bool TestAutofillExternalDelegate::HasActiveScreenReader() const {
 }
 
 void TestAutofillExternalDelegate::OnAutofillAvailabilityEvent(
-    bool has_suggestions) {
-  has_suggestions_available_on_field_focus_ = has_suggestions;
+    const mojom::AutofillState state) {
+  if (state == mojom::AutofillState::kAutofillAvailable)
+    has_suggestions_available_on_field_focus_ = true;
+  else if (state == mojom::AutofillState::kNoSuggestions)
+    has_suggestions_available_on_field_focus_ = false;
 }
 
 void TestAutofillExternalDelegate::WaitForPopupHidden() {

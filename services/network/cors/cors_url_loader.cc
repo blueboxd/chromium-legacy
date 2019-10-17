@@ -464,7 +464,10 @@ void CorsURLLoader::StartRequest() {
   preflight_controller_->PerformPreflightCheck(
       base::BindOnce(&CorsURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr()),
-      request_, tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
+      request_,
+      PreflightController::WithTrustedHeaderClient(
+          options_ & mojom::kURLLoadOptionUseHeaderClient),
+      tainted_, net::NetworkTrafficAnnotationTag(traffic_annotation_),
       network_loader_factory_);
 }
 

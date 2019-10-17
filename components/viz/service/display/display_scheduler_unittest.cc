@@ -825,5 +825,22 @@ TEST_F(DisplaySchedulerTest, GpuBusyNotifications) {
   EXPECT_FALSE(fake_begin_frame_source_.RequestCallbackOnGpuAvailable());
 }
 
+TEST_F(DisplaySchedulerTest, OnBeginFrameDeadlineNoClient) {
+  SurfaceId root_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+
+  scheduler_.SetVisible(true);
+  scheduler_.SetNewRootSurface(root_surface_id);
+
+  AdvanceTimeAndBeginFrameForTest({root_surface_id});
+  SurfaceDamaged(root_surface_id);
+
+  // During teardown, we may get a BeginFrameDeadline while |client_| is null.
+  // This should not crash.
+  scheduler_.SetClient(nullptr);
+  scheduler_.BeginFrameDeadlineForTest();
+}
+
 }  // namespace
 }  // namespace viz

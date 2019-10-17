@@ -102,8 +102,7 @@ base::string16 GetOkButtonLabel(
     case safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON);
     case safe_browsing::ReusedPasswordAccountType::SAVED_PASSWORD:
-      return l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON);
+      return l10n_util::GetStringUTF16(IDS_CLOSE);
     default:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PROTECT_ACCOUNT_BUTTON);
   }

@@ -213,7 +213,8 @@ void FrameLoader::Init() {
   provisional_document_loader_->StartLoading();
 
   CommitDocumentLoader(provisional_document_loader_.Release(), base::nullopt,
-                       false);
+                       false /* dispatch_did_start */, base::DoNothing::Once(),
+                       false /* dispatch_did_commit */);
 
   frame_->GetDocument()->CancelParsing();
 
@@ -935,10 +936,6 @@ void FrameLoader::CommitNavigation(
     progress_tracker_->ProgressStarted();
     provisional_document_loader_ = provisional_document_loader;
     frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
-    {
-      FrameNavigationDisabler navigation_disabler(*frame_);
-      Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
-    }
     probe::DidStartProvisionalLoad(frame_);
     virtual_time_pauser_.PauseVirtualTime();
 
@@ -949,7 +946,6 @@ void FrameLoader::CommitNavigation(
       return;
   }
 
-  std::move(call_before_attaching_new_document).Run();
   tls_version_warning_origins_.clear();
 
   // Following the call to StartLoading, the provisional DocumentLoader state
@@ -961,7 +957,9 @@ void FrameLoader::CommitNavigation(
       DocumentLoader::HistoryNavigationType::kDifferentDocument);
 
   CommitDocumentLoader(provisional_document_loader_.Release(), unload_timing,
-                       !is_javascript_url);
+                       true /* dispatch_did_start */,
+                       std::move(call_before_attaching_new_document),
+                       !is_javascript_url /* dispatch_did_commit */);
 
   TakeObjectSnapshot();
 }
@@ -1078,7 +1076,9 @@ bool FrameLoader::DetachDocument(
 void FrameLoader::CommitDocumentLoader(
     DocumentLoader* document_loader,
     const base::Optional<Document::UnloadEventTiming>& unload_timing,
-    bool dispatch_did_commit_load) {
+    bool dispatch_did_start,
+    base::OnceClosure call_before_attaching_new_document,
+    bool dispatch_did_commit) {
   document_loader_ = document_loader;
   CHECK(document_loader_);
 
@@ -1100,11 +1100,25 @@ void FrameLoader::CommitDocumentLoader(
 
   document_loader_->CommitNavigation();
 
-  if (dispatch_did_commit_load) {
-    Client()->DispatchDidCommitLoad(
-        document_loader_->GetHistoryItem(),
-        DocumentLoader::LoadTypeToCommitType(document_loader_->LoadType()),
-        document_loader_->GetGlobalObjectReusePolicy());
+  {
+    FrameNavigationDisabler navigation_disabler(*frame_);
+    // TODO(https://crbug.com/855189): replace DispatchDidStartProvisionalLoad,
+    // call_before_attaching_new_document and DispatchDidCommitLoad with a
+    // single call.
+    if (dispatch_did_start)
+      Client()->DispatchDidStartProvisionalLoad(document_loader_);
+    std::move(call_before_attaching_new_document).Run();
+    Client()->DidCreateNewDocument();
+    if (dispatch_did_commit) {
+      // TODO(https://crbug.com/855189): Do not make exceptions
+      // for javascript urls.
+      Client()->DispatchDidCommitLoad(
+          document_loader_->GetHistoryItem(),
+          DocumentLoader::LoadTypeToCommitType(document_loader_->LoadType()),
+          document_loader_->GetGlobalObjectReusePolicy());
+    }
+    // TODO(dgozman): make DidCreateScriptContext notification call currently
+    // triggered by installing new document happen here, after commit.
   }
 
   // Load the document if needed.

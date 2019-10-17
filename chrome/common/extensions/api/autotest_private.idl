@@ -63,7 +63,7 @@ namespace autotestPrivate {
   // set in the future.
   enum WMEventType {
     WMEventNormal,
-    WMEventMaxmize,
+    WMEventMaximize,
     WMEventMinimize,
     WMEventFullscreen,
     WMEventSnapLeft,

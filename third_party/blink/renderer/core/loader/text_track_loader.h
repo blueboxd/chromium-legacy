@@ -60,6 +60,7 @@ class TextTrackLoader final : public GarbageCollected<TextTrackLoader>,
   State LoadState() { return state_; }
 
   void GetNewCues(HeapVector<Member<TextTrackCue>>& output_cues);
+  void GetNewStyleSheets(HeapVector<Member<CSSStyleSheet>>& output_sheets);
 
   void Trace(blink::Visitor*) override;
 

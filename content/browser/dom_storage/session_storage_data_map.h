@@ -42,7 +42,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
     virtual void OnDataMapCreation(const std::vector<uint8_t>& map_id,
                                    SessionStorageDataMap* map) = 0;
     virtual void OnDataMapDestruction(const std::vector<uint8_t>& map_id) = 0;
-    virtual void OnCommitResult(leveldb::mojom::DatabaseError error) = 0;
+    virtual void OnCommitResult(leveldb::Status status) = 0;
   };
 
   static scoped_refptr<SessionStorageDataMap> CreateFromDisk(
@@ -77,9 +77,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
   // Note: this is irrelevant, as the parent area is handling binding.
   void OnNoBindings() override {}
 
-  std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommit() override;
-
-  void DidCommit(leveldb::mojom::DatabaseError error) override;
+  void DidCommit(leveldb::Status status) override;
 
  private:
   friend class base::RefCounted<SessionStorageDataMap>;
@@ -95,7 +93,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
       scoped_refptr<SessionStorageDataMap> forking_from);
   ~SessionStorageDataMap() override;
 
-  void OnMapLoaded(leveldb::mojom::DatabaseError error) override;
+  void OnMapLoaded(leveldb::Status status) override;
 
   static StorageAreaImpl::Options GetOptions();
 

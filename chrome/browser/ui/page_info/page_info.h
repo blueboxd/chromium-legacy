@@ -208,8 +208,6 @@ class PageInfo : public content::WebContentsObserver {
     return site_details_message_;
   }
 
-  const base::string16& organization_name() const { return organization_name_; }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
                            NonFactoryDefaultAndRecentlyChangedPermissionsShown);

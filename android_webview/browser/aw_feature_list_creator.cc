@@ -57,6 +57,10 @@ const char* const kPersistentPrefsWhitelist[] = {
     // Current and past country codes, to filter variations studies by country.
     variations::prefs::kVariationsCountry,
     variations::prefs::kVariationsPermanentConsistencyCountry,
+    // Last variations seed fetch date/time, used for histograms and to
+    // determine if the seed is expired.
+    variations::prefs::kVariationsLastFetchTime,
+    variations::prefs::kVariationsSeedDate,
 };
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
@@ -119,11 +123,23 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   field_trial_list_ = std::make_unique<base::FieldTrialList>(
       metrics_client->CreateLowEntropyProvider());
 
+  std::unique_ptr<variations::SeedResponse> seed = GetAndClearJavaSeed();
+  base::Time null_time;
+  base::Time seed_date =
+      seed ? base::Time::FromJavaTime(seed->date) : null_time;
   variations::UIStringOverrider ui_string_overrider;
   client_ = std::make_unique<AwVariationsServiceClient>();
   auto seed_store = std::make_unique<variations::VariationsSeedStore>(
-      local_state_.get(), /*initial_seed=*/GetAndClearJavaSeed(),
+      local_state_.get(), /*initial_seed=*/std::move(seed),
       /*on_initial_seed_stored=*/base::DoNothing());
+
+  // We set the seed fetch time to when the service downloaded the seed rather
+  // than base::Time::Now() because we want to compute seed freshness based on
+  // the initial download time, which happened in the service at some earlier
+  // point.
+  if (!seed_date.is_null())
+    seed_store->RecordLastFetchTime(seed_date);
+
   variations_field_trial_creator_ =
       std::make_unique<variations::VariationsFieldTrialCreator>(
           local_state_.get(), client_.get(), std::move(seed_store),

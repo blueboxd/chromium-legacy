@@ -50,11 +50,11 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
     case base::trace_event::RECORD_UNTIL_FULL:
     case base::trace_event::RECORD_AS_MUCH_AS_POSSIBLE:
       buffer_config->set_fill_policy(
-          perfetto::TraceConfig::BufferConfig::FillPolicy::DISCARD);
+          perfetto::TraceConfig::BufferConfig::DISCARD);
       break;
     case base::trace_event::RECORD_CONTINUOUSLY:
       buffer_config->set_fill_policy(
-          perfetto::TraceConfig::BufferConfig::FillPolicy::RING_BUFFER);
+          perfetto::TraceConfig::BufferConfig::RING_BUFFER);
       break;
     case base::trace_event::ECHO_TO_CONSOLE:
       NOTREACHED();

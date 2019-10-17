@@ -44,6 +44,9 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
     if (parameter == features::kMarkHttpAsParameterDangerous) {
       return DANGEROUS;
     }
+    if (parameter == features::kMarkHttpAsParameterDangerWarning) {
+      return WARNING;
+    }
   }
 
   // Default to dangerous on editing form fields and otherwise

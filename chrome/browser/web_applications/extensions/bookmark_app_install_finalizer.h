@@ -45,9 +45,6 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                          CreateOsShortcutsCallback callback) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const web_app::AppId& app_id) override;
-  bool CanSkipAppUpdateForSync(
-      const web_app::AppId& app_id,
-      const WebApplicationInfo& web_app_info) const override;
   bool CanUserUninstallFromSync(const web_app::AppId& app_id) const override;
 
   using CrxInstallerFactory =

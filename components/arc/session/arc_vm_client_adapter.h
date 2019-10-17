@@ -9,10 +9,17 @@
 
 #include "components/arc/session/arc_client_adapter.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 namespace arc {
 
 // Returns an adapter for arcvm.
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter();
+
+// Function(s) below are for testing.
+bool IsAndroidDebuggableForTesting(const base::FilePath& json_path);
 
 }  // namespace arc
 

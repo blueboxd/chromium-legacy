@@ -2058,7 +2058,7 @@ void NavigationRequest::OnStartChecksComplete(
 
   // Initialize the BundledExchangesHandle.
   if (bundled_exchanges_handle_tracker_) {
-    DCHECK(base::FeatureList::IsEnabled(features::kBundledHTTPExchanges) ||
+    DCHECK(base::FeatureList::IsEnabled(features::kWebBundles) ||
            base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kTrustableBundledExchangesFileUrl));
     bundled_exchanges_handle_ =
@@ -2066,7 +2066,7 @@ void NavigationRequest::OnStartChecksComplete(
             common_params_->url);
   }
   if (!bundled_exchanges_handle_ && bundled_exchanges_navigation_info_) {
-    DCHECK(base::FeatureList::IsEnabled(features::kBundledHTTPExchanges) ||
+    DCHECK(base::FeatureList::IsEnabled(features::kWebBundles) ||
            base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kTrustableBundledExchangesFileUrl));
     bundled_exchanges_handle_ = BundledExchangesHandle::CreateForNavigationInfo(

@@ -90,6 +90,7 @@ class DumpAccessibilityTestBase : public ContentBrowserTest,
   // @WAIT-FOR: directives.
   void ParseHtmlForExtraDirectives(const std::string& test_html,
                                    std::vector<std::string>* wait_for,
+                                   std::vector<std::string>* execute,
                                    std::vector<std::string>* run_until,
                                    std::vector<std::string>* default_action_on);
 

@@ -411,12 +411,17 @@ def main(args):
     with open(tmp_bundle_config, 'w') as f:
       f.write(bundle_config)
 
-    cmd_args = ['java', '-jar', bundletool.BUNDLETOOL_JAR_PATH, 'build-bundle']
-    cmd_args += ['--modules=%s' % ','.join(module_zips)]
-    cmd_args += ['--output=%s' % tmp_unsigned_bundle]
-    cmd_args += ['--config=%s' % tmp_bundle_config]
+    cmd_args = [
+        build_utils.JAVA_PATH, '-jar', bundletool.BUNDLETOOL_JAR_PATH,
+        'build-bundle', '--modules=' + ','.join(module_zips),
+        '--output=' + tmp_unsigned_bundle, '--config=' + tmp_bundle_config
+    ]
 
-    build_utils.CheckOutput(cmd_args, print_stdout=True, print_stderr=True)
+    build_utils.CheckOutput(
+        cmd_args,
+        print_stdout=True,
+        print_stderr=True,
+        stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 
     if options.keystore_path:
       # NOTE: As stated by the public documentation, apksigner cannot be used

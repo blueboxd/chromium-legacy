@@ -2093,6 +2093,12 @@ void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
   // phase of this cycle.
 }
 
+void LocalFrameView::SetNeedsForcedResizeObservations() {
+  if (auto* controller =
+          GetFrame().GetDocument()->GetResizeObserverController())
+    controller->SetNeedsForcedResizeObservations();
+}
+
 void LocalFrameView::NotifyResizeObservers() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::NotifyResizeObservers");
   // Controller exists only if ResizeObserver was created.

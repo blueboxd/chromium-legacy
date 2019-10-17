@@ -139,9 +139,9 @@ ThreadGroup::GetNumAdditionalWorkersForForegroundTaskSourcesLockRequired()
 }
 
 RegisteredTaskSource ThreadGroup::RemoveTaskSource(
-    scoped_refptr<TaskSource> task_source) {
+    const TaskSource& task_source) {
   CheckedAutoLock auto_lock(lock_);
-  return priority_queue_.RemoveTaskSource(std::move(task_source));
+  return priority_queue_.RemoveTaskSource(task_source);
 }
 
 void ThreadGroup::ReEnqueueTaskSourceLockRequired(

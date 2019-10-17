@@ -40,7 +40,7 @@ source_set("webrtc") {
   public_configs = [ "//third_party/webrtc:common_inherited_config" ]
 }
 
-static_library("init_webrtc") {
+source_set("init_webrtc") {
   sources = [
     "init_webrtc.cc",
     "init_webrtc.h",
@@ -67,7 +67,7 @@ static_library("init_webrtc") {
   ]
 }
 
-static_library("metrics") {
+source_set("metrics") {
   sources = [
     "metrics.cc",
   ]
@@ -76,7 +76,7 @@ static_library("metrics") {
   ]
 }
 
-static_library("field_trial") {
+source_set("field_trial") {
   sources = [
     "field_trial.cc",
   ]

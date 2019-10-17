@@ -76,6 +76,7 @@ Element& VTTElement::CloneWithoutAttributesAndChildren(
   auto* clone = MakeGarbageCollected<VTTElement>(
       static_cast<VTTNodeType>(web_vtt_node_type_), &factory);
   clone->SetLanguage(language_);
+  clone->SetTrack(track_);
   return *clone;
 }
 
@@ -130,6 +131,15 @@ void VTTElement::SetIsPastNode(bool is_past_node) {
       kLocalStyleChange,
       StyleChangeReasonForTracing::CreateWithExtraData(
           style_change_reason::kPseudoClass, style_change_extra_data::g_past));
+}
+
+void VTTElement::SetTrack(TextTrack* track) {
+  track_ = track;
+}
+
+void VTTElement::Trace(blink::Visitor* visitor) {
+  visitor->Trace(track_);
+  Element::Trace(visitor);
 }
 
 }  // namespace blink

@@ -137,42 +137,44 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   session_.set_disconnect_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
 
-  // If we auto attached to a new oopif the session is not suspended but the
-  // render frame host may be updated during navigation, so outstanding messages
-  // are resent to the new host.
-  if (!suspended_sending_messages_to_agent_) {
-    for (const auto& pair : waiting_for_response_messages_) {
-      int call_id = pair.first;
-      const WaitingMessage& message = pair.second;
-      DispatchProtocolMessageToAgent(call_id, message.method, message.message);
-    }
-  } else {
-    std::vector<SuspendedMessage> new_suspended_messages;
-    new_suspended_messages.reserve(waiting_for_response_messages_.size());
-    for (const auto& pair : waiting_for_response_messages_) {
-      int call_id = pair.first;
-      const WaitingMessage& message = pair.second;
-      if (TerminateOnCrossProcessNavigation(message.method)) {
-        // We'll not receive any responses from the old agent, so send errors to
-        // the client.
-        auto error = protocol::InternalResponse::createErrorResponse(
-            call_id, protocol::DispatchResponse::kServerError,
-            kTargetClosedMessage);
-        sendProtocolResponse(call_id, std::move(error));
-      } else {
-        new_suspended_messages.push_back(
-            {call_id, message.method, message.message});
-      }
-    }
-    suspended_messages_.insert(suspended_messages_.begin(),
-                               new_suspended_messages.begin(),
-                               new_suspended_messages.end());
-    waiting_for_response_messages_.clear();
-  }
-
   // Set cookie to an empty struct to reattach next time instead of attaching.
   if (!session_state_cookie_)
     session_state_cookie_ = blink::mojom::DevToolsSessionState::New();
+
+  // We're attaching to a new agent while suspended; therefore, messages that
+  // have been sent previously either need to be terminated or re-sent once we
+  // resume, as we will not get any responses from the old agent at this point.
+  if (suspended_sending_messages_to_agent_) {
+    for (auto it = pending_messages_.begin(); it != pending_messages_.end();) {
+      const Message& message = *it;
+      if (waiting_for_response_.count(message.call_id) &&
+          TerminateOnCrossProcessNavigation(message.method)) {
+        // Send error to the client and remove the message from pending.
+        auto error = protocol::InternalResponse::createErrorResponse(
+            message.call_id, protocol::DispatchResponse::kServerError,
+            kTargetClosedMessage);
+        sendProtocolResponse(message.call_id, std::move(error));
+        it = pending_messages_.erase(it);
+      } else {
+        // We'll send or re-send the message in ResumeSendingMessagesToAgent.
+        ++it;
+      }
+    }
+    waiting_for_response_.clear();
+    return;
+  }
+
+  // The session is not suspended but the render frame host may be updated
+  // during navigation because:
+  // - auto attached to a new OOPIF
+  // - cross-process navigation in the main frame
+  // Therefore, we re-send outstanding messages to the new host.
+  for (const Message& message : pending_messages_) {
+    if (waiting_for_response_.count(message.call_id)) {
+      DispatchProtocolMessageToAgent(message.call_id, message.method,
+                                     message.message);
+    }
+  }
 }
 
 void DevToolsSession::MojoConnectionDestroyed() {
@@ -269,13 +271,13 @@ void DevToolsSession::fallThrough(int call_id,
   // In browser-only mode, we should've handled everything in dispatcher.
   DCHECK(!browser_only_);
 
-  if (suspended_sending_messages_to_agent_) {
-    suspended_messages_.push_back({call_id, method, message});
+  auto it = pending_messages_.insert(pending_messages_.end(),
+                                     {call_id, method, message});
+  if (suspended_sending_messages_to_agent_)
     return;
-  }
 
   DispatchProtocolMessageToAgent(call_id, method, message);
-  waiting_for_response_messages_[call_id] = {method, message};
+  waiting_for_response_[call_id] = it;
 }
 
 void DevToolsSession::DispatchProtocolMessageToAgent(
@@ -305,13 +307,15 @@ void DevToolsSession::SuspendSendingMessagesToAgent() {
 void DevToolsSession::ResumeSendingMessagesToAgent() {
   DCHECK(!browser_only_);
   suspended_sending_messages_to_agent_ = false;
-  for (const SuspendedMessage& message : suspended_messages_) {
+  for (auto it = pending_messages_.begin(); it != pending_messages_.end();
+       ++it) {
+    const Message& message = *it;
+    if (waiting_for_response_.count(message.call_id))
+      continue;
     DispatchProtocolMessageToAgent(message.call_id, message.method,
                                    message.message);
-    waiting_for_response_messages_[message.call_id] = {message.method,
-                                                       message.message};
+    waiting_for_response_[message.call_id] = it;
   }
-  suspended_messages_.clear();
 }
 
 // The following methods handle responses or notifications coming from
@@ -365,7 +369,13 @@ void DevToolsSession::DispatchProtocolResponse(
     int call_id,
     blink::mojom::DevToolsSessionStatePtr updates) {
   ApplySessionStateUpdates(std::move(updates));
-  waiting_for_response_messages_.erase(call_id);
+  auto it = waiting_for_response_.find(call_id);
+  // TODO(johannes): Consider shutting down renderer instead of just
+  // dropping the message. See shutdownForBadMessage().
+  if (it == waiting_for_response_.end())
+    return;
+  pending_messages_.erase(it->second);
+  waiting_for_response_.erase(it);
   DispatchProtocolResponseOrNotification(client_, agent_host_,
                                          std::move(message));
   // |this| may be deleted at this point.

@@ -97,12 +97,14 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
 
   int alloc_size_in_bytes = data_size.ValueOrDie();
   if (!src_image) {
-    auto data = WTF::ArrayBufferContents::CreateDataHandle(
-        alloc_size_in_bytes, WTF::ArrayBufferContents::kZeroInitialize);
-    if (!data)
+    WTF::ArrayBufferContents result(alloc_size_in_bytes, 1,
+                                    WTF::ArrayBufferContents::kNotShared,
+                                    WTF::ArrayBufferContents::kZeroInitialize);
+
+    // Check if the ArrayBuffer backing store was allocated correctly.
+    if (result.DataLength() != static_cast<size_t>(alloc_size_in_bytes)) {
       return false;
-    WTF::ArrayBufferContents result(std::move(data),
-                                    WTF::ArrayBufferContents::kNotShared);
+    }
     result.Transfer(dest_contents);
     return true;
   }
@@ -115,12 +117,14 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
   WTF::ArrayBufferContents::InitializationPolicy initialization_policy =
       may_have_stray_area ? WTF::ArrayBufferContents::kZeroInitialize
                           : WTF::ArrayBufferContents::kDontInitialize;
-  auto data = WTF::ArrayBufferContents::CreateDataHandle(alloc_size_in_bytes,
-                                                         initialization_policy);
-  if (!data)
+
+  WTF::ArrayBufferContents result(alloc_size_in_bytes, 1,
+                                  WTF::ArrayBufferContents::kNotShared,
+                                  initialization_policy);
+  // Check if the ArrayBuffer backing store was allocated correctly.
+  if (result.DataLength() != static_cast<size_t>(alloc_size_in_bytes)) {
     return false;
-  WTF::ArrayBufferContents result(std::move(data),
-                                  WTF::ArrayBufferContents::kNotShared);
+  }
 
   SkColorType color_type =
       (color_params.GetSkColorType() == kRGBA_F16_SkColorType)

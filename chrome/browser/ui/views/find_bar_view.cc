@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
@@ -310,16 +309,6 @@ gfx::Size FindBarView::CalculatePreferredSize() const {
   // width from changing every time the match count text changes.
   size.set_width(size.width() - match_count_text_->GetPreferredSize().width());
   return size;
-}
-
-void FindBarView::AddedToWidget() {
-  // Since the find bar now works/looks like a location bar bubble, make sure it
-  // doesn't get dark themed in incognito mode.
-  if (find_bar_host_->browser_view()
-          ->browser()
-          ->profile()
-          ->IsIncognitoProfile())
-    SetNativeTheme(ui::NativeTheme::GetInstanceForNativeUi());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

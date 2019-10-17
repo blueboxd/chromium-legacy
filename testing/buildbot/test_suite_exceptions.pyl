@@ -861,6 +861,13 @@
   },
   'monochrome_public_test_ar_apk': {
     'modifications': {
+      'Nougat Phone Tester': {
+        'args': [
+          # ArCore is not installed as a system app on N, so we can install it
+          # normally instead of replacing the system version.
+          '--additional-apk=//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk'
+        ],
+      },
       # chromium.android
       # We need to match the Playstore version as well because AR tests fail on
       # old versions of the Playstore.

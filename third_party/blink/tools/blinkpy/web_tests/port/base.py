@@ -129,6 +129,9 @@ class Port(object):
         ('mac10.11', 'x86'),
         ('mac10.12', 'x86'),
         ('mac10.13', 'x86'),
+        ('mac10.14', 'x86'),
+        ('mac10.15', 'x86'),
+
         ('win7', 'x86'),
         ('win10', 'x86'),
         ('trusty', 'x86_64'),
@@ -140,6 +143,10 @@ class Port(object):
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
+        # NOTE: We don't support specifiers for mac10.14 or mac10.15 because
+        # we don't have separate baselines for them (they share the mac10.13
+        # results in the platform/mac directory). This list will need to be
+        # updated if/when we actually have separate baselines.
         'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],

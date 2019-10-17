@@ -686,17 +686,6 @@ void PageInfo::ComputeUIInputs(
       if (visible_security_state.cert_status & net::CERT_STATUS_IS_EV) {
         // EV HTTPS page.
         site_identity_status_ = SITE_IDENTITY_STATUS_EV_CERT;
-        DCHECK(!certificate_->subject().organization_names.empty());
-        organization_name_ =
-            UTF8ToUTF16(certificate_->subject().organization_names[0]);
-        // An EV Cert is required to have a city (localityName) and country but
-        // state is "if any".
-        DCHECK(!certificate_->subject().locality_name.empty());
-        DCHECK(!certificate_->subject().country_name.empty());
-        site_details_message_.assign(l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED,
-            organization_name_,
-            UTF8ToUTF16(certificate_->subject().country_name)));
       } else {
         // Non-EV OK HTTPS page.
         site_identity_status_ = SITE_IDENTITY_STATUS_CERT;
@@ -989,10 +978,7 @@ void PageInfo::PresentSiteIdentity() {
   DCHECK_NE(site_identity_status_, SITE_IDENTITY_STATUS_UNKNOWN);
   DCHECK_NE(site_connection_status_, SITE_CONNECTION_STATUS_UNKNOWN);
   PageInfoUI::IdentityInfo info;
-  if (site_identity_status_ == SITE_IDENTITY_STATUS_EV_CERT)
-    info.site_identity = UTF16ToUTF8(organization_name());
-  else
-    info.site_identity = UTF16ToUTF8(GetSimpleSiteName(site_url_));
+  info.site_identity = UTF16ToUTF8(GetSimpleSiteName(site_url_));
 
   info.connection_status = site_connection_status_;
   info.connection_status_description = UTF16ToUTF8(site_connection_details_);

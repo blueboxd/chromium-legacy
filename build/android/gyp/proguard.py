@@ -176,7 +176,7 @@ def _OptimizeWithR8(options,
       os.mkdir(tmp_output)
 
     cmd = [
-        'java',
+        build_utils.JAVA_PATH,
         '-jar',
         options.r8_path,
         '--no-desugaring',
@@ -246,7 +246,7 @@ def _OptimizeWithProguard(options,
 
     if options.proguard_path.endswith('.jar'):
       cmd = [
-          'java', '-jar', options.proguard_path, '-include',
+          build_utils.JAVA_PATH, '-jar', options.proguard_path, '-include',
           combined_proguard_configs_path
       ]
     else:

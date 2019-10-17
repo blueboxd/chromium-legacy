@@ -71,11 +71,9 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, src_dir):
     if src_paths and not os.path.exists(dst_dir):
       os.makedirs(dst_dir)
     for src_path in src_paths:
-      print(src_path)
       dst_path = os.path.join(dst_dir, os.path.basename(src_path))
       if not os.path.exists(dst_path):
         g_archive_inputs.append(src_path)
-        print('paths src_path={0}, dest_dir={1}'.format(src_path, dst_dir))
         shutil.copy(src_path, dst_dir)
 
 def GetLZMAExec(build_dir):

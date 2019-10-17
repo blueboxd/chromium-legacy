@@ -19,6 +19,10 @@
 #include "remoting/client/notification/version_range.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/locale_utils.h"
+#endif
+
 namespace remoting {
 
 namespace {
@@ -190,8 +194,16 @@ NotificationClient::NotificationClient(
           std::make_unique<GstaticJsonFetcher>(network_task_runner),
           kCurrentPlatform,
           kCurrentVersion,
+#if defined(OS_ANDROID)
+          // GetApplicationLocale() returns empty string on Android since we
+          // don't pack any .pak file into the apk, so we need to get the locale
+          // string directly.
+          base::android::GetDefaultLocaleString(),
+#else
           l10n_util::GetApplicationLocale(""),
-          kShouldIgnoreDevMessages) {}
+#endif
+          kShouldIgnoreDevMessages) {
+}
 
 NotificationClient::~NotificationClient() = default;
 

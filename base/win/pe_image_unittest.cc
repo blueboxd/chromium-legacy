@@ -182,29 +182,19 @@ TEST(PEImageTest, EnumeratesPEWithTargetModule) {
   const char kTargetModuleStatic[] = "user32.dll";
   const char kTargetModuleDelay[] = "cfgmgr32.dll";
 
-#if defined(ARCH_CPU_ARM64)
-  const int kSections = 7;
-  const int kImportsDlls = 2;
+  const int kImportsDlls = 1;
   const int kDelayDlls = 1;
   const int kExports = 3;
   const int kImports = 2;
   const int kDelayImports = 1;
+#if defined(ARCH_CPU_ARM64)
+  const int kSections = 7;
   const int kRelocs = 740;
 #elif defined(ARCH_CPU_64_BITS)
   const int kSections = 6;
-  const int kImportsDlls = 1;
-  const int kDelayDlls = 1;
-  const int kExports = 3;
-  const int kImports = 2;
-  const int kDelayImports = 1;
   const int kRelocs = 976;
 #else
   const int kSections = 5;
-  const int kImportsDlls = 1;
-  const int kDelayDlls = 1;
-  const int kExports = 3;
-  const int kImports = 2;
-  const int kDelayImports = 1;
   const int kRelocs = 2114;
 #endif
 

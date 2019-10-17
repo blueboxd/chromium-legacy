@@ -5,6 +5,7 @@
 #include "ash/media/media_notification_container_impl.h"
 
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/background.h"
@@ -19,11 +20,12 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
       control_buttons_view_(
           std::make_unique<message_center::NotificationControlButtonsView>(
               this)),
-      view_(this,
-            std::move(item),
-            control_buttons_view_.get(),
-            message_center::MessageCenter::Get()
-                ->GetSystemNotificationAppName()) {
+      view_(
+          this,
+          std::move(item),
+          control_buttons_view_.get(),
+          message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
+          message_center::kNotificationWidth) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Since we own these, we don't want Views to destroy them when their parent

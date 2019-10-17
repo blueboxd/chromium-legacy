@@ -606,16 +606,26 @@ String ImportMap::ToString() const {
     is_first_key = false;
     builder.Append("\n  ");
     builder.Append(it.key.EncodeForDebugging());
-    builder.Append(": [");
-    bool is_first_value = true;
-    for (const auto& v : it.value) {
-      if (!is_first_value)
-        builder.Append(",");
-      is_first_value = false;
-      builder.Append("\n    ");
-      builder.Append(v.GetString().EncodeForDebugging());
+    builder.Append(": ");
+    if (support_builtin_modules_) {
+      builder.Append("[");
+      bool is_first_value = true;
+      for (const auto& v : it.value) {
+        if (!is_first_value)
+          builder.Append(",");
+        is_first_value = false;
+        builder.Append("\n    ");
+        builder.Append(v.GetString().EncodeForDebugging());
+      }
+      builder.Append("\n  ]");
+    } else {
+      if (it.value.size() == 0) {
+        builder.Append("[]");
+      } else {
+        DCHECK_EQ(it.value.size(), 1u);
+        builder.Append(it.value[0].GetString().EncodeForDebugging());
+      }
     }
-    builder.Append("\n  ]");
   }
   builder.Append("\n}\n");
   return builder.ToString();

@@ -9,6 +9,7 @@
 
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace viz {
@@ -24,7 +25,7 @@ namespace demo {
 class DemoService {
  public:
   DemoService(mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
-              viz::mojom::FrameSinkManagerClientPtr client);
+              mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client);
   ~DemoService();
 
  private:

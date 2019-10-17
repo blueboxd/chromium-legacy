@@ -235,20 +235,22 @@ void TabDragControllerTest::AddTabsAndResetBrowser(Browser* browser,
 }
 
 Browser* TabDragControllerTest::CreateAnotherBrowserAndResize() {
-  // Create another browser.
   Browser* browser2 = CreateBrowser(browser()->profile());
   ResetIDs(browser2->tab_strip_model(), 100);
+  Resize(browser(), browser2);
+  return browser2;
+}
 
+void TabDragControllerTest::Resize(Browser* browser1, Browser* browser2) {
   // Resize the two windows so they're right next to each other.
-  const gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+  const gfx::NativeWindow window = browser1->window()->GetNativeWindow();
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   const gfx::Size size(work_area.width() / 3, work_area.height() / 2);
   gfx::Rect browser_rect(work_area.origin(), size);
-  browser()->window()->SetBounds(browser_rect);
+  browser1->window()->SetBounds(browser_rect);
   browser_rect.set_x(browser_rect.right());
   browser2->window()->SetBounds(browser_rect);
-  return browser2;
 }
 
 void TabDragControllerTest::SetWindowFinderForTabStrip(
@@ -603,16 +605,16 @@ class DetachToBrowserTabDragControllerTest
     observer.Wait();
   }
 
-  std::string InstallWebApp(
+  web_app::AppId InstallWebApp(
       std::unique_ptr<WebApplicationInfo>&& web_app_info) {
-    std::string app_id;
+    web_app::AppId app_id;
     base::RunLoop run_loop;
     auto* provider = web_app::WebAppProvider::Get(browser()->profile());
     DCHECK(provider);
     provider->install_manager().InstallWebAppFromInfo(
         std::move(web_app_info), web_app::ForInstallableSite::kYes,
         WebappInstallSource::OMNIBOX_INSTALL_ICON,
-        base::BindLambdaForTesting([&](const std::string& installed_app_id,
+        base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
           EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
           app_id = installed_app_id;
@@ -624,26 +626,30 @@ class DetachToBrowserTabDragControllerTest
   }
 
   Browser* GetTerminalAppBrowser() {
-    GURL app_url = embedded_test_server()->GetURL("app.com", "/simple.html");
-    auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app_info->app_url = app_url;
-    web_app_info->scope = app_url.GetWithoutFilename();
-    web_app_info->open_as_window = true;
-    web_app::AppId app_id = InstallWebApp(std::move(web_app_info));
+    // Install the app (but only once per session).
+    if (!terminal_app_extension_) {
+      GURL app_url = embedded_test_server()->GetURL("app.com", "/simple.html");
+      auto web_app_info = std::make_unique<WebApplicationInfo>();
+      web_app_info->app_url = app_url;
+      web_app_info->scope = app_url.GetWithoutFilename();
+      web_app_info->open_as_window = true;
+      web_app::AppId app_id = InstallWebApp(std::move(web_app_info));
 
-    auto* provider = web_app::WebAppProvider::Get(browser()->profile());
-    provider->system_web_app_manager().SetSystemAppsForTesting(
-        {{web_app::SystemAppType::TERMINAL, web_app::SystemAppInfo(app_url)}});
-    web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
-        .Insert(app_url, app_id,
-                web_app::ExternalInstallSource::kInternalDefault);
+      auto* provider = web_app::WebAppProvider::Get(browser()->profile());
+      provider->system_web_app_manager().SetSystemAppsForTesting(
+          {{web_app::SystemAppType::TERMINAL,
+            web_app::SystemAppInfo(app_url)}});
+      web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+          .Insert(app_url, app_id,
+                  web_app::ExternalInstallSource::kInternalDefault);
 
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(browser()->profile())
-            ->GetInstalledExtension(app_id);
+      terminal_app_extension_ =
+          extensions::ExtensionRegistry::Get(browser()->profile())
+              ->GetInstalledExtension(app_id);
+    }
 
-    return extensions::browsertest_util::LaunchAppBrowser(browser()->profile(),
-                                                          extension);
+    return extensions::browsertest_util::LaunchAppBrowser(
+        browser()->profile(), terminal_app_extension_);
   }
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
@@ -653,6 +659,7 @@ class DetachToBrowserTabDragControllerTest
   // The root window for the event generator.
   aura::Window* root_ = nullptr;
 #endif
+  const extensions::Extension* terminal_app_extension_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);
 };
@@ -2781,6 +2788,39 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // New browser should be TYPE_APP.
   ASSERT_EQ(2u, browser_list->size());
   EXPECT_EQ(Browser::Type::TYPE_APP, browser_list->get(1)->type());
+}
+
+// Move tab from TYPE_APP Browser to another TYPE_APP Browser.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DragAppToAppWindow) {
+  // Start the embedded server, and get 2 browsers with Terminal System App.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  Browser* app_browser1 = GetTerminalAppBrowser();
+  Browser* app_browser2 = GetTerminalAppBrowser();
+  ASSERT_EQ(3u, browser_list->size());
+  ResetIDs(app_browser2->tab_strip_model(), 100);
+  Resize(app_browser1, app_browser2);
+
+  // Close normal browser since other code expects only 1 browser to start.
+  CloseBrowserSynchronously(browser());
+  ASSERT_EQ(2u, browser_list->size());
+  SelectFirstBrowser();
+  ASSERT_EQ(app_browser1, browser());
+
+  AddTabsAndResetBrowser(browser(), 1);
+  TabStrip* tab_strip1 = GetTabStripForBrowser(app_browser1);
+  TabStrip* tab_strip2 = GetTabStripForBrowser(app_browser2);
+
+  // Move to the first tab and drag it enough so that it detaches, but not
+  // enough that it attaches to browser2.
+  DragTabAndNotify(tab_strip1, base::BindOnce(&DragToSeparateWindowStep2, this,
+                                              tab_strip1, tab_strip2));
+
+  // Should now be attached to tab_strip2.
+  // Release mouse or touch, stopping the drag session.
+  ASSERT_TRUE(ReleaseInput());
+  EXPECT_EQ("100 0", IDString(app_browser2->tab_strip_model()));
+  EXPECT_EQ("1", IDString(app_browser1->tab_strip_model()));
 }
 
 // Subclass of DetachToBrowserTabDragControllerTest that

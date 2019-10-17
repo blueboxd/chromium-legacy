@@ -79,8 +79,6 @@ class UninstallDialog {
                               bool report_rebuse,
                               UninstallDialog* uninstall_dialog)>;
 
-  static constexpr int32_t kSizeHintInDip = 32;
-
   UninstallDialog(Profile* profile,
                   apps::mojom::AppType app_type,
                   const std::string& app_id,

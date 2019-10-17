@@ -1699,6 +1699,11 @@ leveldb::Slice MakeSlice(const base::StringPiece& s) {
   return leveldb::Slice(s.begin(), s.size());
 }
 
+leveldb::Slice MakeSlice(base::span<const uint8_t> s) {
+  return MakeSlice(
+      base::StringPiece(reinterpret_cast<const char*>(s.data()), s.size()));
+}
+
 }  // namespace leveldb_env
 
 namespace leveldb {

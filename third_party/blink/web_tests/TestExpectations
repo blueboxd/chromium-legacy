@@ -2541,6 +2541,10 @@ crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-autosc
 crbug.com/987115 [ Win ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure Crash ]
 crbug.com/965829 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 
+# 1px scroll offset difference for compositor threaded scrollbar scrolling on Linux.
+crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
+crbug.com/1009892 [ Win ] virtual/compositor_threaded_scrollbar_scrolling_hidpi_nozoomfordsf/fast/scrolling/scrollbars/scrollbar-thumb-snapping.html [ Failure ]
+
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-002.html [ Failure ]
@@ -2658,7 +2662,7 @@ crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-inp
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
-crbug.com/626703 external/wpt/webxr/events_referenceSpace_reset.https.html [ Timeout ]
+crbug.com/626703 external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
@@ -3718,7 +3722,6 @@ crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html 
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
 crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 [ Debug ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
-crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
@@ -3969,6 +3972,11 @@ crbug.com/826419 external/wpt/html/semantics/embedded-content/media-elements/tra
 crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-webvtt-non-snap-to-lines.html [ Failure ]
 
 crbug.com/927477 external/wpt/import-maps/acquire-import-maps-flag/worker-request/ [ Skip ]
+crbug.com/927477 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/acquire-import-maps-flag/worker-request/ [ Skip ]
+
+# Excludes tests that require built-in module supports.
+crbug.com/1010751 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/builtin-support.tentative/ [ Skip ]
+crbug.com/1010751 external/wpt/import-maps/imported/ [ Skip ]
 
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
@@ -5716,3 +5724,6 @@ crbug.com/1014327 [ Mac ] external/wpt/preload/onerror-event.html [ Pass Timeout
 crbug.com/1014810 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
 crbug.com/1014812 external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout Failure ]
 crbug.com/1014812 virtual/threaded/external/wpt/animation-worklet/playback-rate.https.html [ Pass Timeout Failure ]
+crbug.com/1014950 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
+crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
+crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]

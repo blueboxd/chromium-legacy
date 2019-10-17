@@ -83,7 +83,8 @@
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \
+    BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "media/mojo/mojom/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
@@ -289,12 +290,24 @@ void ShellContentBrowserClient::BindInterfaceRequestFromFrame(
 void ShellContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
+#if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \
+    BUILDFLAG(ENABLE_CAST_RENDERER)
+  bool is_media_service = false;
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  if (identity.name() == media::mojom::kMediaServiceName) {
+  if (identity.name() == media::mojom::kMediaServiceName)
+    is_media_service = true;
+#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#if BUILDFLAG(ENABLE_CAST_RENDERER)
+  if (identity.name() == media::mojom::kMediaRendererServiceName)
+    is_media_service = true;
+#endif  // BUILDFLAG(ENABLE_CAST_RENDERER)
+
+  if (is_media_service) {
     service_manager::Service::RunAsyncUntilTermination(
         media::CreateMediaServiceForTesting(std::move(*receiver)));
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) ||
+        // BUILDFLAG(ENABLE_CAST_RENDERER)
 }
 
 bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(

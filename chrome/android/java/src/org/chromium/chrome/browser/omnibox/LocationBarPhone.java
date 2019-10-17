@@ -208,6 +208,7 @@ public class LocationBarPhone extends LocationBarLayout {
         }
 
         updateButtonVisibility();
+        mStatusViewCoordinator.setUrlFocusChangePercent(percent);
     }
 
     @Override
@@ -279,7 +280,6 @@ public class LocationBarPhone extends LocationBarLayout {
     protected void updateButtonVisibility() {
         super.updateButtonVisibility();
         updateMicButtonVisibility(mUrlFocusChangePercent);
-        updateStatusButtonVisibility(mUrlFocusChangePercent);
     }
 
     @Override
@@ -291,24 +291,6 @@ public class LocationBarPhone extends LocationBarLayout {
     public void setShowIconsWhenUrlFocused(boolean showIcon) {
         super.setShowIconsWhenUrlFocused(showIcon);
         mStatusViewCoordinator.setShowIconsWhenUrlFocused(showIcon);
-    }
-
-    /**
-     * Updates the display of the status button.
-     *
-     * @param urlFocusChangePercent The completion percentage of the URL focus change animation.
-     */
-    private void updateStatusButtonVisibility(float urlFocusChangePercent) {
-        if (mIconView == null
-                || !SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                        getToolbarDataProvider().isIncognito())) {
-            return;
-        }
-
-        if (mToolbarDataProvider.getNewTabPageForCurrentTab() != null
-                && mToolbarDataProvider.getNewTabPageForCurrentTab().isLocationBarShownInNTP()) {
-            mIconView.setAlpha(urlFocusChangePercent);
-        }
     }
 
     /**

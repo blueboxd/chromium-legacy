@@ -59,10 +59,12 @@ LoginUserInfo& LoginUserInfo::operator=(LoginUserInfo&& other) = default;
 AuthDisabledData::AuthDisabledData() = default;
 AuthDisabledData::AuthDisabledData(AuthDisabledReason reason,
                                    const base::Time& auth_reenabled_time,
-                                   const base::TimeDelta& device_used_time)
+                                   const base::TimeDelta& device_used_time,
+                                   bool disable_lock_screen_media)
     : reason(reason),
       auth_reenabled_time(auth_reenabled_time),
-      device_used_time(device_used_time) {}
+      device_used_time(device_used_time),
+      disable_lock_screen_media(disable_lock_screen_media) {}
 AuthDisabledData::AuthDisabledData(const AuthDisabledData& other) = default;
 AuthDisabledData::AuthDisabledData(AuthDisabledData&& other) = default;
 AuthDisabledData::~AuthDisabledData() = default;

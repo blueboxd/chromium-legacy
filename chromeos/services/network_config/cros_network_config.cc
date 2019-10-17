@@ -740,6 +740,9 @@ mojom::IPConfigPropertiesPtr GetIPConfig(const base::Value* dict) {
       GetStringList(dict, ::onc::ipconfig::kSearchDomains);
   ip_config->routing_prefix = GetInt32(dict, ::onc::ipconfig::kRoutingPrefix);
   ip_config->type = GetString(dict, ::onc::ipconfig::kType);
+  // Shill may omit the IP Config type for VPNs. The type should be IPv4.
+  if (!ip_config->type || ip_config->type->empty())
+    ip_config->type = ::onc::ipconfig::kIPv4;
   ip_config->web_proxy_auto_discovery_url =
       GetString(dict, ::onc::ipconfig::kWebProxyAutoDiscoveryUrl);
   return ip_config;

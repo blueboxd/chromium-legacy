@@ -474,8 +474,27 @@ cursors.Cursor.prototype = {
           // element, should be treated as a character offset.
           (!newNode.state[StateType.EDITABLE] ||
            newNode.state[StateType.RICHLY_EDITABLE]) &&
-          newNode.children[newIndex]) {
-        // Valid child node offset.
+          newIndex <= newNode.children.length) {
+        // Valid child node offset. Note that there is a special case where
+        // |newIndex == node.children.length|. In these cases, we actually want
+        // to position the cursor at the end of the text of
+        // |node.children[newIndex - 1]|.
+        // |newIndex| is assumed to be > 0.
+        if (newIndex == newNode.children.length) {
+          // Take the last child.
+          newNode = newNode.lastChild;
+
+          // The |newIndex| is either a text offset or a child offset.
+          if (newNode.role == RoleType.STATIC_TEXT) {
+            newIndex = newNode.name.length;
+            isTextIndex = true;
+            break;
+          }
+
+          // The last valid child index.
+          newIndex--;
+        }
+
         newNode = newNode.children[newIndex];
         newIndex = 0;
       } else {

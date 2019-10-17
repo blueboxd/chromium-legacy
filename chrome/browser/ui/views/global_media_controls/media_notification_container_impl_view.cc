@@ -57,12 +57,16 @@ class MediaNotificationContainerImplView::DismissButton
 MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     const std::string& id,
     base::WeakPtr<media_message_center::MediaNotificationItem> item)
-    : id_(id),
+    : views::Button(this),
+      id_(id),
       foreground_color_(kDefaultForegroundColor),
       background_color_(kDefaultBackgroundColor) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-
   SetPreferredSize(kNormalSize);
+  set_notify_enter_exit_on_child(true);
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_BACK_TO_TAB));
 
   swipeable_container_ = std::make_unique<views::View>();
   swipeable_container_->set_owned_by_client();
@@ -76,7 +80,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
   dismiss_button_container_->SetPreferredSize(kDismissButtonSize);
   dismiss_button_container_->SetLayoutManager(
       std::make_unique<views::FillLayout>());
-  dismiss_button_container_->SetVisible(true);
+  dismiss_button_container_->SetVisible(false);
 
   auto dismiss_button = std::make_unique<DismissButton>(this);
   dismiss_button->SetPreferredSize(kDismissButtonSize);
@@ -88,7 +92,8 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
   UpdateDismissButtonIcon();
 
   view_ = std::make_unique<media_message_center::MediaNotificationView>(
-      this, std::move(item), dismiss_button_container_.get(), base::string16());
+      this, std::move(item), dismiss_button_container_.get(), base::string16(),
+      kWidth);
   view_->set_owned_by_client();
   ForceExpandedState();
 
@@ -103,19 +108,38 @@ MediaNotificationContainerImplView::~MediaNotificationContainerImplView() {
     observer.OnContainerDestroyed(id_);
 }
 
+void MediaNotificationContainerImplView::AddedToWidget() {
+  if (GetFocusManager())
+    GetFocusManager()->AddFocusChangeListener(this);
+}
+
+void MediaNotificationContainerImplView::RemovedFromWidget() {
+  if (GetFocusManager())
+    GetFocusManager()->RemoveFocusChangeListener(this);
+}
+
+void MediaNotificationContainerImplView::OnMouseEntered(
+    const ui::MouseEvent& event) {
+  UpdateDismissButtonVisibility();
+}
+
+void MediaNotificationContainerImplView::OnMouseExited(
+    const ui::MouseEvent& event) {
+  UpdateDismissButtonVisibility();
+}
+
+void MediaNotificationContainerImplView::OnDidChangeFocus(
+    views::View* focused_before,
+    views::View* focused_now) {
+  UpdateDismissButtonVisibility();
+}
+
 void MediaNotificationContainerImplView::OnExpanded(bool expanded) {
   SetPreferredSize(expanded ? kExpandedSize : kNormalSize);
   PreferredSizeChanged();
 
   for (auto& observer : observers_)
     observer.OnContainerExpanded(expanded);
-}
-
-void MediaNotificationContainerImplView::OnMediaSessionInfoChanged(
-    const media_session::mojom::MediaSessionInfoPtr& session_info) {
-  dismiss_button_container_->SetVisible(
-      !session_info || session_info->playback_state !=
-                           media_session::mojom::MediaPlaybackState::kPlaying);
 }
 
 void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged() {
@@ -159,8 +183,14 @@ void MediaNotificationContainerImplView::OnSlideOut() {
 
 void MediaNotificationContainerImplView::ButtonPressed(views::Button* sender,
                                                        const ui::Event& event) {
-  DCHECK_EQ(dismiss_button_, sender);
-  DismissNotification();
+  if (sender == dismiss_button_) {
+    DismissNotification();
+  } else if (sender == this) {
+    for (auto& observer : observers_)
+      observer.OnContainerClicked(id_);
+  } else {
+    NOTREACHED();
+  }
 }
 
 void MediaNotificationContainerImplView::AddObserver(
@@ -192,6 +222,17 @@ void MediaNotificationContainerImplView::UpdateDismissButtonBackground() {
 
   dismiss_button_container_->SetBackground(views::CreateRoundedRectBackground(
       background_color_, kDismissButtonBackgroundRadius));
+}
+
+void MediaNotificationContainerImplView::UpdateDismissButtonVisibility() {
+  bool has_focus = false;
+  if (GetFocusManager()) {
+    views::View* focused_view = GetFocusManager()->GetFocusedView();
+    if (focused_view)
+      has_focus = Contains(focused_view);
+  }
+
+  dismiss_button_container_->SetVisible(IsMouseHovered() || has_focus);
 }
 
 void MediaNotificationContainerImplView::DismissNotification() {

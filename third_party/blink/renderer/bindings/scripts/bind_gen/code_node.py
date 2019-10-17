@@ -46,7 +46,7 @@ class CodeNode(object):
             if key in kwargs:
                 return kwargs[key]
             else:
-                return '{' + key + '}'
+                return "{" + key + "}"
 
     _template_formatter = _LooseFormatter()
     _gensym_seq_id = 0
@@ -93,7 +93,7 @@ class CodeNode(object):
         will be "abc ${gensym1} xyz" when |sym| is 'gensym1'.
         """
         cls._gensym_seq_id += 1
-        return 'gensym{}'.format(cls._gensym_seq_id)
+        return "gensym{}".format(cls._gensym_seq_id)
 
     def __init__(self,
                  outer=None,
@@ -262,6 +262,27 @@ class CodeNode(object):
         state.code_symbols_used[symbol_node.name] = symbol_node
 
 
+class LiteralNode(CodeNode):
+    """
+    Represents a literal text, which will be rendered as is without any template
+    magic applied.
+    """
+
+    def __init__(self, literal_text, renderer=None):
+        assert isinstance(literal_text, str)
+
+        literal_text_gensym = CodeNode.gensym()
+        template_text = CodeNode.format_template(
+            "${{{literal_text}}}", literal_text=literal_text_gensym)
+        template_vars = {literal_text_gensym: literal_text}
+
+        CodeNode.__init__(
+            self,
+            template_text=template_text,
+            template_vars=template_vars,
+            renderer=renderer)
+
+
 class SimpleNode(CodeNode):
     """
     Represents a simple node that never contains a branch nor sequence.
@@ -281,22 +302,25 @@ class SimpleNode(CodeNode):
 class SequenceNode(CodeNode):
     """
     Represents a sequence of nodes.
-
-    If SymbolNodes are used inside this node, this node will attempt to insert
-    corresponding SymbolDefinitionNodes appropriately.
     """
 
-    def __init__(self, renderer=None):
-        element_nodes_symbol = CodeNode.gensym()
+    def __init__(self, code_nodes=None, separator="\n", renderer=None):
+        assert isinstance(separator, str)
+
+        element_nodes_gensym = CodeNode.gensym()
         element_nodes = []
         template_text = CodeNode.format_template(
             """\
 % for node in {element_nodes}:
-${node}
-% endfor\
+${node}\\
+% if not loop.last:
+{separator}\\
+% endif
+% endfor
 """,
-            element_nodes=element_nodes_symbol)
-        template_vars = {element_nodes_symbol: element_nodes}
+            element_nodes=element_nodes_gensym,
+            separator=separator)
+        template_vars = {element_nodes_gensym: element_nodes}
 
         CodeNode.__init__(
             self,
@@ -306,6 +330,9 @@ ${node}
 
         self._element_nodes = element_nodes
 
+        if code_nodes is not None:
+            self.extend(code_nodes)
+
     def __getitem__(self, index):
         return self._element_nodes[index]
 
@@ -314,20 +341,6 @@ ${node}
 
     def __len__(self):
         return len(self._element_nodes)
-
-    def _render(self, renderer, last_render_state):
-        # Sort nodes in order to generate reproducible code.
-        symbol_nodes = sorted(
-            last_render_state.code_symbols_used.itervalues(),
-            key=lambda node: node.name)
-        for symbol_node in symbol_nodes:
-            self._insert_symbol_definition(symbol_node)
-
-        return super(SequenceNode, self)._render(
-            renderer=renderer, last_render_state=last_render_state)
-
-    def _insert_symbol_definition(self, symbol_node):
-        self.insert(0, symbol_node.create_definition_node())
 
     def append(self, node):
         assert isinstance(node, CodeNode)
@@ -369,24 +382,46 @@ class SymbolNode(CodeNode):
     """
     Represents a code symbol such as a local variable of generated code.
 
-    Used combined with SequenceNode, SymbolDefinitionNode(s) will be
-    automatically inserted iff this symbol is referenced.
+    Using a SymbolNode combined with SymbolScopeNode, SymbolDefinitionNode(s)
+    will be automatically inserted iff this symbol is referenced.
     """
 
-    def __init__(self, name, definition_node_constructor):
+    def __init__(self,
+                 name,
+                 template_text=None,
+                 definition_node_constructor=None):
         """
         Args:
             name: The name of this code symbol.
+            template_text: Template text to be used to define the code symbol.
             definition_node_constructor: A callable that creates and returns a
-                new definition node.  This node will be passed as the argument.
+                new definition node.  This SymbolNode will be passed as the
+                argument.
+                Either of |template_text| or |definition_node_constructor| must
+                be given.
         """
         assert isinstance(name, str) and name
-        assert callable(definition_node_constructor)
+        assert (template_text is not None
+                or definition_node_constructor is not None)
+        assert template_text is None or definition_node_constructor is None
+        if template_text is not None:
+            assert isinstance(template_text, str)
+        if definition_node_constructor is not None:
+            assert callable(definition_node_constructor)
 
         CodeNode.__init__(self)
 
         self._name = name
-        self._definition_node_constructor = definition_node_constructor
+
+        if template_text is not None:
+
+            def constructor(symbol_node):
+                return SymbolDefinitionNode(
+                    symbol_node, template_text=template_text)
+
+            self._definition_node_constructor = constructor
+        else:
+            self._definition_node_constructor = definition_node_constructor
 
     def _render(self, renderer, last_render_state):
         if not renderer.last_caller.is_code_symbol_defined(self):
@@ -426,7 +461,7 @@ class SymbolDefinitionNode(CodeNode):
     def _render(self, renderer, last_render_state):
         if (self.upstream
                 and self.upstream.is_code_symbol_defined(self._symbol_node)):
-            return ''
+            return ""
 
         return super(SymbolDefinitionNode, self)._render(
             renderer=renderer, last_render_state=last_render_state)
@@ -436,3 +471,35 @@ class SymbolDefinitionNode(CodeNode):
             return True
         return super(SymbolDefinitionNode,
                      self).is_code_symbol_defined(symbol_node)
+
+
+class SymbolScopeNode(SequenceNode):
+    """
+    Represents a sequence of nodes.
+
+    If SymbolNodes are rendered inside this node, this node will attempt to
+    insert corresponding SymbolDefinitionNodes appropriately.
+    """
+
+    def _render(self, renderer, last_render_state):
+        # Sort nodes in order to render reproducible results.
+        symbol_nodes = sorted(
+            last_render_state.code_symbols_used.itervalues(),
+            key=lambda symbol_node: symbol_node.name)
+        for symbol_node in symbol_nodes:
+            self._insert_symbol_definition(symbol_node)
+
+        return super(SymbolScopeNode, self)._render(
+            renderer=renderer, last_render_state=last_render_state)
+
+    def _insert_symbol_definition(self, symbol_node):
+        self.insert(0, symbol_node.create_definition_node())
+
+    def register_code_symbol(self, symbol_node):
+        """Registers a SymbolNode and makes it available in this scope."""
+        assert isinstance(symbol_node, SymbolNode)
+        self.add_template_var(symbol_node.name, symbol_node)
+
+    def register_code_symbols(self, symbol_nodes):
+        for symbol_node in symbol_nodes:
+            self.register_code_symbol(symbol_node)

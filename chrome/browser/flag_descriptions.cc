@@ -294,10 +294,6 @@ const char kBundledConnectionHelpDescription[] =
     "an interstitial after clicking the 'Learn More' link on a previous "
     "interstitial.";
 
-const char kBundledHTTPExchangesName[] = "Bundled HTTP Exchanges";
-const char kBundledHTTPExchangesDescription[] =
-    "Enables experimental supports for Bundled HTTP Exchanges core navigation.";
-
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";
 const char kBypassAppBannerEngagementChecksDescription[] =
@@ -1835,13 +1831,6 @@ const char kServiceWorkerOnUIDescription[] =
     "Enables browser process logic related to service workers to run on the UI "
     "thread rather than the IO thread.";
 
-const char kSessionRestorePrioritizesBackgroundUseCasesName[] =
-    "Session restore prioritizes background use cases.";
-const char kSessionRestorePrioritizesBackgroundUseCasesDescription[] =
-    "When enabled session restore logic will prioritize sites that make use of "
-    "background communication mechanisms (favicon and tab title switches, "
-    "notifications, etc) over sites that do not.";
-
 const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
@@ -2211,6 +2200,11 @@ const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =
     "For developers: use the sandbox service for Google Payments API calls.";
+
+const char kWebBundlesName[] = "Web Bundles";
+const char kWebBundlesDescription[] =
+    "Enables experimental supports for Web Bundles (Bundled HTTP Exchanges) "
+    "navigation.";
 
 const char kWebglDraftExtensionsName[] = "WebGL Draft Extensions";
 const char kWebglDraftExtensionsDescription[] =
@@ -3380,6 +3374,12 @@ const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
+
+const char kEnableCrOSActionRecorderName[] = "Enable CrOS action recorder";
+const char kEnableCrOSActionRecorderDescription[] =
+    "When enabled, each app launching, file opening, setting change, and url "
+    "visiting will be logged locally into an encrypted file. Should not be "
+    "enabled. Be aware that hash option only provides a thin layer of privacy.";
 
 const char kEnableDiscoverAppName[] = "Enable Discover App";
 const char kEnableDiscoverAppDescription[] =

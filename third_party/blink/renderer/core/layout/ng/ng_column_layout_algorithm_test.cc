@@ -4445,6 +4445,41 @@ TEST_F(NGColumnLayoutAlgorithmTest, SpannerMarginsRtl) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpannerWithMargins) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        column-fill: auto;
+        height: 100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="columns:2;">
+          <div style="column-span:all; margin-top:10px; margin-bottom:20px; width:33px; height:100px;"></div>
+          <div style="column-span:all; width:44px; height:10px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,10 size:33x90
+      offset:110,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:33x10
+          offset:0,30 size:44x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, InvalidSpanners) {
   // Spanners cannot exist inside new formatting context roots. They will just
   // be treated as normal column content then.

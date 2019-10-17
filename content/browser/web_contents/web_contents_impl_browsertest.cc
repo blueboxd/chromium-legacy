@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <array>
 #include <utility>
 #include <vector>
@@ -30,7 +31,9 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
+#include "content/common/page_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/invalidate_type.h"
@@ -1052,11 +1055,13 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
                               const GURL& worker) {
     DCHECK(url.is_valid());
 
-    // Do a cross-process navigation to clear the in-memory cache.
-    // We assume that we don't start this call from "chrome://gpu", as
-    // otherwise it won't be a cross-process navigation. We are relying
-    // on this navigation to discard the old process.
-    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
+    // Clear the in-memory cache held by the current process:
+    // 1) Prevent the old page from entering the back-forward cache. Otherwise
+    //    the old process will be kept alive, because it is still being used.
+    // 2) Navigate to a WebUI URL, which uses a new process.
+    BackForwardCache::DisableForRenderFrameHost(
+        shell()->web_contents()->GetMainFrame(), "test");
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL(kChromeUIGpuHost)));
 
     // Observe network requests.
     ResourceLoadObserver observer(shell());
@@ -3351,6 +3356,115 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {
             new_client.override_webkit_prefs_rvh_set());
 
   SetBrowserClientForTesting(old_client);
+}
+
+namespace {
+
+class OutgoingSetRendererPrefsIPCWatcher {
+ public:
+  OutgoingSetRendererPrefsIPCWatcher(RenderProcessHostImpl* rph)
+      : rph_(rph), outgoing_message_seen_(false) {
+    rph_->SetIpcSendWatcherForTesting(
+        base::BindRepeating(&OutgoingSetRendererPrefsIPCWatcher::OnMessage,
+                            base::Unretained(this)));
+  }
+  ~OutgoingSetRendererPrefsIPCWatcher() {
+    rph_->SetIpcSendWatcherForTesting(
+        base::RepeatingCallback<void(const IPC::Message& msg)>());
+  }
+
+  void WaitForIPC() {
+    if (outgoing_message_seen_)
+      return;
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  const blink::mojom::RendererPreferences& renderer_preferences() const {
+    return renderer_preferences_;
+  }
+
+ private:
+  void OnMessage(const IPC::Message& message) {
+    IPC_BEGIN_MESSAGE_MAP(OutgoingSetRendererPrefsIPCWatcher, message)
+      IPC_MESSAGE_HANDLER(PageMsg_SetRendererPrefs, OnSetRendererPrefs)
+    IPC_END_MESSAGE_MAP()
+  }
+
+  void OnSetRendererPrefs(
+      const blink::mojom::RendererPreferences& renderer_prefs) {
+    outgoing_message_seen_ = true;
+    renderer_preferences_ = renderer_prefs;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  RenderProcessHostImpl* rph_;
+  bool outgoing_message_seen_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  blink::mojom::RendererPreferences renderer_preferences_;
+};
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SyncRendererPrefs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to a site with two iframes in different origins.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Retrieve an arbitrary renderer preference.
+  blink::mojom::RendererPreferences* renderer_preferences =
+      web_contents->GetMutableRendererPrefs();
+  const bool use_custom_colors_old = renderer_preferences->use_custom_colors;
+
+  // Retrieve all unique render process hosts.
+  std::vector<RenderProcessHostImpl*> render_process_hosts;
+  for (FrameTreeNode* frame_tree_node : web_contents->GetFrameTree()->Nodes()) {
+    RenderProcessHostImpl* render_process_host =
+        static_cast<RenderProcessHostImpl*>(
+            frame_tree_node->current_frame_host()->GetProcess());
+    ASSERT_NE(nullptr, render_process_host);
+    DLOG(INFO) << "render_process_host=" << render_process_host;
+
+    // It's possible (Android e.g.) for frame hosts to share a
+    // RenderProcessHost.
+    if (std::find(render_process_hosts.begin(), render_process_hosts.end(),
+                  render_process_host) == render_process_hosts.end()) {
+      render_process_hosts.push_back(render_process_host);
+    }
+  }
+
+  // Set up watchers for PageMsg_SetRendererPrefs message being sent from unique
+  // render process hosts.
+  std::vector<std::unique_ptr<OutgoingSetRendererPrefsIPCWatcher>> ipc_watchers;
+  for (auto* render_process_host : render_process_hosts) {
+    ipc_watchers.push_back(std::make_unique<OutgoingSetRendererPrefsIPCWatcher>(
+        render_process_host));
+
+    // Make sure the IPC watchers have the same default value for the arbitrary
+    // preference.
+    EXPECT_EQ(use_custom_colors_old,
+              ipc_watchers.back()->renderer_preferences().use_custom_colors);
+  }
+
+  // Change the arbitrary renderer preference.
+  const bool use_custom_colors_new = !use_custom_colors_old;
+  renderer_preferences->use_custom_colors = use_custom_colors_new;
+  web_contents->SyncRendererPrefs();
+
+  // Ensure IPC is sent to each frame.
+  for (auto& ipc_watcher : ipc_watchers) {
+    ipc_watcher->WaitForIPC();
+    EXPECT_EQ(use_custom_colors_new,
+              ipc_watcher->renderer_preferences().use_custom_colors);
+  }
+
+  renderer_preferences->use_custom_colors = use_custom_colors_old;
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SetPageFrozen) {

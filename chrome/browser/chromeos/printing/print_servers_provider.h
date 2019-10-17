@@ -12,6 +12,12 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/print_server.h"
 
+class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace chromeos {
 
 // This class observes values of policies related to external print servers
@@ -35,8 +41,13 @@ class PrintServersProvider
                                   const std::vector<PrintServer>& servers) = 0;
   };
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static std::unique_ptr<PrintServersProvider> Create();
   virtual ~PrintServersProvider() = default;
+
+  // This method set profile to fetch non-external policies. It is needed to
+  // calculate resultant list of servers.
+  virtual void SetProfile(Profile* profile) = 0;
 
   // This method also calls directly OnServersChanged(...) from |observer|.
   virtual void AddObserver(Observer* observer) = 0;

@@ -599,8 +599,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-// Flaky on ChromeOS: https://crbug.com/1003661
-#if defined(OS_CHROMEOS)
+// Flaky on ChromeOS: https://crbug.com/1003661 and Linux:
+// https://crbug.com/1864717
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_WebRequestExtraHeaders DISABLED_WebRequestExtraHeaders
 #else
 #define MAYBE_WebRequestExtraHeaders WebRequestExtraHeaders

@@ -23,6 +23,7 @@
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -46,6 +47,7 @@ namespace {
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
 static constexpr FrameSinkId kAnotherFrameSinkId(4, 4);
+static constexpr FrameSinkId kAnotherFrameSinkId2(5, 5);
 
 class TestSoftwareOutputDevice : public SoftwareOutputDevice {
  public:
@@ -665,6 +667,157 @@ TEST_F(DisplayTest, DisableSwapUntilResize) {
   display_->DisableSwapUntilResize(base::OnceClosure());
   EXPECT_FALSE(scheduler_->swapped);
 
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, BackdropFilterTest) {
+  RendererSettings settings;
+  settings.partial_swap_enabled = true;
+  id_allocator_.GenerateId();
+  const LocalSurfaceId local_surface_id(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+
+  // Set up first display.
+  SetUpSoftwareDisplay(settings);
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(local_surface_id, 1.f);
+
+  // Create frame sink for a sub surface.
+  const LocalSurfaceId sub_local_surface_id1(6,
+                                             base::UnguessableToken::Create());
+  const SurfaceId sub_surface_id1(kAnotherFrameSinkId, sub_local_surface_id1);
+  auto sub_support1 = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kAnotherFrameSinkId, /*is_root=*/false,
+      /*needs_sync_points=*/true);
+
+  // Create frame sink for another sub surface.
+  const LocalSurfaceId sub_local_surface_id2(7,
+                                             base::UnguessableToken::Create());
+  const SurfaceId sub_surface_id2(kAnotherFrameSinkId2, sub_local_surface_id2);
+  auto sub_support2 = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kAnotherFrameSinkId2, /*is_root=*/false,
+      /*needs_sync_points=*/true);
+
+  // Main surface M, damage D, sub-surface B with backdrop filter.
+  //   +-----------+
+  //   | +----+   M|
+  //   | |B +-|-+  |
+  //   | +--|-+ |  |
+  //   |    |  D|  |
+  //   |    +---+  |
+  //   +-----------+
+  const gfx::Size display_size(100, 100);
+  const gfx::Rect damage_rect(20, 20, 40, 40);
+  display_->Resize(display_size);
+  const gfx::Rect sub_surface_rect(5, 5, 25, 25);
+  const gfx::Rect no_damage;
+
+  uint64_t next_render_pass_id = 1;
+  for (size_t frame_num = 1; frame_num <= 2; ++frame_num) {
+    bool first_frame = frame_num == 1;
+    scheduler_->ResetDamageForTest();
+    {
+      // Sub-surface with backdrop-filter.
+      RenderPassList pass_list;
+      auto bd_pass = RenderPass::Create();
+      cc::FilterOperations backdrop_filters;
+      backdrop_filters.Append(cc::FilterOperation::CreateBlurFilter(5.0));
+      bd_pass->SetAll(
+          next_render_pass_id++, sub_surface_rect, no_damage, gfx::Transform(),
+          cc::FilterOperations(), backdrop_filters,
+          gfx::RRectF(gfx::RectF(sub_surface_rect), 0),
+          gfx::ColorSpace::CreateSRGB(), false, false, false, false);
+      pass_list.push_back(std::move(bd_pass));
+
+      CompositorFrame frame = CompositorFrameBuilder()
+                                  .SetRenderPassList(std::move(pass_list))
+                                  .Build();
+      sub_support1->SubmitCompositorFrame(sub_local_surface_id1,
+                                          std::move(frame));
+    }
+
+    {
+      // Sub-surface with damage.
+      RenderPassList pass_list;
+      auto other_pass = RenderPass::Create();
+      other_pass->output_rect = gfx::Rect(display_size);
+      other_pass->damage_rect = damage_rect;
+      other_pass->id = next_render_pass_id++;
+      pass_list.push_back(std::move(other_pass));
+
+      CompositorFrame frame = CompositorFrameBuilder()
+                                  .SetRenderPassList(std::move(pass_list))
+                                  .Build();
+      sub_support2->SubmitCompositorFrame(sub_local_surface_id2,
+                                          std::move(frame));
+    }
+
+    {
+      RenderPassList pass_list;
+      auto pass = RenderPass::Create();
+      pass->output_rect = gfx::Rect(display_size);
+      pass->damage_rect = damage_rect;
+      pass->id = next_render_pass_id++;
+
+      // Embed sub surface 1, with backdrop filter.
+      auto* shared_quad_state1 = pass->CreateAndAppendSharedQuadState();
+      shared_quad_state1->SetAll(
+          gfx::Transform(), /*quad_layer_rect=*/sub_surface_rect,
+          /*visible_quad_layer_rect=*/sub_surface_rect,
+          /*rounded_corner_bounds=*/gfx::RRectF(),
+          /*clip_rect=*/sub_surface_rect, /*is_clipped=*/false,
+          /*are_contents_opaque=*/true, /*opacity=*/1.0f, SkBlendMode::kSrcOver,
+          /*sorting_context_id=*/0);
+      auto* quad1 = pass->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
+      quad1->SetNew(shared_quad_state1, /*rect=*/sub_surface_rect,
+                    /*visible_rect=*/sub_surface_rect,
+                    SurfaceRange(base::nullopt, sub_surface_id1), SK_ColorBLACK,
+                    /*stretch_content_to_fill_bounds=*/false,
+                    /*has_pointer_events_none=*/false);
+      quad1->allow_merge = false;
+
+      // Embed sub surface 2, with damage.
+      auto* shared_quad_state2 = pass->CreateAndAppendSharedQuadState();
+      gfx::Rect rect1(display_size);
+      shared_quad_state2->SetAll(gfx::Transform(), /*quad_layer_rect=*/rect1,
+                                 /*visible_quad_layer_rect=*/rect1,
+                                 /*rounded_corner_bounds=*/gfx::RRectF(),
+                                 /*clip_rect=*/rect1, /*is_clipped=*/false,
+                                 /*are_contents_opaque=*/true, /*opacity=*/1.0f,
+                                 SkBlendMode::kSrcOver,
+                                 /*sorting_context_id=*/0);
+      auto* quad2 = pass->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
+      quad2->SetNew(shared_quad_state2, /*rect=*/rect1,
+                    /*visible_rect=*/rect1,
+                    SurfaceRange(base::nullopt, sub_surface_id2), SK_ColorBLACK,
+                    /*stretch_content_to_fill_bounds=*/false,
+                    /*has_pointer_events_none=*/false);
+      quad2->allow_merge = false;
+
+      pass_list.push_back(std::move(pass));
+      SubmitCompositorFrame(&pass_list, local_surface_id);
+
+      scheduler_->swapped = false;
+      display_->DrawAndSwap();
+      EXPECT_TRUE(scheduler_->swapped);
+      EXPECT_EQ(frame_num, output_surface_->num_sent_frames());
+      EXPECT_EQ(display_size, software_output_device_->viewport_pixel_size());
+      // The damage rect produced by surface_aggregator only includes the
+      // damaged surface rect, and is not expanded for the backdrop-filter
+      // surface.
+      auto expected_damage =
+          first_frame ? gfx::Rect(display_size) : gfx::Rect(20, 20, 40, 40);
+      EXPECT_EQ(expected_damage, software_output_device_->damage_rect());
+      // The scissor rect is expanded by direct_renderer to include the
+      // overlapping pixel-moving backdrop filter surface.
+      auto expected_scissor_rect =
+          first_frame ? gfx::Rect(display_size) : gfx::Rect(5, 5, 55, 55);
+      EXPECT_EQ(
+          expected_scissor_rect,
+          display_->renderer_for_testing()->GetLastRootScissorRectForTesting());
+    }
+  }
   TearDownDisplay();
 }
 

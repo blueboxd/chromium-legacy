@@ -101,7 +101,7 @@ class LocalHistoryZeroSuggestProviderTest
                              std::string zero_suggest_variant_value);
 
   // Fills the URLDatabase with search URLs using the provided information.
-  void LoadURLs(std::vector<TestURLData> url_data_list);
+  void LoadURLs(const std::vector<TestURLData>& url_data_list);
 
   // Waits for history::HistoryService's async operations.
   void WaitForHistoryService();
@@ -112,7 +112,7 @@ class LocalHistoryZeroSuggestProviderTest
                                      PageClassification page_classification);
 
   // Verifies that provider matches are as expected.
-  void ExpectMatches(std::vector<TestMatchData> match_data_list);
+  void ExpectMatches(const std::vector<TestMatchData>& match_data_list);
 
   const TemplateURL* default_search_provider() {
     return client_->GetTemplateURLService()->GetDefaultSearchProvider();
@@ -141,7 +141,7 @@ void LocalHistoryZeroSuggestProviderTest::SetZeroSuggestVariant(
 }
 
 void LocalHistoryZeroSuggestProviderTest::LoadURLs(
-    std::vector<TestURLData> url_data_list) {
+    const std::vector<TestURLData>& url_data_list) {
   const Time now = Time::Now();
   for (const auto& entry : url_data_list) {
     TemplateURLRef::SearchTermsArgs search_terms_args(
@@ -194,7 +194,7 @@ void LocalHistoryZeroSuggestProviderTest::OnProviderUpdate(
 }
 
 void LocalHistoryZeroSuggestProviderTest::ExpectMatches(
-    std::vector<TestMatchData> match_data_list) {
+    const std::vector<TestMatchData>& match_data_list) {
   ASSERT_EQ(match_data_list.size(), provider_->matches().size());
   size_t index = 0;
   for (const auto& expected : match_data_list) {

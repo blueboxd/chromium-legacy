@@ -95,8 +95,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
 
   virtual void PushPropertiesTo(Animation* animation_impl);
 
-  virtual void UpdateState(bool start_ready_keyframe_models,
-                           AnimationEvents* events);
+  void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   virtual void Tick(base::TimeTicks monotonic_time);
 
   void AddToTicking();
@@ -108,6 +107,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   void NotifyKeyframeModelAborted(const AnimationEvent& event);
   void NotifyKeyframeModelTakeover(const AnimationEvent& event);
   size_t TickingKeyframeModelsCount() const;
+  bool AffectsCustomProperty() const;
 
   void SetNeedsPushProperties();
 

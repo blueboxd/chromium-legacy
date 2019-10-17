@@ -33,20 +33,24 @@ cr.define('scaling_settings_test', function() {
     });
 
     test(assert(TestNames.ShowCorrectDropdownOptions), function() {
-      // Fit to page unavailable -> No fit to page option.
+      // Not a PDF document -> No fit to page or fit to paper options.
       const fitToPageOption = scalingSection.$$(
           `[value="${scalingSection.ScalingValue.FIT_TO_PAGE}"]`);
+      const fitToPaperOption = scalingSection.$$(
+          `[value="${scalingSection.ScalingValue.FIT_TO_PAPER}"]`);
       const defaultOption =
           scalingSection.$$(`[value="${scalingSection.ScalingValue.DEFAULT}"]`);
       const customOption =
           scalingSection.$$(`[value="${scalingSection.ScalingValue.CUSTOM}"]`);
       assertTrue(fitToPageOption.hidden);
+      assertTrue(fitToPaperOption.hidden);
       assertFalse(defaultOption.hidden);
       assertFalse(customOption.hidden);
 
-      // Fit to page available -> All 3 options.
+      // Fit to page and paper available -> All 4 options.
       setDocumentPdf(true);
       assertFalse(fitToPageOption.hidden);
+      assertFalse(fitToPaperOption.hidden);
       assertFalse(defaultOption.hidden);
       assertFalse(customOption.hidden);
     });
@@ -103,7 +107,7 @@ cr.define('scaling_settings_test', function() {
               .$.userValue.inputElement;
       const scalingDropdown = scalingSection.$$('.md-select');
 
-      // Make fit to page available.
+      // Make fit to page and fit to paper available.
       setDocumentPdf(true);
 
       // Default is 100
@@ -136,6 +140,13 @@ cr.define('scaling_settings_test', function() {
       validateState(
           '105', true, print_preview.ScalingType.CUSTOM,
           print_preview.ScalingType.FIT_TO_PAGE, '105');
+
+      // Change to fit to paper.
+      await print_preview_test_utils.selectOption(
+          scalingSection, scalingSection.ScalingValue.FIT_TO_PAPER.toString());
+      validateState(
+          '105', true, print_preview.ScalingType.CUSTOM,
+          print_preview.ScalingType.FIT_TO_PAPER, '105');
 
       // Go back to custom. Restores 105 value.
       await print_preview_test_utils.selectOption(
@@ -189,7 +200,7 @@ cr.define('scaling_settings_test', function() {
           print_preview.ScalingType.CUSTOM, '105');
 
       // Enter a blank value in the scaling field. This should not
-      // change the stored value of scaling or fit to page, to avoid an
+      // change the stored value of scaling or scaling type, to avoid an
       // unnecessary preview regeneration.
       await print_preview_test_utils.triggerInputEvent(
           scalingInput, '', scalingSection);

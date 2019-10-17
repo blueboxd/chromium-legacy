@@ -15,8 +15,10 @@
 #include "base/stl_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
+#include "extensions/browser/content_verifier/content_verifier_utils.h"
 #include "extensions/browser/content_verifier/scoped_uma_recorder.h"
 
 namespace extensions {
@@ -121,24 +123,43 @@ bool ComputedHashes::Reader::GetHashes(const base::FilePath& relative_path,
                                        int* block_size,
                                        std::vector<std::string>* hashes) const {
   base::FilePath path = relative_path.NormalizePathSeparatorsTo('/');
-  auto i = data_.find(path);
-  if (i == data_.end()) {
-    // If we didn't find the entry using exact match, it's possible the
-    // developer is using a path with some letters in the incorrect case, which
-    // happens to work on windows/osx. So try doing a linear scan to look for a
-    // case-insensitive match. In practice most extensions don't have that big
-    // a list of files so the performance penalty is probably not too big
-    // here. Also for crbug.com/29941 we plan to start warning developers when
-    // they are making this mistake, since their extension will be broken on
-    // linux/chromeos.
-    for (i = data_.begin(); i != data_.end(); ++i) {
-      const base::FilePath& entry = i->first;
-      if (base::FilePath::CompareEqualIgnoreCase(entry.value(), path.value()))
-        break;
+  auto find_data = [&](const base::FilePath& normalized_path) {
+    auto i = data_.find(normalized_path);
+    if (i == data_.end()) {
+      // If we didn't find the entry using exact match, it's possible the
+      // developer is using a path with some letters in the incorrect case,
+      // which happens to work on windows/osx. So try doing a linear scan to
+      // look for a case-insensitive match. In practice most extensions don't
+      // have that big a list of files so the performance penalty is probably
+      // not too big here. Also for crbug.com/29941 we plan to start warning
+      // developers when they are making this mistake, since their extension
+      // will be broken on linux/chromeos.
+      for (i = data_.begin(); i != data_.end(); ++i) {
+        const base::FilePath& entry = i->first;
+        if (base::FilePath::CompareEqualIgnoreCase(entry.value(),
+                                                   normalized_path.value())) {
+          break;
+        }
+      }
     }
-    if (i == data_.end())
-      return false;
+    return i;
+  };
+  auto i = find_data(path);
+#if defined(OS_WIN)
+  if (i == data_.end()) {
+    base::FilePath::StringType trimmed_path_value;
+    // Also search for path with (.| )+ suffix trimmed as they are ignored in
+    // windows. This matches the canonicalization behavior of
+    // VerifiedContents::Create.
+    if (content_verifier_utils::TrimDotSpaceSuffix(path.value(),
+                                                   &trimmed_path_value)) {
+      i = find_data(base::FilePath(trimmed_path_value));
+    }
   }
+#endif  // defined(OS_WIN)
+  if (i == data_.end())
+    return false;
+
   const HashInfo& info = i->second;
   *block_size = info.first;
   *hashes = info.second;

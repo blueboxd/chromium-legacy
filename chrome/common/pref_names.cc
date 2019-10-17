@@ -1303,6 +1303,10 @@ const char kPrintPreviewUseSystemDefaultPrinter[] =
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
+// List of print servers ids that are allowed. List of strings.
+const char kExternalPrintServersWhitelist[] =
+    "native_printing.external_print_servers_whitelist";
+
 // List of printers configured by policy.
 const char kRecommendedNativePrinters[] =
     "native_printing.recommended_printers";
@@ -2753,9 +2757,8 @@ const char kNotificationNextPersistentId[] = "persistent_notifications.next_id";
 const char kNotificationNextTriggerTime[] =
     "persistent_notifications.next_trigger";
 
-// Preference for controlling whether tab lifecycles
-// (throttling/freezing/discarding) are enabled.
-const char kTabLifecyclesEnabled[] = "tab_lifecycles_enabled";
+// Preference for controlling whether tab freezing is enabled.
+const char kTabFreezingEnabled[] = "tab_freezing_enabled";
 
 // Boolean that enables the Enterprise Hardware Platform Extension API for
 // extensions installed by enterprise policy.

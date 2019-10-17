@@ -126,13 +126,6 @@
 #   },
 
 {
-  'amd_8870m': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '1002:6821',
-      },
-    },
-  },
   'android_q': {
     'swarming': {
       'dimensions': {
@@ -389,13 +382,6 @@
       },
     },
   },
-  'mac_10.14.6': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Mac-10.14.6',
-      },
-    },
-  },
   'mac_10.15_beta': {
     'swarming': {
       'dimensions': {
@@ -526,13 +512,6 @@
     'swarming': {
       'dimensions': {
         'device_os': 'N',
-      },
-    },
-  },
-  'nvidia_750m_mac_edition': {
-    'swarming': {
-      'dimensions': {
-        'gpu': '10de:0fe9',
       },
     },
   },

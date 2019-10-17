@@ -471,6 +471,9 @@ void DisplayLockContext::StartCommit() {
 
   layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
       layout_invalidation_reason::kDisplayLock);
+
+  if (auto* view = layout_object->GetFrameView())
+    view->SetNeedsForcedResizeObservations();
 }
 
 void DisplayLockContext::StartUpdateIfNeeded() {

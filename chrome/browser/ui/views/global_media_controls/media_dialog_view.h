@@ -50,6 +50,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   // MediaNotificationContainerObserver implementation.
   void OnContainerExpanded(bool expanded) override;
   void OnContainerMetadataChanged() override;
+  void OnContainerClicked(const std::string& id) override {}
   void OnContainerDismissed(const std::string& id) override {}
   void OnContainerDestroyed(const std::string& id) override;
 

@@ -140,8 +140,7 @@ class MockConsumer : public perfetto::Consumer {
  private:
   struct DataSourceStatus {
     std::string name;
-    perfetto::ObservableEvents::DataSourceInstanceStateChange::
-        DataSourceInstanceState state;
+    perfetto::ObservableEvents::DataSourceInstanceState state;
   };
 
   void CheckForAllDataSourcesStarted();

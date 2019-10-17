@@ -79,7 +79,7 @@ void TestAutofillDriver::RendererShouldPreviewFieldWithValue(
 }
 
 void TestAutofillDriver::RendererShouldSetSuggestionAvailability(
-    bool available) {}
+    const mojom::AutofillState state) {}
 
 void TestAutofillDriver::PopupHidden() {
 }

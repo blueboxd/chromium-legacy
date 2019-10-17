@@ -165,7 +165,7 @@ TextTrackCueList* TextTrack::cues() {
   return nullptr;
 }
 
-void TextTrack::RemoveAllCues() {
+void TextTrack::Reset() {
   if (!cues_)
     return;
 
@@ -178,6 +178,8 @@ void TextTrack::RemoveAllCues() {
   cues_->RemoveAll();
   if (active_cues_)
     active_cues_->RemoveAll();
+
+  style_sheets_.clear();
 }
 
 void TextTrack::AddListOfCues(
@@ -237,6 +239,12 @@ void TextTrack::addCue(TextTrackCue* cue) {
 
   if (GetCueTimeline() && mode_ != DisabledKeyword())
     GetCueTimeline()->AddCue(this, cue);
+}
+
+void TextTrack::SetCSSStyleSheets(
+    HeapVector<Member<CSSStyleSheet>> style_sheets) {
+  DCHECK(style_sheets_.IsEmpty());
+  style_sheets_ = std::move(style_sheets);
 }
 
 void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exception_state) {
@@ -372,6 +380,7 @@ void TextTrack::Trace(Visitor* visitor) {
   visitor->Trace(cues_);
   visitor->Trace(active_cues_);
   visitor->Trace(track_list_);
+  visitor->Trace(style_sheets_);
   TrackBase::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

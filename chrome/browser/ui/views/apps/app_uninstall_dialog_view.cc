@@ -46,24 +46,9 @@ AppUninstallDialogView::AppUninstallDialogView(
     gfx::ImageSkia image,
     apps::UninstallDialog* uninstall_dialog)
     : apps::UninstallDialog::UiBase(image, uninstall_dialog),
-      BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE) {
-  DialogDelegate::set_button_label(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));
-
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-
-  // Add margins for the icon plus the icon-title padding so that the dialog
-  // contents align with the title text.
-  set_margins(
-      margins() +
-      gfx::Insets(0, margins().left() + apps::UninstallDialog::kSizeHintInDip,
-                  0, 0));
-
-  InitializeView(profile, app_type, app_id);
+      BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
+      app_type_(app_type) {
+  InitializeView(profile, app_id);
   constrained_window::CreateBrowserModalDialogViews(this, nullptr)->Show();
 }
 
@@ -112,7 +97,8 @@ bool AppUninstallDialogView::ShouldShowCloseButton() const {
 }
 
 bool AppUninstallDialogView::ShouldShowWindowIcon() const {
-  return true;
+  return app_type_ == apps::mojom::AppType::kExtension ||
+         app_type_ == apps::mojom::AppType::kWeb;
 }
 
 void AppUninstallDialogView::AddMultiLineLabel(
@@ -128,6 +114,16 @@ void AppUninstallDialogView::AddMultiLineLabel(
 void AppUninstallDialogView::InitializeViewForExtension(
     Profile* profile,
     const std::string& app_id) {
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+  // Add margins for the icon plus the icon-title padding so that the dialog
+  // contents align with the title text.
+  set_margins(margins() +
+              gfx::Insets(0, margins().left() + image().size().height(), 0, 0));
+
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
           app_id);
@@ -159,6 +155,12 @@ void AppUninstallDialogView::InitializeViewForExtension(
 void AppUninstallDialogView::InitializeViewForArcApp(
     Profile* profile,
     const std::string& app_id) {
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal,
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_prefs);
 
@@ -186,9 +188,15 @@ void AppUninstallDialogView::InitializeViewForArcApp(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
   }
 
+  auto* icon_view = AddChildView(std::make_unique<views::ImageView>());
+  constexpr int kArcImageViewSize = 64;
+  icon_view->SetPreferredSize(gfx::Size(kArcImageViewSize, kArcImageViewSize));
+  icon_view->SetImageSize(image().size());
+  icon_view->SetImage(image());
+
   auto* text_container = AddChildView(std::make_unique<views::View>());
   auto* text_container_layout =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
+      text_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
   text_container_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
@@ -202,9 +210,8 @@ void AppUninstallDialogView::InitializeViewForArcApp(
 #endif
 
 void AppUninstallDialogView::InitializeView(Profile* profile,
-                                            apps::mojom::AppType app_type,
                                             const std::string& app_id) {
-  switch (app_type) {
+  switch (app_type_) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
       NOTREACHED();

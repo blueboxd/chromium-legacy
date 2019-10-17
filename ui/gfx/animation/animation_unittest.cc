@@ -16,7 +16,7 @@
 
 namespace gfx {
 
-class AnimationTest: public testing::Test {
+class AnimationTest : public testing::Test {
  protected:
   AnimationTest()
       : task_environment_(

@@ -41,11 +41,6 @@ SkPath GetHighlightPathInternal(const View* view) {
       return highlight_path;
   }
 
-  // TODO(pbos): Remove kHighlightPathKey in favor of HighlightPathGenerators.
-  SkPath* highlight_path = view->GetProperty(kHighlightPathKey);
-  if (highlight_path)
-    return *highlight_path;
-
   const double corner_radius = GetCornerRadius();
   return SkPath().addRRect(SkRRect::MakeRectXY(
       RectToSkRect(view->GetLocalBounds()), corner_radius, corner_radius));

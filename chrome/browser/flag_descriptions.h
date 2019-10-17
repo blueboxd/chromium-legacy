@@ -184,9 +184,6 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kBundledConnectionHelpName[];
 extern const char kBundledConnectionHelpDescription[];
 
-extern const char kBundledHTTPExchangesName[];
-extern const char kBundledHTTPExchangesDescription[];
-
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
@@ -1082,9 +1079,6 @@ extern const char kServiceWorkerLongRunningMessageDescription[];
 extern const char kServiceWorkerOnUIName[];
 extern const char kServiceWorkerOnUIDescription[];
 
-extern const char kSessionRestorePrioritizesBackgroundUseCasesName[];
-extern const char kSessionRestorePrioritizesBackgroundUseCasesDescription[];
-
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
@@ -1293,6 +1287,9 @@ extern const char kV8VmFutureDescription[];
 
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
+
+extern const char kWebBundlesName[];
+extern const char kWebBundlesDescription[];
 
 extern const char kWebglDraftExtensionsName[];
 extern const char kWebglDraftExtensionsDescription[];
@@ -2007,6 +2004,9 @@ extern const char kEnableAssistantRoutinesDescription[];
 
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
+
+extern const char kEnableCrOSActionRecorderName[];
+extern const char kEnableCrOSActionRecorderDescription[];
 
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];

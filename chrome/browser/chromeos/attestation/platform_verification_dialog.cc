@@ -80,6 +80,10 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       domain_(domain),
       callback_(std::move(callback)),
       learn_more_button_(nullptr) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -123,19 +127,6 @@ bool PlatformVerificationDialog::Close() {
   // dialog is closed.
   std::move(callback_).Run(CONSENT_RESPONSE_NONE);
   return true;
-}
-
-base::string16 PlatformVerificationDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  switch (button) {
-    case ui::DIALOG_BUTTON_OK:
-      return l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
-    case ui::DIALOG_BUTTON_CANCEL:
-      return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
-    default:
-      NOTREACHED();
-  }
-  return base::string16();
 }
 
 ui::ModalType PlatformVerificationDialog::GetModalType() const {

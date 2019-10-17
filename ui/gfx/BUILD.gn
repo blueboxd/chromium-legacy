@@ -685,6 +685,7 @@ test("gfx_unittests") {
   if (!is_ios) {
     sources += [
       "animation/animation_container_unittest.cc",
+      "animation/animation_runner_unittest.cc",
       "animation/animation_unittest.cc",
       "animation/multi_animation_unittest.cc",
       "animation/slide_animation_unittest.cc",

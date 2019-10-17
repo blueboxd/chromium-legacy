@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -147,15 +146,9 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   ASSERT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/stale-while-revalidate.html")));
 
-  // Create new renderer preferences and force-disable the |enable_referrers|
-  // preference.
-  blink::mojom::RendererPreferences renderer_preferences;
-  renderer_preferences.enable_referrers = false;
-
-  // Send updated renderer preferences to the renderer.
-  RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  rvh->Send(
-      new ViewMsg_SetRendererPrefs(rvh->GetRoutingID(), renderer_preferences));
+  // Force-disable the |enable_referrers| preference.
+  web_contents->GetMutableRendererPrefs()->enable_referrers = false;
+  web_contents->SyncRendererPrefs();
 
   // Wait for the stale-while-revalidate tests to pass by observing the page's
   // title. If the renderer crashes, the test immediately fails.

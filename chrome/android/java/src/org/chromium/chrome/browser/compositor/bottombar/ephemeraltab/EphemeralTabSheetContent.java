@@ -39,6 +39,7 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     private final Context mContext;
     private final Runnable mOpenNewTabCallback;
     private final Runnable mToolbarClickCallback;
+    private final int mToolbarHeightPx;
 
     private ViewGroup mToolbarView;
     private ViewGroup mSheetContentView;
@@ -55,14 +56,17 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
      * @param context An Android context.
      * @param openNewTabCallback Callback invoked to open a new tab.
      * @param toolbarClickCallback Callback invoked when user clicks on the toolbar.
+     * @param maxSheetHeight The height of the sheet in full height position.
      */
-    public EphemeralTabSheetContent(
-            Context context, Runnable openNewTabCallback, Runnable toolbarClickCallback) {
+    public EphemeralTabSheetContent(Context context, Runnable openNewTabCallback,
+            Runnable toolbarClickCallback, int maxSheetHeight) {
         mContext = context;
         mOpenNewTabCallback = openNewTabCallback;
         mToolbarClickCallback = toolbarClickCallback;
+        mToolbarHeightPx =
+                mContext.getResources().getDimensionPixelSize(R.dimen.preview_tab_toolbar_height);
 
-        createThinWebView();
+        createThinWebView(maxSheetHeight);
         createToolbarView();
     }
 
@@ -84,15 +88,15 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
      * Create a ThinWebView, add it to the view hierarchy, which represents the contents of the
      * bottom sheet.
      */
-    private void createThinWebView() {
+    private void createThinWebView(int maxSheetHeight) {
         mThinWebView = ThinWebViewFactory.create(mContext, new ActivityWindowAndroid(mContext));
 
         mSheetContentView = new FrameLayout(mContext);
+        mThinWebView.getView().setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, maxSheetHeight - mToolbarHeightPx));
         mSheetContentView.addView(mThinWebView.getView());
 
-        int topPadding =
-                mContext.getResources().getDimensionPixelSize(R.dimen.preview_tab_toolbar_height);
-        mSheetContentView.setPadding(0, topPadding, 0, 0);
+        mSheetContentView.setPadding(0, mToolbarHeightPx, 0, 0);
     }
 
     private void createToolbarView() {
@@ -112,9 +116,25 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
         mCurrentFavicon = mFaviconView.getDrawable();
     }
 
+    /**
+     * Resizes the thin webview as per the given sheet height. This should never be more than the
+     * tab height for it to function correctly.
+     * @param maxContentHeight The height of the bottom sheet in the maximized state.
+     */
+    void updateContentHeight(int maxContentHeight) {
+        if (maxContentHeight == 0) return;
+        ViewGroup.LayoutParams layoutParams = mThinWebView.getView().getLayoutParams();
+        layoutParams.height = maxContentHeight - mToolbarHeightPx;
+        mSheetContentView.requestLayout();
+    }
+
     /** Method to be called to start the favicon anmiation. */
     public void startFaviconAnimation(Drawable favicon) {
-        assert favicon != null;
+        if (favicon == null) {
+            mCurrentFavicon = null;
+            mFaviconView.setImageDrawable(null);
+            return;
+        }
 
         // TODO(shaktisahu): Find out if there is a better way for this animation.
         Drawable presentedDrawable = favicon;
@@ -208,11 +228,6 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     @Override
     public boolean wrapContentEnabled() {
         return true;
-    }
-
-    @Override
-    public float getCustomFullRatio() {
-        return 0.9f;
     }
 
     @Override

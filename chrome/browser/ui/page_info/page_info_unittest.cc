@@ -510,7 +510,6 @@ TEST_F(PageInfoTest, HTTPConnection) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_NO_CERT,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 
 TEST_F(PageInfoTest, HTTPSConnection) {
@@ -530,7 +529,6 @@ TEST_F(PageInfoTest, HTTPSConnection) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_CERT,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 
 // Define some dummy constants for Android-only resources.
@@ -745,7 +743,6 @@ TEST_F(PageInfoTest, InsecureContent) {
         test.expected_connection_icon_id,
         PageInfoUI::GetConnectionIconID(page_info()->site_connection_status()));
 #endif
-    EXPECT_EQ(base::string16(), page_info()->organization_name());
   }
 }
 
@@ -772,9 +769,6 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_EV_CERT,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::UTF8ToUTF16("Google Inc"), page_info()->organization_name());
-  EXPECT_EQ(base::UTF8ToUTF16("Issued to: Google Inc [US]"),
-            page_info()->site_details_message());
 }
 
 TEST_F(PageInfoTest, HTTPSConnectionError) {
@@ -796,7 +790,6 @@ TEST_F(PageInfoTest, HTTPSConnectionError) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_CERT,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 
 #if defined(OS_CHROMEOS)
@@ -817,7 +810,6 @@ TEST_F(PageInfoTest, HTTPSPolicyCertConnection) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 #endif
 
@@ -839,7 +831,6 @@ TEST_F(PageInfoTest, HTTPSSHA1) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 #if defined(OS_ANDROID)
   EXPECT_EQ(IDR_PAGEINFO_WARNING_MINOR,
             PageInfoUI::GetIdentityIconID(page_info()->site_identity_status()));
@@ -958,7 +949,6 @@ TEST_F(PageInfoTest, AboutBlankPage) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_NO_CERT,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 
 // On desktop, internal URLs aren't handled by PageInfo class. Instead, a
@@ -971,7 +961,6 @@ TEST_F(PageInfoTest, InternalPage) {
             page_info()->site_connection_status());
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_INTERNAL_PAGE,
             page_info()->site_identity_status());
-  EXPECT_EQ(base::string16(), page_info()->organization_name());
 }
 #endif
 

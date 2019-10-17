@@ -20,9 +20,9 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/offline_pages/prefetch/gcm_token.h"
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_handler_impl.h"
-#include "chrome/browser/offline_pages/prefetch/prefetch_instance_id_proxy.h"
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -72,10 +72,6 @@ void SwitchToFullBrowserImageFetcher(PrefetchServiceImpl* prefetch_service,
 }
 
 void OnProfileCreated(PrefetchServiceImpl* prefetch_service, Profile* profile) {
-  auto gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>(
-      std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
-                                                profile));
-  prefetch_service->SetPrefetchGCMHandler(std::move(gcm_app_handler));
   if (IsPrefetchingOfflinePagesEnabled()) {
     // Trigger an update of the cached GCM token. This needs to be post tasked
     // because otherwise leads to circular dependency between
@@ -86,8 +82,9 @@ void OnProfileCreated(PrefetchServiceImpl* prefetch_service, Profile* profile) {
     base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&PrefetchServiceImpl::RefreshGCMToken,
-                       prefetch_service->GetWeakPtr()));
+        base::BindOnce(&GetGCMToken, profile, kPrefetchingOfflinePagesAppId,
+                       base::BindOnce(&PrefetchServiceImpl::GCMTokenReceived,
+                                      prefetch_service->GetWeakPtr())));
   }
 
   SwitchToFullBrowserImageFetcher(prefetch_service, profile->GetProfileKey());
@@ -184,6 +181,7 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
       std::move(prefetch_network_request_factory), offline_page_model,
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),
+      std::make_unique<PrefetchGCMAppHandler>(),
       std::move(prefetch_background_task_handler), std::move(thumbnail_fetcher),
       image_fetcher, profile_key->GetPrefs());
 

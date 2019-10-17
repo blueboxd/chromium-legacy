@@ -508,8 +508,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void UpdateSystemColorInfo(
       mojom::UpdateSystemColorInfoParamsPtr params) override;
   void PurgePluginListCache(bool reload_pages) override;
-  void SetProcessState(mojom::RenderProcessBackgroundState background_state,
-                       mojom::RenderProcessVisibleState visible_state) override;
+  void SetProcessState(mojom::RenderProcessState process_state) override;
   void SetSchedulerKeepActive(bool keep_active) override;
   void SetIsLockedToSite() override;
   void EnableV8LowMemoryMode() override;
@@ -573,8 +572,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Used to keep track of the renderer's backgrounded and visibility state.
   // Updated via an IPC from the browser process. If nullopt, the browser
   // process has yet to send an update and the state is unknown.
-  base::Optional<mojom::RenderProcessBackgroundState> background_state_;
-  base::Optional<mojom::RenderProcessVisibleState> visible_state_;
+  base::Optional<mojom::RenderProcessState> process_state_;
 
   blink::WebString user_agent_;
   blink::UserAgentMetadata user_agent_metadata_;

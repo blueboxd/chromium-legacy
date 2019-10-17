@@ -131,7 +131,7 @@ void AutofillDriverIOS::RendererShouldPreviewFieldWithValue(
 }
 
 void AutofillDriverIOS::RendererShouldSetSuggestionAvailability(
-    bool available) {}
+    const mojom::AutofillState state) {}
 
 void AutofillDriverIOS::PopupHidden() {
 }

@@ -124,6 +124,7 @@ if (use_libfuzzer) {
     deps = [
       ":rulebased",
       ":rulebased_fuzzer_proto",
+      "//base",
       "//third_party/libprotobuf-mutator",
     ]
   }

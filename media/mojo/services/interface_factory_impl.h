@@ -94,11 +94,11 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
   mojo::StrongBindingSet<mojom::VideoDecoder> video_decoder_bindings_;
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
-#if BUILDFLAG(ENABLE_MOJO_RENDERER)
+#if BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER)
   // TODO(xhwang): Use MojoMediaLog for Renderer.
   NullMediaLog media_log_;
   mojo::StrongBindingSet<mojom::Renderer> renderer_bindings_;
-#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
+#endif  // BUILDFLAG(ENABLE_MOJO_RENDERER) || BUILDFLAG(ENABLE_CAST_RENDERER)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   std::unique_ptr<CdmFactory> cdm_factory_;

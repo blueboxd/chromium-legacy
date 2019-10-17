@@ -519,6 +519,20 @@ TEST_F('ChromeVoxCursorsTest', 'DeepEquivalency', function() {
   });
 });
 
+TEST_F('ChromeVoxCursorsTest', 'DeepEquivalencyBeyondLastChild', function() {
+  this.runWithLoadedTree(function() {/*!
+    <p>test</p>
+  */}, function(root) {
+    var paragraph = root.find({role: RoleType.PARAGRAPH});
+    assertEquals(1, paragraph.children.length);
+    var cursor = new cursors.Cursor(paragraph, 1);
+
+    var deep = cursor.deepEquivalent;
+    assertEquals(RoleType.STATIC_TEXT, deep.node.role);
+    assertEquals(4, deep.index);
+  });
+});
+
 TEST_F('ChromeVoxCursorsTest', 'SelectionAdjustmentsRichText', function() {
   this.runWithLoadedTree(function() {/*!
     <div contenteditable><p>test</p><p>123</p></div>

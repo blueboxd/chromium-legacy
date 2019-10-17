@@ -169,7 +169,7 @@ TEST_F(ShelfConfigTest, InAppMode) {
   // Now go into overview.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
-  EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
+  EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
 
   // Back to the app.
   overview_controller->EndOverview();

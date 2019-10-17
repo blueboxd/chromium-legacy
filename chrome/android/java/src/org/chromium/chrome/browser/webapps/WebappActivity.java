@@ -688,7 +688,7 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     public int getBaseStatusBarColor() {
-        return isStatusBarDefaultThemeColor() ? Color.BLACK : mBrandColor;
+        return isStatusBarDefaultThemeColor() ? Color.WHITE : mBrandColor;
     }
 
     @Override

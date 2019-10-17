@@ -831,7 +831,7 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     main_web_contents_->SetInitialFocus();
 
     PrefsTabHelper::CreateForWebContents(main_web_contents_);
-    main_web_contents_->GetRenderViewHost()->SyncRendererPrefs();
+    main_web_contents_->SyncRendererPrefs();
 
     DoAction(action);
     return;
@@ -1555,7 +1555,7 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   browser_->tab_strip_model()->AddWebContents(
       std::move(owned_main_web_contents_), -1,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, TabStripModel::ADD_ACTIVE);
-  main_web_contents_->GetRenderViewHost()->SyncRendererPrefs();
+  main_web_contents_->SyncRendererPrefs();
 }
 
 BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {

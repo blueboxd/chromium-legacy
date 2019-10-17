@@ -418,6 +418,7 @@ extern const char kPrintPreviewUseSystemDefaultPrinter[];
 #endif
 
 #if defined(OS_CHROMEOS)
+extern const char kExternalPrintServersWhitelist[];
 extern const char kRecommendedNativePrinters[];
 extern const char kRecommendedNativePrintersAccessMode[];
 extern const char kRecommendedNativePrintersBlacklist[];
@@ -962,7 +963,7 @@ extern const char kBlockAutoplayEnabled[];
 extern const char kNotificationNextPersistentId[];
 extern const char kNotificationNextTriggerTime[];
 
-extern const char kTabLifecyclesEnabled[];
+extern const char kTabFreezingEnabled[];
 
 extern const char kEnterpriseHardwarePlatformAPIEnabled[];
 

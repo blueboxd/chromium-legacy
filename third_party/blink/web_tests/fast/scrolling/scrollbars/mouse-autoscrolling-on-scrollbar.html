@@ -81,7 +81,7 @@
     // test will ensure that track autoscroll happens successfully and that the
     // autoscroll aborts when thumb reaches the pointer.
     const trackscroll_x = scrollerRect.right - BUTTON_WIDTH / 2;
-    const trackscroll_y = scrollerRect.top + 45;
+    const trackscroll_y = scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH;
     await mousePressOn(trackscroll_x, trackscroll_y, PRESS_DURATION);
     var err = `Autoscroll down failed (scroller.scrollTop = ${scroller.scrollTop})`;
 

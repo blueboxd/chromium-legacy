@@ -207,6 +207,18 @@ NSString* const
 NSString* const NSAccessibilityLengthForTextMarkerRangeParameterizedAttribute =
     @"AXLengthForTextMarkerRange";
 
+// Private attributes that can be used for testing text markers, e.g. in dump
+// tree tests.
+NSString* const
+    NSAccessibilityTextMarkerDebugDescriptionParameterizedAttribute =
+        @"AXTextMarkerDebugDescription";
+NSString* const
+    NSAccessibilityTextMarkerRangeDebugDescriptionParameterizedAttribute =
+        @"AXTextMarkerRangeDebugDescription";
+NSString* const
+    NSAccessibilityTextMarkerNodeDebugDescriptionParameterizedAttribute =
+        @"AXTextMarkerNodeDebugDescription";
+
 // Other private attributes.
 NSString* const NSAccessibilitySelectTextWithCriteriaParameterizedAttribute =
     @"AXSelectTextWithCriteria";
@@ -3024,6 +3036,32 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       return CreateTextMarkerRange(
           AXPlatformRange(std::move(endPosition), std::move(startPosition)));
     }
+  }
+
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityTextMarkerDebugDescriptionParameterizedAttribute]) {
+    BrowserAccessibilityPositionInstance position =
+        CreatePositionFromTextMarker(parameter);
+    return base::SysUTF8ToNSString(position->ToString());
+  }
+
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityTextMarkerRangeDebugDescriptionParameterizedAttribute]) {
+    AXPlatformRange range = CreateRangeFromTextMarkerRange(parameter);
+    return base::SysUTF8ToNSString(range.ToString());
+  }
+
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityTextMarkerNodeDebugDescriptionParameterizedAttribute]) {
+    BrowserAccessibilityPositionInstance position =
+        CreatePositionFromTextMarker(parameter);
+    if (position->IsNullPosition())
+      return @"nil";
+    DCHECK(position->GetAnchor());
+    return base::SysUTF8ToNSString(position->GetAnchor()->ToString());
   }
 
   if ([attribute

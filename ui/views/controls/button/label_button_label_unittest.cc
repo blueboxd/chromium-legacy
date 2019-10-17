@@ -97,7 +97,7 @@ TEST_F(LabelButtonLabelTest, Colors) {
   // buttons use label colors. See LabelButton::ResetColorsFromNativeTheme().
   theme1_.Set(ui::NativeTheme::kColorId_LabelEnabledColor, SK_ColorGREEN);
   theme1_.Set(ui::NativeTheme::kColorId_LabelDisabledColor, SK_ColorYELLOW);
-  label_->SetNativeTheme(&theme1_);
+  label_->SetNativeThemeForTesting(&theme1_);
 
   // Setting the theme should paint.
   EXPECT_EQ(SK_ColorGREEN, last_color_);
@@ -110,7 +110,7 @@ TEST_F(LabelButtonLabelTest, Colors) {
   // Widget triggers it (which it can do as a friend of RootView).
   theme2_.Set(ui::NativeTheme::kColorId_LabelEnabledColor, SK_ColorBLUE);
   theme2_.Set(ui::NativeTheme::kColorId_LabelDisabledColor, SK_ColorGRAY);
-  label_->SetNativeTheme(&theme2_);
+  label_->SetNativeThemeForTesting(&theme2_);
 
   EXPECT_EQ(SK_ColorGRAY, last_color_);
 
@@ -130,7 +130,7 @@ TEST_F(LabelButtonLabelTest, Colors) {
   EXPECT_EQ(SK_ColorMAGENTA, last_color_);
 
   // Disabled still overridden after a theme change.
-  label_->SetNativeTheme(&theme1_);
+  label_->SetNativeThemeForTesting(&theme1_);
   EXPECT_EQ(SK_ColorMAGENTA, last_color_);
 
   // The enabled color still gets its value from the theme.

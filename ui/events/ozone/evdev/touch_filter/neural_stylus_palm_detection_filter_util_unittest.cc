@@ -176,4 +176,22 @@ TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeBiggestSizeTest) {
   }
 }
 
+TEST_F(NeuralStylusPalmDetectionFilterUtilTest, StrokeGetMaxMajorTest) {
+  Stroke stroke(3);
+  EXPECT_FLOAT_EQ(0, stroke.MaxMajorRadius());
+  base::TimeTicks t =
+      base::TimeTicks::UnixEpoch() + base::TimeDelta::FromSeconds(30);
+  const DistilledDevInfo nocturne_distilled =
+      DistilledDevInfo::Create(nocturne_touchscreen_);
+  for (int i = 1; i < 50; ++i) {
+    touch_.major = i;
+    touch_.minor = i - 1;
+    Sample s(touch_, t, nocturne_distilled);
+    t += base::TimeDelta::FromMilliseconds(8);
+    EXPECT_EQ(static_cast<uint64_t>(i - 1), stroke.samples_seen());
+    stroke.AddSample(s);
+    EXPECT_FLOAT_EQ(i, stroke.MaxMajorRadius());
+  }
+}
+
 }  // namespace ui

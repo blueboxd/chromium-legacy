@@ -86,9 +86,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Returns true if there is a screen reader installed on the machine.
   virtual bool HasActiveScreenReader() const;
 
-  // Indicates on focus changed if autofill is available or unavailable, so
-  // state can be announced by screen readers.
-  virtual void OnAutofillAvailabilityEvent(bool has_suggestions);
+  // Indicates on focus changed if autofill/autocomplete is available or
+  // unavailable, so state can be announced by screen readers.
+  virtual void OnAutofillAvailabilityEvent(const mojom::AutofillState state);
 
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(

@@ -665,7 +665,7 @@ void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
   // Detaching and attaching can be suppresed temporarily to suppress attaching
   // to incorrect window on changing bounds. We should prevent Drag() itself,
   // otherwise it can clear deferred attaching tab.
-  if (!CanDetachFromTabStrip(GetContextForWindow(widget->GetNativeWindow())))
+  if (!CanDetachFromTabStrip(attached_context_))
     return;
 #if defined(USE_AURA)
   aura::Env* env = aura::Env::GetInstance();
@@ -1100,10 +1100,11 @@ TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
   if (state == Liveness::DELETED)
     return Liveness::DELETED;
 
-  // Do not allow dragging into a window with a modal dialog, it causes a weird
-  // behavior.  See crbug.com/336691
-  if (local_window && !ShouldDisallowDrag(local_window)) {
-    TabDragContext* destination_tab_strip = GetContextForWindow(local_window);
+  if (local_window && CanAttachTo(local_window)) {
+    TabDragContext* destination_tab_strip =
+        BrowserView::GetBrowserViewForNativeWindow(local_window)
+            ->tabstrip()
+            ->GetDragContext();
     if (ShouldAttachOnEnd(destination_tab_strip)) {
       // No need to check if the specified screen point is within the bounds of
       // the tabstrip as arriving here we know that the window is currently
@@ -1122,25 +1123,6 @@ TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
   *context = current_state_ == DragState::kDraggingWindow ? attached_context_
                                                           : nullptr;
   return Liveness::ALIVE;
-}
-
-TabDragContext* TabDragController::GetContextForWindow(
-    gfx::NativeWindow window) {
-  if (!window)
-    return NULL;
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForNativeWindow(window);
-  // We don't allow drops on windows that don't have tabstrips.
-  if (!browser_view || !browser_view->browser()->SupportsWindowFeature(
-                           Browser::FEATURE_TABSTRIP))
-    return NULL;
-
-  TabDragContext* other_context = browser_view->tabstrip()->GetDragContext();
-  TabDragContext* context =
-      attached_context_ ? attached_context_ : source_context_;
-  DCHECK(context);
-
-  return other_context->IsCompatibleWith(context) ? other_context : nullptr;
 }
 
 bool TabDragController::DoesTabStripContain(
@@ -1773,7 +1755,7 @@ void TabDragController::BringWindowUnderPointToFront(
 
   // Only bring browser windows to front - only windows with a
   // TabDragContext can be tab drag targets.
-  if (!GetContextForWindow(window))
+  if (!CanAttachTo(window))
     return;
 
   if (window) {
@@ -2181,17 +2163,42 @@ base::Optional<TabGroupId> TabDragController::GetTabGroupForTargetIndex(
   return base::nullopt;
 }
 
-bool TabDragController::ShouldDisallowDrag(gfx::NativeWindow window) {
+bool TabDragController::CanAttachTo(gfx::NativeWindow window) {
+  if (!window)
+    return false;
+
+  BrowserView* other_browser_view =
+      BrowserView::GetBrowserViewForNativeWindow(window);
+  if (!other_browser_view)
+    return false;
+  Browser* other_browser = other_browser_view->browser();
+
+  // Do not allow dragging into a window with a modal dialog, it causes a
+  // weird behavior.  See crbug.com/336691
 #if defined(USE_AURA)
-  return wm::GetModalTransient(window) != nullptr;
+  if (wm::GetModalTransient(window) != nullptr)
+    return false;
 #else
-  TabDragContext* context = GetContextForWindow(window);
-  if (!context)
-    return true;
-  TabStripModel* model = context->GetTabStripModel();
+  TabStripModel* model = other_browser->tab_strip_model();
   DCHECK(model);
-  return model->IsTabBlocked(model->active_index());
+  if (model->IsTabBlocked(model->active_index()))
+    return false;
 #endif
+
+  // We don't allow drops on windows that don't have tabstrips.
+  if (!other_browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
+    return false;
+
+  Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
+                         GetAttachedBrowserWidget()->GetNativeWindow())
+                         ->browser();
+
+  // Profiles must be the same.
+  if (other_browser->profile() != browser->profile())
+    return false;
+
+  // Browser type (e.g. NORMAL vs APP) must be the same.
+  return other_browser->type() == browser->type();
 }
 
 void TabDragController::SetDeferredTargetTabstrip(

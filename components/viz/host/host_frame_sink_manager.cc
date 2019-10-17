@@ -14,14 +14,12 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
 
-HostFrameSinkManager::HostFrameSinkManager() : binding_(this) {}
+HostFrameSinkManager::HostFrameSinkManager() = default;
 
 HostFrameSinkManager::~HostFrameSinkManager() = default;
 
@@ -34,13 +32,13 @@ void HostFrameSinkManager::SetLocalManager(
 }
 
 void HostFrameSinkManager::BindAndSetManager(
-    mojom::FrameSinkManagerClientRequest request,
+    mojo::PendingReceiver<mojom::FrameSinkManagerClient> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     mojo::PendingRemote<mojom::FrameSinkManager> remote) {
   DCHECK(!frame_sink_manager_impl_);
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
 
-  binding_.Bind(std::move(request), std::move(task_runner));
+  receiver_.Bind(std::move(receiver), std::move(task_runner));
   frame_sink_manager_remote_.Bind(std::move(remote));
   frame_sink_manager_ = frame_sink_manager_remote_.get();
 
@@ -346,7 +344,7 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
 void HostFrameSinkManager::OnConnectionLost() {
   connection_was_lost_ = true;
 
-  binding_.Close();
+  receiver_.reset();
   frame_sink_manager_remote_.reset();
   frame_sink_manager_ = nullptr;
 

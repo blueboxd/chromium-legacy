@@ -59,11 +59,12 @@ void CompositorAnimationRunner::OnCompositingShuttingDown(
   compositor_ = nullptr;
 }
 
-void CompositorAnimationRunner::OnStart(base::TimeDelta min_interval) {
+void CompositorAnimationRunner::OnStart(base::TimeDelta min_interval,
+                                        base::TimeDelta elapsed) {
   if (!compositor_)
     return;
 
-  last_tick_ = base::TimeTicks::Now();
+  last_tick_ = base::TimeTicks::Now() - elapsed;
   min_interval_ = min_interval;
   DCHECK(!compositor_->HasAnimationObserver(this));
   compositor_->AddAnimationObserver(this);

@@ -14,6 +14,10 @@
 
 namespace performance_manager {
 
+// static
+constexpr char FrameNodeImpl::kDefaultPriorityReason[] =
+    "default frame priority";
+
 using PriorityAndReason = frame_priority::PriorityAndReason;
 
 FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,

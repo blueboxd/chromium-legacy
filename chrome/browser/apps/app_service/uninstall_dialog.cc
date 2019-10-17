@@ -7,6 +7,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/cpp/icon_loader.h"
 
+namespace {
+
+constexpr int32_t kUninstallIconSize = 32;
+constexpr int32_t kArcUninstallIconSize = 48;
+
+}  // namespace
+
 namespace apps {
 
 UninstallDialog::UninstallDialog(Profile* profile,
@@ -19,10 +26,28 @@ UninstallDialog::UninstallDialog(Profile* profile,
       app_type_(app_type),
       app_id_(app_id),
       uninstall_callback_(std::move(uninstall_callback)) {
+  int32_t size_hint_in_dip;
+  switch (app_type) {
+    case apps::mojom::AppType::kCrostini:
+      // Crostini uninstall dialog doesn't show the icon.
+      UiBase::Create(profile_, app_type_, app_id_, gfx::ImageSkia(), this);
+      return;
+    case apps::mojom::AppType::kArc:
+      // Currently ARC apps only support 48*48 native icon.
+      size_hint_in_dip = kArcUninstallIconSize;
+      break;
+    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kWeb:
+      size_hint_in_dip = kUninstallIconSize;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
   constexpr bool kAllowPlaceholderIcon = false;
   icon_loader->LoadIconFromIconKey(
       app_type, app_id, std::move(icon_key),
-      apps::mojom::IconCompression::kUncompressed, kSizeHintInDip,
+      apps::mojom::IconCompression::kUncompressed, size_hint_in_dip,
       kAllowPlaceholderIcon,
       base::BindOnce(&UninstallDialog::OnLoadIcon,
                      weak_ptr_factory_.GetWeakPtr()));

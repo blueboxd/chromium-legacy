@@ -13,11 +13,13 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/numerics/ranges.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -763,6 +765,9 @@ bool ScrollableShelfView::ShouldShowTooltipForView(
   if (!view || !view->parent())
     return false;
 
+  if (view == left_arrow_ || view == right_arrow_)
+    return true;
+
   if (view->parent() != shelf_view_)
     return false;
 
@@ -798,6 +803,12 @@ base::string16 ScrollableShelfView::GetTitleForView(
 
   if (view->parent() == shelf_view_)
     return shelf_view_->GetTitleForView(view);
+
+  if (view == left_arrow_)
+    return l10n_util::GetStringUTF16(IDS_SHELF_PREVIOUS);
+
+  if (view == right_arrow_)
+    return l10n_util::GetStringUTF16(IDS_SHELF_NEXT);
 
   return base::string16();
 }

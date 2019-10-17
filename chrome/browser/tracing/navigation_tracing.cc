@@ -47,7 +47,7 @@ void NavigationUploadCallback(
       TraceEventMetadataSource::GetInstance()->GenerateLegacyMetadataDict();
 
   uploader->DoUpload(
-      file_contents->data(), content::TraceUploader::UNCOMPRESSED_UPLOAD,
+      *file_contents, content::TraceUploader::UNCOMPRESSED_UPLOAD,
       std::move(metadata), content::TraceUploader::UploadProgressCallback(),
       base::BindOnce(&OnNavigationTracingUploadComplete, base::Owned(uploader),
                      std::move(callback)));

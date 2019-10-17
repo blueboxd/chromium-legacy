@@ -8,10 +8,10 @@
 # locally, generate and push the protobuffer to the storage bucket but do not
 # check in the changes.
 
-version_id: 4
+version_id: 5
 
 # See chrome/browser/lookalikes/safety_tips.proto for the full format.
-# These entries must be sorted alphabetically by pattern.
+# flagged_page entries must be sorted alphabetically by pattern.
 
 # Example entry:
 # flagged_page {
@@ -21,6 +21,7 @@ version_id: 4
 
 # A page that's marked to not show a UI for any heuristic (including lookalike
 # or edit distance).
+# allowed_pattern entries must be sorted alphabetically by pattern.
 # allowed_pattern:  {
 #   pattern: "good.test/some/path.html"
 # }

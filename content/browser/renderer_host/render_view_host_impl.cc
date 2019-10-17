@@ -139,36 +139,6 @@ void GetFontInfo(gfx::win::SystemFont system_font,
 }
 #endif  // OS_WIN
 
-void GetPlatformSpecificPrefs(blink::mojom::RendererPreferences* prefs) {
-#if defined(OS_WIN)
-  // Note that what is called "height" in this struct is actually the font size;
-  // font "height" typically includes ascender, descender, and padding and is
-  // often a third or so larger than the given font size.
-  GetFontInfo(gfx::win::SystemFont::kCaption, &prefs->caption_font_family_name,
-              &prefs->caption_font_height);
-  GetFontInfo(gfx::win::SystemFont::kSmallCaption,
-              &prefs->small_caption_font_family_name,
-              &prefs->small_caption_font_height);
-  GetFontInfo(gfx::win::SystemFont::kMenu, &prefs->menu_font_family_name,
-              &prefs->menu_font_height);
-  GetFontInfo(gfx::win::SystemFont::kMessage, &prefs->message_font_family_name,
-              &prefs->message_font_height);
-  GetFontInfo(gfx::win::SystemFont::kStatus, &prefs->status_font_family_name,
-              &prefs->status_font_height);
-
-  prefs->vertical_scroll_bar_width_in_dips =
-      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXVSCROLL);
-  prefs->horizontal_scroll_bar_height_in_dips =
-      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYHSCROLL);
-  prefs->arrow_bitmap_height_vertical_scroll_bar_in_dips =
-      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYVSCROLL);
-  prefs->arrow_bitmap_width_horizontal_scroll_bar_in_dips =
-      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXHSCROLL);
-#elif defined(OS_LINUX)
-  prefs->system_font_family_name = gfx::Font().GetFontName();
-#endif
-}
-
 }  // namespace
 
 // static
@@ -209,6 +179,38 @@ RenderViewHostImpl* RenderViewHostImpl::From(RenderWidgetHost* rwh) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(owner_delegate);
   DCHECK_EQ(rwh, rvh->GetWidget());
   return rvh;
+}
+
+// static
+void RenderViewHostImpl::GetPlatformSpecificPrefs(
+    blink::mojom::RendererPreferences* prefs) {
+#if defined(OS_WIN)
+  // Note that what is called "height" in this struct is actually the font size;
+  // font "height" typically includes ascender, descender, and padding and is
+  // often a third or so larger than the given font size.
+  GetFontInfo(gfx::win::SystemFont::kCaption, &prefs->caption_font_family_name,
+              &prefs->caption_font_height);
+  GetFontInfo(gfx::win::SystemFont::kSmallCaption,
+              &prefs->small_caption_font_family_name,
+              &prefs->small_caption_font_height);
+  GetFontInfo(gfx::win::SystemFont::kMenu, &prefs->menu_font_family_name,
+              &prefs->menu_font_height);
+  GetFontInfo(gfx::win::SystemFont::kMessage, &prefs->message_font_family_name,
+              &prefs->message_font_height);
+  GetFontInfo(gfx::win::SystemFont::kStatus, &prefs->status_font_family_name,
+              &prefs->status_font_height);
+
+  prefs->vertical_scroll_bar_width_in_dips =
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXVSCROLL);
+  prefs->horizontal_scroll_bar_height_in_dips =
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYHSCROLL);
+  prefs->arrow_bitmap_height_vertical_scroll_bar_in_dips =
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYVSCROLL);
+  prefs->arrow_bitmap_width_horizontal_scroll_bar_in_dips =
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXHSCROLL);
+#elif defined(OS_LINUX)
+  prefs->system_font_family_name = gfx::Font().GetFontName();
+#endif
 }
 
 RenderViewHostImpl::RenderViewHostImpl(
@@ -336,7 +338,8 @@ bool RenderViewHostImpl::CreateRenderView(
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
   params->renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext()).Clone();
-  GetPlatformSpecificPrefs(params->renderer_preferences.get());
+  RenderViewHostImpl::GetPlatformSpecificPrefs(
+      params->renderer_preferences.get());
   params->web_preferences = GetWebkitPreferences();
   params->view_id = GetRoutingID();
   params->main_frame_routing_id = main_frame_routing_id_;
@@ -422,13 +425,6 @@ void RenderViewHostImpl::LeaveBackForwardCache() {
 bool RenderViewHostImpl::IsRenderViewLive() {
   return GetProcess()->IsInitializedAndNotDead() &&
          GetWidget()->renderer_initialized();
-}
-
-void RenderViewHostImpl::SyncRendererPrefs() {
-  blink::mojom::RendererPreferences renderer_preferences =
-      delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
-  GetPlatformSpecificPrefs(&renderer_preferences);
-  Send(new ViewMsg_SetRendererPrefs(GetRoutingID(), renderer_preferences));
 }
 
 void RenderViewHostImpl::SetBackgroundOpaque(bool opaque) {

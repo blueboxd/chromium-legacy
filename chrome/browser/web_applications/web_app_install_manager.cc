@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -100,11 +101,14 @@ void WebAppInstallManager::InstallWebAppWithParams(
   tasks_.insert(std::move(task));
 }
 
-void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
+void WebAppInstallManager::InstallWebAppFromSync(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
-  if (finalizer()->CanSkipAppUpdateForSync(app_id, *web_application_info)) {
+  // Skip sync update if app exists.
+  // All manifest fields will be set locally via update (see crbug.com/926083)
+  // so we must not sync them in order to avoid a device-to-device sync war.
+  if (registrar()->IsInstalled(app_id)) {
     std::move(callback).Run(app_id,
                             InstallResultCode::kSuccessAlreadyInstalled);
     return;

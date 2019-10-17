@@ -177,7 +177,7 @@ void GpuHostImpl::BlockLiveOffscreenContexts() {
 
 void GpuHostImpl::ConnectFrameSinkManager(
     mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
-    mojom::FrameSinkManagerClientPtrInfo client) {
+    mojo::PendingRemote<mojom::FrameSinkManagerClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("gpu", "GpuHostImpl::ConnectFrameSinkManager");
 

@@ -68,6 +68,8 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
       mojom::DeviceSync::SetSoftwareFeatureStateCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
+  void GetDevicesActivityStatus(
+      mojom::DeviceSync::GetDevicesActivityStatusCallback callback) override;
   void GetDebugInfo(mojom::DeviceSync::GetDebugInfoCallback callback) override;
 
   // mojom::DeviceSyncObserver:

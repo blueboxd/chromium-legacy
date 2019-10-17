@@ -24,8 +24,8 @@ import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.SuggestionListViewHolder;
-import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionViewBinder;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
@@ -129,9 +129,9 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.ANSWER_SUGGESTION,
-                        () -> (AnswerSuggestionView) LayoutInflater.from(mListView.getContext())
-                                .inflate(R.layout.omnibox_answer_suggestion, null),
-                        AnswerSuggestionViewBinder::bind);
+                        () -> new BaseSuggestionView(mListView.getContext(),
+                                                     R.layout.omnibox_answer_suggestion),
+                        new AnswerSuggestionViewBinder());
 
                 adapter.registerType(
                         OmniboxSuggestionUiType.ENTITY_SUGGESTION,

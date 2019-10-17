@@ -150,6 +150,13 @@ void TextTrackLoader::GetNewCues(
     cue_parser_->GetNewCues(output_cues);
 }
 
+void TextTrackLoader::GetNewStyleSheets(
+    HeapVector<Member<CSSStyleSheet>>& output_sheets) {
+  DCHECK(cue_parser_);
+  if (cue_parser_)
+    cue_parser_->GetNewStyleSheets(output_sheets);
+}
+
 void TextTrackLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(cue_parser_);

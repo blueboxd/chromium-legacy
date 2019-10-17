@@ -121,36 +121,57 @@ void AudioDelayDSPKernel::Process(const float* source,
       *destination++ = static_cast<float>(output);
     }
   } else {
-    double delay_time = this->DelayTime(sample_rate);
+    // This is basically the same as above, but optimized for the case where the
+    // delay time is constant for the current render.
+    //
+    // TODO(crbug.com/1012198): There are still some further optimizations that
+    // could be done.  interp_factor could be a float to eliminate several
+    // conversions between floats and doubles.  It might be possible to get rid
+    // of the wrapping if the buffer were longer.  This may aslo allow
+    // |write_index_| to be different from |read_index1| or |read_index2| which
+    // simplifies the loop a bit.
 
+    double delay_time = this->DelayTime(sample_rate);
     // Make sure the delay time is in a valid range.
     delay_time = clampTo(delay_time, 0.0, max_time);
+    double desired_delay_frames = delay_time * sample_rate;
+    double read_position = write_index_ + buffer_length - desired_delay_frames;
+    if (read_position >= buffer_length)
+      read_position -= buffer_length;
+
+    // Linearly interpolate in-between delay times.  |read_index1| and
+    // |read_index2| are the indices of the frames to be used for
+    // interpolation.
+    int read_index1 = static_cast<int>(read_position);
+    int read_index2 = (read_index1 + 1) % buffer_length;
+    double interp_factor = read_position - read_index1;
+
+    int w_index = write_index_;
 
     for (unsigned i = 0; i < frames_to_process; ++i) {
-      double desired_delay_frames = delay_time * sample_rate;
+      // Copy the latest sample into the buffer.  Needed because
+      // w_index could be the same as read_index1 or read_index2.
+      buffer[w_index] = *source++;
+      float sample1 = buffer[read_index1];
+      float sample2 = buffer[read_index2];
 
-      double read_position =
-          write_index_ + buffer_length - desired_delay_frames;
-      if (read_position >= buffer_length)
-        read_position -= buffer_length;
+      // Update the indices and wrap them to the beginning of the buffer if
+      // needed.
+      ++w_index;
+      ++read_index1;
+      ++read_index2;
+      if (w_index >= static_cast<int>(buffer_length))
+        w_index -= buffer_length;
+      if (read_index1 >= static_cast<int>(buffer_length))
+        read_index1 -= buffer_length;
+      if (read_index2 >= static_cast<int>(buffer_length))
+        read_index2 -= buffer_length;
 
-      // Linearly interpolate in-between delay times.
-      int read_index1 = static_cast<int>(read_position);
-      int read_index2 = (read_index1 + 1) % buffer_length;
-      double interpolation_factor = read_position - read_index1;
-
-      double input = static_cast<float>(*source++);
-      buffer[write_index_] = static_cast<float>(input);
-      write_index_ = (write_index_ + 1) % buffer_length;
-
-      double sample1 = buffer[read_index1];
-      double sample2 = buffer[read_index2];
-
-      double output = (1.0 - interpolation_factor) * sample1 +
-                      interpolation_factor * sample2;
-
-      *destination++ = static_cast<float>(output);
+      // Linearly interpolate between samples.
+      *destination++ = (1 - interp_factor) * sample1 + interp_factor * sample2;
     }
+
+    write_index_ = w_index;
   }
 }
 

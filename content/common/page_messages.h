@@ -58,6 +58,9 @@ IPC_MESSAGE_ROUTED0(PageMsg_RestorePageFromBackForwardCache)
 IPC_MESSAGE_ROUTED1(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                     blink::WebTextAutosizerPageInfo /* page_info */)
 
+// Sends updated preferences to the renderer.
+IPC_MESSAGE_ROUTED1(PageMsg_SetRendererPrefs, blink::mojom::RendererPreferences)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

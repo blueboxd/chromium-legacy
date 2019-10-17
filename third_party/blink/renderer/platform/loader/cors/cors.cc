@@ -360,7 +360,7 @@ Vector<String> CorsUnsafeRequestHeaderNames(const HTTPHeaderMap& headers) {
 }
 
 bool IsForbiddenHeaderName(const String& name) {
-  return network::cors::IsForbiddenHeader(name.Latin1());
+  return !net::HttpUtil::IsSafeHeader(name.Latin1());
 }
 
 bool ContainsOnlyCorsSafelistedHeaders(const HTTPHeaderMap& header_map) {

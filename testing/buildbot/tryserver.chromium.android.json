@@ -382,6 +382,7 @@
       }
     ]
   },
+  "android-opus-kitkat-arm-rel": {},
   "android_blink_rel": {
     "gtest_tests": [
       {

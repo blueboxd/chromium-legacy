@@ -75,6 +75,12 @@ ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
+  if (!mojo_ptr_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
+    return result;
+  }
+
   mojo_ptr_->GetDirectory(
       name, options->create(),
       WTF::Bind(
@@ -130,6 +136,12 @@ ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(
     const FileSystemRemoveOptions* options) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
+
+  if (!mojo_ptr_) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
+    return result;
+  }
 
   mojo_ptr_->RemoveEntry(
       name, options->recursive(),
@@ -187,13 +199,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
 mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
 NativeFileSystemDirectoryHandle::Transfer() {
   mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> result;
-  mojo_ptr_->Transfer(result.InitWithNewPipeAndPassReceiver());
+  if (mojo_ptr_)
+    mojo_ptr_->Transfer(result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 
 void NativeFileSystemDirectoryHandle::QueryPermissionImpl(
     bool writable,
     base::OnceCallback<void(mojom::blink::PermissionStatus)> callback) {
+  if (!mojo_ptr_) {
+    std::move(callback).Run(mojom::blink::PermissionStatus::DENIED);
+    return;
+  }
   mojo_ptr_->GetPermissionStatus(writable, std::move(callback));
 }
 
@@ -201,6 +218,15 @@ void NativeFileSystemDirectoryHandle::RequestPermissionImpl(
     bool writable,
     base::OnceCallback<void(mojom::blink::NativeFileSystemErrorPtr,
                             mojom::blink::PermissionStatus)> callback) {
+  if (!mojo_ptr_) {
+    std::move(callback).Run(
+        mojom::blink::NativeFileSystemError::New(
+            mojom::blink::NativeFileSystemStatus::kInvalidState,
+            base::File::Error::FILE_ERROR_FAILED, "Context Destroyed"),
+        mojom::blink::PermissionStatus::DENIED);
+    return;
+  }
+
   mojo_ptr_->RequestPermission(writable, std::move(callback));
 }
 

@@ -855,6 +855,19 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV18) {
                      new_image_data->BufferBase()->Data())[0]);
 }
 
+TEST(V8ScriptValueSerializerTest, InvalidImageDataDecodeV18) {
+  V8TestingScope scope;
+  ScriptState* script_state = scope.GetScriptState();
+  {
+    // Nonsense image serialization tag (kOriginCleanTag).
+    scoped_refptr<SerializedScriptValue> input =
+        SerializedValue({0xff, 0x12, 0xff, 0x0d, 0x5c, 0x23, 0x02, 0x00, 0x00,
+                         0x01, 0x01, 0x04, 0x00, 0x00, 0x00, 0x00});
+    EXPECT_TRUE(
+        V8ScriptValueDeserializer(script_state, input).Deserialize()->IsNull());
+  }
+}
+
 MessagePort* MakeMessagePort(ExecutionContext* execution_context,
                              ::MojoHandle* unowned_handle_out = nullptr) {
   auto* port = MakeGarbageCollected<MessagePort>(*execution_context);
@@ -1249,6 +1262,14 @@ TEST(V8ScriptValueSerializerTest, InvalidImageBitmapDecodeV18) {
         {0xff, 0x12, 0xff, 0x0d, 0x5c, 0x67, 0x01, 0x03, 0x02, 0x03, 0x04, 0x01,
          0x05, 0x01, 0x00, 0x03, 0x01, 0x10, 0x94, 0x3a, 0x3f, 0x28, 0x5f, 0x24,
          0x00, 0x3c, 0x94, 0x3a, 0x3f, 0x28, 0x5f, 0x24, 0x00, 0x3c});
+    EXPECT_TRUE(
+        V8ScriptValueDeserializer(script_state, input).Deserialize()->IsNull());
+  }
+  {
+    // Nonsense image serialization tag (kImageDataStorageFormatTag).
+    scoped_refptr<SerializedScriptValue> input =
+        SerializedValue({0xff, 0x12, 0xff, 0x0d, 0x5c, 0x67, 0x03, 0x00, 0x00,
+                         0x01, 0x01, 0x04, 0x00, 0x00, 0x00, 0x00});
     EXPECT_TRUE(
         V8ScriptValueDeserializer(script_state, input).Deserialize()->IsNull());
   }

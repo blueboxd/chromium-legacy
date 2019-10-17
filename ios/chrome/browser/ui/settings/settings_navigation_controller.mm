@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
@@ -61,47 +62,49 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 @end
 
-@implementation SettingsNavigationController {
-  ios::ChromeBrowserState* mainBrowserState_;  // weak
-}
+@implementation SettingsNavigationController
 
 #pragma mark - SettingsNavigationController methods.
 
-+ (SettingsNavigationController*)
-newSettingsMainControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                 delegate:
-                                     (id<SettingsNavigationControllerDelegate>)
++ (instancetype)
+    mainSettingsControllerForBrowser:(Browser*)browser
+                            delegate:(id<SettingsNavigationControllerDelegate>)
                                          delegate {
+  DCHECK(browser);
   SettingsTableViewController* controller = [[SettingsTableViewController alloc]
-      initWithBrowserState:browserState
-                dispatcher:[delegate dispatcherForSettings]];
+      initWithBrowser:browser
+           dispatcher:[delegate dispatcherForSettings]];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browserState
+                    browserState:browser->GetBrowserState()
                         delegate:delegate];
   [controller navigationItem].rightBarButtonItem = [nc doneButton];
   return nc;
 }
 
-+ (SettingsNavigationController*)
-newAccountsController:(ios::ChromeBrowserState*)browserState
-             delegate:(id<SettingsNavigationControllerDelegate>)delegate {
-  AccountsTableViewController* controller =
-      [[AccountsTableViewController alloc] initWithBrowserState:browserState
-                                      closeSettingsOnAddAccount:YES];
++ (instancetype)
+    accountsControllerForBrowser:(Browser*)browser
+                        delegate:
+                            (id<SettingsNavigationControllerDelegate>)delegate {
+  DCHECK(browser);
+  AccountsTableViewController* controller = [[AccountsTableViewController alloc]
+           initWithBrowserState:browser->GetBrowserState()
+      closeSettingsOnAddAccount:YES];
   controller.dispatcher = [delegate dispatcherForSettings];
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browserState
+                    browserState:browser->GetBrowserState()
                         delegate:delegate];
   [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
-+ (SettingsNavigationController*)
-    newGoogleServicesController:(ios::ChromeBrowserState*)browserState
-                       delegate:
-                           (id<SettingsNavigationControllerDelegate>)delegate {
++ (instancetype)
+    googleServicesControllerForBrowser:(Browser*)browser
+                              delegate:
+                                  (id<SettingsNavigationControllerDelegate>)
+                                      delegate {
+  DCHECK(browser);
   // GoogleServicesSettings uses a coordinator to be presented, therefore the
   // view controller is not accessible. Prefer creating a
   // |SettingsNavigationController| with a nil root view controller and then
@@ -109,17 +112,59 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
   // root view controller.
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:nil
-                    browserState:browserState
+                    browserState:browser->GetBrowserState()
                         delegate:delegate];
   [nc showGoogleServices];
   return nc;
 }
 
-+ (SettingsNavigationController*)
-    newUserFeedbackController:(ios::ChromeBrowserState*)browserState
-                     delegate:(id<SettingsNavigationControllerDelegate>)delegate
-           feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
-                   dispatcher:(id<ApplicationCommands>)dispatcher {
++ (instancetype)
+    syncPassphraseControllerForBrowser:(Browser*)browser
+                              delegate:
+                                  (id<SettingsNavigationControllerDelegate>)
+                                      delegate {
+  DCHECK(browser);
+  SyncEncryptionPassphraseTableViewController* controller =
+      [[SyncEncryptionPassphraseTableViewController alloc]
+          initWithBrowserState:browser->GetBrowserState()];
+  controller.dispatcher = [delegate dispatcherForSettings];
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:controller
+                    browserState:browser->GetBrowserState()
+                        delegate:delegate];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
+  return nc;
+}
+
++ (instancetype)
+    savePasswordsControllerForBrowser:(Browser*)browser
+                             delegate:(id<SettingsNavigationControllerDelegate>)
+                                          delegate {
+  DCHECK(browser);
+  PasswordsTableViewController* controller =
+      [[PasswordsTableViewController alloc]
+          initWithBrowserState:browser->GetBrowserState()];
+  controller.dispatcher = [delegate dispatcherForSettings];
+
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:controller
+                    browserState:browser->GetBrowserState()
+                        delegate:delegate];
+  [controller navigationItem].rightBarButtonItem = [nc doneButton];
+
+  // Make sure the cancel button is always present, as the Save Passwords screen
+  // isn't just shown from Settings.
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
+  return nc;
+}
+
++ (instancetype)
+    userFeedbackControllerForBrowser:(Browser*)browser
+                            delegate:(id<SettingsNavigationControllerDelegate>)
+                                         delegate
+                  feedbackDataSource:(id<UserFeedbackDataSource>)dataSource
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
+  DCHECK(browser);
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetUserFeedbackProvider()
              ->IsUserFeedbackEnabled());
@@ -130,7 +175,7 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
   DCHECK(controller);
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browserState
+                    browserState:browser->GetBrowserState()
                         delegate:delegate];
   // If the controller overrides overrideUserInterfaceStyle, respect that in the
   // SettingsNavigationController.
@@ -140,48 +185,16 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
   return nc;
 }
 
-+ (SettingsNavigationController*)
-newSyncEncryptionPassphraseController:(ios::ChromeBrowserState*)browserState
-                             delegate:(id<SettingsNavigationControllerDelegate>)
-                                          delegate {
-  SyncEncryptionPassphraseTableViewController* controller =
-      [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:browserState];
-  controller.dispatcher = [delegate dispatcherForSettings];
-  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
-      initWithRootViewController:controller
-                    browserState:browserState
-                        delegate:delegate];
-  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
-  return nc;
-}
-
-+ (SettingsNavigationController*)
-newSavePasswordsController:(ios::ChromeBrowserState*)browserState
-                  delegate:(id<SettingsNavigationControllerDelegate>)delegate {
-  PasswordsTableViewController* controller =
-      [[PasswordsTableViewController alloc] initWithBrowserState:browserState];
-  controller.dispatcher = [delegate dispatcherForSettings];
-
-  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
-      initWithRootViewController:controller
-                    browserState:browserState
-                        delegate:delegate];
-  [controller navigationItem].rightBarButtonItem = [nc doneButton];
-
-  // Make sure the cancel button is always present, as the Save Passwords screen
-  // isn't just shown from Settings.
-  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
-  return nc;
-}
-
-+ (SettingsNavigationController*)
-newImportDataController:(ios::ChromeBrowserState*)browserState
-               delegate:(id<SettingsNavigationControllerDelegate>)delegate
-     importDataDelegate:(id<ImportDataControllerDelegate>)importDataDelegate
-              fromEmail:(NSString*)fromEmail
-                toEmail:(NSString*)toEmail
-             isSignedIn:(BOOL)isSignedIn {
++ (instancetype)
+    importDataControllerForBrowserState:(ios::ChromeBrowserState*)browserState
+                               delegate:
+                                   (id<SettingsNavigationControllerDelegate>)
+                                       delegate
+                     importDataDelegate:
+                         (id<ImportDataControllerDelegate>)importDataDelegate
+                              fromEmail:(NSString*)fromEmail
+                                toEmail:(NSString*)toEmail
+                             isSignedIn:(BOOL)isSignedIn {
   UIViewController* controller =
       [[ImportDataTableViewController alloc] initWithDelegate:importDataDelegate
                                                     fromEmail:fromEmail
@@ -199,18 +212,20 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
   return nc;
 }
 
-+ (SettingsNavigationController*)
-newAutofillProfilleController:(ios::ChromeBrowserState*)browserState
-                     delegate:
-                         (id<SettingsNavigationControllerDelegate>)delegate {
++ (instancetype)
+    autofillProfileControllerForBrowser:(Browser*)browser
+                               delegate:
+                                   (id<SettingsNavigationControllerDelegate>)
+                                       delegate {
+  DCHECK(browser);
   AutofillProfileTableViewController* controller =
       [[AutofillProfileTableViewController alloc]
-          initWithBrowserState:browserState];
+          initWithBrowserState:browser->GetBrowserState()];
   controller.dispatcher = [delegate dispatcherForSettings];
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browserState
+                    browserState:browser->GetBrowserState()
                         delegate:delegate];
 
   // Make sure the cancel button is always present, as the Autofill screen
@@ -219,18 +234,20 @@ newAutofillProfilleController:(ios::ChromeBrowserState*)browserState
   return nc;
 }
 
-+ (SettingsNavigationController*)
-newAutofillCreditCardController:(ios::ChromeBrowserState*)browserState
-                       delegate:
-                           (id<SettingsNavigationControllerDelegate>)delegate {
++ (instancetype)
+    autofillCreditCardControllerForBrowser:(Browser*)browser
+                                  delegate:
+                                      (id<SettingsNavigationControllerDelegate>)
+                                          delegate {
+  DCHECK(browser);
   AutofillCreditCardTableViewController* controller =
       [[AutofillCreditCardTableViewController alloc]
-          initWithBrowserState:browserState];
+          initWithBrowserState:browser->GetBrowserState()];
   controller.dispatcher = [delegate dispatcherForSettings];
 
   SettingsNavigationController* nc = [[SettingsNavigationController alloc]
       initWithRootViewController:controller
-                    browserState:browserState
+                    browserState:browser->GetBrowserState()
                         delegate:delegate];
 
   // Make sure the cancel button is always present, as the Autofill screen
@@ -242,14 +259,13 @@ newAutofillCreditCardController:(ios::ChromeBrowserState*)browserState
 #pragma mark - Lifecycle
 
 - (instancetype)
-initWithRootViewController:(UIViewController*)rootViewController
-              browserState:(ios::ChromeBrowserState*)browserState
-                  delegate:(id<SettingsNavigationControllerDelegate>)delegate {
-  DCHECK(browserState);
-  DCHECK(!browserState->IsOffTheRecord());
+    initWithRootViewController:(UIViewController*)rootViewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+                      delegate:
+                          (id<SettingsNavigationControllerDelegate>)delegate {
   self = [super initWithRootViewController:rootViewController];
   if (self) {
-    mainBrowserState_ = browserState;
+    _mainBrowserState = browserState;
     _settingsNavigationDelegate = delegate;
     self.modalPresentationStyle = UIModalPresentationFormSheet;
     // Set the presentationController delegate. This is used for swipe down to
@@ -350,7 +366,7 @@ initWithRootViewController:(UIViewController*)rootViewController
   self.googleServicesSettingsCoordinator =
       [[GoogleServicesSettingsCoordinator alloc]
           initWithBaseViewController:self
-                        browserState:mainBrowserState_
+                        browserState:self.mainBrowserState
                                 mode:GoogleServicesSettingsModeSettings];
   self.googleServicesSettingsCoordinator.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
@@ -473,7 +489,7 @@ initWithRootViewController:(UIViewController*)rootViewController
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
   AccountsTableViewController* controller = [[AccountsTableViewController alloc]
-           initWithBrowserState:mainBrowserState_
+           initWithBrowserState:self.mainBrowserState
       closeSettingsOnAddAccount:NO];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
@@ -491,7 +507,7 @@ initWithRootViewController:(UIViewController*)rootViewController
     (UIViewController*)baseViewController {
   SyncEncryptionPassphraseTableViewController* controller =
       [[SyncEncryptionPassphraseTableViewController alloc]
-          initWithBrowserState:mainBrowserState_];
+          initWithBrowserState:self.mainBrowserState];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -502,7 +518,7 @@ initWithRootViewController:(UIViewController*)rootViewController
     (UIViewController*)baseViewController {
   PasswordsTableViewController* controller =
       [[PasswordsTableViewController alloc]
-          initWithBrowserState:mainBrowserState_];
+          initWithBrowserState:self.mainBrowserState];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -513,7 +529,7 @@ initWithRootViewController:(UIViewController*)rootViewController
     (UIViewController*)baseViewController {
   AutofillProfileTableViewController* controller =
       [[AutofillProfileTableViewController alloc]
-          initWithBrowserState:mainBrowserState_];
+          initWithBrowserState:self.mainBrowserState];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
@@ -524,16 +540,10 @@ initWithRootViewController:(UIViewController*)rootViewController
     (UIViewController*)baseViewController {
   AutofillCreditCardTableViewController* controller =
       [[AutofillCreditCardTableViewController alloc]
-          initWithBrowserState:mainBrowserState_];
+          initWithBrowserState:self.mainBrowserState];
   controller.dispatcher =
       [self.settingsNavigationDelegate dispatcherForSettings];
   [self pushViewController:controller animated:YES];
-}
-
-#pragma mark - Profile
-
-- (ios::ChromeBrowserState*)mainBrowserState {
-  return mainBrowserState_;
 }
 
 #pragma mark - UIResponder

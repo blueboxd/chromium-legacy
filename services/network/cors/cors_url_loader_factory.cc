@@ -30,6 +30,8 @@ namespace network {
 
 namespace cors {
 
+bool CorsURLLoaderFactory::allow_external_preflights_for_testing_ = false;
+
 CorsURLLoaderFactory::CorsURLLoaderFactory(
     NetworkContext* context,
     mojom::URLLoaderFactoryParamsPtr params,
@@ -280,12 +282,14 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     return false;
   }
 
-  // kURLLoadOptionAsCorsPreflight should be set only by the network service.
-  // Otherwise the network service will be confused.
-  if (options & mojom::kURLLoadOptionAsCorsPreflight) {
-    mojo::ReportBadMessage(
-        "CorsURLLoaderFactory: kURLLoadOptionAsCorsPreflight is set");
-    return false;
+  if (!allow_external_preflights_for_testing_) {
+    // kURLLoadOptionAsCorsPreflight should be set only by the network service.
+    // Otherwise the network service will be confused.
+    if (options & mojom::kURLLoadOptionAsCorsPreflight) {
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: kURLLoadOptionAsCorsPreflight is set");
+      return false;
+    }
   }
 
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should

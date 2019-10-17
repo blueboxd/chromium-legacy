@@ -80,28 +80,42 @@ void MarkingVisitorBase::AdjustMarkedBytes(HeapObjectHeader* header,
   marked_bytes_ += header->size() - old_size;
 }
 
+// static
 bool MarkingVisitor::WriteBarrierSlow(void* value) {
   if (!value || IsHashTableDeleteValue(value))
     return false;
 
-  ThreadState* const thread_state = ThreadState::Current();
+  // It is guaranteed that managed references point to either GarbageCollected
+  // or GarbageCollectedMixin. Mixins are restricted to regular objects sizes.
+  // It is thus possible to get to the page header by aligning properly.
+  BasePage* base_page = PageFromObject(value);
+
+  ThreadState* const thread_state = base_page->thread_state();
   if (!thread_state->IsIncrementalMarking())
     return false;
 
-  HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
-      reinterpret_cast<Address>(const_cast<void*>(value)));
-  if (header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
+  HeapObjectHeader* header;
+  if (LIKELY(!base_page->IsLargeObjectPage())) {
+    header = reinterpret_cast<HeapObjectHeader*>(
+        static_cast<NormalPage*>(base_page)->FindHeaderFromAddress(
+            reinterpret_cast<Address>(value)));
+  } else {
+    header = static_cast<LargeObjectPage*>(base_page)->ObjectHeader();
+  }
+  DCHECK(header->IsValid());
+
+  if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
     return false;
 
-  if (header->IsInConstruction()) {
+  if (UNLIKELY(header->IsInConstruction())) {
+    // It is assumed that objects on not_fully_constructed_worklist_ are not
+    // marked.
+    header->Unmark();
     thread_state->CurrentVisitor()->not_fully_constructed_worklist_.Push(
         header->Payload());
     return true;
   }
 
-  // Mark and push trace callback.
-  if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
-    return false;
   MarkingVisitor* visitor = thread_state->CurrentVisitor();
   visitor->AccountMarkedBytes(header);
   visitor->marking_worklist_.Push(
@@ -152,7 +166,8 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
   HeapObjectHeader* const header =
       page->IsLargeObjectPage()
           ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
-          : static_cast<NormalPage*>(page)->FindHeaderFromAddress(address);
+          : static_cast<NormalPage*>(page)->ConservativelyFindHeaderFromAddress(
+                address);
   if (!header || header->IsMarked())
     return;
 

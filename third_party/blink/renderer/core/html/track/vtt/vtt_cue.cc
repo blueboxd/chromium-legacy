@@ -140,6 +140,20 @@ VTTCueBox::VTTCueBox(Document& document)
   SetShadowPseudoId(AtomicString("-webkit-media-text-track-display"));
 }
 
+VTTCueBackgroundBox::VTTCueBackgroundBox(Document& document)
+    : HTMLDivElement(document) {
+  SetShadowPseudoId(TextTrackCue::CueShadowPseudoId());
+}
+
+void VTTCueBackgroundBox::Trace(blink::Visitor* visitor) {
+  visitor->Trace(track_);
+  HTMLDivElement::Trace(visitor);
+}
+
+void VTTCueBackgroundBox::SetTrack(TextTrack* track) {
+  track_ = track;
+}
+
 void VTTCueBox::ApplyCSSProperties(
     const VTTDisplayParameters& display_parameters) {
   // http://dev.w3.org/html5/webvtt/#applying-css-properties-to-webvtt-node-objects
@@ -238,11 +252,10 @@ VTTCue::VTTCue(Document& document,
       writing_direction_(kHorizontal),
       cue_alignment_(kCenter),
       vtt_node_tree_(nullptr),
-      cue_background_box_(MakeGarbageCollected<HTMLDivElement>(document)),
+      cue_background_box_(MakeGarbageCollected<VTTCueBackgroundBox>(document)),
       snap_to_lines_(true),
       display_tree_should_change_(true) {
   UseCounter::Count(document, WebFeature::kVTTCue);
-  cue_background_box_->SetShadowPseudoId(CueShadowPseudoId());
 }
 
 VTTCue::~VTTCue() = default;
@@ -441,9 +454,11 @@ void VTTCue::setText(const String& text) {
 }
 
 void VTTCue::CreateVTTNodeTree() {
-  if (!vtt_node_tree_)
-    vtt_node_tree_ =
-        VTTParser::CreateDocumentFragmentFromCueText(GetDocument(), text_);
+  if (!vtt_node_tree_) {
+    vtt_node_tree_ = VTTParser::CreateDocumentFragmentFromCueText(
+        GetDocument(), text_, this->track());
+    cue_background_box_->SetTrack(this->track());
+  }
 }
 
 void VTTCue::CopyVTTNodeToDOMTree(ContainerNode* vtt_node,

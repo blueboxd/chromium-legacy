@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <ostream>
 #include <set>
 #include <string>
 #include <utility>
@@ -545,6 +546,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
 
+  // Returns a string representation of this object for debugging purposes.
+  std::string ToString() const;
+
  protected:
   // The UIA tree formatter needs access to GetUniqueId() to identify the
   // starting point for tree dumps.
@@ -641,6 +645,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
 };
+
+CONTENT_EXPORT std::ostream& operator<<(std::ostream& stream,
+                                        const BrowserAccessibility& object);
 
 }  // namespace content
 

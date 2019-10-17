@@ -61,6 +61,7 @@ class SharingService : public KeyedService,
  public:
   using SendMessageCallback =
       base::OnceCallback<void(SharingSendMessageResult)>;
+  using SharingDeviceList = std::vector<std::unique_ptr<syncer::DeviceInfo>>;
 
   enum class State {
     // Device is unregistered with FCM and Sharing is unavailable.
@@ -92,7 +93,7 @@ class SharingService : public KeyedService,
 
   // Returns a list of DeviceInfo that is available to receive messages.
   // All returned devices have the specified |required_feature|.
-  virtual std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDeviceCandidates(
+  virtual SharingDeviceList GetDeviceCandidates(
       sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
 
   // Register |callback| so it will be invoked after all dependencies of
@@ -162,6 +163,21 @@ class SharingService : public KeyedService,
 
   // Returns all required sync data types to enable Sharing feature.
   syncer::ModelTypeSet GetRequiredSyncDataTypes() const;
+
+  // Returns list of devices that have |required_feature| enabled. Also
+  // filters out devices which have not been online for more than
+  // |SharingConstants::kDeviceExpiration| time.
+  SharingDeviceList FilterDeviceCandidates(
+      SharingDeviceList devices,
+      sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
+
+  // Deduplicates devices based on client name. For devices with duplicate
+  // client names, only the most recently updated device is filtered in.
+  // Returned devices are renamed using the RenameDevice function
+  // and are sorted in (not strictly) descending order by
+  // last_updated_timestamp.
+  SharingDeviceList RenameAndDeduplicateDevices(
+      SharingDeviceList devices) const;
 
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;

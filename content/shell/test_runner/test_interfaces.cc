@@ -123,9 +123,6 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
       spec.find("://web-platform.test") != std::string::npos ||
       spec.find("/harness-tests/wpt/") != std::string::npos)
     test_runner_->set_is_web_platform_tests_mode();
-
-  use_mock_theme_ =
-      spec.find("/fast/scrolling/scrollbars/") != std::string::npos;
 }
 
 void TestInterfaces::WindowOpened(WebViewTestProxy* proxy) {
@@ -155,14 +152,6 @@ WebTestDelegate* TestInterfaces::GetDelegate() {
 
 const std::vector<WebViewTestProxy*>& TestInterfaces::GetWindowList() {
   return window_list_;
-}
-
-blink::WebThemeEngine* TestInterfaces::GetThemeEngine() {
-  if (!use_mock_theme_)
-    return nullptr;
-  if (!theme_engine_.get())
-    theme_engine_.reset(new MockWebThemeEngine());
-  return theme_engine_.get();
 }
 
 }  // namespace test_runner

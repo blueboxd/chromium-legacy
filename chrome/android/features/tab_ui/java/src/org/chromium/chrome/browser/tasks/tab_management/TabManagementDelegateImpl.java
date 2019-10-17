@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceCoordinator;
@@ -35,9 +36,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            TasksSurface.FakeSearchBoxDelegate fakeSearchBoxDelegate, boolean isTabCarousel) {
-        return new TasksSurfaceCoordinator(
-                activity, propertyModel, fakeSearchBoxDelegate, isTabCarousel);
+            FakeboxDelegate fakeboxDelegate, boolean isTabCarousel) {
+        return new TasksSurfaceCoordinator(activity, propertyModel, fakeboxDelegate, isTabCarousel);
     }
 
     @Override

@@ -146,7 +146,7 @@
       // from CSS.
       // https://github.com/WICG/intrinsicsize-attribute/issues/16
       name: "AspectRatioFromWidthAndHeight",
-      status: "test",
+      status: "stable",
     },
     {
       name: "AsyncClipboard",
@@ -395,6 +395,7 @@
       // Support for CSS content-size property.
       // http://tabatkins.github.io/specs/css-content-size/
       name: "CSSContentSize",
+      implied_by: ["DisplayLocking"],
       status: "experimental",
     },
     {
@@ -544,7 +545,6 @@
     {
       name: "DisplayLocking",
       origin_trial_feature_name: "DisplayLocking",
-      depends_on: ["CSSContentSize"],
       status: "experimental",
     },
     {
@@ -568,6 +568,10 @@
       name: "ElementInternals",
       status: "stable",
       implied_by: ["FormAssociatedCustomElements"],
+    },
+    {
+      name: "EmbeddedVTTStylesheets",
+      status: "experimental",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",
@@ -822,6 +826,10 @@
       status: "experimental",
     },
     {
+      name: "IntersectionObserverDocumentScrollingElementRoot",
+      status: "experimental",
+    },
+    {
       name: "IntersectionObserverV2",
       status: "stable",
     },
@@ -856,7 +864,7 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGFragmentPaint", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
       status: "stable",
     },
     {
@@ -874,6 +882,9 @@
     },
     {
       name: "LayoutNGFragmentItem",
+    },
+    {
+      name: "LayoutNGFragmentPaint",
     },
     {
       name: "LayoutNGLineCache",
@@ -1802,7 +1813,7 @@
     {
       name: "WebXrGamepadModule",
       // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebXRHitTest",

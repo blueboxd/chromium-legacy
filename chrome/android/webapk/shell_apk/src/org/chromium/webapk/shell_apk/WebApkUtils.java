@@ -44,9 +44,6 @@ import java.util.Map;
 public class WebApkUtils {
     private static final String TAG = "cr_WebApkUtils";
 
-    /** Percentage to darken a color by when setting the status bar color. */
-    private static final float DARKEN_COLOR_FRACTION = 0.6f;
-
     private static final float CONTRAST_LIGHT_ITEM_THRESHOLD = 3f;
 
     /** Returns whether the application is installed and enabled. */
@@ -205,28 +202,6 @@ public class WebApkUtils {
     }
 
     /**
-     * Darkens the given color to use on the status bar.
-     * @param color Color which should be darkened.
-     * @return Color that should be used for Android status bar.
-     */
-    public static int getDarkenedColorForStatusBar(int color) {
-        return getDarkenedColor(color, DARKEN_COLOR_FRACTION);
-    }
-
-    /**
-     * Darken a color to a fraction of its current brightness.
-     * @param color The input color.
-     * @param darkenFraction The fraction of the current brightness the color should be.
-     * @return The new darkened color.
-     */
-    public static int getDarkenedColor(int color, float darkenFraction) {
-        float[] hsv = new float[3];
-        Color.colorToHSV(color, hsv);
-        hsv[2] *= darkenFraction;
-        return Color.HSVToColor(hsv);
-    }
-
-    /**
      * Check whether lighter or darker foreground elements (i.e. text, drawables etc.)
      * should be used depending on the given background color.
      * @param backgroundColor The background color value which is being queried.
@@ -255,6 +230,25 @@ public class WebApkUtils {
         } catch (Resources.NotFoundException e) {
             return null;
         }
+    }
+
+    /**
+     * Sets the status bar icons to dark or light. Note that this is only valid for
+     * Android M+.
+     *
+     * @param rootView The root view used to request updates to the system UI theming.
+     * @param useDarkIcons Whether the status bar icons should be dark.
+     */
+    public static void setStatusBarIconColor(View rootView, boolean useDarkIcons) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+
+        int systemUiVisibility = rootView.getSystemUiVisibility();
+        if (useDarkIcons) {
+            systemUiVisibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        } else {
+            systemUiVisibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        }
+        rootView.setSystemUiVisibility(systemUiVisibility);
     }
 
     /**

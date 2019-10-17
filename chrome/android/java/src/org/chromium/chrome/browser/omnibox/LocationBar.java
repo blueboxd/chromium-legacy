@@ -10,10 +10,10 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 import androidx.annotation.IntDef;
-import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.WindowDelegate;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -29,7 +29,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Container that holds the {@link UrlBar} and SSL state related with the current {@link Tab}.
  */
-public interface LocationBar extends UrlBarDelegate {
+public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
     /** A means of tracking which mechanism is being used to focus the omnibox. */
     @IntDef({OmniboxFocusReason.OMNIBOX_TAP, OmniboxFocusReason.OMNIBOX_LONG_PRESS,
             OmniboxFocusReason.FAKE_BOX_TAP, OmniboxFocusReason.FAKE_BOX_LONG_PRESS,
@@ -141,39 +141,12 @@ public interface LocationBar extends UrlBarDelegate {
             ActivityTabProvider provider);
 
     /**
-     * Adds a URL focus change listener that will be notified when the URL gains or loses focus.
-     * @param listener The listener to be registered.
-     */
-    default void addUrlFocusChangeListener(UrlFocusChangeListener listener) {}
-
-    /**
-     * Removes a URL focus change listener that was previously added.
-     * @param listener The listener to be removed.
-     */
-    default void removeUrlFocusChangeListener(UrlFocusChangeListener listener) {}
-
-    /**
-     * Signal a {@link UrlBar} focus change request.
-     * @param shouldBeFocused Whether the focus should be requested or cleared. True requests focus
-     *        and False clears focus.
-     * @param pastedText The given pasted text when focus, which could be null.
-     * @param reason The given reason.
-     */
-    void setUrlBarFocus(
-            boolean shouldBeFocused, @Nullable String pastedText, @OmniboxFocusReason int reason);
-
-    /**
      * Triggers the cursor to be visible in the UrlBar without triggering any of the focus animation
      * logic.
      * <p>
      * Only applies to devices with a hardware keyboard attached.
      */
     void showUrlBarCursorWithoutFocusAnimations();
-
-    /**
-     * @return Whether the UrlBar currently has focus.
-     */
-    boolean isUrlBarFocused();
 
     /**
      * Selects all of the editable text in the UrlBar.

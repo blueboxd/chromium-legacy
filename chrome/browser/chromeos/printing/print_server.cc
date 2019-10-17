@@ -8,7 +8,9 @@
 
 namespace chromeos {
 
-PrintServer::PrintServer(const GURL& url, const std::string& name)
-    : url_(url), name_(name) {}
+PrintServer::PrintServer(const std::string& id,
+                         const GURL& url,
+                         const std::string& name)
+    : id_(id), url_(url), name_(name) {}
 
 }  // namespace chromeos

@@ -409,7 +409,7 @@ bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,
   if (last_fetch_time.is_null()) {
     // If the last fetch time is missing and we have a seed, then this must be
     // the first run of Chrome. Store the current time as the last fetch time.
-    seed_store_->RecordLastFetchTime();
+    seed_store_->RecordLastFetchTime(base::Time::Now());
     RecordCreateTrialsSeedExpiry(VARIATIONS_SEED_EXPIRY_FETCH_TIME_MISSING);
     return true;
   }

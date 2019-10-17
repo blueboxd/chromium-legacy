@@ -59,10 +59,13 @@ class EVENTS_OZONE_EVDEV_EXPORT Stroke {
   void AddSample(const Sample& sample);
   gfx::PointF GetCentroid() const;
   float BiggestSize() const;
+  // If no elements in stroke, returns 0.0;
+  float MaxMajorRadius() const;
   void SetTrackingId(int tracking_id);
   const std::deque<Sample>& samples() const;
   uint64_t samples_seen() const;
   int tracking_id() const;
+
  private:
   std::deque<Sample> samples_;
   int tracking_id_ = 0;

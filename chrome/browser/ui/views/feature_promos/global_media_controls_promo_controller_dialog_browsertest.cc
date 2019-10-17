@@ -49,7 +49,7 @@ class GlobalMediaControlsPromoControllerDialogBrowserTest
   }
 
   void SetUpOnMainThread() override {
-    GetMediaToolbarButton()->SetNativeTheme(&test_theme_);
+    GetMediaToolbarButton()->SetNativeThemeForTesting(&test_theme_);
   }
 
   void ShowUi(const std::string& name) override { ShowPromo(); }

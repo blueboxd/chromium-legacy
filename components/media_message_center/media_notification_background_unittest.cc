@@ -140,7 +140,7 @@ TEST_F(MediaNotificationBackgroundTest,
 TEST_F(MediaNotificationBackgroundTest, GetBackgroundColorRespectsTheme) {
   TestDarkTheme dark_theme;
   views::View owner;
-  owner.SetNativeTheme(&dark_theme);
+  owner.SetNativeThemeForTesting(&dark_theme);
   EXPECT_EQ(kDarkBackgroundColor, background()->GetBackgroundColor(owner));
 }
 

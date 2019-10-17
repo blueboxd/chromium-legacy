@@ -368,43 +368,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallForArc) {
   run_loop.Run();
 }
 
-TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
-  auto info = std::make_unique<WebApplicationInfo>();
-  info->app_url = kWebAppUrl;
-  info->title = base::ASCIIToUTF16("Title1");
-  info->description = base::ASCIIToUTF16("Description1");
-
-  const web_app::AppId app_id = web_app::GenerateAppIdFromURL(info->app_url);
-
-  EXPECT_FALSE(finalizer().CanSkipAppUpdateForSync(app_id, *info));
-
-  base::RunLoop run_loop;
-  web_app::InstallFinalizer::FinalizeOptions options;
-  options.install_source = WebappInstallSource::SYNC;
-
-  finalizer().FinalizeInstall(
-      *info, options,
-      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
-                                     web_app::InstallResultCode code) {
-        EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
-        EXPECT_EQ(app_id, installed_app_id);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-
-  EXPECT_TRUE(finalizer().CanSkipAppUpdateForSync(app_id, *info));
-
-  WebApplicationInfo info_with_diff_title = *info;
-  info_with_diff_title.title = base::ASCIIToUTF16("Title2");
-  EXPECT_FALSE(
-      finalizer().CanSkipAppUpdateForSync(app_id, info_with_diff_title));
-
-  WebApplicationInfo info_with_diff_description = *info;
-  info_with_diff_description.title = base::ASCIIToUTF16("Description2");
-  EXPECT_FALSE(
-      finalizer().CanSkipAppUpdateForSync(app_id, info_with_diff_description));
-}
-
 TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Successful) {
   InstallExternalApp(kWebAppUrl);
   ASSERT_EQ(1u, enabled_extensions().size());

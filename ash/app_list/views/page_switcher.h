@@ -19,8 +19,8 @@ class PageSwitcher : public views::View,
                      public views::ButtonListener,
                      public ash::PaginationModelObserver {
  public:
-  static constexpr int kMaxButtonRadius = 16;
-  static constexpr int kPreferredButtonStripWidth = kMaxButtonRadius * 2;
+  static constexpr int kMaxButtonRadiusForRootGrid = 16;
+  static constexpr int kMaxButtonRadiusForFolderGrid = 10;
 
   PageSwitcher(ash::PaginationModel* model,
                bool is_root_app_grid_page_switcher,

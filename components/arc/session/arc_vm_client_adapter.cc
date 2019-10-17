@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -30,6 +31,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
@@ -42,6 +44,7 @@
 namespace arc {
 namespace {
 
+constexpr const char kArcVmConfigJsonPath[] = "/usr/share/arcvm/config.json";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kBuiltinPath[] = "/opt/google/vms/android";
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
@@ -59,6 +62,7 @@ class FileSystemStatus {
   ~FileSystemStatus() = default;
   FileSystemStatus& operator=(FileSystemStatus&& rhs) = default;
 
+  bool is_android_debuggable() const { return is_android_debuggable_; }
   bool is_host_rootfs_writable() const { return is_host_rootfs_writable_; }
   const base::FilePath& system_image_path() const { return system_image_path_; }
   const base::FilePath& vendor_image_path() const { return vendor_image_path_; }
@@ -68,14 +72,56 @@ class FileSystemStatus {
   static FileSystemStatus GetFileSystemStatusBlocking() {
     return FileSystemStatus();
   }
+  static bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
+    return IsAndroidDebuggable(json_path);
+  }
 
  private:
   FileSystemStatus()
-      : is_host_rootfs_writable_(IsHostRootfsWritable()),
+      : is_android_debuggable_(
+            IsAndroidDebuggable(base::FilePath(kArcVmConfigJsonPath))),
+        is_host_rootfs_writable_(IsHostRootfsWritable()),
         system_image_path_(SelectDlcOrBuiltin(base::FilePath(kRootFs))),
         vendor_image_path_(SelectDlcOrBuiltin(base::FilePath(kVendorImage))),
         guest_kernel_path_(SelectDlcOrBuiltin(base::FilePath(kKernel))),
         fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))) {}
+
+  // Parse a JSON file which is like the following and returns a result:
+  //   {
+  //     "ANDROID_DEBUGGABLE": false
+  //   }
+  static bool IsAndroidDebuggable(const base::FilePath& json_path) {
+    // TODO(yusukes): Remove this fallback after adding the json file.
+    if (!base::PathExists(json_path))
+      return true;
+
+    std::string content;
+    if (!base::ReadFileToString(json_path, &content))
+      return false;
+
+    base::JSONReader::ValueWithError result(
+        base::JSONReader::ReadAndReturnValueWithError(content,
+                                                      base::JSON_PARSE_RFC));
+    if (!result.value) {
+      LOG(ERROR) << "Error parsing " << json_path
+                 << ": code=" << result.error_code
+                 << ", message=" << result.error_message << ": " << content;
+      return false;
+    }
+    if (!result.value->is_dict()) {
+      LOG(ERROR) << "Error parsing " << json_path << ": " << *(result.value);
+      return false;
+    }
+
+    const base::Value* debuggable = result.value->FindKeyOfType(
+        "ANDROID_DEBUGGABLE", base::Value::Type::BOOLEAN);
+    if (!debuggable) {
+      LOG(ERROR) << "ANDROID_DEBUGGABLE is not found in " << json_path;
+      return false;
+    }
+
+    return debuggable->GetBool();
+  }
 
   static bool IsHostRootfsWritable() {
     base::ScopedBlockingCall scoped_blocking_call(
@@ -99,6 +145,7 @@ class FileSystemStatus {
     return base::FilePath(kBuiltinPath).Append(file);
   }
 
+  bool is_android_debuggable_;
   bool is_host_rootfs_writable_;
   base::FilePath system_image_path_;
   base::FilePath vendor_image_path_;
@@ -170,6 +217,7 @@ std::string MonotonicTimestamp() {
 std::vector<std::string> GenerateKernelCmdline(
     int32_t lcd_density,
     const base::Optional<bool>& play_store_auto_update,
+    const FileSystemStatus& file_system_status,
     bool is_dev_mode,
     bool is_host_on_vm) {
   const std::string release_channel = GetReleaseChannel();
@@ -185,8 +233,8 @@ std::vector<std::string> GenerateKernelCmdline(
       base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
       base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
       base::StringPrintf("androidboot.vm=%d", is_host_on_vm),
-      // TODO(yusukes): get this from arc-setup config or equivalent.
-      "androidboot.debuggable=1",
+      base::StringPrintf("androidboot.debuggable=%d",
+                         file_system_status.is_android_debuggable()),
       base::StringPrintf("androidboot.lcd_density=%d", lcd_density),
       base::StringPrintf(
           "androidboot.arc_file_picker=%d",
@@ -458,7 +506,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(2) << "Got file system status";
     DCHECK(is_dev_mode_);
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
-        lcd_density_, play_store_auto_update_, *is_dev_mode_, is_host_on_vm_);
+        lcd_density_, play_store_auto_update_, file_system_status,
+        *is_dev_mode_, is_host_on_vm_);
     auto start_request =
         CreateStartArcVmRequest(user_id_hash_, cpus_, data_disk_path,
                                 file_system_status, std::move(kernel_cmdline));
@@ -561,6 +610,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
 std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter() {
   return std::make_unique<ArcVmClientAdapter>();
+}
+
+bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {
+  return FileSystemStatus::IsAndroidDebuggableForTesting(json_path);
 }
 
 }  // namespace arc

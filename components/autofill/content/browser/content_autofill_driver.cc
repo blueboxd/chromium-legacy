@@ -176,10 +176,10 @@ void ContentAutofillDriver::RendererShouldPreviewFieldWithValue(
 }
 
 void ContentAutofillDriver::RendererShouldSetSuggestionAvailability(
-    bool available) {
+    const mojom::AutofillState state) {
   if (!RendererIsAvailable())
     return;
-  GetAutofillAgent()->SetSuggestionAvailability(available);
+  GetAutofillAgent()->SetSuggestionAvailability(state);
 }
 
 void ContentAutofillDriver::PopupHidden() {

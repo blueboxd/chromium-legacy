@@ -5,10 +5,10 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_SESSION_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_SESSION_H_
 
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
@@ -115,22 +115,17 @@ class DevToolsSession : public protocol::FrontendChannel,
   HandlersMap handlers_;
   std::unique_ptr<protocol::UberDispatcher> dispatcher_;
 
-  // These messages were queued after suspending, not sent to the agent,
-  // and will be sent after resuming.
-  struct SuspendedMessage {
+  bool suspended_sending_messages_to_agent_ = false;
+
+  struct Message {
     int call_id;
     std::string method;
     std::string message;
   };
-  std::vector<SuspendedMessage> suspended_messages_;
-  bool suspended_sending_messages_to_agent_ = false;
-
-  // These messages have been sent to agent, but did not get a response yet.
-  struct WaitingMessage {
-    std::string method;
-    std::string message;
-  };
-  std::map<int, WaitingMessage> waiting_for_response_messages_;
+  // Messages that were sent to the agent or queued after suspending.
+  std::list<Message> pending_messages_;
+  // Pending messages that were sent and are thus waiting for a response.
+  base::flat_map<int, std::list<Message>::iterator> waiting_for_response_;
 
   // |session_state_cookie_| always corresponds to a state before
   // any of the waiting for response messages have been handled.

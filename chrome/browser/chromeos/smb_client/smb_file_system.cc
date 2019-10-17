@@ -370,12 +370,21 @@ AbortCallback SmbFileSystem::DeleteEntry(
     bool recursive,
     storage::AsyncFileUtil::StatusCallback callback) {
   OperationId operation_id = task_queue_.GetNextOperationId();
+  SmbTask task;
 
-  auto reply = base::BindOnce(&SmbFileSystem::HandleGetDeleteListCallback,
-                              AsWeakPtr(), std::move(callback), operation_id);
-  SmbTask task = base::BindOnce(&SmbProviderClient::GetDeleteList,
-                                GetWeakSmbProviderClient(), GetMountId(),
-                                entry_path, std::move(reply));
+  if (recursive) {
+    auto reply = base::BindOnce(&SmbFileSystem::HandleGetDeleteListCallback,
+                                AsWeakPtr(), std::move(callback), operation_id);
+    task = base::BindOnce(&SmbProviderClient::GetDeleteList,
+                          GetWeakSmbProviderClient(), GetMountId(), entry_path,
+                          std::move(reply));
+  } else {
+    auto reply = base::BindOnce(&SmbFileSystem::HandleStatusCallback,
+                                AsWeakPtr(), std::move(callback));
+    task = base::BindOnce(&SmbProviderClient::DeleteEntry,
+                          GetWeakSmbProviderClient(), GetMountId(), entry_path,
+                          false /* recursive */, std::move(reply));
+  }
 
   EnqueueTask(std::move(task), operation_id);
   return CreateAbortCallback(operation_id);

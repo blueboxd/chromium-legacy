@@ -223,7 +223,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, PasswordAuthWhenAuthDisabled) {
       user_manager::StubAccountId(),
       ash::AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
                             base::Time::Now() + base::TimeDelta::FromHours(1),
-                            base::TimeDelta::FromHours(1)));
+                            base::TimeDelta::FromHours(1),
+                            true /*disable_lock_screen_media*/));
 
   // Try to authenticate with password.
   tester.UnlockWithPassword(user_manager::StubAccountId(), kPassword);
@@ -261,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, FingerprintAuthWhenAuthDisabled) {
       user_manager::StubAccountId(),
       ash::AuthDisabledData(ash::AuthDisabledReason::kTimeUsageLimit,
                             base::Time::Now() + base::TimeDelta::FromHours(1),
-                            base::TimeDelta::FromHours(3)));
+                            base::TimeDelta::FromHours(3),
+                            true /*disable_lock_screen_media*/));
 
   // Try to authenticate with fingerprint.
   AuthenticateWithFingerprint();

@@ -87,6 +87,8 @@ class DeviceSyncClient {
   virtual void FindEligibleDevices(
       multidevice::SoftwareFeature software_feature,
       FindEligibleDevicesCallback callback) = 0;
+  virtual void GetDevicesActivityStatus(
+      mojom::DeviceSync::GetDevicesActivityStatusCallback callback) = 0;
   virtual void GetDebugInfo(
       mojom::DeviceSync::GetDebugInfoCallback callback) = 0;
 

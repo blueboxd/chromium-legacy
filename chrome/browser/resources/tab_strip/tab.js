@@ -6,6 +6,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 
 import {CustomElement} from './custom_element.js';
+import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
 
 export const DEFAULT_ANIMATION_DURATION = 125;
@@ -45,6 +46,9 @@ export class TabElement extends CustomElement {
 
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxy.getInstance();
+
+    /** @private {!TabStripEmbedderProxy} */
+    this.embedderApi_ = TabStripEmbedderProxy.getInstance();
 
     /** @private {!HTMLElement} */
     this.titleTextEl_ = /** @type {!HTMLElement} */ (
@@ -123,6 +127,7 @@ export class TabElement extends CustomElement {
     }
 
     this.tabsApi_.activateTab(this.tab_.id);
+    this.embedderApi_.closeContainer();
   }
 
   /** @private */
@@ -133,7 +138,7 @@ export class TabElement extends CustomElement {
       return;
     }
 
-    this.tabsApi_.showTabContextMenu(
+    this.embedderApi_.showTabContextMenu(
         this.tab_.id, event.clientX, event.clientY);
   }
 

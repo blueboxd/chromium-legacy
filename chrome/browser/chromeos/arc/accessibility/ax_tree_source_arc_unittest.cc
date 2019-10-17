@@ -526,6 +526,13 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("root label text", name);
 
+  // Set tooltip on child2.
+  SetProperty(child2, AXStringProperty::TOOLTIP, "tooltip text");
+  CallSerializeNode(child2, &data);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kTooltip, &name));
+  ASSERT_EQ("tooltip text", name);
+
   // Clearing both clickable and name from root, the name should not be
   // populated.
   root->boolean_properties->clear();

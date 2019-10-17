@@ -328,7 +328,6 @@
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
 #include "chrome/browser/component_updater/tls_deprecation_config_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
@@ -535,8 +534,6 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
-  RegisterInterventionPolicyDatabaseComponent(
-      cus, g_browser_process->GetTabManager()->intervention_policy_database());
   RegisterTLSDeprecationConfigComponent(cus, path);
 #endif
 

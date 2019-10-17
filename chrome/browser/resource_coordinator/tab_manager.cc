@@ -169,7 +169,6 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
   proactive_freeze_discard_params_ =
       GetStaticProactiveTabFreezeAndDiscardParams();
   tab_load_tracker_->AddObserver(this);
-  intervention_policy_database_.reset(new InterventionPolicyDatabase());
 
   // TabManager works in the absence of DesktopSessionDurationTracker for tests.
   if (metrics::DesktopSessionDurationTracker::IsInitialized())

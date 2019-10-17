@@ -5,10 +5,10 @@
 import 'chrome://tab-strip/tab_list.js';
 
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {TabStripViewProxy} from 'chrome://tab-strip/tab_strip_view_proxy.js';
+import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
-import {TestTabStripViewProxy} from './test_tab_strip_view_proxy.js';
+import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 class MockDataTransfer extends DataTransfer {
@@ -52,7 +52,7 @@ suite('TabList', () => {
   let callbackRouter;
   let optionsCalled;
   let tabList;
-  let testTabStripViewProxy;
+  let testTabStripEmbedderProxy;
   let testTabsApiProxy;
 
   const tabs = [
@@ -99,12 +99,12 @@ suite('TabList', () => {
     TabsApiProxy.instance_ = testTabsApiProxy;
     callbackRouter = testTabsApiProxy.callbackRouter;
 
-    testTabStripViewProxy = new TestTabStripViewProxy();
-    testTabStripViewProxy.setColors({
+    testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
+    testTabStripEmbedderProxy.setColors({
       '--background-color': 'white',
       '--foreground-color': 'black',
     });
-    TabStripViewProxy.instance_ = testTabStripViewProxy;
+    TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
 
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);
@@ -114,22 +114,22 @@ suite('TabList', () => {
 
   teardown(() => {
     testTabsApiProxy.reset();
-    testTabStripViewProxy.reset();
+    testTabStripEmbedderProxy.reset();
   });
 
   test('sets theme colors on init', async () => {
-    await testTabStripViewProxy.whenCalled('getColors');
+    await testTabStripEmbedderProxy.whenCalled('getColors');
     assertEquals(tabList.style.getPropertyValue('--background-color'), 'white');
     assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'black');
   });
 
   test('updates theme colors when theme changes', async () => {
-    testTabStripViewProxy.setColors({
+    testTabStripEmbedderProxy.setColors({
       '--background-color': 'pink',
       '--foreground-color': 'blue',
     });
     webUIListenerCallback('theme-changed');
-    await testTabStripViewProxy.whenCalled('getColors');
+    await testTabStripEmbedderProxy.whenCalled('getColors');
     assertEquals(tabList.style.getPropertyValue('--background-color'), 'pink');
     assertEquals(tabList.style.getPropertyValue('--foreground-color'), 'blue');
   });
@@ -250,7 +250,7 @@ suite('TabList', () => {
   });
 
   test('activating a tab off-screen scrolls to it', async () => {
-    testTabStripViewProxy.setVisible(true);
+    testTabStripEmbedderProxy.setVisible(true);
 
     const scrollPadding = 32;
 
@@ -351,7 +351,7 @@ suite('TabList', () => {
         testTabsApiProxy.resetResolver('moveTab');
 
         // Mock tab strip going from visible to hidden
-        testTabStripViewProxy.setVisible(false);
+        testTabStripEmbedderProxy.setVisible(false);
         document.dispatchEvent(new Event('visibilitychange'));
 
         const [moveId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');

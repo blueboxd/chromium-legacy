@@ -33,6 +33,8 @@ import gn_helpers
 DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
     os.path.abspath(os.path.join(os.path.dirname(__file__),
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
+JAVA_PATH = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current',
+                         'bin', 'java')
 
 try:
   string_types = basestring
@@ -204,6 +206,26 @@ def FilterLines(output, filter_string):
   re_filter = re.compile(filter_string)
   return '\n'.join(
       line for line in output.splitlines() if not re_filter.search(line))
+
+
+def FilterReflectiveAccessJavaWarnings(output):
+  """Filters out warnings about illegal reflective access operation.
+
+  These warnings were introduced in Java 9, and generally mean that dependencies
+  need to be updated.
+  """
+  #  WARNING: An illegal reflective access operation has occurred
+  #  WARNING: Illegal reflective access by ...
+  #  WARNING: Please consider reporting this to the maintainers of ...
+  #  WARNING: Use --illegal-access=warn to enable warnings of further ...
+  #  WARNING: All illegal access operations will be denied in a future release
+  return FilterLines(
+      output, r'WARNING: ('
+      'An illegal reflective|'
+      'Illegal reflective access|'
+      'Please consider reporting this to|'
+      'Use --illegal-access=warn|'
+      'All illegal access operations)')
 
 
 # This can be used in most cases like subprocess.check_output(). The output,

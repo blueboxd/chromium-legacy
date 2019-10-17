@@ -195,8 +195,7 @@ void VizCompositorThreadRunnerImpl::CreateFrameSinkManagerOnCompositorThread(
   frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>(init_params);
   frame_sink_manager_->BindAndSetClient(
       std::move(params->frame_sink_manager), nullptr,
-      mojom::FrameSinkManagerClientPtr(
-          std::move(params->frame_sink_manager_client)));
+      std::move(params->frame_sink_manager_client));
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   if (pending_viz_dev_tools_params_)

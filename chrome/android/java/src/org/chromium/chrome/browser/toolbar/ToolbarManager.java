@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -1932,6 +1933,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public void setProgressBarAnchorView(@Nullable View anchor) {
         mToolbar.setProgressBarAnchorView(anchor);
+    }
+
+    /**
+     * @return The {@link FakeboxDelegate}.
+     */
+    public FakeboxDelegate getFakeboxDelegate() {
+        // TODO(crbug.com/1000295): Split fakebox component out of ntp package.
+        return mLocationBar;
     }
 
     private boolean shouldShowCursorInLocationBar() {

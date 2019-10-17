@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_REPRESENTATION_H_
 
 #include <dawn/dawn.h>
+#include <dawn/dawn_proc_table.h>
 
 #include "base/callback_helpers.h"
 #include "build/build_config.h"

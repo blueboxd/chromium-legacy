@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "components/grit/components_resources.h"
+#include "components/grit/sync_driver_resources.h"
 #include "components/sync/driver/about_sync_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"

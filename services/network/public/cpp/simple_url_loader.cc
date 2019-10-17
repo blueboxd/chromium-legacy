@@ -228,6 +228,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       uint64_t offset = 0,
       uint64_t length = std::numeric_limits<uint64_t>::max()) override;
   void SetRetryOptions(int max_retries, int retry_mode) override;
+  void SetURLLoaderFactoryOptions(uint32_t options) override;
   void SetTimeoutDuration(base::TimeDelta timeout_duration) override;
 
   int NetError() const override;
@@ -342,6 +343,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   // Information related to retrying.
   int remaining_retries_ = 0;
   int retry_mode_ = RETRY_NEVER;
+  uint32_t url_loader_factory_options_ = 0;
 
   // The next values contain all the information required to restart the
   // request.
@@ -1359,6 +1361,12 @@ void SimpleURLLoaderImpl::SetRetryOptions(int max_retries, int retry_mode) {
 #endif  // DCHECK_IS_ON()
 }
 
+void SimpleURLLoaderImpl::SetURLLoaderFactoryOptions(uint32_t options) {
+  // Check if a request has not yet been started.
+  DCHECK(!body_handler_);
+  url_loader_factory_options_ = options;
+}
+
 void SimpleURLLoaderImpl::SetTimeoutDuration(base::TimeDelta timeout_duration) {
   DCHECK(!request_state_->body_started);
   DCHECK(timeout_duration >= base::TimeDelta());
@@ -1514,7 +1522,7 @@ void SimpleURLLoaderImpl::StartRequest(
   }
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, *resource_request_, std::move(client_ptr),
+      url_loader_factory_options_, *resource_request_, std::move(client_ptr),
       net::MutableNetworkTrafficAnnotationTag(annotation_tag_));
 
   // Note that this ends up restarting the timer on each retry.

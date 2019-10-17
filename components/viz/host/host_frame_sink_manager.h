@@ -24,9 +24,9 @@
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/viz_host_export.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
@@ -62,12 +62,12 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Sets a local FrameSinkManagerImpl instance and connects directly to it.
   void SetLocalManager(FrameSinkManagerImpl* frame_sink_manager_impl);
 
-  // Binds |this| as a FrameSinkManagerClient for |request| on |task_runner|. On
-  // Mac |task_runner| will be the resize helper task runner. May only be called
-  // once. If |task_runner| is null, it uses the default mojo task runner for
-  // the thread this call is made on.
+  // Binds |this| as a FrameSinkManagerClient for |receiver| on |task_runner|.
+  // On Mac |task_runner| will be the resize helper task runner. May only be
+  // called once. If |task_runner| is null, it uses the default mojo task runner
+  // for the thread this call is made on.
   void BindAndSetManager(
-      mojom::FrameSinkManagerClientRequest request,
+      mojo::PendingReceiver<mojom::FrameSinkManagerClient> receiver,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       mojo::PendingRemote<mojom::FrameSinkManager> remote);
 
@@ -280,7 +280,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   mojo::Remote<mojom::FrameSinkManager> frame_sink_manager_remote_;
 
   // Mojo connection back from the FrameSinkManager.
-  mojo::Binding<mojom::FrameSinkManagerClient> binding_;
+  mojo::Receiver<mojom::FrameSinkManagerClient> receiver_{this};
 
   // A direct connection to FrameSinkManagerImpl. If this is set then
   // |frame_sink_manager_remote_| must be unbound. For use in browser process

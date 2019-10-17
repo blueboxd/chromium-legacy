@@ -8,6 +8,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "frame_priority.cc",
+    "frame_priority.h",
     "graph_impl.h",
     "graph_test_harness.cc",
     "graph_test_harness.h",

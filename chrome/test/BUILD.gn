@@ -3073,8 +3073,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/amp_page_load_metrics_observer_unittest.cc",
-    "../browser/page_load_metrics/observers/click_input_tracker_unittest.cc",
-    "../browser/page_load_metrics/observers/core_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_base_unittest.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.cc",
     "../browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h",
@@ -3102,6 +3100,7 @@ test("unit_tests") {
     "../browser/password_manager/chrome_password_manager_client_unittest.cc",
     "../browser/password_manager/password_store_x_unittest.cc",
     "../browser/payments/payment_handler_permission_context_unittest.cc",
+    "../browser/performance_manager/decorators/frame_priority_decorator_unittest.cc",
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
@@ -3598,7 +3597,7 @@ test("unit_tests") {
     sources += [
       "../browser/offline_pages/offline_page_request_handler_unittest.cc",
       "../browser/offline_pages/offline_page_utils_unittest.cc",
-      "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
+      "../browser/offline_pages/prefetch/gcm_token_unittest.cc",
     ]
   }
 
@@ -3651,6 +3650,10 @@ test("unit_tests") {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
     if (dfmify_dev_ui) {
+      sources += [
+        "//chrome/browser/dev_ui/android/dev_ui_loader_throttle_unittest.cc",
+      ]
+
       # If DevUI DFM is on, include Java classes and native resource split so
       # that DevUI page tests would work.
       deps += [
@@ -3736,7 +3739,6 @@ test("unit_tests") {
       "../browser/resource_coordinator/background_tab_navigation_throttle_unittest.cc",
       "../browser/resource_coordinator/decision_details_unittest.cc",
       "../browser/resource_coordinator/discard_metrics_lifecycle_unit_observer_unittest.cc",
-      "../browser/resource_coordinator/intervention_policy_database_unittest.cc",
       "../browser/resource_coordinator/leveldb_site_characteristics_database_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_base_unittest.cc",
       "../browser/resource_coordinator/lifecycle_unit_unittest.cc",
@@ -4960,7 +4962,7 @@ test("unit_tests") {
     sources += [
       "../browser/media/webrtc/native_desktop_media_list_unittest.cc",
       "../browser/metrics/upgrade_metrics_provider_unittest.cc",
-      "../browser/policy/machine_level_user_cloud_policy_register_watcher_unittest.cc",
+      "../browser/policy/chrome_browser_cloud_management_register_watcher_unittest.cc",
       "../browser/profiles/profile_activity_metrics_recorder_unittest.cc",
       "../browser/signin/force_signin_verifier_unittest.cc",
       "../browser/signin/signin_global_error_unittest.cc",
@@ -6462,6 +6464,18 @@ if (is_win) {
     # Directory contains useful and non-useful files. Don't worry about
     # non-useful since they are eliminated during pruning.
     seed_corpus = "data/safe_browsing/download_protection/"
+  }
+}
+
+if (is_chromeos) {
+  fuzzer_test("tokenized_string_fuzzer") {
+    sources = [
+      "../browser/ui/app_list/search/tests/tokenized_string_fuzzer.cc",
+    ]
+    deps = [
+      "//ash/public/cpp",
+      "//base",
+    ]
   }
 }
 

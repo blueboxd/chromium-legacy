@@ -9,28 +9,12 @@
 #include "base/bind.h"
 #include "base/test/task_environment.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
+#include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
-
-class TestTokenFactory : public PrefetchGCMAppHandler::TokenFactory {
- public:
-  TestTokenFactory() = default;
-  ~TestTokenFactory() override = default;
-
-  void GetGCMToken(
-      instance_id::InstanceID::GetTokenCallback callback) override {
-    std::move(callback).Run(token, result);
-  }
-
-  instance_id::InstanceID::Result result = instance_id::InstanceID::SUCCESS;
-  std::string token = "default_token";
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTokenFactory);
-};
 
 class PrefetchGCMAppHandlerTest : public testing::Test {
  public:
@@ -38,11 +22,7 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
     auto dispatcher = std::make_unique<TestPrefetchDispatcher>();
     test_dispatcher_ = dispatcher.get();
 
-    auto token_factory = std::make_unique<TestTokenFactory>();
-    token_factory_ = token_factory.get();
-
-    auto gcm_app_handler =
-        std::make_unique<PrefetchGCMAppHandler>(std::move(token_factory));
+    auto gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>();
     handler_ = gcm_app_handler.get();
 
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
@@ -59,7 +39,6 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
 
   TestPrefetchDispatcher* dispatcher() { return test_dispatcher_; }
   PrefetchGCMAppHandler* handler() { return handler_; }
-  TestTokenFactory* token_factory() { return token_factory_; }
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -69,8 +48,6 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
   TestPrefetchDispatcher* test_dispatcher_;
   // Owned by the taco.
   PrefetchGCMAppHandler* handler_;
-  // Owned by the PrefetchGCMAppHandler.
-  TestTokenFactory* token_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchGCMAppHandlerTest);
 };
@@ -92,16 +69,6 @@ TEST_F(PrefetchGCMAppHandlerTest, TestInvalidMessage) {
   handler()->OnMessage("An App ID", message);
 
   EXPECT_EQ(0U, dispatcher()->operation_list.size());
-}
-
-TEST_F(PrefetchGCMAppHandlerTest, TestGetToken) {
-  std::string result_token;
-
-  handler()->GetGCMToken(base::BindOnce(
-      [](std::string* result_token, const std::string& token,
-         instance_id::InstanceID::Result result) { *result_token = token; },
-      &result_token));
-  EXPECT_EQ(token_factory()->token, result_token);
 }
 
 }  // namespace offline_pages

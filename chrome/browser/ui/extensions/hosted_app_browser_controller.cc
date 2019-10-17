@@ -59,10 +59,8 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
 void HostedAppBrowserController::SetAppPrefsForWebContents(
     web_app::AppBrowserController* controller,
     content::WebContents* web_contents) {
-  auto* rvh = web_contents->GetRenderViewHost();
-
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  rvh->SyncRendererPrefs();
+  web_contents->SyncRendererPrefs();
 
   if (!controller)
     return;
@@ -80,10 +78,8 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
 // static
 void HostedAppBrowserController::ClearAppPrefsForWebContents(
     content::WebContents* web_contents) {
-  auto* rvh = web_contents->GetRenderViewHost();
-
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
-  rvh->SyncRendererPrefs();
+  web_contents->SyncRendererPrefs();
 
   extensions::TabHelper::FromWebContents(web_contents)
       ->SetExtensionApp(nullptr);

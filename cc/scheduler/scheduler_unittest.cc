@@ -259,6 +259,7 @@ class FakeSchedulerClient : public SchedulerClient,
 
   size_t CompositedAnimationsCount() const override { return 0; }
   size_t MainThreadAnimationsCount() const override { return 0; }
+  bool HasCustomPropertyAnimations() const override { return false; }
   bool CurrentFrameHadRAF() const override { return false; }
   bool NextFrameHasPendingRAF() const override { return false; }
 

@@ -15,11 +15,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -228,10 +228,10 @@ void OnSqliteError(const base::Closure& catastrophic_error_handler,
   // An error has been detected. Ignore unless it is catastrophic.
   if (sql::IsErrorCatastrophic(err)) {
     // At this point sql::* and DirectoryBackingStore may be on the callstack so
-    // don't invoke the error handler directly. Instead, PostTask to this thread
-    // to avoid potential reentrancy issues.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  catastrophic_error_handler);
+    // don't invoke the error handler directly. Instead, PostTask to this
+    // sequence to avoid potential reentrancy issues.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, catastrophic_error_handler);
   }
 }
 
@@ -283,7 +283,7 @@ DirectoryBackingStore::DirectoryBackingStore(
       database_page_size_(kCurrentPageSizeKB),
       needs_metas_column_refresh_(false),
       needs_share_info_column_refresh_(false) {
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   ResetAndCreateConnection();
 }
 
@@ -297,7 +297,7 @@ DirectoryBackingStore::DirectoryBackingStore(
       db_(db),
       needs_metas_column_refresh_(false),
       needs_share_info_column_refresh_(false) {
-  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
+  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
 }
 
 DirectoryBackingStore::~DirectoryBackingStore() {

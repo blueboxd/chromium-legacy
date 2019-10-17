@@ -408,9 +408,6 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   const bool is_first_update = target_bounds_.IsEmpty();
   target_bounds_ = target_bounds;
 
-  gfx::RectF inset_bounds(target_bounds);
-  inset_bounds.Inset(kWindowMargin, kWindowMargin);
-
   // If the window is minimized we can avoid applying transforms on the original
   // window.
   if (transform_window_.IsMinimized()) {
@@ -454,8 +451,8 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
       }
     }
   } else {
-    // SetItemBounds is called before UpdateHeaderLayout so the header can
-    // properly use the updated windows bounds.
+    gfx::RectF inset_bounds(target_bounds);
+    inset_bounds.Inset(kWindowMargin, kWindowMargin);
     SetItemBounds(inset_bounds, new_animation_type, is_first_update);
     UpdateHeaderLayout(is_first_update ? OVERVIEW_ANIMATION_NONE
                                        : new_animation_type);
@@ -469,12 +466,10 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
     UpdateRoundedCornersAndShadow();
 
   if (cannot_snap_widget_) {
-    inset_bounds.Inset(
-        gfx::Insets(static_cast<float>(kHeaderHeightDp), 0.f, 0.f, 0.f));
     SetWidgetBoundsAndMaybeAnimateTransform(
         cannot_snap_widget_.get(),
         cannot_snap_widget_->GetBoundsCenteredIn(
-            gfx::ToEnclosingRect(inset_bounds)),
+            gfx::ToEnclosingRect(GetWindowTargetBoundsWithInsets())),
         new_animation_type, nullptr);
   }
 
@@ -580,9 +575,8 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
                               visible
                                   ? SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN
                                   : SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_OUT);
-  gfx::Rect bounds = gfx::ToEnclosingRect(target_bounds());
-  bounds.Inset(kWindowMargin, kWindowMargin);
-  bounds.Inset(gfx::Insets(kHeaderHeightDp, 0, 0, 0));
+  const gfx::Rect bounds =
+      gfx::ToEnclosingRect(GetWindowTargetBoundsWithInsets());
   cannot_snap_widget_->SetBoundsCenteredIn(bounds, /*animate=*/false);
 }
 
@@ -1086,6 +1080,13 @@ gfx::Rect OverviewItem::GetShadowBoundsForTesting() {
   return shadow_->content_bounds();
 }
 
+gfx::RectF OverviewItem::GetWindowTargetBoundsWithInsets() const {
+  gfx::RectF window_target_bounds = target_bounds_;
+  window_target_bounds.Inset(kWindowMargin, kWindowMargin);
+  window_target_bounds.Inset(0, kHeaderHeightDp, 0, 0);
+  return window_target_bounds;
+}
+
 void OverviewItem::OnWindowCloseAnimationCompleted() {
   transform_window_.Close();
 }
@@ -1155,6 +1156,15 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
                                  bool is_first_update) {
   aura::Window* window = GetWindow();
   DCHECK(root_window_ == window->GetRootWindow());
+  // Do not set transform for drop target, set bounds instead.
+  if (overview_grid_->IsDropTargetWindow(window)) {
+    window->SetBoundsInScreen(
+        gfx::ToEnclosedRect(GetWindowTargetBoundsWithInsets()),
+        WindowState::Get(window)->GetDisplay());
+    window->SetTransform(gfx::Transform());
+    return;
+  }
+
   gfx::RectF screen_rect = gfx::RectF(GetTargetBoundsInScreen());
 
   // Avoid division by zero by ensuring screen bounds is not empty.
@@ -1166,13 +1176,6 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   gfx::RectF overview_item_bounds =
       transform_window_.ShrinkRectToFitPreservingAspectRatio(
           screen_rect, target_bounds, top_view_inset, kHeaderHeightDp);
-  // Do not set transform for drop target, set bounds instead.
-  if (overview_grid_->IsDropTargetWindow(window)) {
-    window->SetBoundsInScreen(gfx::ToEnclosedRect(overview_item_bounds),
-                              WindowState::Get(window)->GetDisplay());
-    window->SetTransform(gfx::Transform());
-    return;
-  }
 
   const gfx::Transform transform =
       gfx::TransformBetweenRects(screen_rect, overview_item_bounds);
@@ -1230,11 +1233,6 @@ void OverviewItem::CreateWindowLabel() {
 }
 
 void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
-  gfx::RectF transformed_window_bounds =
-      transform_window_.overview_bounds().value_or(
-          transform_window_.GetTransformedBounds());
-  ::wm::TranslateRectFromScreen(root_window_, &transformed_window_bounds);
-
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   ScopedOverviewAnimationSettings animation_settings(animation_type,
                                                      widget_window);
@@ -1247,16 +1245,15 @@ void OverviewItem::UpdateHeaderLayout(OverviewAnimationType animation_type) {
         std::move(enter_observer));
   }
 
-  // |widget_window| is sized to the same bounds as the original window plus
-  // some space for the header and a little padding.
-  gfx::Rect label_rect(0, -kHeaderHeightDp, transformed_window_bounds.width(),
-                       kHeaderHeightDp + transformed_window_bounds.height());
-  label_rect.Inset(-kOverviewMargin, -kOverviewMargin);
-  widget_window->SetBounds(label_rect);
+  gfx::RectF item_bounds = target_bounds_;
+  ::wm::TranslateRectFromScreen(root_window_, &item_bounds);
+  const gfx::Point origin = gfx::ToRoundedPoint(item_bounds.origin());
+  item_bounds.set_origin(gfx::PointF());
+  item_bounds.Inset(-kWindowMargin, -kWindowMargin);
+  widget_window->SetBounds(gfx::ToEnclosedRect(item_bounds));
 
   gfx::Transform label_transform;
-  label_transform.Translate(gfx::ToRoundedInt(transformed_window_bounds.x()),
-                            gfx::ToRoundedInt(transformed_window_bounds.y()));
+  label_transform.Translate(origin.x(), origin.y());
   widget_window->SetTransform(label_transform);
 }
 

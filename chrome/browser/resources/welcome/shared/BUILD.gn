@@ -37,14 +37,10 @@ js_library("nux_types") {
 }
 
 js_library("step_indicator") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/welcome/shared/step_indicator.js",
-  ]
   deps = [
     ":nux_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":step_indicator_module" ]
 }
 
 polymer_modulizer("animations_css") {

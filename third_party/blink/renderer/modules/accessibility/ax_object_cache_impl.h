@@ -37,6 +37,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -258,6 +260,9 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void set_is_handling_action(bool value) { is_handling_action_ = value; }
 
+  WebAXAutofillState GetAutofillState(AXID id) const;
+  void SetAutofillState(AXID id, WebAXAutofillState state);
+
  protected:
   void PostPlatformNotification(
       AXObject*,
@@ -393,6 +398,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   TreeUpdateCallbackQueue tree_update_callback_queue_;
 
   bool is_handling_action_ = false;
+
+  // Maps ids to their object's autofill state.
+  HashMap<AXID, WebAXAutofillState> autofill_state_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AXObjectCacheImpl);
 };

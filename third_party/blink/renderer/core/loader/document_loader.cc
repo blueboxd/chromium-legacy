@@ -1373,8 +1373,6 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
                           ? WebFeature::kSignedExchangeInnerResponseInMainFrame
                           : WebFeature::kSignedExchangeInnerResponseInSubFrame);
   }
-
-  GetLocalFrameClient().DidCreateNewDocument();
 }
 
 void DocumentLoader::WillCommitNavigation() {
@@ -1435,11 +1433,6 @@ void DocumentLoader::DidCommitNavigation() {
 
   // Needs to run before dispatching preloads, as it may evict the memory cache.
   probe::DidCommitLoad(frame_, this);
-
-  // Links with media values need more information (like viewport information).
-  // This happens after the first chunk is parsed in HTMLDocumentParser.
-  DispatchLinkHeaderPreloads(base::nullopt /* viewport */,
-                             PreloadHelper::kOnlyLoadNonMedia);
 
   frame_->GetPage()->DidCommitLoad(frame_);
   GetUseCounterHelper().DidCommitLoad(frame_);
@@ -1599,6 +1592,11 @@ void DocumentLoader::InstallNewDocument(
 
 void DocumentLoader::CreateParserPostCommit() {
   Document* document = frame_->GetDocument();
+
+  // Links with media values need more information (like viewport information).
+  // This happens after the first chunk is parsed in HTMLDocumentParser.
+  DispatchLinkHeaderPreloads(base::nullopt /* viewport */,
+                             PreloadHelper::kOnlyLoadNonMedia);
 
   if (!loading_url_as_javascript_ &&
       !GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument()) {

@@ -5,12 +5,9 @@
 cr.exportPath('print_preview');
 
 /*
- * When fit to page is available, the checkbox and input interact as follows:
- * 1. When checkbox is checked, the fit to page scaling value is displayed in
- * the input. The error message is cleared if it was present.
- * 2. When checkbox is unchecked, the most recent valid scale value is restored.
- * 3. If the input is modified while the checkbox is checked, the checkbox will
- * be unchecked automatically, regardless of the validity of the new value.
+ * Fit to page and fit to paper options will only be displayed for PDF
+ * documents. If the custom option is selected, an additional input field will
+ * appear to enter the custom scale factor.
  */
 Polymer({
   is: 'print-preview-scaling-settings',
@@ -94,12 +91,14 @@ Polymer({
     }
 
     const valueAsNumber = parseInt(value, 10);
-    if (value !== print_preview.ScalingType.FIT_TO_PAGE.toString()) {
+    if (isCustom || value === print_preview.ScalingType.DEFAULT.toString()) {
       this.setSetting('scalingType', valueAsNumber);
     }
     if (this.isPdf ||
-        this.getSetting('scalingTypePdf').value !==
-            print_preview.ScalingType.FIT_TO_PAGE) {
+        this.getSetting('scalingTypePdf').value ===
+            print_preview.ScalingType.DEFAULT ||
+        this.getSetting('scalingTypePdf').value ===
+            print_preview.ScalingType.CUSTOM) {
       this.setSetting('scalingTypePdf', valueAsNumber);
     }
 
@@ -144,8 +143,8 @@ Polymer({
   },
 
   /**
-   * Updates scaling and fit to page settings based on the validity and current
-   * value of the scaling input.
+   * Updates scaling settings based on the validity and current value of the
+   * scaling input.
    * @private
    */
   onInputChanged_: function() {

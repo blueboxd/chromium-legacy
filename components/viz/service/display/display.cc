@@ -218,6 +218,11 @@ Display::~Display() {
       surface_manager_->RemoveObserver(scheduler_.get());
   }
 
+  // Un-register as DisplaySchedulerClient to prevent us from being called in a
+  // partially destructed state.
+  if (scheduler_)
+    scheduler_->SetClient(nullptr);
+
   RunDrawCallbacks();
 }
 

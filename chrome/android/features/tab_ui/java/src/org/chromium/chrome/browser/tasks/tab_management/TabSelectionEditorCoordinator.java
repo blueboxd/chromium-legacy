@@ -74,7 +74,8 @@ class TabSelectionEditorCoordinator {
 
     public TabSelectionEditorCoordinator(Context context, View parentView,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            TabSelectionEditorLayout.TabSelectionEditorLayoutPositionProvider positionProvider) {
+            @Nullable TabSelectionEditorMediator
+                    .TabSelectionEditorPositionProvider positionProvider) {
         mContext = context;
         mParentView = parentView;
         mTabModelSelector = tabModelSelector;
@@ -87,15 +88,14 @@ class TabSelectionEditorCoordinator {
                 .inflate(R.layout.tab_selection_editor_layout, null)
                 .findViewById(R.id.selectable_list);
         mTabSelectionEditorLayout.initialize(mParentView, mTabListCoordinator.getContainerView(),
-                mTabListCoordinator.getContainerView().getAdapter(), mSelectionDelegate,
-                positionProvider);
+                mTabListCoordinator.getContainerView().getAdapter(), mSelectionDelegate);
         mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
 
         mTabSelectionEditorLayoutChangeProcessor = PropertyModelChangeProcessor.create(
                 mModel, mTabSelectionEditorLayout, TabSelectionEditorLayoutBinder::bind);
 
-        mTabSelectionEditorMediator = new TabSelectionEditorMediator(
-                mContext, mTabModelSelector, this::resetWithListOfTabs, mModel, mSelectionDelegate);
+        mTabSelectionEditorMediator = new TabSelectionEditorMediator(mContext, mTabModelSelector,
+                this::resetWithListOfTabs, mModel, mSelectionDelegate, positionProvider);
     }
 
     /**

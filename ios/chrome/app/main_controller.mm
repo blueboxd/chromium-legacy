@@ -86,6 +86,7 @@
 #include "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/mailto/features.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
@@ -1605,9 +1606,10 @@ enum class EnterTabSwitcherSnapshotResult {
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (_settingsNavigationController)
     return;
-  _settingsNavigationController = [SettingsNavigationController
-      newAutofillProfilleController:_mainBrowserState
-                           delegate:self];
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
+  _settingsNavigationController =
+      [SettingsNavigationController autofillProfileControllerForBrowser:browser
+                                                               delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1623,11 +1625,12 @@ enum class EnterTabSwitcherSnapshotResult {
     DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
     if (_settingsNavigationController)
       return;
-    _settingsNavigationController = [SettingsNavigationController
-        newUserFeedbackController:_mainBrowserState
-                         delegate:self
-               feedbackDataSource:self
-                       dispatcher:self];
+    Browser* browser = self.interfaceProvider.mainInterface.browser;
+    _settingsNavigationController =
+        [SettingsNavigationController userFeedbackControllerForBrowser:browser
+                                                              delegate:self
+                                                    feedbackDataSource:self
+                                                            dispatcher:self];
     [baseViewController presentViewController:_settingsNavigationController
                                      animated:YES
                                    completion:nil];
@@ -1726,9 +1729,11 @@ enum class EnterTabSwitcherSnapshotResult {
         showAccountsSettingsFromViewController:baseViewController];
     return;
   }
-  _settingsNavigationController = [SettingsNavigationController
-      newAccountsController:self.currentBrowserState
-                   delegate:self];
+
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
+  _settingsNavigationController =
+      [SettingsNavigationController accountsControllerForBrowser:browser
+                                                        delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1751,11 +1756,10 @@ enum class EnterTabSwitcherSnapshotResult {
     return;
   }
 
-  ios::ChromeBrowserState* originalBrowserState =
-      self.currentBrowserState->GetOriginalChromeBrowserState();
-  _settingsNavigationController = [SettingsNavigationController
-      newGoogleServicesController:originalBrowserState
-                         delegate:self];
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
+  _settingsNavigationController =
+      [SettingsNavigationController googleServicesControllerForBrowser:browser
+                                                              delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1770,9 +1774,10 @@ enum class EnterTabSwitcherSnapshotResult {
         showSyncPassphraseSettingsFromViewController:baseViewController];
     return;
   }
-  _settingsNavigationController = [SettingsNavigationController
-      newSyncEncryptionPassphraseController:_mainBrowserState
-                                   delegate:self];
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
+  _settingsNavigationController =
+      [SettingsNavigationController syncPassphraseControllerForBrowser:browser
+                                                              delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1787,9 +1792,10 @@ enum class EnterTabSwitcherSnapshotResult {
         showSavedPasswordsSettingsFromViewController:baseViewController];
     return;
   }
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
   _settingsNavigationController =
-      [SettingsNavigationController newSavePasswordsController:_mainBrowserState
-                                                      delegate:self];
+      [SettingsNavigationController savePasswordsControllerForBrowser:browser
+                                                             delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1804,9 +1810,10 @@ enum class EnterTabSwitcherSnapshotResult {
         showProfileSettingsFromViewController:baseViewController];
     return;
   }
-  _settingsNavigationController = [SettingsNavigationController
-      newAutofillProfilleController:_mainBrowserState
-                           delegate:self];
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
+  _settingsNavigationController =
+      [SettingsNavigationController autofillProfileControllerForBrowser:browser
+                                                               delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1821,9 +1828,10 @@ enum class EnterTabSwitcherSnapshotResult {
         showCreditCardSettingsFromViewController:baseViewController];
     return;
   }
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
   _settingsNavigationController = [SettingsNavigationController
-      newAutofillCreditCardController:_mainBrowserState
-                             delegate:self];
+      autofillCreditCardControllerForBrowser:browser
+                                    delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -2264,9 +2272,10 @@ enum class EnterTabSwitcherSnapshotResult {
   [[DeferredInitializationRunner sharedInstance]
       runBlockIfNecessary:kPrefObserverInit];
   DCHECK(_localStatePrefObserverBridge);
-  _settingsNavigationController = [SettingsNavigationController
-      newSettingsMainControllerWithBrowserState:_mainBrowserState
-                                       delegate:self];
+  Browser* browser = self.interfaceProvider.mainInterface.browser;
+  _settingsNavigationController =
+      [SettingsNavigationController mainSettingsControllerForBrowser:browser
+                                                            delegate:self];
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];

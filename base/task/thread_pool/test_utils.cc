@@ -241,7 +241,7 @@ bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
 
 void MockPooledTaskRunnerDelegate::RemoveJobTaskSource(
     scoped_refptr<JobTaskSource> task_source) {
-  thread_group_->RemoveTaskSource(std::move(task_source));
+  thread_group_->RemoveTaskSource(*task_source);
 }
 
 bool MockPooledTaskRunnerDelegate::IsRunningPoolWithTraits(

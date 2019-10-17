@@ -62,6 +62,7 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           media::GetCdmManifest(),
 #endif
           media::GetMediaManifest(),
+          media::GetMediaRendererManifest(),
           data_decoder::GetManifest(),
           device::GetManifest(),
           media_session::GetManifest(),

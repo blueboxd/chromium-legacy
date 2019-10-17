@@ -3365,6 +3365,15 @@
       "disabled_extensions": [
         "GL_EXT_shader_framebuffer_fetch"
       ]
-   }
+   },
+   {
+      "id": 315,
+      "cr_bugs": [964010],
+      "description": "Disable GL_MESA_framebuffer_flip_y for desktop GL",
+      "gl_type": "gl",
+      "disabled_extensions": [
+        "GL_MESA_framebuffer_flip_y"
+      ]
+    }
   ]
 }

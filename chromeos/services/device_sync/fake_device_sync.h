@@ -46,7 +46,7 @@ class FakeDeviceSync : public DeviceSyncBase {
       mojom::FindEligibleDevicesResponsePtr find_eligible_devices_response_ptr);
   void InvokePendingGetDevicesActivityStatusCallback(
       mojom::NetworkRequestResult result_code,
-      std::vector<mojom::DeviceActivityStatusPtr>
+      base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>
           get_devices_activity_status_response);
   void InvokePendingGetDebugInfoCallback(mojom::DebugInfoPtr debug_info_ptr);
 

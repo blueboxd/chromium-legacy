@@ -75,7 +75,9 @@ static_library("browser") {
   ]
 
   if (toolkit_views) {
-    deps += [ "//ui/views" ]
+    # This code has TOOLKIT_VIEWS ifdefs, but doesn't actually rely on anything
+    # else in views.
+    all_dependent_configs = [ "//ui/views:flags" ]
   }
 
   if (toolkit_views && !is_mac) {

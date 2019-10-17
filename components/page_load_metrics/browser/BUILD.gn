@@ -10,6 +10,12 @@ source_set("browser") {
     "metrics_navigation_throttle.h",
     "metrics_web_contents_observer.cc",
     "metrics_web_contents_observer.h",
+    "observers/click_input_tracker.cc",
+    "observers/click_input_tracker.h",
+    "observers/core_page_load_metrics_observer.cc",
+    "observers/core_page_load_metrics_observer.h",
+    "observers/largest_contentful_paint_handler.cc",
+    "observers/largest_contentful_paint_handler.h",
     "observers/use_counter/ukm_features.cc",
     "observers/use_counter_page_load_metrics_observer.cc",
     "observers/use_counter_page_load_metrics_observer.h",
@@ -73,6 +79,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "metrics_web_contents_observer_unittest.cc",
+    "observers/click_input_tracker_unittest.cc",
+    "observers/core_page_load_metrics_observer_unittest.cc",
     "observers/page_load_metrics_observer_content_test_harness.cc",
     "observers/page_load_metrics_observer_content_test_harness.h",
     "observers/use_counter_page_load_metrics_observer_unittest.cc",
@@ -85,9 +93,11 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/page_load_metrics/common:test_support",
+    "//components/ukm:test_support",
     "//components/ukm/content",
     "//content/public/browser",
     "//content/test:test_support",
+    "//services/metrics/public/cpp:ukm_builders",
     "//testing/gtest",
     "//url",
   ]

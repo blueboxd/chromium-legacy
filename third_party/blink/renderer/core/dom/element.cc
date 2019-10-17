@@ -4041,7 +4041,12 @@ void Element::focus(const FocusParams& params) {
       return;
     }
   }
-  ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kUser);
+  // If script called focus(), then the type would be none. This means we are
+  // activating because of a script action (kUser). Otherwise, this is a
+  // viewport activation (kViewport).
+  ActivateDisplayLockIfNeeded(params.type == kWebFocusTypeNone
+                                  ? DisplayLockActivationReason::kUser
+                                  : DisplayLockActivationReason::kViewport);
   DispatchActivateInvisibleEventIfNeeded();
   if (IsInsideInvisibleSubtree()) {
     // The element stays invisible because the default event action is
@@ -4195,7 +4200,7 @@ bool Element::IsKeyboardFocusable() const {
          ((SupportsFocus() && tabIndex() >= 0) ||
           (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
            IsScrollableNode(this))) &&
-         !DisplayLockPreventsActivation(DisplayLockActivationReason::kUser);
+         !DisplayLockPreventsActivation(DisplayLockActivationReason::kViewport);
 }
 
 bool Element::IsMouseFocusable() const {
@@ -4204,7 +4209,7 @@ bool Element::IsMouseFocusable() const {
   DCHECK(!GetDocument().IsActive() ||
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
   return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
-         !DisplayLockPreventsActivation(DisplayLockActivationReason::kUser);
+         !DisplayLockPreventsActivation(DisplayLockActivationReason::kViewport);
 }
 
 bool Element::IsAutofocusable() const {

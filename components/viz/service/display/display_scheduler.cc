@@ -212,7 +212,7 @@ bool DisplayScheduler::DrawAndSwap() {
   DCHECK_LT(pending_swaps_, max_pending_swaps_);
   DCHECK(!output_surface_lost_);
 
-  bool success = client_->DrawAndSwap();
+  bool success = client_ && client_->DrawAndSwap();
   if (!success)
     return false;
 
@@ -328,14 +328,15 @@ void DisplayScheduler::OnSurfaceMarkedForDestruction(
 
 bool DisplayScheduler::OnSurfaceDamaged(const SurfaceId& surface_id,
                                         const BeginFrameAck& ack) {
-  bool damaged = client_->SurfaceDamaged(surface_id, ack);
+  bool damaged = client_ && client_->SurfaceDamaged(surface_id, ack);
   ProcessSurfaceDamage(surface_id, ack, damaged);
 
   return damaged;
 }
 
 void DisplayScheduler::OnSurfaceDestroyed(const SurfaceId& surface_id) {
-  client_->SurfaceDestroyed(surface_id);
+  if (client_)
+    client_->SurfaceDestroyed(surface_id);
 }
 
 void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,
@@ -508,7 +509,8 @@ void DisplayScheduler::DidFinishFrame(bool did_draw) {
   DCHECK(begin_frame_source_);
   begin_frame_source_->DidFinishFrame(this);
   BeginFrameAck ack(current_begin_frame_args_, did_draw);
-  client_->DidFinishFrame(ack);
+  if (client_)
+    client_->DidFinishFrame(ack);
 }
 
 void DisplayScheduler::DidSwapBuffers() {

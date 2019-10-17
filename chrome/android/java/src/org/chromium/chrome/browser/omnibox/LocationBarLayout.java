@@ -39,8 +39,8 @@ import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
+import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
@@ -371,43 +371,6 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void setUrlBarFocus(
-            boolean shouldBeFocused, @Nullable String pastedText, @OmniboxFocusReason int reason) {
-        if (shouldBeFocused) {
-            if (!mUrlHasFocus) recordOmniboxFocusReason(reason);
-
-            if (reason == LocationBar.OmniboxFocusReason.FAKE_BOX_TAP
-                    || reason == LocationBar.OmniboxFocusReason.FAKE_BOX_LONG_PRESS
-                    || reason == LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS
-                    || reason == LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_TAP) {
-                mUrlFocusedFromFakebox = true;
-            }
-
-            if (mUrlHasFocus && mUrlFocusedWithoutAnimations) {
-                handleUrlFocusAnimation(mUrlHasFocus);
-            } else {
-                mUrlBar.requestFocus();
-            }
-        } else {
-            assert pastedText == null;
-            hideKeyboard();
-            mUrlBar.clearFocus();
-        }
-
-        if (pastedText != null) {
-            // This must be happen after requestUrlFocus(), which changes the selection.
-            mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(pastedText),
-                    UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
-            forceOnTextChanged();
-        }
-    }
-
-    @Override
-    public boolean isUrlBarFocused() {
-        return mUrlHasFocus;
-    }
-
-    @Override
     public void clearOmniboxFocus() {
         setUrlBarFocus(false, null, LocationBar.OmniboxFocusReason.UNFOCUS);
     }
@@ -561,23 +524,8 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void requestUrlFocusFromFakebox(String pastedText) {
-        // TODO(crbug.com/1013693): Get rid of requestUrlFocusFromFakebox to let the caller uses
-        // setUrlBarFocus directly.
-        setUrlBarFocus(true, pastedText,
-                pastedText == null ? LocationBar.OmniboxFocusReason.FAKE_BOX_TAP
-                                   : LocationBar.OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
-    }
-
-    @Override
     public boolean didFocusUrlFromFakebox() {
         return mUrlFocusedFromFakebox;
-    }
-
-    @Override
-    public boolean isCurrentPage(NativePage nativePage) {
-        assert nativePage != null;
-        return nativePage == mToolbarDataProvider.getNewTabPageForCurrentTab();
     }
 
     @Override
@@ -603,16 +551,6 @@ public class LocationBarLayout extends FrameLayout
         mAutocompleteCoordinator.setToolbarDataProvider(toolbarDataProvider);
         mStatusViewCoordinator.setToolbarDataProvider(toolbarDataProvider);
         mUrlCoordinator.setOnFocusChangedCallback(this::onUrlFocusChange);
-    }
-
-    @Override
-    public void addUrlFocusChangeListener(UrlFocusChangeListener listener) {
-        mUrlFocusChangeListeners.addObserver(listener);
-    }
-
-    @Override
-    public void removeUrlFocusChangeListener(UrlFocusChangeListener listener) {
-        mUrlFocusChangeListeners.removeObserver(listener);
     }
 
     @Override
@@ -1040,6 +978,64 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
+    public void setUrlBarFocus(
+            boolean shouldBeFocused, @Nullable String pastedText, @OmniboxFocusReason int reason) {
+        if (shouldBeFocused) {
+            if (!mUrlHasFocus) recordOmniboxFocusReason(reason);
+
+            if (reason == LocationBar.OmniboxFocusReason.FAKE_BOX_TAP
+                    || reason == LocationBar.OmniboxFocusReason.FAKE_BOX_LONG_PRESS
+                    || reason == LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS
+                    || reason == LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_TAP) {
+                mUrlFocusedFromFakebox = true;
+            }
+
+            if (mUrlHasFocus && mUrlFocusedWithoutAnimations) {
+                handleUrlFocusAnimation(mUrlHasFocus);
+            } else {
+                mUrlBar.requestFocus();
+            }
+        } else {
+            assert pastedText == null;
+            hideKeyboard();
+            mUrlBar.clearFocus();
+        }
+
+        if (pastedText != null) {
+            // This must be happen after requestUrlFocus(), which changes the selection.
+            mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(pastedText),
+                    UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
+            forceOnTextChanged();
+        }
+    }
+
+    @Override
+    public boolean isUrlBarFocused() {
+        return mUrlHasFocus;
+    }
+
+    @Override
+    public boolean isCurrentPage(NativePage nativePage) {
+        assert nativePage != null;
+        return nativePage == mToolbarDataProvider.getNewTabPageForCurrentTab();
+    }
+
+    @Override
+    public LocationBarVoiceRecognitionHandler getLocationBarVoiceRecognitionHandler() {
+        return mVoiceRecognitionHandler;
+    }
+
+    @Override
+    public void addUrlFocusChangeListener(UrlFocusChangeListener listener) {
+        mUrlFocusChangeListeners.addObserver(listener);
+    }
+
+    @Override
+    public void removeUrlFocusChangeListener(UrlFocusChangeListener listener) {
+        mUrlFocusChangeListeners.removeObserver(listener);
+    }
+
+    @Override
     protected void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
         if (visibility == View.VISIBLE) updateMicButtonState();
@@ -1109,7 +1105,6 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void onTabLoadingNTP(NewTabPage ntp) {
         ntp.setFakeboxDelegate(this);
-        ntp.setVoiceRecognitionHandler(mVoiceRecognitionHandler);
     }
 
     @Override

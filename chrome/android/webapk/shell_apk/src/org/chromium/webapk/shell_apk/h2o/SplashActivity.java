@@ -150,10 +150,7 @@ public class SplashActivity extends Activity {
 
     private void showSplashScreen() {
         Bundle metadata = WebApkUtils.readMetaData(this);
-        int themeColor = (int) WebApkMetaDataUtils.getLongFromMetaData(
-                metadata, WebApkMetaDataKeys.THEME_COLOR, Color.BLACK);
-        WebApkUtils.setStatusBarColor(
-                getWindow(), WebApkUtils.getDarkenedColorForStatusBar(themeColor));
+        updateStatusBar(metadata);
 
         int orientation = WebApkUtils.computeScreenLockOrientationFromMetaData(this, metadata);
         if (orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
@@ -173,6 +170,19 @@ public class SplashActivity extends Activity {
                     }
                 });
         setContentView(mSplashView);
+    }
+
+    /**
+     * Sets the the color of the status bar and status bar icons.
+     */
+    private void updateStatusBar(Bundle metadata) {
+        int statusBarColor = (int) WebApkMetaDataUtils.getLongFromMetaData(
+                metadata, WebApkMetaDataKeys.THEME_COLOR, Color.WHITE);
+        WebApkUtils.setStatusBarColor(getWindow(), statusBarColor);
+        boolean needsDarkStatusBarIcons =
+                !WebApkUtils.shouldUseLightForegroundOnBackground(statusBarColor);
+        WebApkUtils.setStatusBarIconColor(
+                getWindow().getDecorView().getRootView(), needsDarkStatusBarIcons);
     }
 
     /** Called once the host browser has been selected. */

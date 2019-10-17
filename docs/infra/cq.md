@@ -63,8 +63,9 @@ The Chromium CQ supports a variety of options that can change what it checks.
 ### What exactly does the CQ run?
 
 CQ runs the jobs specified in [commit-queue.cfg][2]. See
-[`cq_builders.md`](cq_builders.md) for an auto generated file with links to
-information about the builders on the CQ.
+[`cq-builders.md`](https://chromium.googlesource.com/chromium/src/+/master/src/infra/config/generated/cq-builders.md)
+for an auto generated file with links to information about the builders on the
+CQ.
 
 Some of these jobs are experimental. This means they are executed on a
 percentage of CQ builds, and the outcome of the build doesn't affect if the CL

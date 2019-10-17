@@ -12,6 +12,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -51,6 +52,9 @@ class SettingsNavigationControllerTest : public PlatformTest {
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
+    WebStateList* web_state_list = nullptr;
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                             web_state_list);
 
     mockDelegate_ = [OCMockObject
         niceMockForProtocol:@protocol(SettingsNavigationControllerDelegate)];
@@ -80,6 +84,7 @@ class SettingsNavigationControllerTest : public PlatformTest {
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  std::unique_ptr<Browser> browser_;
   id mockDelegate_;
   NSString* initialValueForSpdyProxyEnabled_;
 };
@@ -90,9 +95,8 @@ TEST_F(SettingsNavigationControllerTest, PopController) {
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithBrowserState:chrome_browser_state_
-                                                          .get()
-                                             delegate:nil];
+            mainSettingsControllerForBrowser:browser_.get()
+                                    delegate:nil];
     UIViewController* viewController =
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
     [settingsController pushViewController:viewController animated:NO];
@@ -112,9 +116,8 @@ TEST_F(SettingsNavigationControllerTest, DontPopRootController) {
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithBrowserState:chrome_browser_state_
-                                                          .get()
-                                             delegate:nil];
+            mainSettingsControllerForBrowser:browser_.get()
+                                    delegate:nil];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
 
     EXPECT_FALSE([settingsController popViewControllerAnimated:NO]);
@@ -130,9 +133,8 @@ TEST_F(SettingsNavigationControllerTest,
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithBrowserState:chrome_browser_state_
-                                                          .get()
-                                             delegate:mockDelegate_];
+            mainSettingsControllerForBrowser:browser_.get()
+                                    delegate:mockDelegate_];
     UIViewController* viewController =
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
     [settingsController pushViewController:viewController animated:NO];
@@ -153,9 +155,8 @@ TEST_F(SettingsNavigationControllerTest,
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithBrowserState:chrome_browser_state_
-                                                          .get()
-                                             delegate:mockDelegate_];
+            mainSettingsControllerForBrowser:browser_.get()
+                                    delegate:mockDelegate_];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
     [[mockDelegate_ expect] closeSettings];
     [settingsController popViewControllerOrCloseSettingsAnimated:NO];

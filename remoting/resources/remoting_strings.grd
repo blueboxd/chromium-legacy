@@ -1321,6 +1321,21 @@
         <message name="IDS_HOST_AUTHENTICATION_PROMPT" desc="The prompt to be displayed in the authentication dialog when making changes to the system.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
           <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph> wants to make changes.
         </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_TITLE" desc="The title of the dialog/wizard that asks the user to grant various OS permissions to the Chrome Remote Desktop service. Mac-only.">
+          Grant permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_NEXT_BUTTON" desc="The text on the button in the Mac permission wizard that takes the user to the next stage of the wizard. Mac-only.">
+          Next
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_OK_BUTTON" desc="The text on the button on the final part of the Mac permission wizard that exits the wizard. Mac-only.">
+          OK
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_CANCEL_BUTTON" desc="The text on the button in the Mac permission wizard that allows the user to cancel the permission setup and exits the wizard. Mac-only.">
+          Cancel
+        </message>
+        <message name="IDS_MAC_PERMISSION_WIZARD_FINAL_TEXT" desc="The text shown on the final screen of the permission wizard that lets the user know they have successfully granted the permissions necessary for Chrome Remote Desktop to work properly. Mac-only.">
+          You're all set!
+        </message>
         <message name="IDS_ACCESSIBILITY_PERMISSION_DIALOG_TITLE" desc="The title of the prompt that asks the user to grant 'Accessibility' permission to the Chrome Remote Desktop service. This permission is part of the 'Privacy and Security' preferences pane. Mac-only.">
           Grant 'Accessibility' permission to <ph name="PRODUCT_NAME">$1<ex>Chrome Remote Desktop</ex></ph>
         </message>

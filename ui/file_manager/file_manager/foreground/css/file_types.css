@@ -3,8 +3,9 @@
  * found in the LICENSE file. */
 
 /* TODO(crbug.com/992819): unify root-type-icon and volume-type-icon into one
- type, called file-type-icon or entry_type-icon say, since there is no real
- need for the root/volume icon distinction. */
+ type if possible, called file-type-icon or entry-type-icon say, since there
+ is no real need for the root/volume icon distinction for the directory tree
+ noting that file-type-icon is also used in lists and menus ;) */
 
 /* Small icons for file types, used in lists and menus. */
 [file-type-icon] {
@@ -40,6 +41,18 @@
       url(../images/filetype/2x/filetype_folder.png) 2x);
 }
 
+.computers-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/computer.png) 1x,
+      url(../images/volumes/2x/computer.png) 2x);
+}
+
+.external-media-root[file-type-icon='folder'] {
+  background-image: -webkit-image-set(
+      url(../images/volumes/usb.png) 1x,
+      url(../images/volumes/2x/usb.png) 2x);
+}
+
 .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_folder_shared.png) 1x,
@@ -52,20 +65,19 @@
       url(../images/volumes/2x/hard_drive.png) 2x);
 }
 
-tree .tree-item[selected] > .tree-row > [file-type-icon='folder'] {
+.tree-row[selected] > [file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_folder_active.png) 1x,
       url(../images/filetype/2x/filetype_folder_active.png) 2x);
 }
 
-tree .tree-item[selected] > .tree-row > .shared[file-type-icon='folder'] {
+.tree-row[selected] > .shared[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_folder_shared_active.png) 1x,
       url(../images/filetype/2x/filetype_folder_shared_active.png) 2x);
 }
 
-tree .tree-item[selected] > .tree-row >
-.team-drive-root[file-type-icon='folder'] {
+.tree-row[selected] > .team-drive-root[file-type-icon='folder'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_team_drive_active.png) 1x,
       url(../images/filetype/2x/filetype_team_drive_active.png) 2x);
@@ -233,8 +245,8 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/my_files_active.png) 2x);
 }
 
-[file-type-icon='downloads'],
-[volume-type-icon='downloads'] {
+[volume-type-icon='downloads'],
+[file-type-icon='downloads'] {
   background-image: -webkit-image-set(
       url(../images/volumes/downloads.png) 1x,
       url(../images/volumes/2x/downloads.png) 2x);
@@ -258,6 +270,7 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/drive_active.png) 1x,
       url(../images/volumes/2x/drive_active.png) 2x);
 }
+
 [volume-type-icon='shortcut'] {
   background-image: -webkit-image-set(
       url(../images/volumes/shortcut.png) 1x,
@@ -271,7 +284,7 @@ tree .tree-item[selected] > .tree-row >
 }
 
 .drive-volume > .tree-row > [volume-type-icon='drive'],
-[root-type-icon='drive'] {
+.tree-row [root-type-icon='drive'] {
   background-image: -webkit-image-set(
       url(../images/volumes/service_drive.png) 1x,
       url(../images/volumes/2x/service_drive.png) 2x);
@@ -320,16 +333,13 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/devices_active.png) 2x);
 }
 
-[volume-type-icon='computer'],
-.computers-root[file-type-icon='folder'] {
+[volume-type-icon='computer'] {
   background-image: -webkit-image-set(
       url(../images/volumes/computer.png) 1x,
       url(../images/volumes/2x/computer.png) 2x);
 }
 
-.tree-row[selected] [volume-type-icon='computer'],
-tree .tree-item[selected] > .tree-row >
-.computers-root[file-type-icon='folder'] {
+.tree-row[selected] [volume-type-icon='computer'] {
   background-image: -webkit-image-set(
       url(../images/volumes/computer_active.png) 1x,
       url(../images/volumes/2x/computer_active.png) 2x);
@@ -371,7 +381,6 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/recent_active.png) 2x);
 }
 
-.external-media-root[file-type-icon='folder'],
 [volume-type-icon='external_media'],
 [volume-type-icon='removable'],
 [root-type-icon='removable'] {
@@ -380,8 +389,6 @@ tree .tree-item[selected] > .tree-row >
       url(../images/volumes/2x/usb.png) 2x);
 }
 
-tree .tree-item[selected] > .tree-row >
-.external-media-root[file-type-icon='folder'],
 .tree-row[selected] [volume-type-icon='external_media'],
 .tree-row[selected] [volume-type-icon='removable'],
 .tree-row[selected] [root-type-icon='removable'] {

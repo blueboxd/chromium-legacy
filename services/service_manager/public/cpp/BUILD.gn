@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 component("cpp") {
   output_name = "service_manager_cpp"
 
@@ -30,6 +32,8 @@ component("cpp") {
     "service_context_ref.h",
     "service_keepalive.cc",
     "service_keepalive.h",
+    "standalone_connector_impl.cc",
+    "standalone_connector_impl.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -111,13 +115,23 @@ source_set("unittests") {
 
   sources = [
     "manifest_unittest.cc",
+    "standalone_connector_impl_unittest.cc",
   ]
 
   deps = [
     ":cpp",
+    ":test_mojom",
     "//base",
+    "//base/test:test_support",
     "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
+  ]
+}
+
+mojom("test_mojom") {
+  testonly = true
+  sources = [
+    "standalone_connector_impl_unittest.test-mojom",
   ]
 }

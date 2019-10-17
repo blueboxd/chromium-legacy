@@ -65,7 +65,7 @@ class BASE_EXPORT ThreadGroup {
   // RegisteredTaskSource that evaluats to true if successful, or false if
   // |task_source| is not currently in |priority_queue_|, such as when a worker
   // is running a task from it.
-  RegisteredTaskSource RemoveTaskSource(scoped_refptr<TaskSource> task_source);
+  RegisteredTaskSource RemoveTaskSource(const TaskSource& task_source);
 
   // Updates the position of the TaskSource in |transaction| in this
   // ThreadGroup's PriorityQueue based on the TaskSource's current traits.

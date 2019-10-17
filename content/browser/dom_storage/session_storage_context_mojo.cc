@@ -96,7 +96,7 @@ void RecordSessionStorageCachePurgedHistogram(
 }
 
 void SessionStorageErrorResponse(base::OnceClosure callback,
-                                 leveldb::mojom::DatabaseError error) {
+                                 leveldb::Status status) {
   std::move(callback).Run();
 }
 }  // namespace
@@ -364,7 +364,7 @@ void SessionStorageContextMojo::ShutdownAndDelete() {
   // Nothing to do if no connection to the database was ever finished.
   if (connection_state_ != CONNECTION_FINISHED) {
     connection_state_ = CONNECTION_SHUTDOWN;
-    OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
+    OnShutdownComplete(leveldb::Status::OK());
     return;
   }
   connection_state_ = CONNECTION_SHUTDOWN;
@@ -381,7 +381,7 @@ void SessionStorageContextMojo::ShutdownAndDelete() {
     area->CancelAllPendingRequests();
   }
 
-  OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
+  OnShutdownComplete(leveldb::Status::OK());
 }
 
 void SessionStorageContextMojo::PurgeMemory() {
@@ -522,7 +522,7 @@ bool SessionStorageContextMojo::OnMemoryDump(
 }
 
 void SessionStorageContextMojo::PretendToConnectForTesting() {
-  OnDatabaseOpened(leveldb::mojom::DatabaseError::OK);
+  OnDatabaseOpened(leveldb::Status::OK());
 }
 
 void SessionStorageContextMojo::FlushAreaForTesting(
@@ -571,13 +571,12 @@ void SessionStorageContextMojo::OnDataMapDestruction(
   data_maps_.erase(map_prefix);
 }
 
-void SessionStorageContextMojo::OnCommitResult(
-    leveldb::mojom::DatabaseError error) {
+void SessionStorageContextMojo::OnCommitResult(leveldb::Status status) {
   DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
   UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.CommitResult",
-                            leveldb::GetLevelDBStatusUMAValue(error),
+                            leveldb_env::GetLevelDBStatusUMAValue(status),
                             leveldb_env::LEVELDB_STATUS_MAX);
-  if (error == leveldb::mojom::DatabaseError::OK) {
+  if (status.ok()) {
     commit_error_count_ = 0;
     return;
   }
@@ -601,8 +600,8 @@ void SessionStorageContextMojo::OnCommitResult(
 
 void SessionStorageContextMojo::OnCommitResultWithCallback(
     base::OnceClosure callback,
-    leveldb::mojom::DatabaseError error) {
-  OnCommitResult(error);
+    leveldb::Status status) {
+  OnCommitResult(status);
   std::move(callback).Run();
 }
 
@@ -738,20 +737,19 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SessionStorageContextMojo::OnDatabaseOpened(
-    leveldb::mojom::DatabaseError status) {
-  if (status != leveldb::mojom::DatabaseError::OK) {
+void SessionStorageContextMojo::OnDatabaseOpened(leveldb::Status status) {
+  if (!status.ok()) {
     UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.DatabaseOpenError",
-                              leveldb::GetLevelDBStatusUMAValue(status),
+                              leveldb_env::GetLevelDBStatusUMAValue(status),
                               leveldb_env::LEVELDB_STATUS_MAX);
     if (in_memory_) {
       UMA_HISTOGRAM_ENUMERATION(
           "SessionStorageContext.DatabaseOpenError.Memory",
-          leveldb::GetLevelDBStatusUMAValue(status),
+          leveldb_env::GetLevelDBStatusUMAValue(status),
           leveldb_env::LEVELDB_STATUS_MAX);
     } else {
       UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.DatabaseOpenError.Disk",
-                                leveldb::GetLevelDBStatusUMAValue(status),
+                                leveldb_env::GetLevelDBStatusUMAValue(status),
                                 leveldb_env::LEVELDB_STATUS_MAX);
     }
     LogDatabaseOpenResult(OpenResult::kDatabaseOpenFailed);
@@ -890,11 +888,11 @@ SessionStorageContextMojo::ParseNamespaces(
     database_->Write(
         std::move(migration_operations),
         base::BindOnce(
-            [](base::OnceCallback<void(leveldb::mojom::DatabaseError)> callback,
+            [](base::OnceCallback<void(leveldb::Status)> callback,
                scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-               leveldb::mojom::DatabaseError error) {
+               leveldb::Status status) {
               callback_task_runner->PostTask(
-                  FROM_HERE, base::BindOnce(std::move(callback), error));
+                  FROM_HERE, base::BindOnce(std::move(callback), status));
             },
             base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
                            weak_ptr_factory_.GetWeakPtr()),
@@ -1001,8 +999,7 @@ void SessionStorageContextMojo::OnDBDestroyed(bool recreate_in_memory,
   InitiateConnection(recreate_in_memory);
 }
 
-void SessionStorageContextMojo::OnShutdownComplete(
-    leveldb::mojom::DatabaseError error) {
+void SessionStorageContextMojo::OnShutdownComplete(leveldb::Status status) {
   delete this;
 }
 

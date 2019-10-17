@@ -317,6 +317,13 @@ public class StatusView extends LinearLayout {
         animateStatusIcon();
     }
 
+    /** Specify the status icon alpha. */
+    void setStatusIconAlpha(float alpha) {
+        if (mIconView == null) return;
+        mIconView.setAlpha(alpha);
+        mIconView.setVisibility(alpha > 0f ? VISIBLE : GONE);
+    }
+
     /**
      * Specify accessibility string presented to user upon long click.
      */

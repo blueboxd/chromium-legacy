@@ -101,6 +101,7 @@ constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 constexpr int kMessageCenterCollapseThreshold = 175;
 constexpr int kStackedNotificationBarHeight = 32;
 constexpr int kStackedNotificationBarCollapsedHeight = 40;
+constexpr int kNotificationIconStackThreshold = 28;
 constexpr int kUnifiedSliderViewSpacing = 12;
 constexpr int kUnifiedMenuPadding = 8;
 constexpr int kUnifiedMessageCenterBubbleSpacing = 8;

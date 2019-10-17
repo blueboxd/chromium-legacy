@@ -1577,18 +1577,6 @@ gpu_fyi_linux_ci_tester(
 )
 
 gpu_fyi_linux_ci_tester(
-    name = 'Mac FYI 10.14 Release (AMD)',
-)
-
-gpu_fyi_linux_ci_tester(
-    name = 'Mac FYI 10.14 Release (Intel)',
-)
-
-gpu_fyi_linux_ci_tester(
-    name = 'Mac FYI 10.14 Release (NVIDIA)',
-)
-
-gpu_fyi_linux_ci_tester(
     name = 'Mac FYI Debug (Intel)',
 )
 

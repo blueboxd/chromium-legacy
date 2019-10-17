@@ -126,6 +126,10 @@ body.controls-refresh {
 }
 
 @media (forced-colors: active) {
+    .controls-refresh .color-suggestion-picker-main {
+        border: 1px solid WindowText;
+    }
+
     .controls-refresh .color-swatch {
         forced-color-adjust: none;
         border-color: WindowText;

@@ -35,7 +35,8 @@ namespace {
 
 constexpr int kNormalButtonRadius = 4;
 constexpr int kSelectedButtonRadius = 5;
-constexpr int kInkDropRadius = 16;
+constexpr int kInkDropRadiusForRootGrid = 16;
+constexpr int kInkDropRadiusForFolderGrid = 10;
 constexpr SkScalar kStrokeWidth = SkIntToScalar(2);
 
 // Constants for the button strip that grows vertically.
@@ -54,7 +55,8 @@ constexpr SkColor kDarkInkDropHighlightColor =
 
 // Constants for the button strip that grows horizontally.
 // The padding on left/right side of each button.
-constexpr int kHorizontalButtonPadding = 6;
+constexpr int kHorizontalButtonPadding = 0;
+
 // The normal button color for the page switcher shown in folders (54% black).
 constexpr SkColor kLightNormalColor = SkColorSetA(SK_ColorBLACK, 138);
 constexpr SkColor kLightInkDropBaseColor = SkColorSetARGB(255, 95, 99, 104);
@@ -86,8 +88,10 @@ class PageSwitcherButton : public views::Button {
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(PageSwitcher::kMaxButtonRadius * 2,
-                     PageSwitcher::kMaxButtonRadius * 2);
+    const int max_radius = is_root_app_grid_page_switcher_
+                               ? PageSwitcher::kMaxButtonRadiusForRootGrid
+                               : PageSwitcher::kMaxButtonRadiusForFolderGrid;
+    return gfx::Size(max_radius * 2, max_radius * 2);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
@@ -106,15 +110,18 @@ class PageSwitcherButton : public views::Button {
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
     return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), kInkDropRadius);
+        size(), GetLocalBounds().CenterPoint(),
+        is_root_app_grid_page_switcher_ ? kInkDropRadiusForRootGrid
+                                        : kInkDropRadiusForFolderGrid);
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     gfx::Point center = GetLocalBounds().CenterPoint();
-    gfx::Rect bounds(center.x() - PageSwitcher::kMaxButtonRadius,
-                     center.y() - PageSwitcher::kMaxButtonRadius,
-                     2 * PageSwitcher::kMaxButtonRadius,
-                     2 * PageSwitcher::kMaxButtonRadius);
+    const int max_radius = is_root_app_grid_page_switcher_
+                               ? PageSwitcher::kMaxButtonRadiusForRootGrid
+                               : PageSwitcher::kMaxButtonRadiusForFolderGrid;
+    gfx::Rect bounds(center.x() - max_radius, center.y() - max_radius,
+                     2 * max_radius, 2 * max_radius);
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
         GetInkDropCenterBasedOnLastEvent(),
@@ -130,7 +137,8 @@ class PageSwitcherButton : public views::Button {
         std::make_unique<views::CircleLayerDelegate>(
             is_root_app_grid_page_switcher_ ? kDarkInkDropHighlightColor
                                             : kLightInkDropHighlightColor,
-            kInkDropRadius));
+            is_root_app_grid_page_switcher_ ? kInkDropRadiusForRootGrid
+                                            : kInkDropRadiusForFolderGrid));
   }
 
   void NotifyClick(const ui::Event& event) override {
@@ -228,14 +236,15 @@ PageSwitcher::~PageSwitcher() {
 }
 
 gfx::Size PageSwitcher::CalculatePreferredSize() const {
+  const int max_radius = is_root_app_grid_page_switcher_
+                             ? PageSwitcher::kMaxButtonRadiusForRootGrid
+                             : PageSwitcher::kMaxButtonRadiusForFolderGrid;
   // Always return a size with correct width so that container resize is not
   // needed when more pages are added.
   if (is_root_app_grid_page_switcher_) {
-    return gfx::Size(kPreferredButtonStripWidth,
-                     buttons_->GetPreferredSize().height());
+    return gfx::Size(2 * max_radius, buttons_->GetPreferredSize().height());
   }
-  return gfx::Size(buttons_->GetPreferredSize().width(),
-                   kPreferredButtonStripWidth);
+  return gfx::Size(buttons_->GetPreferredSize().width(), 2 * max_radius);
 }
 
 void PageSwitcher::Layout() {

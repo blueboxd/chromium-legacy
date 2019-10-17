@@ -49,6 +49,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -527,14 +528,32 @@ void AutofillAgent::PreviewFieldWithValue(const base::string16& value) {
     DoPreviewFieldWithValue(value, input_element);
 }
 
-void AutofillAgent::SetSuggestionAvailability(bool available) {
+void AutofillAgent::SetSuggestionAvailability(
+    const mojom::AutofillState state) {
   if (element_.IsNull())
     return;
 
   WebInputElement* input_element = ToWebInputElement(&element_);
-  if (input_element)
-    WebAXObject::FromWebNode(*input_element)
-        .HandleAutofillStateChanged(available);
+  if (input_element) {
+    switch (state) {
+      case autofill::mojom::AutofillState::kAutofillAvailable:
+        WebAXObject::FromWebNode(*input_element)
+            .HandleAutofillStateChanged(
+                blink::WebAXAutofillState::kAutofillAvailable);
+        return;
+      case autofill::mojom::AutofillState::kAutocompleteAvailable:
+        WebAXObject::FromWebNode(*input_element)
+            .HandleAutofillStateChanged(
+                blink::WebAXAutofillState::kAutocompleteAvailable);
+        return;
+      case autofill::mojom::AutofillState::kNoSuggestions:
+        WebAXObject::FromWebNode(*input_element)
+            .HandleAutofillStateChanged(
+                blink::WebAXAutofillState::kNoSuggestions);
+        return;
+    }
+    NOTREACHED();
+  }
 }
 
 void AutofillAgent::AcceptDataListSuggestion(const base::string16& value) {

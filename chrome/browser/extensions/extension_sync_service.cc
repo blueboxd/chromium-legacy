@@ -547,7 +547,7 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
   DCHECK(provider);
 
-  provider->install_manager().InstallOrUpdateWebAppFromSync(
+  provider->install_manager().InstallWebAppFromSync(
       extension_sync_data.id(), std::move(web_app_info), base::DoNothing());
 }
 

@@ -12,9 +12,12 @@ source_set("coordinators") {
     "infobar_coordinator_implementation.h",
     "infobar_password_coordinator.h",
     "infobar_password_coordinator.mm",
+    "infobar_save_card_coordinator.h",
+    "infobar_save_card_coordinator.mm",
   ]
   deps = [
     "//base",
+    "//components/autofill/core/browser",
     "//components/infobars/core",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:public",

@@ -273,7 +273,8 @@ struct ASH_PUBLIC_EXPORT AuthDisabledData {
   AuthDisabledData();
   AuthDisabledData(AuthDisabledReason reason,
                    const base::Time& auth_reenabled_time,
-                   const base::TimeDelta& device_used_time);
+                   const base::TimeDelta& device_used_time,
+                   bool disable_lock_screen_media);
   AuthDisabledData(const AuthDisabledData& other);
   AuthDisabledData(AuthDisabledData&& other);
   ~AuthDisabledData();
@@ -290,6 +291,10 @@ struct ASH_PUBLIC_EXPORT AuthDisabledData {
 
   // The amount of time that the user used this device.
   base::TimeDelta device_used_time;
+
+  // If true media will be suspended and media controls will be unavailable on
+  // lock screen.
+  bool disable_lock_screen_media = false;
 };
 
 // Possible reasons why the parent access code is required. This corresponds to

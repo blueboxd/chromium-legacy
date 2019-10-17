@@ -417,6 +417,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_KHR_parallel_shader_compile =
       gfx::HasExtension(extensions, "GL_KHR_parallel_shader_compile");
   ext.b_GL_KHR_robustness = gfx::HasExtension(extensions, "GL_KHR_robustness");
+  ext.b_GL_MESA_framebuffer_flip_y =
+      gfx::HasExtension(extensions, "GL_MESA_framebuffer_flip_y");
   ext.b_GL_NV_blend_equation_advanced =
       gfx::HasExtension(extensions, "GL_NV_blend_equation_advanced");
   ext.b_GL_NV_fence = gfx::HasExtension(extensions, "GL_NV_fence");
@@ -900,6 +902,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         reinterpret_cast<glDepthRangefProc>(GetGLProcAddress("glDepthRangef"));
   }
 
+  if (ext.b_GL_ANGLE_request_extension) {
+    fn.glDisableExtensionANGLEFn =
+        reinterpret_cast<glDisableExtensionANGLEProc>(
+            GetGLProcAddress("glDisableExtensionANGLE"));
+  }
+
   if (ext.b_GL_EXT_discard_framebuffer) {
     fn.glDiscardFramebufferEXTFn =
         reinterpret_cast<glDiscardFramebufferEXTProc>(
@@ -1049,6 +1057,10 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glFramebufferParameteriFn =
         reinterpret_cast<glFramebufferParameteriProc>(
             GetGLProcAddress("glFramebufferParameteri"));
+  } else if (ext.b_GL_MESA_framebuffer_flip_y) {
+    fn.glFramebufferParameteriFn =
+        reinterpret_cast<glFramebufferParameteriProc>(
+            GetGLProcAddress("glFramebufferParameteriMESA"));
   }
 
   if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
@@ -3480,6 +3492,10 @@ void GLApiBase::glDetachShaderFn(GLuint program, GLuint shader) {
 
 void GLApiBase::glDisableFn(GLenum cap) {
   driver_->fn.glDisableFn(cap);
+}
+
+void GLApiBase::glDisableExtensionANGLEFn(const char* name) {
+  driver_->fn.glDisableExtensionANGLEFn(name);
 }
 
 void GLApiBase::glDisableVertexAttribArrayFn(GLuint index) {
@@ -6804,6 +6820,11 @@ void TraceGLApi::glDetachShaderFn(GLuint program, GLuint shader) {
 void TraceGLApi::glDisableFn(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisable")
   gl_api_->glDisableFn(cap);
+}
+
+void TraceGLApi::glDisableExtensionANGLEFn(const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisableExtensionANGLE")
+  gl_api_->glDisableExtensionANGLEFn(name);
 }
 
 void TraceGLApi::glDisableVertexAttribArrayFn(GLuint index) {
@@ -10811,6 +10832,12 @@ void DebugGLApi::glDisableFn(GLenum cap) {
   GL_SERVICE_LOG("glDisable"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
   gl_api_->glDisableFn(cap);
+}
+
+void DebugGLApi::glDisableExtensionANGLEFn(const char* name) {
+  GL_SERVICE_LOG("glDisableExtensionANGLE"
+                 << "(" << name << ")");
+  gl_api_->glDisableExtensionANGLEFn(name);
 }
 
 void DebugGLApi::glDisableVertexAttribArrayFn(GLuint index) {
@@ -15452,6 +15479,10 @@ void NoContextGLApi::glDetachShaderFn(GLuint program, GLuint shader) {
 
 void NoContextGLApi::glDisableFn(GLenum cap) {
   NoContextHelper("glDisable");
+}
+
+void NoContextGLApi::glDisableExtensionANGLEFn(const char* name) {
+  NoContextHelper("glDisableExtensionANGLE");
 }
 
 void NoContextGLApi::glDisableVertexAttribArrayFn(GLuint index) {

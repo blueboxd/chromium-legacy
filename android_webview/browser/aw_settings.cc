@@ -252,9 +252,8 @@ void AwSettings::UpdateRendererPreferencesLocked(
     update_prefs = true;
   }
 
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  if (update_prefs && host)
-    host->SyncRendererPrefs();
+  if (update_prefs)
+    web_contents()->SyncRendererPrefs();
 
   if (update_prefs) {
     // make sure to update accept languages when the network service is enabled

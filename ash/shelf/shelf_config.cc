@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_analysis.h"
@@ -84,7 +83,6 @@ void ShelfConfig::Init() {
   Shell* shell = Shell::Get();
   shell->tablet_mode_controller()->AddObserver(this);
   shell->app_list_controller()->AddObserver(this);
-  shell->overview_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -94,7 +92,6 @@ void ShelfConfig::Shutdown() {
 
   Shell* shell = Shell::Get();
   display::Screen::GetScreen()->RemoveObserver(this);
-  shell->overview_controller()->RemoveObserver(this);
   shell->app_list_controller()->RemoveObserver(this);
   shell->tablet_mode_controller()->RemoveObserver(this);
 }
@@ -119,14 +116,6 @@ void ShelfConfig::OnAppListVisibilityWillChange(bool shown,
   DCHECK_NE(is_app_list_visible_, shown);
 
   is_app_list_visible_ = shown;
-  OnShelfConfigUpdated();
-}
-
-void ShelfConfig::OnOverviewModeStartingAnimationComplete(bool canceled) {
-  OnShelfConfigUpdated();
-}
-
-void ShelfConfig::OnOverviewModeEndingAnimationComplete(bool canceled) {
   OnShelfConfigUpdated();
 }
 
@@ -204,13 +193,10 @@ int ShelfConfig::status_area_hit_region_padding() const {
 
 bool ShelfConfig::is_in_app() const {
   Shell* shell = Shell::Get();
-  const auto* overview = shell->overview_controller();
   const auto* session = shell->session_controller();
-  if (!overview || !session)
+  if (!session)
     return false;
-  return !overview->InOverviewSession() &&
-         !overview->IsCompletingShutdownAnimations() &&
-         session->GetSessionState() == session_manager::SessionState::ACTIVE &&
+  return session->GetSessionState() == session_manager::SessionState::ACTIVE &&
          !is_app_list_visible_;
 }
 

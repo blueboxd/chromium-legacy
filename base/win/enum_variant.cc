@@ -4,6 +4,8 @@
 
 #include "base/win/enum_variant.h"
 
+#include <wrl/client.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -26,27 +28,9 @@ VARIANT* EnumVariant::ItemAt(ULONG index) {
   return items_[index].AsInput();
 }
 
-ULONG STDMETHODCALLTYPE EnumVariant::AddRef() {
-  return IUnknownImpl::AddRef();
-}
-
-ULONG STDMETHODCALLTYPE EnumVariant::Release() {
-  return IUnknownImpl::Release();
-}
-
-STDMETHODIMP EnumVariant::QueryInterface(REFIID riid, void** ppv) {
-  if (riid == IID_IEnumVARIANT) {
-    *ppv = static_cast<IEnumVARIANT*>(this);
-    AddRef();
-    return S_OK;
-  }
-
-  return IUnknownImpl::QueryInterface(riid, ppv);
-}
-
-STDMETHODIMP EnumVariant::Next(ULONG requested_count,
-                               VARIANT* out_elements,
-                               ULONG* out_elements_received) {
+HRESULT EnumVariant::Next(ULONG requested_count,
+                          VARIANT* out_elements,
+                          ULONG* out_elements_received) {
   if (!out_elements)
     return E_INVALIDARG;
 
@@ -65,7 +49,7 @@ STDMETHODIMP EnumVariant::Next(ULONG requested_count,
   return (count == requested_count ? S_OK : S_FALSE);
 }
 
-STDMETHODIMP EnumVariant::Skip(ULONG skip_count) {
+HRESULT EnumVariant::Skip(ULONG skip_count) {
   ULONG count = skip_count;
   if (current_index_ + count > ULONG{items_.size()})
     count = ULONG{items_.size()} - current_index_;
@@ -74,24 +58,23 @@ STDMETHODIMP EnumVariant::Skip(ULONG skip_count) {
   return (count == skip_count ? S_OK : S_FALSE);
 }
 
-STDMETHODIMP EnumVariant::Reset() {
+HRESULT EnumVariant::Reset() {
   current_index_ = 0;
   return S_OK;
 }
 
-STDMETHODIMP EnumVariant::Clone(IEnumVARIANT** out_cloned_object) {
+HRESULT EnumVariant::Clone(IEnumVARIANT** out_cloned_object) {
   if (!out_cloned_object)
     return E_INVALIDARG;
 
   size_t count = items_.size();
-  EnumVariant* other = new EnumVariant(ULONG{count});
+  Microsoft::WRL::ComPtr<EnumVariant> other =
+      Microsoft::WRL::Make<EnumVariant>(ULONG{count});
   for (size_t i = 0; i < count; ++i)
     other->items_[i] = static_cast<const VARIANT&>(items_[i]);
 
   other->Skip(current_index_);
-  other->AddRef();
-  *out_cloned_object = other;
-  return S_OK;
+  return other.CopyTo(IID_PPV_ARGS(out_cloned_object));
 }
 
 }  // namespace win

@@ -555,6 +555,20 @@ scoped_refptr<const NGBlockBreakToken> NGColumnLayoutAlgorithm::LayoutSpanner(
       spanner_style, content_box_size_.inline_size,
       ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
 
+  if (break_token) {
+    // Truncate block-start margins at fragmentainer breaks, and also make sure
+    // that we don't repeat them at the beginning of every fragment generated
+    // from the spanner node.
+    margins.block_start = LayoutUnit();
+
+    if (break_token->IsBreakBefore()) {
+      // TODO(mstensho): Passing a break-before token shouldn't be a problem,
+      // but it would cause problems for the NGPaintFragment code. Just pass
+      // nullptr. Won't make any difference anyway.
+      break_token = nullptr;
+    }
+  }
+
   // Collapse the block-start margin of this spanner with the block-end margin
   // of an immediately preceding spanner, if any.
   margin_strut->Append(margins.block_start, /* is_quirky */ false);
@@ -564,11 +578,6 @@ scoped_refptr<const NGBlockBreakToken> NGColumnLayoutAlgorithm::LayoutSpanner(
   // context and out of space).
   LayoutUnit block_offset = intrinsic_block_size_ + margin_strut->Sum();
   auto spanner_space = CreateConstraintSpaceForSpanner(block_offset);
-  // TODO(mstensho): Passing a break-before token shouldn't be a problem, but it
-  // would cause problems for the NGPaintFragment code. Just pass nullptr. Won't
-  // make any difference anyway.
-  if (break_token && break_token->IsBreakBefore())
-    break_token = nullptr;
   auto result = spanner_node.Layout(spanner_space, break_token);
   NGFragment fragment(ConstraintSpace().GetWritingMode(),
                       result->PhysicalFragment());

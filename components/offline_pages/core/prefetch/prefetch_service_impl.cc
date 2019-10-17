@@ -36,6 +36,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer,
     std::unique_ptr<PrefetchDownloader> prefetch_downloader,
     std::unique_ptr<PrefetchImporter> prefetch_importer,
+    std::unique_ptr<PrefetchGCMHandler> gcm_handler,
     std::unique_ptr<PrefetchBackgroundTaskHandler>
         prefetch_background_task_handler,
     std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher,
@@ -48,6 +49,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       prefetch_store_(std::move(prefetch_store)),
       prefetch_downloader_(std::move(prefetch_downloader)),
       prefetch_importer_(std::move(prefetch_importer)),
+      prefetch_gcm_handler_(std::move(gcm_handler)),
       prefetch_background_task_handler_(
           std::move(prefetch_background_task_handler)),
       prefs_(prefs),
@@ -56,6 +58,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       image_fetcher_(image_fetcher) {
   prefetch_dispatcher_->SetService(this);
   prefetch_downloader_->SetPrefetchService(this);
+  prefetch_gcm_handler_->SetService(this);
   if (suggested_articles_observer_)
     suggested_articles_observer_->SetPrefetchService(this);
 }
@@ -84,13 +87,7 @@ std::string PrefetchServiceImpl::GetCachedGCMToken() const {
   return prefetch_prefs::GetCachedPrefetchGCMToken(prefs_);
 }
 
-void PrefetchServiceImpl::RefreshGCMToken() {
-  DCHECK(prefetch_gcm_handler_);
-  prefetch_gcm_handler_->GetGCMToken(base::AdaptCallbackForRepeating(
-      base::BindOnce(&PrefetchServiceImpl::OnGCMTokenReceived, GetWeakPtr())));
-}
-
-void PrefetchServiceImpl::OnGCMTokenReceived(
+void PrefetchServiceImpl::GCMTokenReceived(
     const std::string& gcm_token,
     instance_id::InstanceID::Result result) {
   // TODO(dimich): Add UMA reporting on instance_id::InstanceID::Result.
@@ -157,13 +154,6 @@ PrefetchDispatcher* PrefetchServiceImpl::GetPrefetchDispatcher() {
 PrefetchGCMHandler* PrefetchServiceImpl::GetPrefetchGCMHandler() {
   DCHECK(prefetch_gcm_handler_);
   return prefetch_gcm_handler_.get();
-}
-
-void PrefetchServiceImpl::SetPrefetchGCMHandler(
-    std::unique_ptr<PrefetchGCMHandler> handler) {
-  DCHECK(!prefetch_gcm_handler_);
-  prefetch_gcm_handler_ = std::move(handler);
-  prefetch_gcm_handler_->SetService(this);
 }
 
 PrefetchNetworkRequestFactory*

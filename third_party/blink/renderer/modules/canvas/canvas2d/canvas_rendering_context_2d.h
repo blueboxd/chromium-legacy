@@ -201,9 +201,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
  protected:
-  void NeedsFinalizeFrame() override {
-    CanvasRenderingContext::NeedsFinalizeFrame();
-  }
   CanvasColorParams ColorParams() const override;
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,

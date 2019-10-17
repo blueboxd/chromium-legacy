@@ -373,6 +373,42 @@ class DeviceSyncClientImplTest : public testing::Test {
         expected_ineligible_devices);
   }
 
+  void CallGetDevicesActivityStatus(
+      mojom::NetworkRequestResult expected_result_code,
+      base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>
+          expected_activity_statuses) {
+    base::RunLoop run_loop;
+
+    client_->GetDevicesActivityStatus(
+        base::BindOnce(&DeviceSyncClientImplTest::OnGetDevicesActivityStatus,
+                       base::Unretained(this), run_loop.QuitClosure()));
+
+    SendPendingMojoMessages();
+
+    base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>
+        device_activity_statuses_optional;
+    if (expected_activity_statuses != base::nullopt) {
+      std::vector<mojom::DeviceActivityStatusPtr> device_activity_statuses;
+      for (const mojom::DeviceActivityStatusPtr& device_activity_status :
+           *expected_activity_statuses) {
+        device_activity_statuses.emplace_back(mojom::DeviceActivityStatus::New(
+            device_activity_status->device_id,
+            device_activity_status->last_activity_time,
+            device_activity_status->connectivity_status));
+      }
+      device_activity_statuses_optional =
+          base::make_optional(std::move(device_activity_statuses));
+    }
+    fake_device_sync_->InvokePendingGetDevicesActivityStatusCallback(
+        expected_result_code, std::move(device_activity_statuses_optional));
+    run_loop.Run();
+
+    EXPECT_EQ(expected_result_code,
+              std::get<0>(get_devices_activity_status_code_and_response_));
+    EXPECT_EQ(expected_activity_statuses,
+              std::get<1>(get_devices_activity_status_code_and_response_));
+  }
+
   void CallGetDebugInfo() {
     EXPECT_FALSE(debug_info_received_);
 
@@ -444,6 +480,9 @@ class DeviceSyncClientImplTest : public testing::Test {
              multidevice::RemoteDeviceRefList,
              multidevice::RemoteDeviceRefList>
       find_eligible_devices_error_code_and_response_;
+  std::tuple<mojom::NetworkRequestResult,
+             base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>>
+      get_devices_activity_status_code_and_response_;
   bool debug_info_received_ = false;
 
  private:
@@ -472,6 +511,16 @@ class DeviceSyncClientImplTest : public testing::Test {
       multidevice::RemoteDeviceRefList ineligible_devices) {
     find_eligible_devices_error_code_and_response_ =
         std::make_tuple(result_code, eligible_devices, ineligible_devices);
+    std::move(callback).Run();
+  }
+
+  void OnGetDevicesActivityStatus(
+      base::OnceClosure callback,
+      mojom::NetworkRequestResult result_code,
+      base::Optional<std::vector<mojom::DeviceActivityStatusPtr>>
+          device_activity_status) {
+    get_devices_activity_status_code_and_response_ =
+        std::make_tuple(result_code, std::move(device_activity_status));
     std::move(callback).Run();
   }
 
@@ -679,6 +728,23 @@ TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_ErrorCode) {
   CallFindEligibleDevices(mojom::NetworkRequestResult::kEndpointNotFound,
                           multidevice::RemoteDeviceList(),
                           multidevice::RemoteDeviceList());
+}
+
+TEST_F(DeviceSyncClientImplTest, TestGetDevicesActivityStatus_NoErrorCode) {
+  SetupClient();
+  std::vector<mojom::DeviceActivityStatusPtr> expected_activity_statuses;
+  expected_activity_statuses.emplace_back(mojom::DeviceActivityStatus::New(
+      "deviceid", base::Time(), cryptauthv2::ConnectivityStatus::ONLINE));
+
+  CallGetDevicesActivityStatus(mojom::NetworkRequestResult::kSuccess,
+                               std::move(expected_activity_statuses));
+}
+
+TEST_F(DeviceSyncClientImplTest, TestGetDevicesActivityStatus_ErrorCode) {
+  SetupClient();
+
+  CallGetDevicesActivityStatus(mojom::NetworkRequestResult::kEndpointNotFound,
+                               base::nullopt);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestGetDebugInfo) {

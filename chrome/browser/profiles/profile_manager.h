@@ -410,6 +410,10 @@ class ProfileManager : public content::NotificationObserver,
       const base::FilePath& profile_dir);
 #endif  // !defined(OS_ANDROID)
 
+  // Destroy after |profile_info_cache_| since Profile destruction may trigger
+  // some observers to unregister themselves.
+  base::ObserverList<ProfileManagerObserver> observers_;
+
   // Object to cache various information about profiles. Contains information
   // about every profile which has been created for this instance of Chrome,
   // if it has not been explicitly deleted. It must be destroyed after
@@ -450,8 +454,6 @@ class ProfileManager : public content::NotificationObserver,
 
   // Controls whether to initialize some services. Only disabled for testing.
   bool do_final_services_init_ = true;
-
-  base::ObserverList<ProfileManagerObserver> observers_;
 
   // TODO(chrome/browser/profiles/OWNERS): Usage of this in profile_manager.cc
   // should likely be turned into DCHECK_CURRENTLY_ON(BrowserThread::UI) for

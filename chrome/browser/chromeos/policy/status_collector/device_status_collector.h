@@ -33,8 +33,6 @@
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
-#include "components/session_manager/core/session_manager.h"
-#include "components/session_manager/core/session_manager_observer.h"
 #include "ui/base/idle/idle.h"
 
 namespace chromeos {
@@ -115,7 +113,6 @@ class SampledData {
 
 // Collects and summarizes the status of an enterprise-managed ChromeOS device.
 class DeviceStatusCollector : public StatusCollector,
-                              public session_manager::SessionManagerObserver,
                               public chromeos::UsageTimeStateNotifier::Observer,
                               public chromeos::PowerManagerClient::Observer {
  public:
@@ -229,22 +226,9 @@ class DeviceStatusCollector : public StatusCollector,
   // next device status update.
   void SampleResourceUsage();
 
-  // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override;
-
   // chromeos::UsageTimeStateNotifier::Observer:
   void OnUsageTimeStateChange(
       chromeos::UsageTimeStateNotifier::UsageTimeState state) override;
-
-  // power_manager::PowerManagerClient::Observer:
-  void ScreenIdleStateChanged(
-      const power_manager::ScreenIdleState& state) override;
-
-  // power_manager::PowerManagerClient::Observer:
-  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-
-  // power_manager::PowerManagerClient::Observer:
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // power_manager::PowerManagerClient::Observer:
   void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
@@ -428,6 +412,9 @@ class DeviceStatusCollector : public StatusCollector,
   CrosHealthdDataFetcher cros_healthd_data_fetcher_;
 
   PowerStatusCallback power_status_callback_;
+
+  // Power manager client. Used to listen to power changed events.
+  chromeos::PowerManagerClient* const power_manager_;
 
   // Runtime probe client. Used to fetch hardware data.
   chromeos::RuntimeProbeClient* const runtime_probe_;

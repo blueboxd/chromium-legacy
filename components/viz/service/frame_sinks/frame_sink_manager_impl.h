@@ -35,7 +35,9 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
@@ -85,9 +87,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Binds |this| as a FrameSinkManagerImpl for |receiver| on |task_runner|. On
   // Mac |task_runner| will be the resize helper task runner. May only be called
   // once.
-  void BindAndSetClient(mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
-                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                        mojom::FrameSinkManagerClientPtr client);
+  void BindAndSetClient(
+      mojo::PendingReceiver<mojom::FrameSinkManager> receiver,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      mojo::PendingRemote<mojom::FrameSinkManagerClient> client);
 
   // Sets up a direction connection to |client| without using Mojo.
   void SetLocalClient(
@@ -334,20 +337,21 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   std::unique_ptr<VideoDetector> video_detector_;
 
   // There are three states this can be in:
-  //  1. Mojo client: |client_| will point to |client_ptr_|, the Mojo client,
+  //  1. Mojo client: |client_| will point to |client_remote_|, the Mojo client,
   //     and |ui_task_runner_| will not be used. Calls to OnFrameTokenChanged()
   //     will go through Mojo. This is the normal state.
   //  2. Local (directly connected) client, *with* task runner: |client_| will
-  //     point to the client, |client_ptr_| will be nullptr, and calls to
-  //     OnFrameTokenChanged() will be PostTasked using |ui_task_runner_|. Used
-  //     mostly for layout tests.
+  //     point to the client, |client_remote_| will not be bound to any remote
+  //     client, and calls to OnFrameTokenChanged() will be PostTasked using
+  //     |ui_task_runner_|. Used mostly for layout tests.
   //  3. Local (directly connected) client, *without* task runner: |client_|
-  //     will point to the client, |client_ptr_| and |ui_task_runner_| will be
-  //     nullptr, and calls to OnFrameTokenChanged() will be directly called
-  //     (without PostTask) on |client_|. Used for some unit tests.
+  //     will point to the client, |client_remote_| will not be bound to any
+  //     remote client and |ui_task_runner_| will be nullptr, and calls to
+  //     OnFrameTokenChanged() will be directly called (without PostTask) on
+  //     |client_|. Used for some unit tests.
   mojom::FrameSinkManagerClient* client_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_ = nullptr;
-  mojom::FrameSinkManagerClientPtr client_ptr_;
+  mojo::Remote<mojom::FrameSinkManagerClient> client_remote_;
   mojo::Receiver<mojom::FrameSinkManager> receiver_{this};
 
   base::ObserverList<FrameSinkObserver>::Unchecked observer_list_;

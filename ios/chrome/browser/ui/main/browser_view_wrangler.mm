@@ -61,6 +61,10 @@
   return self.coordinator.tabModel;
 }
 
+- (Browser*)browser {
+  return self.coordinator.browser;
+}
+
 - (ios::ChromeBrowserState*)browserState {
   return self.coordinator.viewController.browserState;
 }

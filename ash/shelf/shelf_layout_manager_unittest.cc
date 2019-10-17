@@ -1966,7 +1966,8 @@ TEST_P(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
   // list.
   StartScroll(start);
   UpdateScroll(-AppListView::kDragSnapToPeekingThreshold);
-  EndScroll(true /* is_fling */, -(AppListView::kDragVelocityThreshold + 10));
+  EndScroll(true /* is_fling */,
+            -(AppListView::kDragVelocityFromShelfThreshold + 10));
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
@@ -1976,19 +1977,21 @@ TEST_P(ShelfLayoutManagerTest, FlingUpOnShelfForAppList) {
   GetAppListTestHelper()->CheckVisibility(false);
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
 
-  // Fling down that exceeds the velocity threshold should close the app list.
+  // Fling down that exceeds the velocity threshold should go to peeking state.
   StartScroll(start);
   UpdateScroll(-AppListView::kDragSnapToPeekingThreshold);
-  EndScroll(true /* is_fling */, AppListView::kDragVelocityThreshold + 10);
+  EndScroll(true /* is_fling */,
+            AppListView::kDragVelocityFromShelfThreshold + 10);
   GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(false);
-  GetAppListTestHelper()->CheckState(ash::AppListViewState::kClosed);
+  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckState(ash::AppListViewState::kPeeking);
 
   // Fling the app list not exceed the velocity threshold, the state depends on
   // the drag amount.
   StartScroll(start);
   UpdateScroll(-(AppListView::kDragSnapToPeekingThreshold - 10));
-  EndScroll(true /* is_fling */, -(AppListView::kDragVelocityThreshold - 10));
+  EndScroll(true /* is_fling */,
+            -(AppListView::kDragVelocityFromShelfThreshold - 10));
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kPeeking);

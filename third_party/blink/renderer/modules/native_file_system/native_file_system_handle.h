@@ -42,6 +42,8 @@ class NativeFileSystemHandle : public ScriptWrappable,
   ScriptPromise requestPermission(ScriptState*,
                                   const FileSystemHandlePermissionDescriptor*);
 
+  // Grab a handle to a transfer token. This may return an invalid PendingRemote
+  // if the context is already destroyed.
   virtual mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
   Transfer() = 0;
 

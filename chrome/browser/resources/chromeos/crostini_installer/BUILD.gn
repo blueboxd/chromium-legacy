@@ -18,14 +18,10 @@ js_type_check("closure_compile") {
 }
 
 js_library("app") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/chromeos/crostini_installer/app.js",
-  ]
   deps = [
     ":browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":app_module" ]
 }
 
 js_library("browser_proxy") {

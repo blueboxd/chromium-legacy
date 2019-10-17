@@ -55,7 +55,7 @@ def _ParseArgs():
 def main():
   args = _ParseArgs()
   proguard_cmd = [
-      'java',
+      build_utils.JAVA_PATH,
       '-jar',
       args.r8_path,
       '--classfile',
@@ -105,7 +105,7 @@ def main():
       # Step 2: Expand inclusion list to all classes referenced by the .class
       # files of kept classes (non-recursive).
       main_dex_list_cmd = [
-          'java',
+          build_utils.JAVA_PATH,
           '-cp',
           args.dx_path,
           'com.android.multidex.MainDexListBuilder',

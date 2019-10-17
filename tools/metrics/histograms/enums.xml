@@ -6739,6 +6739,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Registration is a duplicate"/>
 </enum>
 
+<enum name="BooleanReloaded">
+  <int value="0" label="Didn't reload"/>
+  <int value="1" label="Reloaded"/>
+</enum>
+
 <enum name="BooleanRemoved">
   <int value="0" label="Not removed"/>
   <int value="1" label="Removed"/>
@@ -18319,6 +18324,7 @@ Called by update_net_error_codes.py.-->
   <int value="628" label="DeviceLoginScreenScreenMagnifierType"/>
   <int value="629" label="CorsMitigationList"/>
   <int value="630" label="CorsLegacyModeEnabled"/>
+  <int value="631" label="ExternalPrintServersWhitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -35429,6 +35435,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1633586675" label="TabModalJsDialog:enabled"/>
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
+  <int value="-1626110605" label="WebBundles:disabled"/>
   <int value="-1625881240" label="FullscreenExitUI:disabled"/>
   <int value="-1625777277"
       label="AutofillUpstreamEditableCardholderName:disabled"/>
@@ -36090,7 +36097,6 @@ from previous Chrome versions.
   <int value="-835331907" label="TabOutlinesInLowContrastThemes:disabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
-  <int value="-828612322" label="BundledHTTPExchanges:enabled"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
   <int value="-824199802" label="ContextualSearchSimplifiedServer:enabled"/>
   <int value="-823165021" label="MaterialDesignUserMenu:enabled"/>
@@ -36777,9 +36783,11 @@ from previous Chrome versions.
   <int value="79094339" label="VrLaunchIntents:enabled"/>
   <int value="79503461" label="disable-account-consistency"/>
   <int value="79595680" label="OmniboxTabSwitchSuggestions:enabled"/>
+  <int value="79729295" label="WebBundles:enabled"/>
   <int value="83422372"
       label="ChromeHomePersonalizedOmniboxSuggestions:enabled"/>
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
+  <int value="88412508" label="EnableCrOSActionRecorder:enabled"/>
   <int value="88437020" label="FeaturePolicy:enabled"/>
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
@@ -36867,6 +36875,7 @@ from previous Chrome versions.
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
   <int value="218890378" label="ManualSaving:disabled"/>
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
+  <int value="220418174" label="EnableCrOSActionRecorder:disabled"/>
   <int value="221212638" label="StartSurfaceAndroid:enabled"/>
   <int value="222184258"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
@@ -38239,7 +38248,6 @@ from previous Chrome versions.
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
   <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
-  <int value="2053273256" label="BundledHTTPExchanges:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2058148069" label="UseMessagesStagingUrl:enabled"/>
   <int value="2058283872" label="CCTModuleCache:disabled"/>
@@ -50280,6 +50288,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="22" label="DEFAULT_DPI"/>
   <int value="23" label="NON_DEFAULT_DPI"/>
   <int value="24" label="PIN"/>
+  <int value="25" label="FIT_TO_PAPER"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">
@@ -57448,21 +57457,26 @@ Called by update_net_trust_anchors.py.-->
   <int value="65546" label="Custom | UndisplayableExtension"/>
 <!-- Common errors for ReadVersion operation: (2 shiftleft 16) + Windows error -->
 
+  <int value="131078" label="ReadVersion | ERROR_INVALID_HANDLE"/>
   <int value="131181" label="ReadVersion | ERROR_BROKEN_PIPE"/>
   <int value="131306" label="ReadVersion | ERROR_MORE_DATA"/>
 <!-- Common errors for ReadRequestLength operation: (3 shiftleft 16) + Windows error -->
 
+  <int value="196614" label="ReadRequestLength | ERROR_INVALID_HANDLE"/>
   <int value="196717" label="ReadRequestLength | ERROR_BROKEN_PIPE"/>
   <int value="196842" label="ReadRequestLength | ERROR_MORE_DATA"/>
 <!-- Common errors for ReadRequest operation: (4 shiftleft 16) + Windows error -->
 
+  <int value="262150" label="ReadRequest | ERROR_INVALID_HANDLE"/>
   <int value="262253" label="ReadRequest | ERROR_BROKEN_PIPE"/>
   <int value="262378" label="ReadRequest | ERROR_MORE_DATA"/>
 <!-- Common error for WriteResponse operation: (5 shiftleft 16) + Windows error -->
 
+  <int value="327686" label="WriteResponse | ERROR_INVALID_HANDLE"/>
   <int value="327789" label="WriteResponse | ERROR_BROKEN_PIPE"/>
 <!-- Common error for WriteResponseLength operation: (6 shiftleft 16) + Windows error -->
 
+  <int value="393222" label="WriteResponseLength | ERROR_INVALID_HANDLE"/>
   <int value="393325" label="WriteResponseLength | ERROR_BROKEN_PIPE"/>
 </enum>
 
@@ -63469,6 +63483,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Omnibox"/>
   <int value="1" label="NTP"/>
   <int value="2" label="Search widget"/>
+  <int value="3" label="Tasks surface"/>
 </enum>
 
 <enum name="VPNDriver">

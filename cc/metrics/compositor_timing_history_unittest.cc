@@ -53,6 +53,7 @@ class CompositorTimingHistoryTest : public testing::Test {
 
   base::TimeTicks Now() { return now_; }
 
+  // TODO(xidachen): the composited_animations_count should just be 0.
   void DrawMainFrame(int advance_ms,
                      int composited_animations_count,
                      int main_thread_animations_count,
@@ -69,12 +70,13 @@ class CompositorTimingHistoryTest : public testing::Test {
     AdvanceNowBy(base::TimeDelta::FromMicroseconds(advance_ms));
     timing_history_.DidDraw(true, Now(), composited_animations_count,
                             main_thread_animations_count, current_frame_had_raf,
-                            next_frame_has_pending_raf);
+                            next_frame_has_pending_raf, false);
   }
 
   void DrawImplFrame(int advance_ms,
                      int composited_animations_count,
-                     int main_thread_animations_count) {
+                     int main_thread_animations_count,
+                     bool has_custom_property_animation) {
     timing_history_.WillBeginMainFrame(true, Now());
     timing_history_.BeginMainFrameStarted(Now());
     timing_history_.BeginMainFrameAborted();
@@ -83,7 +85,8 @@ class CompositorTimingHistoryTest : public testing::Test {
     timing_history_.WillDraw();
     AdvanceNowBy(base::TimeDelta::FromMicroseconds(advance_ms));
     timing_history_.DidDraw(false, Now(), composited_animations_count,
-                            main_thread_animations_count, false, false);
+                            main_thread_animations_count, false, false,
+                            has_custom_property_animation);
   }
 
  protected:
@@ -137,7 +140,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_Commit) {
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw(true, Now(), 0, 0, false, false);
+  timing_history_.DidDraw(true, Now(), 0, 0, false, false, false);
 
   EXPECT_EQ(begin_main_frame_queue_duration,
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());
@@ -188,7 +191,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   AdvanceNowBy(one_second);
   timing_history_.WillDraw();
   AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw(false, Now(), 0, 0, false, false);
+  timing_history_.DidDraw(false, Now(), 0, 0, false, false, false);
 
   EXPECT_EQ(base::TimeDelta(),
             timing_history_.BeginMainFrameQueueDurationCriticalEstimate());
@@ -417,10 +420,10 @@ TEST_F(CompositorTimingHistoryTest, InterFrameAnimationsNotReported) {
 TEST_F(CompositorTimingHistoryTest, AnimationsWithNewActiveTreeNotUsed) {
   base::HistogramTester histogram_tester;
 
-  DrawImplFrame(123, 1, 1);
+  DrawImplFrame(123, 1, 1, false);
   TestAnimationUMA(histogram_tester, 0, 0);
 
-  DrawImplFrame(456, 1, 0);
+  DrawImplFrame(456, 1, 0, false);
   TestAnimationUMA(histogram_tester, 1, 0);
   histogram_tester.ExpectBucketCount(
       "Scheduling.Renderer.DrawIntervalWithCompositedAnimations2", 456, 1);
@@ -430,7 +433,7 @@ TEST_F(CompositorTimingHistoryTest, AnimationsWithNewActiveTreeNotUsed) {
 
   // This frame verifies that we record that there is a composited animation,
   // so in the next frame when there is a composited animation, we report it.
-  DrawImplFrame(234, 1, 1);
+  DrawImplFrame(234, 1, 1, false);
   TestAnimationUMA(histogram_tester, 1, 0);
 
   // Even though the previous frame had no main thread animation, we report it
@@ -445,10 +448,35 @@ TEST_F(CompositorTimingHistoryTest, AnimationsWithNewActiveTreeNotUsed) {
   histogram_tester.ExpectBucketCount(
       "Scheduling.Renderer.DrawIntervalWithMainThreadAnimations2", 888, 1);
 
-  DrawImplFrame(123, 1, 0);
+  DrawImplFrame(123, 1, 0, false);
   TestAnimationUMA(histogram_tester, 3, 1);
   histogram_tester.ExpectBucketCount(
       "Scheduling.Renderer.DrawIntervalWithCompositedAnimations2", 123, 1);
+}
+
+TEST_F(CompositorTimingHistoryTest, CustomPropertyAnimations) {
+  base::HistogramTester histogram_tester;
+
+  DrawImplFrame(123, 1, 0, true);
+  TestAnimationUMA(histogram_tester, 0, 0);
+
+  DrawImplFrame(456, 1, 0, true);
+  TestAnimationUMA(histogram_tester, 1, 0);
+
+  histogram_tester.ExpectBucketCount(
+      "Scheduling.Renderer.DrawIntervalWithCompositedAnimations2", 456, 1);
+  histogram_tester.ExpectBucketCount(
+      "Scheduling.Renderer.DrawIntervalWithCustomPropertyAnimations2", 456, 1);
+
+  DrawImplFrame(1234, 1, 0, false);
+  DrawImplFrame(2345, 1, 0, true);
+  TestAnimationUMA(histogram_tester, 3, 0);
+  histogram_tester.ExpectBucketCount(
+      "Scheduling.Renderer.DrawIntervalWithCompositedAnimations2", 2345, 1);
+  // This impl frame does have custom property animation, but the previous impl
+  // frame doesn't, so we won't report it.
+  histogram_tester.ExpectBucketCount(
+      "Scheduling.Renderer.DrawIntervalWithCustomPropertyAnimations2", 2345, 0);
 }
 
 }  // namespace

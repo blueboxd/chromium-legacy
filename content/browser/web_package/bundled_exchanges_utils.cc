@@ -50,13 +50,13 @@ bool CanLoadAsTrustableBundledExchangesFile(const GURL& url) {
 }
 
 bool CanLoadAsBundledExchangesFile(const GURL& url) {
-  if (!base::FeatureList::IsEnabled(features::kBundledHTTPExchanges))
+  if (!base::FeatureList::IsEnabled(features::kWebBundles))
     return false;
   return IsSupprtedFileScheme(url);
 }
 
 bool CanLoadAsBundledExchanges(const GURL& url, const std::string& mime_type) {
-  if (!base::FeatureList::IsEnabled(features::kBundledHTTPExchanges))
+  if (!base::FeatureList::IsEnabled(features::kWebBundles))
     return false;
   // Currently loading bundled exchanges file from server response is not
   // implemented yet.
@@ -68,7 +68,7 @@ bool CanLoadAsBundledExchanges(const GURL& url, const std::string& mime_type) {
 bool GetBundledExchangesFileMimeTypeFromFile(const base::FilePath& path,
                                              std::string* mime_type) {
   DCHECK(mime_type);
-  if (!base::FeatureList::IsEnabled(features::kBundledHTTPExchanges))
+  if (!base::FeatureList::IsEnabled(features::kWebBundles))
     return false;
   if (path.Extension() != kBundledExchangesFileExtension)
     return false;

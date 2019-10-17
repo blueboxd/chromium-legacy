@@ -5,6 +5,8 @@
 package org.chromium.components.variations.firstrun;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,12 +32,11 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.text.ParseException;
+import java.util.Date;
 
 /**
  * Tests for VariationsSeedFetcher
@@ -43,8 +44,6 @@ import java.text.ParseException;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class VariationsSeedFetcherTest {
-    private static final String RFC_822_DATE = "Sat, 01 Jan 2000 00:00:00 GMT";
-
     private HttpURLConnection mConnection;
     private VariationsSeedFetcher mFetcher;
     private SharedPreferences mPrefs;
@@ -78,26 +77,32 @@ public class VariationsSeedFetcherTest {
      * @throws IOException
      */
     @Test
-    public void testFetchSeed() throws IOException, ParseException {
+    public void testFetchSeed() throws IOException {
         // Pretend we are on a background thread; set the UI thread looper to something other than
         // the current thread.
 
         when(mConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mConnection.getHeaderField("X-Seed-Signature")).thenReturn("signature");
         when(mConnection.getHeaderField("X-Country")).thenReturn("Nowhere Land");
-        when(mConnection.getHeaderField("Date")).thenReturn(RFC_822_DATE);
         when(mConnection.getHeaderField("IM")).thenReturn("gzip");
         when(mConnection.getInputStream())
                 .thenReturn(new ByteArrayInputStream(ApiCompatibilityUtils.getBytesUtf8("1234")));
 
+        long startTime = new Date().getTime();
         mFetcher.fetchSeed(sRestrict, sMilestone, sChannel);
+        long endTime = new Date().getTime();
 
         assertThat(mPrefs.getString(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_SIGNATURE, ""),
                 equalTo("signature"));
         assertThat(mPrefs.getString(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_COUNTRY, ""),
                 equalTo("Nowhere Land"));
-        assertThat(mPrefs.getLong(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_DATE, 0),
-                equalTo(SeedInfo.parseDateHeader(RFC_822_DATE)));
+        long seedDate = mPrefs.getLong(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_DATE, 0);
+        // We use *OrEqualTo comparisons here to account for when both points in time fall into the
+        // same tick of the clock.
+        assertThat("Seed date should be after the test start time", seedDate,
+                greaterThanOrEqualTo(startTime));
+        assertThat("Seed date should be before the test end time", seedDate,
+                lessThanOrEqualTo(endTime));
         assertTrue(mPrefs.getBoolean(
                 VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED, false));
         assertThat(mPrefs.getString(VariationsSeedBridge.VARIATIONS_FIRST_RUN_SEED_BASE64, ""),

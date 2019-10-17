@@ -28,9 +28,6 @@ js_type_check("welcome_files") {
 }
 
 js_library("landing_view") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/welcome/landing_view.js",
-  ]
   deps = [
     ":landing_view_proxy",
     ":navigation_behavior",
@@ -38,7 +35,6 @@ js_library("landing_view") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":landing_view_module" ]
 }
 
 js_library("landing_view_proxy") {
@@ -49,16 +45,12 @@ js_library("landing_view_proxy") {
 }
 
 js_library("signin_view") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/welcome/signin_view.js",
-  ]
   deps = [
     ":navigation_behavior",
     ":signin_view_proxy",
     ":welcome_browser_proxy",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  extra_deps = [ ":signin_view_module" ]
 }
 
 js_library("signin_view_proxy") {
@@ -76,9 +68,6 @@ js_library("navigation_behavior") {
 }
 
 js_library("welcome_app") {
-  sources = [
-    "$root_gen_dir/chrome/browser/resources/welcome/welcome_app.js",
-  ]
   deps = [
     ":navigation_behavior",
     ":welcome_browser_proxy",
@@ -89,7 +78,6 @@ js_library("welcome_app") {
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  extra_deps = [ ":welcome_app_module" ]
 }
 
 js_library("welcome_browser_proxy") {

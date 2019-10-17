@@ -1178,6 +1178,8 @@ jumbo_source_set("browser") {
     "media/media_devices_util.h",
     "media/media_experiment_manager.cc",
     "media/media_experiment_manager.h",
+    "media/media_interface_factory_holder.cc",
+    "media/media_interface_factory_holder.h",
     "media/media_interface_proxy.cc",
     "media/media_interface_proxy.h",
     "media/media_internals.cc",

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace cc {
 class UIResourceLayer;
@@ -25,11 +26,13 @@ class ContentViewRenderView;
 // Native side of TopControlsContainerView. Responsible for creating and
 // positioning the cc::Layer that contains an image of the contents of the
 // top-control.
-class TopControlsContainerView {
+class TopControlsContainerView : public content::WebContentsObserver {
  public:
-  TopControlsContainerView(content::WebContents* web_contents,
+  TopControlsContainerView(const base::android::JavaParamRef<jobject>&
+                               java_top_controls_container_view,
+                           content::WebContents* web_contents,
                            ContentViewRenderView* content_view_render_view);
-  ~TopControlsContainerView();
+  ~TopControlsContainerView() override;
 
   // Height needed to display the top-control.
   int GetTopControlsHeight();
@@ -69,8 +72,12 @@ class TopControlsContainerView {
       const base::android::JavaParamRef<jobject>& caller);
 
  private:
+  // WebContentsObserver:
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen,
+                                     bool will_cause_resize) override;
+
+  base::android::ScopedJavaGlobalRef<jobject> java_top_controls_container_view_;
   ContentViewRenderView* content_view_render_view_;
-  content::WebContents* web_contents_;
   int top_controls_resource_id_ = -1;
 
   // Layer containing showing the image for the top-controls. This is a sibling

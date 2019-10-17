@@ -286,32 +286,33 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
     return;
   }
 
-  if (!*member) {
-    // In theory, this should only need to assign a newly constructed Button to
-    // |*member|. DialogDelegate::UpdateButton(), and any overrides of that,
-    // should be responsible for the rest. TODO(tapted): When there is only
-    // MdTextButton, make it so. Note that some overrides may not always update
-    // the title (they should). See http://crbug.com/697303 .
-    const base::string16 title = delegate->GetDialogButtonLabel(type);
-    std::unique_ptr<LabelButton> button;
+  const bool is_default = delegate->GetDefaultDialogButton() == type &&
+                          (type != ui::DIALOG_BUTTON_CANCEL ||
+                           PlatformStyle::kDialogDefaultButtonCanBeCancel);
+  const base::string16 title = delegate->GetDialogButtonLabel(type);
 
-    const bool is_default = delegate->GetDefaultDialogButton() == type &&
-                            (type != ui::DIALOG_BUTTON_CANCEL ||
-                             PlatformStyle::kDialogDefaultButtonCanBeCancel);
-
-    button = is_default ? MdTextButton::CreateSecondaryUiBlueButton(this, title)
-                        : MdTextButton::CreateSecondaryUiButton(this, title);
-
-    const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
-        views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
-    button->SetMinSize(gfx::Size(minimum_width, 0));
-
-    button->SetGroup(kButtonGroup);
-
-    *member = button_row_container_->AddChildView(std::move(button));
+  if (*member) {
+    LabelButton* button = *member;
+    button->SetEnabled(delegate->IsDialogButtonEnabled(type));
+    button->SetIsDefault(is_default);
+    button->SetText(title);
+    return;
   }
 
-  delegate->UpdateButton(*member, type);
+  std::unique_ptr<LabelButton> button =
+      is_default ? MdTextButton::CreateSecondaryUiBlueButton(this, title)
+                 : MdTextButton::CreateSecondaryUiButton(this, title);
+
+  button->SetIsDefault(is_default);
+  button->SetEnabled(delegate->IsDialogButtonEnabled(type));
+
+  const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH);
+  button->SetMinSize(gfx::Size(minimum_width, 0));
+
+  button->SetGroup(kButtonGroup);
+
+  *member = button_row_container_->AddChildView(std::move(button));
 }
 
 int DialogClientView::GetExtraViewSpacing() const {

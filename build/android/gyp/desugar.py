@@ -31,7 +31,7 @@ def main():
   options.classpath = build_utils.ParseGnList(options.classpath)
 
   cmd = [
-      'java',
+      build_utils.JAVA_PATH,
       '-jar',
       options.desugar_jar,
       '--input',
@@ -46,7 +46,10 @@ def main():
     cmd += ['--bootclasspath_entry', path]
   for path in options.classpath:
     cmd += ['--classpath_entry', path]
-  build_utils.CheckOutput(cmd, print_stdout=False)
+  build_utils.CheckOutput(
+      cmd,
+      print_stdout=False,
+      stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 
   if options.depfile:
     build_utils.WriteDepfile(

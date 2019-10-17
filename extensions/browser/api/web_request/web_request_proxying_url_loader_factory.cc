@@ -98,6 +98,21 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
 }
 
+WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
+    WebRequestProxyingURLLoaderFactory* factory,
+    uint64_t request_id,
+    const network::ResourceRequest& request)
+    : factory_(factory),
+      request_(request),
+      original_initiator_(request.request_initiator),
+      request_id_(request_id),
+      proxied_loader_binding_(this),
+      proxied_client_binding_(this),
+      for_cors_preflight_(true),
+      has_any_extra_headers_listeners_(
+          ExtensionWebRequestEventRouter::GetInstance()
+              ->HasAnyExtraHeadersListener(factory_->browser_context_)) {}
+
 WebRequestProxyingURLLoaderFactory::InProgressRequest::~InProgressRequest() {
   // This is important to ensure that no outstanding blocking requests continue
   // to reference state owned by this object.
@@ -139,7 +154,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   current_request_uses_header_client_ =
       factory_->url_loader_header_client_receiver_.is_bound() &&
-      request_.url.SchemeIsHTTPOrHTTPS() && network_service_request_id_ != 0 &&
+      request_.url.SchemeIsHTTPOrHTTPS() &&
+      (for_cors_preflight_ || network_service_request_id_ != 0) &&
       ExtensionWebRequestEventRouter::GetInstance()
           ->HasExtraHeadersListenerForRequest(factory_->browser_context_,
                                               &info_.value());
@@ -157,6 +173,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
   if (current_request_uses_header_client_) {
     continuation = base::BindRepeating(
         &InProgressRequest::ContinueToStartRequest, weak_factory_.GetWeakPtr());
+  } else if (for_cors_preflight_) {
+    // In this case we do nothing because extensions should see nothing.
+    return;
   } else {
     continuation =
         base::BindRepeating(&InProgressRequest::ContinueToBeforeSendHeaders,
@@ -374,6 +393,15 @@ bool WebRequestProxyingURLLoaderFactory::IsForDownload() const {
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnLoaderCreated(
     mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
   header_client_receiver_.Bind(std::move(receiver));
+  if (for_cors_preflight_) {
+    // In this case we don't have |target_loader_| and
+    // |proxied_client_binding_|, and |receiver| is the only connection to the
+    // network service, so we observe mojo connection errors.
+    header_client_receiver_.set_disconnect_handler(base::BindOnce(
+        &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
+        weak_factory_.GetWeakPtr(),
+        network::URLLoaderCompletionStatus(net::ERR_FAILED)));
+  }
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnBeforeSendHeaders(
@@ -395,12 +423,19 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnHeadersReceived(
     OnHeadersReceivedCallback callback) {
   if (!current_request_uses_header_client_) {
     std::move(callback).Run(net::OK, base::nullopt, GURL());
+
+    if (for_cors_preflight_) {
+      // CORS preflight is supported only when "extraHeaders" is specified.
+      // Deletes |this|.
+      factory_->RemoveRequest(network_service_request_id_, request_id_);
+    }
     return;
   }
 
   on_headers_received_callback_ = std::move(callback);
   current_response_.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(headers);
+  current_response_.remote_endpoint = remote_endpoint;
   HandleResponseOrRedirectHeaders(
       base::BindOnce(&InProgressRequest::ContinueToHandleOverrideHeaders,
                      weak_factory_.GetWeakPtr()));
@@ -534,6 +569,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   }
 
   if (current_request_uses_header_client_ && !redirect_url_.is_empty()) {
+    if (for_cors_preflight_) {
+      // CORS preflight doesn't support redirect.
+      OnRequestError(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      return;
+    }
     HandleBeforeRequestRedirect();
     return;
   }
@@ -543,6 +583,13 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   if (header_client_receiver_.is_bound())
     header_client_receiver_.Resume();
+
+  if (for_cors_preflight_) {
+    // For CORS preflight requests, we have already started the request in
+    // the network service. We did block the request by blocking
+    // |header_client_receiver_|, which we unblocked right above.
+    return;
+  }
 
   if (!target_loader_.is_bound() && factory_->target_factory_.is_bound()) {
     // No extensions have cancelled us up to this point, so it's now OK to
@@ -710,8 +757,28 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       current_response_.headers = override_headers_;
     }
   }
+
+  if (for_cors_preflight_ && !redirect_url_.is_empty()) {
+    OnRequestError(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+    return;
+  }
+
   std::move(on_headers_received_callback_).Run(net::OK, headers, redirect_url_);
   override_headers_ = nullptr;
+
+  if (for_cors_preflight_) {
+    // If this is for CORS preflight, there is no associated client. We notify
+    // the completion here, and deletes |this|.
+    info_->AddResponseInfoFromResourceResponse(current_response_);
+    ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
+        factory_->browser_context_, &info_.value(), net::OK);
+    ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
+        factory_->browser_context_, &info_.value(), net::OK);
+
+    // Deletes |this|.
+    factory_->RemoveRequest(network_service_request_id_, request_id_);
+    return;
+  }
 
   if (proxied_client_binding_)
     proxied_client_binding_.ResumeIncomingMethodCallProcessing();
@@ -719,6 +786,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     ContinueToResponseStarted(int error_code) {
+  DCHECK(!for_cors_preflight_);
   if (error_code != net::OK) {
     OnRequestError(network::URLLoaderCompletionStatus(error_code));
     return;
@@ -815,12 +883,15 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     }
 
     if (result == net::ERR_IO_PENDING) {
-      // One or more listeners is blocking, so the request must be paused until
-      // they respond. |continuation| above will be invoked asynchronously to
-      // continue or cancel the request.
-      //
-      // We pause the binding here to prevent further client message processing.
-      proxied_client_binding_.PauseIncomingMethodCallProcessing();
+      if (proxied_client_binding_.is_bound()) {
+        // One or more listeners is blocking, so the request must be paused
+        // until they respond. |continuation| above will be invoked
+        // asynchronously to continue or cancel the request.
+        //
+        // We pause the binding here to prevent further client message
+        // processing.
+        proxied_client_binding_.PauseIncomingMethodCallProcessing();
+      }
       return;
     }
 
@@ -832,7 +903,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
   if (!request_completed_) {
-    target_client_->OnComplete(status);
+    if (target_client_)
+      target_client_->OnComplete(status);
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
         factory_->browser_context_, &info_.value(), true /* started */,
         status.error_code);
@@ -983,7 +1055,22 @@ void WebRequestProxyingURLLoaderFactory::OnLoaderCreated(
 void WebRequestProxyingURLLoaderFactory::OnLoaderForCorsPreflightCreated(
     const network::ResourceRequest& request,
     mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver) {
-  // TODO(yhirano): Implement this.
+  // Please note that the URLLoader is now starting, without waiting for
+  // additional signals from here. The URLLoader will be blocked before
+  // sending HTTP request headers (TrustedHeaderClient.OnBeforeSendHeaders),
+  // but the connection set up will be done before that. This is acceptable from
+  // Web Request API because the extension has already allowed to set up
+  // a connection to the same URL (i.e., the actual request), and distinguishing
+  // two connections for the actual request and the preflight request before
+  // sending request headers is very difficult.
+  const uint64_t web_request_id = request_id_generator_->Generate();
+
+  auto result = requests_.insert(std::make_pair(
+      web_request_id,
+      std::make_unique<InProgressRequest>(this, web_request_id, request)));
+
+  result.first->second->OnLoaderCreated(std::move(receiver));
+  result.first->second->Restart();
 }
 
 void WebRequestProxyingURLLoaderFactory::HandleAuthRequest(

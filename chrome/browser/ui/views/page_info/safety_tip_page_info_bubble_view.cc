@@ -32,6 +32,25 @@
 
 using security_state::SafetyTipStatus;
 
+namespace {
+
+int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status) {
+  switch (safety_tip_status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION;
+    case security_state::SafetyTipStatus::kLookalike:
+      return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION;
+    case security_state::SafetyTipStatus::kBadKeyword:
+    case security_state::SafetyTipStatus::kUnknown:
+    case security_state::SafetyTipStatus::kNone:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION;
+}
+
+}  // namespace
+
 SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
     views::View* anchor_view,
     const gfx::Rect& anchor_rect,
@@ -91,7 +110,15 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   bubble_col_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                             1.0, views::GridLayout::USE_PREF, 0, 0);
 
-  // TODO(crbug/996731): Add banner once available. See crrev/c/1816805/7.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::ImageSkia* image =
+      rb.GetNativeImageNamed(GetSafetyTipBannerId(safety_tip_status))
+          .ToImageSkia();
+  auto image_view = std::make_unique<NonAccessibleImageView>();
+  image_view->SetImage(*image);
+  views::BubbleFrameView* frame_view = GetBubbleFrameView();
+  CHECK(frame_view);
+  frame_view->SetHeaderView(std::move(image_view));
 
   auto bottom_view = std::make_unique<views::View>();
   views::GridLayout* bottom_layout =

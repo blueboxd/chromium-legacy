@@ -134,8 +134,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
-  void OnDatabaseOpened(leveldb::mojom::DatabaseError status);
-  void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
+  void OnDatabaseOpened(leveldb::Status status);
+  void OnGotDatabaseVersion(leveldb::Status status,
                             const std::vector<uint8_t>& value);
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);
@@ -152,14 +152,14 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // directly from that function, or through |on_database_open_callbacks_|.
   void RetrieveStorageUsage(GetStorageUsageCallback callback);
   void OnGotMetaData(GetStorageUsageCallback callback,
-                     leveldb::mojom::DatabaseError status,
+                     leveldb::Status status,
                      std::vector<leveldb::mojom::KeyValuePtr> data);
 
   void OnGotStorageUsageForShutdown(std::vector<StorageUsageInfo> usage);
-  void OnShutdownComplete(leveldb::mojom::DatabaseError error);
+  void OnShutdownComplete(leveldb::Status status);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_area_count);
-  void OnCommitResult(leveldb::mojom::DatabaseError error);
+  void OnCommitResult(leveldb::Status status);
 
   // These values are written to logs.  New enum values can be added, but
   // existing enums must never be renumbered or deleted and reused.

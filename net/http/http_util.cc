@@ -386,8 +386,7 @@ bool HttpUtil::ParseRetryAfterHeader(const std::string& retry_after_string,
 namespace {
 
 // A header string containing any of the following fields will cause
-// an error. The list comes from the XMLHttpRequest standard.
-// https://fetch.spec.whatwg.org/#forbidden-header-name
+// an error. The list comes from the fetch standard.
 const char* const kForbiddenHeaderFields[] = {
     "accept-charset",
     "accept-encoding",

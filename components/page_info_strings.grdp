@@ -424,7 +424,7 @@
           You could lose access to your Google Account. Chrome recommends changing your password now. You'll be asked to sign in.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED" desc="A short paragraph explaining to a Chrome user that they have reused their saved password on the current website.">
-          Chrome has detected that you have just entered your password into a site that is suspicious. Please reset your password now!
+          You just entered your password on a deceptive site. Chrome recommends changing your password now.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC" desc="A short paragraph explaining to a Chrome sync user that they have reused their Google password on the current website.">
           Chrome can help you protect your Google Account and change your password.
@@ -444,8 +444,7 @@
           You could lose access to your Google Account. Chromium recommends changing your password now. You'll be asked to sign in.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED" desc="A short paragraph explaining to a Chromium user that they have reused their saved password on the current website.">
-          Chromium has detected that you have just entered your password into a site that is
-          suspicious. Please reset your password now!
+          You just entered your password on a deceptive site. Chromium recommends changing your password now.
         </message>
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC" desc="A short paragraph explaining to a Chrome sync user that they have reused their Google password on the current website.">
           Chromium can help you protect your Google Account and change your password.
@@ -471,9 +470,6 @@
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="In Title Case: The string used in the page info ignore password warning button.">
           Ignore
         </message>
-        <message name="IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON" desc="In Title Case: The string used in the page info dismiss password warning button.">
-          Dismiss
-        </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON" desc="The string used in the page info change password button.">
@@ -484,9 +480,6 @@
         </message>
         <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="The string used in the page info ignore password warning button.">
           Ignore
-        </message>
-        <message name="IDS_PAGE_INFO_DISMISS_PASSWORD_WARNING_BUTTON" desc="The string used in the page info dismiss password warning button.">
-          Dismiss
         </message>
        </if>
       <message name="IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON" desc="The string used in the page info whitelist password reuse button.">

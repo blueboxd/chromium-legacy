@@ -287,9 +287,9 @@ Process LaunchProcess(const string16& cmdline,
       << "job. https://crbug.com/820996";
   if (options.as_user) {
     flags |= CREATE_UNICODE_ENVIRONMENT;
-    void* enviroment_block = nullptr;
+    void* environment_block = nullptr;
 
-    if (!CreateEnvironmentBlock(&enviroment_block, options.as_user, FALSE)) {
+    if (!CreateEnvironmentBlock(&environment_block, options.as_user, FALSE)) {
       DPLOG(ERROR);
       return Process();
     }
@@ -300,9 +300,9 @@ Process LaunchProcess(const string16& cmdline,
 
     BOOL launched = CreateProcessAsUser(
         options.as_user, nullptr, as_writable_wcstr(writable_cmdline), nullptr,
-        nullptr, inherit_handles, flags, enviroment_block, current_directory,
+        nullptr, inherit_handles, flags, environment_block, current_directory,
         startup_info, &temp_process_info);
-    DestroyEnvironmentBlock(enviroment_block);
+    DestroyEnvironmentBlock(environment_block);
     if (!launched) {
       DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
                    << std::endl;

@@ -37,7 +37,6 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
   ~ConfirmBubbleViews() override;
 
   // views::DialogDelegate implementation.
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;

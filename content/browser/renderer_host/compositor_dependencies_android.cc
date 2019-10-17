@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/compositor_dependencies_android.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -100,13 +102,15 @@ void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
   mojo::PendingReceiver<viz::mojom::FrameSinkManager>
       frame_sink_manager_receiver =
           frame_sink_manager.InitWithNewPipeAndPassReceiver();
-  viz::mojom::FrameSinkManagerClientPtr frame_sink_manager_client;
-  viz::mojom::FrameSinkManagerClientRequest frame_sink_manager_client_request =
-      mojo::MakeRequest(&frame_sink_manager_client);
+  mojo::PendingRemote<viz::mojom::FrameSinkManagerClient>
+      frame_sink_manager_client;
+  mojo::PendingReceiver<viz::mojom::FrameSinkManagerClient>
+      frame_sink_manager_client_receiver =
+          frame_sink_manager_client.InitWithNewPipeAndPassReceiver();
 
   // Setup HostFrameSinkManager with interface endpoints.
   host_frame_sink_manager_.BindAndSetManager(
-      std::move(frame_sink_manager_client_request),
+      std::move(frame_sink_manager_client_receiver),
       base::ThreadTaskRunnerHandle::Get(), std::move(frame_sink_manager));
 
   // Set up a callback to automatically re-connect if we lose our
@@ -120,7 +124,7 @@ void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
   pending_connect_viz_on_io_thread_ = base::BindOnce(
       &CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread,
       std::move(frame_sink_manager_receiver),
-      frame_sink_manager_client.PassInterface());
+      std::move(frame_sink_manager_client));
 }
 
 cc::TaskGraphRunner* CompositorDependenciesAndroid::GetTaskGraphRunner() {
@@ -147,7 +151,7 @@ void CompositorDependenciesAndroid::TryEstablishVizConnectionIfNeeded() {
 // static
 void CompositorDependenciesAndroid::ConnectVizFrameSinkManagerOnIOThread(
     mojo::PendingReceiver<viz::mojom::FrameSinkManager> receiver,
-    viz::mojom::FrameSinkManagerClientPtrInfo client) {
+    mojo::PendingRemote<viz::mojom::FrameSinkManagerClient> client) {
   auto* gpu_process_host = GpuProcessHost::Get();
   if (!gpu_process_host)
     return;

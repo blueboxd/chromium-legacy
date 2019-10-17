@@ -27,20 +27,25 @@ class ANIMATION_EXPORT AnimationRunner {
   virtual ~AnimationRunner();
 
   // Sets the provided |step| callback, then calls OnStart() with the provided
-  // |min_interval| to allow the subclass to actually begin animating.
-  // Subclasses are expected to call Step() periodically to drive the animation.
+  // |min_interval| and |elapsed| time to allow the subclass to actually begin
+  // animating. Subclasses are expected to call Step() periodically to drive the
+  // animation.
   void Start(base::TimeDelta min_interval,
+             base::TimeDelta elapsed,
              base::RepeatingCallback<void(base::TimeTicks)> step);
 
   // Called when subclasses don't need to call Step() anymore.
   virtual void Stop() = 0;
+
+  bool step_is_null_for_testing() const { return step_.is_null(); }
 
  protected:
   AnimationRunner();
 
   // Called when subclasses should start calling Step() periodically to
   // drive the animation.
-  virtual void OnStart(base::TimeDelta min_interval) = 0;
+  virtual void OnStart(base::TimeDelta min_interval,
+                       base::TimeDelta elapsed) = 0;
 
   // Advances the animation based on |tick|.
   void Step(base::TimeTicks tick);

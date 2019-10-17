@@ -1085,14 +1085,14 @@ TEST(VariationsSeedStoreTest, LastFetchTime_DistinctSeeds) {
   prefs.SetTime(prefs::kVariationsLastFetchTime, WrapTime(1));
   prefs.SetTime(prefs::kVariationsSafeSeedFetchTime, WrapTime(0));
 
-  base::Time start_time = base::Time::Now();
+  base::Time start_time = WrapTime(10);
   TestVariationsSeedStore seed_store(&prefs);
-  seed_store.RecordLastFetchTime();
+  seed_store.RecordLastFetchTime(WrapTime(11));
 
   // Verify that the last fetch time was updated.
   const base::Time last_fetch_time =
       prefs.GetTime(prefs::kVariationsLastFetchTime);
-  EXPECT_NE(WrapTime(1), last_fetch_time);
+  EXPECT_EQ(WrapTime(11), last_fetch_time);
   EXPECT_GE(last_fetch_time, start_time);
 
   // Verify that the safe seed's fetch time was *not* updated.
@@ -1108,14 +1108,14 @@ TEST(VariationsSeedStoreTest, LastFetchTime_IdenticalSeeds) {
   prefs.SetTime(prefs::kVariationsLastFetchTime, WrapTime(1));
   prefs.SetTime(prefs::kVariationsSafeSeedFetchTime, WrapTime(0));
 
-  base::Time start_time = base::Time::Now();
+  base::Time start_time = WrapTime(10);
   TestVariationsSeedStore seed_store(&prefs);
-  seed_store.RecordLastFetchTime();
+  seed_store.RecordLastFetchTime(WrapTime(11));
 
   // Verify that the last fetch time was updated.
   const base::Time last_fetch_time =
       prefs.GetTime(prefs::kVariationsLastFetchTime);
-  EXPECT_NE(WrapTime(1), last_fetch_time);
+  EXPECT_EQ(WrapTime(11), last_fetch_time);
   EXPECT_GE(last_fetch_time, start_time);
 
   // Verify that the safe seed's fetch time *was* also updated.

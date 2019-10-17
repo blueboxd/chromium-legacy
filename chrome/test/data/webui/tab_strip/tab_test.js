@@ -5,12 +5,15 @@
 import 'chrome://tab-strip/tab.js';
 
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
+import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabNetworkState, TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 
+import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('Tab', function() {
   let testTabsApiProxy;
+  let testTabStripEmbedderProxy;
   let tabElement;
 
   const tab = {
@@ -21,6 +24,9 @@ suite('Tab', function() {
 
   setup(() => {
     document.body.innerHTML = '';
+
+    testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
+    TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
 
     testTabsApiProxy = new TestTabsApiProxy();
     TabsApiProxy.instance_ = testTabsApiProxy;
@@ -251,9 +257,15 @@ suite('Tab', function() {
     tabElement.dispatchEvent(event);
 
     const contextMenuArgs =
-        await testTabsApiProxy.whenCalled('showTabContextMenu');
+        await testTabStripEmbedderProxy.whenCalled('showTabContextMenu');
     assertEquals(contextMenuArgs[0], tabElement.tab.id);
     assertEquals(contextMenuArgs[1], 1);
     assertEquals(contextMenuArgs[2], 2);
+  });
+
+  test('activating closes WebUI container', () => {
+    assertEquals(testTabStripEmbedderProxy.getCallCount('closeContainer'), 0);
+    tabElement.click();
+    assertEquals(testTabStripEmbedderProxy.getCallCount('closeContainer'), 1);
   });
 });

@@ -139,20 +139,18 @@ RegisteredTaskSource PriorityQueue::PopTaskSource() {
 }
 
 RegisteredTaskSource PriorityQueue::RemoveTaskSource(
-    scoped_refptr<TaskSource> task_source) {
-  DCHECK(task_source);
-
+    const TaskSource& task_source) {
   if (IsEmpty())
     return nullptr;
 
-  const HeapHandle heap_handle = task_source->heap_handle();
+  const HeapHandle heap_handle = task_source.heap_handle();
   if (!heap_handle.IsValid())
     return nullptr;
 
   TaskSourceAndSortKey& task_source_and_sort_key =
       const_cast<PriorityQueue::TaskSourceAndSortKey&>(
           container_.at(heap_handle));
-  DCHECK_EQ(task_source_and_sort_key.task_source().get(), task_source);
+  DCHECK_EQ(task_source_and_sort_key.task_source().get(), &task_source);
   RegisteredTaskSource registered_task_source =
       task_source_and_sort_key.take_task_source();
 

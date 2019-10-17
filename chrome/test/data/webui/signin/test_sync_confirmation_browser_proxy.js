@@ -38,6 +38,6 @@ export class TestSyncConfirmationBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   requestAccountImage() {
-    // Don't request image in the test browser proxy.
+    this.methodCalled('requestAccountImage');
   }
 }

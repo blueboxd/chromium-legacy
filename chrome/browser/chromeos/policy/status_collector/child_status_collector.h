@@ -21,10 +21,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/usage_time_state_notifier.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "components/session_manager/core/session_manager_observer.h"
-#include "ui/base/idle/idle.h"
 
 namespace chromeos {
 namespace system {
@@ -34,10 +31,6 @@ class StatisticsProvider;
 
 namespace user_manager {
 class User;
-}
-
-namespace session_manager {
-class SessionManager;
 }
 
 class PrefService;
@@ -52,9 +45,7 @@ class ChildStatusCollectorState;
 // itself (e.g. OS version). Doesn't include anything related to other users on
 // the device.
 class ChildStatusCollector : public StatusCollector,
-                             public session_manager::SessionManagerObserver,
-                             public chromeos::UsageTimeStateNotifier::Observer,
-                             public chromeos::PowerManagerClient::Observer {
+                             public chromeos::UsageTimeStateNotifier::Observer {
  public:
   // Passed into asynchronous mojo interface for communicating with Android.
   using AndroidStatusReceiver =
@@ -89,6 +80,8 @@ class ChildStatusCollector : public StatusCollector,
   bool ShouldReportHardwareStatus() const override;
 
   // How often, in seconds, to poll to see if the user is idle.
+  // Note: This in only used in tests and not referenced in .cc. It should
+  // probably be moved.
   static const unsigned int kIdlePollIntervalSeconds = 30;
 
   // Returns the amount of time the child has used so far today. If there is no
@@ -96,22 +89,9 @@ class ChildStatusCollector : public StatusCollector,
   base::TimeDelta GetActiveChildScreenTime();
 
  protected:
-  // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override;
-
   // chromeos::UsageTimeStateNotifier::Observer:
   void OnUsageTimeStateChange(
       chromeos::UsageTimeStateNotifier::UsageTimeState state) override;
-
-  // power_manager::PowerManagerClient::Observer:
-  void ScreenIdleStateChanged(
-      const power_manager::ScreenIdleState& state) override;
-
-  // power_manager::PowerManagerClient::Observer:
-  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-
-  // power_manager::PowerManagerClient::Observer:
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // Updates the child's active time.
   void UpdateChildUsageTime();
@@ -157,9 +137,6 @@ class ChildStatusCollector : public StatusCollector,
 
   // Mainly used to store activity periods for reporting. Not owned.
   PrefService* const pref_service_;
-
-  // The last time an idle state check was performed.
-  base::Time last_idle_check_;
 
   // The last time an active state check was performed.
   base::Time last_active_check_;

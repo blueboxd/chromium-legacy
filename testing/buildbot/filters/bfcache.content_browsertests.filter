@@ -55,11 +55,6 @@
 # happen when the BackForwardCache is used to store the old document.
 -RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
 
-# FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
-# In content::RenderFrameProxy::OnSetFrameOwnerProperties()
-# https://crbug.com/999849
--WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache*
-
 # Histogram "PrefetchedSignedExchangeCache.Count" is recorded when the document
 # in the RenderFrameHost is replaced, or when the RenderFrameHost is deleted.
 # With the BackForwardCache, the RenderFrameHost is not deleted, so the

@@ -263,9 +263,12 @@ class CORE_EXPORT FrameLoader final {
   void TakeObjectSnapshot() const;
 
   // Commits the given |document_loader|.
-  void CommitDocumentLoader(DocumentLoader* document_loader,
-                            const base::Optional<Document::UnloadEventTiming>&,
-                            bool dispatch_did_commit_load);
+  void CommitDocumentLoader(
+      DocumentLoader* document_loader,
+      const base::Optional<Document::UnloadEventTiming>&,
+      bool dispatch_did_start,
+      base::OnceClosure call_before_attaching_new_document,
+      bool dispatch_did_commit);
 
   LocalFrameClient* Client() const;
 

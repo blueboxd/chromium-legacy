@@ -17,7 +17,7 @@ namespace test {
 namespace ios {
 
 const NSTimeInterval kSpinDelaySeconds = 0.01;
-const NSTimeInterval kWaitForJSCompletionTimeout = 4.0;
+const NSTimeInterval kWaitForJSCompletionTimeout = 6.0;
 const NSTimeInterval kWaitForUIElementTimeout = 4.0;
 const NSTimeInterval kWaitForDownloadTimeout = 10.0;
 const NSTimeInterval kWaitForPageLoadTimeout = 10.0;

@@ -311,6 +311,13 @@ size_t Animation::TickingKeyframeModelsCount() const {
   return count;
 }
 
+bool Animation::AffectsCustomProperty() const {
+  for (const auto& keyframe_effect : keyframe_effects_)
+    if (keyframe_effect->AffectsCustomProperty())
+      return true;
+  return false;
+}
+
 void Animation::SetNeedsCommit() {
   DCHECK(animation_host_);
   animation_host_->SetNeedsCommit();

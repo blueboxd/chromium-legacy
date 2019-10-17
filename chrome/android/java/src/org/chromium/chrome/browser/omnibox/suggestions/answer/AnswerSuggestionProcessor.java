@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.DrawableRes;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
@@ -17,10 +19,9 @@ import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
-import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionViewProperties.AnswerIcon;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.components.omnibox.AnswerType;
 import org.chromium.components.omnibox.SuggestionAnswer;
@@ -32,14 +33,13 @@ import java.util.List;
 import java.util.Map;
 
 /** A class that handles model and view creation for the most commonly used omnibox suggestion. */
-public class AnswerSuggestionProcessor implements SuggestionProcessor {
+public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     private static final int MAX_CACHE_SIZE = 500 * ConversionUtils.BYTES_PER_KILOBYTE;
-
     private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
-    private ImageFetcher mImageFetcher;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
+    private ImageFetcher mImageFetcher;
 
     /**
      * @param context An Android context.
@@ -47,6 +47,7 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
      */
     public AnswerSuggestionProcessor(Context context, SuggestionHost suggestionHost,
             UrlBarEditingTextStateProvider editingTextProvider) {
+        super(context, suggestionHost);
         mContext = context;
         mSuggestionHost = suggestionHost;
         mPendingAnswerRequestUrls = new HashMap<>();
@@ -82,11 +83,8 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        SuggestionViewDelegate delegate =
-                mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
-
-        setStateForNewSuggestion(model, suggestion, delegate);
-        maybeFetchAnswerIcon(suggestion, model);
+        super.populateModel(suggestion, model, position);
+        setStateForSuggestion(model, suggestion);
     }
 
     @Override
@@ -114,7 +112,15 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         // https://cs.chromium.org/Omnibox.SuggestionUsed.AnswerInSuggest
     }
 
-    private void maybeFetchAnswerIcon(OmniboxSuggestion suggestion, PropertyModel model) {
+    /**
+     * Specify ImageFetcher instance to be used for testing purposes.
+     * TODO(ender): Create fetcher instance in AutocompleteMediator and pass it to the constructor.
+     */
+    void setImageFetcherForTesting(ImageFetcher fetcher) {
+        mImageFetcher = fetcher;
+    }
+
+    private void maybeFetchAnswerIcon(PropertyModel model, OmniboxSuggestion suggestion) {
         ThreadUtils.assertOnUiThread();
 
         // Attempting to fetch answer data before we have a profile to request it for.
@@ -145,13 +151,19 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         mImageFetcher.fetchImage(
                 url, ImageFetcher.ANSWER_SUGGESTIONS_UMA_CLIENT_NAME, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();
-
+                    // Remove models for the URL ahead of all the checks to ensure we
+                    // do not keep them around waiting in case image fetch failed.
                     List<PropertyModel> currentModels = mPendingAnswerRequestUrls.remove(url);
+                    if (currentModels == null || bitmap == null) return;
+
                     boolean didUpdate = false;
                     for (int i = 0; i < currentModels.size(); i++) {
                         PropertyModel currentModel = currentModels.get(i);
                         if (!mSuggestionHost.isActiveModel(currentModel)) continue;
-                        model.set(AnswerSuggestionViewProperties.ANSWER_IMAGE, bitmap);
+                        setSuggestionDrawableState(currentModel,
+                                SuggestionDrawableState.Builder.forBitmap(bitmap)
+                                        .setLarge(true)
+                                        .build());
                         didUpdate = true;
                     }
                     if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
@@ -161,16 +173,10 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
     /**
      * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
      */
-    private void setStateForNewSuggestion(
-            PropertyModel model, OmniboxSuggestion suggestion, SuggestionViewDelegate delegate) {
+    private void setStateForSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
         SuggestionAnswer answer = suggestion.getAnswer();
         AnswerText[] details = AnswerTextNewLayout.from(
                 mContext, suggestion, mUrlBarEditingTextProvider.getTextWithoutAutocomplete());
-
-        model.set(AnswerSuggestionViewProperties.DELEGATE, delegate);
-
-        model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_SIZE, details[0].mHeightSp);
-        model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_SIZE, details[1].mHeightSp);
 
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_TEXT, details[0].mText);
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_TEXT, details[1].mText);
@@ -183,43 +189,49 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].mMaxLines);
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].mMaxLines);
 
-        @AnswerIcon
-        int icon = AnswerIcon.UNDEFINED;
+        setSuggestionDrawableState(model,
+                SuggestionDrawableState.Builder
+                        .forDrawableRes(mContext, getSuggestionIcon(suggestion))
+                        .setLarge(true)
+                        .build());
 
+        maybeFetchAnswerIcon(model, suggestion);
+    }
+
+    /**
+     * Get default suggestion icon for supplied suggestion.
+     */
+    @DrawableRes
+    int getSuggestionIcon(OmniboxSuggestion suggestion) {
+        SuggestionAnswer answer = suggestion.getAnswer();
         if (answer != null) {
             switch (answer.getType()) {
                 case AnswerType.DICTIONARY:
-                    icon = AnswerIcon.DICTIONARY;
-                    break;
+                    return R.drawable.ic_book_round;
                 case AnswerType.FINANCE:
-                    icon = AnswerIcon.FINANCE;
-                    break;
+                    return R.drawable.ic_swap_vert_round;
                 case AnswerType.KNOWLEDGE_GRAPH:
-                    icon = AnswerIcon.KNOWLEDGE;
-                    break;
+                    return R.drawable.ic_google_round;
                 case AnswerType.SUNRISE:
-                    icon = AnswerIcon.SUNRISE;
-                    break;
+                    return R.drawable.ic_wb_sunny_round;
                 case AnswerType.TRANSLATION:
-                    icon = AnswerIcon.TRANSLATION;
-                    break;
+                    return R.drawable.logo_translate_round;
                 case AnswerType.WEATHER:
-                    icon = AnswerIcon.WEATHER;
-                    break;
+                    return R.drawable.logo_partly_cloudy;
                 case AnswerType.WHEN_IS:
-                    icon = AnswerIcon.EVENT;
-                    break;
+                    return R.drawable.ic_event_round;
                 case AnswerType.CURRENCY:
-                    icon = AnswerIcon.CURRENCY;
-                    break;
+                    return R.drawable.ic_loop_round;
                 case AnswerType.SPORTS:
-                    icon = AnswerIcon.SPORTS;
+                    return R.drawable.ic_google_round;
+                default:
+                    assert false : "Unsupported answer type";
+                    break;
             }
         } else {
             assert suggestion.getType() == OmniboxSuggestionType.CALCULATOR;
-            icon = AnswerIcon.CALCULATOR;
+            return R.drawable.ic_equals_sign_round;
         }
-
-        model.set(AnswerSuggestionViewProperties.ANSWER_ICON_TYPE, icon);
+        return 0;
     }
 }

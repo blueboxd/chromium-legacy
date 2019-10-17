@@ -277,6 +277,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
+  // Returns the target bounds of |window_|. Same as |target_bounds_|, with some
+  // insets.
+  gfx::RectF GetWindowTargetBoundsWithInsets() const;
+
   // Functions to be called back when their associated animations complete.
   void OnWindowCloseAnimationCompleted();
   void OnItemSpawnedAnimationCompleted();

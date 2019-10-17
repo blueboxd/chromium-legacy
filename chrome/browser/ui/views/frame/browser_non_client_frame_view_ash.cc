@@ -667,11 +667,7 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   if (immersive_mode_controller->IsEnabled())
     return immersive_mode_controller->IsRevealed();
 
-  if (frame()->IsFullscreen())
-    return false;
-
-  // Do not paint for V1 apps in overview mode.
-  return browser_view()->IsBrowserTypeNormal() || !IsInOverviewMode();
+  return !frame()->IsFullscreen();
 }
 
 void BrowserNonClientFrameViewAsh::OnAddedToOrRemovedFromOverview() {
@@ -679,14 +675,6 @@ void BrowserNonClientFrameViewAsh::OnAddedToOrRemovedFromOverview() {
   caption_button_container_->SetVisible(should_show_caption_buttons);
   if (web_app_frame_toolbar())
     web_app_frame_toolbar()->SetVisible(should_show_caption_buttons);
-
-  // The entire frame should be repainted for v1 apps, since its visibility can
-  // change (see also ShouldPaint()). Do not invoke this on normal browser
-  // windows since it does not have to repaint frame except for the caption
-  // buttons and repainting might cause stuttering of the animation. See
-  // https://crbug.com/949227.
-  if (!browser_view()->IsBrowserTypeNormal())
-    SchedulePaint();
 }
 
 std::unique_ptr<ash::FrameHeader>

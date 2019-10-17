@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import android.content.Context;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.IdRes;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -58,5 +59,12 @@ class DecoratedSuggestionView extends SimpleHorizontalLayoutView {
     @Override
     public boolean isFocused() {
         return super.isFocused() || (isSelected() && !isInTouchMode());
+    }
+
+    <ViewType extends View> ViewType findContentView(@IdRes int id) {
+        if (mContentView == null) {
+            return null;
+        }
+        return mContentView.findViewById(id);
     }
 }

@@ -98,15 +98,9 @@ base::Optional<std::string> StatusCollector::GetBootMode(
   return base::nullopt;
 }
 
-StatusCollector::StatusCollector(
-    chromeos::system::StatisticsProvider* provider,
-    chromeos::CrosSettings* cros_settings,
-    chromeos::PowerManagerClient* power_manager,
-    session_manager::SessionManager* session_manager)
-    : statistics_provider_(provider),
-      cros_settings_(cros_settings),
-      power_manager_(power_manager),
-      session_manager_(session_manager) {}
+StatusCollector::StatusCollector(chromeos::system::StatisticsProvider* provider,
+                                 chromeos::CrosSettings* cros_settings)
+    : statistics_provider_(provider), cros_settings_(cros_settings) {}
 
 StatusCollector::~StatusCollector() = default;
 

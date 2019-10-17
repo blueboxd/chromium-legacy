@@ -52,18 +52,18 @@ public class BaseSuggestionViewBinder
         final RoundedCornerImageView view = baseView.getSuggestionImageView();
         final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ICON);
         final Resources res = view.getContext().getResources();
-        final int paddingStart = res.getDimensionPixelSize(sds.isLarge()
+        final int paddingStart = res.getDimensionPixelSize(sds.isLarge
                         ? R.dimen.omnibox_suggestion_36dp_icon_margin_start
                         : R.dimen.omnibox_suggestion_24dp_icon_margin_start);
 
-        final int paddingEnd = res.getDimensionPixelSize(sds.isLarge()
+        final int paddingEnd = res.getDimensionPixelSize(sds.isLarge
                         ? R.dimen.omnibox_suggestion_36dp_icon_margin_end
                         : R.dimen.omnibox_suggestion_24dp_icon_margin_end);
 
         // TODO(ender): move logic applying corner rounding to updateIcon when action images use
         // RoundedCornerImageView too.
         RoundedCornerImageView rciv = (RoundedCornerImageView) view;
-        int radius = sds.isRounded()
+        int radius = sds.useRoundedCorners
                 ? res.getDimensionPixelSize(R.dimen.default_rounded_corner_radius)
                 : 0;
         rciv.setRoundedCorners(radius, radius, radius, radius);
@@ -91,8 +91,8 @@ public class BaseSuggestionViewBinder
             return;
         }
 
-        view.setImageDrawable(sds.getDrawable());
-        if (sds.isTintable()) {
+        view.setImageDrawable(sds.drawable);
+        if (sds.allowTint) {
             ApiCompatibilityUtils.setImageTintList(
                     view, ColorUtils.getIconTint(view.getContext(), !useDarkColors));
         }

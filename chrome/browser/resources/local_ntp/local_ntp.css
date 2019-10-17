@@ -221,6 +221,7 @@ body.hide-fakebox #fakebox {
   background-repeat: no-repeat;
   background-size: 24px;
   font-size: 16px;
+  outline: none;
   overflow: hidden;
   padding-bottom: 8px;
   padding-inline-end: 16px;
@@ -267,11 +268,11 @@ html[dir=rtl] #realbox-matches :-webkit-any(.clock-icon, .search-icon) {
   right: 16px;
 }
 
-#realbox-matches a:hover {
+#realbox-matches a:-webkit-any(:hover, .selected) {
   background-color: rgb(var(--GG100-rgb));
 }
 
-#realbox-matches a.selected {
+#realbox-matches a:focus-within {
   background-color: rgb(var(--GG200-rgb));
 }
 

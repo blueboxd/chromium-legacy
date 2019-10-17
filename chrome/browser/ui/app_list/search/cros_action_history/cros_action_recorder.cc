@@ -21,6 +21,12 @@ namespace app_list {
 namespace {
 
 constexpr int kSecondsPerDay = 86400;
+// If |CrOSActionRecorder::actions_| gets longer than this, force a Flush to
+// disk.
+constexpr int kActionLimitInMemory = 3600;
+// If current file already contains more record than this, skip the rest for
+// that day.
+constexpr int kActionLimitPerFile = 100000;
 
 enum CrOSActionRecorderType {
   kDefault = 0,
@@ -38,6 +44,9 @@ void SaveToDiskOnWorkerThread(const CrOSActionHistoryProto actions,
   CrOSActionHistoryProto actions_to_write;
   if (!actions_to_write.ParseFromString(proto_str))
     actions_to_write.Clear();
+
+  if (actions_to_write.actions_size() > kActionLimitPerFile)
+    return;
 
   actions_to_write.MergeFrom(actions);
   const std::string proto_str_to_write = actions_to_write.SerializeAsString();
@@ -112,8 +121,12 @@ void CrOSActionRecorder::RecordAction(
 
 void CrOSActionRecorder::MaybeFlushToDisk() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (actions_.actions().empty())
+    return;
+
   const base::Time now = base::Time::Now();
-  if (now - last_save_timestamp_ >= kSaveInternal) {
+  if (now - last_save_timestamp_ >= kSaveInternal ||
+      actions_.actions_size() > kActionLimitInMemory) {
     last_save_timestamp_ = now;
 
     // Writes the predictor proto to disk asynchronously.

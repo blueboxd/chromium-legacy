@@ -669,3 +669,52 @@ test.realbox.testPressEnterOnResult = function() {
 
   assertTrue(clicked);
 };
+
+test.realbox.testArrowDownMovesFocus = function() {
+  test.realbox.realboxEl.value = 'hello ';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getSearchMatch({contents: 'hello fresh'}),
+      test.realbox.getSearchMatch({contents: 'hello kitty'}),
+      test.realbox.getSearchMatch({contents: 'hello dolly'}),
+      test.realbox.getUrlMatch(),
+    ],
+  });
+
+  test.realbox.realboxEl.focus();
+
+  const arrowDown = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  });
+  test.realbox.realboxEl.dispatchEvent(arrowDown);
+  assertTrue(arrowDown.defaultPrevented);
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(4, matchEls.length);
+
+  // Arrow up/down while focus is in realbox should not focus matches.
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertEquals(document.activeElement, test.realbox.realboxEl);
+
+  // Pretend that user moved focus to first match via Tab.
+  matchEls[0].focus();
+  matchEls[0].dispatchEvent(new Event('focusin', {bubbles: true}));
+  assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
+
+  const arrowDown2 = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  });
+  matchEls[0].dispatchEvent(arrowDown2);
+  assertTrue(arrowDown2.defaultPrevented);
+
+  // Arrow up/down while focus is in the matches should change focus.
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertEquals(document.activeElement, matchEls[1])
+};

@@ -1241,7 +1241,8 @@ function onRealboxKeyDown(e) {
     return;
   }
 
-  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
+  const realboxMatchesEl = $(IDS.REALBOX_MATCHES);
+  const matchEls = Array.from(realboxMatchesEl.children);
   const selected = matchEls.findIndex(matchEl => {
     return matchEl.classList.contains(CLASSES.SELECTED);
   });
@@ -1289,6 +1290,11 @@ function onRealboxKeyDown(e) {
     newSelected = matchEls.length - 1;
   }
   selectMatchEl(matchEls[newSelected]);
+
+  if (realboxMatchesEl.contains(document.activeElement)) {
+    // Selection should match focus if focus is currently in the matches.
+    matchEls[newSelected].focus();
+  }
 
   const newMatch = autocompleteMatches[newSelected];
   const newFill = newMatch.fillIntoEdit;

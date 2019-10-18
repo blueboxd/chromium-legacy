@@ -6,6 +6,7 @@
 #define SERVICES_NETWORK_HTTP_AUTH_CACHE_COPIER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
@@ -36,7 +37,7 @@ class HttpAuthCacheCopier {
                          net::HttpAuthCache* cache);
 
  private:
-  std::map<base::UnguessableToken, net::HttpAuthCache> caches_;
+  std::map<base::UnguessableToken, std::unique_ptr<net::HttpAuthCache>> caches_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpAuthCacheCopier);
 };

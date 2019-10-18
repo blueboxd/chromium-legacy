@@ -95,9 +95,8 @@ class VIEWS_EXPORT MenuItemView : public View {
     HIGHLIGHTED,         // Performs an action when selected, and has a
                          // different colored background that merges with the
                          // menu's rounded corners when placed at the bottom.
-    TITLE,               // Title text, does not perform any action.
-    EMPTY,               // EMPTY is a special type for empty menus that is only
-                         // used internally.
+    EMPTY,  // EMPTY is a special type for empty menus that is only used
+            // internally.
   };
 
   // Where the menu should be drawn, above or below the bounds (when

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_HISTOGRAM_UTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 
@@ -94,7 +95,13 @@ void LogJsonConfigConversionStatus(const std::string& suffix,
 
 void LogZeroStateLaunchType(RankingItemType type);
 
-void LogZeroStateReceivedScore(const std::string& suffix, float score);
+// Log |score| within the [lo, hi] range divided into 100 buckets. |lo| is
+// reported as 0 and |hi| as 100. Values below |lo| are reported in the bottom
+// bucket, similarly for |hi|.
+void LogZeroStateReceivedScore(const std::string& suffix,
+                               float score,
+                               float lo,
+                               float hi);
 
 // Logs zero state UI-related metrics. These comprise of the clicked position,
 // number of types per impression set, and CTR metrics.

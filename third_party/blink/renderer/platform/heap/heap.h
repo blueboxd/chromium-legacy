@@ -518,22 +518,48 @@ class GarbageCollected {
 #endif
 
  public:
-  using GarbageCollectedType = T;
+  using ParentMostGarbageCollectedType = T;
 
   void* operator new(size_t size) = delete;  // Must use MakeGarbageCollected.
 
+  template <typename Derived>
   static void* AllocateObject(size_t size) {
     if (IsGarbageCollectedMixin<T>::value) {
       // Ban large mixin so we can use PageFromObject() on them.
       CHECK_GE(kLargeObjectSizeThreshold, size)
           << "GarbageCollectedMixin may not be a large object";
     }
-    return ThreadHeap::Allocate<T>(size);
+    return ThreadHeap::Allocate<GCInfoFoldedType<Derived>>(size);
   }
 
   void operator delete(void* p) { NOTREACHED(); }
 
  protected:
+  // This trait in theory can be moved to gc_info.h, but that would cause
+  // significant memory bloat caused by huge number of ThreadHeap::Allocate<>
+  // instantiations, which linker is not able to fold.
+  template <typename Derived>
+  class GCInfoFolded {
+    static constexpr bool is_virtual_destructor_at_base =
+        std::has_virtual_destructor<ParentMostGarbageCollectedType>::value;
+    static constexpr bool both_trivially_destructible =
+        std::is_trivially_destructible<ParentMostGarbageCollectedType>::value &&
+        std::is_trivially_destructible<Derived>::value;
+    static constexpr bool has_custom_dispatch_at_base =
+        internal::HasFinalizeGarbageCollectedObject<
+            ParentMostGarbageCollectedType>::value;
+
+   public:
+    using Type = std::conditional_t<is_virtual_destructor_at_base ||
+                                        both_trivially_destructible ||
+                                        has_custom_dispatch_at_base,
+                                    ParentMostGarbageCollectedType,
+                                    Derived>;
+  };
+
+  template <typename Derived>
+  using GCInfoFoldedType = typename GCInfoFolded<Derived>::Type;
+
   GarbageCollected() = default;
 
   DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
@@ -552,7 +578,7 @@ T* MakeGarbageCollected(Args&&... args) {
                     internal::HasFinalizeGarbageCollectedObject<T>::value,
                 "Finalized GarbageCollected class should either have a virtual "
                 "destructor or be marked as final.");
-  void* memory = T::AllocateObject(sizeof(T));
+  void* memory = T::template AllocateObject<T>(sizeof(T));
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
@@ -579,7 +605,8 @@ T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
                     internal::HasFinalizeGarbageCollectedObject<T>::value,
                 "Finalized GarbageCollected class should either have a virtual "
                 "destructor or be marked as final.");
-  void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value);
+  void* memory =
+      T::template AllocateObject<T>(sizeof(T) + additional_bytes.value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);

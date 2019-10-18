@@ -29,7 +29,7 @@ AuthenticationServiceFake::AuthenticationServiceFake(
                             sync_setup_service,
                             identity_manager,
                             sync_service),
-      have_accounts_changed_(false) {}
+      have_accounts_changed_while_in_background_(false) {}
 
 AuthenticationServiceFake::~AuthenticationServiceFake() {}
 
@@ -48,12 +48,13 @@ void AuthenticationServiceFake::SignOut(
     completion();
 }
 
-void AuthenticationServiceFake::SetHaveAccountsChanged(bool changed) {
-  have_accounts_changed_ = changed;
+void AuthenticationServiceFake::SetHaveAccountsChangedWhileInBackground(
+    bool changed) {
+  have_accounts_changed_while_in_background_ = changed;
 }
 
-bool AuthenticationServiceFake::HaveAccountsChanged() const {
-  return have_accounts_changed_;
+bool AuthenticationServiceFake::HaveAccountsChangedWhileInBackground() const {
+  return have_accounts_changed_while_in_background_;
 }
 
 bool AuthenticationServiceFake::IsAuthenticated() const {

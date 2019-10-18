@@ -172,6 +172,10 @@ enum ContentSettingsType {
   // File System API.
   CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
 
+  // Content settings for installed web apps that browsing history may be
+  // inferred from e.g. last update check timestamp.
+  CONTENT_SETTINGS_TYPE_INSTALLED_WEB_APP_METADATA,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

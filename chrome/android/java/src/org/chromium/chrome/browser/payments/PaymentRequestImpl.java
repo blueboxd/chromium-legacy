@@ -216,6 +216,7 @@ public class PaymentRequestImpl
         void onCanMakePaymentReturned();
         void onHasEnrolledInstrumentCalled();
         void onHasEnrolledInstrumentReturned();
+        void onShowInstrumentsReady();
         void onNotSupportedError();
         void onConnectionTerminated();
         void onAbortCalled();
@@ -2274,6 +2275,15 @@ public class PaymentRequestImpl
                     mHasEnrolledInstrument |= instrument.canMakePayment();
                     mHasNonAutofillInstrument |= !instrument.isAutofillInstrument();
                     mPendingInstruments.add(instrument);
+
+                    if (instrument.isAutofillInstrument()) {
+                        mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_BASIC_CARD);
+                    } else if (instrumentMethodNames.contains(PAY_WITH_GOOGLE_METHOD_NAME)
+                            || instrumentMethodNames.contains(ANDROID_PAY_METHOD_NAME)) {
+                        mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_GOOGLE);
+                    } else {
+                        mJourneyLogger.setEventOccurred(Event.AVAILABLE_METHOD_OTHER);
+                    }
                 } else {
                     instrument.dismissInstrument();
                 }
@@ -2394,6 +2404,9 @@ public class PaymentRequestImpl
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
         if (!isFinishedQueryingPaymentApps() || !mIsCurrentPaymentRequestShowing) return false;
+        if (mNativeObserverForTest != null) {
+            mNativeObserverForTest.onShowInstrumentsReady();
+        }
 
         boolean foundPaymentMethods =
                 mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty();

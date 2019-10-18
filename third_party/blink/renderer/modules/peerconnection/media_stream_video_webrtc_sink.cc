@@ -14,11 +14,11 @@
 #include "base/synchronization/lock.h"
 #include "base/timer/timer.h"
 #include "media/base/limits.h"
-#include "third_party/blink/public/platform/modules/peerconnection/webrtc_video_track_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_utils.h"
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/platform/peerconnection/webrtc_video_track_source.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/video_track_source_proxy.h"
 

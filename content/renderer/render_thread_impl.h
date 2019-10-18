@@ -103,7 +103,6 @@ class BrowserPluginManager;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
-class PeerConnectionTracker;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
@@ -289,10 +288,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_.get();
-  }
-
-  PeerConnectionTracker* peer_connection_tracker() {
-    return peer_connection_tracker_.get();
   }
 
   blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
@@ -552,10 +547,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
-
-  // This is used to communicate to the browser process the status
-  // of all the peer connections created in the renderer.
-  std::unique_ptr<PeerConnectionTracker> peer_connection_tracker_;
 
   // Filter out unfreezable messages and pass it to unfreezable task runners.
   scoped_refptr<UnfreezableMessageFilter> unfreezable_message_filter_;

@@ -135,7 +135,7 @@ void ArcCameraBridge::StartCameraService(StartCameraServiceCallback callback) {
 }
 
 void ArcCameraBridge::RegisterCameraHalClient(
-    cros::mojom::CameraHalClientPtr client) {
+    mojo::PendingRemote<cros::mojom::CameraHalClient> client) {
   media::CameraHalDispatcherImpl::GetInstance()->RegisterClient(
       std::move(client));
 }

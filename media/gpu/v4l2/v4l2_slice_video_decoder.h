@@ -21,11 +21,12 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "media/base/video_decoder.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/linux/video_decoder_pipeline.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend.h"
@@ -36,7 +37,7 @@ namespace media {
 class DmabufVideoFramePool;
 
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
-    : public VideoDecoder,
+    : public VideoDecoderPipeline::DecoderInterface,
       public V4L2VideoDecoderBackend::Client {
  public:
   using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
@@ -44,26 +45,17 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // Create V4L2SliceVideoDecoder instance. The success of the creation doesn't
   // ensure V4L2SliceVideoDecoder is available on the device. It will be
   // determined in Initialize().
-  static std::unique_ptr<VideoDecoder> Create(
+  static std::unique_ptr<VideoDecoderPipeline::DecoderInterface> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       GetFramePoolCB get_pool_cb);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
-  // VideoDecoder implementation.
-  std::string GetDisplayName() const override;
-  bool IsPlatformDecoder() const override;
-  int GetMaxDecodeRequests() const override;
-  bool NeedsBitstreamConversion() const override;
-  bool CanReadWithoutStalling() const override;
-
+  // VideoDecoderPipeline::DecoderInterface implementation.
   void Initialize(const VideoDecoderConfig& config,
-                  bool low_delay,
-                  CdmContext* cdm_context,
                   InitCB init_cb,
-                  const OutputCB& output_cb,
-                  const WaitingCB& waiting_cb) override;
+                  const OutputCB& output_cb) override;
   void Reset(base::OnceClosure closure) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
 
@@ -89,7 +81,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
       scoped_refptr<V4L2Device> device,
       GetFramePoolCB get_pool_cb);
   ~V4L2SliceVideoDecoder() override;
-  void Destroy() override;
 
   enum class State {
     // Initial state. Transitions to |kDecoding| if Initialize() is successful,
@@ -147,7 +138,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
       const gfx::Rect& visible_rect);
 
   // Destroy on decoder thread.
-  void DestroyTask();
+  void DestroyTask(base::WaitableEvent* event);
   // Reset on decoder thread.
   void ResetTask(base::OnceClosure closure);
 
@@ -177,8 +168,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   GetFramePoolCB get_pool_cb_;
   DmabufVideoFramePool* frame_pool_ = nullptr;
 
-  // Client task runner. All public methods of VideoDecoder interface are
-  // executed at this task runner.
+  // Client task runner. All public methods of
+  // VideoDecoderPipeline::DecoderInterface are executed at this task runner.
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
   // Thread to communicate with the device on. Most of internal methods and data
   // members are manipulated on this thread.
@@ -200,9 +191,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   scoped_refptr<V4L2Queue> output_queue_;
 
   BitstreamIdGenerator bitstream_id_generator_;
-
-  // True if the decoder needs bitstream conversion before decoding.
-  bool needs_bitstream_conversion_ = false;
 
   SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(decoder_sequence_checker_);

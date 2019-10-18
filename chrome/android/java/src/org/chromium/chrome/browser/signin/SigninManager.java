@@ -459,6 +459,9 @@ public class SigninManager
         // This method should be called at most once per sign-in flow.
         assert mSignInState != null && mSignInState.mCoreAccountInfo != null;
 
+        // The user should not be already signed in
+        assert !mIdentityManager.hasPrimaryAccount();
+
         if (!mIdentityMutator.setPrimaryAccount(mSignInState.mCoreAccountInfo.getId())) {
             Log.w(TAG, "Failed to set the PrimaryAccount in IdentityManager, aborting signin");
             abortSignIn();

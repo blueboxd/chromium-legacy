@@ -9,7 +9,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:minHeight="340dp"
     android:orientation="vertical">
 
     <ImageView
@@ -29,11 +28,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="@dimen/touch_to_fill_sheet_margin"
         android:layout_marginStart="@dimen/touch_to_fill_sheet_margin"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="8dp"
         android:divider="@null"
         tools:listitem="@layout/touch_to_fill_credential_item"/>
 

@@ -766,11 +766,10 @@ void PageHandler::CaptureScreenshot(
   // We don't support clip/emulation when capturing from window, bail out.
   if (!from_surface.fromMaybe(true)) {
     widget_host->GetSnapshotFromBrowser(
-        base::BindOnce(&PageHandler::ScreenshotCaptured,
-                       weak_factory_.GetWeakPtr(),
-                       base::Passed(std::move(callback)), screenshot_format,
-                       screenshot_quality, gfx::Size(), gfx::Size(),
-                       blink::WebDeviceEmulationParams()),
+        base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
+                   base::Passed(std::move(callback)), screenshot_format,
+                   screenshot_quality, gfx::Size(), gfx::Size(),
+                   blink::WebDeviceEmulationParams()),
         false);
     return;
   }
@@ -867,11 +866,10 @@ void PageHandler::CaptureScreenshot(
   }
 
   widget_host->GetSnapshotFromBrowser(
-      base::BindOnce(&PageHandler::ScreenshotCaptured,
-                     weak_factory_.GetWeakPtr(),
-                     base::Passed(std::move(callback)), screenshot_format,
-                     screenshot_quality, original_view_size,
-                     requested_image_size, original_params),
+      base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback)), screenshot_format,
+                 screenshot_quality, original_view_size, requested_image_size,
+                 original_params),
       true);
 }
 

@@ -6100,4 +6100,24 @@ TEST_F(HeapTest, AccessDeletedBackingStore) {
   }
 }
 
+class GCBase : public GarbageCollected<GCBase> {
+ public:
+  virtual void Trace(Visitor*) {}
+};
+
+class GCDerived final : public GCBase {
+ public:
+  static int destructor_called;
+  void Trace(Visitor*) override {}
+  ~GCDerived() { ++destructor_called; }
+};
+
+int GCDerived::destructor_called = 0;
+
+TEST_F(HeapTest, CallMostDerivedFinalizer) {
+  MakeGarbageCollected<GCDerived>();
+  PreciselyCollectGarbage();
+  EXPECT_EQ(1, GCDerived::destructor_called);
+}
+
 }  // namespace blink

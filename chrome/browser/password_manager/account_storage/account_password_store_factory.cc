@@ -28,7 +28,49 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 
+#if !defined(OS_ANDROID)
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/browser_task_traits.h"
+#endif  // !defined(OS_ANDROID)
+
 using password_manager::PasswordStore;
+
+#if !defined(OS_ANDROID)
+
+namespace {
+
+void UpdateAllFormManagers(Profile* profile) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->profile() != profile)
+      continue;
+    TabStripModel* tabs = browser->tab_strip_model();
+    for (int index = 0; index < tabs->count(); index++) {
+      content::WebContents* web_contents = tabs->GetWebContentsAt(index);
+      ChromePasswordManagerClient* client =
+          ChromePasswordManagerClient::FromWebContents(web_contents);
+      if (client)
+        client->UpdateFormManagers();
+    }
+  }
+}
+
+}  // namespace
+
+#endif  // !defined(OS_ANDROID)
+
+void SyncEnabledOrDisabled(Profile* profile) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&UpdateAllFormManagers, profile));
+#endif  // defined(OS_ANDROID)
+}
 
 // static
 scoped_refptr<PasswordStore> AccountPasswordStoreFactory::GetForProfile(
@@ -77,7 +119,8 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<PasswordStore> ps =
       new password_manager::PasswordStoreDefault(std::move(login_db));
-  if (!ps->Init(/*flare=*/base::DoNothing(), profile->GetPrefs())) {
+  if (!ps->Init(/*flare=*/base::DoNothing(), profile->GetPrefs(),
+                base::BindRepeating(&SyncEnabledOrDisabled, profile))) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
     LOG(WARNING) << "Could not initialize password store.";

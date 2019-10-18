@@ -585,7 +585,8 @@ void ThreadHeap::FlushV8References() {
       reinterpret_cast<v8::EmbedderHeapTracer*>(
           thread_state_->unified_heap_controller());
   while (v8_references.Pop(&reference)) {
-    controller->RegisterEmbedderReference(reference->Get());
+    controller->RegisterEmbedderReference(
+        reference->template Cast<v8::Data>().Get());
   }
 }
 

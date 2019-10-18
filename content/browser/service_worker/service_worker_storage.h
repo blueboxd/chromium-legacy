@@ -24,7 +24,6 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
@@ -45,6 +44,7 @@ class ServiceWorkerDiskCache;
 class ServiceWorkerResponseMetadataWriter;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
+class ServiceWorkerVersion;
 struct ServiceWorkerRegistrationInfo;
 
 namespace service_worker_storage_unittest {
@@ -64,8 +64,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerResourceStorageDiskTest,
 // an owner of this class. When a storage operation fails, this is marked as
 // disabled and all subsequent requests are aborted until the context core is
 // restarted.
-class CONTENT_EXPORT ServiceWorkerStorage
-    : public ServiceWorkerVersion::Observer {
+class CONTENT_EXPORT ServiceWorkerStorage {
  public:
   using ResourceList = std::vector<ServiceWorkerDatabase::ResourceRecord>;
   using StatusCallback =
@@ -90,7 +89,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status)>;
 
-  ~ServiceWorkerStorage() override;
+  ~ServiceWorkerStorage();
 
   static std::unique_ptr<ServiceWorkerStorage> Create(
       const base::FilePath& user_data_directory,

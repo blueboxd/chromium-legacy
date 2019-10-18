@@ -6,4 +6,6 @@
 <resources>
     <dimen name="touch_to_fill_favicon_size">24dp</dimen>
     <dimen name="touch_to_fill_sheet_margin">16dp</dimen>
+    <dimen name="touch_to_fill_sheet_height_multiple_credentials">326dp</dimen>
+    <dimen name="touch_to_fill_sheet_height_single_credential">298dp</dimen>
 </resources>

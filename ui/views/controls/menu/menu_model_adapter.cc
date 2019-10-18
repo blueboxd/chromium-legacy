@@ -70,9 +70,6 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   base::Optional<MenuItemView::Type> type;
   ui::MenuModel::ItemType menu_type = model->GetTypeAt(model_index);
   switch (menu_type) {
-    case ui::MenuModel::TYPE_TITLE:
-      type = MenuItemView::TITLE;
-      break;
     case ui::MenuModel::TYPE_COMMAND:
     case ui::MenuModel::TYPE_BUTTON_ITEM:
       type = MenuItemView::NORMAL;

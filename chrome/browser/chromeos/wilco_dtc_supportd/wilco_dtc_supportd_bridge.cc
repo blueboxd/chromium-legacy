@@ -15,11 +15,11 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/wilco_dtc_supportd_client.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -160,11 +160,9 @@ void WilcoDtcSupportdBridge::WaitForDBusService() {
   // ScheduleWaitingForDBusService().
   dbus_waiting_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  DBusThreadManager::Get()
-      ->GetWilcoDtcSupportdClient()
-      ->WaitForServiceToBeAvailable(
-          base::BindOnce(&WilcoDtcSupportdBridge::OnWaitedForDBusService,
-                         dbus_waiting_weak_ptr_factory_.GetWeakPtr()));
+  chromeos::WilcoDtcSupportdClient::Get()->WaitForServiceToBeAvailable(
+      base::BindOnce(&WilcoDtcSupportdBridge::OnWaitedForDBusService,
+                     dbus_waiting_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WilcoDtcSupportdBridge::ScheduleWaitingForDBusService() {
@@ -221,12 +219,10 @@ void WilcoDtcSupportdBridge::BootstrapMojoConnection() {
 
   // Send the file descriptor with the Mojo message pipe's remote endpoint to
   // the wilco_dtc_supportd daemon via the D-Bus.
-  DBusThreadManager::Get()
-      ->GetWilcoDtcSupportdClient()
-      ->BootstrapMojoConnection(
-          std::move(remote_endpoint_fd),
-          base::BindOnce(&WilcoDtcSupportdBridge::OnBootstrappedMojoConnection,
-                         weak_ptr_factory_.GetWeakPtr()));
+  chromeos::WilcoDtcSupportdClient::Get()->BootstrapMojoConnection(
+      std::move(remote_endpoint_fd),
+      base::BindOnce(&WilcoDtcSupportdBridge::OnBootstrappedMojoConnection,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WilcoDtcSupportdBridge::OnBootstrappedMojoConnection(bool success) {

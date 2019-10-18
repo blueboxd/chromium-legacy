@@ -13,15 +13,29 @@ found in the LICENSE file.
 
     <script>
       var removeDiv = function() {
-        var div = document.getElementById("div");
+        var div = document.getElementById("divToRemove");
         div.parentNode.removeChild(div);
+      }
+
+      var setText = function() {
+        var select = document.getElementById("select");
+        var input = document.getElementById("myPet");
+        input.value = select.options[select.selectedIndex].label;
       }
     </script>
   </head>
   <body>
     <button id="button" type="button" onclick="removeDiv()">Button</button>
-    <div id="div">Text</div>
+    <div id="divToRemove">Text</div>
 
     <input id="input" type="text" />
+
+    <select id="select" name="pet" onchange="setText()">
+      <option value="Dog">Dog</option>
+      <option value="Cat">Cat</option>
+      <option value="Hamster">Hamster</option>
+      <option value="Fish">Fish</option>
+    </select>
+    <input type="text" id="myPet"/>
   </body>
 </html>

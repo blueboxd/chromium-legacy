@@ -75,8 +75,15 @@ void OnRemovedPrinter(const Printer::PrinterProtocol& protocol, bool success) {
 }
 
 // Log if the IPP attributes request was succesful.
-void RecordIppQuerySuccess(bool success) {
-  UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.IppAttributesSuccess", success);
+void RecordIppQueryResult(const PrinterQueryResult& result) {
+  bool reachable = (result != PrinterQueryResult::UNREACHABLE);
+  UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.IppDeviceReachable", reachable);
+
+  if (reachable) {
+    // Only record whether the query was successful if we reach the printer.
+    bool query_success = (result == PrinterQueryResult::SUCCESS);
+    UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.IppAttributesSuccess", query_success);
+  }
 }
 
 // Returns true if |printer_uri| is an IPP uri.
@@ -491,9 +498,9 @@ void CupsPrintersHandler::OnAutoconfQueriedDiscovered(
     const std::string& make_and_model,
     const std::vector<std::string>& document_formats,
     bool ipp_everywhere) {
-  const bool success = result == PrinterQueryResult::SUCCESS;
-  RecordIppQuerySuccess(success);
+  RecordIppQueryResult(result);
 
+  const bool success = result == PrinterQueryResult::SUCCESS;
   if (success) {
     // If we queried a valid make and model, use it.  The mDNS record isn't
     // guaranteed to have it.  However, don't overwrite it if the printer
@@ -537,8 +544,8 @@ void CupsPrintersHandler::OnAutoconfQueried(
     const std::string& make_and_model,
     const std::vector<std::string>& document_formats,
     bool ipp_everywhere) {
+  RecordIppQueryResult(result);
   const bool success = result == PrinterQueryResult::SUCCESS;
-  RecordIppQuerySuccess(success);
 
   if (result == PrinterQueryResult::UNREACHABLE) {
     PRINTER_LOG(DEBUG) << "Could not reach printer";

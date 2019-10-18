@@ -98,11 +98,10 @@ void BackForwardCacheMetrics::DidCommitNavigation(
     NavigationRequest* navigation) {
   bool is_history_navigation =
       navigation->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
-  if (navigation->IsInMainFrame() && !navigation->IsSameDocument() &&
-      is_history_navigation) {
-    RecordMetricsForHistoryNavigationCommit(navigation);
-    disallowed_reasons_.clear();
-    evicted_reason_ = base::nullopt;
+  if (navigation->IsInMainFrame() && !navigation->IsSameDocument()) {
+    if (is_history_navigation)
+      RecordMetricsForHistoryNavigationCommit(navigation);
+    not_restored_reasons_.reset();
   }
 
   if (last_committed_main_frame_navigation_id_ != -1 &&
@@ -178,14 +177,14 @@ void BackForwardCacheMetrics::CollectFeatureUsageFromSubtree(
   }
 }
 
-void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(
-    const base::StringPiece& reason) {
-  disallowed_reasons_.push_back(reason.as_string());
+void BackForwardCacheMetrics::MarkNotRestoredWithReason(
+    NotRestoredReason reason) {
+  not_restored_reasons_.set(static_cast<size_t>(reason));
 }
 
-void BackForwardCacheMetrics::MarkEvictedFromBackForwardCacheWithReason(
-    BackForwardCacheMetrics::EvictedReason reason) {
-  evicted_reason_ = reason;
+void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(
+    const base::StringPiece& reason) {
+  disallowed_reasons_.insert(reason.as_string());
 }
 
 void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
@@ -199,15 +198,20 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
         BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::kRestored);
   }
 
-  // TODO(hajimehoshi): Do not record the outcome when the experient condition
-  // does not match.
+  // TODO(hajimehoshi): By |BackForwardCache::IsAllowed(navigation->GetURL())|,
+  // check whether the page matches the experiment condition, and do not record
+  // anything in this case.
+
   UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
                             outcome);
 
-  if (evicted_reason_.has_value()) {
+  for (int i = 0; i <= static_cast<int>(NotRestoredReason::kMaxValue); i++) {
+    if (!not_restored_reasons_.test(static_cast<size_t>(i)))
+      continue;
+    DCHECK(!navigation->IsServedFromBackForwardCache());
     UMA_HISTOGRAM_ENUMERATION(
-        "BackForwardCache.HistoryNavigationOutcome.EvictedReason",
-        evicted_reason_.value());
+        "BackForwardCache.HistoryNavigationOutcome.NotRestoredReason",
+        static_cast<NotRestoredReason>(i));
   }
 
   for (const std::string& reason : disallowed_reasons_) {

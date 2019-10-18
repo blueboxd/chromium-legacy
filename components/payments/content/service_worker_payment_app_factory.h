@@ -79,6 +79,7 @@ class ServiceWorkerPaymentAppFactory {
   friend class PaymentRequestPaymentAppTest;
   friend class ServiceWorkerPaymentAppFactoryBrowserTest;
   friend class HybridRequestSkipUITest;
+  friend class JourneyLoggerTest;
 
   ServiceWorkerPaymentAppFactory();
   ~ServiceWorkerPaymentAppFactory();

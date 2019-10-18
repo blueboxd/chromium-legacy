@@ -20,12 +20,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/base/video_codecs.h"
-#include "media/base/video_decoder.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/decode_surface_handler.h"
+#include "media/gpu/linux/video_decoder_pipeline.h"
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -38,30 +39,22 @@ class VaapiWrapper;
 class VideoFrame;
 class VASurface;
 
-class VaapiVideoDecoder : public media::VideoDecoder,
+class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
                           public DecodeSurfaceHandler<VASurface> {
  public:
   using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
 
-  static std::unique_ptr<VideoDecoder> Create(
+  static std::unique_ptr<VideoDecoderPipeline::DecoderInterface> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       GetFramePoolCB get_pool);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
-  // media::VideoDecoder implementation.
-  std::string GetDisplayName() const override;
-  bool IsPlatformDecoder() const override;
-  bool NeedsBitstreamConversion() const override;
-  bool CanReadWithoutStalling() const override;
-  int GetMaxDecodeRequests() const override;
+  // VideoDecoderPipeline::DecoderInterface implementation.
   void Initialize(const VideoDecoderConfig& config,
-                  bool low_delay,
-                  CdmContext* cdm_context,
                   InitCB init_cb,
-                  const OutputCB& output_cb,
-                  const WaitingCB& waiting_cb) override;
+                  const OutputCB& output_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
 
@@ -102,16 +95,12 @@ class VaapiVideoDecoder : public media::VideoDecoder,
       GetFramePoolCB get_pool);
   ~VaapiVideoDecoder() override;
 
-  // Destroy the VAAPIVideoDecoder, aborts pending decode requests and blocks
-  // until destroyed.
-  void Destroy() override;
-
   // Initialize the VAAPI video decoder on the decoder thread.
   void InitializeTask(const VideoDecoderConfig& config,
                       InitCB init_cb,
                       OutputCB output_cb);
   // Destroy the VAAPI video decoder on the decoder thread.
-  void DestroyTask();
+  void DestroyTask(base::WaitableEvent* event);
 
   // Queue a decode task on the decoder thread. If the decoder is currently
   // waiting for input buffers decoding will be started.
@@ -169,8 +158,6 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // The video stream's profile.
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
-  // True if the decoder needs bitstream conversion before decoding.
-  bool needs_bitstream_conversion_ = false;
 
   // Output frame properties.
   base::Optional<VideoFrameLayout> frame_layout_;

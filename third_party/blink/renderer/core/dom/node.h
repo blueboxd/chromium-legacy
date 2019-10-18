@@ -163,15 +163,14 @@ class CORE_EXPORT Node : public EventTarget {
     kDocumentPositionImplementationSpecific = 0x20,
   };
 
-  // Override operator new to allocate Node subtype objects onto
-  // a dedicated heap.
+  template <typename T>
   static void* AllocateObject(size_t size) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<Node>::kAffinity>::GetState();
     const char* type_name = "blink::Node";
     return state->Heap().AllocateOnArenaIndex(
         state, size, BlinkGC::kNodeArenaIndex,
-        GCInfoTrait<EventTarget>::Index(), type_name);
+        GCInfoTrait<GCInfoFoldedType<T>>::Index(), type_name);
   }
 
   static void DumpStatistics();

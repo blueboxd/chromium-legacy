@@ -1269,7 +1269,7 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
       FROM_HERE, evict_after,
       base::BindOnce(&RenderFrameHostImpl::EvictFromBackForwardCacheWithReason,
                      weak_ptr_factory_.GetWeakPtr(),
-                     BackForwardCacheMetrics::EvictedReason::kTimeout));
+                     BackForwardCacheMetrics::NotRestoredReason::kTimeout));
 }
 
 void RenderFrameHostImpl::DisallowBackForwardCache() {
@@ -1281,7 +1281,7 @@ void RenderFrameHostImpl::DisallowBackForwardCache() {
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
   was_granted_media_access_ = true;
   MaybeEvictFromBackForwardCache(
-      BackForwardCacheMetrics::EvictedReason::kGrantedMediaStreamAccess);
+      BackForwardCacheMetrics::NotRestoredReason::kGrantedMediaStreamAccess);
 }
 
 void RenderFrameHostImpl::OnPortalActivated(
@@ -1882,8 +1882,10 @@ void RenderFrameHostImpl::RenderProcessGone(
   if (is_in_back_forward_cache_) {
     EvictFromBackForwardCacheWithReason(
         info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
-            ? BackForwardCacheMetrics::EvictedReason::kRendererProcessCrashed
-            : BackForwardCacheMetrics::EvictedReason::kRendererProcessKilled);
+            ? BackForwardCacheMetrics::NotRestoredReason::
+                  kRendererProcessCrashed
+            : BackForwardCacheMetrics::NotRestoredReason::
+                  kRendererProcessKilled);
     return;
   }
 
@@ -2555,7 +2557,7 @@ void RenderFrameHostImpl::UpdateActiveSchedulerTrackedFeatures(
   renderer_reported_scheduler_tracked_features_ = features_mask;
 
   MaybeEvictFromBackForwardCache(
-      BackForwardCacheMetrics::EvictedReason::kSchedulerTrackedFeatureUsed);
+      BackForwardCacheMetrics::NotRestoredReason::kSchedulerTrackedFeatureUsed);
 }
 
 void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
@@ -2565,7 +2567,7 @@ void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
       1 << static_cast<uint64_t>(feature);
 
   MaybeEvictFromBackForwardCache(
-      BackForwardCacheMetrics::EvictedReason::kSchedulerTrackedFeatureUsed);
+      BackForwardCacheMetrics::NotRestoredReason::kSchedulerTrackedFeatureUsed);
 }
 
 bool RenderFrameHostImpl::IsFrozen() {
@@ -3115,7 +3117,7 @@ void RenderFrameHostImpl::OnRunJavaScriptDialog(
   // If a dialog tries to show for a document in the BackForwardCache, evict it.
   if (is_in_back_forward_cache_) {
     EvictFromBackForwardCacheWithReason(
-        BackForwardCacheMetrics::EvictedReason::kDialog);
+        BackForwardCacheMetrics::NotRestoredReason::kDialog);
     return;
   }
 
@@ -3701,11 +3703,11 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
   // TODO(hajimehoshi): This function should take the reason from the renderer
   // side.
   EvictFromBackForwardCacheWithReason(
-      BackForwardCacheMetrics::EvictedReason::kJavaScriptExecution);
+      BackForwardCacheMetrics::NotRestoredReason::kJavaScriptExecution);
 }
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
-    base::Optional<BackForwardCacheMetrics::EvictedReason> reason) {
+    base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason) {
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -3723,7 +3725,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
   // |is_in_back_forward_cache()| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
   if (is_in_back_forward_cache() && reason && metrics)
-    metrics->MarkEvictedFromBackForwardCacheWithReason(reason.value());
+    metrics->MarkNotRestoredWithReason(reason.value());
 
   if (!in_back_forward_cache) {
     BackForwardCacheMetrics::RecordEvictedAfterDocumentRestored(
@@ -7890,7 +7892,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
 }
 
 void RenderFrameHostImpl::MaybeEvictFromBackForwardCache(
-    BackForwardCacheMetrics::EvictedReason reason) {
+    BackForwardCacheMetrics::NotRestoredReason reason) {
   if (!is_in_back_forward_cache_)
     return;
 

@@ -13,7 +13,7 @@ IN_PROC_BROWSER_TEST_F(WebLayerBrowserTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/simple_page.html");
 
-  NavigateAndWait(url, shell());
+  NavigateAndWaitForCompletion(url, shell());
 }
 
 }  // namespace weblayer

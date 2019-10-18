@@ -298,7 +298,6 @@ void SVGSMILElement::RemovedFrom(ContainerNode& root_parent) {
     ClearResourceAndEventBaseReferences();
     ClearConditions();
     SetTargetElement(nullptr);
-    AnimationAttributeChanged();
     time_container_ = nullptr;
   }
 
@@ -483,7 +482,6 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
         time_container_->ScheduleIntervalUpdate();
       }
     }
-    AnimationAttributeChanged();
   } else if (name == svg_names::kEndAttr) {
     if (!conditions_.IsEmpty()) {
       ClearConditions();
@@ -499,7 +497,6 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
         time_container_->ScheduleIntervalUpdate();
       }
     }
-    AnimationAttributeChanged();
   } else if (name == svg_names::kOnbeginAttr) {
     SetAttributeEventListener(event_type_names::kBeginEvent,
                               CreateAttributeEventListener(this, name, value));
@@ -518,34 +515,31 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
       restart_ = kRestartAlways;
   } else if (name == svg_names::kFillAttr) {
     fill_ = value == "freeze" ? kFillFreeze : kFillRemove;
+  } else if (name == svg_names::kDurAttr) {
+    cached_dur_ = kInvalidCachedTime;
+  } else if (name == svg_names::kRepeatDurAttr) {
+    cached_repeat_dur_ = kInvalidCachedTime;
+  } else if (name == svg_names::kRepeatCountAttr) {
+    cached_repeat_count_ = SMILRepeatCount::Invalid();
+  } else if (name == svg_names::kMinAttr) {
+    cached_min_ = kInvalidCachedTime;
+  } else if (name == svg_names::kMaxAttr) {
+    cached_max_ = kInvalidCachedTime;
   } else {
     SVGElement::ParseAttribute(params);
   }
 }
 
 void SVGSMILElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name == svg_names::kDurAttr) {
-    cached_dur_ = kInvalidCachedTime;
-  } else if (attr_name == svg_names::kRepeatDurAttr) {
-    cached_repeat_dur_ = kInvalidCachedTime;
-  } else if (attr_name == svg_names::kRepeatCountAttr) {
-    cached_repeat_count_ = SMILRepeatCount::Invalid();
-  } else if (attr_name == svg_names::kMinAttr) {
-    cached_min_ = kInvalidCachedTime;
-  } else if (attr_name == svg_names::kMaxAttr) {
-    cached_max_ = kInvalidCachedTime;
-  } else if (attr_name.Matches(svg_names::kHrefAttr) ||
-             attr_name.Matches(xlink_names::kHrefAttr)) {
+  if (attr_name.Matches(svg_names::kHrefAttr) ||
+      attr_name.Matches(xlink_names::kHrefAttr)) {
     // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
     // is changed.
     SVGElement::InvalidationGuard invalidation_guard(this);
     BuildPendingResource();
-  } else {
-    SVGElement::SvgAttributeChanged(attr_name);
     return;
   }
-
-  AnimationAttributeChanged();
+  SVGElement::SvgAttributeChanged(attr_name);
 }
 
 void SVGSMILElement::ConnectConditions() {

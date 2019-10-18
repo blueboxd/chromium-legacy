@@ -510,6 +510,7 @@ class HeapHashMap : public HashMap<KeyArg,
   }
 
  public:
+  template <typename>
   static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
         HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg>>(
@@ -539,6 +540,7 @@ class HeapHashSet
   }
 
  public:
+  template <typename>
   static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<HeapHashSet<ValueArg, HashArg, TraitsArg>>(
         size);
@@ -568,6 +570,7 @@ class HeapLinkedHashSet
   }
 
  public:
+  template <typename>
   static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
         HeapLinkedHashSet<ValueArg, HashArg, TraitsArg>>(size);
@@ -601,6 +604,7 @@ class HeapListHashSet
   }
 
  public:
+  template <typename>
   static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
         HeapListHashSet<ValueArg, inlineCapacity, HashArg>>(size);
@@ -629,6 +633,7 @@ class HeapHashCountedSet
   }
 
  public:
+  template <typename>
   static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
         HeapHashCountedSet<Value, HashFunctions, Traits>>(size);
@@ -655,6 +660,7 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
   }
 
  public:
+  template <typename>
   static void* AllocateObject(size_t size) {
     // On-heap HeapVectors generally should not have inline capacity, but it is
     // hard to avoid when using a type alias. Hence we only disallow the
@@ -706,6 +712,7 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
   }
 
  public:
+  template <typename>
   static void* AllocateObject(size_t size) {
     // On-heap HeapDeques generally should not have inline capacity, but it is
     // hard to avoid when using a type alias. Hence we only disallow the

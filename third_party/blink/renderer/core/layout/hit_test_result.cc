@@ -46,8 +46,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 HitTestResult::HitTestResult()
     : hit_test_request_(HitTestRequest::kReadOnly | HitTestRequest::kActive),
       cacheable_(true),
@@ -190,7 +188,7 @@ HTMLAreaElement* HitTestResult::ImageAreaForImage() const {
     return nullptr;
 
   HTMLMapElement* map = image_element->GetTreeScope().GetImageMap(
-      image_element->FastGetAttribute(kUsemapAttr));
+      image_element->FastGetAttribute(html_names::kUsemapAttr));
   if (!map)
     return nullptr;
 
@@ -293,7 +291,7 @@ const AtomicString& HitTestResult::AltDisplayString() const {
     return g_null_atom;
 
   if (auto* image = ToHTMLImageElementOrNull(*inner_node_or_image_map_image))
-    return image->getAttribute(kAltAttr);
+    return image->getAttribute(html_names::kAltAttr);
 
   if (auto* input = ToHTMLInputElementOrNull(*inner_node_or_image_map_image))
     return input->Alt();

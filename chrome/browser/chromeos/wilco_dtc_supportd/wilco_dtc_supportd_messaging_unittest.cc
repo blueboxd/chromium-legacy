@@ -15,9 +15,9 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/testing_wilco_dtc_supportd_bridge_wrapper.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -126,7 +126,7 @@ namespace {
 class WilcoDtcSupportdMessagingOpenedByExtensionTest : public testing::Test {
  protected:
   WilcoDtcSupportdMessagingOpenedByExtensionTest() {
-    DBusThreadManager::Initialize();
+    WilcoDtcSupportdClient::InitializeFake();
     testing_wilco_dtc_supportd_bridge_wrapper_ =
         TestingWilcoDtcSupportdBridgeWrapper::Create(
             &mojo_wilco_dtc_supportd_service_,
@@ -140,7 +140,7 @@ class WilcoDtcSupportdMessagingOpenedByExtensionTest : public testing::Test {
     // DBusThreadManager is shut down, since the WilcoDtcSupportdBridge class
     // uses the latter.
     wilco_dtc_supportd_bridge_.reset();
-    DBusThreadManager::Shutdown();
+    WilcoDtcSupportdClient::Shutdown();
   }
 
   MockMojoWilcoDtcSupportdService* mojo_wilco_dtc_supportd_service() {

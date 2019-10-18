@@ -312,6 +312,10 @@ void DockedMagnifierControllerImpl::CenterOnPoint(
   viewport_magnifier_layer_->SetTransform(transform);
 }
 
+int DockedMagnifierControllerImpl::GetMagnifierHeightForTesting() const {
+  return GetTotalMagnifierHeight();
+}
+
 void DockedMagnifierControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   active_user_pref_service_ = pref_service;

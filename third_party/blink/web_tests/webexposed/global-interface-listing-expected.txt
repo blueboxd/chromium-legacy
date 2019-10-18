@@ -5965,6 +5965,9 @@ interface PushSubscriptionOptions
     getter applicationServerKey
     getter userVisibleOnly
     method constructor
+interface QuicTransport
+    attribute @@toStringTag
+    method constructor
 interface RTCCertificate
     attribute @@toStringTag
     getter expires

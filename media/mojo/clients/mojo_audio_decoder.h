@@ -12,8 +12,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/mojom/media_types.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -82,8 +81,8 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
 
   uint32_t writer_capacity_ = 0;
 
-  // Binding for AudioDecoderClient, bound to the |task_runner_|.
-  mojo::AssociatedBinding<AudioDecoderClient> client_binding_;
+  // Receiver for AudioDecoderClient, bound to the |task_runner_|.
+  mojo::AssociatedReceiver<AudioDecoderClient> client_receiver_{this};
 
   InitCB init_cb_;
   OutputCB output_cb_;

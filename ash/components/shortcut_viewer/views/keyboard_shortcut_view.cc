@@ -469,13 +469,12 @@ void KeyboardShortcutView::InitCategoriesTabbedPane(
     item_list_view->AddChildView(item_view.get());
     shortcut_items.emplace_back(item_view.get());
     // Remove the search query highlight.
-    description_label_view->Layout();
+    description_label_view->InvalidateLayout();
   }
   // Update node data for the last category.
   UpdateAXNodeDataPosition(shortcut_items);
 
-  tab_contents->Layout();
-  Layout();
+  tab_contents->InvalidateLayout();
 }
 
 void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
@@ -501,8 +500,7 @@ void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
   }
   categories_tabbed_pane_->SetVisible(!should_show_search_results);
   search_results_container_->SetVisible(should_show_search_results);
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }
 
 void KeyboardShortcutView::ShowSearchResults(
@@ -550,7 +548,7 @@ void KeyboardShortcutView::ShowSearchResults(
         description_label_view->AddStyleRange(
             gfx::Range(match_index, match_index + match_length), style);
         // Apply new styles to highlight matched search query.
-        description_label_view->Layout();
+        description_label_view->InvalidateLayout();
       }
 
       found_items_list_view->AddChildView(item_view.get());
@@ -581,8 +579,7 @@ void KeyboardShortcutView::ShowSearchResults(
           : IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITH_RESULTS,
       replacement_strings, nullptr));
   search_results_container_->AddChildView(search_container_content_view);
-  Layout();
-  SchedulePaint();
+  InvalidateLayout();
 }
 
 bool KeyboardShortcutView::CanMaximize() const {

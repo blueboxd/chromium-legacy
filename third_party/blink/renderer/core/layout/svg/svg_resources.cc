@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using namespace svg_names;
-
 SVGResources::SVGResources() : linked_resource_(nullptr) {}
 
 SVGResourceClient* SVGResources::GetClient(const LayoutObject& object) {
@@ -59,26 +57,28 @@ static HashSet<AtomicString>& ClipperFilterMaskerTags() {
           // http://www.w3.org/TR/SVG11/intro.html#TermContainerElement
           // "graphics elements" :
           // http://www.w3.org/TR/SVG11/intro.html#TermGraphicsElement
-          kATag.LocalName(), kCircleTag.LocalName(), kEllipseTag.LocalName(),
-          kGTag.LocalName(), kImageTag.LocalName(), kLineTag.LocalName(),
-          kMarkerTag.LocalName(), kMaskTag.LocalName(), kPathTag.LocalName(),
-          kPolygonTag.LocalName(), kPolylineTag.LocalName(),
-          kRectTag.LocalName(), kSVGTag.LocalName(), kTextTag.LocalName(),
-          kUseTag.LocalName(),
+          svg_names::kATag.LocalName(), svg_names::kCircleTag.LocalName(),
+          svg_names::kEllipseTag.LocalName(), svg_names::kGTag.LocalName(),
+          svg_names::kImageTag.LocalName(), svg_names::kLineTag.LocalName(),
+          svg_names::kMarkerTag.LocalName(), svg_names::kMaskTag.LocalName(),
+          svg_names::kPathTag.LocalName(), svg_names::kPolygonTag.LocalName(),
+          svg_names::kPolylineTag.LocalName(), svg_names::kRectTag.LocalName(),
+          svg_names::kSVGTag.LocalName(), svg_names::kTextTag.LocalName(),
+          svg_names::kUseTag.LocalName(),
           // Not listed in the definitions is the clipPath element, the SVG spec
           // says though:
           // The "clipPath" element or any of its children can specify property
           // "clip-path".
           // So we have to add kClipPathTag here, otherwhise clip-path on
           // clipPath will fail. (Already mailed SVG WG, waiting for a solution)
-          kClipPathTag.LocalName(),
+          svg_names::kClipPathTag.LocalName(),
           // Not listed in the definitions are the text content elements, though
           // filter/clipper/masker on tspan/text/.. is allowed.
           // (Already mailed SVG WG, waiting for a solution)
-          kTextPathTag.LocalName(), kTSpanTag.LocalName(),
+          svg_names::kTextPathTag.LocalName(), svg_names::kTSpanTag.LocalName(),
           // Not listed in the definitions is the foreignObject element, but
           // clip-path is a supported attribute.
-          kForeignObjectTag.LocalName(),
+          svg_names::kForeignObjectTag.LocalName(),
           // Elements that we ignore, as it doesn't make any sense.
           // defs, pattern, switch (FIXME: Mail SVG WG about these)
           // symbol (is converted to a svg element, when referenced by use, we
@@ -90,21 +90,28 @@ static HashSet<AtomicString>& ClipperFilterMaskerTags() {
 bool SVGResources::SupportsMarkers(const SVGElement& element) {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, tag_list,
                       ({
-                          kLineTag.LocalName(), kPathTag.LocalName(),
-                          kPolygonTag.LocalName(), kPolylineTag.LocalName(),
+                          svg_names::kLineTag.LocalName(),
+                          svg_names::kPathTag.LocalName(),
+                          svg_names::kPolygonTag.LocalName(),
+                          svg_names::kPolylineTag.LocalName(),
                       }));
   return tag_list.Contains(element.localName());
 }
 
 static HashSet<AtomicString>& FillAndStrokeTags() {
-  DEFINE_STATIC_LOCAL(
-      HashSet<AtomicString>, tag_list,
-      ({
-          kCircleTag.LocalName(), kEllipseTag.LocalName(), kLineTag.LocalName(),
-          kPathTag.LocalName(), kPolygonTag.LocalName(),
-          kPolylineTag.LocalName(), kRectTag.LocalName(), kTextTag.LocalName(),
-          kTextPathTag.LocalName(), kTSpanTag.LocalName(),
-      }));
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, tag_list,
+                      ({
+                          svg_names::kCircleTag.LocalName(),
+                          svg_names::kEllipseTag.LocalName(),
+                          svg_names::kLineTag.LocalName(),
+                          svg_names::kPathTag.LocalName(),
+                          svg_names::kPolygonTag.LocalName(),
+                          svg_names::kPolylineTag.LocalName(),
+                          svg_names::kRectTag.LocalName(),
+                          svg_names::kTextTag.LocalName(),
+                          svg_names::kTextPathTag.LocalName(),
+                          svg_names::kTSpanTag.LocalName(),
+                      }));
   return tag_list;
 }
 

@@ -53,6 +53,7 @@ blink_modules_sources("peerconnection") {
     "call_setup_state_tracker.cc",
     "call_setup_state_tracker.h",
     "media_stream_remote_video_source.cc",
+    "media_stream_remote_video_source.h",
     "media_stream_video_webrtc_sink.cc",
     "peer_connection_dependency_factory.cc",
     "rtc_certificate.cc",

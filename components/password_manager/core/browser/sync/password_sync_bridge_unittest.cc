@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/data_batch.h"
@@ -233,8 +234,8 @@ class PasswordSyncBridgeTest : public testing::Test {
         .WillByDefault(Invoke(&fake_db_, &FakeDatabase::RemoveLogin));
 
     bridge_ = std::make_unique<PasswordSyncBridge>(
-        mock_processor_.CreateForwardingProcessor(),
-        &mock_password_store_sync_);
+        mock_processor_.CreateForwardingProcessor(), &mock_password_store_sync_,
+        sync_enabled_or_disabled_cb_.Get());
 
     // It's the responsibility of the PasswordStoreSync to inform the bridge
     // about changes in the password store. The bridge notifies the
@@ -303,11 +304,16 @@ class PasswordSyncBridgeTest : public testing::Test {
     return &mock_password_store_sync_;
   }
 
+  base::MockRepeatingClosure* mock_sync_enabled_or_disabled_cb() {
+    return &sync_enabled_or_disabled_cb_;
+  }
+
  private:
   FakeDatabase fake_db_;
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
   testing::NiceMock<MockSyncMetadataStore> mock_sync_metadata_store_sync_;
   testing::NiceMock<MockPasswordStoreSync> mock_password_store_sync_;
+  testing::NiceMock<base::MockRepeatingClosure> sync_enabled_or_disabled_cb_;
   std::unique_ptr<PasswordSyncBridge> bridge_;
 };
 
@@ -780,7 +786,7 @@ TEST_F(PasswordSyncBridgeTest,
                                     /*entities=*/testing::SizeIs(1))));
 
   PasswordSyncBridge bridge(mock_processor().CreateForwardingProcessor(),
-                            mock_password_store_sync());
+                            mock_password_store_sync(), base::DoNothing());
 }
 
 // Tests that in case ReadAllLogins() during initial merge returns encryption
@@ -804,6 +810,66 @@ TEST_F(PasswordSyncBridgeTest, ShouldDeleteUndecryptableLoginsDuringMerge) {
 TEST_F(PasswordSyncBridgeTest,
        ShouldDeleteSyncMetadataWhenApplyStopSyncChanges) {
   EXPECT_CALL(*mock_sync_metadata_store_sync(), DeleteAllSyncMetadata());
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldNotifyOnSyncEnable) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(true));
+
+  // New password data becoming available because sync was newly enabled should
+  // trigger the callback.
+  EXPECT_CALL(*mock_sync_enabled_or_disabled_cb(), Run());
+
+  syncer::EntityChangeList initial_entity_data;
+  initial_entity_data.push_back(syncer::EntityChange::CreateAdd(
+      /*storage_key=*/"",
+      SpecificsToEntity(CreateSpecificsWithSignonRealm(kSignonRealm1))));
+
+  base::Optional<syncer::ModelError> error = bridge()->MergeSyncData(
+      bridge()->CreateMetadataChangeList(), std::move(initial_entity_data));
+  ASSERT_FALSE(error);
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldNotNotifyOnSyncChange) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(true));
+
+  // New password data becoming available due to an incoming sync change should
+  // *not* trigger the callback. This is mainly for performance reasons: In
+  // practice, this callback will cause all PasswordFormManagers to re-query
+  // from the password store, which can be expensive.
+  EXPECT_CALL(*mock_sync_enabled_or_disabled_cb(), Run()).Times(0);
+
+  syncer::EntityChangeList entity_changes;
+  entity_changes.push_back(syncer::EntityChange::CreateAdd(
+      /*storage_key=*/"",
+      SpecificsToEntity(CreateSpecificsWithSignonRealm(kSignonRealm1))));
+
+  base::Optional<syncer::ModelError> error = bridge()->ApplySyncChanges(
+      bridge()->CreateMetadataChangeList(), std::move(entity_changes));
+  ASSERT_FALSE(error);
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldNotifyOnSyncDisableIfAccountStore) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(true));
+
+  // The account password store gets cleared when sync is disabled, so this
+  // should trigger the callback.
+  EXPECT_CALL(*mock_sync_enabled_or_disabled_cb(), Run());
+
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+}
+
+TEST_F(PasswordSyncBridgeTest, ShouldNotNotifyOnSyncDisableIfProfileStore) {
+  ON_CALL(*mock_password_store_sync(), IsAccountStore())
+      .WillByDefault(Return(false));
+
+  // The profile password store does *not* get cleared when sync is disabled, so
+  // this should *not* trigger the callback.
+  EXPECT_CALL(*mock_sync_enabled_or_disabled_cb(), Run()).Times(0);
+
   bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
 }
 

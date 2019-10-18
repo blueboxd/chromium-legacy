@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -209,6 +210,8 @@ void LocalHistoryZeroSuggestProviderTest::ExpectMatches(
 
 // Tests that suggestions are returned only if when input is empty and focused.
 TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
+  base::HistogramTester histogram_tester;
+
   LoadURLs({
       {default_search_provider(), "hello world", "&foo=bar", 1},
   });
@@ -216,11 +219,38 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Input) {
   StartProviderAndWaitUntilDone(/*text=*/"blah");
   ExpectMatches({});
 
+  // Following histograms should not be logged if zero-prefix suggestions are
+  // not allowed.
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount", 0);
+
   StartProviderAndWaitUntilDone(/*text=*/"", /*from_omnibox_focus=*/false);
   ExpectMatches({});
 
+  // Following histograms should not be logged if zero-prefix suggestions are
+  // not allowed.
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 0);
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount", 0);
+
   StartProviderAndWaitUntilDone();
   ExpectMatches({{"hello world", 500}});
+
+  // Following histograms should be logged when zero-prefix suggestions are
+  // allowed and the keyword search terms database is queried.
+  histogram_tester.ExpectUniqueSample(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Omnibox.LocalHistoryZeroSuggest.MaxMatchesCount",
+      provider_->max_matches_, 1);
+  // Deletion histograms should not be logged unless a suggestion is deleted.
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.SyncDeleteTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.AsyncDeleteTime", 0);
 }
 
 // Tests that suggestions are returned only if ZeroSuggestVariant is configured
@@ -325,6 +355,8 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Suggestions_Freshness) {
 
 // Tests that the provider supports deletion of matches.
 TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
+  base::HistogramTester histogram_tester;
+
   auto* template_url_service = client_->GetTemplateURLService();
   auto* other_search_provider = template_url_service->Add(
       std::make_unique<TemplateURL>(*GenerateDummyTemplateURLData("other")));
@@ -340,7 +372,20 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
   StartProviderAndWaitUntilDone();
   ExpectMatches({{"hello world", 500}, {"not to be deleted", 499}});
 
+  // The keyword search terms database should be queried for the search terms
+  // submitted to the default search provider only; which are 4 unique search
+  // terms in this case.
+  histogram_tester.ExpectUniqueSample(
+      "Omnibox.LocalHistoryZeroSuggest.SearchTermsSeenCount", 4, 1);
+
   provider_->DeleteMatch(provider_->matches()[0]);
+
+  // Histogram tracking the synchronous deletion duration should get logged
+  // synchrnously.
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.SyncDeleteTime", 1);
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.AsyncDeleteTime", 0);
 
   // Make sure the deletion takes effect immediately in the provider before the
   // history service asynchronously performs the deletion or even before the
@@ -352,6 +397,11 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Delete) {
 
   // Wait until the history service performs the deletion.
   WaitForHistoryService();
+
+  // Histogram tracking the async deletion duration should get logged once the
+  // HistoryService async task returns to the initiating thread.
+  histogram_tester.ExpectTotalCount(
+      "Omnibox.LocalHistoryZeroSuggest.AsyncDeleteTime", 1);
 
   StartProviderAndWaitUntilDone();
   ExpectMatches({{"not to be deleted", 500}});

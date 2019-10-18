@@ -26,6 +26,7 @@ struct NativeObserverCallbacks {
   base::RepeatingClosure on_can_make_payment_returned;
   base::RepeatingClosure on_has_enrolled_instrument_called;
   base::RepeatingClosure on_has_enrolled_instrument_returned;
+  base::RepeatingClosure on_show_instruments_ready;
   base::RepeatingClosure on_not_supported_error;
   base::RepeatingClosure on_connection_terminated;
   base::RepeatingClosure on_abort_called;
@@ -41,6 +42,7 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
     base::RepeatingClosure on_can_make_payment_returned,
     base::RepeatingClosure on_has_enrolled_instrument_called,
     base::RepeatingClosure on_has_enrolled_instrument_returned,
+    base::RepeatingClosure on_show_instruments_ready,
     base::RepeatingClosure on_not_supported_error,
     base::RepeatingClosure on_connection_terminated,
     base::RepeatingClosure on_abort_called) {
@@ -55,6 +57,7 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
       std::move(on_has_enrolled_instrument_called);
   callbacks.on_has_enrolled_instrument_returned =
       std::move(on_has_enrolled_instrument_returned);
+  callbacks.on_show_instruments_ready = std::move(on_show_instruments_ready);
   callbacks.on_not_supported_error = std::move(on_not_supported_error);
   callbacks.on_connection_terminated = std::move(on_connection_terminated);
   callbacks.on_abort_called = std::move(on_abort_called);
@@ -64,6 +67,7 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
       reinterpret_cast<jlong>(&callbacks.on_can_make_payment_returned),
       reinterpret_cast<jlong>(&callbacks.on_has_enrolled_instrument_called),
       reinterpret_cast<jlong>(&callbacks.on_has_enrolled_instrument_returned),
+      reinterpret_cast<jlong>(&callbacks.on_show_instruments_ready),
       reinterpret_cast<jlong>(&callbacks.on_not_supported_error),
       reinterpret_cast<jlong>(&callbacks.on_connection_terminated),
       reinterpret_cast<jlong>(&callbacks.on_abort_called));

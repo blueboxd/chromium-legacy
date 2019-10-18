@@ -25,8 +25,7 @@ MojoAudioDecoder::MojoAudioDecoder(
     : task_runner_(task_runner),
       pending_remote_decoder_(std::move(remote_decoder)),
       writer_capacity_(
-          GetDefaultDecoderBufferConverterCapacity(DemuxerStream::AUDIO)),
-      client_binding_(this) {
+          GetDefaultDecoderBufferConverterCapacity(DemuxerStream::AUDIO)) {
   DVLOG(1) << __func__;
 }
 
@@ -150,10 +149,7 @@ void MojoAudioDecoder::BindRemoteDecoder() {
   remote_decoder_.set_disconnect_handler(
       base::Bind(&MojoAudioDecoder::OnConnectionError, base::Unretained(this)));
 
-  mojom::AudioDecoderClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-
-  remote_decoder_->Construct(std::move(client_ptr_info));
+  remote_decoder_->Construct(client_receiver_.BindNewEndpointAndPassRemote());
 }
 
 void MojoAudioDecoder::OnBufferDecoded(mojom::AudioBufferPtr buffer) {

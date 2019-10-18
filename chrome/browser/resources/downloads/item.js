@@ -211,6 +211,15 @@ cr.define('downloads', function() {
       const data = this.data;
 
       switch (data.state) {
+        case downloads.States.COMPLETE:
+          switch (data.dangerType) {
+            case downloads.DangerType.DEEP_SCANNED_SAFE:
+              return loadTimeData.getString('deepScannedSafeDesc');
+            case downloads.DangerType.DEEP_SCANNED_OPENED_DANGEROUS:
+              return loadTimeData.getString('deepScannedOpenedDangerousDesc');
+          }
+          break;
+
         case downloads.States.DANGEROUS:
           const fileName = data.fileName;
           switch (data.dangerType) {
@@ -227,12 +236,25 @@ cr.define('downloads', function() {
 
             case downloads.DangerType.POTENTIALLY_UNWANTED:
               return loadTimeData.getString('dangerSettingsDesc');
+
+            case downloads.DangerType.SENSITIVE_CONTENT_WARNING:
+              return loadTimeData.getString('sensitiveContentWarningDesc');
           }
           break;
 
         case downloads.States.IN_PROGRESS:
         case downloads.States.PAUSED:  // Fallthrough.
           return data.progressStatusText;
+
+        case downloads.States.INTERRUPTED:
+          switch (data.dangerType) {
+            case downloads.DangerType.SENSITIVE_CONTENT_BLOCK:
+              return loadTimeData.getString('sensitiveContentBlockedDesc');
+            case downloads.DangerType.BLOCKED_TOO_LARGE:
+              return loadTimeData.getString('blockedTooLargeDesc');
+            case downloads.DangerType.BLOCKED_PASSWORD_PROTECTED:
+              return loadTimeData.getString('blockedPasswordProtectedDesc');
+          }
       }
 
       return '';
@@ -243,10 +265,23 @@ cr.define('downloads', function() {
      * @private
      */
     computeIcon_: function() {
-      if (loadTimeData.getBoolean('requestsApVerdicts') &&
-          this.data &&
-          this.data.dangerType == downloads.DangerType.UNCOMMON_CONTENT) {
-        return 'cr:error';
+      if (this.data) {
+        const dangerType = this.data.dangerType;
+
+        if ((loadTimeData.getBoolean('requestsApVerdicts') &&
+             dangerType == downloads.DangerType.UNCOMMON_CONTENT) ||
+            dangerType == downloads.DangerType.SENSITIVE_CONTENT_WARNING) {
+          return 'cr:error';
+        }
+
+        const WARNING_TYPES = [
+          downloads.DangerType.SENSITIVE_CONTENT_BLOCK,
+          downloads.DangerType.BLOCKED_TOO_LARGE,
+          downloads.DangerType.BLOCKED_PASSWORD_PROTECTED,
+        ];
+        if (WARNING_TYPES.includes(dangerType)) {
+          return 'cr:warning';
+        }
       }
       if (this.isDangerous_) {
         return 'cr:warning';
@@ -406,8 +441,16 @@ cr.define('downloads', function() {
         return;
       }
 
+      const OVERRIDDEN_ICON_TYPES = [
+        downloads.DangerType.SENSITIVE_CONTENT_BLOCK,
+        downloads.DangerType.BLOCKED_TOO_LARGE,
+        downloads.DangerType.BLOCKED_PASSWORD_PROTECTED,
+      ];
+
       if (this.isDangerous_) {
         this.$.url.removeAttribute('href');
+        this.useFileIcon_ = false;
+      } else if (OVERRIDDEN_ICON_TYPES.includes(this.data.dangerType)) {
         this.useFileIcon_ = false;
       } else {
         this.$.url.href = assert(this.data.url);

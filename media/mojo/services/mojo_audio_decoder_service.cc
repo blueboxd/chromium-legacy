@@ -27,7 +27,7 @@ MojoAudioDecoderService::MojoAudioDecoderService(
 MojoAudioDecoderService::~MojoAudioDecoderService() = default;
 
 void MojoAudioDecoderService::Construct(
-    mojom::AudioDecoderClientAssociatedPtrInfo client) {
+    mojo::PendingAssociatedRemote<mojom::AudioDecoderClient> client) {
   DVLOG(1) << __func__;
   client_.Bind(std::move(client));
 }

@@ -1015,8 +1015,9 @@ bool RTCPeerConnectionHandler::Initialize(
   CHECK(!initialize_called_);
   initialize_called_ = true;
 
-  peer_connection_tracker_ =
-      RenderThreadImpl::current()->peer_connection_tracker()->AsWeakPtr();
+  // TODO(crbug.com/787254): Evaluate the need for passing weak ptr since
+  // PeerConnectionTracker is now leaky with base::LazyInstance.
+  peer_connection_tracker_ = PeerConnectionTracker::GetInstance()->AsWeakPtr();
 
   configuration_ = server_configuration;
 

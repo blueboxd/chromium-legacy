@@ -52,8 +52,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 static int64_t GenerateFormDataIdentifier() {
   // Initialize to the current time to reduce the likelihood of generating
   // identifiers that overlap with those from past/future browser sessions.
@@ -183,16 +181,20 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
   copied_attributes.CopyFrom(attributes);
   if (submit_button) {
     AtomicString attribute_value;
-    if (!(attribute_value = submit_button->FastGetAttribute(kFormactionAttr))
+    if (!(attribute_value =
+              submit_button->FastGetAttribute(html_names::kFormactionAttr))
              .IsNull())
       copied_attributes.ParseAction(attribute_value);
-    if (!(attribute_value = submit_button->FastGetAttribute(kFormenctypeAttr))
+    if (!(attribute_value =
+              submit_button->FastGetAttribute(html_names::kFormenctypeAttr))
              .IsNull())
       copied_attributes.UpdateEncodingType(attribute_value);
-    if (!(attribute_value = submit_button->FastGetAttribute(kFormmethodAttr))
+    if (!(attribute_value =
+              submit_button->FastGetAttribute(html_names::kFormmethodAttr))
              .IsNull())
       copied_attributes.UpdateMethodType(attribute_value);
-    if (!(attribute_value = submit_button->FastGetAttribute(kFormtargetAttr))
+    if (!(attribute_value =
+              submit_button->FastGetAttribute(html_names::kFormtargetAttr))
              .IsNull())
       copied_attributes.SetTarget(attribute_value);
   }

@@ -50,8 +50,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 LayoutImage::LayoutImage(Element* element)
     : LayoutReplaced(element, LayoutSize()),
       did_increment_visually_non_empty_pixel_count_(false),
@@ -287,7 +285,8 @@ LayoutUnit LayoutImage::MinimumReplacedHeight() const {
 
 HTMLMapElement* LayoutImage::ImageMap() const {
   HTMLImageElement* i = ToHTMLImageElementOrNull(GetNode());
-  return i ? i->GetTreeScope().GetImageMap(i->FastGetAttribute(kUsemapAttr))
+  return i ? i->GetTreeScope().GetImageMap(
+                 i->FastGetAttribute(html_names::kUsemapAttr))
            : nullptr;
 }
 

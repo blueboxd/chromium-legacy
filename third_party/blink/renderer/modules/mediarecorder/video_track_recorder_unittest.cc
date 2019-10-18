@@ -19,8 +19,10 @@
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediarecorder/buildflags.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/video_frame_utils.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 using media::VideoFrame;
 using video_track_recorder::kVEAEncoderMinResolutionHeight;
@@ -54,11 +56,16 @@ const gfx::Size kTrackRecorderTestSize[] = {
     gfx::Size(kVEAEncoderMinResolutionWidth / 2,
               kVEAEncoderMinResolutionHeight / 2),
     gfx::Size(kVEAEncoderMinResolutionWidth, kVEAEncoderMinResolutionHeight)};
+const media::VideoFrame::StorageType kStorageTypeToTest[] = {
+    media::VideoFrame::STORAGE_OWNED_MEMORY,
+    media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER};
 static const int kTrackRecorderTestSizeDiff = 20;
 
 class VideoTrackRecorderTest
-    : public TestWithParam<
-          testing::tuple<VideoTrackRecorder::CodecId, gfx::Size, bool>> {
+    : public TestWithParam<testing::tuple<VideoTrackRecorder::CodecId,
+                                          gfx::Size,
+                                          bool,
+                                          media::VideoFrame::StorageType>> {
  public:
   VideoTrackRecorderTest() : mock_source_(new MockMediaStreamVideoSource()) {
     const WebString webkit_track_id(WebString::FromASCII("dummy"));
@@ -162,9 +169,52 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   const bool encode_alpha_channel = testing::get<2>(GetParam());
   // |frame_size| cannot be arbitrarily small, should be reasonable.
   const gfx::Size& frame_size = testing::get<1>(GetParam());
+  const media::VideoFrame::StorageType storage_type =
+      testing::get<3>(GetParam());
+
+  // We don't support alpha channel with GpuMemoryBuffer frames.
+  if (storage_type == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER &&
+      encode_alpha_channel) {
+    return;
+  }
+
+  auto create_test_frame =
+      [](media::VideoFrame::StorageType storage_type,
+         const gfx::Size& frame_size,
+         bool encode_alpha_channel) -> scoped_refptr<VideoFrame> {
+    scoped_refptr<VideoFrame> video_frame;
+    switch (storage_type) {
+      case media::VideoFrame::STORAGE_OWNED_MEMORY:
+        video_frame = encode_alpha_channel
+                          ? VideoFrame::CreateTransparentFrame(frame_size)
+                          : VideoFrame::CreateBlackFrame(frame_size);
+        break;
+      case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER: {
+        video_frame = CreateTestFrame(frame_size, gfx::Rect(frame_size),
+                                      frame_size, storage_type);
+        // Create a black NV12 frame.
+        auto* gmb = video_frame->GetGpuMemoryBuffer();
+        gmb->Map();
+        const uint8_t kBlackY = 0x00;
+        const uint8_t kBlackUV = 0x80;
+        memset(static_cast<uint8_t*>(gmb->memory(0)), kBlackY,
+               gmb->stride(0) * frame_size.height());
+        memset(static_cast<uint8_t*>(gmb->memory(1)), kBlackUV,
+               gmb->stride(1) * (frame_size.height() / 2));
+        gmb->Unmap();
+        break;
+      }
+      default:
+        DLOG(ERROR) << "Unexpected storage type";
+    }
+    return video_frame;
+  };
+
   const scoped_refptr<VideoFrame> video_frame =
-      encode_alpha_channel ? VideoFrame::CreateTransparentFrame(frame_size)
-                           : VideoFrame::CreateBlackFrame(frame_size);
+      create_test_frame(storage_type, frame_size, encode_alpha_channel);
+  if (!video_frame)
+    ASSERT_TRUE(!!video_frame);
+
   const double kFrameRate = 60.0f;
   video_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                      kFrameRate);
@@ -193,8 +243,7 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   const gfx::Size frame_size2(frame_size.width() + kTrackRecorderTestSizeDiff,
                               frame_size.height());
   const scoped_refptr<VideoFrame> video_frame2 =
-      encode_alpha_channel ? VideoFrame::CreateTransparentFrame(frame_size2)
-                           : VideoFrame::CreateBlackFrame(frame_size2);
+      create_test_frame(storage_type, frame_size2, encode_alpha_channel);
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
@@ -215,7 +264,9 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   EXPECT_GE(second_frame_encoded_data.size(), kEncodedSizeThreshold);
   EXPECT_GE(third_frame_encoded_data.size(), kEncodedSizeThreshold);
 
-  if (encode_alpha_channel && CanEncodeAlphaChannel()) {
+  // We only support NV12 with GpuMemoryBuffer video frame.
+  if (storage_type != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER &&
+      encode_alpha_channel && CanEncodeAlphaChannel()) {
     EXPECT_GE(first_frame_encoded_alpha.size(), kEncodedSizeThreshold);
     EXPECT_GE(second_frame_encoded_alpha.size(), kEncodedSizeThreshold);
     EXPECT_GE(third_frame_encoded_alpha.size(), kEncodedSizeThreshold);
@@ -236,12 +287,24 @@ TEST_P(VideoTrackRecorderTest, EncodeFrameWithPaddedCodedSize) {
 
   const gfx::Size& frame_size = testing::get<1>(GetParam());
   const size_t kCodedSizePadding = 16;
-  const scoped_refptr<VideoFrame> video_frame =
-      VideoFrame::CreateZeroInitializedFrame(
-          media::PIXEL_FORMAT_I420,
-          gfx::Size(frame_size.width() + kCodedSizePadding,
-                    frame_size.height()),
-          gfx::Rect(frame_size), frame_size, base::TimeDelta());
+  const media::VideoFrame::StorageType storage_type =
+      testing::get<3>(GetParam());
+  const gfx::Size padded_size(frame_size.width() + kCodedSizePadding,
+                              frame_size.height());
+  scoped_refptr<VideoFrame> video_frame;
+  switch (storage_type) {
+    case media::VideoFrame::STORAGE_OWNED_MEMORY:
+      video_frame = VideoFrame::CreateZeroInitializedFrame(
+          media::PIXEL_FORMAT_I420, padded_size, gfx::Rect(frame_size),
+          frame_size, base::TimeDelta());
+      break;
+    case media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
+      video_frame = CreateTestFrame(padded_size, gfx::Rect(frame_size),
+                                    frame_size, storage_type);
+      break;
+    default:
+      NOTREACHED() << "Unexpected storage type";
+  }
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
@@ -354,7 +417,8 @@ INSTANTIATE_TEST_SUITE_P(,
                          VideoTrackRecorderTest,
                          ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
                                             ValuesIn(kTrackRecorderTestSize),
-                                            ::testing::Bool()));
+                                            ::testing::Bool(),
+                                            ValuesIn(kStorageTypeToTest)));
 
 class CodecEnumeratorTest : public ::testing::Test {
  public:

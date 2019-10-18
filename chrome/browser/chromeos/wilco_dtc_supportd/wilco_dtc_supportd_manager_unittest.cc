@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/testing_wilco_dtc_supportd_bridge_wrapper.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
@@ -96,11 +96,13 @@ class FakeWilcoDtcSupportdManagerDelegate final
 class WilcoDtcSupportdManagerTest : public testing::Test {
  protected:
   WilcoDtcSupportdManagerTest() {
-    DBusThreadManager::Initialize();
+    WilcoDtcSupportdClient::InitializeFake();
     upstart_client_ = std::make_unique<TestUpstartClient>();
   }
 
-  ~WilcoDtcSupportdManagerTest() override { DBusThreadManager::Shutdown(); }
+  ~WilcoDtcSupportdManagerTest() override {
+    WilcoDtcSupportdClient::Shutdown();
+  }
 
   std::unique_ptr<WilcoDtcSupportdManager::Delegate> CreateDelegate() {
     return std::make_unique<FakeWilcoDtcSupportdManagerDelegate>(

@@ -19,7 +19,7 @@ namespace blink {
 
 class ExecutionContext;
 class ScriptState;
-class WakeLockStateRecord;
+class WakeLockManager;
 
 class MODULES_EXPORT WakeLockSentinel final
     : public EventTargetWithInlineData,
@@ -31,7 +31,7 @@ class MODULES_EXPORT WakeLockSentinel final
  public:
   WakeLockSentinel(ScriptState* script_state,
                    WakeLockType type,
-                   WakeLockStateRecord* manager);
+                   WakeLockManager* manager);
   ~WakeLockSentinel() override;
 
   // Web-exposed interfaces
@@ -51,7 +51,7 @@ class MODULES_EXPORT WakeLockSentinel final
   void ContextDestroyed(ExecutionContext*) override;
 
  private:
-  friend class WakeLockStateRecord;
+  friend class WakeLockManager;
 
   // This function, which only has any effect once, detaches this sentinel from
   // its |manager_|, and fires a "release" event.
@@ -61,7 +61,7 @@ class MODULES_EXPORT WakeLockSentinel final
   // where |script_state_|'s context is no longer valid.
   void DoRelease();
 
-  Member<WakeLockStateRecord> manager_;
+  Member<WakeLockManager> manager_;
   const WakeLockType type_;
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockSentinelTest, MultipleReleaseCalls);

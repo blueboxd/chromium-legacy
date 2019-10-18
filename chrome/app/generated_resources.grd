@@ -1607,6 +1607,26 @@ are declared in tools/grit/grit_rule.gni.
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it may be dangerous.">
         This type of file may harm your computer.
       </message>
+      <message name="IDS_DEEP_SCANNED_SAFE_DESCRIPTION"
+        desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be safe.">
+        Scan complete, no issues identified.
+      </message>
+      <message name="IDS_DEEP_SCANNED_OPENED_DANGEROUS_DESCRIPTION"
+        desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be malicious.">
+        Download contains malware.
+      </message>
+      <message name="IDS_BLOCK_REASON_SENSITIVE_CONTENT_WARNING" desc="Message shown to the user on chrome://downloads page to explain this download is showing a warning because it contains sensitive content">
+        This file contains sensitive content.
+      </message>
+      <message name="IDS_SENSITIVE_CONTENT_BLOCKED_DESCRIPTION" desc="Message shown to the user on chrome://downloads page to explain this download is blocked because it contains sensitive content">
+        This file has been blocked because it contains sensitive content.
+      </message>
+      <message name="IDS_BLOCKED_TOO_LARGE_DESCRIPTION" desc="Message shown to the user on chrome://downloads page to explain this download is blocked because it is too large for deep scanning">
+        This file is too large for cloud scanning and has been blocked from opening.
+      </message>
+      <message name="IDS_BLOCKED_PASSWORD_PROTECTED_DESCRIPTION" desc="Message shown to the user on chrome://downloads page to explain this download is blocked because it is password protected">
+        This file is encrypted and has been blocked from opening.
+      </message>
 
       <if expr="chromeos">
         <message name="IDS_PROMPT_BLOCKED_MALICIOUS_DOWNLOAD_TITLE"

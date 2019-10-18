@@ -699,8 +699,7 @@ base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {
 
 void RendererBlinkPlatformImpl::TrackGetUserMedia(
     const blink::WebUserMediaRequest& web_request) {
-  RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
-      web_request);
+  PeerConnectionTracker::GetInstance()->TrackGetUserMedia(web_request);
 }
 
 bool RendererBlinkPlatformImpl::IsWebRtcHWH264DecodingEnabled(

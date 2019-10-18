@@ -9,32 +9,24 @@
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:layout_marginBottom="16dp"
-    android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:orientation="vertical">
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="@dimen/touch_to_fill_sheet_margin"
-        android:layout_marginStart="@dimen/touch_to_fill_sheet_margin"
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/touch_to_fill_header_image" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/touch_to_fill_sheet_margin"
-        android:layout_marginStart="@dimen/touch_to_fill_sheet_margin"
         android:layout_gravity="center_horizontal"
         android:text="@string/touch_to_fill_sheet_title"
         android:textAppearance="@style/TextAppearance.BlackHeadline" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/touch_to_fill_sheet_subtitle"
-        android:layout_marginEnd="@dimen/touch_to_fill_sheet_margin"
-        android:layout_marginStart="@dimen/touch_to_fill_sheet_margin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"

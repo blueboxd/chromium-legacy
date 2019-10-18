@@ -26,6 +26,9 @@ class ASH_EXPORT DockedMagnifierController {
   // by itself.
   virtual void CenterOnPoint(const gfx::Point& point_in_screen) = 0;
 
+  // Returns docked magnifier height.
+  virtual int GetMagnifierHeightForTesting() const = 0;
+
  protected:
   virtual ~DockedMagnifierController() = default;
 };

@@ -25,7 +25,7 @@ void FilterInterfacesImpl(
     service_manager::mojom::InterfaceProviderRequest request,
     service_manager::mojom::InterfaceProviderPtr provider) {
   RenderProcessHost* process = RenderProcessHost::FromID(process_id);
-  if (!process)
+  if (!process || !process->IsInitializedAndNotDead())
     return;
 
   service_manager::Connector* connector =

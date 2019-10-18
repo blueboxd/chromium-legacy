@@ -15,7 +15,11 @@ behave in presence of out-of-process iframes.
 Tests under `virtual/not-site-per-process` are run with
 `--disable-site-isolation-trials` cmdline flag which turns off site
 isolation.  This is needed to preserve test coverage provided by around
-60 tests that fail when run with site isolation.
+60 tests that fail when run with site isolation. `isolated-code-cache` tests are
+also run with `--disable-features=SplitCacheByNetworkIsolationKey` which turns
+off HTTP cache partitioning. This is needed as a test expects cross-origin
+resources to be cached. Equivalent tests with the feature enabled can be found
+under `virtual/split-http-cache-not-site-per-process`.
 
 When modifying the list of files that behave differently with and without
 OOPIFs, please consider modifying all the locations below:

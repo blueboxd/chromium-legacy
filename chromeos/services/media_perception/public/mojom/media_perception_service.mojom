@@ -12,8 +12,8 @@ import "services/video_capture/public/mojom/video_source_provider.mojom";
 // Used to establish two-way communication between a client and the media
 // perception service.
 interface MediaPerceptionService {
-  GetController@0(MediaPerceptionController& request,
-                  MediaPerceptionControllerClient client);
+  GetController@0(pending_receiver<MediaPerceptionController> receiver,
+                  pending_remote<MediaPerceptionControllerClient> client);
 };
 
 interface MediaPerceptionController {

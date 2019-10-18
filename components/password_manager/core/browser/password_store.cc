@@ -124,11 +124,13 @@ PasswordStore::PasswordStore()
       init_status_(InitStatus::kUnknown) {}
 
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
-                         PrefService* prefs) {
+                         PrefService* prefs,
+                         base::RepeatingClosure sync_enabled_or_disabled_cb) {
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   DCHECK(main_task_runner_);
   background_task_runner_ = CreateBackgroundTaskRunner();
   DCHECK(background_task_runner_);
+  sync_enabled_or_disabled_cb_ = std::move(sync_enabled_or_disabled_cb);
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   prefs_ = prefs;
   hash_password_manager_.set_prefs(prefs);
@@ -553,7 +555,7 @@ bool PasswordStore::InitOnBackgroundSequence(
     sync_bridge_.reset(new PasswordSyncBridge(
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
             syncer::PASSWORDS, base::DoNothing()),
-        /*password_store_sync=*/this));
+        /*password_store_sync=*/this, sync_enabled_or_disabled_cb_));
   } else {
     DCHECK(!syncable_service_);
     syncable_service_.reset(new PasswordSyncableService(this));

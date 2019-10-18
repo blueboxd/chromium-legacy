@@ -183,7 +183,7 @@ const base::Feature kSessionManagerLongKillTimeout{
 
 // Enables or disables the scrollable shelf.
 const base::Feature kShelfScrollable{"ShelfScrollable",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the shelf hotseat.
 const base::Feature kShelfHotseat{"ShelfHotseat",

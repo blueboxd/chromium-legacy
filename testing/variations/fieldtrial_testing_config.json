@@ -2860,30 +2860,6 @@
             ]
         }
     ],
-    "GwpAsanUnified": [
-        {
-            "platforms": [
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "AllocationSamplingRange": "16",
-                        "MaxAllocations": "70",
-                        "MaxMetadata": "255",
-                        "ProcessSamplingBoost2": "10",
-                        "ProcessSamplingProbability": "0.015"
-                    },
-                    "enable_features": [
-                        "GwpAsanMalloc",
-                        "GwpAsanPartitionAlloc"
-                    ]
-                }
-            ]
-        }
-    ],
     "HTTPReallyBadFinal": [
         {
             "platforms": [
@@ -5372,6 +5348,27 @@
                     "name": "EnabledLaunch",
                     "enable_features": [
                         "CookieDeprecationMessages"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SavePasswordIllustration": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "image": "1"
+                    },
+                    "enable_features": [
+                        "SavePasswordIllustration"
                     ]
                 }
             ]

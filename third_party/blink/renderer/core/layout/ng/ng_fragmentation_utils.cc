@@ -213,6 +213,44 @@ void FinishFragmentation(const NGConstraintSpace& space,
   builder->SetIntrinsicBlockSize(intrinsic_block_size);
 }
 
+NGBreakStatus BreakBeforeChildIfNeeded(const NGConstraintSpace& space,
+                                       NGLayoutInputNode child,
+                                       const NGLayoutResult& layout_result,
+                                       LayoutUnit fragmentainer_block_offset,
+                                       bool has_container_separation,
+                                       NGBoxFragmentBuilder* builder) {
+  DCHECK(space.HasBlockFragmentation());
+
+  if (has_container_separation) {
+    EBreakBetween break_between =
+        CalculateBreakBetweenValue(child, layout_result, *builder);
+    if (IsForcedBreakValue(space, break_between)) {
+      BreakBeforeChild(space, child, layout_result, fragmentainer_block_offset,
+                       kBreakAppealPerfect, /* is_forced_break */ true,
+                       builder);
+      return NGBreakStatus::kBrokeBefore;
+    }
+  }
+
+  NGBreakAppeal appeal_before = CalculateBreakAppealBefore(
+      space, child, layout_result, *builder, has_container_separation);
+
+  // Attempt to move past the break point, and if we can do that, also assess
+  // the appeal of breaking there, even if we didn't.
+  if (MovePastBreakpoint(space, child, layout_result,
+                         fragmentainer_block_offset, appeal_before, builder))
+    return NGBreakStatus::kContinue;
+
+  // Breaking inside the child isn't appealing, and we're out of space. Figure
+  // out where to insert a soft break. It will either be before this child, or
+  // before an earlier sibling, if there's a more appealing breakpoint there.
+  if (!AttemptSoftBreak(space, child, layout_result, fragmentainer_block_offset,
+                        appeal_before, builder))
+    return NGBreakStatus::kNeedsEarlierBreak;
+
+  return NGBreakStatus::kBrokeBefore;
+}
+
 void BreakBeforeChild(const NGConstraintSpace& space,
                       NGLayoutInputNode child,
                       const NGLayoutResult& layout_result,

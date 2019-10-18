@@ -27,6 +27,7 @@ namespace content {
 class RenderFrameHostImpl;
 class RenderFrameProxyHost;
 class RenderViewHostImpl;
+class SiteInstance;
 
 // BackForwardCache:
 //
@@ -77,12 +78,13 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
     ~CanStoreDocumentResult();
 
     bool can_store;
-    base::Optional<BackForwardCacheMetrics::CanNotStoreDocumentReason> reason;
+    // TODO(hajimehoshi): Accept multiple reasons.
+    base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason;
     uint64_t blocklisted_features;
 
     static CanStoreDocumentResult Yes();
     static CanStoreDocumentResult No(
-        BackForwardCacheMetrics::CanNotStoreDocumentReason reason);
+        BackForwardCacheMetrics::NotRestoredReason reason);
     static CanStoreDocumentResult NoDueToFeatures(uint64_t features);
 
     std::string ToString();
@@ -92,8 +94,7 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
    private:
     CanStoreDocumentResult(
         bool can_store,
-        base::Optional<BackForwardCacheMetrics::CanNotStoreDocumentReason>
-            reason,
+        base::Optional<BackForwardCacheMetrics::NotRestoredReason> reason,
         uint64_t blocklisted_features);
   };
 
@@ -130,6 +131,10 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
 
   // Remove all entries from the BackForwardCache.
   void Flush();
+
+  // Evict all cached pages in the same BrowsingInstance as
+  // |site_instance|.
+  void EvictFramesInRelatedSiteInstances(SiteInstance* site_instance);
 
   // Posts a task to destroy all frames in the BackForwardCache that have been
   // marked as evicted.

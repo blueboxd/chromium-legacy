@@ -33,13 +33,14 @@ class Length;
 
 class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
  public:
+  template <typename T>
   static void* AllocateObject(size_t size) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<CSSValue>::kAffinity>::GetState();
     const char* type_name = "blink::CSSValue";
     return state->Heap().AllocateOnArenaIndex(
         state, size, BlinkGC::kCSSValueArenaIndex,
-        GCInfoTrait<CSSValue>::Index(), type_name);
+        GCInfoTrait<GCInfoFoldedType<CSSValue>>::Index(), type_name);
   }
 
   // TODO(sashab): Remove this method and move logic to the caller.

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -27,17 +28,16 @@ class SharingBrowserTest : public SyncTest {
 
   void SetUpOnMainThread() override;
 
-  void Init();
+  void Init(
+      sync_pb::SharingSpecificFields_EnabledFeatures first_device_feature,
+      sync_pb::SharingSpecificFields_EnabledFeatures second_device_feature);
 
   virtual std::string GetTestPageURL() const = 0;
 
-  void SetUpDevices(int count,
-                    sync_pb::SharingSpecificFields_EnabledFeatures feature);
-
-  std::unique_ptr<TestRenderViewContextMenu> InitRightClickMenu(
+  std::unique_ptr<TestRenderViewContextMenu> InitContextMenu(
       const GURL& url,
-      const base::string16& link_text,
-      const base::string16& selection_text);
+      base::StringPiece link_text,
+      base::StringPiece selection_text);
 
   void CheckLastReceiver(const std::string& device_guid) const;
 
@@ -48,6 +48,15 @@ class SharingBrowserTest : public SyncTest {
   content::WebContents* web_contents() const;
 
  private:
+  void SetUpDevices(
+      sync_pb::SharingSpecificFields_EnabledFeatures first_device_feature,
+      sync_pb::SharingSpecificFields_EnabledFeatures second_device_feature);
+
+  void RegisterDevice(int profile_index,
+                      sync_pb::SharingSpecificFields_EnabledFeatures feature);
+  void AddDeviceInfo(const syncer::DeviceInfo& original_device,
+                     int fake_device_id);
+
   gcm::GCMProfileServiceFactory::ScopedTestingFactoryInstaller
       scoped_testing_factory_installer_;
   gcm::FakeGCMProfileService* gcm_service_;

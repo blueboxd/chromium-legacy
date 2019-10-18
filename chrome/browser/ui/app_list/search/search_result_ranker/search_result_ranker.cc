@@ -669,17 +669,17 @@ void SearchResultRanker::LogZeroStateResultScore(RankingItemType type,
     if (now - time_of_last_omnibox_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_omnibox_log_ = now;
-    LogZeroStateReceivedScore("OmniboxSearch", score);
+    LogZeroStateReceivedScore("OmniboxSearch", score, 0.0f, 1.0f);
   } else if (type == RankingItemType::kZeroStateFile) {
     if (now - time_of_last_local_file_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_local_file_log_ = now;
-    LogZeroStateReceivedScore("ZeroStateFile", score);
+    LogZeroStateReceivedScore("ZeroStateFile", score, 0.0f, 1.0f);
   } else if (type == RankingItemType::kDriveQuickAccess) {
     if (now - time_of_last_drive_log_ < kMinTimeBetweenLogs)
       return;
     time_of_last_drive_log_ = now;
-    LogZeroStateReceivedScore("DriveQuickAccess", score);
+    LogZeroStateReceivedScore("DriveQuickAccess", score, -10.0f, 10.0f);
   }
 }
 

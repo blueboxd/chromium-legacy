@@ -63,7 +63,7 @@ TEST_F(SignedInAccountsViewControllerTest,
 // have changed.
 TEST_F(SignedInAccountsViewControllerTest,
        ShouldBePresentedForBrowserStateNecessary) {
-  auth_service_->SetHaveAccountsChanged(true);
+  auth_service_->SetHaveAccountsChangedWhileInBackground(true);
   EXPECT_TRUE([SignedInAccountsViewController
       shouldBePresentedForBrowserState:browser_state_.get()]);
 }
@@ -72,7 +72,7 @@ TEST_F(SignedInAccountsViewControllerTest,
 // session after upgrade.
 TEST_F(SignedInAccountsViewControllerTest,
        ShouldBePresentedForBrowserStateAfterUpgrade) {
-  auth_service_->SetHaveAccountsChanged(true);
+  auth_service_->SetHaveAccountsChangedWhileInBackground(true);
 
   {
     [PreviousSessionInfo resetSharedInstanceForTesting];

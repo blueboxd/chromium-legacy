@@ -10,7 +10,71 @@ function setUpPage() {
       '<xf-display-panel id="test-xf-display-panel"></xf-display-panel>';
 }
 
-async function testFilesDisplayPanel(done) {
+async function testDisplayPanelAttachPanel(done) {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Test create/attach/remove sequences.
+  // Create a progress panel item.
+  let progressPanel = displayPanel.createPanelItem('testpanel');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+
+  // Attach the panel to it's host display panel.
+  displayPanel.attachPanelItem(progressPanel);
+
+  // Verify the panel is attached to the document.
+  assertTrue(!!progressPanel.isConnected);
+
+  // Remove the panel item.
+  displayPanel.removePanelItem(progressPanel);
+
+  // Verify the panel item is not attached to the document.
+  assertFalse(progressPanel.isConnected);
+
+  // Create a progress panel item.
+  progressPanel = displayPanel.createPanelItem('testpanel2');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+
+  // Remove the panel item.
+  displayPanel.removePanelItem(progressPanel);
+
+  // Try to attach the removed panel to it's host display panel.
+  displayPanel.attachPanelItem(progressPanel);
+
+  // Verify the panel is not attached to the document.
+  assertFalse(progressPanel.isConnected);
+
+  done();
+}
+
+async function testDisplayPanelChangingPanelTypes(done) {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+  const panelItem = displayPanel.addPanelItem('testpanel');
+  panelItem.panelType = panelItem.panelTypeProgress;
+
+  // Verify the panel item indicator is progress.
+  assertTrue(
+      panelItem.indicator === 'progress',
+      'Wrong panel indicator, got ' + panelItem.indicator);
+
+  // Change the panel item to an error panel.
+  panelItem.panelType = panelItem.panelTypeError;
+
+  // Verify the panel item indicator is set to error.
+  assertTrue(
+      panelItem.indicator === 'status',
+      'Wrong panel indicator, got ' + panelItem.indicator);
+  assertTrue(
+      panelItem.status === 'failure',
+      'Wrong panel status, got ' + panelItem.status);
+
+  done();
+}
+
+async function testFilesDisplayPanelSummaryPanel(done) {
   // Get the host display panel container element.
   /** @type {!DisplayPanel|!Element} */
   const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
@@ -67,29 +131,6 @@ async function testFilesDisplayPanel(done) {
   assertFalse(panelContainer.hasAttribute('hidden'));
   summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
   assertTrue(summaryPanelItem.panelType === summaryPanelItem.panelTypeSummary);
-
-  // Test create/attach/remove sequences.
-  // Create a progress panel item.
-  progressPanel = displayPanel.createPanelItem('testpanel2');
-  progressPanel.panelType = progressPanel.panelTypeProgress;
-  // Attach the panel to it's host display panel.
-  displayPanel.attachPanelItem(progressPanel);
-  // Verify the panel is attached to the document.
-  assertTrue(!!progressPanel.parentNode);
-  // Remove the panel item.
-  displayPanel.removePanelItem(progressPanel);
-  // Verify the panel item is not attached to the document.
-  assertTrue(progressPanel.parentNode === null);
-
-  // Create a progress panel item.
-  progressPanel = displayPanel.createPanelItem('testpanel3');
-  progressPanel.panelType = progressPanel.panelTypeProgress;
-  // Remove the panel item.
-  displayPanel.removePanelItem(progressPanel);
-  // Try to attach the removed panel to it's host display panel.
-  displayPanel.attachPanelItem(progressPanel);
-  // Verify the panel is not attached to the document.
-  assertTrue(progressPanel.parentNode === null);
 
   done();
 }

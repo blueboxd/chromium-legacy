@@ -130,7 +130,8 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
     const base::string16 kFoo(base::ASCIIToUTF16("foo"));
     const base::string16 kBar(base::ASCIIToUTF16("bar"));
     session_->http_auth_cache()->Add(
-        GURL("http://proxy:443/"), "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
+        GURL("http://proxy:443/"), HttpAuth::AUTH_PROXY, "MyRealm1",
+        HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
         "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
   }
 

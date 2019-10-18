@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_METRICS_H_
 #define CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_METRICS_H_
 
+#include <bitset>
+#include <set>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -32,19 +35,31 @@ class RenderFrameHostImpl;
 class BackForwardCacheMetrics
     : public base::RefCounted<BackForwardCacheMetrics> {
  public:
-  enum class CanNotStoreDocumentReason : uint8_t {
-    kNotMainFrame,
-    kBackForwardCacheDisabled,
-    kRelatedActiveContentsExist,
-    kHTTPStatusNotOK,
-    kSchemeNotHTTPOrHTTPS,
-    kLoading,
-    kWasGrantedMediaAccess,
-    kBlocklistedFeatures,
-    kDisableForRenderFrameHostCalled,
-    kDomainNotAllowed,
-    kHTTPMethodNotGET,
-    kSubframeIsNavigating
+  // Please keep in sync with BackForwardCacheNotRestoredReason in
+  // tools/metrics/histograms/enums.xml. These values should not be renumbered.
+  enum class NotRestoredReason : uint8_t {
+    kNotMainFrame = 0,
+    kBackForwardCacheDisabled = 1,
+    kRelatedActiveContentsExist = 2,
+    kHTTPStatusNotOK = 3,
+    kSchemeNotHTTPOrHTTPS = 4,
+    kLoading = 5,
+    kWasGrantedMediaAccess = 6,
+    kBlocklistedFeatures = 7,
+    kDisableForRenderFrameHostCalled = 8,
+    kDomainNotAllowed = 9,
+    kHTTPMethodNotGET = 10,
+    kSubframeIsNavigating = 11,
+    kTimeout = 12,
+    kCacheLimit = 13,
+    kJavaScriptExecution = 14,
+    kRendererProcessKilled = 15,
+    kRendererProcessCrashed = 16,
+    kDialog = 17,
+    kGrantedMediaStreamAccess = 18,
+    kSchedulerTrackedFeatureUsed = 19,
+    kConflictingBrowsingInstance = 20,
+    kMaxValue = kConflictingBrowsingInstance,
   };
 
   // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in
@@ -53,20 +68,6 @@ class BackForwardCacheMetrics
     kRestored = 0,
     kNotRestored = 1,
     kMaxValue = kNotRestored,
-  };
-
-  // Please keep in sync with BackForwardCacheEvictedReason in
-  // tools/metrics/histograms/enums.xml. These values should not be renumbered.
-  enum class EvictedReason {
-    kTimeout = 0,
-    kCacheLimit = 1,
-    kJavaScriptExecution = 2,
-    kRendererProcessKilled = 3,
-    kRendererProcessCrashed = 4,
-    kDialog = 5,
-    kGrantedMediaStreamAccess = 6,
-    kSchedulerTrackedFeatureUsed = 7,
-    kMaxValue = kSchedulerTrackedFeatureUsed,
   };
 
   // Please keep in sync with BackForwardCacheEvictedAfterDocumentRestoredReason
@@ -121,10 +122,9 @@ class BackForwardCacheMetrics
   // placed in the back-forward cache.
   void RecordFeatureUsage(RenderFrameHostImpl* main_frame);
 
-  // Marks when the page is evicted with the reason. This information is useful
-  // e.g., to know the major cause of eviction.
-  void MarkEvictedFromBackForwardCacheWithReason(
-      BackForwardCacheMetrics::EvictedReason reason);
+  // Marks when the page is not cached, or evicted. This information is useful
+  // e.g., to prioritize the tasks to improve cache-hit rate.
+  void MarkNotRestoredWithReason(NotRestoredReason reason);
 
   // Marks the frame disabled the back forward cache with the reason.
   void MarkDisableForRenderFrameHost(const base::StringPiece& reason);
@@ -170,8 +170,12 @@ class BackForwardCacheMetrics
   base::Optional<base::TimeTicks> started_navigation_timestamp_;
   base::Optional<base::TimeTicks> navigated_away_from_main_document_timestamp_;
 
-  std::vector<std::string> disallowed_reasons_;
-  base::Optional<EvictedReason> evicted_reason_;
+  std::bitset<static_cast<size_t>(NotRestoredReason::kMaxValue) + 1ul>
+      not_restored_reasons_;
+
+  // The reasons given at BackForwardCache::DisableForRenderFrameHost. These are
+  // a further breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.
+  std::set<std::string> disallowed_reasons_;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheMetrics);
 };

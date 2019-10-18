@@ -6965,6 +6965,76 @@ TEST_F(URLRequestTestHTTP, BasicAuthWithCookiesCancelAuth) {
   EXPECT_EQ(1, network_delegate.set_cookie_count());
 }
 
+// Tests that |key_auth_cache_by_network_isolation_key| is respected.
+TEST_F(URLRequestTestHTTP, AuthWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  ASSERT_TRUE(http_test_server()->Start());
+
+  for (bool key_auth_cache_by_network_isolation_key : {false, true}) {
+    TestURLRequestContext url_request_context(true /* delay_initialization */);
+    std::unique_ptr<HttpNetworkSession::Params> http_network_session_params =
+        std::make_unique<HttpNetworkSession::Params>();
+    http_network_session_params
+        ->key_auth_cache_server_entries_by_network_isolation_key =
+        key_auth_cache_by_network_isolation_key;
+    url_request_context.set_http_network_session_params(
+        std::move(http_network_session_params));
+    url_request_context.Init();
+
+    // Populate the auth cache using one NetworkIsolationKey.
+    {
+      TestDelegate d;
+      GURL url(base::StringPrintf(
+          "http://%s:%s@%s/auth-basic", base::UTF16ToASCII(kUser).c_str(),
+          base::UTF16ToASCII(kSecret).c_str(),
+          http_test_server()->host_port_pair().ToString().c_str()));
+
+      std::unique_ptr<URLRequest> r(url_request_context.CreateRequest(
+          url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+      r->SetLoadFlags(LOAD_BYPASS_CACHE);
+      r->set_network_isolation_key(kNetworkIsolationKey1);
+      r->Start();
+
+      d.RunUntilComplete();
+      EXPECT_THAT(d.request_status(), IsOk());
+      ASSERT_TRUE(r->response_headers());
+      EXPECT_EQ(200, r->response_headers()->response_code());
+      EXPECT_TRUE(d.data_received().find("user/secret") != std::string::npos);
+    }
+
+    // Make a request with another NetworkIsolationKey. This may or may not use
+    // the cached auth credentials, depending on whether or not the
+    // HttpAuthCache is configured to respect the NetworkIsolationKey.
+    {
+      TestDelegate d;
+
+      std::unique_ptr<URLRequest> r(url_request_context.CreateRequest(
+          http_test_server()->GetURL("/auth-basic"), DEFAULT_PRIORITY, &d,
+          TRAFFIC_ANNOTATION_FOR_TESTS));
+      r->SetLoadFlags(LOAD_BYPASS_CACHE);
+      r->set_network_isolation_key(kNetworkIsolationKey2);
+      r->Start();
+
+      d.RunUntilComplete();
+
+      EXPECT_THAT(d.request_status(), IsOk());
+      ASSERT_TRUE(r->response_headers());
+      if (key_auth_cache_by_network_isolation_key) {
+        EXPECT_EQ(401, r->response_headers()->response_code());
+      } else {
+        EXPECT_EQ(200, r->response_headers()->response_code());
+      }
+
+      EXPECT_EQ(!key_auth_cache_by_network_isolation_key,
+                d.data_received().find("user/secret") != std::string::npos);
+    }
+  }
+}
+
 TEST_F(URLRequestTest, ReportCookieActivity) {
   HttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());

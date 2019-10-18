@@ -90,8 +90,6 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
                            stringsShouldNotSupportAddition);
 
  private:
-  void ResetCachedAnimationState();
-
   bool ShouldApplyAnimation(const SVGElement& target_element) const;
 
   void SetAttributeType(const AtomicString&);

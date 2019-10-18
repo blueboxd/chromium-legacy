@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, ConnectRequestCallback) {
 }
 
 // Test HideCallback is called after screen hides.
-IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, DISABLED_HideCallback) {
+IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, HideCallback) {
   bool callback_called = false;
   GetScreen()->SetHideCallback(
       base::BindLambdaForTesting([&]() { callback_called = true; }));

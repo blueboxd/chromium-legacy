@@ -206,11 +206,12 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   if (prevSessionInfo.isFirstSessionAfterUpgrade &&
       [prevSessionInfo.previousSessionVersion hasPrefix:@"77."]) {
     // In M77, showing the signed-in account view was disabled due to the fact
-    // that the preferences used to compute authService->HaveAccountsChanged()
-    // were not correctly updated (see crbug.com/1006717).
-    // To avoid user confusion, it is important to avoid showing the signed-in
-    // accounts dialog on the first session after an update from M77 in order
-    // to allow the authentication service to update its internal preferences.
+    // that the preferences used to compute
+    // authService->HaveAccountsChangedWhileInBackground() were not correctly
+    // updated (see crbug.com/1006717). To avoid user confusion, it is important
+    // to avoid showing the signed-in accounts dialog on the first session after
+    // an update from M77 in order to allow the authentication service to update
+    // its internal preferences.
     //
     // TODO(crbug.com/1007990) Remove this code after M81 (revert
     // https://chromium-review.googlesource.com/c/chromium/src/+/1824259 ).
@@ -220,7 +221,8 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   return !gSignedInAccountsViewControllerIsShown &&
-         authService->IsAuthenticated() && authService->HaveAccountsChanged();
+         authService->IsAuthenticated() &&
+         authService->HaveAccountsChangedWhileInBackground();
 }
 
 #pragma mark Initialization

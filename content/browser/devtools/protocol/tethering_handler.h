@@ -28,7 +28,7 @@ class TetheringHandler : public DevToolsDomainHandler,
                          public Tethering::Backend {
  public:
   using CreateServerSocketCallback =
-      base::RepeatingCallback<std::unique_ptr<net::ServerSocket>(std::string*)>;
+      base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
 
   TetheringHandler(const CreateServerSocketCallback& socket_callback,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner);

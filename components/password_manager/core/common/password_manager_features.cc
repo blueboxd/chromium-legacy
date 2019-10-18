@@ -75,11 +75,6 @@ const base::Feature kPasswordManagerOnboardingAndroid = {
 const base::Feature kPasswordSaveIllustration = {
     "SavePasswordIllustration", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Deletes entries from local database on Mac which cannot be decrypted when
-// merging data with Sync.
-const base::Feature kRecoverPasswordsForSyncUsers = {
-    "RecoverPasswordsForSyncUsers", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables support of filling and saving on username first flow.
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

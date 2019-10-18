@@ -1050,11 +1050,14 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
             SelectOption(selector, "two").proto_status());
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
-  Selector selector;
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("select[name=state]");
-  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "NY").proto_status());
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
+  Selector select_selector;
+
+  // IFrame.
+  select_selector.selectors.clear();
+  select_selector.selectors.emplace_back("#iframe");
+  select_selector.selectors.emplace_back("select[name=state]");
+  EXPECT_EQ(ACTION_APPLIED, SelectOption(select_selector, "NY").proto_status());
 
   const std::string javascript = R"(
     let iframe = document.querySelector("iframe").contentDocument;
@@ -1062,16 +1065,46 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIframe) {
     select.options[select.selectedIndex].label;
   )";
   EXPECT_EQ("NY", content::EvalJs(shell(), javascript));
+
+  // OOPIF.
+  // Checking elements through EvalJs in OOPIF is blocked by cross-site.
+  select_selector.selectors.clear();
+  select_selector.selectors.emplace_back("#iframeExternal");
+  select_selector.selectors.emplace_back("select[name=pet]");
+  EXPECT_EQ(ACTION_APPLIED,
+            SelectOption(select_selector, "Cat").proto_status());
+
+  Selector result_selector;
+  result_selector.selectors.emplace_back("#iframeExternal");
+  result_selector.selectors.emplace_back("#myPet");
+  GetFieldsValue({result_selector}, {"Cat"});
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
-  Selector selector;
-  selector.selectors.emplace_back("#testOuterHtml");
   std::string html;
-  ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(selector, &html).proto_status());
+
+  // Div.
+  Selector div_selector;
+  div_selector.selectors.emplace_back("#testOuterHtml");
+  ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(div_selector, &html).proto_status());
   EXPECT_EQ(
       R"(<div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>)",
       html);
+
+  // IFrame.
+  Selector iframe_selector;
+  iframe_selector.selectors.emplace_back("#iframe");
+  iframe_selector.selectors.emplace_back("#input");
+  ASSERT_EQ(ACTION_APPLIED,
+            GetOuterHtml(iframe_selector, &html).proto_status());
+  EXPECT_EQ(R"(<input id="input" type="text">)", html);
+
+  // OOPIF.
+  Selector oopif_selector;
+  oopif_selector.selectors.emplace_back("#iframeExternal");
+  oopif_selector.selectors.emplace_back("#divToRemove");
+  ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(oopif_selector, &html).proto_status());
+  EXPECT_EQ(R"(<div id="divToRemove">Text</div>)", html);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {

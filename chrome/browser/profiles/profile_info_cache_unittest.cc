@@ -281,12 +281,9 @@ TEST_P(ProfileInfoCacheTestWithParam, GAIAName) {
   EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(index1).empty());
   EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(index2).empty());
 
-  // Set GAIA name. This re-sorts the cache.
+  // Set GAIA name.
   base::string16 gaia_name(ASCIIToUTF16("Pat Smith"));
   GetCache()->SetGAIANameOfProfileAtIndex(index2, gaia_name);
-  index1 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_1"));
-  index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
-
   // Since there is a GAIA name, we use that as a display name.
   EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(index1).empty());
   EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(index2));
@@ -294,13 +291,9 @@ TEST_P(ProfileInfoCacheTestWithParam, GAIAName) {
                                      concatenate_enabled_, false),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index2));
 
-  // This re-sorts the cache.
   base::string16 custom_name(ASCIIToUTF16("Custom name"));
   GetCache()->SetLocalProfileNameOfProfileAtIndex(index2, custom_name);
   GetCache()->SetProfileIsUsingDefaultNameAtIndex(index2, false);
-
-  index1 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_1"));
-  index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
 
   EXPECT_EQ(GetExpectedNameToDisplay(gaia_name, custom_name, false,
                                      concatenate_enabled_, false),
@@ -331,7 +324,6 @@ TEST_F(ProfileInfoCacheTest, ConcatenateGaiaNameAndProfileName) {
       GetProfilePath("path_2"), ASCIIToUTF16("Person 2"), std::string(),
       base::string16(), false, 0, std::string(), EmptyAccountId());
 
-  index1 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_1"));
   EXPECT_EQ(ASCIIToUTF16("Patt (Person 1)"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index1));
 
@@ -340,16 +332,13 @@ TEST_F(ProfileInfoCacheTest, ConcatenateGaiaNameAndProfileName) {
             GetCache()->GetNameToDisplayOfProfileAtIndex(index2));
   // Set Gaia name.
   GetCache()->SetGAIANameOfProfileAtIndex(index2, ASCIIToUTF16("Patti Smith"));
-  index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
   // Profile name is a substring of Gaia name.
   GetCache()->SetLocalProfileNameOfProfileAtIndex(index2,
                                                   ASCIIToUTF16("patti"));
-  index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
   EXPECT_EQ(ASCIIToUTF16("Patti Smith"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index2));
   // Profile name equals Gaia given name.
   GetCache()->SetGAIAGivenNameOfProfileAtIndex(index2, ASCIIToUTF16("Patti"));
-  index2 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_2"));
   EXPECT_EQ(ASCIIToUTF16("Patti"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index2));
   GetCache()->SetLocalProfileNameOfProfileAtIndex(index2, ASCIIToUTF16("Work"));
@@ -362,12 +351,10 @@ TEST_F(ProfileInfoCacheTest, ConcatenateGaiaNameAndProfileName) {
                                 std::string(), EmptyAccountId());
   int index3 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_3"));
   GetCache()->SetGAIAGivenNameOfProfileAtIndex(index3, ASCIIToUTF16("Pat"));
-  index3 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_3"));
   EXPECT_EQ(ASCIIToUTF16("Pat"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index3));
   GetCache()->SetGAIANameOfProfileAtIndex(index3, ASCIIToUTF16("Pat Smith"));
   GetCache()->SetGAIAGivenNameOfProfileAtIndex(index3, ASCIIToUTF16(""));
-  index3 = GetCache()->GetIndexOfProfileWithPath(GetProfilePath("path_3"));
   EXPECT_EQ(ASCIIToUTF16("Pat Smith"),
             GetCache()->GetNameToDisplayOfProfileAtIndex(index3));
 
@@ -436,49 +423,6 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
   EXPECT_EQ(generic_icon_index,
             GetCache()->GetAvatarIconIndexOfProfileAtIndex(1));
 #endif
-}
-
-TEST_F(ProfileInfoCacheTest, Sort) {
-  base::string16 name_a = ASCIIToUTF16("apple");
-  GetCache()->AddProfileToCache(GetProfilePath("path_a"), name_a, std::string(),
-                                base::string16(), false, 0, std::string(),
-                                EmptyAccountId());
-
-  base::string16 name_c = ASCIIToUTF16("cat");
-  GetCache()->AddProfileToCache(GetProfilePath("path_c"), name_c, std::string(),
-                                base::string16(), false, 0, std::string(),
-                                EmptyAccountId());
-
-  // Sanity check the initial order.
-  EXPECT_EQ(name_a, GetCache()->GetNameToDisplayOfProfileAtIndex(0));
-  EXPECT_EQ(name_c, GetCache()->GetNameToDisplayOfProfileAtIndex(1));
-
-  // Add a new profile (start with a capital to test case insensitive sorting.
-  base::string16 name_b = ASCIIToUTF16("Banana");
-  GetCache()->AddProfileToCache(GetProfilePath("path_b"), name_b, std::string(),
-                                base::string16(), false, 0, std::string(),
-                                EmptyAccountId());
-
-  // Verify the new order.
-  EXPECT_EQ(name_a, GetCache()->GetNameToDisplayOfProfileAtIndex(0));
-  EXPECT_EQ(name_b, GetCache()->GetNameToDisplayOfProfileAtIndex(1));
-  EXPECT_EQ(name_c, GetCache()->GetNameToDisplayOfProfileAtIndex(2));
-
-  // Change the name of an existing profile.
-  name_a = UTF8ToUTF16("dog");
-  GetCache()->SetLocalProfileNameOfProfileAtIndex(0, name_a);
-
-  // Verify the new order.
-  EXPECT_EQ(name_b, GetCache()->GetNameToDisplayOfProfileAtIndex(0));
-  EXPECT_EQ(name_c, GetCache()->GetNameToDisplayOfProfileAtIndex(1));
-  EXPECT_EQ(name_a, GetCache()->GetNameToDisplayOfProfileAtIndex(2));
-
-  // Delete a profile.
-  GetCache()->DeleteProfileFromCache(GetProfilePath("path_c"));
-
-  // Verify the new order.
-  EXPECT_EQ(name_b, GetCache()->GetNameToDisplayOfProfileAtIndex(0));
-  EXPECT_EQ(name_a, GetCache()->GetNameToDisplayOfProfileAtIndex(1));
 }
 
 // Will be removed SOON with ProfileInfoCache tests.

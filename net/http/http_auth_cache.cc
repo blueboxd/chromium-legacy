@@ -65,27 +65,38 @@ struct IsEnclosedBy {
 
 namespace net {
 
-HttpAuthCache::HttpAuthCache() = default;
+HttpAuthCache::HttpAuthCache(bool key_server_entries_by_network_isolation_key)
+    : key_server_entries_by_network_isolation_key_(
+          key_server_entries_by_network_isolation_key) {}
 
 HttpAuthCache::~HttpAuthCache() = default;
 
 // Performance: O(logN+n), where N is the total number of entries, n is the
-// number of realm entries for the given origin.
-HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
-                                            const std::string& realm,
-                                            HttpAuth::Scheme scheme) {
-  EntryMap::iterator entry_it = LookupEntryIt(origin, realm, scheme);
+// number of realm entries for the given origin, target, and with a matching
+// NetworkIsolationKey.
+HttpAuthCache::Entry* HttpAuthCache::Lookup(
+    const GURL& origin,
+    HttpAuth::Target target,
+    const std::string& realm,
+    HttpAuth::Scheme scheme,
+    const NetworkIsolationKey& network_isolation_key) {
+  EntryMap::iterator entry_it =
+      LookupEntryIt(origin, target, realm, scheme, network_isolation_key);
   if (entry_it == entries_.end())
     return nullptr;
   return &(entry_it->second);
 }
 
 // Performance: O(logN+n*m), where N is the total number of entries, n is the
-// number of realm entries for the given origin, m is the number of path entries
-// per realm. Both n amd m are expected to be small; m is kept small because
-// AddPath() only keeps the shallowest entry.
-HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
-                                                  const std::string& path) {
+// number of realm entries for the given origin, target, and
+// NetworkIsolationKey, m is the number of path entries per realm. Both n and m
+// are expected to be small; m is kept small because AddPath() only keeps the
+// shallowest entry.
+HttpAuthCache::Entry* HttpAuthCache::LookupByPath(
+    const GURL& origin,
+    HttpAuth::Target target,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& path) {
 #if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
   CheckPathIsValid(path);
@@ -98,7 +109,9 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
   std::string parent_dir = GetParentDirectory(path);
 
   // Linear scan through the <scheme, realm> entries for the given origin.
-  auto entry_range = entries_.equal_range(origin);
+  auto entry_range = entries_.equal_range(
+      EntryMapKey(origin, target, network_isolation_key,
+                  key_server_entries_by_network_isolation_key_));
   auto best_match_it = entries_.end();
   size_t best_match_length = 0;
   for (auto it = entry_range.first; it != entry_range.second; ++it) {
@@ -119,12 +132,15 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
   return nullptr;
 }
 
-HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
-                                         const std::string& realm,
-                                         HttpAuth::Scheme scheme,
-                                         const std::string& auth_challenge,
-                                         const AuthCredentials& credentials,
-                                         const std::string& path) {
+HttpAuthCache::Entry* HttpAuthCache::Add(
+    const GURL& origin,
+    HttpAuth::Target target,
+    const std::string& realm,
+    HttpAuth::Scheme scheme,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& auth_challenge,
+    const AuthCredentials& credentials,
+    const std::string& path) {
 #if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
   CheckPathIsValid(path);
@@ -133,21 +149,29 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   base::TimeTicks now_ticks = tick_clock_->NowTicks();
 
   // Check for existing entry (we will re-use it if present).
-  HttpAuthCache::Entry* entry = Lookup(origin, realm, scheme);
+  HttpAuthCache::Entry* entry =
+      Lookup(origin, target, realm, scheme, network_isolation_key);
   if (!entry) {
     bool evicted = false;
     // Failsafe to prevent unbounded memory growth of the cache.
     //
-    // Data collected in June of 2019 indicate that the eviction rate is at
-    // around 0.05%. I.e. 0.05% of the time the number of entries in the cache
-    // exceed kMaxNumRealmEntries. The evicted entry is roughly half an hour old
-    // (median), and it's been around 25 minutes since its last use (median).
+    // Data was collected in June of 2019, before entries were keyed on either
+    // HttpAuth::Target or NetworkIsolationKey. That data indicated that the
+    // eviction rate was at around 0.05%. I.e. 0.05% of the time the number of
+    // entries in the cache exceed kMaxNumRealmEntries. The evicted entry is
+    // roughly half an hour old (median), and it's been around 25 minutes since
+    // its last use (median).
     if (entries_.size() >= kMaxNumRealmEntries) {
       DLOG(WARNING) << "Num auth cache entries reached limit -- evicting";
       EvictLeastRecentlyUsedEntry();
       evicted = true;
     }
-    entry = &(entries_.emplace(std::make_pair(origin, Entry()))->second);
+    entry = &(entries_
+                  .emplace(std::make_pair(
+                      EntryMapKey(origin, target, network_isolation_key,
+                                  key_server_entries_by_network_isolation_key_),
+                      Entry()))
+                  ->second);
     entry->origin_ = origin;
     entry->realm_ = realm;
     entry->scheme_ = scheme;
@@ -245,10 +269,13 @@ bool HttpAuthCache::Entry::HasEnclosingPath(const std::string& dir,
 }
 
 bool HttpAuthCache::Remove(const GURL& origin,
+                           HttpAuth::Target target,
                            const std::string& realm,
                            HttpAuth::Scheme scheme,
+                           const NetworkIsolationKey& network_isolation_key,
                            const AuthCredentials& credentials) {
-  EntryMap::iterator entry_it = LookupEntryIt(origin, realm, scheme);
+  EntryMap::iterator entry_it =
+      LookupEntryIt(origin, target, realm, scheme, network_isolation_key);
   if (entry_it == entries_.end())
     return false;
   Entry& entry = entry_it->second;
@@ -274,11 +301,15 @@ void HttpAuthCache::ClearAllEntries() {
   entries_.clear();
 }
 
-bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
-                                         const std::string& realm,
-                                         HttpAuth::Scheme scheme,
-                                         const std::string& auth_challenge) {
-  HttpAuthCache::Entry* entry = Lookup(origin, realm, scheme);
+bool HttpAuthCache::UpdateStaleChallenge(
+    const GURL& origin,
+    HttpAuth::Target target,
+    const std::string& realm,
+    HttpAuth::Scheme scheme,
+    const NetworkIsolationKey& network_isolation_key,
+    const std::string& auth_challenge) {
+  HttpAuthCache::Entry* entry =
+      Lookup(origin, target, realm, scheme, network_isolation_key);
   if (!entry)
     return false;
   entry->UpdateStaleChallenge(auth_challenge);
@@ -287,11 +318,15 @@ bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
 }
 
 void HttpAuthCache::UpdateAllFrom(const HttpAuthCache& other) {
+  DCHECK_EQ(key_server_entries_by_network_isolation_key_,
+            other.key_server_entries_by_network_isolation_key());
+
   for (auto it = other.entries_.begin(); it != other.entries_.end(); ++it) {
     // Add an Entry with one of the original entry's paths.
     const Entry& e = it->second;
     DCHECK(e.paths_.size() > 0);
-    Entry* entry = Add(e.origin(), e.realm(), e.scheme(), e.auth_challenge(),
+    Entry* entry = Add(e.origin(), it->first.target, e.realm(), e.scheme(),
+                       it->first.network_isolation_key, e.auth_challenge(),
                        e.credentials(), e.paths_.back());
     // Copy all other paths.
     for (auto it2 = std::next(e.paths_.rbegin()); it2 != e.paths_.rend(); ++it2)
@@ -301,20 +336,44 @@ void HttpAuthCache::UpdateAllFrom(const HttpAuthCache& other) {
   }
 }
 
+HttpAuthCache::EntryMapKey::EntryMapKey(
+    const GURL& url,
+    HttpAuth::Target target,
+    const NetworkIsolationKey& network_isolation_key,
+    bool key_server_entries_by_network_isolation_key)
+    : url(url),
+      target(target),
+      network_isolation_key(target == HttpAuth::AUTH_SERVER &&
+                                    key_server_entries_by_network_isolation_key
+                                ? network_isolation_key
+                                : NetworkIsolationKey()) {}
+
+HttpAuthCache::EntryMapKey::~EntryMapKey() = default;
+
+bool HttpAuthCache::EntryMapKey::operator<(const EntryMapKey& other) const {
+  return std::tie(url, target, network_isolation_key) <
+         std::tie(other.url, other.target, other.network_isolation_key);
+}
+
 size_t HttpAuthCache::GetEntriesSizeForTesting() {
   return entries_.size();
 }
 
 HttpAuthCache::EntryMap::iterator HttpAuthCache::LookupEntryIt(
     const GURL& origin,
+    HttpAuth::Target target,
     const std::string& realm,
-    HttpAuth::Scheme scheme) {
+    HttpAuth::Scheme scheme,
+    const NetworkIsolationKey& network_isolation_key) {
 #if DCHECK_IS_ON()
   CheckOriginIsValid(origin);
 #endif
 
-  // Linear scan through the <scheme, realm> entries for the given origin.
-  auto entry_range = entries_.equal_range(origin);
+  // Linear scan through the <scheme, realm> entries for the given origin and
+  // NetworkIsolationKey.
+  auto entry_range = entries_.equal_range(
+      EntryMapKey(origin, target, network_isolation_key,
+                  key_server_entries_by_network_isolation_key_));
   for (auto it = entry_range.first; it != entry_range.second; ++it) {
     Entry& entry = it->second;
     DCHECK(entry.origin() == origin);

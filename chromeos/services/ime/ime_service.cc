@@ -33,7 +33,8 @@ enum SimpleDownloadError {
 }  // namespace
 
 ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
-    : receiver_(this, std::move(receiver)) {
+    : receiver_(this, std::move(receiver)),
+      main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   input_engine_ = chromeos::features::IsImeDecoderWithSandboxEnabled()
                       ? std::make_unique<DecoderEngine>(this)
                       : std::make_unique<InputEngine>();
@@ -77,7 +78,7 @@ const char* ImeService::GetImeBundleDir() {
 }
 
 const char* ImeService::GetImeGlobalDir() {
-  // Global IME data dir will not be supported yet.
+  // Global IME data is supported yet.
   return "";
 }
 
@@ -86,10 +87,11 @@ const char* ImeService::GetImeUserHomeDir() {
 }
 
 void ImeService::RunInMainSequence(ImeSequencedTask task, int task_id) {
-  // Always run tasks on current SequencedTaskRunner.
-  // It's necessary for making any call on a bound Mojo Remote.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(task, task_id));
+  // This helps ensure that tasks run in the **main** SequencedTaskRunner.
+  // E.g. the Mojo Remotes are bound on the main_task_runner_, so that any task
+  // invoked Mojo call from other threads (sequences) should be posted to
+  // main_task_runner_ by this function.
+  main_task_runner_->PostTask(FROM_HERE, base::BindOnce(task, task_id));
 }
 
 int ImeService::SimpleDownloadToFile(const char* url,

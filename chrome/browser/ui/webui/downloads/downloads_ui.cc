@@ -88,6 +88,18 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       {"dangerRestore", IDS_CONFIRM_DOWNLOAD_RESTORE},
       {"dangerDiscard", IDS_DISCARD_DOWNLOAD},
 
+      // Deep scanning strings.
+      {"deepScannedSafeDesc", IDS_DEEP_SCANNED_SAFE_DESCRIPTION},
+      {"deepScannedOpenedDangerousDesc",
+       IDS_DEEP_SCANNED_OPENED_DANGEROUS_DESCRIPTION},
+      {"sensitiveContentWarningDesc",
+       IDS_BLOCK_REASON_SENSITIVE_CONTENT_WARNING},
+      {"sensitiveContentBlockedDesc",
+       IDS_SENSITIVE_CONTENT_BLOCKED_DESCRIPTION},
+      {"blockedTooLargeDesc", IDS_BLOCKED_TOO_LARGE_DESCRIPTION},
+      {"blockedPasswordProtectedDesc",
+       IDS_BLOCKED_PASSWORD_PROTECTED_DESCRIPTION},
+
       // Controls.
       {"controlPause", IDS_DOWNLOAD_LINK_PAUSE},
       {"controlCancel", IDS_DOWNLOAD_LINK_CANCEL},

@@ -111,6 +111,14 @@ class CC_EXPORT CompositorFrameReporter {
 
   int StageHistorySizeForTesting() { return stage_history_.size(); }
 
+  void OnFinishImplFrame(base::TimeTicks timestamp);
+  void OnAbortBeginMainFrame();
+  bool did_finish_impl_frame() const { return did_finish_impl_frame_; }
+  bool did_abort_main_frame() const { return did_abort_main_frame_; }
+  base::TimeTicks impl_frame_finish_time() const {
+    return impl_frame_finish_time_;
+  }
+
  protected:
   struct StageData {
     StageType stage_type;
@@ -161,6 +169,14 @@ class CC_EXPORT CompositorFrameReporter {
       FrameTerminationStatus::kUnknown;
 
   const base::flat_set<FrameSequenceTrackerType>* active_trackers_;
+
+  // Indicates if work on Impl frame is finished.
+  bool did_finish_impl_frame_ = false;
+  // Indicates if main frame is aborted after begin.
+  bool did_abort_main_frame_ = false;
+  // The time that work on Impl frame is finished. It's only valid if the
+  // reporter is in a stage other than begin impl frame.
+  base::TimeTicks impl_frame_finish_time_;
 };
 }  // namespace cc
 

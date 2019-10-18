@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -299,9 +301,10 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     EXPECT_CALL(*autofill_client, HideAutofillPopup());
     base::HistogramTester histograms;
     password_autofill_manager_->DidAcceptSuggestion(
-        test_username_, is_suggestion_on_password_field
-                            ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
-                            : autofill::POPUP_ITEM_ID_USERNAME_ENTRY,
+        test_username_,
+        is_suggestion_on_password_field
+            ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
+            : autofill::POPUP_ITEM_ID_USERNAME_ENTRY,
         1);
     histograms.ExpectUniqueSample(
         kDropdownSelectedHistogram,
@@ -735,7 +738,8 @@ TEST_F(PasswordAutofillManagerTest,
   gfx::RectF element_bounds;
   EXPECT_FALSE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
-          element_bounds, base::i18n::RIGHT_TO_LEFT));
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          /*show_password_suggestions=*/true));
 }
 
 TEST_F(PasswordAutofillManagerTest,
@@ -770,7 +774,8 @@ TEST_F(PasswordAutofillManagerTest,
           false, PopupType::kPasswords, _));
   EXPECT_TRUE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
-          element_bounds, base::i18n::RIGHT_TO_LEFT));
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          /*show_password_suggestions=*/true));
   histograms.ExpectUniqueSample(
       kDropdownShownHistogram,
       metrics_util::PasswordDropdownState::kStandardGenerate, 1);
@@ -785,4 +790,39 @@ TEST_F(PasswordAutofillManagerTest,
       metrics_util::PasswordDropdownSelectedOption::kGenerate, 1);
 }
 
+TEST_F(PasswordAutofillManagerTest,
+       MaybeShowPasswordSuggestionsWithOmittedCredentials) {
+  auto client = std::make_unique<TestPasswordManagerClient>();
+  auto autofill_client = std::make_unique<MockAutofillClient>();
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
+  data.origin = GURL("https://foo.test");
+
+  favicon::MockFaviconService favicon_service;
+  EXPECT_CALL(*client, GetFaviconService()).WillOnce(Return(&favicon_service));
+  EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _));
+  password_autofill_manager_->OnAddPasswordFillData(data);
+
+  base::string16 generation_string =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
+
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          AllOf(SuggestionVectorValuesAre(
+                    ElementsAreArray(GetSuggestionList({generation_string}))),
+                SuggestionVectorIconsAre(
+                    ElementsAreArray(GetIconsList({"keyIcon"})))),
+          false, PopupType::kPasswords, _));
+
+  EXPECT_TRUE(
+      password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
+          element_bounds, base::i18n::RIGHT_TO_LEFT,
+          /*show_password_suggestions=*/false));
+}
 }  // namespace password_manager

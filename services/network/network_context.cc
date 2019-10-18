@@ -50,6 +50,7 @@
 #include "net/dns/mapped_host_resolver.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/failing_http_transaction_factory.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_cache.h"
@@ -1501,9 +1502,15 @@ void NetworkContext::AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
         url_request_context_->http_transaction_factory()
             ->GetSession()
             ->http_auth_cache();
-    http_auth_cache->Add(challenge.challenger.GetURL(), challenge.realm,
+    // TODO(mmenke): Use correct NetworkIsolationKey. Either make it a parameter
+    // to this method, or add it as a field of net::AuthChallengeInfo.
+    http_auth_cache->Add(challenge.challenger.GetURL(),
+                         challenge.is_proxy ? net::HttpAuth::AUTH_PROXY
+                                            : net::HttpAuth::AUTH_SERVER,
+                         challenge.realm,
                          net::HttpAuth::StringToScheme(challenge.scheme),
-                         challenge.challenge, credentials, challenge.path);
+                         net::NetworkIsolationKey(), challenge.challenge,
+                         credentials, challenge.path);
   }
   std::move(callback).Run();
 }
@@ -1515,8 +1522,12 @@ void NetworkContext::LookupBasicAuthCredentials(
       url_request_context_->http_transaction_factory()
           ->GetSession()
           ->http_auth_cache();
+  // TODO(mmenke): Make NetworkIsolationKey an argument to this method. The one
+  // consumer of it is associated with a ResourceRequest, so can have the
+  // consumer grab it from there.
   net::HttpAuthCache::Entry* entry =
-      http_auth_cache->LookupByPath(url.GetOrigin(), url.path());
+      http_auth_cache->LookupByPath(url.GetOrigin(), net::HttpAuth::AUTH_SERVER,
+                                    net::NetworkIsolationKey(), url.path());
   if (entry && entry->scheme() == net::HttpAuth::AUTH_SCHEME_BASIC)
     std::move(callback).Run(entry->credentials());
   else

@@ -42,10 +42,6 @@ void WaitForExit(OobeScreenId screen_id) {
 }  // namespace
 
 void WaitForWelcomeScreen() {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-      content::NotificationService::AllSources());
-  observer.Wait();
   WaitFor(WelcomeView::kScreenId);
 }
 

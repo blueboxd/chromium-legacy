@@ -222,6 +222,7 @@ public class SigninManagerTest {
         doReturn(account)
                 .when(mIdentityManager)
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
+        doReturn(false).when(mIdentityManager).hasPrimaryAccount();
         doReturn(true).when(mIdentityMutator).setPrimaryAccount(any());
         doNothing().when(mIdentityMutator).reloadAllAccountsFromSystemWithPrimaryAccount(any());
 
@@ -236,5 +237,31 @@ public class SigninManagerTest {
         mSigninManager.finishSignInAfterPolicyEnforced();
         assertFalse(mSigninManager.isOperationInProgress());
         assertEquals(1, callCount.get());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void failIfAlreadySignedin() {
+        CoreAccountInfo account = new CoreAccountInfo(new CoreAccountId("test_at_gmail.com"),
+                new Account("test@gmail.com", AccountManagerFacade.GOOGLE_ACCOUNT_TYPE),
+                "test_at_gmail.com");
+
+        // No need to seed accounts to the native code.
+        doReturn(true).when(mAccountTrackerService).checkAndSeedSystemAccounts();
+        // Request that policy is loaded. It will pause sign-in until onPolicyCheckedBeforeSignIn is
+        // invoked.
+        doNothing().when(mNativeMock).fetchAndApplyCloudPolicy(anyLong(), any(), any());
+
+        doReturn(account)
+                .when(mIdentityManager)
+                .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
+        doReturn(true).when(mIdentityManager).hasPrimaryAccount();
+
+        mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
+
+        mSigninManager.signIn(account.getAccount(), null);
+        assertTrue(mSigninManager.isOperationInProgress());
+
+        // The following should throw an assertion error
+        mSigninManager.finishSignInAfterPolicyEnforced();
     }
 }

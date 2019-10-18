@@ -125,8 +125,9 @@ public class PaymentRequestPaymentAppUiSkipTest {
                 RecordHistogram.getHistogramValueCountForTesting("PaymentRequest.Events",
                         Event.REQUEST_METHOD_OTHER | Event.HAD_INITIAL_FORM_OF_PAYMENT
                                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.SKIPPED_SHOW
-                                | Event.SELECTED_OTHER | Event.PAY_CLICKED
-                                | Event.RECEIVED_INSTRUMENT_DETAILS | Event.COMPLETED));
+                                | Event.AVAILABLE_METHOD_OTHER | Event.SELECTED_OTHER
+                                | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                                | Event.COMPLETED));
     }
 
     /** Two payments apps with the same payment method name should not skip payments UI. */
@@ -147,7 +148,8 @@ public class PaymentRequestPaymentAppUiSkipTest {
                 RecordHistogram.getHistogramValueCountForTesting("PaymentRequest.Events",
                         Event.REQUEST_METHOD_OTHER | Event.HAD_INITIAL_FORM_OF_PAYMENT
                                 | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.SHOWN
-                                | Event.SELECTED_OTHER | Event.PAY_CLICKED
-                                | Event.RECEIVED_INSTRUMENT_DETAILS | Event.COMPLETED));
+                                | Event.AVAILABLE_METHOD_OTHER | Event.SELECTED_OTHER
+                                | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
+                                | Event.COMPLETED));
     }
 }

@@ -54,7 +54,7 @@ class SharingDeviceRegistration {
   // For testing
   void SetEnabledFeaturesForTesting(
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures>
-          enabled_feautres);
+          enabled_features);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,

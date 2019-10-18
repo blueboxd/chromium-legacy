@@ -6890,6 +6890,8 @@ base::Optional<PROPERTYID> AXPlatformNodeWin::MojoEventToUIAProperty(
   switch (event) {
     case ax::mojom::Event::kControlsChanged:
       return UIA_ControllerForPropertyId;
+    case ax::mojom::Event::kCheckedStateChanged:
+      return UIA_ToggleToggleStatePropertyId;
     default:
       return base::nullopt;
   }

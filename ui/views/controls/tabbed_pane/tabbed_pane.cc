@@ -77,6 +77,7 @@ Tab::~Tab() = default;
 
 void Tab::SetSelected(bool selected) {
   contents_->SetVisible(selected);
+  contents_->parent()->InvalidateLayout();
   SetState(selected ? State::kActive : State::kInactive);
 #if defined(OS_MACOSX)
   SetFocusBehavior(selected ? FocusBehavior::ACCESSIBLE_ONLY

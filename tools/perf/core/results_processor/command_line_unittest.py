@@ -124,10 +124,9 @@ class TestProcessOptions(ProcessOptionsTestCase):
     self.assertEqual(options.upload_bucket, 'some-special-bucket')
 
   def testDefaultOutputFormat(self):
-    self.legacy_formats = ['html']
     options = self.ParseArgs([])
-    self.assertEqual(options.output_formats, [])
-    self.assertEqual(options.legacy_output_formats, ['html'])
+    self.assertEqual(options.output_formats, ['html'])
+    self.assertEqual(options.legacy_output_formats, [])
 
   def testUnkownOutputFormatRaises(self):
     with self.assertRaises(SystemExit):

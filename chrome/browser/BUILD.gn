@@ -5389,6 +5389,9 @@ action("expired_flags_list_gen") {
   sources = [
     "flag-metadata.json",
   ]
+  inputs = [
+    "//chrome/VERSION",
+  ]
   outputs = [
     "$root_gen_dir/chrome/browser/expired_flags_list.cc",
   ]

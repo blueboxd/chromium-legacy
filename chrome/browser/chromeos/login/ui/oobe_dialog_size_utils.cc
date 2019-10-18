@@ -10,7 +10,6 @@ namespace chromeos {
 namespace {
 
 constexpr gfx::Size kMaxDialogSize{768, 768};
-constexpr int kDialogHeightForWidePadding = 640;
 constexpr gfx::Size kMinDialogSize{464, 464};
 constexpr gfx::Insets kMinMargins{48, 48};
 
@@ -18,8 +17,7 @@ constexpr gfx::Insets kMinMargins{48, 48};
 
 void CalculateOobeDialogBounds(const gfx::Rect& host_bounds,
                                int shelf_height,
-                               gfx::Rect* result,
-                               OobeDialogPaddingMode* result_padding) {
+                               gfx::Rect* result) {
   // Area to position dialog.
   gfx::Rect available_area = host_bounds;
   available_area.Inset(0, 0, 0, shelf_height);
@@ -38,14 +36,6 @@ void CalculateOobeDialogBounds(const gfx::Rect& host_bounds,
   // Center dialog within an available area.
   *result = available_area;
   result->ClampToCenteredSize(dialog_size);
-  if (!result_padding)
-    return;
-  if ((result->width() >= kMaxDialogSize.width()) &&
-      (result->height() >= kDialogHeightForWidePadding)) {
-    *result_padding = OobeDialogPaddingMode::PADDING_WIDE;
-  } else {
-    *result_padding = OobeDialogPaddingMode::PADDING_NARROW;
-  }
 }
 
 }  // namespace chromeos

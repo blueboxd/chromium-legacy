@@ -78,6 +78,9 @@ FrameTree::NodeIterator::NodeIterator(FrameTreeNode* starting_node,
       root_of_subtree_to_skip_(root_of_subtree_to_skip) {}
 
 FrameTree::NodeIterator FrameTree::NodeRange::begin() {
+  // We shouldn't be attempting a frame tree traversal while the tree is
+  // being constructed.
+  DCHECK(root_->current_frame_host());
   return NodeIterator(root_, root_of_subtree_to_skip_);
 }
 

@@ -200,6 +200,10 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     break_appeal_ = appeal;
   }
   bool HasEarlyBreak() const { return early_break_.get(); }
+  const NGEarlyBreak& EarlyBreak() const {
+    DCHECK(early_break_.get());
+    return *early_break_.get();
+  }
 
   // Set the highest break appeal found so far. This is either:
   // 1: The highest appeal of a breakpoint found by our container

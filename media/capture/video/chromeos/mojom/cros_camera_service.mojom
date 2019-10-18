@@ -21,11 +21,11 @@ import "media/capture/video/chromeos/mojom/camera_common.mojom";
 interface CameraHalDispatcher {
   // A CameraHalServer calls RegisterServer to register itself with the
   // dispatcher.
-  RegisterServer@0(CameraHalServer server);
+  RegisterServer@0(pending_remote<CameraHalServer> server);
 
   // A CameraHalClient calls RegisterClient to register itself with the
   // dispatcher.
-  RegisterClient@1(CameraHalClient client);
+  RegisterClient@1(pending_remote<CameraHalClient> client);
 
   // Get JpegDecodeAccelerator from dispatcher.
   [MinVersion=1] GetJpegDecodeAccelerator@2(

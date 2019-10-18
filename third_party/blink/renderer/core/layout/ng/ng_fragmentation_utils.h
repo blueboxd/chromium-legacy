@@ -109,6 +109,30 @@ enum class NGBreakStatus {
   kNeedsEarlierBreak
 };
 
+// Insert a fragmentainer break before the child if necessary. In that case, the
+// previous in-flow position will be updated, we'll return |kBrokeBefore|. If we
+// don't break inside, we'll consider the appeal of doing so anyway (and store
+// it as the most appealing break point so far if that's the case), since we
+// might have to go back and break here. Return |kContinue| if we're to continue
+// laying out. If |kNeedsEarlierBreak| is returned, it means that we ran out of
+// space, but shouldn't break before the child, but rather abort layout, and
+// re-layout to a previously found good breakpoint.  If
+// |has_container_separation| is true, it means that we're at a valid
+// breakpoint. We obviously prefer valid breakpoints, but sometimes we need to
+// break at undesirable locations. Class A breakpoints occur between block
+// siblings. Class B breakpoints between line boxes. Both these breakpoint
+// classes imply that we're already past the first in-flow child in the
+// container, but there's also another way of achieving container separation:
+// class C breakpoints. Those occur if there's a positive gap between the
+// block-start content edge of the container and the block-start margin edge of
+// the first in-flow child. https://www.w3.org/TR/css-break-3/#possible-breaks
+NGBreakStatus BreakBeforeChildIfNeeded(const NGConstraintSpace&,
+                                       NGLayoutInputNode child,
+                                       const NGLayoutResult&,
+                                       LayoutUnit fragmentainer_block_offset,
+                                       bool has_container_separation,
+                                       NGBoxFragmentBuilder*);
+
 // Insert a break before the child, and propagate space shortage if needed.
 void BreakBeforeChild(const NGConstraintSpace&,
                       NGLayoutInputNode child,

@@ -525,14 +525,16 @@ class AccessibilityManagerLoginTest : public OobeBaseTest {
   ~AccessibilityManagerLoginTest() override = default;
 
   void SetUpOnMainThread() override {
-    OobeBaseTest::SetUpOnMainThread();
+    // BrailleController has to be set before SetUpOnMainThread call as
+    // observers subscribe to the controller during SetUpOnMainThread.
     AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
     default_autoclick_delay_ = GetAutoclickDelay();
+    OobeBaseTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
-    AccessibilityManager::SetBrailleControllerForTest(nullptr);
     OobeBaseTest::TearDownOnMainThread();
+    AccessibilityManager::SetBrailleControllerForTest(nullptr);
   }
 
   void CreateSession(const AccountId& account_id) {

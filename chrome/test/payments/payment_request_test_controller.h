@@ -21,13 +21,14 @@ namespace payments {
 // both Android and desktop.
 class PaymentRequestTestObserver {
  public:
-  virtual void OnCanMakePaymentCalled() = 0;
-  virtual void OnCanMakePaymentReturned() = 0;
-  virtual void OnHasEnrolledInstrumentCalled() = 0;
-  virtual void OnHasEnrolledInstrumentReturned() = 0;
-  virtual void OnNotSupportedError() = 0;
-  virtual void OnConnectionTerminated() = 0;
-  virtual void OnAbortCalled() = 0;
+  virtual void OnCanMakePaymentCalled() {}
+  virtual void OnCanMakePaymentReturned() {}
+  virtual void OnHasEnrolledInstrumentCalled() {}
+  virtual void OnHasEnrolledInstrumentReturned() {}
+  virtual void OnShowInstrumentsReady() {}
+  virtual void OnNotSupportedError() {}
+  virtual void OnConnectionTerminated() {}
+  virtual void OnAbortCalled() {}
 
  protected:
   virtual ~PaymentRequestTestObserver() {}
@@ -57,6 +58,7 @@ class PaymentRequestTestController {
   void OnCanMakePaymentReturned();
   void OnHasEnrolledInstrumentCalled();
   void OnHasEnrolledInstrumentReturned();
+  void OnShowInstrumentsReady();
   void OnNotSupportedError();
   void OnConnectionTerminated();
   void OnAbortCalled();

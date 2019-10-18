@@ -474,6 +474,13 @@ void RenderFrameHostManager::SwapOutOldFrame(
   // RenderFrameHost should not be trying to commit a navigation.
   old_render_frame_host->ResetNavigationRequests();
 
+  NavigationEntryImpl* last_committed_entry =
+      delegate_->GetControllerForRenderManager().GetLastCommittedEntry();
+  BackForwardCacheMetrics* old_page_back_forward_cache_metrics =
+      (!old_render_frame_host->GetParent() && last_committed_entry)
+          ? last_committed_entry->back_forward_cache_metrics()
+          : nullptr;
+
   // Record the metrics about the state of the old main frame at the moment when
   // we navigate away from it as it matters for whether the page is eligible for
   // being put into back-forward cache.
@@ -484,16 +491,9 @@ void RenderFrameHostManager::SwapOutOldFrame(
   //
   // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
   // implementing back-forward cache.
-  if (!old_render_frame_host->GetParent()) {
-    if (NavigationEntryImpl* last_committed_entry =
-            delegate_->GetControllerForRenderManager()
-                .GetLastCommittedEntry()) {
-      if (last_committed_entry->back_forward_cache_metrics()) {
-        last_committed_entry->back_forward_cache_metrics()->RecordFeatureUsage(
-            old_render_frame_host.get());
-      }
-    }
-  }
+  if (old_page_back_forward_cache_metrics)
+    old_page_back_forward_cache_metrics->RecordFeatureUsage(
+        old_render_frame_host.get());
 
   // BackForwardCache:
   //
@@ -542,6 +542,14 @@ void RenderFrameHostManager::SwapOutOldFrame(
           std::move(old_render_view_hosts));
       back_forward_cache.StoreEntry(std::move(entry));
       return;
+    }
+
+    if (old_page_back_forward_cache_metrics) {
+      // TODO(hajimehoshi): For code readability, BackForwardCacheMetrics should
+      // take CanStoreDocumentResult directly and rename
+      // MarkNotRestoredWithReason to DidNotStoreDocument.
+      old_page_back_forward_cache_metrics->MarkNotRestoredWithReason(
+          can_store.reason.value());
     }
   }
 

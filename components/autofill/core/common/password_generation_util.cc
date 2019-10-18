@@ -17,12 +17,14 @@ PasswordGenerationUIData::PasswordGenerationUIData(
     int max_length,
     const base::string16& generation_element,
     uint32_t generation_element_id,
+    bool is_generation_element_password_type,
     base::i18n::TextDirection text_direction,
     const autofill::PasswordForm& password_form)
     : bounds(bounds),
       max_length(max_length),
       generation_element(generation_element),
       generation_element_id(generation_element_id),
+      is_generation_element_password_type(is_generation_element_password_type),
       text_direction(text_direction),
       password_form(password_form) {}
 

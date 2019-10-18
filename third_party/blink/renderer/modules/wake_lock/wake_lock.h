@@ -28,7 +28,7 @@ namespace blink {
 
 class ExecutionContext;
 class ScriptState;
-class WakeLockStateRecord;
+class WakeLockManager;
 
 class MODULES_EXPORT WakeLock final : public ScriptWrappable,
                                       public ContextLifecycleObserver,
@@ -71,7 +71,7 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
   // https://w3c.github.io/wake-lock/#concepts-and-state-record
   // Each platform wake lock (one per wake lock type) has an associated state
   // record per responsible document [...] internal slots.
-  Member<WakeLockStateRecord> state_records_[kWakeLockTypeCount];
+  Member<WakeLockManager> managers_[kWakeLockTypeCount];
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockTest, RequestWakeLockGranted);
   FRIEND_TEST_ALL_PREFIXES(WakeLockTest, RequestWakeLockDenied);

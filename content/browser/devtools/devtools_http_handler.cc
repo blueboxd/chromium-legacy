@@ -710,8 +710,8 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     scoped_refptr<DevToolsAgentHost> browser_agent =
         DevToolsAgentHost::CreateForBrowser(
             thread_->task_runner(),
-            base::BindRepeating(&DevToolsSocketFactory::CreateForTethering,
-                                base::Unretained(socket_factory_.get())));
+            base::Bind(&DevToolsSocketFactory::CreateForTethering,
+                       base::Unretained(socket_factory_.get())));
     connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
         thread_->task_runner(), server_wrapper_.get(), connection_id,
         browser_agent));

@@ -228,7 +228,7 @@ void ToggleImageButton::SetToggled(bool toggled) {
   toggled_ = toggled;
   SchedulePaint();
 
-  NotifyAccessibilityEvent(ax::mojom::Event::kAriaAttributeChanged, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kCheckedStateChanged, true);
 }
 
 void ToggleImageButton::SetToggledImage(ButtonState image_state,

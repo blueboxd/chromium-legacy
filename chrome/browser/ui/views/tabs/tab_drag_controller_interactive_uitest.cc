@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -27,7 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -627,29 +628,25 @@ class DetachToBrowserTabDragControllerTest
 
   Browser* GetTerminalAppBrowser() {
     // Install the app (but only once per session).
-    if (!terminal_app_extension_) {
+    if (!terminal_app_id_) {
       GURL app_url = embedded_test_server()->GetURL("app.com", "/simple.html");
       auto web_app_info = std::make_unique<WebApplicationInfo>();
       web_app_info->app_url = app_url;
       web_app_info->scope = app_url.GetWithoutFilename();
       web_app_info->open_as_window = true;
-      web_app::AppId app_id = InstallWebApp(std::move(web_app_info));
+      terminal_app_id_ = InstallWebApp(std::move(web_app_info));
 
       auto* provider = web_app::WebAppProvider::Get(browser()->profile());
       provider->system_web_app_manager().SetSystemAppsForTesting(
           {{web_app::SystemAppType::TERMINAL,
             web_app::SystemAppInfo(app_url)}});
       web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
-          .Insert(app_url, app_id,
+          .Insert(app_url, *terminal_app_id_,
                   web_app::ExternalInstallSource::kInternalDefault);
-
-      terminal_app_extension_ =
-          extensions::ExtensionRegistry::Get(browser()->profile())
-              ->GetInstalledExtension(app_id);
     }
 
-    return extensions::browsertest_util::LaunchAppBrowser(
-        browser()->profile(), terminal_app_extension_);
+    return web_app::LaunchWebAppBrowser(browser()->profile(),
+                                        *terminal_app_id_);
   }
 
   Browser* browser() const { return InProcessBrowserTest::browser(); }
@@ -659,7 +656,7 @@ class DetachToBrowserTabDragControllerTest
   // The root window for the event generator.
   aura::Window* root_ = nullptr;
 #endif
-  const extensions::Extension* terminal_app_extension_ = nullptr;
+  base::Optional<web_app::AppId> terminal_app_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTest);
 };

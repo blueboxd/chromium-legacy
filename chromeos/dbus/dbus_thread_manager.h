@@ -56,7 +56,6 @@ class SMSClient;
 class UpdateEngineClient;
 class VirtualFileProviderClient;
 class VmPluginDispatcherClient;
-class WilcoDtcSupportdClient;
 
 // THIS CLASS IS BEING DEPRECATED. See README.md for guidelines and
 // https://crbug.com/647367 for details.
@@ -138,7 +137,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   UpdateEngineClient* GetUpdateEngineClient();
   VirtualFileProviderClient* GetVirtualFileProviderClient();
   VmPluginDispatcherClient* GetVmPluginDispatcherClient();
-  WilcoDtcSupportdClient* GetWilcoDtcSupportdClient();
 
   // DEPRECATED, DO NOT USE. The static getter for each of these classes should
   // be used instead. TODO(stevenjb): Remove. https://crbug.com/948390.

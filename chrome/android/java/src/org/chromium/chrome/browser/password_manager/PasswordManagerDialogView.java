@@ -45,8 +45,6 @@ public class PasswordManagerDialogView extends ScrollView {
             mIllustrationView.setVisibility(VISIBLE);
         } else {
             mIllustrationView.setVisibility(GONE);
-            requestLayout(); // Sometimes the visibility isn't propagated correctly and the image
-                             // appears as INVISIBLE.
         }
     }
 

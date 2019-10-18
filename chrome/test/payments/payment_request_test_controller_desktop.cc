@@ -58,6 +58,9 @@ class PaymentRequestTestController::ObserverConverter
   void OnHasEnrolledInstrumentReturned() override {
     controller_->OnHasEnrolledInstrumentReturned();
   }
+  void OnShowInstrumentsReady() override {
+    controller_->OnShowInstrumentsReady();
+  }
   void OnNotSupportedError() override { controller_->OnNotSupportedError(); }
   void OnConnectionTerminated() override {
     controller_->OnConnectionTerminated();
@@ -144,6 +147,11 @@ void PaymentRequestTestController::OnHasEnrolledInstrumentCalled() {
 void PaymentRequestTestController::OnHasEnrolledInstrumentReturned() {
   if (observer_)
     observer_->OnHasEnrolledInstrumentReturned();
+}
+
+void PaymentRequestTestController::OnShowInstrumentsReady() {
+  if (observer_)
+    observer_->OnShowInstrumentsReady();
 }
 
 void PaymentRequestTestController::OnNotSupportedError() {

@@ -445,11 +445,25 @@ class PanelItem extends HTMLElement {
   }
 
   /**
+   *  Getter for the progress indicator.
+   */
+  get indicator() {
+    return this.getAttribute('indicator');
+  }
+
+  /**
    * Setter to set the success/failure indication.
    * @param {string} status Status value being set.
    */
   set status(status) {
     this.setAttribute('status', status);
+  }
+
+  /**
+   *  Getter for the success/failure indication.
+   */
+  get status() {
+    return this.getAttribute('status');
   }
 
   /**

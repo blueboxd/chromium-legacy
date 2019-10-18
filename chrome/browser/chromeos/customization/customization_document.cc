@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -72,10 +73,6 @@ const char kDefaultAppsFolderName[] = "default_apps_folder_name";
 const char kIdAttr[] = "id";
 
 const char kAcceptedManifestVersion[] = "1.0";
-
-// Path to OEM partner startup customization manifest.
-const char kStartupCustomizationManifestPath[] =
-    "/opt/oem/etc/startup_manifest.json";
 
 // This is subdirectory relative to PathService(DIR_CHROMEOS_CUSTOM_WALLPAPERS),
 // where downloaded (and resized) wallpaper is stored.
@@ -287,7 +284,10 @@ StartupCustomizationDocument::StartupCustomizationDocument()
     // Loading manifest causes us to do blocking IO on UI thread.
     // Temporarily allow it until we fix http://crosbug.com/11103
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    LoadManifestFromFile(base::FilePath(kStartupCustomizationManifestPath));
+    base::FilePath startup_customization_manifest;
+    base::PathService::Get(chromeos::FILE_STARTUP_CUSTOMIZATION_MANIFEST,
+                           &startup_customization_manifest);
+    LoadManifestFromFile(startup_customization_manifest);
   }
   Init(system::StatisticsProvider::GetInstance());
 }

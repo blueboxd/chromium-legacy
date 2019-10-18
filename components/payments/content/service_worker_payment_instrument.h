@@ -86,6 +86,9 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   // interface must be called before any other interfaces in this class.
   void ValidateCanMakePayment(ValidateCanMakePaymentCallback callback);
 
+  // Returns the list of payment methods supported by this instrument.
+  std::vector<std::string> GetInstrumentMethodNames() const;
+
   // PaymentInstrument:
   void InvokePaymentApp(Delegate* delegate) override;
   void OnPaymentAppWindowClosed() override;
@@ -104,6 +107,8 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
+  // Only works for installed payment instruments. This will DCHECK if this
+  // instrument needs installation.
   void IsValidForPaymentMethodIdentifier(
       const std::string& payment_method_identifier,
       bool* is_valid) const override;

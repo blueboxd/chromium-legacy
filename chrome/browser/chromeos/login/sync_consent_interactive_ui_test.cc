@@ -114,13 +114,6 @@ class SyncConsentTest : public OobeBaseTest {
     OobeBaseTest::TearDownOnMainThread();
   }
 
-  void WaitForUIToLoad() {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-        content::NotificationService::AllSources());
-    observer.Wait();
-  }
-
   void SwitchLanguage(const std::string& language) {
     const char get_num_reloads[] = "Oobe.getInstance().reloadContentNumEvents_";
     const int prev_reloads = test::OobeJS().GetInt(get_num_reloads);
@@ -212,7 +205,6 @@ class SyncConsentTest : public OobeBaseTest {
 };
 
 IN_PROC_BROWSER_TEST_F(SyncConsentTest, SyncConsentRecorder) {
-  WaitForUIToLoad();
   EXPECT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
   LoginToSyncConsentScreen();
   // For En-US we hardcode strings here to catch string issues too.
@@ -245,7 +237,6 @@ class SyncConsentTestWithParams
 IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams, SyncConsentTestWithLocale) {
   LOG(INFO) << "SyncConsentTestWithParams() started with param='" << GetParam()
             << "'";
-  WaitForUIToLoad();
   EXPECT_EQ(g_browser_process->GetApplicationLocale(), "en-US");
   SwitchLanguage(GetParam());
   LoginToSyncConsentScreen();

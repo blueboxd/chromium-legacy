@@ -88,6 +88,12 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintLineBoxChildren(NGPaintFragment::ChildList,
                             const PaintInfo&,
                             const PhysicalOffset& paint_offset);
+  void PaintLineBox(const NGPhysicalFragment& line_box_fragment,
+                    const DisplayItemClient& display_item_client,
+                    const NGPaintFragment* line_box_paint_fragment,
+                    const NGFragmentItem* line_box_item,
+                    const PaintInfo&,
+                    const PhysicalOffset& paint_offset);
   void PaintBackplate(NGPaintFragment::ChildList,
                       const PaintInfo&,
                       const PhysicalOffset& paint_offset);
@@ -105,6 +111,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintTextItem(const NGInlineCursor& cursor,
                      const PaintInfo&,
                      const PhysicalOffset& paint_offset);
+  MoveTo PaintLineBoxItem(const NGFragmentItem& item,
+                          const PaintInfo& paint_info,
+                          const PhysicalOffset& paint_offset);
   MoveTo PaintBoxItem(const NGFragmentItem& item,
                       const PaintInfo& paint_info,
                       const PhysicalOffset& paint_offset);
@@ -130,7 +139,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void RecordHitTestDataForLine(const PaintInfo& paint_info,
                                 const PhysicalOffset& paint_offset,
-                                const NGPaintFragment& line);
+                                const NGPhysicalFragment& line,
+                                const DisplayItemClient& display_item_client);
 
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;

@@ -13,12 +13,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "content/child/child_thread_impl.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/render_thread_impl.h"
@@ -603,6 +603,24 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
   const int lid_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 };
+
+struct PeerConnectionTrackerLazyInstanceTraits
+    : public base::internal::DestructorAtExitLazyInstanceTraits<
+          PeerConnectionTracker> {
+  static PeerConnectionTracker* New(void* instance) {
+    return new (instance) PeerConnectionTracker(
+        RenderThreadImpl::current()->main_thread_runner());
+  }
+};
+
+base::LazyInstance<PeerConnectionTracker,
+                   PeerConnectionTrackerLazyInstanceTraits>
+    g_peer_connection_tracker = LAZY_INSTANCE_INITIALIZER;
+
+// static
+PeerConnectionTracker* PeerConnectionTracker::GetInstance() {
+  return &g_peer_connection_tracker.Get();
+}
 
 PeerConnectionTracker::PeerConnectionTracker(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)

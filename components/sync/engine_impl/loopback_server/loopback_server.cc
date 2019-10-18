@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -255,7 +256,7 @@ std::string LoopbackServer::GenerateNewKeystoreKey() const {
 bool LoopbackServer::CreatePermanentBookmarkFolder(
     const std::string& server_tag,
     const std::string& name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<LoopbackServerEntity> entity =
       PersistentPermanentEntity::CreateNew(
           syncer::BOOKMARKS, server_tag, name,
@@ -306,7 +307,7 @@ void LoopbackServer::SaveEntity(std::unique_ptr<LoopbackServerEntity> entity) {
 
 net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
                                                   std::string* response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   response->clear();
 
   sync_pb::ClientToServerMessage message;
@@ -663,7 +664,7 @@ bool LoopbackServer::HandleCommitRequest(
 }
 
 void LoopbackServer::ClearServerData() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   entities_.clear();
   keystore_keys_.clear();
   ++store_birthday_;
@@ -672,13 +673,13 @@ void LoopbackServer::ClearServerData() {
 }
 
 std::string LoopbackServer::GetStoreBirthday() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::NumberToString(store_birthday_);
 }
 
 std::vector<sync_pb::SyncEntity> LoopbackServer::GetSyncEntitiesByModelType(
     ModelType model_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<sync_pb::SyncEntity> sync_entities;
   for (const auto& kv : entities_) {
     const LoopbackServerEntity& entity = *kv.second;
@@ -694,7 +695,7 @@ std::vector<sync_pb::SyncEntity> LoopbackServer::GetSyncEntitiesByModelType(
 
 std::vector<sync_pb::SyncEntity>
 LoopbackServer::GetPermanentSyncEntitiesByModelType(ModelType model_type) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<sync_pb::SyncEntity> sync_entities;
   for (const auto& kv : entities_) {
     const LoopbackServerEntity& entity = *kv.second;
@@ -710,7 +711,7 @@ LoopbackServer::GetPermanentSyncEntitiesByModelType(ModelType model_type) {
 
 std::unique_ptr<base::DictionaryValue>
 LoopbackServer::GetEntitiesAsDictionaryValue() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<base::DictionaryValue> dictionary(
       new base::DictionaryValue());
 
@@ -783,7 +784,7 @@ bool LoopbackServer::ModifyBookmarkEntity(
 }
 
 void LoopbackServer::SerializeState(sync_pb::LoopbackServerProto* proto) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   proto->set_version(kCurrentLoopbackServerProtoVersion);
   proto->set_store_birthday(store_birthday_);
@@ -798,7 +799,7 @@ void LoopbackServer::SerializeState(sync_pb::LoopbackServerProto* proto) const {
 
 bool LoopbackServer::DeSerializeState(
     const sync_pb::LoopbackServerProto& proto) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(proto.version(), kCurrentLoopbackServerProtoVersion);
 
   store_birthday_ = proto.store_birthday();

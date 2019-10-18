@@ -84,6 +84,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
       JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
       JourneyLogger::EVENT_REQUEST_SHIPPING |
       JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD |
       JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT;
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
                                      expected_event_bits, 1);
@@ -124,7 +125,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
       JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
       JourneyLogger::EVENT_HAD_NECESSARY_COMPLETE_SUGGESTIONS |
       JourneyLogger::EVENT_REQUEST_SHIPPING |
-      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD;
+      JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD;
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
                                      expected_event_bits, 1);
 
@@ -166,6 +168,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
       JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
       JourneyLogger::EVENT_REQUEST_SHIPPING |
       JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD |
       JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT |
       JourneyLogger::EVENT_NEEDS_COMPLETION_SHIPPING;
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
@@ -214,6 +217,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
       JourneyLogger::EVENT_REQUEST_PAYER_EMAIL |
       JourneyLogger::EVENT_REQUEST_PAYER_PHONE |
       JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD |
       JourneyLogger::EVENT_REQUEST_METHOD_OTHER |
       JourneyLogger::EVENT_NEEDS_COMPLETION_CONTACT_INFO |
       JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT;
@@ -262,6 +266,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestMissingFieldsMetricsTest,
       JourneyLogger::EVENT_SHOWN | JourneyLogger::EVENT_USER_ABORTED |
       JourneyLogger::EVENT_HAD_INITIAL_FORM_OF_PAYMENT |
       JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+      JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD |
       JourneyLogger::EVENT_NEEDS_COMPLETION_PAYMENT;
   histogram_tester.ExpectBucketCount("PaymentRequest.Events",
                                      expected_event_bits, 1);

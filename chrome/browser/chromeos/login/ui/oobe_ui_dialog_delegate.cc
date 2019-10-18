@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -43,18 +42,6 @@ namespace {
 constexpr char kGaiaURL[] = "chrome://oobe/gaia-signin";
 constexpr char kAppLaunchBailout[] = "app_launch_bailout";
 constexpr char kCancel[] = "cancel";
-
-CoreOobeView::DialogPaddingMode ConvertDialogPaddingMode(
-    OobeDialogPaddingMode padding) {
-  switch (padding) {
-    case OobeDialogPaddingMode::PADDING_AUTO:
-      return CoreOobeView::DialogPaddingMode::MODE_AUTO;
-    case OobeDialogPaddingMode::PADDING_WIDE:
-      return CoreOobeView::DialogPaddingMode::MODE_WIDE;
-    case OobeDialogPaddingMode::PADDING_NARROW:
-      return CoreOobeView::DialogPaddingMode::MODE_NARROW;
-  }
-}
 
 }  // namespace
 
@@ -137,8 +124,6 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
     Layout();
   }
 
-  OobeDialogPaddingMode padding() { return padding_; }
-
   // views::WidgetDelegateView:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
 
@@ -146,18 +131,14 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
 
   void Layout() override {
     if (fullscreen_) {
-      for (views::View* child : children()) {
-        child->SetBoundsRect(GetContentsBounds());
-      }
-      padding_ = OobeDialogPaddingMode::PADDING_AUTO;
+      oobe_view_->SetBoundsRect(GetContentsBounds());
       return;
     }
 
     gfx::Rect bounds;
     const int shelf_height =
         has_shelf_ ? ash::ShelfConfig::Get()->shelf_size() : 0;
-    CalculateOobeDialogBounds(GetContentsBounds(), shelf_height, &bounds,
-                              &padding_);
+    CalculateOobeDialogBounds(GetContentsBounds(), shelf_height, &bounds);
 
     for (views::View* child : children()) {
       child->SetBoundsRect(bounds);
@@ -173,9 +154,6 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
   // Indicates if ash shelf is displayed (and should be excluded from available
   // space).
   bool has_shelf_ = true;
-
-  // Tracks dialog margins after last size calculations.
-  OobeDialogPaddingMode padding_ = OobeDialogPaddingMode::PADDING_AUTO;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutWidgetDelegateView);
 };
@@ -330,8 +308,6 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   layout_view_->SetHasShelf(
       !ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 
-  dialog_view_->AddObserver(this);
-
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
 
@@ -482,17 +458,6 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
 
   GetOobeUI()->ForwardAccelerator(entry->second);
   return true;
-}
-
-void OobeUIDialogDelegate::OnViewBoundsChanged(views::View* observed_view) {
-  if (!widget_)
-    return;
-  GetOobeUI()->GetCoreOobeView()->SetDialogPaddingMode(
-      ConvertDialogPaddingMode(layout_view_->padding()));
-}
-
-void OobeUIDialogDelegate::OnViewIsDeleting(views::View* observed_view) {
-  observed_view->RemoveObserver(this);
 }
 
 void OobeUIDialogDelegate::OnKeyboardVisibilityChanged(bool visible) {

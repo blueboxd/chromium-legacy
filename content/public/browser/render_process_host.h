@@ -360,6 +360,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //   4. Possibly more stpes, depending on the ChildThreadImpl subclass.
   virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
+  // Can only be called when IsInitializedAndNotDead() is true.
   virtual const service_manager::Identity& GetChildIdentity() = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.

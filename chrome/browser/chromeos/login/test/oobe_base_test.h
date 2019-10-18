@@ -58,12 +58,17 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   // is set before SetUpCommandLine is invoked.
   bool needs_background_networking_ = false;
 
-  std::unique_ptr<content::WindowedNotificationObserver>
-      login_screen_load_observer_;
   std::string gaia_frame_parent_ = "signin-frame";
   std::string authenticator_id_ = "$('gaia-signin').authenticator_";
   EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
                                                      embedded_test_server()};
+
+ private:
+  // Waits for login_screen_load_observer_ and resets it afterwards.
+  void MaybeWaitForLoginScreenLoad();
+
+  std::unique_ptr<content::WindowedNotificationObserver>
+      login_screen_load_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeBaseTest);
 };

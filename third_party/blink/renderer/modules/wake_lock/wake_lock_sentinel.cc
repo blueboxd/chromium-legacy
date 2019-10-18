@@ -8,14 +8,14 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
-#include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
+#include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 
 WakeLockSentinel::WakeLockSentinel(ScriptState* script_state,
                                    WakeLockType type,
-                                   WakeLockStateRecord* manager)
+                                   WakeLockManager* manager)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       manager_(manager),
       type_(type) {}

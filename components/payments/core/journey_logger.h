@@ -104,7 +104,11 @@ class JourneyLogger {
     EVENT_NEEDS_COMPLETION_CONTACT_INFO = 1 << 24,
     EVENT_NEEDS_COMPLETION_PAYMENT = 1 << 25,
     EVENT_NEEDS_COMPLETION_SHIPPING = 1 << 26,
-    EVENT_ENUM_MAX = 1 << 27,
+    // Payment apps available (after JIT crawling) at the time show() is called.
+    EVENT_AVAILABLE_METHOD_BASIC_CARD = 1 << 27,
+    EVENT_AVAILABLE_METHOD_GOOGLE = 1 << 28,
+    EVENT_AVAILABLE_METHOD_OTHER = 1 << 29,
+    EVENT_ENUM_MAX = 1 << 30,
   };
 
   // The reason why the Payment Request was aborted.

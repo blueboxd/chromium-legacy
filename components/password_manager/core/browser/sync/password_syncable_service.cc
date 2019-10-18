@@ -452,9 +452,7 @@ void PasswordSyncableService::CreateOrUpdateEntry(
 }
 
 bool PasswordSyncableService::ShouldRecoverPasswordsDuringMerge() const {
-  return base::FeatureList::IsEnabled(
-             features::kRecoverPasswordsForSyncUsers) &&
-         !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
+  return !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 }
 
 syncer::SyncData SyncDataFromPassword(

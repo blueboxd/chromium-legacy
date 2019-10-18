@@ -212,21 +212,20 @@ chrome_cleaner::ResultCode RunChromeCleaner(
   chrome_cleaner::SandboxConnectionErrorCallback connection_error_callback =
       main_controller.GetSandboxConnectionErrorCallback();
 
-  // Initialize a null UniqueParserPtr to be set by SpawnParserSandbox.
-  chrome_cleaner::UniqueParserPtr parser_ptr(
-      nullptr, base::OnTaskRunnerDeleter(nullptr));
+  // Initialize a null RemoteParserPtr to be set by SpawnParserSandbox.
+  chrome_cleaner::RemoteParserPtr parser(nullptr,
+                                         base::OnTaskRunnerDeleter(nullptr));
   chrome_cleaner::ResultCode init_result = chrome_cleaner::SpawnParserSandbox(
-      shutdown_sequence.mojo_task_runner, connection_error_callback,
-      &parser_ptr);
+      shutdown_sequence.mojo_task_runner, connection_error_callback, &parser);
   if (init_result != chrome_cleaner::RESULT_CODE_SUCCESS) {
     return init_result;
   }
   std::unique_ptr<chrome_cleaner::SandboxedJsonParser> json_parser =
       std::make_unique<chrome_cleaner::SandboxedJsonParser>(
-          shutdown_sequence.mojo_task_runner.get(), parser_ptr.get());
+          shutdown_sequence.mojo_task_runner.get(), parser.get());
   std::unique_ptr<chrome_cleaner::SandboxedShortcutParser> shortcut_parser =
       std::make_unique<chrome_cleaner::SandboxedShortcutParser>(
-          shutdown_sequence.mojo_task_runner.get(), parser_ptr.get());
+          shutdown_sequence.mojo_task_runner.get(), parser.get());
 
   chrome_cleaner::Settings* settings = chrome_cleaner::Settings::GetInstance();
   if (!chrome_cleaner::IsSupportedEngine(settings->engine())) {

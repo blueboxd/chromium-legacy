@@ -11,7 +11,7 @@ interface AudioDecoder {
   //
   // TODO(sandersd): Rename to Initialize() if/when
   // media::AudioDecoder::Initialize() is renamed to Configure().
-  Construct(associated AudioDecoderClient client);
+  Construct(pending_associated_remote<AudioDecoderClient> client);
 
   // Initializes the AudioDecoder with the audio codec configuration and CDM id.
   // For the unencrypted streams the |cdm_id| is ignored. Executed the callback

@@ -214,6 +214,7 @@ struct PasswordGenerationUIData {
   int32 max_length;
   mojo_base.mojom.String16 generation_element;
   uint32 generation_element_id;
+  bool is_generation_element_password_type;
   mojo_base.mojom.TextDirection text_direction;
   PasswordForm password_form;
 };

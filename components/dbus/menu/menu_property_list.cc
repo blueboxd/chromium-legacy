@@ -67,7 +67,6 @@ MenuItemProperties ComputeMenuPropertiesForMenuItem(ui::MenuModel* menu,
   switch (menu->GetTypeAt(i)) {
     case ui::MenuModel::TYPE_COMMAND:
     case ui::MenuModel::TYPE_HIGHLIGHTED:
-    case ui::MenuModel::TYPE_TITLE:
       // Nothing special to do.
       break;
     case ui::MenuModel::TYPE_CHECK:

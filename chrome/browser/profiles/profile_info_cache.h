@@ -197,7 +197,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // recomputed to "Person 1" and "Person 2".
   void RecomputeProfileNamesIfNeeded();
 
-  std::vector<std::string> sorted_keys_;
+  std::vector<std::string> keys_;
   const base::FilePath user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);

@@ -753,9 +753,7 @@ void RenderThreadImpl::Init() {
   browser_plugin_manager_.reset(new BrowserPluginManager());
   AddObserver(browser_plugin_manager_.get());
 
-  peer_connection_tracker_.reset(
-      new PeerConnectionTracker(main_thread_runner()));
-  AddObserver(peer_connection_tracker_.get());
+  AddObserver(PeerConnectionTracker::GetInstance());
 
   unfreezable_message_filter_ = new UnfreezableMessageFilter(this);
   AddFilter(unfreezable_message_filter_.get());

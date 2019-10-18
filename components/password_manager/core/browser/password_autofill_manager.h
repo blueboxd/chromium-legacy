@@ -6,6 +6,7 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_AUTOFILL_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -85,7 +86,8 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // and returns false.
   bool MaybeShowPasswordSuggestionsWithGeneration(
       const gfx::RectF& bounds,
-      base::i18n::TextDirection text_direction);
+      base::i18n::TextDirection text_direction,
+      bool show_password_suggestions);
 
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();

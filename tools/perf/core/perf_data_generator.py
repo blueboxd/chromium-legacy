@@ -630,9 +630,10 @@ BUILDERS = {
     'platform': 'win',
     'target_bits': 32,
     'dimension': {
-      'pool': 'chrome.tests.perf',
-      'os': 'Windows-2008ServerR2-SP1',
-      'gpu': '102b:0532'
+        'gpu': '102b:0532-6.1.7600.16385',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'chrome.tests.perf',
+        'synthetic_product_name': 'PowerEdge R210 II (Dell Inc.)',
     },
   },
   'Win 7 Nvidia GPU Perf': {

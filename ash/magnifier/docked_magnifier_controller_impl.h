@@ -79,6 +79,7 @@ class ASH_EXPORT DockedMagnifierControllerImpl
 
   // DockedMagnifierController:
   void CenterOnPoint(const gfx::Point& point_in_screen) override;
+  int GetMagnifierHeightForTesting() const override;
 
   // ash::SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;

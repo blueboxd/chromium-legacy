@@ -33,7 +33,6 @@ cr.define('cr.ui.Oobe', function() {
     setClientAreaSize: function(data) {},
     setLabelText: function(data) {},
     setShelfHeight: function(data) {},
-    setDialogPaddingMode: function(data) {},
     setVirtualKeyboardShown: function(data) {},
     showAPIKeysNotice: function(data) {},
     showOobeUI: function(data) {},

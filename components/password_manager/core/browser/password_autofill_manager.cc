@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -338,14 +339,16 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestions(
 
 bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
     const gfx::RectF& bounds,
-    base::i18n::TextDirection text_direction) {
+    base::i18n::TextDirection text_direction,
+    bool show_password_suggestions) {
   if (!fill_data_)
     return false;
   std::vector<autofill::Suggestion> suggestions;
-  GetSuggestions(*fill_data_, base::string16(), page_favicon_,
-                 true /* show_all */, true /* is_password_field */,
-                 &suggestions);
-
+  if (show_password_suggestions) {
+    GetSuggestions(*fill_data_, base::string16(), page_favicon_,
+                   true /* show_all */, true /* is_password_field */,
+                   &suggestions);
+  }
   // Add 'Generation' option.
   // The UI code will pick up an icon from the resources based on the string.
   autofill::Suggestion suggestion(

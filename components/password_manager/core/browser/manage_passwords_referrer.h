@@ -9,6 +9,11 @@ namespace password_manager {
 
 // Enumerates referrers that can trigger a navigation to the manage passwords
 // page.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Needs to stay in sync with
+// ManagePasswordsReferrer in enums.xml.
+//
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.password_manager
 enum class ManagePasswordsReferrer {

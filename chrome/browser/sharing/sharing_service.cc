@@ -446,10 +446,10 @@ void SharingService::RegisterDevice() {
 }
 
 void SharingService::RegisterDeviceInTesting(
-    std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_feautres,
+    std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_features,
     SharingDeviceRegistration::RegistrationCallback callback) {
   sharing_device_registration_->SetEnabledFeaturesForTesting(
-      std::move(enabled_feautres));
+      std::move(enabled_features));
   sharing_device_registration_->RegisterDevice(std::move(callback));
 }
 

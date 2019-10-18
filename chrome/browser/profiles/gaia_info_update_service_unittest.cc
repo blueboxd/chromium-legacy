@@ -294,48 +294,6 @@ TEST_F(GAIAInfoUpdateServiceTest, ProfileLockEnabledForWhitelist) {
       GetString(prefs::kGoogleServicesHostedDomain));
 }
 
-// TODO(anthonyvd) : remove or update test once the refactoring of the internals
-// of ProfileInfoCache is complete.
-TEST_F(GAIAInfoUpdateServiceTest, HandlesProfileReordering) {
-  size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
-  GetCache()->SetLocalProfileNameOfProfileAtIndex(index, FullName16("B"));
-  GetCache()->SetProfileIsUsingDefaultNameAtIndex(index, true);
-
-  CreateProfile(FullName("A"));
-  CreateProfile(FullName("C"));
-  CreateProfile(FullName("E"));
-
-  size_t index_before =
-      GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
-
-  // Rename our profile.
-  RenameProfile(FullName16("D"), GivenName16("D"));
-  // Profiles should have been reordered in the cache.
-  EXPECT_NE(index_before,
-            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
-  // Rename the profile back to the original name, it should go back to its
-  // original position.
-  RenameProfile(FullName16("B"), GivenName16("B"));
-  EXPECT_EQ(index_before,
-            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
-
-  // Rename only the given name of our profile.
-  RenameProfile(FullName16("B"), GivenName16("D"));
-  // Rename the profile back to the original name, it should go back to its
-  // original position.
-  RenameProfile(FullName16("B"), GivenName16("B"));
-  EXPECT_EQ(index_before,
-            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
-
-  // Rename only the full name of our profile.
-  RenameProfile(FullName16("D"), GivenName16("B"));
-  // Rename the profile back to the original name, it should go back to its
-  // original position.
-  RenameProfile(FullName16("B"), GivenName16("B"));
-  EXPECT_EQ(index_before,
-            GetCache()->GetIndexOfProfileWithPath(profile()->GetPath()));
-}
-
 TEST_F(GAIAInfoUpdateServiceTest, ShouldUseGAIAProfileInfo) {
 #if defined(OS_CHROMEOS)
   // This feature should never be enabled on ChromeOS.

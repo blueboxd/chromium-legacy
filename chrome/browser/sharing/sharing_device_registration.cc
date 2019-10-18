@@ -224,6 +224,6 @@ bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
 }
 
 void SharingDeviceRegistration::SetEnabledFeaturesForTesting(
-    std::set<SharingSpecificFields::EnabledFeatures> enabled_feautres) {
-  enabled_features_testing_value_ = std::move(enabled_feautres);
+    std::set<SharingSpecificFields::EnabledFeatures> enabled_features) {
+  enabled_features_testing_value_ = std::move(enabled_features);
 }

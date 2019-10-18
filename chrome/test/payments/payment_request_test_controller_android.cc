@@ -31,6 +31,8 @@ void PaymentRequestTestController::SetUpOnMainThread() {
       base::BindRepeating(
           &PaymentRequestTestController::OnHasEnrolledInstrumentReturned,
           base::Unretained(this)),
+      base::BindRepeating(&PaymentRequestTestController::OnShowInstrumentsReady,
+                          base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnNotSupportedError,
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnConnectionTerminated,
@@ -94,6 +96,10 @@ void PaymentRequestTestController::OnHasEnrolledInstrumentReturned() {
     observer_->OnHasEnrolledInstrumentReturned();
 }
 
+void PaymentRequestTestController::OnShowInstrumentsReady() {
+  if (observer_)
+    observer_->OnShowInstrumentsReady();
+}
 void PaymentRequestTestController::OnNotSupportedError() {
   if (observer_)
     observer_->OnNotSupportedError();

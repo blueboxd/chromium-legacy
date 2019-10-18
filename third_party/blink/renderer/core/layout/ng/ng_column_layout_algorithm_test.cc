@@ -4672,6 +4672,424 @@ TEST_F(NGColumnLayoutAlgorithmTest, BreakInsideSpannerWithContent) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners) {
+  // There are two spanners in a nested multicol. They could fit in the same
+  // outer column, but there's a forced break between them.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-inside:avoid; width:55px; height:40px;"></div>
+          <div style="column-span:all; break-before:column; break-inside:avoid; width:66px; height:40px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x40
+      offset:110,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:66x40
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners2) {
+  // There are two spanners in a nested multicol. They could fit in the same
+  // outer column, but there's a forced break between them.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-after:column; break-inside:avoid; width:55px; height:40px;"></div>
+          <div style="column-span:all; break-inside:avoid; width:66px; height:40px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x40
+      offset:110,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:66x40
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners3) {
+  // There are two spanners in a nested multicol. They could fit in the same
+  // outer column, but there's a forced break after the last child of the first
+  // spanner.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-inside:avoid; width:55px; height:40px;">
+            <div style="width:33px; height:10px;"></div>
+            <div style="break-after:column; width:44px; height:10px;"></div>
+          </div>
+          <div style="column-span:all; break-inside:avoid; width:66px; height:40px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x40
+            offset:0,0 size:33x10
+            offset:0,10 size:44x10
+      offset:110,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:66x40
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners4) {
+  // There are two spanners in a nested multicol. They could fit in the same
+  // outer column, but there's a forced break before the first child of the
+  // last spanner.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-inside:avoid; width:55px; height:40px;"></div>
+          <div style="column-span:all; break-inside:avoid; width:66px; height:40px;">
+            <div style="break-before:column; width:33px; height:10px;"></div>
+            <div style="width:44px; height:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x40
+      offset:110,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:66x40
+            offset:0,0 size:33x10
+            offset:0,10 size:44x10
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakBetweenSpanners5) {
+  // There are two spanners in a nested multicol. They could fit in the same
+  // outer column, but there's a forced break between them. The second spanner
+  // has a top margin, which should be retained, due to the forced break.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-inside:avoid; width:55px; height:40px;"></div>
+          <div style="column-span:all; break-before:column; break-inside:avoid; width:66px; height:40px; margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x40
+      offset:110,0 size:100x50
+        offset:0,0 size:100x50
+          offset:0,10 size:66x40
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, SoftBreakBetweenSpanners) {
+  // There are two spanners in a nested multicol. They won't fit in the same
+  // outer column, and we don't want to break inside. So we should break between
+  // them.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-inside:avoid; width:55px; height:60px;"></div>
+          <div style="column-span:all; break-inside:avoid; width:66px; height:60px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x60
+      offset:110,0 size:100x60
+        offset:0,0 size:100x60
+          offset:0,0 size:66x60
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, SoftBreakBetweenSpanners2) {
+  // There are two spanners in a nested multicol. They won't fit in the same
+  // outer column, and we don't want to break inside. So we should break between
+  // them. The second spanner has a top margin, but it should be truncated since
+  // it's at a soft break.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-inside:avoid; width:55px; height:60px;"></div>
+          <div style="column-span:all; break-inside:avoid; width:66px; height:60px; margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x60
+      offset:110,0 size:100x60
+        offset:0,0 size:100x60
+          offset:0,0 size:66x60
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners) {
+  // There are three spanners in a nested multicol. The first two could fit in
+  // the same outer column, but the third one is too tall, and we also don't
+  // want to break before that one.So we should break between the two first
+  // spanners.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; break-inside:avoid; width:55px; height:40px;"></div>
+          <div style="column-span:all; break-inside:avoid; width:66px; height:40px;"></div>
+          <div style="column-span:all; break-inside:avoid; break-before:avoid; width:77px; height:60px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:55x40
+      offset:110,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:66x40
+          offset:0,40 size:77x60
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners2) {
+  // There are two spanners in a nested multicol. They won't fit in the same
+  // outer column, but we don't want to break inside the second one, and also
+  // not between the spanners. The first spanner is breakable, so we should
+  // break at the most appealing breakpoint there, i.e. before its last child.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer { columns:3; height:100px; column-fill:auto; column-gap:10px; width:320px; }
+      .inner { columns:2; }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; width:11px;">
+            <div class="content" style="width:22px;"></div>
+            <div class="content" style="width:33px;"></div>
+            <div class="content" style="width:44px;"></div>
+          </div>
+          <div style="column-span:all; break-inside:avoid; break-before:avoid; width:55px; height:60px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:11x100
+            offset:0,0 size:22x20
+            offset:0,20 size:33x20
+      offset:110,0 size:100x80
+        offset:0,0 size:100x80
+          offset:0,0 size:11x20
+            offset:0,0 size:44x20
+          offset:0,20 size:55x60
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, AvoidSoftBreakBetweenSpanners3) {
+  // Violate orphans and widows requests rather than break-between avoidance
+  // requests.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer {
+        columns:3;
+        height:100px;
+        column-fill:auto;
+        column-gap:10px;
+        width:320px;
+        line-height: 20px;
+        orphans: 3;
+        widows: 3;
+      }
+      .inner { columns:2; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div style="column-span:all; width:11px;">
+            <br>
+            <br>
+            <br>
+          </div>
+          <div style="column-span:all; break-inside:avoid; break-before:avoid; width:55px; height:60px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:11x100
+            offset:0,0 size:0x20
+              offset:0,9 size:0x1
+            offset:0,20 size:0x20
+              offset:0,9 size:0x1
+      offset:110,0 size:100x80
+        offset:0,0 size:100x80
+          offset:0,0 size:11x20
+            offset:0,0 size:0x20
+              offset:0,9 size:0x1
+          offset:0,20 size:55x60
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, SoftBreakBetweenRowAndSpanner) {
+  // We have a nested multicol with some column content, followed by a
+  // spanner. Everything won't fit in the same outer column, and we don't want
+  // to break inside the spanner. Break between the row of columns and the
+  // spanner.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .outer {
+        columns:3;
+        height:100px;
+        column-fill:auto;
+        column-gap:10px;
+        width:320px;
+      }
+      .inner { columns:2; column-gap:10px; }
+      .content { break-inside:avoid; height:20px; }
+    </style>
+    <div id="container">
+      <div class="outer">
+        <div class="inner">
+          <div class="content" style="width:11px;"></div>
+          <div class="content" style="width:22px;"></div>
+          <div class="content" style="width:33px;"></div>
+          <div style="column-span:all; break-inside:avoid; width:44px; height:70px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:100x100
+          offset:0,0 size:45x40
+            offset:0,0 size:11x20
+            offset:0,20 size:22x20
+          offset:55,0 size:45x20
+            offset:0,0 size:33x20
+      offset:110,0 size:100x70
+        offset:0,0 size:100x70
+          offset:0,0 size:44x70
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, SpannerAsMulticol) {
   SetBodyInnerHTML(R"HTML(
     <style>

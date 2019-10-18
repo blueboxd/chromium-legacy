@@ -113,8 +113,6 @@ component("dbus") {
     "fake_virtual_file_provider_client.h",
     "fake_vm_plugin_dispatcher_client.cc",
     "fake_vm_plugin_dispatcher_client.h",
-    "fake_wilco_dtc_supportd_client.cc",
-    "fake_wilco_dtc_supportd_client.h",
     "gnubby_client.cc",
     "gnubby_client.h",
     "image_burner_client.cc",
@@ -144,8 +142,6 @@ component("dbus") {
     "virtual_file_provider_client.h",
     "vm_plugin_dispatcher_client.cc",
     "vm_plugin_dispatcher_client.h",
-    "wilco_dtc_supportd_client.cc",
-    "wilco_dtc_supportd_client.h",
   ]
 }
 

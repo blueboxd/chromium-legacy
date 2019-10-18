@@ -279,9 +279,18 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
   EXPECT_EQ(net::ERR_UNEXPECTED, result);
 }
 
+// TODO(crbug.com/1014916): These two tests are very flaky on Fuchsia.
+#if defined(OS_FUCHSIA)
+#define MAYBE_TestReadSendTo DISABLED_TestReadSendTo
+#define MAYBE_TestUnexpectedSequences DISABLED_TestUnexpectedSequences
+#else
+#define MAYBE_TestReadSendTo TestReadSendTo
+#define MAYBE_TestUnexpectedSequences TestUnexpectedSequences
+#endif
+
 // Tests that the sequence of calling Bind()/Connect() and setters is
 // important.
-TEST_F(UDPSocketTest, TestUnexpectedSequences) {
+TEST_F(UDPSocketTest, MAYBE_TestUnexpectedSequences) {
   mojo::Remote<mojom::UDPSocket> socket_remote;
   factory()->CreateUDPSocket(socket_remote.BindNewPipeAndPassReceiver(),
                              mojo::NullRemote());
@@ -487,7 +496,7 @@ TEST_F(UDPSocketTest, TestReadSend) {
   EXPECT_EQ(msg, result.data.value());
 }
 
-TEST_F(UDPSocketTest, TestReadSendTo) {
+TEST_F(UDPSocketTest, MAYBE_TestReadSendTo) {
   // Create a server socket to send data.
   mojo::Remote<mojom::UDPSocket> server_socket;
   factory()->CreateUDPSocket(server_socket.BindNewPipeAndPassReceiver(),

@@ -85,6 +85,7 @@ test("weblayer_browsertests") {
 
   sources = [
     "browsertests_main.cc",
+    "ssl_browsertest.cc",
     "test_launcher_delegate_impl.cc",
     "test_launcher_delegate_impl.h",
     "weblayer_browser_test.cc",

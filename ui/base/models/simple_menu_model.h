@@ -107,7 +107,6 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   void AddHighlightedItemWithIcon(int command_id,
                                   const base::string16& label,
                                   const gfx::ImageSkia& icon);
-  void AddTitle(const base::string16& label);
 
   // Adds a separator of the specified type to the model.
   // - Adding a separator after another separator is always invalid if they

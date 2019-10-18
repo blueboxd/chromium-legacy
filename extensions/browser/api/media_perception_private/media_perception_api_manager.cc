@@ -20,8 +20,9 @@
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 
@@ -87,9 +88,10 @@ class MediaPerceptionAPIManager::MediaPerceptionControllerClient
   // delegate is owned by the ExtensionsAPIClient.
   MediaPerceptionControllerClient(
       MediaPerceptionAPIDelegate* delegate,
-      chromeos::media_perception::mojom::MediaPerceptionControllerClientRequest
-          request)
-      : delegate_(delegate), binding_(this, std::move(request)) {
+      mojo::PendingReceiver<
+          chromeos::media_perception::mojom::MediaPerceptionControllerClient>
+          receiver)
+      : delegate_(delegate), receiver_(this, std::move(receiver)) {
     DCHECK(delegate_) << "Delegate not set.";
   }
 
@@ -106,10 +108,10 @@ class MediaPerceptionAPIManager::MediaPerceptionControllerClient
   // Provides access to methods for talking to core Chrome code.
   MediaPerceptionAPIDelegate* delegate_;
 
-  // Binding of the MediaPerceptionControllerClient to the message pipe.
-  mojo::Binding<
+  // Receiver of the MediaPerceptionControllerClient to the message pipe.
+  mojo::Receiver<
       chromeos::media_perception::mojom::MediaPerceptionControllerClient>
-      binding_;
+      receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionControllerClient);
 };
@@ -410,10 +412,10 @@ void MediaPerceptionAPIManager::SendMojoInvitation(
                                  base::kNullProcessHandle,
                                  channel.TakeLocalEndpoint());
 
-  media_perception_service_ =
-      chromeos::media_perception::mojom::MediaPerceptionServicePtr(
-          chromeos::media_perception::mojom::MediaPerceptionServicePtrInfo(
-              std::move(server_pipe), 0));
+  media_perception_service_.Bind(
+      mojo::PendingRemote<
+          chromeos::media_perception::mojom::MediaPerceptionService>(
+          std::move(server_pipe), 0));
 
   base::ScopedFD fd =
       channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
@@ -465,19 +467,21 @@ void MediaPerceptionAPIManager::OnBootstrapMojoConnection(
     return;
   }
 
-  auto controller_request = mojo::MakeRequest(&media_perception_controller_);
+  auto controller_receiver =
+      media_perception_controller_.BindNewPipeAndPassReceiver();
 
-  chromeos::media_perception::mojom::MediaPerceptionControllerClientPtr
-      client_ptr;
+  mojo::PendingRemote<
+      chromeos::media_perception::mojom::MediaPerceptionControllerClient>
+      client_remote;
   media_perception_controller_client_ =
       std::make_unique<MediaPerceptionControllerClient>(
-          delegate, mojo::MakeRequest(&client_ptr));
+          delegate, client_remote.InitWithNewPipeAndPassReceiver());
   delegate->SetMediaPerceptionRequestHandler(
       base::BindRepeating(&MediaPerceptionAPIManager::ActivateMediaPerception,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  media_perception_service_->GetController(std::move(controller_request),
-                                           std::move(client_ptr));
+  media_perception_service_->GetController(std::move(controller_receiver),
+                                           std::move(client_remote));
   std::move(callback).Run(std::move(state_started));
 }
 

@@ -1698,7 +1698,7 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
             overflow_shelf_view->GetPreferredSize().width());
 }
 
-TEST_F(ShelfViewTest, OverflowShelfColorIsDerivedFromWallpaper) {
+TEST_F(ShelfViewTest, DISABLED_OverflowShelfColorIsDerivedFromWallpaper) {
   // No overflow bubble when scrollable shelf enabled.
   // TODO(https://crbug.com/1002576): revisit when scrollable shelf is launched.
   if (chromeos::switches::ShouldShowScrollableShelf())
@@ -1905,7 +1905,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
 // Checks various drag and drop operations from OverflowBubble to Shelf, and
 // vice versa.
-TEST_F(ShelfViewTest, CheckDragAndDropFromShelfToOtherShelf) {
+TEST_F(ShelfViewTest, DISABLED_CheckDragAndDropFromShelfToOtherShelf) {
   // No overflow bubble when scrollable shelf enabled.
   // TODO(https://crbug.com/1002576): revisit when scrollable shelf is launched.
   if (chromeos::switches::ShouldShowScrollableShelf())

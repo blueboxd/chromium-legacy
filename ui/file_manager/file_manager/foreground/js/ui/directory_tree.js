@@ -126,14 +126,6 @@ DirectoryItemTreeBaseMethods.recordUMASelectedEntry =
 
 Object.freeze(DirectoryItemTreeBaseMethods);
 
-const TREE_ITEM_INNER_HTML = '<div class="tree-row">' +
-    ' <paper-ripple fit class="recenteringTouch"></paper-ripple>' +
-    ' <span class="expand-icon"></span>' +
-    ' <span class="icon"></span>' +
-    ' <span class="label entry-name"></span>' +
-    '</div>' +
-    '<div class="tree-children" role="group"></div>';
-
 ////////////////////////////////////////////////////////////////////////////////
 // TreeItem
 
@@ -234,28 +226,23 @@ class TreeItem extends cr.ui.TreeItem {
  * An expandable directory in the tree. Each element represents one folder (sub
  * directory) or one volume (root directory).
  */
-class DirectoryItem extends cr.ui.TreeItem {
+class DirectoryItem extends TreeItem {
   /**
    * @param {string} label Label for this item.
    * @param {DirectoryTree} tree Current tree, which contains this item.
    */
   constructor(label, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(label, tree);
     this.__proto__ = DirectoryItem.prototype;
 
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'DirectoryItem');
-      this.setAttribute('entry-label', label);
     }
-    this.parentTree_ = tree;
+
     this.directoryModel_ = tree.directoryModel;
     this.fileFilter_ = tree.directoryModel.getFileFilter();
 
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
+    // Listen for expand.
     this.addEventListener('expand', this.onExpand_.bind(this), false);
 
     // Listen for collapse because for the delayed expansion case all
@@ -271,8 +258,6 @@ class DirectoryItem extends cr.ui.TreeItem {
     // scanning sub-directories in updateSubElementsFromList().
     this.hasChildren = false;
 
-    this.label = label;
-
     // @type {!Array<Entry>} Filled after updateSubDirectories read entries.
     this.entries_ = [];
 
@@ -281,7 +266,6 @@ class DirectoryItem extends cr.ui.TreeItem {
     this.onMetadataUpdateBound_ = undefined;
   }
 
-
   /**
    * The DirectoryEntry corresponding to this DirectoryItem. This may be
    * a dummy DirectoryEntry.
@@ -289,15 +273,6 @@ class DirectoryItem extends cr.ui.TreeItem {
    */
   get entry() {
     return null;
-  }
-
-  /**
-   * The element containing the label text and the icon.
-   * @type {!HTMLElement}
-   * @override
-   */
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
   }
 
   /**
@@ -782,7 +757,7 @@ class DirectoryItem extends cr.ui.TreeItem {
 // SubDirectoryItem
 
 /**
- * A sub directory in the tree. Each element represents a directory which is not
+ * A subdirectory in the tree. Each element represents a directory that is not
  * a volume's root.
  */
 class SubDirectoryItem extends DirectoryItem {
@@ -800,6 +775,7 @@ class SubDirectoryItem extends DirectoryItem {
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'SubDirectoryItem');
     }
+
     this.dirEntry_ = dirEntry;
     this.entry = dirEntry;
     this.delayExpansion = parentDirItem.delayExpansion;
@@ -812,6 +788,8 @@ class SubDirectoryItem extends DirectoryItem {
     // Sets up icons of the item.
     const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
+
+    // Add volume-dependent attributes / icon.
     const location = tree.volumeManager.getLocationInfo(this.entry);
     if (location && location.rootType && location.isRootEntry) {
       icon.setAttribute('volume-type-icon', location.rootType);
@@ -832,12 +810,12 @@ class SubDirectoryItem extends DirectoryItem {
       this.updateDriveSpecificIcons();
     }
 
-    // Sets up context menu of the item.
+    // Setup the item context menu.
     if (tree.contextMenuForSubitems) {
       this.setContextMenu_(tree.contextMenuForSubitems);
     }
 
-    // Populates children now if needed.
+    // Update children now if needed.
     if (parentDirItem.expanded) {
       this.updateSubDirectories(false /* recursive */);
     }
@@ -848,24 +826,33 @@ class SubDirectoryItem extends DirectoryItem {
    * @override
    */
   updateDriveSpecificIcons() {
-    const icon = this.querySelector('.icon');
     const metadata = this.parentTree_.metadataModel.getCache(
         [this.dirEntry_], ['shared', 'isMachineRoot', 'isExternalMedia']);
+
+    const icon = this.querySelector('.icon');
     icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));
+
     if (metadata[0] && metadata[0].isMachineRoot) {
       icon.setAttribute(
           'volume-type-icon', VolumeManagerCommon.RootType.COMPUTER);
     }
+
     if (metadata[0] && metadata[0].isExternalMedia) {
       icon.setAttribute(
           'volume-type-icon', VolumeManagerCommon.RootType.EXTERNAL_MEDIA);
     }
   }
 
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   */
   get entry() {
     return this.dirEntry_;
   }
 
+  /**
+   * Sets the DirectoryEntry corresponding to this DirectoryItem.
+   */
   set entry(value) {
     this.dirEntry_ = value;
 
@@ -893,12 +880,10 @@ class EntryListItem extends DirectoryItem {
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'EntryListItem');
     }
-    this.entries_ = [];
 
-    this.rootType_ = rootType;
-    this.modelItem_ = modelItem;
     this.dirEntry_ = modelItem.entry;
-    this.parentTree_ = tree;
+    this.modelItem_ = modelItem;
+    this.rootType_ = rootType;
 
     if (rootType === VolumeManagerCommon.RootType.REMOVABLE) {
       this.setupEjectButton_(this.rowElement);
@@ -914,7 +899,7 @@ class EntryListItem extends DirectoryItem {
       }
     }
 
-    const icon = queryRequiredElement('.icon', this);
+    const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
     icon.setAttribute('root-type-icon', rootType);
 
@@ -929,7 +914,7 @@ class EntryListItem extends DirectoryItem {
       this.expanded = true;
     }
 
-    // Populate children of this volume.
+    // Update children of this volume.
     this.updateSubDirectories(false /* recursive */);
   }
 
@@ -998,21 +983,12 @@ class EntryListItem extends DirectoryItem {
   }
 
   /**
-   * The DirectoryEntry corresponding to this DirectoryItem. This may be
-   * a dummy DirectoryEntry.
-   * @type {DirectoryEntry|Object}
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   * @type {DirectoryEntry}
+   * @override
    */
   get entry() {
     return this.dirEntry_;
-  }
-
-  /**
-   * The element containing the label text and the icon.
-   * @type {!HTMLElement}
-   * @override
-   */
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
   }
 
   /**
@@ -1200,10 +1176,11 @@ class DriveVolumeItem extends VolumeItem {
     super(modelItem, tree);
     this.__proto__ = DriveVolumeItem.prototype;
 
-    this.classList.add('drive-volume');
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'DriveVolumeItem');
     }
+
+    this.classList.add('drive-volume');
   }
 
   /**
@@ -1533,25 +1510,22 @@ class DriveVolumeItem extends VolumeItem {
  * A TreeItem which represents a shortcut for Drive folder.
  * Shortcut items are displayed as top-level children of DirectoryTree.
  */
-class ShortcutItem extends cr.ui.TreeItem {
+class ShortcutItem extends TreeItem {
   /**
    * @param {!NavigationModelShortcutItem} modelItem NavigationModelItem of this
    *     volume.
    * @param {!DirectoryTree} tree Current tree, which contains this item.
    */
   constructor(modelItem, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(modelItem.entry.name, tree);
     this.__proto__ = ShortcutItem.prototype;
 
-    this.parentTree_ = tree;
+    if (window.IN_TEST) {
+      this.setAttribute('dir-type', 'ShortcutItem');
+    }
+
     this.dirEntry_ = modelItem.entry;
     this.modelItem_ = modelItem;
-
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
 
     const icon = this.querySelector('.icon');
     icon.classList.add('item-icon');
@@ -1559,13 +1533,6 @@ class ShortcutItem extends cr.ui.TreeItem {
 
     if (tree.contextMenuForRootItems) {
       this.setContextMenu_(tree.contextMenuForRootItems);
-    }
-
-    this.label = modelItem.entry.name;
-
-    if (window.IN_TEST) {
-      this.setAttribute('dir-type', 'ShortcutItem');
-      this.setAttribute('entry-label', this.label);
     }
   }
 
@@ -1648,17 +1615,20 @@ class ShortcutItem extends cr.ui.TreeItem {
         });
   }
 
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   */
   get entry() {
     return this.dirEntry_;
   }
+
+  /**
+   * @type {!NavigationModelVolumeItem}
+   */
   get modelItem() {
     return this.modelItem_;
   }
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
-  }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // AndroidAppItem
@@ -1667,38 +1637,30 @@ class ShortcutItem extends cr.ui.TreeItem {
  * A TreeItem representing an Android picker app. These Android app items are
  * shown as top-level volume entries of the DirectoryTree.
  */
-class AndroidAppItem extends cr.ui.TreeItem {
+class AndroidAppItem extends TreeItem {
   /**
    * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem
    *     associated with this volume.
    * @param {!DirectoryTree} tree Directory tree.
    */
   constructor(modelItem, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(modelItem.androidApp.name, tree);
     this.__proto__ = AndroidAppItem.prototype;
 
-    /** @private {!DirectoryTree} */
-    this.parentTree_ = tree;
+    if (window.IN_TEST) {
+      this.setAttribute('dir-type', 'AndroidAppItem');
+    }
 
-    /** @private {!NavigationModelAndroidAppItem} */
     this.modelItem_ = modelItem;
 
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
+    const icon = this.querySelector('.icon');
+    icon.classList.add('item-icon');
 
-    /** @public {string} */
-    this.label = modelItem.androidApp.name;
-
-    const appIcon = this.querySelector('.icon');
-    appIcon.classList.add('item-icon');
     if (modelItem.androidApp.iconSet) {
       const backgroundImage =
           util.iconSetToCSSBackgroundImageValue(modelItem.androidApp.iconSet);
       if (backgroundImage !== 'none') {
-        appIcon.setAttribute('style', 'background-image: ' + backgroundImage);
+        icon.setAttribute('style', 'background-image: ' + backgroundImage);
       }
     }
 
@@ -1738,40 +1700,32 @@ class AndroidAppItem extends cr.ui.TreeItem {
 /**
  * FakeItem is used by Recent and Linux files.
  */
-class FakeItem extends cr.ui.TreeItem {
+class FakeItem extends TreeItem {
   /**
    * @param {!VolumeManagerCommon.RootType} rootType root type.
    * @param {!NavigationModelFakeItem} modelItem
    * @param {!DirectoryTree} tree Current tree, which contains this item.
    */
   constructor(rootType, modelItem, tree) {
-    super();
-    // Get the original label id defined by TreeItem, before overwriting
-    // prototype.
-    const labelId = this.labelElement.id;
+    super(modelItem.label, tree);
     this.__proto__ = FakeItem.prototype;
 
     if (window.IN_TEST) {
       this.setAttribute('dir-type', 'FakeItem');
-      this.setAttribute('entry-label', modelItem.label);
     }
 
-    this.rootType_ = rootType;
-    this.parentTree_ = tree;
-    this.modelItem_ = modelItem;
-    this.dirEntry_ = modelItem.entry;
-    this.innerHTML = TREE_ITEM_INNER_HTML;
-    this.labelElement.id = labelId;
-    this.label = modelItem.label;
     this.directoryModel_ = tree.directoryModel;
+    this.dirEntry_ = modelItem.entry;
+    this.modelItem_ = modelItem;
+    this.rootType_ = rootType;
+
+    const icon = this.querySelector('.icon');
+    icon.classList.add('item-icon');
+    icon.setAttribute('root-type-icon', rootType);
 
     if (tree.disabledContextMenu) {
       cr.ui.contextMenuHandler.setContextMenu(this, tree.disabledContextMenu);
     }
-
-    const icon = queryRequiredElement('.icon', this);
-    icon.classList.add('item-icon');
-    icon.setAttribute('root-type-icon', rootType);
   }
 
   /**
@@ -1817,18 +1771,22 @@ class FakeItem extends cr.ui.TreeItem {
   }
 
   /**
-   * FakeItem doesn't really have shared status/icon so we define here as no-op.
+   * FakeItem's do not have shared status/icon.
    */
   updateDriveSpecificIcons() {}
 
+  /**
+   * The DirectoryEntry corresponding to this DirectoryItem.
+   */
   get entry() {
     return this.dirEntry_;
   }
+
+  /**
+   * @type {!NavigationModelVolumeItem}
+   */
   get modelItem() {
     return this.modelItem_;
-  }
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
   }
 }
 

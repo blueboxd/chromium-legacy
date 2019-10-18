@@ -240,11 +240,6 @@ VirtualFileProviderClient* DBusThreadManager::GetVirtualFileProviderClient() {
              : nullptr;
 }
 
-WilcoDtcSupportdClient* DBusThreadManager::GetWilcoDtcSupportdClient() {
-  return clients_browser_ ? clients_browser_->wilco_dtc_supportd_client_.get()
-                          : nullptr;
-}
-
 VmPluginDispatcherClient* DBusThreadManager::GetVmPluginDispatcherClient() {
   return clients_browser_ ? clients_browser_->vm_plugin_dispatcher_client_.get()
                           : nullptr;

@@ -381,14 +381,6 @@ cr.define('cr.ui', function() {
   };
 
   /**
-   * Sets the hint for calculating OOBE dialog margins.
-   * @param {OobeTypes.DialogPaddingMode} mode.
-   */
-  Oobe.setDialogPaddingMode = function(mode) {
-    Oobe.getInstance().setDialogPaddingMode(mode);
-  };
-
-  /**
    * Get the primary display's name.
    *
    * Same as the displayInfo.name parameter returned by

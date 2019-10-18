@@ -56,7 +56,8 @@ void RunSingleRoundAuthTest(
     int expected_controller_rv,
     SchemeState scheme_state,
     const NetLogWithSource& net_log = NetLogWithSource()) {
-  HttpAuthCache dummy_auth_cache;
+  HttpAuthCache dummy_auth_cache(
+      false /* key_server_entries_by_network_isolation_key */);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -75,10 +76,11 @@ void RunSingleRoundAuthTest(
   auth_handler_factory.set_do_init_from_challenge(true);
   auto host_resolver = std::make_unique<MockHostResolver>();
 
-  scoped_refptr<HttpAuthController> controller(new HttpAuthController(
-      HttpAuth::AUTH_PROXY, GURL("http://example.com"), &dummy_auth_cache,
-      &auth_handler_factory, host_resolver.get(),
-      HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
+  scoped_refptr<HttpAuthController> controller(
+      base::MakeRefCounted<HttpAuthController>(
+          HttpAuth::AUTH_PROXY, GURL("http://example.com"),
+          NetworkIsolationKey(), &dummy_auth_cache, &auth_handler_factory,
+          host_resolver.get(), HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, net_log));
@@ -213,7 +215,8 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
   };
 
   NetLogWithSource dummy_log;
-  HttpAuthCache dummy_auth_cache;
+  HttpAuthCache dummy_auth_cache(
+      false /* key_server_entries_by_network_isolation_key */);
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://example.com");
@@ -258,10 +261,11 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
 
   auto host_resolver = std::make_unique<MockHostResolver>();
 
-  scoped_refptr<HttpAuthController> controller(new HttpAuthController(
-      HttpAuth::AUTH_SERVER, GURL("http://example.com"), &dummy_auth_cache,
-      &auth_handler_factory, host_resolver.get(),
-      HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
+  scoped_refptr<HttpAuthController> controller(
+      base::MakeRefCounted<HttpAuthController>(
+          HttpAuth::AUTH_SERVER, GURL("http://example.com"),
+          NetworkIsolationKey(), &dummy_auth_cache, &auth_handler_factory,
+          host_resolver.get(), HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, dummy_log));

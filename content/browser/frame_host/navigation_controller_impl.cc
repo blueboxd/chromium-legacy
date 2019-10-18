@@ -2558,18 +2558,30 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
     return;
   }
 
-  // By design, a page in the BackForwardCache is alone in its BrowsingInstance.
-  // History navigation might try to reuse a specific SiteInstance, already used
-  // by a page in the cache. This must not happen. It would fail creating the
-  // RenderFrame, because only one main document can live there. For this
-  // reason, the BackForwardCache is flushed.
-  // TODO(arthursonzogni): Flushing the entire cache is a bit overkill, this can
-  // be refined to only delete the page (if any) using the same
-  // BrowsingInstance.
+  // History navigation might try to reuse a specific BrowsingInstance, already
+  // used by a page in the cache. To avoid having two different main frames that
+  // live in the same BrowsingInstance, evict the all pages with this
+  // BrowsingInstance from the cache.
+  //
+  // For example, take the following scenario:
+  //
+  // A1 = Some page on a.com
+  // A2 = Some other page on a.com
+  // B3 = An uncacheable page on b.com
+  //
+  // Then the following navigations occur:
+  // A1->A2->B3->A1
+  // On the navigation from B3 to A1, A2 will remain in the cache (B3 doesn't
+  // take its place) and A1 will be created in the same BrowsingInstance (and
+  // SiteInstance), as A2.
+  //
+  // If we didn't do anything, both A1 and A2 would remain alive in the same
+  // BrowsingInstance/SiteInstance, which is unsupported by
+  // RenderFrameHostManager::CommitPending(). To avoid this conundrum, we evict
+  // A2 from the cache.
   if (pending_entry_->site_instance()) {
-    SiteInstance* current = root->current_frame_host()->GetSiteInstance();
-    if (!current->IsRelatedSiteInstance(pending_entry_->site_instance()))
-      back_forward_cache_.Flush();
+    back_forward_cache_.EvictFramesInRelatedSiteInstances(
+        pending_entry_->site_instance());
   }
 
   // If we were navigating to a slow-to-commit page, and the user performs

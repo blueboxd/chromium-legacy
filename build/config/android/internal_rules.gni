@@ -592,37 +592,33 @@ template("test_runner_script") {
   }
 
   generate_android_wrapper(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "data_deps",
-                             "deps",
-                           ])
-    if (!defined(deps)) {
-      deps = []
-    }
-
-    if (!defined(data_deps)) {
-      data_deps = []
-    }
+    testonly = true
+    wrapper_script = "$root_build_dir/bin/run_${_test_name}"
 
     if (defined(android_test_runner_script)) {
       executable = android_test_runner_script
     } else {
       executable = "//build/android/test_runner.py"
     }
-    testonly = true
 
-    data_deps += [
-      "//build/android:test_runner_py",
-      "//build/android:logdog_wrapper_py",
-    ]
-
+    deps = []
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    data_deps = []
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
+    }
     data = []
 
     executable_args = [
       _test_type,
       "--output-directory",
       "@WrappedPath(.)",
+    ]
+    data_deps += [
+      "//build/android:test_runner_py",
+      "//build/android:logdog_wrapper_py",
     ]
 
     if (_runtime_deps) {
@@ -792,13 +788,6 @@ template("test_runner_script") {
     }
     if (_device_test && is_asan) {
       executable_args += [ "--tool=asan" ]
-    }
-
-    if (defined(invoker.generated_script)) {
-      assert(_test_name != "" || true)  # Mark _test_name as used.
-      wrapper_script = invoker.generated_script
-    } else {
-      wrapper_script = "$root_build_dir/bin/run_${_test_name}"
     }
 
     if (defined(invoker.modules)) {

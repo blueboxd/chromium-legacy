@@ -200,7 +200,6 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       node_data->SetCheckedState(is_checked ? ax::mojom::CheckedState::kTrue
                                             : ax::mojom::CheckedState::kFalse);
     } break;
-    case TITLE:
     case NORMAL:
     case SEPARATOR:
     case EMPTY:
@@ -1140,9 +1139,7 @@ SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
           : style::CONTEXT_MENU;
 
   style::TextStyle text_style = style::STYLE_PRIMARY;
-  if (type_ == Type::TITLE)
-    text_style = style::STYLE_PRIMARY;
-  else if (type_ == HIGHLIGHTED)
+  if (type_ == HIGHLIGHTED)
     text_style = style::STYLE_HIGHLIGHTED;
   else if (!GetEnabled())
     text_style = style::STYLE_DISABLED;

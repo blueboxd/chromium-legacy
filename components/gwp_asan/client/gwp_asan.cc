@@ -36,8 +36,8 @@ namespace gwp_asan {
 namespace internal {
 namespace {
 
-constexpr int kDefaultMaxAllocations = 35;
-constexpr int kDefaultMaxMetadata = 150;
+constexpr int kDefaultMaxAllocations = 70;
+constexpr int kDefaultMaxMetadata = 255;
 
 #if defined(ARCH_CPU_64_BITS)
 constexpr int kDefaultTotalPages = 2048;
@@ -51,17 +51,23 @@ constexpr int kDefaultTotalPages = kDefaultMaxMetadata * 2;
 // multiplier * range**rand
 // where rand is a random real number in the range [0,1).
 constexpr int kDefaultAllocationSamplingMultiplier = 1000;
-constexpr int kDefaultAllocationSamplingRange = 64;
+constexpr int kDefaultAllocationSamplingRange = 16;
 
-constexpr double kDefaultProcessSamplingProbability = 0.2;
+constexpr double kDefaultProcessSamplingProbability = 0.015;
 // The multiplier to increase the ProcessSamplingProbability in scenarios where
 // we want to perform additional testing (e.g., on canary/dev builds).
-constexpr int kDefaultProcessSamplingBoost2 = 5;
+constexpr int kDefaultProcessSamplingBoost2 = 10;
 
-const base::Feature kGwpAsanMalloc{"GwpAsanMalloc",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_WIN) || defined(OS_MACOSX)
+constexpr base::FeatureState kDefaultEnabled = base::FEATURE_ENABLED_BY_DEFAULT;
+#else
+constexpr base::FeatureState kDefaultEnabled =
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#endif
+
+const base::Feature kGwpAsanMalloc{"GwpAsanMalloc", kDefaultEnabled};
 const base::Feature kGwpAsanPartitionAlloc{"GwpAsanPartitionAlloc",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           kDefaultEnabled};
 
 // Returns whether this process should be sampled to enable GWP-ASan.
 bool SampleProcess(const base::Feature& feature, bool boost_sampling) {

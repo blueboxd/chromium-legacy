@@ -112,10 +112,11 @@ class PasswordStore : protected PasswordStoreSync,
 
   PasswordStore();
 
-  // Reimplement this to add custom initialization. Always call this too on the
-  // UI thread.
-  virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare,
-                    PrefService* prefs);
+  // Always call this too on the UI thread.
+  bool Init(
+      const syncer::SyncableService::StartSyncFlare& flare,
+      PrefService* prefs,
+      base::RepeatingClosure sync_enabled_or_disabled_cb = base::DoNothing());
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
@@ -715,6 +716,8 @@ class PasswordStore : protected PasswordStoreSync,
   // Either of two below would actually be set based on a feature flag.
   std::unique_ptr<PasswordSyncableService> syncable_service_;
   std::unique_ptr<PasswordSyncBridge> sync_bridge_;
+
+  base::RepeatingClosure sync_enabled_or_disabled_cb_;
 
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 

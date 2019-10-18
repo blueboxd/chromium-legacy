@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import android.content.Context;
+import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -128,7 +129,7 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
 
     @Override
     public int getPeekHeight() {
-        return Math.min(mContentView.getMinimumHeight(),
+        return Math.min(mContext.getResources().getDimensionPixelSize(getDesiredSheetHeight()),
                 (int) mBottomSheetController.getBottomSheet().getSheetContainerHeight());
     }
 
@@ -160,5 +161,14 @@ class TouchToFillView implements BottomSheet.BottomSheetContent {
     @Override
     public int getSheetClosedAccessibilityStringId() {
         return R.string.touch_to_fill_sheet_closed;
+    }
+
+    // TODO(crbug.com/1009331): This should add up the height of all items up to the 2nd credential.
+    private @DimenRes int getDesiredSheetHeight() {
+        if (mSheetItemListView.getAdapter() != null
+                && mSheetItemListView.getAdapter().getItemCount() > 2) {
+            return R.dimen.touch_to_fill_sheet_height_multiple_credentials;
+        }
+        return R.dimen.touch_to_fill_sheet_height_single_credential;
     }
 }

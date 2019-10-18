@@ -117,6 +117,7 @@ void CreatePasswordGenerationUIData(
   data->max_length = 20;
   data->generation_element = base::ASCIIToUTF16("generation_element");
   data->text_direction = base::i18n::RIGHT_TO_LEFT;
+  data->is_generation_element_password_type = false;
   CreateTestPasswordForm(&data->password_form);
 }
 
@@ -154,6 +155,8 @@ void CheckEqualPassPasswordGenerationUIData(
   EXPECT_EQ(expected.bounds, actual.bounds);
   EXPECT_EQ(expected.max_length, actual.max_length);
   EXPECT_EQ(expected.generation_element, actual.generation_element);
+  EXPECT_EQ(expected.is_generation_element_password_type,
+            actual.is_generation_element_password_type);
   EXPECT_EQ(expected.text_direction, actual.text_direction);
   EXPECT_EQ(expected.password_form, actual.password_form);
 }

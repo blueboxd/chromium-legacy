@@ -22,7 +22,7 @@
 #include "chrome/chrome_cleaner/parsers/shortcut_parser/broker/sandboxed_shortcut_parser.h"
 #include "chrome/chrome_cleaner/parsers/shortcut_parser/sandboxed_lnk_parser_test_util.h"
 #include "chrome/chrome_cleaner/parsers/shortcut_parser/target/lnk_parser.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,11 +41,11 @@ class ParserImplTest : public testing::Test {
  public:
   ParserImplTest()
       : task_runner_(MojoTaskRunner::Create()),
-        parser_ptr_(new mojom::ParserPtr(),
-                    base::OnTaskRunnerDeleter(task_runner_)),
+        parser_(new mojo::Remote<mojom::Parser>(),
+                base::OnTaskRunnerDeleter(task_runner_)),
         parser_impl_(nullptr, base::OnTaskRunnerDeleter(task_runner_)),
-        sandboxed_json_parser_(task_runner_.get(), parser_ptr_.get()),
-        shortcut_parser_(task_runner_.get(), parser_ptr_.get()) {}
+        sandboxed_json_parser_(task_runner_.get(), parser_.get()),
+        shortcut_parser_(task_runner_.get(), parser_.get()) {}
 
   void SetUp() override {
     BindParser();
@@ -59,17 +59,18 @@ class ParserImplTest : public testing::Test {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](mojom::ParserPtr* parser,
+            [](mojo::Remote<mojom::Parser>* parser,
                std::unique_ptr<ParserImpl, base::OnTaskRunnerDeleter>*
                    parser_impl) {
-              parser_impl->reset(
-                  new ParserImpl(mojo::MakeRequest(parser), base::DoNothing()));
+              parser_impl->reset(new ParserImpl(
+                  parser->BindNewPipeAndPassReceiver(), base::DoNothing()));
             },
-            parser_ptr_.get(), &parser_impl_));
+            parser_.get(), &parser_impl_));
   }
 
   scoped_refptr<MojoTaskRunner> task_runner_;
-  std::unique_ptr<mojom::ParserPtr, base::OnTaskRunnerDeleter> parser_ptr_;
+  std::unique_ptr<mojo::Remote<mojom::Parser>, base::OnTaskRunnerDeleter>
+      parser_;
   std::unique_ptr<ParserImpl, base::OnTaskRunnerDeleter> parser_impl_;
   SandboxedJsonParser sandboxed_json_parser_;
 

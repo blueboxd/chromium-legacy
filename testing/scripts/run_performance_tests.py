@@ -348,8 +348,9 @@ def execute_telemetry_benchmark(
       return_code = xvfb.run_executable(
           command, env=env, stdoutfile=output_paths.logs)
     else:
-      return_code = test_env.run_command_with_output(
-          command, env=env, stdoutfile=output_paths.logs)
+      with open(output_paths.logs, 'w') as handle:
+        return_code = test_env.run_command_output_to_handle(
+            command, handle, env=env)
     expected_results_filename = os.path.join(temp_dir, 'test-results.json')
     if os.path.exists(expected_results_filename):
       shutil.move(expected_results_filename, output_paths.test_results)

@@ -512,9 +512,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -549,9 +550,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -586,9 +588,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -626,9 +629,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "102b:0532",
+              "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
           "expiration": 7200,

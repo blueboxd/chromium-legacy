@@ -51,7 +51,7 @@ TEST(ShelfApplicationMenuModelTest, VerifyContentsWithNoMenuItems) {
   ShelfApplicationMenuModel menu(title, {}, nullptr);
   // Expect the title and a separator.
   ASSERT_EQ(2, menu.GetItemCount());
-  EXPECT_EQ(ui::MenuModel::TYPE_TITLE, menu.GetTypeAt(0));
+  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(0));
   EXPECT_EQ(title, menu.GetLabelAt(0));
   EXPECT_FALSE(menu.IsEnabledAt(0));
   EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(1));
@@ -75,7 +75,7 @@ TEST(ShelfApplicationMenuModelTest, VerifyContentsWithMenuItems) {
   ASSERT_EQ(static_cast<int>(5), menu.GetItemCount());
 
   // The label title should not be enabled.
-  EXPECT_EQ(ui::MenuModel::TYPE_TITLE, menu.GetTypeAt(0));
+  EXPECT_EQ(ui::MenuModel::TYPE_COMMAND, menu.GetTypeAt(0));
   EXPECT_EQ(title, menu.GetLabelAt(0));
   EXPECT_FALSE(menu.IsEnabledAt(0));
 

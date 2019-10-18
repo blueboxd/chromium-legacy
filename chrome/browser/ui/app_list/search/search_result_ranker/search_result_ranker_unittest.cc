@@ -969,12 +969,14 @@ TEST_F(SearchResultRankerTest, ZeroStateReceivedScoreMetrics) {
   ranker->Rank(&results);
 
   // Scores should scaled to the range 0-100 and logged into the correct bucket.
+  // Zero state file and omnibox scores map the range [0,1] to [0,100], and
+  // Drive scores map the range [-10,10] to [0,100].
   histogram_tester_.ExpectUniqueSample(
       "Apps.AppList.ZeroStateResults.ReceivedScore.OmniboxSearch", 15, 1);
   histogram_tester_.ExpectUniqueSample(
       "Apps.AppList.ZeroStateResults.ReceivedScore.ZeroStateFile", 25, 1);
   histogram_tester_.ExpectUniqueSample(
-      "Apps.AppList.ZeroStateResults.ReceivedScore.DriveQuickAccess", 35, 1);
+      "Apps.AppList.ZeroStateResults.ReceivedScore.DriveQuickAccess", 51, 1);
 }
 
 }  // namespace app_list

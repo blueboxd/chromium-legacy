@@ -124,6 +124,10 @@ em {
   flex: none;
 }
 
+#cookie-controls-toggle:not(:defined) {
+  width: 34px;
+}
+
 /** Layout ------------------------------------------------------------------ */
 
 /* Align the content, icon, and title to to the center. */

@@ -90,10 +90,12 @@ source_set("components") {
   }
 
   deps = [
+    "//base/util/values:values_util",
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/browser/web_applications:web_app_group",
     "//chrome/common",
+    "//components/content_settings/core/browser",
     "//components/crx_file",
     "//components/favicon/content",
     "//components/keyed_service/content",

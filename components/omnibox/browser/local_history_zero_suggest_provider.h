@@ -37,6 +37,8 @@ class LocalHistoryZeroSuggestProvider : public AutocompleteProvider {
   void DeleteMatch(const AutocompleteMatch& match) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LocalHistoryZeroSuggestProviderTest, Input);
+
   LocalHistoryZeroSuggestProvider(AutocompleteProviderClient* client,
                                   AutocompleteProviderListener* listener);
   ~LocalHistoryZeroSuggestProvider() override;
@@ -46,8 +48,10 @@ class LocalHistoryZeroSuggestProvider : public AutocompleteProvider {
   void QueryURLDatabase(const AutocompleteInput& input);
 
   // Called when the query results from HistoryService::QueryHistory are ready.
-  // Deletes URLs in |results| that would generate |suggestion|.
+  // Deletes URLs in |results| that would generate |suggestion|. |query_time| is
+  // the time HistoryService was queried.
   void OnHistoryQueryResults(const base::string16& suggestion,
+                             const base::TimeTicks& query_time,
                              history::QueryResults results);
 
   // The maximum number of matches to return.

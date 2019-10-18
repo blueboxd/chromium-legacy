@@ -39,8 +39,6 @@ class UI_BASE_EXPORT MenuModel : public base::SupportsWeakPtr<MenuModel> {
     TYPE_HIGHLIGHTED,  // Performs an action when selected, and has a different
                        // colored background. When placed at the bottom, the
                        // background matches the menu's rounded corners.
-    TYPE_TITLE,        // Plain text that does not perform any action when
-                       // selected.
   };
 
   MenuModel();

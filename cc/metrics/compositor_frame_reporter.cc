@@ -153,6 +153,17 @@ void CompositorFrameReporter::TerminateFrame(
   EndCurrentStage(frame_termination_time_);
 }
 
+void CompositorFrameReporter::OnFinishImplFrame(base::TimeTicks timestamp) {
+  DCHECK(!did_finish_impl_frame_);
+
+  did_finish_impl_frame_ = true;
+  impl_frame_finish_time_ = timestamp;
+}
+
+void CompositorFrameReporter::OnAbortBeginMainFrame() {
+  did_abort_main_frame_ = false;
+}
+
 void CompositorFrameReporter::SetVizBreakdown(
     const viz::FrameTimingDetails& viz_breakdown) {
   DCHECK(current_stage_.viz_breakdown.received_compositor_frame_timestamp
@@ -161,7 +172,8 @@ void CompositorFrameReporter::SetVizBreakdown(
 }
 
 void CompositorFrameReporter::TerminateReporter() {
-  DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
+  if (frame_termination_status_ != FrameTerminationStatus::kUnknown)
+    DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
   bool report_latency = false;
   const char* termination_status_str = nullptr;
   switch (frame_termination_status_) {
@@ -186,7 +198,7 @@ void CompositorFrameReporter::TerminateReporter() {
       termination_status_str = "did_not_produce_frame";
       break;
     case FrameTerminationStatus::kUnknown:
-      NOTREACHED();
+      termination_status_str = "terminated_before_ending";
       break;
   }
   const char* submission_status_str =

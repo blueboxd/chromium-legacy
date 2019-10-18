@@ -3976,10 +3976,12 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
        scroll_node = scroll_tree.parent(scroll_node)) {
     if (scroll_node->scrollable) {
       // Ensure we use scroll chaining behavior for the inner viewport node.
-      if (viewport()->ShouldScroll(*scroll_node))
+      if (scroll_node->scrolls_inner_viewport &&
+          !scroll_node->prevent_viewport_scrolling_from_inner) {
         closest_scroll_node = viewport()->MainScrollNode();
-      else
+      } else {
         closest_scroll_node = scroll_node;
+      }
       break;
     }
   }
@@ -4451,12 +4453,13 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   const float kEpsilon = 0.1f;
 
   if (viewport()->ShouldScroll(*scroll_node)) {
-    // This will be false if the scroll chains up to the viewport without going
-    // through the outer viewport scroll node. This can happen if we scroll an
-    // element that's not a descendant of the document.rootScroller. In that
-    // case we want to scroll *only* the inner viewport -- to allow panning
-    // while zoomed -- but still use Viewport::ScrollBy to also move browser
-    // controls if needed.
+    // |scroll_outer_vieiwport| will only ever be false if the scroll chains up
+    // to the viewport without going through the outer viewport scroll node.
+    // This is because we normally terminate the scroll chain at the outer
+    // viewport node.  For example, if we start scrolling from an element
+    // that's not a descendant of the root scroller. In these cases we want to
+    // scroll *only* the inner viewport -- to allow panning while zoomed -- but
+    // still use Viewport::ScrollBy to also move browser controls if needed.
     bool scroll_outer_viewport = scroll_node->scrolls_outer_viewport;
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),

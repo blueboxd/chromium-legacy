@@ -16,6 +16,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       type_(kText),
       sub_type_(static_cast<unsigned>(text.TextType())),
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
+      is_generated_text_(text.IsGeneratedText()),
       is_hidden_for_paint_(false),
       text_direction_(static_cast<unsigned>(text.ResolvedDirection())) {
   DCHECK_LE(text_.start_offset, text_.end_offset);
@@ -29,9 +30,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
                                wtf_size_t item_count)
-    : layout_object_(nullptr),
-      line_({line.Metrics(), To<NGInlineBreakToken>(line.BreakToken()),
-             item_count}),
+    : layout_object_(line.ContainerLayoutObject()),
+      line_({&line, item_count}),
       rect_({PhysicalOffset(), line.Size()}),
       type_(kLine),
       style_variant_(static_cast<unsigned>(line.StyleVariant())),
@@ -80,6 +80,13 @@ bool NGFragmentItem::IsAtomicInline() const {
     return false;
   if (const NGPhysicalBoxFragment* box = BoxFragment())
     return box->IsAtomicInline();
+  return false;
+}
+
+bool NGFragmentItem::IsGeneratedText() const {
+  if (Type() == kText || Type() == kGeneratedText)
+    return is_generated_text_;
+  NOTREACHED();
   return false;
 }
 
@@ -152,6 +159,7 @@ String NGFragmentItem::DebugName() const {
 IntRect NGFragmentItem::VisualRect() const {
   // TODO(kojii): Need to reconsider the storage of |VisualRect|, to integrate
   // better with |FragmentData| and to avoid dependency to |LayoutObject|.
+  DCHECK(GetLayoutObject());
   return GetLayoutObject()->VisualRectForInlineBox();
 }
 

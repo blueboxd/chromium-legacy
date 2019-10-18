@@ -303,12 +303,12 @@
   {
     "name": "autofill-profile-client-validation",
     "owners": [ "parastoog" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "autofill-profile-server-validation",
     "owners": [ "parastoog" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "autofill-prune-suggestions",
@@ -332,13 +332,13 @@
   },
   {
     "name": "autofill-use-improved-label-disambiguation",
-    "owners": [ "ftirelo", "tmartino" ],
-    "expiry_milestone": 77
+    "owners": [ "fhorschig" ],
+    "expiry_milestone": 81
   },
   {
     "name": "autofill-use-mobile-label-disambiguation",
-    "owners": [ "ftirelo", "tmartino" ],
-    "expiry_milestone": 79
+    "owners": [ "fhorschig" ],
+    "expiry_milestone": 81
   },
   {
     "name": "back-forward-cache",
@@ -1741,8 +1741,8 @@
   },
   {
     "name": "enable-suggestions-with-substring-match",
-    "owners": [ "tmartino" ],
-    "expiry_milestone": 77
+    "owners": [ "fhorschig" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-surfacecontrol",

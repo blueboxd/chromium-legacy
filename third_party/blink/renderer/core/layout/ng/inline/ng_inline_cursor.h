@@ -18,8 +18,10 @@ class LayoutInline;
 class LayoutObject;
 class NGFragmentItem;
 class NGFragmentItems;
+class NGInlineBreakToken;
 class NGPaintFragment;
 class NGPhysicalBoxFragment;
+class Node;
 struct PhysicalOffset;
 struct PhysicalRect;
 struct PhysicalSize;
@@ -73,6 +75,10 @@ class CORE_EXPORT NGInlineCursor {
   // True if fragment at the current position has children.
   bool HasChildren() const;
 
+  // True if current position has soft wrap to next line. It is error to call
+  // other than line.
+  bool HasSoftWrapToNextLine() const;
+
   // True if the current position is a atomic inline. It is error to call at
   // end.
   bool IsAtomicInline() const;
@@ -84,6 +90,10 @@ class CORE_EXPORT NGInlineCursor {
   // True if the current position is an ellipsis. It is error to call at end.
   bool IsEllipsis() const;
 
+  // True if the current position is a generatd text. It is error to call at
+  // end.
+  bool IsGeneratedText() const;
+
   // True if the current position is hidden for paint. It is error to call at
   // end.
   bool IsHiddenForPaint() const;
@@ -93,6 +103,9 @@ class CORE_EXPORT NGInlineCursor {
 
   // True if the current position is a line break. It is error to call at end.
   bool IsLineBreak() const;
+
+  // True if the current position is a text. It is error to call at end.
+  bool IsText() const;
 
   // |Current*| functions return an object for the current position.
   const NGFragmentItem* CurrentItem() const { return current_item_; }
@@ -104,6 +117,7 @@ class CORE_EXPORT NGInlineCursor {
   TextDirection CurrentBaseDirection() const;
   const NGPhysicalBoxFragment* CurrentBoxFragment() const;
   const LayoutObject* CurrentLayoutObject() const;
+  Node* CurrentNode() const;
   // Returns text direction of current text or atomic inline. It is error to
   // call at other than text or atomic inline. Note: <span> doesn't have
   // reserved direction.
@@ -140,6 +154,10 @@ class CORE_EXPORT NGInlineCursor {
   // See also |TryToMoveToFirstChild()|.
   void MoveToFirstChild();
 
+  // Move to first logical leaf of current line box. If current line box has
+  // no children, curosr becomes null.
+  void MoveToFirstLogicalLeaf();
+
   // Move to last child of current container box. If the current position is
   // at fragment without children, this cursor points nothing.
   // See also |TryToMoveToFirstChild()|.
@@ -162,6 +180,10 @@ class CORE_EXPORT NGInlineCursor {
   // Same as |MoveToNext| except that this skips children even if they exist.
   void MoveToNextSkippingChildren();
 
+  // Move the current position to previous line. It is error to call other than
+  // line box.
+  void MoveToPreviousLine();
+
   // Returns true if the current position moves to first child.
   bool TryToMoveToFirstChild();
 
@@ -173,6 +195,9 @@ class CORE_EXPORT NGInlineCursor {
 
  private:
   using ItemsSpan = base::span<const std::unique_ptr<NGFragmentItem>>;
+
+  // Returns break token for line box. It is error to call other than line box.
+  const NGInlineBreakToken& CurrentInlineBreakToken() const;
 
   // True if current position is descendant or self of |layout_object|.
   // Note: This function is used for moving cursor in culled inline boxes.

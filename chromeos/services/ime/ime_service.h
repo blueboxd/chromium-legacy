@@ -60,6 +60,7 @@ class ImeService : public mojom::ImeService,
                               const base::FilePath& file);
 
   mojo::Receiver<mojom::ImeService> receiver_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // For the duration of this service lifetime, there should be only one
   // input engine instance.

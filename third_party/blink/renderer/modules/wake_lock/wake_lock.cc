@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
-#include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
+#include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -26,20 +26,18 @@ using mojom::blink::PermissionStatus;
 WakeLock::WakeLock(Document& document)
     : ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
-      state_records_{
-          MakeGarbageCollected<WakeLockStateRecord>(&document,
-                                                    WakeLockType::kScreen),
-          MakeGarbageCollected<WakeLockStateRecord>(&document,
-                                                    WakeLockType::kSystem)} {}
+      managers_{MakeGarbageCollected<WakeLockManager>(&document,
+                                                      WakeLockType::kScreen),
+                MakeGarbageCollected<WakeLockManager>(&document,
+                                                      WakeLockType::kSystem)} {}
 
 WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
     : ContextLifecycleObserver(&worker_scope),
       PageVisibilityObserver(nullptr),
-      state_records_{
-          MakeGarbageCollected<WakeLockStateRecord>(&worker_scope,
-                                                    WakeLockType::kScreen),
-          MakeGarbageCollected<WakeLockStateRecord>(&worker_scope,
-                                                    WakeLockType::kSystem)} {}
+      managers_{MakeGarbageCollected<WakeLockManager>(&worker_scope,
+                                                      WakeLockType::kScreen),
+                MakeGarbageCollected<WakeLockManager>(&worker_scope,
+                                                      WakeLockType::kSystem)} {}
 
 ScriptPromise WakeLock::request(ScriptState* script_state, const String& type) {
   // https://w3c.github.io/wake-lock/#request-static-method
@@ -161,7 +159,7 @@ void WakeLock::DidReceivePermissionResponse(WakeLockType type,
     return;
   }
   // https://github.com/w3c/wake-lock/issues/222: the page can become hidden
-  // between request() and WakeLockStateRecord::AcquireWakeLock(), in which case
+  // between request() and WakeLockManager::AcquireWakeLock(), in which case
   // we need to abort early.
   if (type == WakeLockType::kScreen &&
       !(GetPage() && GetPage()->IsPageVisible())) {
@@ -174,9 +172,9 @@ void WakeLock::DidReceivePermissionResponse(WakeLockType type,
   // and type:
   // 6.2.1. If success is false then reject promise with a "NotAllowedError"
   //        DOMException, and abort these steps.
-  WakeLockStateRecord* state_record = state_records_[static_cast<size_t>(type)];
-  DCHECK(state_record);
-  state_record->AcquireWakeLock(resolver);
+  WakeLockManager* manager = managers_[static_cast<size_t>(type)];
+  DCHECK(manager);
+  manager->AcquireWakeLock(resolver);
 }
 
 void WakeLock::ContextDestroyed(ExecutionContext*) {
@@ -184,15 +182,15 @@ void WakeLock::ContextDestroyed(ExecutionContext*) {
   // 1. Let document be the responsible document of the current settings object.
   // 2. Let screenRecord be the platform wake lock's state record associated
   // with document and wake lock type "screen".
-  // 3. For each lockPromise in screenRecord.[[WakeLockStateRecord]]:
+  // 3. For each lockPromise in screenRecord.[[ActiveLocks]]:
   // 3.1. Run release a wake lock with lockPromise and "screen".
   // 4. Let systemRecord be the platform wake lock's state record associated
   // with document and wake lock type "system".
-  // 5. For each lockPromise in systemRecord.[[WakeLockStateRecord]]:
+  // 5. For each lockPromise in systemRecord.[[ActiveLocks]]:
   // 5.1. Run release a wake lock with lockPromise and "system".
-  for (WakeLockStateRecord* state_record : state_records_) {
-    if (state_record)
-      state_record->ClearWakeLocks();
+  for (WakeLockManager* manager : managers_) {
+    if (manager)
+      manager->ClearWakeLocks();
   }
 }
 
@@ -204,12 +202,12 @@ void WakeLock::PageVisibilityChanged() {
     return;
   // 3. Let screenRecord be the platform wake lock's state record associated
   // with wake lock type "screen".
-  // 4. For each lockPromise in screenRecord.[[WakeLockStateRecord]]:
+  // 4. For each lockPromise in screenRecord.[[ActiveLocks]]:
   // 4.1. Run release a wake lock with lockPromise and "screen".
-  WakeLockStateRecord* state_record =
-      state_records_[static_cast<size_t>(WakeLockType::kScreen)];
-  if (state_record)
-    state_record->ClearWakeLocks();
+  WakeLockManager* manager =
+      managers_[static_cast<size_t>(WakeLockType::kScreen)];
+  if (manager)
+    manager->ClearWakeLocks();
 }
 
 void WakeLock::ObtainPermission(
@@ -258,8 +256,8 @@ PermissionService* WakeLock::GetPermissionService() {
 }
 
 void WakeLock::Trace(Visitor* visitor) {
-  for (WakeLockStateRecord* state_record : state_records_)
-    visitor->Trace(state_record);
+  for (WakeLockManager* manager : managers_)
+    visitor->Trace(manager);
   PageVisibilityObserver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);

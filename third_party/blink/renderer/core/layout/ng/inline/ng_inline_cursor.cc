@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 
 namespace blink {
 
@@ -115,6 +116,12 @@ bool NGInlineCursor::HasChildren() const {
   return false;
 }
 
+bool NGInlineCursor::HasSoftWrapToNextLine() const {
+  DCHECK(IsLineBox());
+  const NGInlineBreakToken& break_token = CurrentInlineBreakToken();
+  return !break_token.IsFinished() && !break_token.IsForcedBreak();
+}
+
 bool NGInlineCursor::IsAtomicInline() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->PhysicalFragment().IsAtomicInline();
@@ -129,6 +136,19 @@ bool NGInlineCursor::IsEllipsis() const {
     return current_paint_fragment_->IsEllipsis();
   if (current_item_)
     return current_item_->IsEllipsis();
+  NOTREACHED();
+  return false;
+}
+
+bool NGInlineCursor::IsGeneratedText() const {
+  if (current_paint_fragment_) {
+    if (auto* text_fragment = DynamicTo<NGPhysicalTextFragment>(
+            current_paint_fragment_->PhysicalFragment()))
+      return text_fragment->IsGeneratedText();
+    return false;
+  }
+  if (current_item_)
+    return current_item_->IsGeneratedText();
   NOTREACHED();
   return false;
 }
@@ -172,6 +192,17 @@ bool NGInlineCursor::IsLineBreak() const {
   }
   if (current_item_)
     return current_item_->IsLineBreak();
+  NOTREACHED();
+  return false;
+}
+
+bool NGInlineCursor::IsText() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->PhysicalFragment().IsText();
+  if (current_item_) {
+    return current_item_->Type() == NGFragmentItem::kText ||
+           current_item_->Type() == NGFragmentItem::kGeneratedText;
+  }
   NOTREACHED();
   return false;
 }
@@ -248,12 +279,30 @@ const NGPhysicalBoxFragment* NGInlineCursor::CurrentBoxFragment() const {
   return nullptr;
 }
 
+const NGInlineBreakToken& NGInlineCursor::CurrentInlineBreakToken() const {
+  DCHECK(IsLineBox());
+  if (current_paint_fragment_) {
+    return To<NGInlineBreakToken>(
+        *To<NGPhysicalLineBoxFragment>(
+             current_paint_fragment_->PhysicalFragment())
+             .BreakToken());
+  }
+  DCHECK(current_item_);
+  return *current_item_->InlineBreakToken();
+}
+
 const LayoutObject* NGInlineCursor::CurrentLayoutObject() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->GetLayoutObject();
   if (current_item_)
     return current_item_->GetLayoutObject();
   NOTREACHED();
+  return nullptr;
+}
+
+Node* NGInlineCursor::CurrentNode() const {
+  if (const LayoutObject* layout_object = CurrentLayoutObject())
+    return layout_object->GetNode();
   return nullptr;
 }
 
@@ -368,6 +417,9 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
 }
 
 void NGInlineCursor::MoveTo(const NGPaintFragment& paint_fragment) {
+  DCHECK(!fragment_items_);
+  if (!root_paint_fragment_)
+    root_paint_fragment_ = paint_fragment.Root();
   DCHECK(root_paint_fragment_);
   DCHECK(paint_fragment.IsDescendantOfNotSelf(*root_paint_fragment_))
       << paint_fragment << " " << root_paint_fragment_;
@@ -405,6 +457,21 @@ void NGInlineCursor::MoveToFirstChild() {
   DCHECK(CanHaveChildren());
   if (!TryToMoveToFirstChild())
     MakeNull();
+}
+
+void NGInlineCursor::MoveToFirstLogicalLeaf() {
+  DCHECK(IsLineBox());
+  // TODO(yosin): This isn't correct for mixed Bidi. Fix it. Besides, we
+  // should compute and store it during layout.
+  // TODO(yosin): We should check direction of each container instead of line
+  // box. See also |NGPhysicalLineBoxFragment::LastLogicalLeaf()|.
+  if (IsLtr(CurrentStyle().Direction())) {
+    while (TryToMoveToFirstChild())
+      continue;
+    return;
+  }
+  while (TryToMoveToLastChild())
+    continue;
 }
 
 void NGInlineCursor::MoveToLastChild() {
@@ -472,6 +539,24 @@ void NGInlineCursor::MoveToNextSkippingChildren() {
   if (root_paint_fragment_)
     return MoveToNextPaintFragmentSkippingChildren();
   MoveToNextItemSkippingChildren();
+}
+
+void NGInlineCursor::MoveToPreviousLine() {
+  DCHECK(IsLineBox());
+  if (current_paint_fragment_) {
+    // TODO(yosin): We should implement |PreviousLineOf()| here.
+    if (auto* paint_fragment =
+            NGPaintFragmentTraversal::PreviousLineOf(*current_paint_fragment_))
+      return MoveTo(*paint_fragment);
+    return MakeNull();
+  }
+  if (current_item_) {
+    do {
+      MoveToPreviousItem();
+    } while (IsNotNull() && !IsLineBox());
+    return;
+  }
+  NOTREACHED();
 }
 
 bool NGInlineCursor::TryToMoveToFirstChild() {

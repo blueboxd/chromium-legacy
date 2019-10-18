@@ -119,7 +119,7 @@ class SharingService : public KeyedService,
 
   // Used to register devices with required capabilities in tests.
   void RegisterDeviceInTesting(
-      std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_feautres,
+      std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_features,
       SharingDeviceRegistration::RegistrationCallback callback);
 
   SharingSyncPreference* GetSyncPreferences() const;

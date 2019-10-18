@@ -510,9 +510,9 @@ TEST_F(AvailabilityProberTest, TimeUntilSuccess) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.TimeUntilFailure.Litepages", 0);
+      "Availability.Prober.TimeUntilFailure2.Litepages", 0);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.TimeUntilSuccess.Litepages", 11000, 1);
+      "Availability.Prober.TimeUntilSuccess2.Litepages", 11000, 1);
 }
 
 TEST_F(AvailabilityProberTest, TimeUntilFailure) {
@@ -535,9 +535,9 @@ TEST_F(AvailabilityProberTest, TimeUntilFailure) {
   EXPECT_FALSE(prober->is_active());
 
   histogram_tester.ExpectTotalCount(
-      "Availability.Prober.TimeUntilSuccess.Litepages", 0);
+      "Availability.Prober.TimeUntilSuccess2.Litepages", 0);
   histogram_tester.ExpectUniqueSample(
-      "Availability.Prober.TimeUntilFailure.Litepages", 11000, 1);
+      "Availability.Prober.TimeUntilFailure2.Litepages", 11000, 1);
 }
 
 TEST_F(AvailabilityProberTest, RandomGUID) {

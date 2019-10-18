@@ -286,17 +286,17 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
   DCHECK(succeeded) << "TaskScheduler::Initialize() failed";
 
   // Initialize the sandbox for the shortcut parser.
-  chrome_cleaner::UniqueParserPtr parser_ptr(
-      nullptr, base::OnTaskRunnerDeleter(nullptr));
+  chrome_cleaner::RemoteParserPtr parser(nullptr,
+                                         base::OnTaskRunnerDeleter(nullptr));
   chrome_cleaner::ResultCode parser_result_code =
       chrome_cleaner::SpawnParserSandbox(
           shutdown_sequence.mojo_task_runner.get(),
-          sandbox_connection_error_callback, &parser_ptr);
+          sandbox_connection_error_callback, &parser);
   if (parser_result_code != chrome_cleaner::RESULT_CODE_SUCCESS)
     return FinalizeWithResultCode(parser_result_code, &registry_logger);
   std::unique_ptr<chrome_cleaner::ShortcutParserAPI> shortcut_parser =
       std::make_unique<chrome_cleaner::SandboxedShortcutParser>(
-          shutdown_sequence.mojo_task_runner.get(), parser_ptr.get());
+          shutdown_sequence.mojo_task_runner.get(), parser.get());
 
   std::unique_ptr<chrome_cleaner::ScannerController> scanner_controller =
       std::make_unique<chrome_cleaner::ScannerControllerImpl>(

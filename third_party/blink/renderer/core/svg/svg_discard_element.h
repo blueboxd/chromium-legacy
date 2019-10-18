@@ -47,7 +47,6 @@ class SVGDiscardElement final : public SVGSMILElement {
   void ResetAnimatedType() override {}
   void ClearAnimatedType() override {}
   void ApplyResultsToTarget() override {}
-  void AnimationAttributeChanged() override {}
 
   bool OverwritesUnderlyingAnimationValue() const override { return false; }
 

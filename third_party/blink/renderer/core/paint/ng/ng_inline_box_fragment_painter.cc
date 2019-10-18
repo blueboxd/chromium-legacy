@@ -154,11 +154,10 @@ void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
   }
   rect.offset += paint_offset;
 
-  const NGPhysicalFragment& block_fragment = block_fragment_.PhysicalFragment();
   const LayoutBlockFlow& layout_block_flow =
-      *To<LayoutBlockFlow>(block_fragment.GetLayoutObject());
+      *To<LayoutBlockFlow>(block_fragment_.GetLayoutObject());
   BackgroundImageGeometry geometry(layout_block_flow);
-  NGBoxFragmentPainter box_painter(block_fragment_);
+  NGBoxFragmentPainter box_painter(block_fragment_, block_paint_fragment_);
   PaintBoxDecorationBackground(
       box_painter, paint_info, paint_offset, rect, geometry,
       /*object_has_multiple_boxes*/ false, /*include_logical_left_edge*/ true,

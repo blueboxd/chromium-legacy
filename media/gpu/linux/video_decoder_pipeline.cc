@@ -108,25 +108,19 @@ bool VideoDecoderPipeline::IsPlatformDecoder() const {
 int VideoDecoderPipeline::GetMaxDecodeRequests() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  if (!decoder_)
-    DVLOGF(1) << "Call before Initialize() success.";
-  return decoder_ ? decoder_->GetMaxDecodeRequests() : 1;
+  return 4;
 }
 
 bool VideoDecoderPipeline::NeedsBitstreamConversion() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  if (!decoder_)
-    DVLOGF(1) << "Call before Initialize() success.";
-  return decoder_ ? decoder_->NeedsBitstreamConversion() : false;
+  return needs_bitstream_conversion_;
 }
 
 bool VideoDecoderPipeline::CanReadWithoutStalling() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  if (!decoder_)
-    DVLOGF(1) << "Call before Initialize() success.";
-  return decoder_ ? decoder_->CanReadWithoutStalling() : false;
+  return frame_pool_ && !frame_pool_->IsExhausted();
 }
 
 void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
@@ -139,35 +133,46 @@ void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
   DCHECK(!init_cb_);
   VLOGF(2) << "config: " << config.AsHumanReadableString();
 
+  if (!config.IsValidConfig()) {
+    VLOGF(1) << "config is not valid";
+    std::move(init_cb).Run(false);
+    return;
+  }
+  if (config.is_encrypted()) {
+    VLOGF(1) << "Encrypted streams are not supported for this VD";
+    std::move(init_cb).Run(false);
+    return;
+  }
+  if (cdm_context) {
+    VLOGF(1) << "cdm_context is not supported.";
+    std::move(init_cb).Run(false);
+    return;
+  }
+
+  needs_bitstream_conversion_ = (config.codec() == kCodecH264);
   client_output_cb_ = std::move(output_cb);
   init_cb_ = std::move(init_cb);
   base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs =
       get_create_vd_functions_cb_.Run(used_create_vd_func_);
 
   if (!decoder_) {
-    CreateAndInitializeVD(std::move(create_vd_funcs), config, low_delay,
-                          cdm_context, waiting_cb);
+    CreateAndInitializeVD(std::move(create_vd_funcs), config);
   } else {
     decoder_->Initialize(
-        config, low_delay, cdm_context,
+        config,
         // If it fails to re-initialize current |decoder_|, it will create
         // another decoder instance by trying available VD creation functions
         // again. See |OnInitializeDone| for detail.
         base::BindOnce(&VideoDecoderPipeline::OnInitializeDone, weak_this_,
-                       std::move(create_vd_funcs), config, low_delay,
-                       cdm_context, waiting_cb),
+                       std::move(create_vd_funcs), config),
         base::BindRepeating(&VideoDecoderPipeline::OnFrameDecodedThunk,
-                            client_task_runner_, weak_this_),
-        waiting_cb);
+                            client_task_runner_, weak_this_));
   }
 }
 
 void VideoDecoderPipeline::CreateAndInitializeVD(
     base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs,
-    VideoDecoderConfig config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    WaitingCB waiting_cb) {
+    VideoDecoderConfig config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK(init_cb_);
   DCHECK(!decoder_);
@@ -189,26 +194,20 @@ void VideoDecoderPipeline::CreateAndInitializeVD(
   if (!decoder_) {
     DVLOGF(2) << "Failed to create VideoDecoder.";
     used_create_vd_func_ = nullptr;
-    return CreateAndInitializeVD(std::move(create_vd_funcs), config, low_delay,
-                                 cdm_context, std::move(waiting_cb));
+    return CreateAndInitializeVD(std::move(create_vd_funcs), config);
   }
 
   decoder_->Initialize(
-      config, low_delay, cdm_context,
+      config,
       base::BindOnce(&VideoDecoderPipeline::OnInitializeDone, weak_this_,
-                     std::move(create_vd_funcs), config, low_delay, cdm_context,
-                     waiting_cb),
+                     std::move(create_vd_funcs), config),
       base::BindRepeating(&VideoDecoderPipeline::OnFrameDecodedThunk,
-                          client_task_runner_, weak_this_),
-      waiting_cb);
+                          client_task_runner_, weak_this_));
 }
 
 void VideoDecoderPipeline::OnInitializeDone(
     base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs,
     VideoDecoderConfig config,
-    bool low_delay,
-    CdmContext* cdm_context,
-    WaitingCB waiting_cb,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK(init_cb_);
@@ -223,8 +222,7 @@ void VideoDecoderPipeline::OnInitializeDone(
   DVLOGF(3) << "Reset VD, try the next create function.";
   decoder_ = nullptr;
   used_create_vd_func_ = nullptr;
-  CreateAndInitializeVD(std::move(create_vd_funcs), config, low_delay,
-                        cdm_context, std::move(waiting_cb));
+  CreateAndInitializeVD(std::move(create_vd_funcs), config);
 }
 
 void VideoDecoderPipeline::Reset(base::OnceClosure closure) {

@@ -67,6 +67,8 @@ jumbo_static_library("weblayer_lib") {
     "public/navigation_controller.h",
     "public/navigation_observer.h",
     "public/profile.h",
+    "utility/content_utility_client_impl.cc",
+    "utility/content_utility_client_impl.h",
   ]
 
   configs += [
@@ -91,6 +93,7 @@ jumbo_static_library("weblayer_lib") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/common:service_names",
+    "//content/public/utility",
     "//net",
     "//net:net_resources",
     "//sandbox",

@@ -99,7 +99,8 @@ interface CameraHost {
   StartCameraService@0() => (CameraService service);
 
   // Registers the camera HAL client. Used by camera HAL v3.
-  [MinVersion=2] RegisterCameraHalClient@1(cros.mojom.CameraHalClient client);
+  [MinVersion=2] RegisterCameraHalClient@1(
+      pending_remote<cros.mojom.CameraHalClient> client);
 };
 
 // Next method ID: 1

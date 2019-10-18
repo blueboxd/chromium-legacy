@@ -320,7 +320,7 @@ public class PaymentRequestContactDetailsTest implements MainActivityStartCallba
                 | Event.RECEIVED_INSTRUMENT_DETAILS | Event.REQUEST_PAYER_EMAIL
                 | Event.REQUEST_PAYER_PHONE | Event.REQUEST_PAYER_NAME
                 | Event.REQUEST_METHOD_BASIC_CARD | Event.REQUEST_METHOD_OTHER
-                | Event.SELECTED_OTHER;
+                | Event.SELECTED_OTHER | Event.AVAILABLE_METHOD_OTHER;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));

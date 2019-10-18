@@ -89,7 +89,8 @@ HttpNetworkSession::Params::Params()
       enable_quic_proxies_for_https_urls(false),
       disable_idle_sockets_close_on_memory_pressure(false),
       allow_default_credentials(HttpAuthPreferences::DefaultCredentials::
-                                    DISALLOW_DEFAULT_CREDENTIALS) {
+                                    DISALLOW_DEFAULT_CREDENTIALS),
+      key_auth_cache_server_entries_by_network_isolation_key(false) {
   enable_early_data =
       base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
 }
@@ -141,6 +142,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
 #endif
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
+      http_auth_cache_(
+          params.key_auth_cache_server_entries_by_network_isolation_key),
       ssl_client_session_cache_(SSLClientSessionCache::Config()),
       ssl_client_context_(context.ssl_config_service,
                           context.cert_verifier,

@@ -40,7 +40,8 @@ void UnifiedHeapMarkingVisitorBase::VisitImpl(
     v8_references_worklist_.Push(&v8_reference);
     return;
   }
-  controller_->RegisterEmbedderReference(v8_reference.Get());
+  controller_->RegisterEmbedderReference(
+      v8_reference.template Cast<v8::Data>().Get());
 }
 
 UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,

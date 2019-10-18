@@ -76,7 +76,7 @@ void PrivacyFilteringCheck::CheckProtoForUnexpectedFields(
       serialized_trace_proto.size());
 
   for (auto it = trace.packet(); !!it; ++it) {
-    TracePacket::Decoder packet(it->data(), it->size());
+    TracePacket::Decoder packet(*it);
     const MessageInfo* root = &kTracePacket;
     VerifyProto(root, &packet);
 

@@ -150,6 +150,8 @@ class NET_EXPORT HttpNetworkSession {
     // If authentication APIs that support ambient authentication are allowed
     // to use the default credentials.
     HttpAuthPreferences::DefaultCredentials allow_default_credentials;
+
+    bool key_auth_cache_server_entries_by_network_isolation_key;
   };
 
   // Structure with pointers to the dependencies of the HttpNetworkSession.

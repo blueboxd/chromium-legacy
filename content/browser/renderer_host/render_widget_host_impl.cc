@@ -847,11 +847,11 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // 7. Browser:    parent RenderWidgetHost (We're here if |is_child_frame|.)
   // 8. IPC           -> WidgetMsg_UpdateVisualProperties
   // 9. Renderer B: child  RenderWidget
-  visual_properties.page_scale_factor =
-      properties_from_parent_frame_.page_scale_factor;
-  visual_properties.is_pinch_gesture_active =
-      properties_from_parent_frame_.is_pinch_gesture_active;
   if (is_child_frame) {
+    visual_properties.page_scale_factor =
+        properties_from_parent_frame_.page_scale_factor;
+    visual_properties.is_pinch_gesture_active =
+        properties_from_parent_frame_.is_pinch_gesture_active;
     visual_properties.compositor_viewport_pixel_rect =
         properties_from_parent_frame_.compositor_viewport;
 

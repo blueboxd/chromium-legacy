@@ -31,9 +31,9 @@ class AuthenticationServiceFake : public AuthenticationService {
   void SignOut(signin_metrics::ProfileSignout signout_source,
                ProceduralBlock completion) override;
 
-  void SetHaveAccountsChanged(bool changed);
+  void SetHaveAccountsChangedWhileInBackground(bool changed);
 
-  bool HaveAccountsChanged() const override;
+  bool HaveAccountsChangedWhileInBackground() const override;
 
   bool IsAuthenticated() const override;
 
@@ -46,7 +46,7 @@ class AuthenticationServiceFake : public AuthenticationService {
                             syncer::SyncService* sync_service);
 
   __strong ChromeIdentity* authenticated_identity_;
-  bool have_accounts_changed_;
+  bool have_accounts_changed_while_in_background_;
 };
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_AUTHENTICATION_SERVICE_FAKE_H_

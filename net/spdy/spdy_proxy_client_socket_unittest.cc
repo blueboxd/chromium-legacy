@@ -158,12 +158,10 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   void AddAuthToCache() {
     const base::string16 kFoo(base::ASCIIToUTF16("foo"));
     const base::string16 kBar(base::ASCIIToUTF16("bar"));
-    session_->http_auth_cache()->Add(GURL(kProxyUrl),
-                                     "MyRealm1",
-                                     HttpAuth::AUTH_SCHEME_BASIC,
-                                     "Basic realm=MyRealm1",
-                                     AuthCredentials(kFoo, kBar),
-                                     "/");
+    session_->http_auth_cache()->Add(
+        GURL(kProxyUrl), HttpAuth::AUTH_PROXY, "MyRealm1",
+        HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
+        "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
   }
 
   void ResumeAndRun() {
@@ -271,8 +269,8 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
       spdy_stream, user_agent_, endpoint_host_port_pair_, net_log_.bound(),
       new HttpAuthController(
           HttpAuth::AUTH_PROXY, GURL("https://" + proxy_host_port_.ToString()),
-          session_->http_auth_cache(), session_->http_auth_handler_factory(),
-          session_->host_resolver(),
+          NetworkIsolationKey(), session_->http_auth_cache(),
+          session_->http_auth_handler_factory(), session_->host_resolver(),
           HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
 }
 

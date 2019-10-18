@@ -111,8 +111,8 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
       base::FilePath::FromUTF8Unsafe(download_helper->GetDownloadPath());
 
   FilenameDeterminedCallback filename_determined_callback =
-      base::BindOnce(&DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
-                     base::Unretained(this), item->GetId(), callback);
+      base::Bind(&DevToolsDownloadManagerDelegate::OnDownloadPathGenerated,
+                 base::Unretained(this), item->GetId(), callback);
 
   PostTask(
       FROM_HERE,
@@ -159,7 +159,7 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
     const std::string& suggested_filename,
     const std::string& mime_type,
     const base::FilePath& suggested_directory,
-    FilenameDeterminedCallback callback) {
+    const FilenameDeterminedCallback& callback) {
   base::FilePath generated_name =
       net::GenerateFileName(url, content_disposition, std::string(),
                             suggested_filename, mime_type, "download");
@@ -169,7 +169,7 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), suggested_path));
+                 base::BindOnce(callback, suggested_path));
 }
 
 void DevToolsDownloadManagerDelegate::OnDownloadPathGenerated(

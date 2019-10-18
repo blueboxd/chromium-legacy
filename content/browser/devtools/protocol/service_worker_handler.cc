@@ -91,13 +91,13 @@ void StopServiceWorkerOnCoreThread(
 void GetDevToolsRouteInfoOnCoreThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     int64_t version_id,
-    base::OnceCallback<void(int, int)> callback) {
+    const base::Callback<void(int, int)>& callback) {
   if (content::ServiceWorkerVersion* version =
           context->GetLiveVersion(version_id)) {
     RunOrPostTaskOnThread(
         FROM_HERE, BrowserThread::UI,
         base::BindOnce(
-            std::move(callback), version->embedded_worker()->process_id(),
+            callback, version->embedded_worker()->process_id(),
             version->embedded_worker()->worker_devtools_agent_route_id()));
   }
 }
@@ -219,13 +219,12 @@ Response ServiceWorkerHandler::Enable() {
   enabled_ = true;
 
   context_watcher_ = new ServiceWorkerContextWatcher(
-      context_,
-      base::BindRepeating(&ServiceWorkerHandler::OnWorkerRegistrationUpdated,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&ServiceWorkerHandler::OnWorkerVersionUpdated,
-                          weak_factory_.GetWeakPtr()),
-      base::BindRepeating(&ServiceWorkerHandler::OnErrorReported,
-                          weak_factory_.GetWeakPtr()));
+      context_, base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated,
+                           weak_factory_.GetWeakPtr()),
+      base::Bind(&ServiceWorkerHandler::OnWorkerVersionUpdated,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ServiceWorkerHandler::OnErrorReported,
+                 weak_factory_.GetWeakPtr()));
   context_watcher_->Start();
 
   return Response::OK();
@@ -319,10 +318,9 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
     return CreateInvalidVersionIdErrorResponse();
   RunOrPostTaskOnThread(
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-      base::BindOnce(
-          &GetDevToolsRouteInfoOnCoreThread, context_, id,
-          base::BindOnce(&ServiceWorkerHandler::OpenNewDevToolsWindow,
-                         weak_factory_.GetWeakPtr())));
+      base::BindOnce(&GetDevToolsRouteInfoOnCoreThread, context_, id,
+                     base::Bind(&ServiceWorkerHandler::OpenNewDevToolsWindow,
+                                weak_factory_.GetWeakPtr())));
   return Response::OK();
 }
 

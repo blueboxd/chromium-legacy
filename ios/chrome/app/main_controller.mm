@@ -330,9 +330,6 @@ enum class EnterTabSwitcherSnapshotResult {
   // The object that drives the Chrome startup/shutdown logic.
   std::unique_ptr<IOSChromeMain> _chromeMain;
 
-  // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
-  ios::ChromeBrowserState* _mainBrowserState;  // Weak.
-
   // Wrangler to handle BVC and tab model creation, access, and related logic.
   // Implements faetures exposed from this object through the
   // BrowserViewInformation protocol.
@@ -372,18 +369,6 @@ enum class EnterTabSwitcherSnapshotResult {
   // in a modal dialog.
   BOOL _isPresentingFirstRunUI;
 
-  // The tab switcher command and the voice search commands can be sent by views
-  // that reside in a different UIWindow leading to the fact that the exclusive
-  // touch property will be ineffective and a command for processing both
-  // commands may be sent in the same run of the runloop leading to
-  // inconsistencies. Those two boolean indicate if one of those commands have
-  // been processed in the last 200ms in order to only allow processing one at
-  // a time.
-  // TODO(crbug.com/560296):  Provide a general solution for handling mutually
-  // exclusive chrome commands sent at nearly the same time.
-  BOOL _isProcessingTabSwitcherCommand;
-  BOOL _isProcessingVoiceSearchCommand;
-
   // Bridge to listen to pref changes.
   std::unique_ptr<PrefObserverBridge> _localStatePrefObserverBridge;
 
@@ -406,22 +391,19 @@ enum class EnterTabSwitcherSnapshotResult {
   // Cached launchOptions from -didFinishLaunchingWithOptions.
   NSDictionary* _launchOptions;
 
-  // Coordinator for displaying history.
-  HistoryCoordinator* _historyCoordinator;
-
   // Variable backing metricsMediator property.
   __weak MetricsMediator* _metricsMediator;
 
   // Hander for the startup tasks, deferred or not.
   StartupTasks* _startupTasks;
 
-  // The application level component for url loading. Is passed down to
-  // browser state level UrlLoadingService instances.
-  AppUrlLoadingService* _appURLLoadingService;
-
   // If the animations were disabled.
   BOOL _animationDisabled;
 }
+
+// The ChromeBrowserState associated with the main (non-OTR) browsing mode.
+@property(nonatomic, assign)
+    ios::ChromeBrowserState* mainBrowserState;  // Weak.
 
 // The main coordinator, lazily created the first time it is accessed. Manages
 // the main view controller. This property should not be accessed before the
@@ -433,12 +415,6 @@ enum class EnterTabSwitcherSnapshotResult {
 // enabled.
 @property(nonatomic, readwrite)
     NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
-
-// The SigninInteractionCoordinator to present Sign In UI. It is created the
-// first time Sign In UI is needed to be presented and should not be destroyed
-// while the UI is presented.
-@property(nonatomic, strong)
-    SigninInteractionCoordinator* signinInteractionCoordinator;
 
 // Returns YES if the settings are presented, either from
 // _settingsNavigationController or from SigninInteractionCoordinator.
@@ -573,10 +549,15 @@ enum class EnterTabSwitcherSnapshotResult {
 @end
 
 @implementation MainController
+// Defined by MainControllerGuts.
+@synthesize historyCoordinator;
+@synthesize settingsNavigationController;
+@synthesize appURLLoadingService;
+@synthesize isProcessingTabSwitcherCommand;
+@synthesize isProcessingVoiceSearchCommand;
+@synthesize signinInteractionCoordinator;
 
 // Defined by public protocols.
-// - AppNavigation
-@synthesize settingsNavigationController = _settingsNavigationController;
 // - BrowserLauncher
 @synthesize launchOptions = _launchOptions;
 @synthesize browserInitializationStage = _browserInitializationStage;
@@ -589,7 +570,6 @@ enum class EnterTabSwitcherSnapshotResult {
 @synthesize mainCoordinator = _mainCoordinator;
 @synthesize NTPActionAfterTabSwitcherDismissal =
     _NTPActionAfterTabSwitcherDismissal;
-@synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
 #pragma mark - Application lifecycle
 
@@ -721,29 +701,29 @@ enum class EnterTabSwitcherSnapshotResult {
     [_restoreHelper moveAsideSessionInformation];
   }
 
-  _appURLLoadingService = new AppUrlLoadingService();
-  _appURLLoadingService->SetDelegate(self);
+  self.appURLLoadingService = new AppUrlLoadingService();
+  self.appURLLoadingService->SetDelegate(self);
 
   // Initialize and set the main browser state.
   [self initializeBrowserState:chromeBrowserState];
-  _mainBrowserState = chromeBrowserState;
+  self.mainBrowserState = chromeBrowserState;
   [_browserViewWrangler shutdown];
-  _browserViewWrangler =
-      [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
-                                   webStateListObserver:self
-                             applicationCommandEndpoint:self
-                                   appURLLoadingService:_appURLLoadingService
-                                        storageSwitcher:self];
+  _browserViewWrangler = [[BrowserViewWrangler alloc]
+            initWithBrowserState:self.mainBrowserState
+            webStateListObserver:self
+      applicationCommandEndpoint:self
+            appURLLoadingService:self.appURLLoadingService
+                 storageSwitcher:self];
 
   // Force an obvious initialization of the AuthenticationService. This must
   // be done before creation of the UI to ensure the service is initialised
   // before use (it is a security issue, so accessing the service CHECK if
   // this is not the case).
-  DCHECK(_mainBrowserState);
+  DCHECK(self.mainBrowserState);
   AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
-      _mainBrowserState,
+      self.mainBrowserState,
       std::make_unique<MainControllerAuthenticationServiceDelegate>(
-          _mainBrowserState, self));
+          self.mainBrowserState, self));
 
   // Send "Chrome Opened" event to the feature_engagement::Tracker on cold
   // start.
@@ -757,10 +737,10 @@ enum class EnterTabSwitcherSnapshotResult {
   [_browserViewWrangler createMainBrowser];
 
   _spotlightManager =
-      [SpotlightManager spotlightManagerWithBrowserState:_mainBrowserState];
+      [SpotlightManager spotlightManagerWithBrowserState:self.mainBrowserState];
 
   ShareExtensionService* service =
-      ShareExtensionServiceFactory::GetForBrowserState(_mainBrowserState);
+      ShareExtensionServiceFactory::GetForBrowserState(self.mainBrowserState);
   service->Initialize();
 
   // Before bringing up the UI, make sure the launch mode is correct, and
@@ -791,9 +771,9 @@ enum class EnterTabSwitcherSnapshotResult {
                            interfaceProvider:self.interfaceProvider];
   if (self.isColdStart) {
     [ContentSuggestionsSchedulerNotifications
-        notifyColdStart:_mainBrowserState];
+        notifyColdStart:self.mainBrowserState];
     [ContentSuggestionsSchedulerNotifications
-        notifyForeground:_mainBrowserState];
+        notifyForeground:self.mainBrowserState];
   }
 
   ios::GetChromeBrowserProvider()->GetOverridesProvider()->InstallOverrides();
@@ -868,9 +848,9 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)clearIOSSpecificIncognitoData {
-  DCHECK(_mainBrowserState->HasOffTheRecordChromeBrowserState());
+  DCHECK(self.mainBrowserState->HasOffTheRecordChromeBrowserState());
   ios::ChromeBrowserState* otrBrowserState =
-      _mainBrowserState->GetOffTheRecordChromeBrowserState();
+      self.mainBrowserState->GetOffTheRecordChromeBrowserState();
   [self removeBrowsingDataForBrowserState:otrBrowserState
                                timePeriod:browsing_data::TimePeriod::ALL_TIME
                                removeMask:BrowsingDataRemoveMask::REMOVE_ALL
@@ -988,8 +968,8 @@ enum class EnterTabSwitcherSnapshotResult {
 
   _extensionSearchEngineDataUpdater = nullptr;
 
-  [_historyCoordinator stop];
-  _historyCoordinator = nil;
+  [self.historyCoordinator stop];
+  self.historyCoordinator = nil;
 
   ios::GetChromeBrowserProvider()
       ->GetMailtoHandlerProvider()
@@ -1096,7 +1076,7 @@ enum class EnterTabSwitcherSnapshotResult {
                     // Track changes to default search engine.
                     TemplateURLService* service =
                         ios::TemplateURLServiceFactory::GetForBrowserState(
-                            _mainBrowserState);
+                            self.mainBrowserState);
                     _extensionSearchEngineDataUpdater =
                         std::make_unique<ExtensionSearchEngineDataUpdater>(
                             service);
@@ -1108,7 +1088,7 @@ enum class EnterTabSwitcherSnapshotResult {
       enqueueBlockNamed:kSendInstallPingIfNecessary
                   block:^{
                     auto URLLoaderFactory =
-                        _mainBrowserState->GetSharedURLLoaderFactory();
+                        self.mainBrowserState->GetSharedURLLoaderFactory();
                     bool is_first_run = FirstRun::IsChromeFirstRun();
                     ios::GetChromeBrowserProvider()
                         ->GetAppDistributionProvider()
@@ -1168,10 +1148,10 @@ enum class EnterTabSwitcherSnapshotResult {
   // ClearSessionCookies() is not synchronous.
   if (cookie_util::ShouldClearSessionCookies()) {
     cookie_util::ClearSessionCookies(
-        _mainBrowserState->GetOriginalChromeBrowserState());
+        self.mainBrowserState->GetOriginalChromeBrowserState());
     if (![self.otrTabModel isEmpty]) {
       cookie_util::ClearSessionCookies(
-          _mainBrowserState->GetOffTheRecordChromeBrowserState());
+          self.mainBrowserState->GetOffTheRecordChromeBrowserState());
     }
   }
 
@@ -1201,12 +1181,12 @@ enum class EnterTabSwitcherSnapshotResult {
       enqueueBlockNamed:kMailtoHandlingInitialization
                   block:^{
                     __strong __typeof(weakSelf) strongSelf = weakSelf;
-                    if (!strongSelf || !strongSelf->_mainBrowserState) {
+                    if (!strongSelf || !strongSelf.mainBrowserState) {
                       return;
                     }
                     ios::GetChromeBrowserProvider()
                         ->GetMailtoHandlerProvider()
-                        ->PrepareMailtoHandling(strongSelf->_mainBrowserState);
+                        ->PrepareMailtoHandling(strongSelf.mainBrowserState);
                   }];
 }
 
@@ -1276,7 +1256,8 @@ enum class EnterTabSwitcherSnapshotResult {
   // Deferred tasks.
   [self schedulePrefObserverInitialization];
   [self scheduleMemoryDebuggingTools];
-  [StartupTasks scheduleDeferredBrowserStateInitialization:_mainBrowserState];
+  [StartupTasks
+      scheduleDeferredBrowserStateInitialization:self.mainBrowserState];
   [self scheduleAuthenticationServiceNotification];
   [self sendQueuedFeedback];
   [self scheduleSpotlightResync];
@@ -1294,7 +1275,7 @@ enum class EnterTabSwitcherSnapshotResult {
   if (GetApplicationContext()->WasLastShutdownClean()) {
     // Delay the cleanup of the unreferenced files to not impact startup
     // performance.
-    ExternalFileRemoverFactory::GetForBrowserState(_mainBrowserState)
+    ExternalFileRemoverFactory::GetForBrowserState(self.mainBrowserState)
         ->RemoveAfterDelay(
             base::TimeDelta::FromSeconds(kExternalFilesCleanupDelaySeconds),
             base::OnceClosure());
@@ -1361,7 +1342,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)createInitialUI:(ApplicationMode)launchMode {
-  DCHECK(_mainBrowserState);
+  DCHECK(self.mainBrowserState);
 
   // In order to correctly set the mode switch icon, we need to know how many
   // tabs are in the other tab model. That means loading both models.  They
@@ -1395,8 +1376,8 @@ enum class EnterTabSwitcherSnapshotResult {
 
   ios::ChromeBrowserState* browserState =
       (launchMode == ApplicationMode::INCOGNITO)
-          ? _mainBrowserState->GetOffTheRecordChromeBrowserState()
-          : _mainBrowserState;
+          ? self.mainBrowserState->GetOffTheRecordChromeBrowserState()
+          : self.mainBrowserState;
   [self changeStorageFromBrowserState:nullptr toBrowserState:browserState];
 
   TabModel* tabModel;
@@ -1444,7 +1425,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
-          initWithBrowserState:_mainBrowserState
+          initWithBrowserState:self.mainBrowserState
                       tabModel:self.mainTabModel
                      presenter:self.mainBVC
                     dispatcher:self.mainBVC.dispatcher];
@@ -1486,9 +1467,9 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // Show the sign-in promo if needed
   if ([SigninPromoViewController
-          shouldBePresentedForBrowserState:_mainBrowserState]) {
+          shouldBePresentedForBrowserState:self.mainBrowserState]) {
     UIViewController* promoController = [[SigninPromoViewController alloc]
-        initWithBrowserState:_mainBrowserState
+        initWithBrowserState:self.mainBrowserState
                   dispatcher:self.mainBVC.dispatcher];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
@@ -1533,14 +1514,14 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)showHistory {
-  _historyCoordinator =
-      [[HistoryCoordinator alloc] initWithBaseViewController:self.currentBVC
-                                                browserState:_mainBrowserState];
-  _historyCoordinator.loadStrategy = [self currentPageIsIncognito]
-                                         ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
-                                         : UrlLoadStrategy::NORMAL;
-  _historyCoordinator.dispatcher = self.mainBVC.dispatcher;
-  [_historyCoordinator start];
+  self.historyCoordinator = [[HistoryCoordinator alloc]
+      initWithBaseViewController:self.currentBVC
+                    browserState:self.mainBrowserState];
+  self.historyCoordinator.loadStrategy =
+      [self currentPageIsIncognito] ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
+                                    : UrlLoadStrategy::NORMAL;
+  self.historyCoordinator.dispatcher = self.mainBVC.dispatcher;
+  [self.historyCoordinator start];
 }
 
 - (void)closeSettingsUIAndOpenURL:(OpenNewTabCommand*)command {
@@ -1582,14 +1563,14 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)displayTabSwitcher {
   DCHECK(!_tabSwitcherIsActive);
-  if (!_isProcessingVoiceSearchCommand) {
+  if (!self.isProcessingVoiceSearchCommand) {
     [self.currentBVC userEnteredTabSwitcher];
     [self showTabSwitcher];
-    _isProcessingTabSwitcherCommand = YES;
+    self.isProcessingTabSwitcherCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  kExpectedTransitionDurationInNanoSeconds),
                    dispatch_get_main_queue(), ^{
-                     _isProcessingTabSwitcherCommand = NO;
+                     self.isProcessingTabSwitcherCommand = NO;
                    });
   }
 }
@@ -1642,7 +1623,7 @@ enum class EnterTabSwitcherSnapshotResult {
   params.from_chrome = command.fromChrome;
   params.user_initiated = command.userInitiated;
   params.should_focus_omnibox = command.shouldFocusOmnibox;
-  _appURLLoadingService->LoadUrlInNewTab(params);
+  self.appURLLoadingService->LoadUrlInNewTab(params);
 }
 
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
@@ -1650,7 +1631,7 @@ enum class EnterTabSwitcherSnapshotResult {
     baseViewController:(UIViewController*)baseViewController {
   if (!self.signinInteractionCoordinator) {
     self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowserState:_mainBrowserState
+        initWithBrowserState:self.mainBrowserState
                   dispatcher:self.mainBVC.dispatcher];
   }
 
@@ -1675,7 +1656,7 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
   self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-      initWithBrowserState:_mainBrowserState
+      initWithBrowserState:self.mainBrowserState
                 dispatcher:self.mainBVC.dispatcher];
   [self.signinInteractionCoordinator
       showAdvancedSigninSettingsWithPresentingViewController:
@@ -1686,7 +1667,7 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
   if (!self.signinInteractionCoordinator) {
     self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowserState:_mainBrowserState
+        initWithBrowserState:self.mainBrowserState
                   dispatcher:self.mainBVC.dispatcher];
   }
 
@@ -1959,7 +1940,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // browser state.
   breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(
       /*in_progress=*/true);
-  DCHECK(_mainBrowserState->HasOffTheRecordChromeBrowserState());
+  DCHECK(self.mainBrowserState->HasOffTheRecordChromeBrowserState());
   [self clearIOSSpecificIncognitoData];
 
   // OffTheRecordProfileIOData cannot be deleted before all the requests are
@@ -2004,13 +1985,13 @@ enum class EnterTabSwitcherSnapshotResult {
 #pragma mark - Mode Switching
 
 - (void)startVoiceSearch {
-  if (!_isProcessingTabSwitcherCommand) {
+  if (!self.isProcessingTabSwitcherCommand) {
     [self startVoiceSearchInCurrentBVC];
-    _isProcessingVoiceSearchCommand = YES;
+    self.isProcessingVoiceSearchCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  kExpectedTransitionDurationInNanoSeconds),
                    dispatch_get_main_queue(), ^{
-                     _isProcessingVoiceSearchCommand = NO;
+                     self.isProcessingVoiceSearchCommand = NO;
                    });
   }
 }
@@ -2633,7 +2614,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
   payments::IOSPaymentInstrumentLauncher* paymentAppLauncher =
       payments::IOSPaymentInstrumentLauncherFactory::GetInstance()
-          ->GetForBrowserState(_mainBrowserState);
+          ->GetForBrowserState(self.mainBrowserState);
 
   if (!paymentAppLauncher->delegate())
     return NO;
@@ -2710,6 +2691,12 @@ enum class EnterTabSwitcherSnapshotResult {
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
 }
 
+#pragma mark - MainControllerGuts
+
+- (id<TabSwitcher>)tabSwitcher {
+  return _tabSwitcher;
+}
+
 @end
 
 #pragma mark - TestingOnly
@@ -2718,10 +2705,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (DeviceSharingManager*)deviceSharingManager {
   return [_browserViewWrangler deviceSharingManager];
-}
-
-- (id<TabSwitcher>)tabSwitcher {
-  return _tabSwitcher;
 }
 
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher {

@@ -80,6 +80,10 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
 
+  // Returns the |LayoutObject| of the container. |GetLayoutObject()| returns
+  // |nullptr| because line boxes do not have corresponding |LayoutObject|.
+  const LayoutObject* ContainerLayoutObject() const { return &layout_object_; }
+
  private:
   NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);
 

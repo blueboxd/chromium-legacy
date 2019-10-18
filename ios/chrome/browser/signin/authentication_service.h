@@ -66,7 +66,7 @@ class AuthenticationService : public KeyedService,
   // they were stored in the browser state prefs. This storing happens every
   // time the accounts change in foreground.
   // This reloads the cached accounts if the information might be stale.
-  virtual bool HaveAccountsChanged() const;
+  virtual bool HaveAccountsChangedWhileInBackground() const;
 
   // ChromeIdentity management
 
@@ -126,14 +126,23 @@ class AuthenticationService : public KeyedService,
   // ids.
   void MigrateAccountsStoredInPrefsIfNeeded();
 
-  // Stores the token service accounts in the browser state prefs.
-  void StoreAccountsInPrefs();
+  // Saves the last known list of accounts from the token service when
+  // the app is in foreground. This can be used when app comes back from
+  // background to detect if any changes occurred to the list. Must only
+  // be called when the application is in foreground.
+  // See HaveAccountsChangesWhileInBackground().
+  void StoreKnownAccountsWhileInForeground();
 
-  // Gets the accounts previously stored in the  browser state prefs.
-  std::vector<std::string> GetAccountsInPrefs();
+  // Gets the accounts previously stored as the foreground accounts in the
+  // browser state prefs.
+  // Returns the list of previously stored known accounts. This list
+  // is only updated when the app is in foreground and used to detect
+  // if any change occurred while the app was in background.
+  // See HaveAccountsChangesWhileInBackground().
+  std::vector<std::string> GetLastKnownAccountsFromForeground();
 
-  // Returns the cached MDM infos associated with |identity|. If the cache is
-  // stale for |identity|, the entry might be removed.
+  // Returns the cached MDM infos associated with |identity|. If the cache
+  // is stale for |identity|, the entry might be removed.
   NSDictionary* GetCachedMDMInfo(ChromeIdentity* identity) const;
 
   // Handles an MDM notification |user_info| associated with |identity|.
@@ -147,7 +156,7 @@ class AuthenticationService : public KeyedService,
   //
   // |in_foreground| indicates whether the application was in foreground when
   // the identity list change notification was received.
-  void HandleIdentityListChanged(bool in_foreground);
+  void HandleIdentityListChanged();
 
   // Verifies that the authenticated user is still associated with a valid
   // ChromeIdentity. This method must only be called when the user is
@@ -177,6 +186,9 @@ class AuthenticationService : public KeyedService,
   // or when the application is entering foregorund.
   void UpdateHaveAccountsChangedWhileInBackground();
 
+  // Returns whether the application is currently in the foreground or not.
+  bool InForeground() const;
+
   // signin::IdentityManager::Observer implementation.
   void OnEndBatchOfRefreshTokenStateChanges() override;
 
@@ -203,7 +215,7 @@ class AuthenticationService : public KeyedService,
   // Whether the accounts have changed while the AuthenticationService was in
   // background. When the AuthenticationService is in background, this value
   // cannot be trusted.
-  bool have_accounts_changed_ = false;
+  bool have_accounts_changed_while_in_background_ = false;
 
   // Whether the AuthenticationService is currently reloading credentials, used
   // to avoid an infinite reloading loop.

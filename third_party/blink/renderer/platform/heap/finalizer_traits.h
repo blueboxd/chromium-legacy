@@ -38,18 +38,27 @@ template <typename T>
 struct FinalizerTraitImpl<T, true> {
  private:
   STATIC_ONLY(FinalizerTraitImpl);
-  struct CustomDispatch {
+  struct Custom {
     static void Call(void* obj) {
       static_cast<T*>(obj)->FinalizeGarbageCollectedObject();
     }
   };
-  struct DestructorDispatch {
-    static void Call(void* obj) { static_cast<T*>(obj)->~T(); }
+  struct Destructor {
+    static void Call(void* obj) {
+// The garbage collector differs from regular C++ here as it remembers whether
+// an object's base class has a virtual destructor. In case there is no virtual
+// destructor present, the object is always finalized through its leaf type. In
+// other words: there is no finalization through a base pointer.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdelete-non-abstract-non-virtual-dtor"
+      static_cast<T*>(obj)->~T();
+#pragma GCC diagnostic pop
+    }
   };
   using FinalizeImpl =
       std::conditional_t<HasFinalizeGarbageCollectedObject<T>::value,
-                         CustomDispatch,
-                         DestructorDispatch>;
+                         Custom,
+                         Destructor>;
 
  public:
   static void Finalize(void* obj) {

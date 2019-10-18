@@ -176,6 +176,17 @@ void PaymentRequestState::OnSWPaymentInstrumentValidated(
     }
   }
 
+  std::vector<std::string> instrument_method_names =
+      instrument->GetInstrumentMethodNames();
+  if (base::Contains(instrument_method_names, kGooglePayMethodName) ||
+      base::Contains(instrument_method_names, kAndroidPayMethodName)) {
+    journey_logger_->SetEventOccurred(
+        JourneyLogger::EVENT_AVAILABLE_METHOD_GOOGLE);
+  } else {
+    journey_logger_->SetEventOccurred(
+        JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER);
+  }
+
   if (--number_of_pending_sw_payment_instruments_ > 0)
     return;
 
@@ -378,6 +389,8 @@ void PaymentRequestState::AddAutofillPaymentInstrument(
   instrument->set_is_requested_autofill_data_available(
       is_requested_autofill_data_available_);
   available_instruments_.push_back(std::move(instrument));
+  journey_logger_->SetEventOccurred(
+      JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD);
 
   if (selected) {
     SetSelectedInstrument(available_instruments_.back().get(),

@@ -108,12 +108,12 @@ class AuthenticationServiceTest : public PlatformTest {
     EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup());
   }
 
-  void StoreAccountsInPrefs() {
-    authentication_service()->StoreAccountsInPrefs();
+  void StoreKnownAccountsWhileInForeground() {
+    authentication_service()->StoreKnownAccountsWhileInForeground();
   }
 
-  std::vector<std::string> GetAccountsInPrefs() {
-    return authentication_service()->GetAccountsInPrefs();
+  std::vector<std::string> GetLastKnownAccountsFromForeground() {
+    return authentication_service()->GetLastKnownAccountsFromForeground();
   }
 
   void FireApplicationWillEnterForeground() {
@@ -249,7 +249,7 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
 
 TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
   // Profile starts empty.
-  std::vector<std::string> accounts = GetAccountsInPrefs();
+  std::vector<std::string> accounts = GetLastKnownAccountsFromForeground();
   EXPECT_TRUE(accounts.empty());
 
   // Sign in.
@@ -258,12 +258,11 @@ TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
 
   // Store the accounts and get them back from the prefs. They should be the
   // same as the token service accounts.
-  StoreAccountsInPrefs();
-  accounts = GetAccountsInPrefs();
+  StoreKnownAccountsWhileInForeground();
+  accounts = GetLastKnownAccountsFromForeground();
   ASSERT_EQ(2u, accounts.size());
-
-      EXPECT_EQ("foo2ID", accounts[0]);
-      EXPECT_EQ("fooID", accounts[1]);
+  EXPECT_EQ("foo2ID", accounts[0]);
+  EXPECT_EQ("fooID", accounts[1]);
 }
 
 TEST_F(AuthenticationServiceTest,
@@ -282,9 +281,8 @@ TEST_F(AuthenticationServiceTest,
       identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());
-
-      EXPECT_EQ("foo2ID", accounts[0].account_id);
-      EXPECT_EQ("fooID", accounts[1].account_id);
+  EXPECT_EQ("foo2ID", accounts[0].account_id);
+  EXPECT_EQ("fooID", accounts[1].account_id);
 
   // Simulate a switching to background and back to foreground, triggering a
   // credentials reload.
@@ -296,13 +294,14 @@ TEST_F(AuthenticationServiceTest,
   accounts = identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
-      EXPECT_EQ("foo2ID", accounts[0].account_id);
-      EXPECT_EQ("foo3ID", accounts[1].account_id);
-      EXPECT_EQ("fooID", accounts[2].account_id);
+  EXPECT_EQ("foo2ID", accounts[0].account_id);
+  EXPECT_EQ("foo3ID", accounts[1].account_id);
+  EXPECT_EQ("fooID", accounts[2].account_id);
 }
 
 TEST_F(AuthenticationServiceTest, HaveAccountsChanged_Default) {
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 }
 
 TEST_F(AuthenticationServiceTest, HaveAccountsChanged_NoChange) {
@@ -315,15 +314,18 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged_NoChange) {
 
   // If an account is added while the application is in foreground, then the
   // have accounts changed state should stay false.
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 
   // Backgrounding the app should not change the have accounts changed state.
   FireApplicationDidEnterBackground();
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 
   // Foregrounding the app should not change the have accounts changed state.
   FireApplicationWillEnterForeground();
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 }
 
 TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ChangedInBackground) {
@@ -333,14 +335,15 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ChangedInBackground) {
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 
   // Simulate a switching to background and back to foreground, changing the
   // accounts while in background (no notification fired by |identity_service|).
   FireApplicationDidEnterBackground();
   identity_service()->AddIdentities(@[ @"foo4" ]);
   FireApplicationWillEnterForeground();
-  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+  EXPECT_TRUE(authentication_service()->HaveAccountsChangedWhileInBackground());
 }
 
 TEST_F(AuthenticationServiceTest, HaveAccountsChanged_CalledInBackground) {
@@ -350,7 +353,8 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged_CalledInBackground) {
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 
   // Simulate a switching to background, changing the accounts while in
   // background.
@@ -358,11 +362,11 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged_CalledInBackground) {
   identity_service()->AddIdentities(@[ @"foo4" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+  EXPECT_TRUE(authentication_service()->HaveAccountsChangedWhileInBackground());
 
   // Entering foreground should not change the have accounts changed state.
   FireApplicationWillEnterForeground();
-  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+  EXPECT_TRUE(authentication_service()->HaveAccountsChangedWhileInBackground());
 }
 
 // Regression test for http://crbug.com/1006717
@@ -373,7 +377,8 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ResetOntwoBackgrounds) {
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 
   // Simulate a switching to background, changing the accounts while in
   // background.
@@ -386,14 +391,15 @@ TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ResetOntwoBackgrounds) {
   // When entering foreground, the have accounts changed state should be
   // updated.
   FireApplicationWillEnterForeground();
-  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+  EXPECT_TRUE(authentication_service()->HaveAccountsChangedWhileInBackground());
 
   // Backgrounding and foregrounding the application a second time should update
   // the list of accounts in |kSigninLastAccounts| and should reset the have
   // account changed state.
   FireApplicationDidEnterBackground();
   FireApplicationWillEnterForeground();
-  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+  EXPECT_FALSE(
+      authentication_service()->HaveAccountsChangedWhileInBackground());
 }
 
 TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {

@@ -14,6 +14,8 @@
 #include "media/base/audio_decoder.h"
 #include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace media {
 
@@ -29,7 +31,8 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
   ~MojoAudioDecoderService() final;
 
   // mojom::AudioDecoder implementation
-  void Construct(mojom::AudioDecoderClientAssociatedPtrInfo client) final;
+  void Construct(
+      mojo::PendingAssociatedRemote<mojom::AudioDecoderClient> client) final;
   void Initialize(const AudioDecoderConfig& config,
                   int32_t cdm_id,
                   InitializeCallback callback) final;
@@ -69,7 +72,7 @@ class MEDIA_MOJO_EXPORT MojoAudioDecoderService : public mojom::AudioDecoder {
   MojoCdmServiceContext* const mojo_cdm_service_context_ = nullptr;
 
   // The destination for the decoded buffers.
-  mojom::AudioDecoderClientAssociatedPtr client_;
+  mojo::AssociatedRemote<mojom::AudioDecoderClient> client_;
 
   // Holds the CdmContextRef to keep the CdmContext alive for the lifetime of
   // the |decoder_|.

@@ -4740,20 +4740,33 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="By JavaScript"/>
 </enum>
 
-<enum name="BackForwardCacheEvictedReason">
-  <int value="0" label="Timeout"/>
-  <int value="1" label="Cache limit"/>
-  <int value="2" label="JavaScript execution"/>
-  <int value="3" label="Renderer process killed"/>
-  <int value="4" label="Renderer process crashed"/>
-  <int value="5" label="Dialog"/>
-  <int value="6" label="Granted media stream access"/>
-  <int value="7" label="Scheduler tracked feature used"/>
-</enum>
-
 <enum name="BackForwardCacheHistoryNavigationOutcome">
   <int value="0" label="Restored"/>
   <int value="1" label="Not restored"/>
+</enum>
+
+<enum name="BackForwardCacheNotRestoredReason">
+  <int value="0" label="Not main frame. This shouldn't be recorded."/>
+  <int value="1" label="Back forward cache disabled"/>
+  <int value="2" label="Related active contents exist"/>
+  <int value="3" label="HTTP status not OK"/>
+  <int value="4" label="Scheme not HTTP or HTTPS"/>
+  <int value="5" label="Loading"/>
+  <int value="6" label="Was granted media access"/>
+  <int value="7" label="Blocklisted features"/>
+  <int value="8" label="Disable for render frame host called"/>
+  <int value="9" label="Domain not allowed"/>
+  <int value="10" label="HTTP method not GET"/>
+  <int value="11" label="Subframe is navigating"/>
+  <int value="12" label="Timeout"/>
+  <int value="13" label="Cache limit"/>
+  <int value="14" label="JavaScript execution"/>
+  <int value="15" label="Renderer process killed"/>
+  <int value="16" label="Renderer process crashed"/>
+  <int value="17" label="Dialog"/>
+  <int value="18" label="Granted media stream access"/>
+  <int value="19" label="Scheduler tracked feature used"/>
+  <int value="20" label="Conflicting BrowsingInstance"/>
 </enum>
 
 <enum name="BackForwardNavigationType">
@@ -10130,6 +10143,7 @@ Called by update_net_error_codes.py.-->
   <int value="55" label="System wake lock"/>
   <int value="56" label="Legacy cookie access"/>
   <int value="57" label="Native file system write guard"/>
+  <int value="58" label="Installed web app metadata"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -10977,6 +10991,45 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Missing All Hashes"/>
   <int value="2" label="Missing File Hash"/>
   <int value="3" label="Hash Mismatch"/>
+</enum>
+
+<enum name="CorsAccessCheckError">
+  <summary>The CORS check results for each request.</summary>
+  <int value="0" label="CORS request was permitted"/>
+  <int value="1" label="CORS request was not permitted"/>
+  <int value="2" label="CORS preflight permitted a CORS request"/>
+  <int value="3" label="CORS preflight didn't permit a CORS request"/>
+</enum>
+
+<enum name="CorsAccessCheckResult">
+  <summary>
+    The detailed error type for CORS check failures. See
+    services/network/public/mojom/cors.mojom for detailed information.
+  </summary>
+  <int value="0" label="kDisallowedByMode"/>
+  <int value="1" label="kInvalidResponse"/>
+  <int value="2" label="kWildcardOriginNotAllowed"/>
+  <int value="3" label="kMissingAllowOriginHeader"/>
+  <int value="4" label="kMultipleAllowOriginValues"/>
+  <int value="5" label="kInvalidAllowOriginValue"/>
+  <int value="6" label="kAllowOriginMismatch"/>
+  <int value="7" label="kInvalidAllowCredentials"/>
+  <int value="8" label="kCorsDisabledScheme"/>
+  <int value="9" label="kPreflightInvalidStatus"/>
+  <int value="10" label="kPreflightDisallowedRedirect"/>
+  <int value="11" label="kPreflightWildcardOriginNotAllowed"/>
+  <int value="12" label="kPreflightMissingAllowOriginHeader"/>
+  <int value="13" label="kPreflightMultipleAllowOriginValues"/>
+  <int value="14" label="kPreflightInvalidAllowOriginValue"/>
+  <int value="15" label="kPreflightAllowOriginMismatch"/>
+  <int value="16" label="kPreflightInvalidAllowCredentials"/>
+  <int value="17" label="kPreflightMissingAllowExternal"/>
+  <int value="18" label="kPreflightInvalidAllowExternal"/>
+  <int value="19" label="kInvalidAllowMethodsPreflightResponse"/>
+  <int value="20" label="kInvalidAllowHeadersPreflightResponse"/>
+  <int value="21" label="kMethodDisallowedByPreflightResponse"/>
+  <int value="22" label="kHeaderDisallowedByPreflightResponse"/>
+  <int value="23" label="kRedirectContainsCredentials"/>
 </enum>
 
 <enum name="CorsCompletionStatus">
@@ -32729,6 +32782,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Invalid GUID"/>
 </enum>
 
+<enum name="InvalidDevicePolicyFilesStatus">
+  <int value="0" label="All valid"/>
+  <int value="1" label="Some invalid"/>
+  <int value="2" label="All invalid"/>
+</enum>
+
 <enum name="InvalidOriginReason">
   <int value="0" label="Opaque Origin"/>
   <int value="1" label="Empty URL"/>
@@ -39073,6 +39132,7 @@ from previous Chrome versions.
   <int value="4" label="Password Generation Confirmation"/>
   <int value="5" label="Profile Chooser"/>
   <int value="6" label="Passwords Accessory Sheet"/>
+  <int value="7" label="Touch To Fill"/>
 </enum>
 
 <enum name="ManifestFetchResultType">

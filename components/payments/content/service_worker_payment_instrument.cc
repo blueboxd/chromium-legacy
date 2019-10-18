@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -554,6 +555,16 @@ bool ServiceWorkerPaymentInstrument::HandlesPayerPhone() const {
   return needs_installation_
              ? installable_web_app_info_->supported_delegations.payer_phone
              : stored_payment_app_info_->supported_delegations.payer_phone;
+}
+
+std::vector<std::string>
+ServiceWorkerPaymentInstrument::GetInstrumentMethodNames() const {
+  if (stored_payment_app_info_) {
+    return stored_payment_app_info_->enabled_methods;
+  }
+
+  std::vector<std::string> result = {installable_enabled_method_};
+  return result;
 }
 
 }  // namespace payments

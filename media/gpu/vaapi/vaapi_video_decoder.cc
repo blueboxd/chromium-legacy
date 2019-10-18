@@ -27,9 +27,6 @@ namespace media {
 
 namespace {
 
-// Maximum number of parallel decode requests.
-constexpr int kMaxDecodeRequests = 4;
-
 // Size of the timestamp cache, needs to be large enough for frame-reordering.
 constexpr size_t kTimestampCacheSize = 128;
 
@@ -66,13 +63,15 @@ VaapiVideoDecoder::DecodeTask::~DecodeTask() = default;
 VaapiVideoDecoder::DecodeTask::DecodeTask(DecodeTask&&) = default;
 
 // static
-std::unique_ptr<VideoDecoder> VaapiVideoDecoder::Create(
+std::unique_ptr<VideoDecoderPipeline::DecoderInterface>
+VaapiVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     GetFramePoolCB get_pool_cb) {
-  return base::WrapUnique<VideoDecoder>(new VaapiVideoDecoder(
-      std::move(client_task_runner), std::move(decoder_task_runner),
-      std::move(get_pool_cb)));
+  return base::WrapUnique<VideoDecoderPipeline::DecoderInterface>(
+      new VaapiVideoDecoder(std::move(client_task_runner),
+                            std::move(decoder_task_runner),
+                            std::move(get_pool_cb)));
 }
 
 // static
@@ -96,62 +95,42 @@ VaapiVideoDecoder::VaapiVideoDecoder(
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
-VaapiVideoDecoder::~VaapiVideoDecoder() {}
-
-std::string VaapiVideoDecoder::GetDisplayName() const {
+VaapiVideoDecoder::~VaapiVideoDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  VLOGF(2);
 
-  return "VaapiVideoDecoder";
+  // We need this event to synchronously destroy this instance.
+  // TODO(akahuang): Remove this event by manipulating this instance only on one
+  // sequence.
+  base::WaitableEvent event;
+  decoder_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VaapiVideoDecoder::DestroyTask, weak_this_,
+                                base::Unretained(&event)));
+  event.Wait();
 }
 
-bool VaapiVideoDecoder::IsPlatformDecoder() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+void VaapiVideoDecoder::DestroyTask(base::WaitableEvent* event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(2);
 
-  return true;
-}
+  // Abort all currently scheduled decode tasks.
+  ClearDecodeTaskQueue(DecodeStatus::ABORTED);
 
-bool VaapiVideoDecoder::NeedsBitstreamConversion() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  if (decoder_) {
+    decoder_->Reset();
+    decoder_ = nullptr;
+  }
 
-  return needs_bitstream_conversion_;
-}
+  weak_this_factory_.InvalidateWeakPtrs();
 
-bool VaapiVideoDecoder::CanReadWithoutStalling() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  return frame_pool_ && !frame_pool_->IsExhausted();
-}
-
-int VaapiVideoDecoder::GetMaxDecodeRequests() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  return kMaxDecodeRequests;
+  event->Signal();
 }
 
 void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                   bool low_delay,
-                                   CdmContext* cdm_context,
                                    InitCB init_cb,
-                                   const OutputCB& output_cb,
-                                   const WaitingCB& /*waiting_cb*/) {
+                                   const OutputCB& output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  VLOGF(2) << "config: " << config.AsHumanReadableString();
-
-  if (cdm_context) {
-    VLOGF(1) << "cdm_context is not supported.";
-    std::move(init_cb).Run(false);
-    return;
-  }
-  if (!config.IsValidConfig()) {
-    VLOGF(1) << "config is not valid";
-    std::move(init_cb).Run(false);
-    return;
-  }
-  if (config.is_encrypted()) {
-    VLOGF(1) << "Encrypted streams are not supported for this VD";
-    std::move(init_cb).Run(false);
-    return;
-  }
+  DCHECK(config.IsValidConfig());
 
   decoder_task_runner_->PostTask(
       FROM_HERE,
@@ -175,8 +154,8 @@ void VaapiVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   }
 
   // We expect the decoder to have released all output buffers (by the client
-  // triggering a flush or reset), even if the media::VideoDecoder API doesn't
-  // explicitly specify this.
+  // triggering a flush or reset), even if the
+  // VideoDecoderPipeline::DecoderInterface API doesn't explicitly specify this.
   DCHECK(output_frames_.empty());
 
   if (state_ != State::kUninitialized) {
@@ -219,7 +198,6 @@ void VaapiVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
                                   base::BindOnce(std::move(init_cb), false));
     return;
   }
-  needs_bitstream_conversion_ = (config.codec() == kCodecH264);
 
   // Get and initialize the frame pool.
   frame_pool_ = get_pool_cb_.Run();
@@ -233,32 +211,6 @@ void VaapiVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   // Notify client initialization was successful.
   client_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(std::move(init_cb), true));
-}
-
-void VaapiVideoDecoder::Destroy() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  VLOGF(2);
-
-  decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiVideoDecoder::DestroyTask, weak_this_));
-}
-
-void VaapiVideoDecoder::DestroyTask() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(2);
-
-  // Abort all currently scheduled decode tasks.
-  ClearDecodeTaskQueue(DecodeStatus::ABORTED);
-
-  if (decoder_) {
-    decoder_->Reset();
-    decoder_ = nullptr;
-  }
-
-  weak_this_factory_.InvalidateWeakPtrs();
-
-  delete this;
-  VLOGF(2) << "Destroying VAAPI VD done";
 }
 
 void VaapiVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
@@ -487,9 +439,6 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
     video_frame = std::move(wrapped_frame);
   }
 
-  // TODO(dstaessens): MojoVideoDecoderService expects the |output_cb_| to be
-  // called on the client task runner, even though media::VideoDecoder states
-  // frames should be output without any thread jumping.
   client_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(output_cb_, std::move(video_frame)));
 }

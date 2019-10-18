@@ -3933,6 +3933,41 @@ RenderProcessHost* RenderProcessHostImpl::GetExistingProcessHost(
 }
 
 // static
+RenderProcessHost* RenderProcessHostImpl::GetUnusedProcessHostForServiceWorker(
+    SiteInstanceImpl* site_instance) {
+  DCHECK(site_instance->is_for_service_worker());
+  if (site_instance->process_reuse_policy() !=
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE) {
+    return nullptr;
+  }
+
+  auto& spare_process_manager = SpareRenderProcessHostManager::GetInstance();
+  iterator iter(AllHostsIterator());
+  while (!iter.IsAtEnd()) {
+    auto* host = iter.GetCurrentValue();
+    // This function tries to choose the process that will be chosen by a
+    // navigation that will use the service worker that is being started. Prefer
+    // to not take the spare process host, since if the navigation is out of the
+    // New Tab Page on Android, it will be using the existing NTP process
+    // instead of the spare process. If this function doesn't find a suitable
+    // process, the spare can still be chosen when
+    // MaybeTakeSpareRenderProcessHost() is called later.
+    bool is_spare = (host == spare_process_manager.spare_render_process_host());
+
+    if (!is_spare && iter.GetCurrentValue()->MayReuseHost() &&
+        iter.GetCurrentValue()->IsUnused() &&
+        RenderProcessHostImpl::IsSuitableHost(
+            iter.GetCurrentValue(), site_instance->GetBrowserContext(),
+            site_instance->GetIsolationContext(), site_instance->GetSiteURL(),
+            site_instance->lock_url())) {
+      return host;
+    }
+    iter.Advance();
+  }
+  return nullptr;
+}
+
+// static
 bool RenderProcessHost::ShouldUseProcessPerSite(BrowserContext* browser_context,
                                                 const GURL& url) {
   // Returns true if we should use the process-per-site model.  This will be
@@ -4063,6 +4098,13 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
            base::FeatureList::IsEnabled(
                features::kProcessSharingWithStrictSiteInstances));
   }
+
+  // If a process hasn't been selected yet, and the site instance is for a
+  // service worker, try to use an unused process host. One might have been
+  // created for a navigation and this will let the navigation and the service
+  // worker share the same process.
+  if (!render_process_host && is_unmatched_service_worker)
+    render_process_host = GetUnusedProcessHostForServiceWorker(site_instance);
 
   // See if the spare RenderProcessHost can be used.
   auto& spare_process_manager = SpareRenderProcessHostManager::GetInstance();

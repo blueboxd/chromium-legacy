@@ -57,6 +57,9 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
   TRACE_EVENT0("media", "H264Encoder::EncodeOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
+  if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER)
+    frame = ConvertToI420ForSoftwareEncoder(frame);
+
   const gfx::Size frame_size = frame->visible_rect().size();
   if (!openh264_encoder_ || configured_size_ != frame_size) {
     ConfigureEncoderOnEncodingTaskRunner(frame_size);

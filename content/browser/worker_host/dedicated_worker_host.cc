@@ -554,8 +554,8 @@ RenderFrameHostImpl* DedicatedWorkerHost::GetAncestorRenderFrameHost() {
 }
 
 namespace {
-// A factory for creating DedicatedWorkerHosts. Its lifetime is managed by
-// the renderer over mojo via a StrongBinding. This lives on the UI thread.
+// A factory for creating DedicatedWorkerHosts. Its lifetime is managed by the
+// renderer over mojo via SelfOwnedReceiver. It lives on the UI thread.
 class DedicatedWorkerHostFactoryImpl final
     : public blink::mojom::DedicatedWorkerHostFactory {
  public:

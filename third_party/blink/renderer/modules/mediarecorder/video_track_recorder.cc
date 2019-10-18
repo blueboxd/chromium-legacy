@@ -396,6 +396,37 @@ bool VideoTrackRecorder::Encoder::CanEncodeAlphaChannel() {
 }
 
 // static
+scoped_refptr<media::VideoFrame>
+VideoTrackRecorder::Encoder::ConvertToI420ForSoftwareEncoder(
+    scoped_refptr<media::VideoFrame> frame) {
+  DCHECK_EQ(frame->storage_type(),
+            media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+  // NV12 is currently the only supported pixel format for GpuMemoryBuffer.
+  DCHECK_EQ(frame->format(), media::VideoPixelFormat::PIXEL_FORMAT_NV12);
+
+  auto* gmb = frame->GetGpuMemoryBuffer();
+  if (!gmb->Map())
+    return frame;
+  scoped_refptr<media::VideoFrame> i420_frame = media::VideoFrame::CreateFrame(
+      media::VideoPixelFormat::PIXEL_FORMAT_I420, frame->coded_size(),
+      frame->visible_rect(), frame->natural_size(), frame->timestamp());
+  auto ret = libyuv::NV12ToI420(
+      static_cast<const uint8_t*>(gmb->memory(0)), gmb->stride(0),
+      static_cast<const uint8_t*>(gmb->memory(1)), gmb->stride(1),
+      i420_frame->data(media::VideoFrame::kYPlane),
+      i420_frame->stride(media::VideoFrame::kYPlane),
+      i420_frame->data(media::VideoFrame::kUPlane),
+      i420_frame->stride(media::VideoFrame::kUPlane),
+      i420_frame->data(media::VideoFrame::kVPlane),
+      i420_frame->stride(media::VideoFrame::kVPlane),
+      frame->coded_size().width(), frame->coded_size().height());
+  gmb->Unmap();
+  if (ret)
+    return frame;
+  return i420_frame;
+}
+
+// static
 VideoTrackRecorder::CodecId VideoTrackRecorder::GetPreferredCodecId() {
   return GetCodecEnumerator()->GetPreferredCodecId();
 }

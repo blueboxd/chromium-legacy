@@ -8,12 +8,10 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.verify;
 
@@ -37,6 +35,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -135,7 +134,7 @@ public class PasswordManagerDialogTest {
             mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDipLandscape * dipScale),
                     (int) (testHeightDipLandscape * dipScale), 0, 0, 0, 0);
         });
-        assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(false));
+        CriteriaHelper.pollUiThread(() -> !mModel.get(ILLUSTRATION_VISIBLE));
 
         // Dimensions resembling portrait orientation.
         final int testHeightDipPortrait = 500;
@@ -144,7 +143,7 @@ public class PasswordManagerDialogTest {
             mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDipPortrait * dipScale),
                     (int) (testHeightDipPortrait * dipScale), 0, 0, 0, 0);
         });
-        assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(true));
+        CriteriaHelper.pollUiThread(() -> mModel.get(ILLUSTRATION_VISIBLE));
 
         // Dimensions resembling multi-window mode.
         final int testHeightDipMultiWindow = 250;
@@ -153,6 +152,6 @@ public class PasswordManagerDialogTest {
             mMediator.onLayoutChange(null, 0, 0, (int) (testWidthDipMultiWindow * dipScale),
                     (int) (testHeightDipMultiWindow * dipScale), 0, 0, 0, 0);
         });
-        assertThat(mModel.get(ILLUSTRATION_VISIBLE), is(false));
+        CriteriaHelper.pollUiThread(() -> !mModel.get(ILLUSTRATION_VISIBLE));
     }
 }

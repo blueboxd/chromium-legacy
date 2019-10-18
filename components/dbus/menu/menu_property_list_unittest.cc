@@ -149,9 +149,6 @@ class TestMenuModelBuilder {
       case ui::MenuModel::TYPE_COMMAND:
         menu->AddItem(0, label_);
         break;
-      case ui::MenuModel::TYPE_TITLE:
-        menu->AddTitle(label_);
-        break;
       case ui::MenuModel::TYPE_CHECK:
         menu->AddCheckItem(0, label_);
         break;

@@ -408,6 +408,11 @@ struct StructTraits<autofill::mojom::PasswordGenerationUIDataDataView,
     return r.generation_element_id;
   }
 
+  static bool is_generation_element_password_type(
+      const autofill::password_generation::PasswordGenerationUIData& r) {
+    return r.is_generation_element_password_type;
+  }
+
   static base::i18n::TextDirection text_direction(
       const autofill::password_generation::PasswordGenerationUIData& r) {
     return r.text_direction;

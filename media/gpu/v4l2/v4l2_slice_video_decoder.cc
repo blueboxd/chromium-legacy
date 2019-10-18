@@ -40,7 +40,8 @@ constexpr uint32_t kSupportedInputFourccs[] = {
 }  // namespace
 
 // static
-std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
+std::unique_ptr<VideoDecoderPipeline::DecoderInterface>
+V4L2SliceVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     GetFramePoolCB get_pool_cb) {
@@ -53,9 +54,10 @@ std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
     return nullptr;
   }
 
-  return base::WrapUnique<VideoDecoder>(new V4L2SliceVideoDecoder(
-      std::move(client_task_runner), std::move(decoder_task_runner),
-      std::move(device), std::move(get_pool_cb)));
+  return base::WrapUnique<VideoDecoderPipeline::DecoderInterface>(
+      new V4L2SliceVideoDecoder(std::move(client_task_runner),
+                                std::move(decoder_task_runner),
+                                std::move(device), std::move(get_pool_cb)));
 }
 
 // static
@@ -87,52 +89,20 @@ V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
 }
 
 V4L2SliceVideoDecoder::~V4L2SliceVideoDecoder() {
-  // We might be called from either the client or the decoder sequence.
-  DETACH_FROM_SEQUENCE(client_sequence_checker_);
-  DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
-  VLOGF(2);
-}
-
-std::string V4L2SliceVideoDecoder::GetDisplayName() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  return "V4L2SliceVideoDecoder";
-}
-
-bool V4L2SliceVideoDecoder::IsPlatformDecoder() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  return true;
-}
-
-int V4L2SliceVideoDecoder::GetMaxDecodeRequests() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  return 4;
-}
-
-bool V4L2SliceVideoDecoder::NeedsBitstreamConversion() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  return needs_bitstream_conversion_;
-}
-
-bool V4L2SliceVideoDecoder::CanReadWithoutStalling() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  return frame_pool_ && !frame_pool_->IsExhausted();
-}
-
-void V4L2SliceVideoDecoder::Destroy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   VLOGF(2);
 
+  // We need this event to synchronously destroy this instance.
+  // TODO(akahuang): Remove this event by manipulating this instance only on one
+  // sequence.
+  base::WaitableEvent event;
   decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecoder::DestroyTask, weak_this_));
+      FROM_HERE, base::BindOnce(&V4L2SliceVideoDecoder::DestroyTask, weak_this_,
+                                base::Unretained(&event)));
+  event.Wait();
 }
 
-void V4L2SliceVideoDecoder::DestroyTask() {
+void V4L2SliceVideoDecoder::DestroyTask(base::WaitableEvent* event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(2);
 
@@ -155,29 +125,14 @@ void V4L2SliceVideoDecoder::DestroyTask() {
 
   weak_this_factory_.InvalidateWeakPtrs();
 
-  delete this;
-  VLOGF(2) << "Destroyed";
+  event->Signal();
 }
 
 void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
-                                       bool low_delay,
-                                       CdmContext* cdm_context,
                                        InitCB init_cb,
-                                       const OutputCB& output_cb,
-                                       const WaitingCB& /* waiting_cb */) {
+                                       const OutputCB& output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  VLOGF(2) << "config: " << config.AsHumanReadableString();
-
-  if (!config.IsValidConfig()) {
-    VLOGF(1) << "config is not valid";
-    std::move(init_cb).Run(false);
-    return;
-  }
-  if (cdm_context) {
-    VLOGF(1) << "cdm_context is not supported.";
-    std::move(init_cb).Run(false);
-    return;
-  }
+  DCHECK(config.IsValidConfig());
 
   decoder_task_runner_->PostTask(
       FROM_HERE,
@@ -246,7 +201,6 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
 
-  needs_bitstream_conversion_ = (config.codec() == kCodecH264);
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
   // Create Input/Output V4L2Queue
@@ -661,10 +615,6 @@ void V4L2SliceVideoDecoder::OutputFrame(scoped_refptr<VideoFrame> frame,
     frame = std::move(wrapped_frame);
   }
 
-  // Although the document of VideoDecoder says "should run |output_cb| as soon
-  // as possible (without thread trampolining)", MojoVideoDecoderService still
-  // assumes the callback is called at original thread.
-  // TODO(akahuang): call the callback directly after updating MojoVDService.
   client_task_runner_->PostTask(FROM_HERE,
                                 base::BindOnce(output_cb_, std::move(frame)));
 }

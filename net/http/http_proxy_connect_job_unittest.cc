@@ -754,8 +754,9 @@ TEST_P(HttpProxyConnectJobTest, HaveAuth) {
                      ? (std::string("http://") + kHttpProxyHost)
                      : (std::string("https://") + kHttpsProxyHost));
   session_->http_auth_cache()->Add(
-      proxy_url, "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
-      "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
+      proxy_url, HttpAuth::AUTH_PROXY, "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
+      NetworkIsolationKey(), "Basic realm=MyRealm1",
+      AuthCredentials(kFoo, kBar), "/");
 
   for (IoMode io_mode : {SYNCHRONOUS, ASYNC}) {
     SCOPED_TRACE(io_mode);

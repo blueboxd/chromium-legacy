@@ -79,13 +79,17 @@ void LogZeroStateLaunchType(RankingItemType ranking_item_type) {
                             zero_state_type);
 }
 
-void LogZeroStateReceivedScore(const std::string& suffix, float score) {
+void LogZeroStateReceivedScore(const std::string& suffix,
+                               float score,
+                               float lo,
+                               float hi) {
   if (suffix.empty())
     return;
-  // Record the score's floor in order to preserve its bucket.
+  DCHECK(lo < hi);
+  // Record the scaled score's floor in order to preserve its bucket.
   base::UmaHistogramExactLinear(
       "Apps.AppList.ZeroStateResults.ReceivedScore." + suffix,
-      floor(score * 100), 100);
+      floor(100 * (score - lo) / (hi - lo)), 100);
 }
 
 void LogZeroStateResultsListMetrics(
@@ -93,15 +97,16 @@ void LogZeroStateResultsListMetrics(
     int launched_index) {
   // Log position of clicked items.
   if (launched_index >= 0) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "Apps.AppList.ZeroStateResultsList.LaunchedItemPosition",
-        launched_index);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        "Apps.AppList.ZeroStateResultsList.LaunchedItemPositionV2",
+        launched_index, 5);
   }
 
   // Log the number of types shown in the impression set.
   base::flat_set<RankingItemType> type_set(result_types);
-  UMA_HISTOGRAM_COUNTS_100(
-      "Apps.AppList.ZeroStateResultsList.NumImpressionTypes", type_set.size());
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "Apps.AppList.ZeroStateResultsList.NumImpressionTypesV2", type_set.size(),
+      5);
 
   // Log whether any Drive files were impressed.
   UMA_HISTOGRAM_BOOLEAN("Apps.AppList.ZeroStateResultsList.ContainsDriveFiles",

@@ -2475,8 +2475,6 @@ crbug.com/748549 external/wpt/network-error-logging [ Skip ]
 crbug.com/955620 http/tests/navigation/frozen-useragent.html [ Skip ]
 crbug.com/955620 virtual/stable/http/tests/navigation/frozen-useragent.html [ Skip ]
 
-crbug.com/863896 http/tests/permissions/test-query.html [ Timeout ]
-
 crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
 
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
@@ -2683,6 +2681,7 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-disabled.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries_resized.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/eol-spaces-bidi-001.html [ Failure ]
@@ -5768,3 +5767,6 @@ crbug.com/1014812 virtual/threaded/external/wpt/animation-worklet/playback-rate.
 crbug.com/1014950 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
+
+# Sheriff 2019-10-18
+crbug.com/996250 external/wpt/web-nfc/NFCReader_scan_iframe.https.html [ Timeout ]

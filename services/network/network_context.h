@@ -348,7 +348,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                    base::Value body) override;
   void QueueSignedExchangeReport(
       mojom::SignedExchangeReportPtr report) override;
-
   void AddDomainReliabilityContextForTesting(
       const GURL& origin,
       const GURL& upload_url,
@@ -361,10 +360,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
                          const net::AuthCredentials& credentials,
                          AddAuthCacheEntryCallback callback) override;
+  // TODO(mmenke): Rename this method and update Mojo docs to make it clear this
+  // doesn't give proxy auth credentials.
   void LookupBasicAuthCredentials(
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override;
-
   void GetOriginPolicyManager(
       mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) override;
 

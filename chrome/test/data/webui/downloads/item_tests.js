@@ -54,4 +54,31 @@ suite('item tests', function() {
     Polymer.dom.flush();
     assertTrue(item.getFileIcon().hidden);
   });
+
+  test('icon overridden by danger type', async () => {
+    testIconLoader.setShouldIconsLoad(true);
+    item.set('data', createDownload({
+               filePath: 'unique1',
+               hideDate: false,
+               dangerType: downloads.DangerType.SENSITIVE_CONTENT_BLOCK,
+             }));
+    assertEquals(item.computeIcon_(), 'cr:warning');
+    assertFalse(item.useFileIcon_);
+
+    item.set('data', createDownload({
+               filePath: 'unique1',
+               hideDate: false,
+               dangerType: downloads.DangerType.BLOCKED_TOO_LARGE,
+             }));
+    assertEquals(item.computeIcon_(), 'cr:warning');
+    assertFalse(item.useFileIcon_);
+
+    item.set('data', createDownload({
+               filePath: 'unique1',
+               hideDate: false,
+               dangerType: downloads.DangerType.BLOCKED_PASSWORD_PROTECTED,
+             }));
+    assertEquals(item.computeIcon_(), 'cr:warning');
+    assertFalse(item.useFileIcon_);
+  });
 });

@@ -123,8 +123,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 bool IsBackForwardLoadType(WebFrameLoadType type) {
   return type == WebFrameLoadType::kBackForward;
 }

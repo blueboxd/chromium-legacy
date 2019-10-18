@@ -238,6 +238,7 @@ struct SpdySessionDependencies {
   bool disable_idle_sockets_close_on_memory_pressure;
   bool enable_early_data;
   HttpAuthPreferences::DefaultCredentials allow_default_credentials;
+  bool key_auth_cache_server_entries_by_network_isolation_key;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {

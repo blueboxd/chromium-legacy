@@ -72,6 +72,9 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   TRACE_EVENT0("media", "VpxEncoder::EncodeOnEncodingTaskRunner");
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
+  if (frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER)
+    frame = ConvertToI420ForSoftwareEncoder(frame);
+
   const gfx::Size frame_size = frame->visible_rect().size();
   base::TimeDelta duration = EstimateFrameDuration(*frame);
   const media::WebmMuxer::VideoParameters video_params(frame);

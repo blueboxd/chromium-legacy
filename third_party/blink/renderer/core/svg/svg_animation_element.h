@@ -114,14 +114,12 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   SVGAnimationElement(const QualifiedName&, Document&);
 
   void ParseAttribute(const AttributeModificationParams&) override;
-  void SvgAttributeChanged(const QualifiedName&) override;
 
   String ToValue() const;
   String ByValue() const;
   String FromValue() const;
 
   // from SVGSMILElement
-  void StartedActiveInterval() override;
   void UpdateAnimation(float percent,
                        unsigned repeat,
                        SVGSMILElement* result_element) override;
@@ -142,12 +140,13 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   // http://www.w3.org/TR/SVG/animate.html#ValuesAttribute .
   static bool ParseValues(const String&, Vector<String>& result);
 
-  void InvalidatedValuesCache();
-  void AnimationAttributeChanged() override;
+  void WillChangeAnimationTarget() override;
 
  private:
   bool IsValid() const final { return SVGTests::IsValid(); }
 
+  void AnimationAttributeChanged();
+  bool CheckAnimationParameters();
   virtual bool CalculateToAtEndOfDurationValue(
       const String& to_at_end_of_duration_string) = 0;
   virtual bool CalculateFromAndToValues(const String& from_string,
@@ -186,7 +185,12 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
 
   void SetCalcMode(const AtomicString&);
 
-  bool animation_valid_;
+  enum class AnimationValidity : unsigned char {
+    kUnknown,
+    kValid,
+    kInvalid,
+  };
+  AnimationValidity animation_valid_;
   bool use_paced_key_times_;
 
   Vector<String> values_;

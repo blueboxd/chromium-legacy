@@ -159,7 +159,7 @@ void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
   ui_manager_ = WebAppUiManager::Create(profile);
   install_manager_ = std::make_unique<WebAppInstallManager>(profile);
-  manifest_update_manager_ = std::make_unique<ManifestUpdateManager>();
+  manifest_update_manager_ = std::make_unique<ManifestUpdateManager>(profile);
   pending_app_manager_ = std::make_unique<PendingAppManagerImpl>(profile);
   external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);

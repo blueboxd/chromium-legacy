@@ -127,7 +127,12 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
   // Counting site usage data and durable permissions.
   auto* hcsm = HostContentSettingsMapFactory::GetForProfile(profile_);
   const ContentSettingsType content_settings[] = {
-      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, CONTENT_SETTINGS_TYPE_APP_BANNER};
+    CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+    CONTENT_SETTINGS_TYPE_APP_BANNER,
+#if !defined(OS_ANDROID)
+    CONTENT_SETTINGS_TYPE_INSTALLED_WEB_APP_METADATA,
+#endif
+  };
   for (auto type : content_settings) {
     tasks_ += 1;
     GetOriginsFromHostContentSettignsMap(hcsm, type);

@@ -181,9 +181,9 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
 
   int32_t Decode(uint32_t timestamp) {
     webrtc::EncodedImage input_image;
-    input_image.Allocate(1);
-    input_image.set_size(1);
-    input_image.data()[0] = 0;
+    static const uint8_t data[1] = {0};
+    input_image.SetEncodedData(
+        webrtc::EncodedImageBuffer::Create(data, sizeof(data)));
     input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
     input_image._completeFrame = true;
     input_image.SetTimestamp(timestamp);
@@ -214,7 +214,9 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
 
   webrtc::EncodedImage GetEncodedImageWithColorSpace(uint32_t timestamp) {
     webrtc::EncodedImage input_image;
-    input_image.Allocate(1);
+    static const uint8_t data[1] = {0};
+    input_image.SetEncodedData(
+        webrtc::EncodedImageBuffer::Create(data, sizeof(data)));
     input_image.set_size(1);
     input_image.data()[0] = 0;
     input_image._completeFrame = true;

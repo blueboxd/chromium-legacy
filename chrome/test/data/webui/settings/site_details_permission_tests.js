@@ -34,11 +34,6 @@ suite('SiteDetailsPermission', function() {
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     testElement = document.createElement('site-details-permission');
-
-    // Set the camera icon on <site-details-permission> manually to avoid
-    // failures on undefined icons during teardown in PolymerTest.testIronIcons.
-    // In practice, this is done from the parent.
-    testElement.icon = 'cr:videocam';
     document.body.appendChild(testElement);
   });
 

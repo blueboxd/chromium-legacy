@@ -254,10 +254,10 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
     CHECK_EQ(RESULT_CODE_SUCCESS,
              StartSandboxTarget(MakeCmdLine("EngineSandboxMain"),
                                 &engine_setup_hooks, SandboxType::kTest));
-    json_parser_ptr_ = std::make_unique<chrome_cleaner::UniqueParserPtr>(
-        parser_setup_hooks.TakeParserPtr());
+    json_parser_ = std::make_unique<chrome_cleaner::RemoteParserPtr>(
+        parser_setup_hooks.TakeParserRemote());
     return std::make_unique<chrome_cleaner::SandboxedJsonParser>(
-        mojo_task_runner_.get(), json_parser_ptr_.get()->get());
+        mojo_task_runner_.get(), json_parser_.get()->get());
   }
 
  protected:
@@ -272,7 +272,7 @@ class ExtensionCleanupTest : public base::MultiProcessTest {
   testing::NiceMock<MockLoggingService> mock_logging_service_;
   base::FilePath fake_apps_dir_;
   base::FilePath chrome_dir_;
-  std::unique_ptr<chrome_cleaner::UniqueParserPtr> json_parser_ptr_;
+  std::unique_ptr<chrome_cleaner::RemoteParserPtr> json_parser_;
   scoped_refptr<chrome_cleaner::EngineClient> engine_client_;
   chrome_cleaner::TestPUPData test_pup_data_;
   std::unique_ptr<ScopedFile> uws_A_;

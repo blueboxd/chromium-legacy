@@ -2797,7 +2797,7 @@ void TabStrip::SetDropArrow(
   // Let the controller know of the index update.
   controller_->OnDropIndexUpdate(index->value, index->drop_before);
 
-  if (drop_arrow_ && (index == drop_arrow_->index))
+  if (drop_arrow_ && (index == drop_arrow_->index()))
     return;
 
   bool is_beneath;
@@ -2807,18 +2807,12 @@ void TabStrip::SetDropArrow(
   if (!drop_arrow_) {
     drop_arrow_ = std::make_unique<DropArrow>(*index, !is_beneath, GetWidget());
   } else {
-    drop_arrow_->index = *index;
-    if (is_beneath == drop_arrow_->point_down) {
-      drop_arrow_->point_down = !is_beneath;
-      drop_arrow_->arrow_view->SetImage(
-          GetDropArrowImage(drop_arrow_->point_down));
-    }
+    drop_arrow_->set_index(*index);
+    drop_arrow_->SetPointDown(!is_beneath);
   }
 
-  // Reposition the window. Need to show it too as the window is initially
-  // hidden.
-  drop_arrow_->arrow_window->SetBounds(drop_bounds);
-  drop_arrow_->arrow_window->Show();
+  // Reposition the window.
+  drop_arrow_->SetWindowBounds(drop_bounds);
 }
 
 // static
@@ -2852,24 +2846,45 @@ void TabStrip::TabContextMenuController::ShowContextMenuForViewImpl(
 TabStrip::DropArrow::DropArrow(const BrowserRootView::DropIndex& index,
                                bool point_down,
                                views::Widget* context)
-    : index(index), point_down(point_down) {
-  arrow_view = new views::ImageView;
-  arrow_view->SetImage(GetDropArrowImage(point_down));
+    : index_(index), point_down_(point_down) {
+  arrow_view_ = new views::ImageView;
+  arrow_view_->SetImage(GetDropArrowImage(point_down_));
 
-  arrow_window = new views::Widget;
+  arrow_window_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
   params.bounds = gfx::Rect(g_drop_indicator_width, g_drop_indicator_height);
   params.context = context->GetNativeWindow();
-  arrow_window->Init(std::move(params));
-  arrow_window->SetContentsView(arrow_view);
+  arrow_window_->Init(std::move(params));
+  arrow_window_->SetContentsView(arrow_view_);
+  scoped_observer_.Add(arrow_window_);
+
+  arrow_window_->Show();
 }
 
 TabStrip::DropArrow::~DropArrow() {
   // Close eventually deletes the window, which deletes arrow_view too.
-  arrow_window->Close();
+  if (arrow_window_)
+    arrow_window_->Close();
+}
+
+void TabStrip::DropArrow::SetPointDown(bool down) {
+  if (point_down_ == down)
+    return;
+
+  point_down_ = down;
+  arrow_view_->SetImage(GetDropArrowImage(point_down_));
+}
+
+void TabStrip::DropArrow::SetWindowBounds(const gfx::Rect& bounds) {
+  arrow_window_->SetBounds(bounds);
+}
+
+void TabStrip::DropArrow::OnWidgetDestroying(views::Widget* widget) {
+  scoped_observer_.Remove(arrow_window_);
+  arrow_window_ = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

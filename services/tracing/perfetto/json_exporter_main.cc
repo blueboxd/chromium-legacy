@@ -42,7 +42,8 @@ void WriteJsonTrace(const std::string& data, base::File* output_file) {
   std::vector<perfetto::TracePacket> packets;
   for (auto it = decoder.packet(); !!it; ++it) {
     perfetto::TracePacket trace_packet;
-    trace_packet.AddSlice(it->data(), it->size());
+    auto const_bytes = *it;
+    trace_packet.AddSlice(const_bytes.data, const_bytes.size);
     packets.emplace_back(std::move(trace_packet));
   }
   exporter.OnTraceData(std::move(packets), false);

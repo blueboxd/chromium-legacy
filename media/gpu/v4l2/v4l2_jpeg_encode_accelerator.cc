@@ -1501,9 +1501,17 @@ size_t V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::FinalizeJpegImage(
 
   auto output_gmb_handle = CreateGpuMemoryBufferHandle(output_frame.get());
   DCHECK(!output_gmb_handle.is_null());
+
+  // In this case, we use the R_8 buffer with height == 1 to represent a data
+  // container. As a result, we use plane.stride as size of the data here since
+  // plane.size might be larger due to height alignment.
+  const gfx::Size output_gmb_buffer_size(
+      base::checked_cast<int32_t>(output_frame->layout().planes()[0].stride),
+      1);
+
   auto output_gmb_buffer =
       gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
-          std::move(output_gmb_handle), output_frame->coded_size(),
+          std::move(output_gmb_handle), output_gmb_buffer_size,
           gfx::BufferFormat::R_8, gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
           base::DoNothing());
 

@@ -22,7 +22,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -865,8 +864,9 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           password_generation_driver_bindings_.GetCurrentTargetFrame(),
           bounds));
   autofill::password_generation::PasswordGenerationUIData ui_data(
-      bounds, 0 /*max_length*/, base::string16() /*generation_element*/,
-      field_renderer_id, base::i18n::TextDirection(), form);
+      bounds, /*max_length=*/0, /*generation_element=*/base::string16(),
+      field_renderer_id, /*is_generation_element_password_type=*/true,
+      base::i18n::TextDirection(), form);
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, ui_data,
       driver->AsWeakPtr(), observer_, web_contents(),
@@ -1171,10 +1171,13 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
     bool is_manually_triggered) {
   gfx::RectF element_bounds_in_top_frame_space =
       TransformToRootCoordinates(driver->render_frame_host(), ui_data.bounds);
+  // Only show password suggestions iff the field is of password type.
+  bool show_password_suggestions = ui_data.is_generation_element_password_type;
   if (!is_manually_triggered &&
       driver->GetPasswordAutofillManager()
           ->MaybeShowPasswordSuggestionsWithGeneration(
-              element_bounds_in_top_frame_space, ui_data.text_direction)) {
+              element_bounds_in_top_frame_space, ui_data.text_direction,
+              show_password_suggestions)) {
     return;
   }
 

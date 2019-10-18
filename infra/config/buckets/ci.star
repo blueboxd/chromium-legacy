@@ -1208,7 +1208,6 @@ def fyi_coverage_builder(
       name = name,
       cores = cores,
       execution_timeout = execution_timeout,
-      service_account = 'chromium-code-coverage-builder@chops-service-accounts.iam.gserviceaccount.com',
       **kwargs
   )
 

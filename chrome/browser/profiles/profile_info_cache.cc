@@ -83,7 +83,7 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 #endif
     base::string16 name;
     info->GetString(kNameKey, &name);
-    sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
+    keys_.push_back(it.key());
     profile_attributes_entries_[user_data_dir_.AppendASCII(it.key()).value()] =
         std::unique_ptr<ProfileAttributesEntry>(nullptr);
 
@@ -167,7 +167,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
     old_single_profile_name = entry->GetName();
   }
 
-  sorted_keys_.insert(FindPositionForProfile(key, name), key);
+  keys_.push_back(key);
   profile_attributes_entries_[user_data_dir_.AppendASCII(key).value()] =
       std::unique_ptr<ProfileAttributesEntry>();
 
@@ -219,7 +219,7 @@ void ProfileInfoCache::DeleteProfileFromCache(
   base::DictionaryValue* cache = update.Get();
   std::string key = CacheKeyFromProfilePath(profile_path);
   cache->Remove(key, NULL);
-  sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
+  keys_.erase(std::find(keys_.begin(), keys_.end(), key));
   profile_attributes_entries_.erase(profile_path.value());
 
   bool single_profile_name_changed =
@@ -236,7 +236,7 @@ void ProfileInfoCache::DeleteProfileFromCache(
 }
 
 size_t ProfileInfoCache::GetNumberOfProfiles() const {
-  return sorted_keys_.size();
+  return keys_.size();
 }
 
 size_t ProfileInfoCache::GetIndexOfProfileWithPath(
@@ -244,8 +244,8 @@ size_t ProfileInfoCache::GetIndexOfProfileWithPath(
   if (profile_path.DirName() != user_data_dir_)
     return std::string::npos;
   std::string search_key = CacheKeyFromProfilePath(profile_path);
-  for (size_t i = 0; i < sorted_keys_.size(); ++i) {
-    if (sorted_keys_[i] == search_key)
+  for (size_t i = 0; i < keys_.size(); ++i) {
+    if (keys_[i] == search_key)
       return i;
   }
   return std::string::npos;
@@ -279,7 +279,7 @@ base::string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
 }
 
 base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
-  return user_data_dir_.AppendASCII(sorted_keys_[index]);
+  return user_data_dir_.AppendASCII(keys_[index]);
 }
 
 base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
@@ -455,7 +455,6 @@ void ProfileInfoCache::SetLocalProfileNameOfProfileAtIndex(
 
   base::string16 new_display_name = GetNameToDisplayOfProfileAtIndex(index);
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  UpdateSortForProfileIndex(index);
 
   if (old_display_name != new_display_name) {
     for (auto& observer : observer_list_)
@@ -572,7 +571,6 @@ void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
   SetInfoForProfileAtIndex(index, std::move(info));
   base::string16 new_display_name = GetNameToDisplayOfProfileAtIndex(index);
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  UpdateSortForProfileIndex(index);
 
   if (old_display_name != new_display_name) {
     for (auto& observer : observer_list_)
@@ -593,7 +591,6 @@ void ProfileInfoCache::SetGAIAGivenNameOfProfileAtIndex(
   SetInfoForProfileAtIndex(index, std::move(info));
   base::string16 new_display_name = GetNameToDisplayOfProfileAtIndex(index);
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  UpdateSortForProfileIndex(index);
 
   if (old_display_name != new_display_name) {
     for (auto& observer : observer_list_)
@@ -723,7 +720,7 @@ const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
   const base::DictionaryValue* cache =
       prefs_->GetDictionary(prefs::kProfileInfoCache);
   const base::DictionaryValue* info = NULL;
-  cache->GetDictionaryWithoutPathExpansion(sorted_keys_[index], &info);
+  cache->GetDictionaryWithoutPathExpansion(keys_[index], &info);
   return info;
 }
 
@@ -732,7 +729,7 @@ void ProfileInfoCache::SetInfoForProfileAtIndex(
     std::unique_ptr<base::DictionaryValue> info) {
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
-  cache->SetWithoutPathExpansion(sorted_keys_[index], std::move(info));
+  cache->SetWithoutPathExpansion(keys_[index], std::move(info));
 }
 
 std::string ProfileInfoCache::CacheKeyFromProfilePath(
@@ -740,36 +737,6 @@ std::string ProfileInfoCache::CacheKeyFromProfilePath(
   DCHECK(user_data_dir_ == profile_path.DirName());
   base::FilePath base_name = profile_path.BaseName();
   return base_name.MaybeAsASCII();
-}
-
-std::vector<std::string>::iterator ProfileInfoCache::FindPositionForProfile(
-    const std::string& search_key,
-    const base::string16& search_name) {
-  base::string16 search_name_l = base::i18n::ToLower(search_name);
-  for (size_t i = 0; i < GetNumberOfProfiles(); ++i) {
-    base::string16 name_l =
-        base::i18n::ToLower(GetNameToDisplayOfProfileAtIndex(i));
-    int name_compare = search_name_l.compare(name_l);
-    if (name_compare < 0)
-      return sorted_keys_.begin() + i;
-    if (name_compare == 0) {
-      int key_compare = search_key.compare(sorted_keys_[i]);
-      if (key_compare < 0)
-        return sorted_keys_.begin() + i;
-    }
-  }
-  return sorted_keys_.end();
-}
-
-void ProfileInfoCache::UpdateSortForProfileIndex(size_t index) {
-  base::string16 name = GetNameToDisplayOfProfileAtIndex(index);
-
-  // Remove and reinsert key in |sorted_keys_| to alphasort.
-  std::string key = CacheKeyFromProfilePath(GetPathOfProfileAtIndex(index));
-  auto key_it = std::find(sorted_keys_.begin(), sorted_keys_.end(), key);
-  DCHECK(key_it != sorted_keys_.end());
-  sorted_keys_.erase(key_it);
-  sorted_keys_.insert(FindPositionForProfile(key, name), key);
 }
 
 const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
@@ -806,7 +773,6 @@ void ProfileInfoCache::RecomputeProfileNamesIfNeeded() {
       if (name == entries[j]->GetLocalProfileName()) {
         entries[j]->SetLocalProfileName(
             ChooseNameForNewProfile(entries[j]->GetAvatarIconIndex()));
-        UpdateSortForProfileIndex(entries[j]->profile_index());
       }
     }
   }

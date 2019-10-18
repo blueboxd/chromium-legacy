@@ -109,6 +109,7 @@ struct PasswordGenerationUIData {
                            int max_length,
                            const base::string16& generation_element,
                            uint32_t generation_element_id,
+                           bool is_generation_element_password_type,
                            base::i18n::TextDirection text_direction,
                            const autofill::PasswordForm& password_form);
   PasswordGenerationUIData();
@@ -131,6 +132,9 @@ struct PasswordGenerationUIData {
 
   // Renderer ID of the generation element.
   uint32_t generation_element_id;
+
+  // Is the generation element |type=password|.
+  bool is_generation_element_password_type;
 
   // Direction of the text for |generation_element|.
   base::i18n::TextDirection text_direction;

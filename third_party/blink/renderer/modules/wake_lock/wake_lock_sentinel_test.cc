@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
-#include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
+#include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_test_utils.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
@@ -53,12 +53,12 @@ TEST(WakeLockSentinelTest, MultipleReleaseCalls) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
 
-  auto* state_record = MakeGarbageCollected<WakeLockStateRecord>(
-      context.GetDocument(), WakeLockType::kScreen);
+  auto* manager = MakeGarbageCollected<WakeLockManager>(context.GetDocument(),
+                                                        WakeLockType::kScreen);
   auto* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
   ScriptPromise promise = resolver->Promise();
-  state_record->AcquireWakeLock(resolver);
+  manager->AcquireWakeLock(resolver);
   context.WaitForPromiseFulfillment(promise);
   auto* sentinel =
       ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(promise);
@@ -87,8 +87,8 @@ TEST(WakeLockSentinelTest, ContextDestruction) {
 
   auto* sentinel = MakeGarbageCollected<WakeLockSentinel>(
       context.GetScriptState(), WakeLockType::kScreen,
-      MakeGarbageCollected<WakeLockStateRecord>(context.GetDocument(),
-                                                WakeLockType::kScreen));
+      MakeGarbageCollected<WakeLockManager>(context.GetDocument(),
+                                            WakeLockType::kScreen));
 
   auto* event_listener =
       MakeGarbageCollected<SyncEventListener>(WTF::Bind([]() {

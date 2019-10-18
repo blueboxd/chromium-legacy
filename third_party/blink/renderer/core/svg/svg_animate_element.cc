@@ -155,12 +155,10 @@ void SVGAnimateElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == svg_names::kAttributeTypeAttr) {
     SetAttributeType(params.new_value);
-    AnimationAttributeChanged();
     return;
   }
   if (params.name == svg_names::kAttributeNameAttr) {
     SetAttributeName(ConstructQualifiedName(*this, params.new_value));
-    AnimationAttributeChanged();
     return;
   }
   SVGAnimationElement::ParseAttribute(params);
@@ -550,7 +548,9 @@ void SVGAnimateElement::WillChangeAnimationTarget() {
   SVGAnimationElement::WillChangeAnimationTarget();
   // Should be cleared by the above.
   DCHECK(!animated_value_);
-  ResetCachedAnimationState();
+  from_property_.Clear();
+  to_property_.Clear();
+  to_at_end_of_duration_property_.Clear();
 }
 
 void SVGAnimateElement::DidChangeAnimationTarget() {
@@ -580,14 +580,6 @@ void SVGAnimateElement::SetAttributeType(
   WillChangeAnimationTarget();
   attribute_type_ = attribute_type;
   DidChangeAnimationTarget();
-}
-
-void SVGAnimateElement::ResetCachedAnimationState() {
-  DCHECK(!animated_value_);
-  InvalidatedValuesCache();
-  from_property_.Clear();
-  to_property_.Clear();
-  to_at_end_of_duration_property_.Clear();
 }
 
 void SVGAnimateElement::Trace(blink::Visitor* visitor) {

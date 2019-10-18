@@ -139,6 +139,7 @@ base::Value ControllerParamsToValue(HttpAuth::Target target, const GURL& url) {
 HttpAuthController::HttpAuthController(
     HttpAuth::Target target,
     const GURL& auth_url,
+    const NetworkIsolationKey& network_isolation_key,
     HttpAuthCache* http_auth_cache,
     HttpAuthHandlerFactory* http_auth_handler_factory,
     HostResolver* host_resolver,
@@ -147,6 +148,7 @@ HttpAuthController::HttpAuthController(
       auth_url_(auth_url),
       auth_origin_(auth_url.GetOrigin()),
       auth_path_(auth_url.path()),
+      network_isolation_key_(network_isolation_key),
       embedded_identity_used_(false),
       allow_default_credentials_(allow_default_credentials),
       default_credentials_used_(false),
@@ -220,8 +222,8 @@ bool HttpAuthController::SelectPreemptiveAuth(
   // is expected to be fast. LookupByPath() is fast in the common case, since
   // the number of http auth cache entries is expected to be very small.
   // (For most users in fact, it will be 0.)
-  HttpAuthCache::Entry* entry =
-      http_auth_cache_->LookupByPath(auth_origin_, auth_path_);
+  HttpAuthCache::Entry* entry = http_auth_cache_->LookupByPath(
+      auth_origin_, target_, network_isolation_key_, auth_path_);
   if (!entry)
     return false;
 
@@ -292,10 +294,10 @@ int HttpAuthController::HandleAuthChallenge(
         InvalidateCurrentHandler(INVALIDATE_HANDLER_AND_CACHED_CREDENTIALS);
         break;
       case HttpAuth::AUTHORIZATION_RESULT_STALE:
-        if (http_auth_cache_->UpdateStaleChallenge(auth_origin_,
-                                                   handler_->realm(),
-                                                   handler_->auth_scheme(),
-                                                   challenge_used)) {
+        if (http_auth_cache_->UpdateStaleChallenge(
+                auth_origin_, target_, handler_->realm(),
+                handler_->auth_scheme(), network_isolation_key_,
+                challenge_used)) {
           InvalidateCurrentHandler(INVALIDATE_HANDLER);
         } else {
           // It's possible that a server could incorrectly issue a stale
@@ -420,9 +422,10 @@ void HttpAuthController::ResetAuth(const AuthCredentials& credentials) {
     case HttpAuth::IDENT_SRC_DEFAULT_CREDENTIALS:
       break;
     default:
-      http_auth_cache_->Add(auth_origin_, handler_->realm(),
-                            handler_->auth_scheme(), handler_->challenge(),
-                            identity_.credentials, auth_path_);
+      http_auth_cache_->Add(auth_origin_, target_, handler_->realm(),
+                            handler_->auth_scheme(), network_isolation_key_,
+                            handler_->challenge(), identity_.credentials,
+                            auth_path_);
       break;
   }
 }
@@ -469,8 +472,9 @@ void HttpAuthController::InvalidateRejectedAuthFromCache() {
   // Clear the cache entry for the identity we just failed on.
   // Note: we require the credentials to match before invalidating
   // since the entry in the cache may be newer than what we used last time.
-  http_auth_cache_->Remove(auth_origin_, handler_->realm(),
-                           handler_->auth_scheme(), identity_.credentials);
+  http_auth_cache_->Remove(auth_origin_, target_, handler_->realm(),
+                           handler_->auth_scheme(), network_isolation_key_,
+                           identity_.credentials);
 }
 
 void HttpAuthController::PrepareIdentityForReuse() {
@@ -520,8 +524,8 @@ bool HttpAuthController::SelectNextAuthIdentityToTry() {
 
   // Check the auth cache for a realm entry.
   HttpAuthCache::Entry* entry =
-      http_auth_cache_->Lookup(auth_origin_, handler_->realm(),
-                               handler_->auth_scheme());
+      http_auth_cache_->Lookup(auth_origin_, target_, handler_->realm(),
+                               handler_->auth_scheme(), network_isolation_key_);
 
   if (entry) {
     identity_.source = HttpAuth::IDENT_SRC_REALM_LOOKUP;

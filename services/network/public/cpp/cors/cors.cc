@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -26,6 +27,8 @@
 // should be latin-1, not utf-8, as per HTTP. Note that as we use ByteString
 // as the IDL types of header name/value, a character whose code point is
 // greater than 255 has already been blocked.
+
+namespace network {
 
 namespace {
 
@@ -123,29 +126,7 @@ bool IsNoCorsSafelistedHeaderNameLowerCase(const std::string& lower_name) {
   return true;
 }
 
-}  // namespace
-
-namespace network {
-
-namespace cors {
-
-namespace header_names {
-
-const char kAccessControlAllowCredentials[] =
-    "Access-Control-Allow-Credentials";
-const char kAccessControlAllowExternal[] = "Access-Control-Allow-External";
-const char kAccessControlAllowHeaders[] = "Access-Control-Allow-Headers";
-const char kAccessControlAllowMethods[] = "Access-Control-Allow-Methods";
-const char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
-const char kAccessControlMaxAge[] = "Access-Control-Max-Age";
-const char kAccessControlRequestExternal[] = "Access-Control-Request-External";
-const char kAccessControlRequestHeaders[] = "Access-Control-Request-Headers";
-const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
-
-}  // namespace header_names
-
-// See https://fetch.spec.whatwg.org/#cors-check.
-base::Optional<CorsErrorStatus> CheckAccess(
+base::Optional<CorsErrorStatus> CheckAccessInternal(
     const GURL& response_url,
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
@@ -226,6 +207,61 @@ base::Optional<CorsErrorStatus> CheckAccess(
   return base::nullopt;
 }
 
+// These values are used for logging to UMA. Entries should not be renumbered
+// and numeric values should never be reused. Please keep in sync with
+// "AccessCheckResult" in src/tools/metrics/histograms/enums.xml.
+enum class AccessCheckResult {
+  kPermitted = 0,
+  kNotPermitted = 1,
+  kPermittedInPreflight = 2,
+  kNotPermittedInPreflight = 3,
+
+  kMaxValue = kNotPermittedInPreflight,
+};
+
+void ReportAccessCheckResultMetric(AccessCheckResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckResult", result);
+}
+
+}  // namespace
+
+namespace cors {
+
+namespace header_names {
+
+const char kAccessControlAllowCredentials[] =
+    "Access-Control-Allow-Credentials";
+const char kAccessControlAllowExternal[] = "Access-Control-Allow-External";
+const char kAccessControlAllowHeaders[] = "Access-Control-Allow-Headers";
+const char kAccessControlAllowMethods[] = "Access-Control-Allow-Methods";
+const char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
+const char kAccessControlMaxAge[] = "Access-Control-Max-Age";
+const char kAccessControlRequestExternal[] = "Access-Control-Request-External";
+const char kAccessControlRequestHeaders[] = "Access-Control-Request-Headers";
+const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
+
+}  // namespace header_names
+
+// See https://fetch.spec.whatwg.org/#cors-check.
+base::Optional<CorsErrorStatus> CheckAccess(
+    const GURL& response_url,
+    const int response_status_code,
+    const base::Optional<std::string>& allow_origin_header,
+    const base::Optional<std::string>& allow_credentials_header,
+    mojom::CredentialsMode credentials_mode,
+    const url::Origin& origin) {
+  base::Optional<CorsErrorStatus> error_status = CheckAccessInternal(
+      response_url, response_status_code, allow_origin_header,
+      allow_credentials_header, credentials_mode, origin);
+  ReportAccessCheckResultMetric(error_status ? AccessCheckResult::kNotPermitted
+                                             : AccessCheckResult::kPermitted);
+  if (error_status) {
+    UMA_HISTOGRAM_ENUMERATION("Net.Cors.AccessCheckError",
+                              error_status->cors_error);
+  }
+  return error_status;
+}
+
 bool ShouldCheckCors(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
                      mojom::RequestMode request_mode) {
@@ -255,9 +291,12 @@ base::Optional<CorsErrorStatus> CheckPreflightAccess(
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode actual_credentials_mode,
     const url::Origin& origin) {
-  const auto error_status =
-      CheckAccess(response_url, response_status_code, allow_origin_header,
-                  allow_credentials_header, actual_credentials_mode, origin);
+  const auto error_status = CheckAccessInternal(
+      response_url, response_status_code, allow_origin_header,
+      allow_credentials_header, actual_credentials_mode, origin);
+  ReportAccessCheckResultMetric(
+      error_status ? AccessCheckResult::kNotPermittedInPreflight
+                   : AccessCheckResult::kPermittedInPreflight);
   if (!error_status)
     return base::nullopt;
 
@@ -290,6 +329,8 @@ base::Optional<CorsErrorStatus> CheckPreflightAccess(
       NOTREACHED();
       break;
   }
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCheckError", error);
+
   return CorsErrorStatus(error, error_status->failed_parameter);
 }
 

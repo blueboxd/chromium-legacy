@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/allocator/allocator_shim.h"
+#include "base/memory/protected_memory_cfi.h"
 
 #include <dlfcn.h>
 #include <malloc.h>
@@ -22,6 +23,10 @@ void __libc_free(void* ptr);
 namespace {
 
 using base::allocator::AllocatorDispatch;
+using MallocUsableSizeFunction = decltype(malloc_usable_size)*;
+
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<MallocUsableSizeFunction>
+    g_MallocUsableSizeFunction;
 
 void* GlibcMalloc(const AllocatorDispatch*, size_t size, void* context) {
   return __libc_malloc(size);
@@ -59,12 +64,11 @@ size_t GlibcGetSizeEstimate(const AllocatorDispatch*,
   // resolve it instead. This should be safe because glibc (and hence dlfcn)
   // does not use malloc_size internally and so there should not be a risk of
   // recursion.
-  using MallocUsableSizeFunction = decltype(malloc_usable_size)*;
-  static MallocUsableSizeFunction fn_ptr =
-      reinterpret_cast<MallocUsableSizeFunction>(
-          dlsym(RTLD_NEXT, "malloc_usable_size"));
+  static base::ProtectedMemory<MallocUsableSizeFunction>::Initializer init(
+      &g_MallocUsableSizeFunction, reinterpret_cast<MallocUsableSizeFunction>(
+                                       dlsym(RTLD_NEXT, "malloc_usable_size")));
 
-  return fn_ptr(address);
+  return base::UnsanitizedCfiCall(g_MallocUsableSizeFunction)(address);
 }
 
 }  // namespace

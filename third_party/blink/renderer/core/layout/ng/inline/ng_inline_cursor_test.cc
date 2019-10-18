@@ -36,6 +36,9 @@ class NGInlineCursorTest : public NGLayoutTest,
   }
 
   String ToDebugString(const NGInlineCursor& cursor) {
+    if (cursor.IsLineBox())
+      return "#linebox";
+
     const String text_content =
         cursor.GetLayoutBlockFlow()->GetNGInlineNodeData()->text_content;
     if (const LayoutObject* layout_object = cursor.CurrentLayoutObject()) {
@@ -55,8 +58,6 @@ class NGInlineCursorTest : public NGLayoutTest,
       return layout_object->DebugName();
     }
 
-    if (cursor.IsLineBox())
-      return "#linebox";
     return "#null";
   }
 };
@@ -132,6 +133,88 @@ TEST_P(NGInlineCursorTest, FirstChild2) {
   cursor.MoveToFirstChild();
   EXPECT_EQ("abc", ToDebugString(cursor));
   EXPECT_FALSE(cursor.TryToMoveToFirstChild());
+}
+
+TEST_P(NGInlineCursorTest, FirstLastLogicalLeafInSimpleText) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root><b>first</b><b>middle</b><b>last</b></div>");
+
+  NGInlineCursor first_logical_leaf(cursor);
+  first_logical_leaf.MoveToFirstLogicalLeaf();
+  EXPECT_EQ("first", ToDebugString(first_logical_leaf));
+
+  NGInlineCursor last_logical_leaf(cursor);
+  last_logical_leaf.MoveToLastLogicalLeaf();
+  EXPECT_EQ("last", ToDebugString(last_logical_leaf));
+}
+
+TEST_P(NGInlineCursorTest, FirstLastLogicalLeafInRtlText) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<bdo id=root dir=rtl style=display:block>"
+      "<b>first</b><b>middle</b><b>last</b>"
+      "</bdo>");
+
+  NGInlineCursor first_logical_leaf(cursor);
+  first_logical_leaf.MoveToFirstLogicalLeaf();
+  EXPECT_EQ("first", ToDebugString(first_logical_leaf));
+
+  NGInlineCursor last_logical_leaf(cursor);
+  last_logical_leaf.MoveToLastLogicalLeaf();
+  EXPECT_EQ("last", ToDebugString(last_logical_leaf));
+}
+
+TEST_P(NGInlineCursorTest, FirstLastLogicalLeafInTextAsDeepDescendants) {
+  // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
+  InsertStyleElement("b { background: gray; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root>"
+      "<b><b>first</b>ABC</b>"
+      "<b>middle</b>"
+      "<b>DEF<b>last</b></b>"
+      "</div>");
+
+  NGInlineCursor first_logical_leaf(cursor);
+  first_logical_leaf.MoveToFirstLogicalLeaf();
+  EXPECT_EQ("first", ToDebugString(first_logical_leaf));
+
+  NGInlineCursor last_logical_leaf(cursor);
+  last_logical_leaf.MoveToLastLogicalLeaf();
+  EXPECT_EQ("last", ToDebugString(last_logical_leaf));
+}
+
+TEST_P(NGInlineCursorTest, FirstLastLogicalLeafWithInlineBlock) {
+  InsertStyleElement("b { display: inline-block; }");
+  NGInlineCursor cursor = SetupCursor(
+      "<div id=root>"
+      "<b id=first>first</b>middle<b id=last>last</b>"
+      "</div>");
+
+  NGInlineCursor first_logical_leaf(cursor);
+  first_logical_leaf.MoveToFirstLogicalLeaf();
+  EXPECT_EQ("#first", ToDebugString(first_logical_leaf))
+      << "stop at inline-block";
+
+  NGInlineCursor last_logical_leaf(cursor);
+  last_logical_leaf.MoveToLastLogicalLeaf();
+  EXPECT_EQ("#last", ToDebugString(last_logical_leaf))
+      << "stop at inline-block";
+}
+
+TEST_P(NGInlineCursorTest, FirstLastLogicalLeafWithImages) {
+  NGInlineCursor cursor =
+      SetupCursor("<div id=root><img id=first>middle<img id=last></div>");
+
+  NGInlineCursor first_logical_leaf(cursor);
+  first_logical_leaf.MoveToFirstLogicalLeaf();
+  EXPECT_EQ("#first", ToDebugString(first_logical_leaf));
+
+  NGInlineCursor last_logical_leaf(cursor);
+  last_logical_leaf.MoveToLastLogicalLeaf();
+  EXPECT_EQ("#last", ToDebugString(last_logical_leaf));
 }
 
 TEST_P(NGInlineCursorTest, LastChild) {
@@ -282,6 +365,27 @@ TEST_P(NGInlineCursorTest, EmptyOutOfFlow) {
   NGInlineCursor cursor(*block_flow);
   Vector<String> list = ToDebugStringList(cursor);
   EXPECT_THAT(list, ElementsAre());
+}
+
+TEST_P(NGInlineCursorTest, PreviousLine) {
+  NGInlineCursor cursor = SetupCursor("<div id=root>abc<br>xyz</div>");
+  NGInlineCursor line1(cursor);
+  while (line1 && !line1.IsLineBox())
+    line1.MoveToNext();
+  ASSERT_TRUE(line1.IsNotNull());
+  NGInlineCursor line2(line1);
+  line2.MoveToNext();
+  while (line2 && !line2.IsLineBox())
+    line2.MoveToNext();
+  ASSERT_NE(line1, line2);
+
+  NGInlineCursor should_be_null(line1);
+  should_be_null.MoveToPreviousLine();
+  EXPECT_TRUE(should_be_null.IsNull());
+
+  NGInlineCursor should_be_line1(line2);
+  should_be_line1.MoveToPreviousLine();
+  EXPECT_EQ(line1, should_be_line1);
 }
 
 }  // namespace blink

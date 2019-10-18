@@ -63,7 +63,7 @@ net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         })");
 
 using CreateServerSocketCallback =
-    base::OnceCallback<std::unique_ptr<net::ServerSocket>(std::string*)>;
+    base::Callback<std::unique_ptr<net::ServerSocket>(std::string*)>;
 
 class SocketPump {
  public:
@@ -73,9 +73,9 @@ class SocketPump {
         pending_destruction_(false) {
   }
 
-  std::string Init(CreateServerSocketCallback socket_callback) {
+  std::string Init(const CreateServerSocketCallback& socket_callback) {
     std::string channel_name;
-    server_socket_ = std::move(socket_callback).Run(&channel_name);
+    server_socket_ = socket_callback.Run(&channel_name);
     if (!server_socket_.get() || channel_name.empty()) {
       SelfDestruct();
       return std::string();
@@ -189,13 +189,12 @@ class SocketPump {
 
 class BoundSocket {
  public:
-  using AcceptedCallback =
-      base::OnceCallback<void(uint16_t, const std::string&)>;
+  typedef base::Callback<void(uint16_t, const std::string&)> AcceptedCallback;
 
   BoundSocket(AcceptedCallback accepted_callback,
-              CreateServerSocketCallback socket_callback)
-      : accepted_callback_(std::move(accepted_callback)),
-        socket_callback_(std::move(socket_callback)),
+              const CreateServerSocketCallback& socket_callback)
+      : accepted_callback_(accepted_callback),
+        socket_callback_(socket_callback),
         socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
         port_(0) {}
 
@@ -244,9 +243,9 @@ class BoundSocket {
       return;
 
     SocketPump* pump = new SocketPump(accept_socket_.release());
-    std::string name = pump->Init(std::move(socket_callback_));
+    std::string name = pump->Init(socket_callback_);
     if (!name.empty())
-      std::move(accepted_callback_).Run(port_, name);
+      accepted_callback_.Run(port_, name);
   }
 
   AcceptedCallback accepted_callback_;
@@ -280,7 +279,9 @@ class TetheringHandler::TetheringImpl {
 TetheringHandler::TetheringImpl::TetheringImpl(
     base::WeakPtr<TetheringHandler> handler,
     const CreateServerSocketCallback& socket_callback)
-    : handler_(handler), socket_callback_(std::move(socket_callback)) {}
+    : handler_(handler),
+      socket_callback_(socket_callback) {
+}
 
 TetheringHandler::TetheringImpl::~TetheringImpl() = default;
 
@@ -294,7 +295,7 @@ void TetheringHandler::TetheringImpl::Bind(
     return;
   }
 
-  BoundSocket::AcceptedCallback accepted = base::BindOnce(
+  BoundSocket::AcceptedCallback accepted = base::Bind(
       &TetheringHandler::TetheringImpl::Accepted, base::Unretained(this));
   std::unique_ptr<BoundSocket> bound_socket =
       std::make_unique<BoundSocket>(std::move(accepted), socket_callback_);

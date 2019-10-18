@@ -45,9 +45,8 @@ using DownloadVector = DownloadManager::DownloadVector;
 namespace {
 
 // Returns a string constant to be used as the |danger_type| value in
-// CreateDownloadData().  Only return strings for DANGEROUS_FILE,
-// DANGEROUS_URL, DANGEROUS_CONTENT, and UNCOMMON_CONTENT because the
-// |danger_type| value is only defined if the value of |state| is |DANGEROUS|.
+// CreateDownloadData(). This can be the empty string, if the danger type is not
+// relevant for the UI.
 const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
   switch (danger_type) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
@@ -73,7 +72,9 @@ const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
       return "SENSITIVE_CONTENT_BLOCK";
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
+      return "DEEP_SCANNED_SAFE";
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
+      return "DEEP_SCANNED_OPENED_DANGEROUS";
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
@@ -81,9 +82,9 @@ const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
     case download::DOWNLOAD_DANGER_TYPE_MAX:
       break;
   }
+
   // Don't return a danger type string if it is NOT_DANGEROUS,
-  // MAYBE_DANGEROUS_CONTENT, or USER_VALIDATED.
-  NOTREACHED();
+  // MAYBE_DANGEROUS_CONTENT, or USER_VALIDATED, or WHITELISTED_BY_POLICY.
   return "";
 }
 
@@ -259,7 +260,7 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
   file_value->resume = download_item->CanResume();
   file_value->otr = IsIncognito(*download_item);
 
-  const char* danger_type = "";
+  const char* danger_type = GetDangerTypeString(download_item->GetDangerType());
   base::string16 last_reason_text;
   // -2 is invalid, -1 means indeterminate, and 0-100 are in-progress.
   int percent = -2;
@@ -271,7 +272,6 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
     case download::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
         state = "DANGEROUS";
-        danger_type = GetDangerTypeString(download_item->GetDangerType());
       } else if (download_item->IsPaused()) {
         state = "PAUSED";
       } else {

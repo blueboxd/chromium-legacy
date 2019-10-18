@@ -45,6 +45,8 @@ class CONTENT_EXPORT PeerConnectionTracker
     : public RenderThreadObserver,
       public base::SupportsWeakPtr<PeerConnectionTracker> {
  public:
+  static PeerConnectionTracker* GetInstance();
+
   explicit PeerConnectionTracker(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   PeerConnectionTracker(

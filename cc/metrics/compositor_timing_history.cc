@@ -735,6 +735,8 @@ void CompositorTimingHistory::WillBeginImplFrame(
 void CompositorTimingHistory::WillFinishImplFrame(bool needs_redraw) {
   if (!needs_redraw)
     SetCompositorDrawingContinuously(false);
+
+  compositor_frame_reporting_controller_->OnFinishImplFrame();
 }
 
 void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {

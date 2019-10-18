@@ -206,12 +206,16 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& content_rect,
-    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        callbacks) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callbacks);
 
+  mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+      callbacks_remote(std::move(callbacks));
+
   if (!receiver_ || !data.IsValid()) {
-    callbacks->Done();
+    callbacks_remote->Done();
     return;
   }
 
@@ -225,11 +229,11 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
       // number of frames in-flight.
       constexpr size_t kMaxInFlightFrames = 32;  // Arbitrarily-chosen limit.
       DCHECK_LT(frame_callbacks_.size(), kMaxInFlightFrames);
-      frame_callbacks_.emplace_back(std::move(callbacks));
+      frame_callbacks_.emplace_back(std::move(callbacks_remote));
       break;
     }
     if (!frame_callbacks_[index].is_bound()) {
-      frame_callbacks_[index] = std::move(callbacks);
+      frame_callbacks_[index] = std::move(callbacks_remote);
       break;
     }
   }

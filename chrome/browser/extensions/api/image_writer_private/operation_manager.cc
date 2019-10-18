@@ -24,6 +24,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/notification_types.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -80,14 +81,15 @@ void OperationManager::StartWriteFromUrl(
     return;
   }
 
-  network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      url_loader_factory_remote;
   content::BrowserContext::GetDefaultStoragePartition(browser_context_)
       ->GetURLLoaderFactoryForBrowserProcess()
-      ->Clone(mojo::MakeRequest(&url_loader_factory_info));
+      ->Clone(url_loader_factory_remote.InitWithNewPipeAndPassReceiver());
 
   auto operation = base::MakeRefCounted<WriteFromUrlOperation>(
       weak_factory_.GetWeakPtr(), extension_id,
-      std::move(url_loader_factory_info), url, hash, device_path,
+      std::move(url_loader_factory_remote), url, hash, device_path,
       GetAssociatedDownloadFolder());
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));

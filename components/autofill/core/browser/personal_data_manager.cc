@@ -1691,7 +1691,7 @@ std::string PersonalDataManager::SaveImportedCreditCard(
   SetCreditCards(&credit_cards);
 
   // After a card is saved locally, notifies the observers.
-  OnCreditCardSaved();
+  OnCreditCardSaved(/*is_local_card=*/true);
 
   return guid;
 }
@@ -1929,13 +1929,14 @@ void PersonalDataManager::NotifyPersonalDataObserver() {
   }
 }
 
-void PersonalDataManager::OnCreditCardSaved() {
+void PersonalDataManager::OnCreditCardSaved(bool is_local_card) {
   if (!base::FeatureList::IsEnabled(
           features::kAutofillCreditCardUploadFeedback)) {
     return;
   }
   for (PersonalDataManagerObserver& observer : observers_)
-    observer.OnCreditCardSaved();
+    observer.OnCreditCardSaved(
+        /*should_show_sign_in_promo_if_applicable=*/is_local_card);
 }
 
 std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(

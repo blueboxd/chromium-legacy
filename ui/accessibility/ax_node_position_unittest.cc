@@ -1732,6 +1732,19 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTextPosition) {
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 
   text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, root_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  test_position = text_position->AsLeafTextPosition();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, text_field_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
@@ -1755,9 +1768,7 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTextPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(0, test_position->text_offset());
-  // Even though upstream affinity doesn't make sense on a leaf node, there is
-  // no need to reset it to downstream.
-  EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, test_position->affinity());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 
   // Create a text position on the root, pointing to the line break character
   // inside the text field but with an upstream affinity which will cause the
@@ -1774,9 +1785,7 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTextPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
-  // Even though upstream affinity doesn't make sense on a leaf node, there is
-  // no need to reset it to downstream.
-  EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, test_position->affinity());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 
   // Create a text position pointing to the line break character inside the text
   // field but with an upstream affinity which will cause the leaf text position
@@ -1791,9 +1800,7 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTextPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box1_.id, test_position->anchor_id());
   EXPECT_EQ(6, test_position->text_offset());
-  // Even though upstream affinity doesn't make sense on a leaf node, there is
-  // no need to reset it to downstream.
-  EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, test_position->affinity());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 
   // Create a text position on the root, pointing to the line break character
   // inside the text field.
@@ -1863,9 +1870,67 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTextPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
   EXPECT_EQ(3, test_position->text_offset());
-  // Even though upstream affinity doesn't make sense on a leaf node, there is
-  // no need to reset it to downstream.
-  EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, test_position->affinity());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+}
+
+TEST_F(AXPositionTest, AsLeafTextPositionWithTextPositionAndEmptyTextSandwich) {
+  // This test updates the tree structure to test a specific edge case -
+  // AsLeafTextPosition when there is an empty leaf text node between
+  // two non-empty text nodes.
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kInlineTextBox;
+  text_data.SetName("some text");
+
+  AXNodeData button_data;
+  button_data.id = 3;
+  button_data.role = ax::mojom::Role::kButton;
+  button_data.SetName("");
+
+  AXNodeData more_text_data;
+  more_text_data.id = 4;
+  more_text_data.role = ax::mojom::Role::kInlineTextBox;
+  more_text_data.SetName("more text");
+
+  root_data.child_ids = {text_data.id, button_data.id, more_text_data.id};
+
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root_data, text_data, button_data, more_text_data});
+  AXNodePosition::SetTree(new_tree.get());
+
+  // Create a text position on the root pointing to just after the
+  // first static text leaf node.
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, root_data.id, 9 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  TestPositionType test_position = text_position->AsLeafTextPosition();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
+  EXPECT_EQ(button_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, root_data.id, 9 /* text_offset */,
+      ax::mojom::TextAffinity::kUpstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  test_position = text_position->AsLeafTextPosition();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
+  EXPECT_EQ(text_data.id, test_position->anchor_id());
+  EXPECT_EQ(9, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 }
 
 TEST_F(AXPositionTest, CreatePositionAtStartOfAnchorWithNullPosition) {

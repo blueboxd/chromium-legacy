@@ -718,3 +718,88 @@ test.realbox.testArrowDownMovesFocus = function() {
   assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
   assertEquals(document.activeElement, matchEls[1])
 };
+
+test.realbox.testPressEnterAfterFocusout = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()],
+  });
+
+  const downArrow = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  });
+  test.realbox.realboxEl.dispatchEvent(downArrow);
+  assertTrue(downArrow.defaultPrevented);
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(2, matchEls.length);
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+
+  test.realbox.realboxEl.dispatchEvent(new Event('focusout', {
+    bubbles: true,
+    cancelable: true,
+    target: test.realbox.realboxEl,
+    relatedTarget: document.body,
+  }));
+
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
+    bubbles: true,
+    cancelable: true,
+    target: test.realbox.realboxEl,
+  }));
+
+  let clicked = false;
+  matchEls[1].onclick = () => clicked = true;
+
+  const enter = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Enter',
+  });
+  test.realbox.realboxEl.dispatchEvent(enter);
+  assertTrue(enter.defaultPrevented);
+
+  assertTrue(clicked);
+};
+
+test.realbox.testArrowUpDownShowsMatchesWhenHidden = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()],
+  });
+
+  test.realbox.realboxEl.dispatchEvent(new Event('focusout', {
+    bubbles: true,
+    cancelable: true,
+    target: test.realbox.realboxEl,
+    relatedTarget: document.body,
+  }));
+
+  assertFalse(test.realbox.wrapperEl.classList.contains(
+      test.realbox.CLASSES.SHOW_MATCHES));
+
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {
+    bubbles: true,
+    cancelable: true,
+    target: test.realbox.realboxEl,
+  }));
+
+  const arrowDown = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  });
+  test.realbox.realboxEl.dispatchEvent(arrowDown);
+  assertTrue(arrowDown.defaultPrevented);
+
+  assertTrue(test.realbox.wrapperEl.classList.contains(
+      test.realbox.CLASSES.SHOW_MATCHES));
+};

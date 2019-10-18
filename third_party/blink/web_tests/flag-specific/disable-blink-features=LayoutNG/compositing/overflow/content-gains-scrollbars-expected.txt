@@ -12,13 +12,37 @@
       "transform": 1
     },
     {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [85, 0],
+      "bounds": [15, 100],
+      "transform": 1
+    },
+    {
       "name": "LayoutBlockFlow (positioned) DIV class='container'",
       "bounds": [100, 100],
       "transform": 2
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 85],
+      "bounds": [100, 15],
+      "transform": 2
+    },
+    {
       "name": "LayoutBlockFlow (positioned) DIV class='container'",
       "bounds": [100, 100],
+      "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 85],
+      "bounds": [85, 15],
+      "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [85, 0],
+      "bounds": [15, 85],
       "transform": 3
     },
     {

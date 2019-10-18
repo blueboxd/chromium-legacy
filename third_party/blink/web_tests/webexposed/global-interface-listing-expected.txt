@@ -8139,10 +8139,6 @@ interface TrustedTypePolicyFactory
     method getAttributeType
     method getPropertyType
     method getTypeMapping
-interface TrustedURL
-    attribute @@toStringTag
-    method constructor
-    method toString
 interface UIEvent : Event
     attribute @@toStringTag
     getter detail
@@ -8468,10 +8464,6 @@ interface WakeLock
     attribute @@toStringTag
     method constructor
     method request
-interface WakeLockEvent : Event
-    attribute @@toStringTag
-    getter lock
-    method constructor
 interface WakeLockSentinel : EventTarget
     attribute @@toStringTag
     getter onrelease

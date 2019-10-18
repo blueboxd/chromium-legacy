@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/html/html_picture_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 #define SOURCE_LOG_LEVEL 3
@@ -68,13 +67,6 @@ HTMLSourceElement::HTMLSourceElement(Document& document)
 }
 
 HTMLSourceElement::~HTMLSourceElement() = default;
-
-const AttrNameToTrustedType& HTMLSourceElement::GetCheckedAttributeTypes()
-    const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"src", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
 
 void HTMLSourceElement::CreateMediaQueryList(const AtomicString& media) {
   RemoveMediaQueryListListener();

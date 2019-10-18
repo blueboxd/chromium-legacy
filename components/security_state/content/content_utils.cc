@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -66,8 +67,12 @@ void ExplainHTTPSecurity(
   // summary for the page and add a bullet describing the issue.
   if (security_level == security_state::DANGEROUS &&
       !security_state::IsSchemeCryptographic(visible_security_state.url)) {
-    security_style_explanations->summary =
-        l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY);
+    // Only change the summary if it's empty to avoid overwriting summaries
+    // from SafeBrowsing or Safety Tips.
+    if (security_style_explanations->summary.empty()) {
+      security_style_explanations->summary =
+          l10n_util::GetStringUTF8(IDS_HTTP_NONSECURE_SUMMARY);
+    }
     if (visible_security_state.insecure_input_events.insecure_field_edited) {
       security_style_explanations->insecure_explanations.push_back(
           content::SecurityStyleExplanation(
@@ -287,11 +292,11 @@ void ExplainSafetyTipSecurity(
     content::SecurityStyleExplanations* security_style_explanations) {
   std::vector<content::SecurityStyleExplanation> explanations;
 
-  switch (visible_security_state.safety_tip_status) {
+  switch (visible_security_state.safety_tip_info.status) {
     case security_state::SafetyTipStatus::kBadReputation:
       explanations.emplace_back(
           l10n_util::GetStringUTF8(
-              IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE),
+              IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_SUMMARY),
           l10n_util::GetStringUTF8(
               IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION));
       break;
@@ -300,8 +305,10 @@ void ExplainSafetyTipSecurity(
       explanations.emplace_back(
           l10n_util::GetStringUTF8(
               IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_SUMMARY),
-          l10n_util::GetStringUTF8(
-              IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_DESCRIPTION));
+          l10n_util::GetStringFUTF8(
+              IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_DESCRIPTION,
+              security_interstitials::common_string_util::GetFormattedHostName(
+                  visible_security_state.safety_tip_info.safe_url)));
       break;
 
     case security_state::SafetyTipStatus::kBadKeyword:
@@ -318,8 +325,8 @@ void ExplainSafetyTipSecurity(
     // it's empty. The title set here can be overridden by later checks (e.g.
     // bad HTTP).
     if (security_style_explanations->summary.empty()) {
-      security_style_explanations->summary = l10n_util::GetStringUTF8(
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE);
+      security_style_explanations->summary =
+          l10n_util::GetStringUTF8(IDS_SECURITY_TAB_SAFETY_TIP_TITLE);
     }
     DCHECK_EQ(1u, explanations.size());
     security_style_explanations->insecure_explanations.push_back(

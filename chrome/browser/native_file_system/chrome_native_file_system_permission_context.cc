@@ -389,6 +389,9 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
 
     // This shouldn't be returned for Native File System write checks.
     case Result::ASYNC_SCANNING:
+    case Result::SENSITIVE_CONTENT_WARNING:
+    case Result::SENSITIVE_CONTENT_BLOCK:
+    case Result::DEEP_SCANNED_SAFE:
       NOTREACHED();
       return ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult::
           kAllow;

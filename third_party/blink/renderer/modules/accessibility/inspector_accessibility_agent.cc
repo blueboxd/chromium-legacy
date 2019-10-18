@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_list.h"
-#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
@@ -725,8 +724,6 @@ Response InspectorAccessibilityAgent::getFullAXTree(
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
     return Response::Error("No document.");
-  if (document->View()->NeedsLayout() || document->NeedsLayoutTreeUpdate())
-    document->UpdateStyleAndLayout();
   *nodes = std::make_unique<protocol::Array<protocol::Accessibility::AXNode>>();
   AXContext ax_context(*document);
   AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());

@@ -24,6 +24,7 @@
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -85,9 +86,8 @@ void ContentHashFetcher::Start(HashFetcherCallback hash_fetcher_callback) {
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
-  url_loader_factory_ptr.Bind(
-      std::move(fetch_key_.url_loader_factory_ptr_info));
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_remote(
+      std::move(fetch_key_.url_loader_factory_remote));
 
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);
@@ -96,7 +96,7 @@ void ContentHashFetcher::Start(HashFetcherCallback hash_fetcher_callback) {
       kMaxRetries,
       network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
   simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory_ptr.get(),
+      url_loader_factory_remote.get(),
       base::BindOnce(&ContentHashFetcher::OnSimpleLoaderComplete,
                      base::Unretained(this)));
 }

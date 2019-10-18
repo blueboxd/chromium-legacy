@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -18,6 +19,8 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "net/base/features.h"
+#include "net/cookies/cookie_constants.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -80,6 +83,8 @@ const char kExampleScope[] = "https://example.com/a";
 const char kExampleWorkerScript[] = "https://example.com/a/script.js";
 const char kGoogleScope[] = "https://google.com/a";
 const char kGoogleWorkerScript[] = "https://google.com/a/script.js";
+const char kLegacyScope[] = "https://legacy.com/a";
+const char kLegacyWorkerScript[] = "https://legacy.com/a/script.js";
 
 // Mocks a service worker that uses the cookieStore API.
 class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
@@ -155,10 +160,9 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
     }
 
     void DispatchCookieChangeEvent(
-        const net::CanonicalCookie& cookie,
-        ::network::mojom::CookieChangeCause cause,
+        const net::CookieChangeInfo& change,
         DispatchCookieChangeEventCallback callback) override {
-      worker_helper_->changes_.emplace_back(cookie, cause);
+      worker_helper_->changes_.emplace_back(change);
       std::move(callback).Run(
           blink::mojom::ServiceWorkerEventStatus::COMPLETED);
     }
@@ -196,11 +200,7 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   }
 
   // The data in the CookieChangeEvents received by the worker.
-  std::vector<
-      std::pair<net::CanonicalCookie, ::network::mojom::CookieChangeCause>>&
-  changes() {
-    return changes_;
-  }
+  std::vector<net::CookieChangeInfo>& changes() { return changes_; }
 
  private:
   // Used to add cookie change subscriptions during OnInstallEvent().
@@ -213,9 +213,7 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   base::RunLoop* quit_on_activate_ = nullptr;
 
   // Collects the changes reported to OnCookieChangeEvent().
-  std::vector<
-      std::pair<net::CanonicalCookie, ::network::mojom::CookieChangeCause>>
-      changes_;
+  std::vector<net::CookieChangeInfo> changes_;
 };
 
 }  // namespace
@@ -227,7 +225,13 @@ class CookieStoreManagerTest
       public testing::WithParamInterface<bool /* reset_context */> {
  public:
   CookieStoreManagerTest()
-      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
+    // Enable SameSiteByDefaultCookies because the default CookieAccessSemantics
+    // setting is based on the state of this feature, and we want a consistent
+    // expected value in the tests for domains without a custom setting.
+    feature_list_.InitAndEnableFeature(
+        net::features::kSameSiteByDefaultCookies);
+  }
 
   void SetUp() override {
     // Use an on-disk service worker storage to test saving and loading.
@@ -248,8 +252,10 @@ class CookieStoreManagerTest
     // called by ResetServiceWorkerContext().
     example_service_.reset();
     google_service_.reset();
+    legacy_service_.reset();
     example_service_remote_.reset();
     google_service_remote_.reset();
+    legacy_service_remote_.reset();
     cookie_manager_.reset();
     cookie_store_context_ = nullptr;
     storage_partition_impl_.reset();
@@ -292,6 +298,24 @@ class CookieStoreManagerTest
         google_service_remote_.BindNewPipeAndPassReceiver());
     google_service_ =
         std::make_unique<CookieStoreSync>(google_service_remote_.get());
+
+    cookie_store_context_->CreateServiceForTesting(
+        url::Origin::Create(GURL(kLegacyScope)),
+        legacy_service_remote_.BindNewPipeAndPassReceiver());
+    legacy_service_ =
+        std::make_unique<CookieStoreSync>(legacy_service_remote_.get());
+
+    // Set Legacy cookie access setting for legacy.com to test
+    // CookieAccessSemantics.
+    std::vector<ContentSettingPatternSource> legacy_settings;
+    legacy_settings.emplace_back(
+        ContentSettingsPattern::FromString("[*.]legacy.com"),
+        ContentSettingsPattern::FromString("*"),
+        base::Value(ContentSetting::CONTENT_SETTING_ALLOW), std::string(),
+        false /* incognito */);
+    cookie_manager_->SetContentSettingsForLegacyCookieAccess(
+        std::move(legacy_settings));
+    cookie_manager_.FlushForTesting();
   }
 
   int64_t RegisterServiceWorker(const char* scope, const char* script_url) {
@@ -323,10 +347,8 @@ class CookieStoreManagerTest
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie) {
     base::RunLoop run_loop;
     bool success = false;
-    net::CookieOptions options;
-    options.set_include_httponly();
     cookie_manager_->SetCanonicalCookie(
-        cookie, "https", options,
+        cookie, "https", net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
             [&](net::CanonicalCookie::CookieInclusionStatus service_status) {
               success = service_status.IsInclude();
@@ -346,7 +368,7 @@ class CookieStoreManagerTest
                         const char* path) {
     return SetCanonicalCookie(net::CanonicalCookie(
         name, value, domain, path, base::Time(), base::Time(), base::Time(),
-        /* secure = */ false,
+        /* secure = */ true,
         /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
         net::COOKIE_PRIORITY_DEFAULT));
   }
@@ -357,6 +379,7 @@ class CookieStoreManagerTest
 
  protected:
   BrowserTaskEnvironment task_environment_;
+  base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir user_data_directory_;
   std::unique_ptr<CookieStoreWorkerTestHelper> worker_test_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
@@ -364,8 +387,9 @@ class CookieStoreManagerTest
   mojo::Remote<::network::mojom::CookieManager> cookie_manager_;
 
   mojo::Remote<blink::mojom::CookieStore> example_service_remote_,
-      google_service_remote_;
-  std::unique_ptr<CookieStoreSync> example_service_, google_service_;
+      google_service_remote_, legacy_service_remote_;
+  std::unique_ptr<CookieStoreSync> example_service_, google_service_,
+      legacy_service_;
 };
 
 const int64_t CookieStoreManagerTest::kInvalidRegistrationId;
@@ -758,12 +782,59 @@ TEST_P(CookieStoreManagerTest, OneCookieChange) {
   task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
-  EXPECT_EQ("cookie-name", worker_test_helper_->changes()[0].first.Name());
-  EXPECT_EQ("cookie-value", worker_test_helper_->changes()[0].first.Value());
-  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
-  EXPECT_EQ("/", worker_test_helper_->changes()[0].first.Path());
-  EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
-            worker_test_helper_->changes()[0].second);
+  EXPECT_EQ("cookie-name", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // example.com does not have a custom access semantics setting, so it defaults
+  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
+}
+
+// Same as above except this tests that the LEGACY access semantics for
+// legacy.com cookies is correctly reflected in the change info.
+TEST_P(CookieStoreManagerTest, OneCookieChangeLegacy) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kLegacyScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 legacy_service_remote_.get());
+  int64_t registration_id =
+      RegisterServiceWorker(kLegacyScope, kLegacyWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      legacy_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name", "cookie-value", "legacy.com", "/"));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("legacy.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // legacy.com has a custom Legacy setting.
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
 }
 
 TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
@@ -802,12 +873,16 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
   task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
-  EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].first.Name());
-  EXPECT_EQ("cookie-value-2", worker_test_helper_->changes()[0].first.Value());
-  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
-  EXPECT_EQ("/", worker_test_helper_->changes()[0].first.Path());
-  EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
-            worker_test_helper_->changes()[0].second);
+  EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-2", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // example.com does not have a custom access semantics setting, so it defaults
+  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(SetSessionCookie("cookie-name-22", "cookie-value-22",
@@ -815,12 +890,83 @@ TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWith) {
   task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
-  EXPECT_EQ("cookie-name-22", worker_test_helper_->changes()[0].first.Name());
-  EXPECT_EQ("cookie-value-22", worker_test_helper_->changes()[0].first.Value());
-  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
-  EXPECT_EQ("/", worker_test_helper_->changes()[0].first.Path());
-  EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
-            worker_test_helper_->changes()[0].second);
+  EXPECT_EQ("cookie-name-22", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-22",
+            worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // example.com does not have a custom access semantics setting, so it defaults
+  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
+}
+
+// Same as above except this tests that the LEGACY access semantics for
+// legacy.com cookies is correctly reflected in the change info.
+TEST_P(CookieStoreManagerTest, CookieChangeNameStartsWithLegacy) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "cookie-name-2";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kLegacyScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 legacy_service_remote_.get());
+  int64_t registration_id =
+      RegisterServiceWorker(kLegacyScope, kLegacyWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      legacy_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name-1", "cookie-value-1", "legacy.com", "/"));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(0u, worker_test_helper_->changes().size());
+
+  worker_test_helper_->changes().clear();
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name-2", "cookie-value-2", "legacy.com", "/"));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-2", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("legacy.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // legacy.com has a custom Legacy setting.
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
+
+  worker_test_helper_->changes().clear();
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name-22", "cookie-value-22", "legacy.com", "/"));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name-22", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-22",
+            worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("legacy.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // legacy.com has a custom Legacy setting.
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
 }
 
 TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
@@ -865,12 +1011,16 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
-  EXPECT_EQ("cookie-name-3", worker_test_helper_->changes()[0].first.Name());
-  EXPECT_EQ("cookie-value-3", worker_test_helper_->changes()[0].first.Value());
-  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
-  EXPECT_EQ("/", worker_test_helper_->changes()[0].first.Path());
-  EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
-            worker_test_helper_->changes()[0].second);
+  EXPECT_EQ("cookie-name-3", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-3", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // example.com does not have a custom access semantics setting, so it defaults
+  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
 
   worker_test_helper_->changes().clear();
   ASSERT_TRUE(
@@ -878,12 +1028,87 @@ TEST_P(CookieStoreManagerTest, CookieChangeUrl) {
   task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
-  EXPECT_EQ("cookie-name-4", worker_test_helper_->changes()[0].first.Name());
-  EXPECT_EQ("cookie-value-4", worker_test_helper_->changes()[0].first.Value());
-  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
-  EXPECT_EQ("/a", worker_test_helper_->changes()[0].first.Path());
-  EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
-            worker_test_helper_->changes()[0].second);
+  EXPECT_EQ("cookie-name-4", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-4", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/a", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // example.com does not have a custom access semantics setting, so it defaults
+  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
+}
+
+// Same as above except this tests that the LEGACY access semantics for
+// legacy.com cookies is correctly reflected in the change info.
+TEST_P(CookieStoreManagerTest, CookieChangeUrlLegacy) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kLegacyScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 legacy_service_remote_.get());
+  int64_t registration_id =
+      RegisterServiceWorker(kLegacyScope, kLegacyWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      legacy_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name-1", "cookie-value-1", "google.com", "/"));
+  task_environment_.RunUntilIdle();
+  ASSERT_EQ(0u, worker_test_helper_->changes().size());
+
+  worker_test_helper_->changes().clear();
+  ASSERT_TRUE(SetSessionCookie("cookie-name-2", "cookie-value-2", "legacy.com",
+                               "/a/subpath"));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(0u, worker_test_helper_->changes().size());
+
+  worker_test_helper_->changes().clear();
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name-3", "cookie-value-3", "legacy.com", "/"));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name-3", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-3", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("legacy.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // legacy.com has a custom Legacy setting.
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
+
+  worker_test_helper_->changes().clear();
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name-4", "cookie-value-4", "legacy.com", "/a"));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name-4", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-4", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("legacy.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/a", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // legacy.com has a custom Legacy setting.
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
 }
 
 TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
@@ -930,12 +1155,73 @@ TEST_P(CookieStoreManagerTest, HttpOnlyCookieChange) {
   task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, worker_test_helper_->changes().size());
-  EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].first.Name());
-  EXPECT_EQ("cookie-value-2", worker_test_helper_->changes()[0].first.Value());
-  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].first.Domain());
-  EXPECT_EQ("/", worker_test_helper_->changes()[0].first.Path());
-  EXPECT_EQ(::network::mojom::CookieChangeCause::INSERTED,
-            worker_test_helper_->changes()[0].second);
+  EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-2", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("example.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // example.com does not have a custom access semantics setting, so it defaults
+  // to NONLEGACY, because the FeatureList has SameSiteByDefaultCookies enabled.
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
+}
+
+// Same as above except this tests that the LEGACY access semantics for
+// legacy.com cookies is correctly reflected in the change info.
+TEST_P(CookieStoreManagerTest, HttpOnlyCookieChangeLegacy) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kLegacyScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 legacy_service_remote_.get());
+  int64_t registration_id =
+      RegisterServiceWorker(kLegacyScope, kLegacyWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  base::Optional<CookieStoreSync::Subscriptions> all_subscriptions_opt =
+      legacy_service_->GetSubscriptions(registration_id);
+  ASSERT_TRUE(all_subscriptions_opt.has_value());
+  ASSERT_EQ(1u, all_subscriptions_opt.value().size());
+
+  if (reset_context_during_test())
+    ResetServiceWorkerContext();
+
+  ASSERT_TRUE(SetCanonicalCookie(net::CanonicalCookie(
+      "cookie-name-1", "cookie-value-1", "legacy.com", "/", base::Time(),
+      base::Time(), base::Time(),
+      /* secure = */ false,
+      /* httponly = */ true, net::CookieSameSite::NO_RESTRICTION,
+      net::COOKIE_PRIORITY_DEFAULT)));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(0u, worker_test_helper_->changes().size());
+
+  worker_test_helper_->changes().clear();
+  ASSERT_TRUE(SetCanonicalCookie(net::CanonicalCookie(
+      "cookie-name-2", "cookie-value-2", "legacy.com", "/", base::Time(),
+      base::Time(), base::Time(),
+      /* secure = */ false,
+      /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
+      net::COOKIE_PRIORITY_DEFAULT)));
+  task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(1u, worker_test_helper_->changes().size());
+  EXPECT_EQ("cookie-name-2", worker_test_helper_->changes()[0].cookie.Name());
+  EXPECT_EQ("cookie-value-2", worker_test_helper_->changes()[0].cookie.Value());
+  EXPECT_EQ("legacy.com", worker_test_helper_->changes()[0].cookie.Domain());
+  EXPECT_EQ("/", worker_test_helper_->changes()[0].cookie.Path());
+  EXPECT_EQ(net::CookieChangeCause::INSERTED,
+            worker_test_helper_->changes()[0].cause);
+  // legacy.com has a custom Legacy setting.
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            worker_test_helper_->changes()[0].access_semantics);
 }
 
 TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {

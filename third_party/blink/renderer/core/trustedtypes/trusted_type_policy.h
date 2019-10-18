@@ -17,7 +17,6 @@ class ExceptionState;
 class TrustedHTML;
 class TrustedScript;
 class TrustedScriptURL;
-class TrustedURL;
 
 class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -30,7 +29,6 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
   TrustedScriptURL* CreateScriptURL(v8::Isolate*,
                                     const String&,
                                     ExceptionState&);
-  TrustedURL* CreateURL(v8::Isolate*, const String&, ExceptionState&);
 
   // IDL generates calls with ScriptState*, which contains the Isolate*.
   // These methods all call the Isolate* variant.
@@ -39,7 +37,6 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
   TrustedScriptURL* createScriptURL(ScriptState*,
                                     const String&,
                                     ExceptionState&);
-  TrustedURL* createURL(ScriptState*, const String&, ExceptionState&);
 
   String name() const;
 

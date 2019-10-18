@@ -57,10 +57,13 @@ void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
 
   vulkan_surface_->Reshape(size, transform);
 
-  if (vulkan_surface_->swap_chain_generation() != generation) {
+  auto sk_color_space = color_space.ToSkColorSpace();
+  if (vulkan_surface_->swap_chain_generation() != generation ||
+      !SkColorSpace::Equals(sk_color_space.get(), sk_color_space_.get())) {
     // swapchain is changed, we need recreate all cached sk surfaces.
     sk_surfaces_.clear();
     sk_surfaces_.resize(vulkan_surface_->swap_chain()->num_images());
+    sk_color_space_ = std::move(sk_color_space);
   }
 }
 
@@ -110,7 +113,7 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
                              : kRGBA_8888_SkColorType;
     sk_surface = SkSurface::MakeFromBackendRenderTarget(
         context_provider_->GetGrContext(), render_target,
-        kTopLeft_GrSurfaceOrigin, sk_color_type, nullptr /* color_space */,
+        kTopLeft_GrSurfaceOrigin, sk_color_type, sk_color_space_,
         &surface_props);
     DCHECK(sk_surface);
   } else {

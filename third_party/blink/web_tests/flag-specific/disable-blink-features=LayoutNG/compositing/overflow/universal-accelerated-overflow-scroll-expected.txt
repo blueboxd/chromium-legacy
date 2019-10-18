@@ -18,6 +18,18 @@
       "transform": 2
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
+      "transform": 1
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [87, 87],
       "bounds": [15, 15],
@@ -54,6 +66,18 @@
       "transform": 5
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 4
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
+      "transform": 4
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [87, 87],
       "bounds": [15, 15],
@@ -75,6 +99,18 @@
     {
       "name": "LayoutBlockFlow DIV id='container-absolute-not-contained' class='overflow'",
       "bounds": [104, 104],
+      "transform": 7
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 7
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
       "transform": 7
     },
     {
@@ -114,6 +150,18 @@
       "transform": 11
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 10
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
+      "transform": 10
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [87, 87],
       "bounds": [15, 15],
@@ -150,6 +198,18 @@
       "transform": 14
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 13
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
+      "transform": 13
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [87, 87],
       "bounds": [15, 15],
@@ -171,6 +231,18 @@
     {
       "name": "LayoutBlockFlow DIV id='container-absolute-sibling-not-contained' class='overflow'",
       "bounds": [104, 104],
+      "transform": 16
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 16
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
       "transform": 16
     },
     {
@@ -204,6 +276,18 @@
       "transform": 19
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 19
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
+      "transform": 19
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [87, 87],
       "bounds": [15, 15],
@@ -225,6 +309,18 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container-absolute' class='positionAbsolute overflow'",
       "bounds": [104, 104],
+      "transform": 22
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 22
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
       "transform": 22
     },
     {
@@ -258,6 +354,18 @@
       "transform": 26
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 25
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
+      "transform": 25
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [87, 87],
       "bounds": [15, 15],
@@ -286,6 +394,18 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container-fixed-sibling' class='positionAbsolute overflow'",
       "bounds": [104, 104],
+      "transform": 29
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 29
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
       "transform": 29
     },
     {
@@ -326,6 +446,18 @@
       "transform": 34
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 33
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
+      "transform": 33
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [87, 87],
       "bounds": [15, 15],
@@ -354,6 +486,18 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container-fixed' class='positionAbsolute overflow'",
       "bounds": [104, 104],
+      "transform": 37
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [2, 87],
+      "bounds": [85, 15],
+      "transform": 37
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [87, 2],
+      "bounds": [15, 85],
       "transform": 37
     },
     {
@@ -579,6 +723,12 @@
       "position": [0, 56],
       "bounds": [75, 80],
       "transform": 58
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

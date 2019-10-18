@@ -166,6 +166,17 @@ bool ExtensionManagement::IsInstallationExplicitlyAllowed(
          mode == INSTALLATION_ALLOWED;
 }
 
+bool ExtensionManagement::IsInstallationExplicitlyBlocked(
+    const ExtensionId& id) const {
+  auto it = settings_by_id_.find(id);
+  // No settings explicitly specified for |id|.
+  if (it == settings_by_id_.end())
+    return false;
+  // Checks if the extension is on the black list or removed list.
+  InstallationMode mode = it->second->installation_mode;
+  return mode == INSTALLATION_BLOCKED || mode == INSTALLATION_REMOVED;
+}
+
 bool ExtensionManagement::IsOffstoreInstallAllowed(
     const GURL& url,
     const GURL& referrer_url) const {

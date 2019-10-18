@@ -36,6 +36,7 @@ import javax.annotation.Generated;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -58,8 +59,10 @@ import javax.tools.Diagnostic;
  * containing an interface annotated with NativeMethods.
  *
  */
+@SupportedOptions({JniProcessor.SKIP_GEN_JNI_ARG})
 @AutoService(Processor.class)
 public class JniProcessor extends AbstractProcessor {
+    static final String SKIP_GEN_JNI_ARG = "org.chromium.chrome.skipGenJni";
     private static final Class<NativeMethods> JNI_STATIC_NATIVES_CLASS = NativeMethods.class;
     private static final Class<MainDex> MAIN_DEX_CLASS = MainDex.class;
 
@@ -209,11 +212,14 @@ public class JniProcessor extends AbstractProcessor {
 
         try {
             // Need to write NativeClass first because the wrapper classes
-            // depend on it.
-            JavaFile nativeClassFile =
-                    JavaFile.builder(mNativeClassPackage, mNativesBuilder.build()).build();
+            // depend on it. This step is skipped for APK targets since the final GEN_JNI class is
+            // provided elsewhere.
+            if (!processingEnv.getOptions().containsKey(SKIP_GEN_JNI_ARG)) {
+                JavaFile nativeClassFile =
+                        JavaFile.builder(mNativeClassPackage, mNativesBuilder.build()).build();
 
-            nativeClassFile.writeTo(processingEnv.getFiler());
+                nativeClassFile.writeTo(processingEnv.getFiler());
+            }
 
             for (JavaFile f : writeQueue) {
                 f.writeTo(processingEnv.getFiler());

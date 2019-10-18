@@ -16,15 +16,6 @@ using autofill::ServerFieldType;
 
 namespace password_manager {
 
-namespace {
-
-// Returns true if the field is password or username prediction.
-bool IsCredentialRelatedPrediction(ServerFieldType type) {
-  return DeriveFromServerFieldType(type) != CredentialFieldType::kNone;
-}
-
-}  // namespace
-
 CredentialFieldType DeriveFromServerFieldType(ServerFieldType type) {
   switch (type) {
     case autofill::USERNAME:
@@ -89,23 +80,20 @@ FormPredictions ConvertToFormPredictions(int driver_id,
       }
     }
 
-    if (IsCredentialRelatedPrediction(server_type)) {
-      bool may_use_prefilled_placeholder = false;
-      for (const auto& predictions : field->server_predictions()) {
-        may_use_prefilled_placeholder |=
-            predictions.may_use_prefilled_placeholder();
-      }
-
-      field_predictions.emplace_back();
-
-      field_predictions.back().renderer_id = field->unique_renderer_id,
-      field_predictions.back().type = server_type,
-      field_predictions.back().may_use_prefilled_placeholder =
-          may_use_prefilled_placeholder;
-#if defined(OS_IOS)
-      field_predictions.back().unique_id = field->unique_id;
-#endif
+    bool may_use_prefilled_placeholder = false;
+    for (const auto& predictions : field->server_predictions()) {
+      may_use_prefilled_placeholder |=
+          predictions.may_use_prefilled_placeholder();
     }
+
+    field_predictions.emplace_back();
+    field_predictions.back().renderer_id = field->unique_renderer_id;
+    field_predictions.back().type = server_type;
+    field_predictions.back().may_use_prefilled_placeholder =
+        may_use_prefilled_placeholder;
+#if defined(OS_IOS)
+    field_predictions.back().unique_id = field->unique_id;
+#endif
   }
 
   FormPredictions predictions;

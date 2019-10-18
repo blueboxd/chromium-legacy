@@ -122,7 +122,7 @@ public class StatusView extends LinearLayout {
             // Setup the padding once we're loaded, the other padding changes will happen with post-
             // layout positioning.
             setPaddingRelative(getPaddingStart(), getPaddingTop(),
-                    getEndPaddingPixelSizeForState(false), getPaddingBottom());
+                    getEndPaddingPixelSizeForFocusState(false), getPaddingBottom());
         }
     }
 
@@ -424,7 +424,7 @@ public class StatusView extends LinearLayout {
     /**
      * @returns The end padding for the given state.
      */
-    public int getEndPaddingPixelSizeForState(boolean hasFocus) {
+    public int getEndPaddingPixelSizeForFocusState(boolean hasFocus) {
         if (hasFocus) {
             return getResources().getDimensionPixelOffset(
                     R.dimen.sei_location_bar_icon_end_padding_focused);

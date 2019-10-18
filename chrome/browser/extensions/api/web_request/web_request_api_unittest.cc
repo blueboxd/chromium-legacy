@@ -40,6 +40,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
@@ -873,8 +874,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   net::HttpRequestHeaders headers4;
   headers4.MergeFrom(base_headers);
 
-  DNRRequestAction remove_headers_action(
-      DNRRequestAction::Type::REMOVE_HEADERS);
+  DNRRequestAction remove_headers_action =
+      CreateRequestActionForTesting(DNRRequestAction::Type::REMOVE_HEADERS);
   remove_headers_action.request_headers_to_remove = {"key5"};
   info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(remove_headers_action));
@@ -1347,8 +1348,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
 
   // Ensure headers removed by Declarative Net Request API can't be added by web
   // request extensions and result in a conflict.
-  DNRRequestAction remove_headers_action(
-      DNRRequestAction::Type::REMOVE_HEADERS);
+  DNRRequestAction remove_headers_action =
+      CreateRequestActionForTesting(DNRRequestAction::Type::REMOVE_HEADERS);
   remove_headers_action.response_headers_to_remove = {"key3"};
   info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(remove_headers_action));

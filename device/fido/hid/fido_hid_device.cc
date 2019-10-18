@@ -177,8 +177,8 @@ void FidoHidDevice::Connect(
     device::mojom::HidManager::ConnectCallback callback) {
   DCHECK(hid_manager_);
   hid_manager_->Connect(device_info_->guid,
-                        mojo::PendingRemote<mojom::HidConnectionClient>(),
-                        std::move(callback));
+                        /*connection_client=*/mojo::NullRemote(),
+                        /*watcher=*/mojo::NullRemote(), std::move(callback));
 }
 
 void FidoHidDevice::OnConnect(

@@ -41,18 +41,19 @@ class LocationBar {
   // latency of page loads starting at user input.
   virtual void AcceptInput(base::TimeTicks match_selection_timestamp) = 0;
 
-  // Focuses the location bar.  Optionally also selects its contents.
+  // Focuses the location bar. User-initiated focuses (like pressing Ctrl+L)
+  // should have |is_user_initiated| set to true. In those cases, we want to
+  // take some extra steps, like selecting everything and maybe uneliding.
   //
-  // User-initiated focuses should have |select_all| set to true, as users
-  // are accustomed to being able to use Ctrl+L to select-all in the omnibox.
+  // Renderer-initiated focuses (like browser startup or NTP finished loading),
+  // should have |is_user_initiated| set to false, so we can avoid disrupting
+  // user actions and avoid requesting on-focus suggestions.
   //
-  // Renderer-initiated focuses should have |select_all| set to false, as the
-  // user may be in the middle of typing while the tab finishes loading.
-  // In that case, we don't want to select-all and cause the user to clobber
-  // their already-typed text.
-  virtual void FocusLocation(bool select_all) = 0;
+  // TODO(tommycli): See if there's a more descriptive name for this method.
+  virtual void FocusLocation(bool is_user_initiated) = 0;
 
   // Puts the user into keyword mode with their default search provider.
+  // TODO(tommycli): See if there's a more descriptive name for this method.
   virtual void FocusSearch() = 0;
 
   // Updates the state of the images showing the content settings status.

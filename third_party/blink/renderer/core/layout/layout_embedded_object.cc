@@ -39,7 +39,7 @@
 
 namespace blink {
 
-LayoutEmbeddedObject::LayoutEmbeddedObject(Element* element)
+LayoutEmbeddedObject::LayoutEmbeddedObject(HTMLFrameOwnerElement* element)
     : LayoutEmbeddedContent(element) {
   View()->GetFrameView()->SetIsVisuallyNonEmpty();
 }

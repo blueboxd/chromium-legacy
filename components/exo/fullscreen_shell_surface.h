@@ -86,6 +86,9 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   void SetChildAxTreeId(ui::AXTreeID child_ax_tree_id);
 
  private:
+  // Keep the bounds in sync with the root surface bounds.
+  void UpdateHostWindowBounds() override;
+
   void CreateFullscreenShellSurfaceWidget(ui::WindowShowState show_state);
   void CommitWidget();
   bool OnPreWidgetCommit();

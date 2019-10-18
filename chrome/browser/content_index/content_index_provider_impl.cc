@@ -11,6 +11,9 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -95,53 +98,15 @@ OfflineItemFilter CategoryToFilter(blink::mojom::ContentCategory category) {
   }
 }
 
-OfflineItem EntryToOfflineItem(const content::ContentIndexEntry& entry) {
-  OfflineItem item;
-  item.id = ContentId(kProviderNamespace, EntryKey(entry));
-  item.title = entry.description->title;
-  item.description = entry.description->description;
-  item.filter = CategoryToFilter(entry.description->category);
-  item.is_transient = false;
-  item.is_suggested = true;
-  item.creation_time = entry.registration_time;
-  item.is_openable = true;
-  item.state = offline_items_collection::OfflineItemState::COMPLETE;
-  item.is_resumable = false;
-  item.can_rename = false;
-  item.page_url = entry.launch_url;
-
-  return item;
-}
-
-void DidGetAllEntries(base::OnceClosure done_closure,
-                      ContentIndexProviderImpl::OfflineItemList* item_list,
-                      blink::mojom::ContentIndexError error,
-                      std::vector<content::ContentIndexEntry> entries) {
-  if (error != blink::mojom::ContentIndexError::NONE) {
-    std::move(done_closure).Run();
-    return;
-  }
-
-  for (const auto& entry : entries)
-    item_list->push_back(EntryToOfflineItem(entry));
-
-  std::move(done_closure).Run();
-}
-
-void DidGetAllEntriesAcrossStorageParitions(
-    std::unique_ptr<ContentIndexProviderImpl::OfflineItemList> item_list,
-    ContentIndexProviderImpl::MultipleItemCallback callback) {
-  ContentIndexMetrics::RecordContentIndexEntries(item_list->size());
-  std::move(callback).Run(*item_list);
-}
-
 }  // namespace
 
 ContentIndexProviderImpl::ContentIndexProviderImpl(Profile* profile)
     : profile_(profile),
       metrics_(ukm::UkmBackgroundRecorderFactory::GetForProfile(profile)),
-      aggregator_(OfflineContentAggregatorFactory::GetForKey(
-          profile->GetProfileKey())) {
+      aggregator_(
+          OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey())),
+      site_engagement_service_(
+          SiteEngagementServiceFactory::GetForProfile(profile)) {
   aggregator_->RegisterProvider(kProviderNamespace, this);
 }
 
@@ -153,6 +118,7 @@ ContentIndexProviderImpl::~ContentIndexProviderImpl() {
 void ContentIndexProviderImpl::Shutdown() {
   aggregator_->UnregisterProvider(kProviderNamespace);
   aggregator_ = nullptr;
+  site_engagement_service_ = nullptr;
 }
 
 std::vector<gfx::Size> ContentIndexProviderImpl::GetIconSizes(
@@ -287,15 +253,17 @@ void ContentIndexProviderImpl::GetItemById(const ContentId& id,
 
   storage_partition->GetContentIndexContext()->GetEntry(
       components.service_worker_registration_id, components.description_id,
-      base::BindOnce(
-          [](SingleItemCallback callback,
-             base::Optional<content::ContentIndexEntry> entry) {
-            if (!entry)
-              std::move(callback).Run(base::nullopt);
-            else
-              std::move(callback).Run(EntryToOfflineItem(*entry));
-          },
-          std::move(callback)));
+      base::BindOnce(&ContentIndexProviderImpl::DidGetItem,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ContentIndexProviderImpl::DidGetItem(
+    SingleItemCallback callback,
+    base::Optional<content::ContentIndexEntry> entry) {
+  if (!entry)
+    std::move(callback).Run(base::nullopt);
+  else
+    std::move(callback).Run(EntryToOfflineItem(*entry));
 }
 
 void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
@@ -317,8 +285,10 @@ void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
   // Get the all entries from every partition.
   auto barrier_closure = base::BarrierClosure(
       storage_paritions.size(),
-      base::BindOnce(&DidGetAllEntriesAcrossStorageParitions,
-                     std::move(item_list), std::move(callback)));
+      base::BindOnce(
+          &ContentIndexProviderImpl::DidGetAllEntriesAcrossStorageParitions,
+          weak_ptr_factory_.GetWeakPtr(), std::move(item_list),
+          std::move(callback)));
 
   for (auto* storage_partition : storage_paritions) {
     if (!storage_partition || !storage_partition->GetContentIndexContext()) {
@@ -328,9 +298,33 @@ void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
 
     // |item_list_ptr| is safe to use since it is owned by the barrier
     // closure.
-    storage_partition->GetContentIndexContext()->GetAllEntries(
-        base::BindOnce(&DidGetAllEntries, barrier_closure, item_list_ptr));
+    storage_partition->GetContentIndexContext()->GetAllEntries(base::BindOnce(
+        &ContentIndexProviderImpl::DidGetAllEntries,
+        weak_ptr_factory_.GetWeakPtr(), barrier_closure, item_list_ptr));
   }
+}
+
+void ContentIndexProviderImpl::DidGetAllEntriesAcrossStorageParitions(
+    std::unique_ptr<OfflineItemList> item_list,
+    MultipleItemCallback callback) {
+  ContentIndexMetrics::RecordContentIndexEntries(item_list->size());
+  std::move(callback).Run(*item_list);
+}
+
+void ContentIndexProviderImpl::DidGetAllEntries(
+    base::OnceClosure done_closure,
+    OfflineItemList* item_list,
+    blink::mojom::ContentIndexError error,
+    std::vector<content::ContentIndexEntry> entries) {
+  if (error != blink::mojom::ContentIndexError::NONE) {
+    std::move(done_closure).Run();
+    return;
+  }
+
+  for (const auto& entry : entries)
+    item_list->push_back(EntryToOfflineItem(entry));
+
+  std::move(done_closure).Run();
 }
 
 void ContentIndexProviderImpl::GetVisualsForItem(const ContentId& id,
@@ -351,6 +345,31 @@ void ContentIndexProviderImpl::GetVisualsForItem(const ContentId& id,
       components.service_worker_registration_id, components.description_id,
       base::BindOnce(&ContentIndexProviderImpl::DidGetIcons,
                      weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
+}
+
+OfflineItem ContentIndexProviderImpl::EntryToOfflineItem(
+    const content::ContentIndexEntry& entry) {
+  OfflineItem item;
+  item.id = ContentId(kProviderNamespace, EntryKey(entry));
+  item.title = entry.description->title;
+  item.description = entry.description->description;
+  item.filter = CategoryToFilter(entry.description->category);
+  item.is_transient = false;
+  item.is_suggested = true;
+  item.creation_time = entry.registration_time;
+  item.is_openable = true;
+  item.state = offline_items_collection::OfflineItemState::COMPLETE;
+  item.is_resumable = false;
+  item.can_rename = false;
+  item.page_url = entry.launch_url;
+
+  if (site_engagement_service_) {
+    item.content_quality_score =
+        site_engagement_service_->GetScore(entry.launch_url.GetOrigin()) /
+        SiteEngagementScore::kMaxPoints;
+  }
+
+  return item;
 }
 
 void ContentIndexProviderImpl::DidGetIcons(const ContentId& id,

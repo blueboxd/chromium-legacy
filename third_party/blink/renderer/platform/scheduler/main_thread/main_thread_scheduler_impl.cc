@@ -97,7 +97,7 @@ const char* BackgroundStateToString(bool is_backgrounded) {
   if (is_backgrounded) {
     return "renderer_backgrounded";
   } else {
-    return "renderer_visible";
+    return "renderer_foregrounded";
   }
 }
 
@@ -371,12 +371,12 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
                             &main_thread_scheduler_impl->tracing_controller_,
                             RAILModeToString),
       renderer_hidden(false,
-                      "Scheduler.Hidden",
+                      "RendererVisibility",
                       main_thread_scheduler_impl,
                       &main_thread_scheduler_impl->tracing_controller_,
                       HiddenStateToString),
       renderer_backgrounded(kLaunchingProcessIsBackgrounded,
-                            "RendererVisibility",
+                            "RendererPriority",
                             main_thread_scheduler_impl,
                             &main_thread_scheduler_impl->tracing_controller_,
                             BackgroundStateToString),
@@ -2312,14 +2312,6 @@ void MainThreadSchedulerImpl::RemoveRAILModeObserver(
 void MainThreadSchedulerImpl::SetRendererProcessType(
     WebRendererProcessType type) {
   main_thread_only().process_type = type;
-}
-
-WebScopedVirtualTimePauser
-MainThreadSchedulerImpl::CreateWebScopedVirtualTimePauser(
-    const char* name,
-    WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
-  return WebScopedVirtualTimePauser(this, duration,
-                                    WebString(WTF::String(name)));
 }
 
 PendingUserInputInfo MainThreadSchedulerImpl::GetPendingUserInputInfo() const {

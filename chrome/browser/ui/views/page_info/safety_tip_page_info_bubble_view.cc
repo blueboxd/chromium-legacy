@@ -35,18 +35,35 @@ using security_state::SafetyTipStatus;
 namespace {
 
 int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status) {
-  switch (safety_tip_status) {
-    case security_state::SafetyTipStatus::kBadReputation:
-      return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION;
-    case security_state::SafetyTipStatus::kLookalike:
-      return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION;
-    case security_state::SafetyTipStatus::kBadKeyword:
-    case security_state::SafetyTipStatus::kUnknown:
-    case security_state::SafetyTipStatus::kNone:
-      NOTREACHED();
+  const ui::NativeTheme* native_theme =
+      ui::NativeTheme::GetInstanceForNativeUi();
+  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
+
+  if (is_dark) {
+    switch (safety_tip_status) {
+      case security_state::SafetyTipStatus::kBadReputation:
+        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK;
+      case security_state::SafetyTipStatus::kLookalike:
+        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_DARK;
+      case security_state::SafetyTipStatus::kBadKeyword:
+      case security_state::SafetyTipStatus::kUnknown:
+      case security_state::SafetyTipStatus::kNone:
+        NOTREACHED();
+    }
+  } else {
+    switch (safety_tip_status) {
+      case security_state::SafetyTipStatus::kBadReputation:
+        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
+      case security_state::SafetyTipStatus::kLookalike:
+        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT;
+      case security_state::SafetyTipStatus::kBadKeyword:
+      case security_state::SafetyTipStatus::kUnknown:
+      case security_state::SafetyTipStatus::kNone:
+        NOTREACHED();
+    }
   }
   NOTREACHED();
-  return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION;
+  return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
 }
 
 }  // namespace
@@ -137,8 +154,9 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL);
   bottom_layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
                                      views::GridLayout::kFixedSize, spacing);
-  auto text_label = std::make_unique<views::Label>(
-      safety_tips::GetSafetyTipDescription(safety_tip_status, suggested_url_));
+  auto text_label =
+      std::make_unique<views::Label>(safety_tips::GetSafetyTipDescription(
+          safety_tip_status, url_, suggested_url_));
   text_label->SetMultiLine(true);
   text_label->SetLineHeight(20);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

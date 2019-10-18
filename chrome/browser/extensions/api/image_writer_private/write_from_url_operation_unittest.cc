@@ -38,13 +38,13 @@ class WriteFromUrlOperationForTest : public WriteFromUrlOperation {
   WriteFromUrlOperationForTest(
       base::WeakPtr<OperationManager> manager,
       const ExtensionId& extension_id,
-      network::mojom::URLLoaderFactoryPtrInfo factory_info,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote,
       GURL url,
       const std::string& hash,
       const std::string& storage_unit_id)
       : WriteFromUrlOperation(manager,
                               extension_id,
-                              std::move(factory_info),
+                              std::move(factory_remote),
                               url,
                               hash,
                               storage_unit_id,
@@ -115,15 +115,16 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
   scoped_refptr<WriteFromUrlOperationForTest> CreateOperation(
       const GURL& url,
       const std::string& hash) {
-    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        url_loader_factory_remote;
     content::BrowserContext::GetDefaultStoragePartition(&test_profile_)
         ->GetURLLoaderFactoryForBrowserProcess()
-        ->Clone(mojo::MakeRequest(&url_loader_factory_ptr_info));
+        ->Clone(url_loader_factory_remote.InitWithNewPipeAndPassReceiver());
 
     scoped_refptr<WriteFromUrlOperationForTest> operation(
         new WriteFromUrlOperationForTest(
             manager_.AsWeakPtr(), kDummyExtensionId,
-            std::move(url_loader_factory_ptr_info), url, hash,
+            std::move(url_loader_factory_remote), url, hash,
             test_utils_.GetDevicePath().AsUTF8Unsafe()));
     operation->Start();
     return operation;

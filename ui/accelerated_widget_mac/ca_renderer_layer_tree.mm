@@ -21,6 +21,10 @@
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_image_io_surface.h"
 
+@interface CALayer (Private)
+@property BOOL wantsExtendedDynamicRangeContent;
+@end
+
 namespace ui {
 
 namespace {
@@ -384,6 +388,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect_in,
     unsigned background_color,
+    bool triggers_hdr,
     unsigned edge_aa_mask,
     float opacity,
     unsigned filter)
@@ -392,6 +397,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       contents_rect(contents_rect),
       rect(rect_in),
       background_color(background_color),
+      triggers_hdr(triggers_hdr),
       ca_edge_aa_mask(0),
       opacity(opacity),
       ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest) {
@@ -478,6 +484,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       contents_rect(layer.contents_rect),
       rect(layer.rect),
       background_color(layer.background_color),
+      triggers_hdr(layer.triggers_hdr),
       ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
       ca_filter(layer.ca_filter),
@@ -553,6 +560,7 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     const CARendererLayerParams& params) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
+  bool triggers_hdr = false;
   if (params.image) {
     gl::GLImageIOSurface* io_surface_image =
         gl::GLImageIOSurface::FromGLImage(params.image);
@@ -566,12 +574,12 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     // TODO(ccameron): If this indeed causes the bug to disappear, then
     // extirpate the CVPixelBufferRef path.
     // cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
+    triggers_hdr = params.image->color_space().IsHDR();
   }
-
   content_layers.push_back(
       ContentLayer(tree, io_surface, cv_pixel_buffer, params.contents_rect,
-                   params.rect, params.background_color, params.edge_aa_mask,
-                   params.opacity, params.filter));
+                   params.rect, params.background_color, triggers_hdr,
+                   params.edge_aa_mask, params.opacity, params.filter));
 }
 
 void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
@@ -747,6 +755,7 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_contents_rect = true;
   bool update_rect = true;
   bool update_background_color = true;
+  bool update_triggers_hdr = true;
   bool update_ca_edge_aa_mask = true;
   bool update_opacity = true;
   bool update_ca_filter = true;
@@ -760,6 +769,7 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     update_contents_rect = old_layer->contents_rect != contents_rect;
     update_rect = old_layer->rect != rect;
     update_background_color = old_layer->background_color != background_color;
+    update_triggers_hdr = old_layer->triggers_hdr != triggers_hdr;
     update_ca_edge_aa_mask = old_layer->ca_edge_aa_mask != ca_edge_aa_mask;
     update_opacity = old_layer->opacity != opacity;
     update_ca_filter = old_layer->ca_filter != ca_filter;
@@ -780,8 +790,8 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   DCHECK_EQ([ca_layer superlayer], superlayer);
   bool update_anything = update_contents || update_contents_rect ||
                          update_rect || update_background_color ||
-                         update_ca_edge_aa_mask || update_opacity ||
-                         update_ca_filter;
+                         update_triggers_hdr || update_ca_edge_aa_mask ||
+                         update_opacity || update_ca_filter;
   if (use_av_layer) {
     if (update_contents) {
       bool result = false;
@@ -834,6 +844,15 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     base::ScopedCFTypeRef<CGColorRef> srgb_background_color(CGColorCreate(
         CGColorSpaceCreateWithName(kCGColorSpaceSRGB), rgba_color_components));
     [ca_layer setBackgroundColor:srgb_background_color];
+  }
+  if (update_triggers_hdr) {
+    if (@available(macos 10.15, *)) {
+      if ([ca_layer
+              respondsToSelector:(@selector
+                                  (setWantsExtendedDynamicRangeContent:))]) {
+        [ca_layer setWantsExtendedDynamicRangeContent:triggers_hdr];
+      }
+    }
   }
   if (update_ca_edge_aa_mask)
     [ca_layer setEdgeAntialiasingMask:ca_edge_aa_mask];

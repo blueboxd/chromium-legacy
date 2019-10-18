@@ -26,6 +26,17 @@
       "position": [1, 1],
       "bounds": [100, 500],
       "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [94, 1],
+      "bounds": [7, 100],
+      "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [394, 1],
+      "bounds": [7, 300]
     }
   ],
   "transforms": [

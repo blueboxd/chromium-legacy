@@ -18,7 +18,7 @@ interface MediaPerceptionService {
 
 interface MediaPerceptionController {
   // Used by the client to establish a MediaPerception pipe.
-  ActivateMediaPerception@0(MediaPerception& request);
+  ActivateMediaPerception@0(pending_receiver<MediaPerception> receiver);
 };
 
 interface MediaPerceptionControllerClient {

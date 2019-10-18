@@ -190,8 +190,10 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 - (void)detachView {
-  [self dismissInfobarBanner:self animated:NO completion:nil];
-  [self dismissInfobarModal:self animated:NO completion:nil];
+  if (self.bannerViewController)
+    [self dismissInfobarBanner:self animated:NO completion:nil];
+  if (self.modalViewController)
+    [self dismissInfobarModal:self animated:NO completion:nil];
   [self stop];
 }
 

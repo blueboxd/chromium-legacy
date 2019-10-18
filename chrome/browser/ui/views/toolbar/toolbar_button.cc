@@ -214,6 +214,14 @@ void ToolbarButton::SetLeadingMargin(int margin) {
   UpdateColorsAndInsets();
 }
 
+void ToolbarButton::SetTrailingMargin(int margin) {
+  gfx::Insets* const internal_padding = GetProperty(views::kInternalPaddingKey);
+  if (internal_padding->right() == margin)
+    return;
+  internal_padding->set_right(margin);
+  UpdateColorsAndInsets();
+}
+
 void ToolbarButton::ClearPendingMenu() {
   show_menu_factory_.InvalidateWeakPtrs();
 }

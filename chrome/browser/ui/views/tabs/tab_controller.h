@@ -191,6 +191,12 @@ class TabController {
   virtual void SetVisualDataForGroup(TabGroupId group,
                                      TabGroupVisualData visual_data) = 0;
 
+  virtual void CloseAllTabsInGroup(TabGroupId group) = 0;
+
+  virtual void UngroupAllTabsInGroup(TabGroupId group) = 0;
+
+  virtual void AddNewTabInGroup(TabGroupId group) = 0;
+
  protected:
   virtual ~TabController() {}
 };

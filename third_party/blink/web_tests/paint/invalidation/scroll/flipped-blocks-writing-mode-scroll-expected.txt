@@ -22,6 +22,12 @@
         }
       ],
       "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 385],
+      "bounds": [400, 15],
+      "transform": 1
     }
   ],
   "transforms": [

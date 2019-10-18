@@ -2580,11 +2580,6 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
-  // TODO(zhongyi): remove condition check once b/115926584 is fixed.
-  if (version_.transport_version <= quic::QUIC_VERSION_39) {
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeDummyCHLOPacket(packet_num++));
-  }
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(
@@ -2689,11 +2684,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
-  // TODO(zhongyi): remove condition check once b/115926584 is fixed.
-  if (version_.transport_version <= quic::QUIC_VERSION_39) {
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeDummyCHLOPacket(packet_num++));
-  }
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(
@@ -2827,11 +2817,6 @@ TEST_P(QuicNetworkTransactionTest,
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
-  // TODO(zhongyi): remove condition check once b/115926584 is fixed.
-  if (version_.transport_version <= quic::QUIC_VERSION_39) {
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeDummyCHLOPacket(packet_num++));
-  }
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(
@@ -2955,12 +2940,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeDummyCHLOPacket(packet_num++));
-  // TODO(zhongyi): remove condition check once b/115926584 is fixed, i.e.,
-  // quic_fix_has_pending_crypto_data is introduced and enabled.
-  if (version_.transport_version <= quic::QUIC_VERSION_39) {
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeDummyCHLOPacket(packet_num++));
-  }
   // After timeout, connection will be closed with QUIC_NETWORK_IDLE_TIMEOUT.
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakeConnectionClosePacket(

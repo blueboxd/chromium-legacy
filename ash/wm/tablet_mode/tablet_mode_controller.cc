@@ -682,14 +682,18 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
   } else {
     state_ = State::kExitingTabletMode;
 
-    tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
+    // We may have entered tablet mode, then tried to exit before the screenshot
+    // was taken. In this case |tablet_mode_window_manager_| will be null.
+    if (tablet_mode_window_manager_)
+      tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
+
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeEnding();
-    // Make sure that calling `TabletModeController::InTabletMode()` returns
-    // false from now on.
-    std::unique_ptr<TabletModeWindowManager> to_be_removed_tablet_mode_wm =
-        std::move(tablet_mode_window_manager_);
-    to_be_removed_tablet_mode_wm->Shutdown();
+
+    if (tablet_mode_window_manager_)
+      tablet_mode_window_manager_->Shutdown();
+    tablet_mode_window_manager_.reset();
+
     base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));
     RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_ACTIVE);
     state_ = State::kInClamshellMode;
@@ -924,6 +928,8 @@ void TabletModeController::ResetPauser() {
 }
 
 void TabletModeController::FinishInitTabletMode() {
+  DCHECK_EQ(State::kEnteringTabletMode, state_);
+
   for (auto& observer : tablet_mode_observers_)
     observer.OnTabletModeStarting();
   tablet_mode_window_manager_ = std::make_unique<TabletModeWindowManager>();

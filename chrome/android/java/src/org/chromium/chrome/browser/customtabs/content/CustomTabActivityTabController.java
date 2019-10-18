@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.FirstMeaningfulPaintObserver;
 import org.chromium.chrome.browser.customtabs.PageLoadMetricsObserver;
+import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -97,6 +98,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
     private final ActivityTabProvider mActivityTabProvider;
     private final CustomTabActivityTabProvider mTabProvider;
     private final StartupTabPreloader mStartupTabPreloader;
+    private final ReparentingTaskProvider mReparentingTaskProvider;
 
     @Nullable
     private final CustomTabsSessionToken mSession;
@@ -120,7 +122,8 @@ public class CustomTabActivityTabController implements InflationObserver, Native
             CustomTabTabPersistencePolicy persistencePolicy, CustomTabActivityTabFactory tabFactory,
             Lazy<CustomTabObserver> customTabObserver, WebContentsFactory webContentsFactory,
             CustomTabNavigationEventObserver tabNavigationEventObserver,
-            CustomTabActivityTabProvider tabProvider, StartupTabPreloader startupTabPreloader) {
+            CustomTabActivityTabProvider tabProvider, StartupTabPreloader startupTabPreloader,
+            ReparentingTaskProvider reparentingTaskProvider) {
         mCustomTabDelegateFactory = customTabDelegateFactory;
         mActivity = activity;
         mConnection = connection;
@@ -136,6 +139,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         mActivityTabProvider = activityTabProvider;
         mTabProvider = tabProvider;
         mStartupTabPreloader = startupTabPreloader;
+        mReparentingTaskProvider = reparentingTaskProvider;
 
         mSession = mIntentDataProvider.getSession();
         mIntent = mIntentDataProvider.getIntent();
@@ -166,7 +170,8 @@ public class CustomTabActivityTabController implements InflationObserver, Native
             return;
         }
         mTabProvider.removeTab();
-        tab.detachAndStartReparenting(intent, startActivityOptions, finishCallback);
+        mReparentingTaskProvider.get(tab).begin(
+                mActivity, intent, startActivityOptions, finishCallback);
     }
 
     /**
@@ -311,7 +316,7 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         if (mode == TabCreationMode.HIDDEN) {
             TabReparentingParams params =
                     (TabReparentingParams) AsyncTabParamsManager.remove(tab.getId());
-            tab.attachAndFinishReparenting(mActivity, mCustomTabDelegateFactory.get(),
+            mReparentingTaskProvider.get(tab).finish(mActivity, mCustomTabDelegateFactory.get(),
                     (params == null ? null : params.getFinalizeCallback()));
         }
 

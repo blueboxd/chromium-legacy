@@ -556,21 +556,19 @@
           </chooser-exception-list>
         </settings-subpage>
       </template>
-      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
-        <template is="dom-if" route-path="/content/serialPorts" no-search>
-          <settings-subpage page-title="$i18n{siteSettingsSerialPorts}">
-            <category-default-setting
-                toggle-off-label="$i18n{siteSettingsSerialPortsBlock}"
-                toggle-on-label=
-                    "$i18n{siteSettingsSerialPortsAskRecommended}"
-                category="{{ContentSettingsTypes.SERIAL_PORTS}}">
-            </category-default-setting>
-            <chooser-exception-list
-                category="{{ContentSettingsTypes.SERIAL_PORTS}}"
-                chooser-type="{{ChooserType.SERIAL_PORTS}}">
-            </chooser-exception-list>
-          </settings-subpage>
-        </template>
+      <template is="dom-if" route-path="/content/serialPorts" no-search>
+        <settings-subpage page-title="$i18n{siteSettingsSerialPorts}">
+          <category-default-setting
+              toggle-off-label="$i18n{siteSettingsSerialPortsBlock}"
+              toggle-on-label=
+                  "$i18n{siteSettingsSerialPortsAskRecommended}"
+              category="{{ContentSettingsTypes.SERIAL_PORTS}}">
+          </category-default-setting>
+          <chooser-exception-list
+              category="{{ContentSettingsTypes.SERIAL_PORTS}}"
+              chooser-type="{{ChooserType.SERIAL_PORTS}}">
+          </chooser-exception-list>
+        </settings-subpage>
       </template>
       <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
         <template is="dom-if" route-path="/content/filesystem" no-search>

@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
@@ -1440,7 +1439,7 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
 }
 
 DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
-                                const USVStringOrTrustedURL& string_or_url,
+                                const String& url_string,
                                 const AtomicString& target,
                                 const String& features,
                                 ExceptionState& exception_state) {
@@ -1457,11 +1456,6 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
                       WebFeature::kWindowOpenRealmMismatch);
     return nullptr;
   }
-
-  const String& url_string =
-      GetStringFromTrustedURL(string_or_url, document_, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
 
   if (!IsCurrentlyDisplayedInFrame())
     return nullptr;

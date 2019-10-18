@@ -2176,7 +2176,18 @@ void NetworkContext::InitializeCorsParams() {
   }
   for (const auto& key : params_->cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
-  cors_enabled_ = params_->enable_cors;
+  switch (params_->cors_mode) {
+    case mojom::NetworkContextParams::CorsMode::kDefault:
+      cors_enabled_ =
+          base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
+      break;
+    case mojom::NetworkContextParams::CorsMode::kEnable:
+      cors_enabled_ = true;
+      break;
+    case mojom::NetworkContextParams::CorsMode::kDisable:
+      cors_enabled_ = false;
+      break;
+  }
 }
 
 void NetworkContext::GetOriginPolicyManager(

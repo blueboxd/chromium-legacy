@@ -31,6 +31,7 @@ jumbo_source_set("internal") {
     "async_policy_provider.h",
     "chrome_schema.cc",
     "chrome_schema.h",
+    "cloud/chrome_browser_cloud_management_metrics.h",
     "cloud/cloud_external_data_manager.cc",
     "cloud/cloud_external_data_manager.h",
     "cloud/cloud_policy_client.cc",
@@ -71,7 +72,6 @@ jumbo_source_set("internal") {
     "cloud/external_policy_data_updater.h",
     "cloud/machine_level_user_cloud_policy_manager.cc",
     "cloud/machine_level_user_cloud_policy_manager.h",
-    "cloud/machine_level_user_cloud_policy_metrics.h",
     "cloud/machine_level_user_cloud_policy_store.cc",
     "cloud/machine_level_user_cloud_policy_store.h",
     "cloud/policy_value_validator.h",
@@ -229,11 +229,11 @@ jumbo_source_set("internal") {
       "proxy_policy_provider.h",
     ]
     sources -= [
+      "cloud/chrome_browser_cloud_management_metrics.h",
       "cloud/cloud_policy_client_registration_helper.cc",
       "cloud/cloud_policy_client_registration_helper.h",
       "cloud/machine_level_user_cloud_policy_manager.cc",
       "cloud/machine_level_user_cloud_policy_manager.h",
-      "cloud/machine_level_user_cloud_policy_metrics.h",
       "cloud/machine_level_user_cloud_policy_store.cc",
       "cloud/machine_level_user_cloud_policy_store.h",
       "cloud/user_cloud_policy_manager.cc",

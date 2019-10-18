@@ -66,9 +66,13 @@ class ToolbarButton : public views::LabelButton,
   void SetHighlight(const base::string16& highlight_text,
                     base::Optional<SkColor> highlight_color);
 
-  // Sets |margin_leading_| when the browser is maximized and updates layout
-  // to make the focus rectangle centered.
+  // Sets the leading margin when the browser is maximized and updates layout to
+  // make the focus rectangle centered.
   void SetLeadingMargin(int margin);
+
+  // Sets the trailing margin when the browser is maximized and updates layout
+  // to make the focus rectangle centered.
+  void SetTrailingMargin(int margin);
 
   // Methods for handling ButtonDropDown-style menus.
   void ClearPendingMenu();
@@ -127,6 +131,8 @@ class ToolbarButton : public views::LabelButton,
 
   // Sets |layout_inset_delta_|, see comment there.
   void SetLayoutInsetDelta(const gfx::Insets& insets);
+
+  void UpdateColorsAndInsets();
 
   static constexpr int kDefaultIconSize = 16;
   static constexpr int kDefaultTouchableIconSize = 24;
@@ -188,8 +194,6 @@ class ToolbarButton : public views::LabelButton,
   // it hides the current highlight using an animation. Otherwise, it is a
   // no-op.
   void ClearHighlight();
-
-  void UpdateColorsAndInsets();
 
   // Sets the spacing on the outer side of the label (not the side where the
   // image is). The spacing is applied only when the label is non-empty.

@@ -208,42 +208,41 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void InitiateConnection(bool in_memory_only = false);
   void OnDatabaseOpened(leveldb::Status status);
 
-  struct DatabaseMetadataResult {
-    DatabaseMetadataResult();
-    DatabaseMetadataResult(DatabaseMetadataResult&&);
-    DatabaseMetadataResult(const DatabaseMetadataResult&) = delete;
-    ~DatabaseMetadataResult();
-
-    storage::DomStorageDatabase::Value version;
-    leveldb::Status version_status;
-
-    storage::DomStorageDatabase::Value next_map_id;
-    leveldb::Status next_map_id_status;
-
-    std::vector<storage::DomStorageDatabase::KeyValuePair> namespaces;
-    leveldb::Status namespaces_status;
+  struct ValueAndStatus {
+    ValueAndStatus();
+    ValueAndStatus(ValueAndStatus&&);
+    ~ValueAndStatus();
+    leveldb::Status status;
+    storage::DomStorageDatabase::Value value;
   };
-  void OnGotDatabaseMetadata(DatabaseMetadataResult result);
+
+  struct KeyValuePairsAndStatus {
+    KeyValuePairsAndStatus();
+    KeyValuePairsAndStatus(KeyValuePairsAndStatus&&);
+    ~KeyValuePairsAndStatus();
+    leveldb::Status status;
+    std::vector<storage::DomStorageDatabase::KeyValuePair> key_value_pairs;
+  };
+
+  void OnGotDatabaseMetadata(ValueAndStatus version,
+                             KeyValuePairsAndStatus namespaces,
+                             ValueAndStatus next_map_id);
 
   struct MetadataParseResult {
     OpenResult open_result;
     const char* histogram_name;
   };
   MetadataParseResult ParseDatabaseVersion(
-      DatabaseMetadataResult* result,
+      ValueAndStatus version,
       std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations);
   MetadataParseResult ParseNamespaces(
-      DatabaseMetadataResult* result,
+      KeyValuePairsAndStatus namespaces,
       std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations);
-  MetadataParseResult ParseNextMapId(DatabaseMetadataResult* result);
+  MetadataParseResult ParseNextMapId(ValueAndStatus next_map_id);
 
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);
   void OnDBDestroyed(bool recreate_in_memory, leveldb::Status status);
-
-  void OnGotMetaData(GetStorageUsageCallback callback,
-                     leveldb::Status status,
-                     std::vector<leveldb::mojom::KeyValuePtr> data);
 
   void OnShutdownComplete(leveldb::Status status);
 

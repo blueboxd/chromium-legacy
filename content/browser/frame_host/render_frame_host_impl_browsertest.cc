@@ -1981,7 +1981,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Verify that the NavigationHandle / NavigationRequest didn't leak.
   RenderFrameHostImpl* frame = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetAllFrames()[1]);
-  EXPECT_FALSE(frame->HasPendingCommitNavigationForTesting());
+  EXPECT_FALSE(frame->HasPendingCommitNavigation());
 
   // TODO(lukasza, clamy): https://crbug.com/784904: Verify that
   // WebContentsObserver::DidFinishNavigation was called with the same

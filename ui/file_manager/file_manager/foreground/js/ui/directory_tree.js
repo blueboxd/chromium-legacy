@@ -135,11 +135,55 @@ const TREE_ITEM_INNER_HTML = '<div class="tree-row">' +
     '<div class="tree-children" role="group"></div>';
 
 ////////////////////////////////////////////////////////////////////////////////
-// DirectoryItem
+// TreeItem
+
+/**
+ * A CSS class .tree-row rowElement contains the content of one tree row, and
+ * is always followed by 0 or more children in a 'group' indented by one more
+ * level of depth relative their .tree-item parent:
+ *
+ *   <div class='tree-item'> {class TreeItem extends cr.ui.TreeItem}
+ *     <div class='tree-row'>
+ *       .tree-row content ...
+ *     <div>
+ *     <div class='tree-children' role='group' expanded='true||false'>
+ *       0 or more indented .tree-item children ...
+ *     </div>
+ *   </div>
+ *
+ * Create tree rowElement content: returns a string of HTML used to innerHTML
+ * a tree item rowElement.
+ * @param {string} id The tree rowElement label Id.
+ * @param {string} label The tree rowElement label.
+ * @return {string}
+ */
+directorytree.createRowElementContent = (id, label) => {
+  return `
+    <paper-ripple fit class='recenteringTouch'></paper-ripple>
+    <span class='expand-icon'></span>
+    <span class='icon'></span>
+    <span class='label entry-name' id='${id}'>${label}</span>`;
+};
+
+/**
+ * Create tree rowElement content: returns a string of HTML used to innerHTML
+ * a tree item rowElement for FILES_NG_ENABLED case.
+ * @param {string} id The tree rowElement label Id.
+ * @param {string} label The tree rowElement label.
+ * @return {string}
+ */
+directorytree.createRowElementContentFilesNG = (id, label) => {
+  return `
+    <div class='file-row'>
+     <span class='expand-icon'></span>
+     <span class='icon'></span>
+     <span class='label entry-name' id='${id}'>${label}</span>
+    </div>`;
+};
 
 /**
  * An optional rowElement depth (indent) style handler where undefined uses the
- * default cr.ui.Tree/cr.ui.TreeItem indent styling.
+ * default cr.ui.TreeItem indent styling.
  *
  * TODO(crbug.com/992819): add an implementation for the FILES_NG_ENABLED case,
  * where a rowElement child needs the indent, not the rowElement itself.
@@ -147,6 +191,44 @@ const TREE_ITEM_INNER_HTML = '<div class="tree-row">' +
  * @type {function(!cr.ui.TreeItem,number)|undefined}
  */
 directorytree.styleRowElementDepth = undefined;
+
+/**
+ * A tree item has a tree row with a text label.
+ */
+class TreeItem extends cr.ui.TreeItem {
+  /**
+   * @param {string} label Label for this item.
+   * @param {DirectoryTree} tree Tree that contains this item.
+   */
+  constructor(label, tree) {
+    super();
+
+    // Save the cr.ui.TreeItem label id before overwriting the prototype.
+    const id = this.labelElement.id;
+    this.__proto__ = TreeItem.prototype;
+
+    if (window.IN_TEST) {
+      this.setAttribute('entry-label', label);
+    }
+
+    this.parentTree_ = tree;
+
+    const innerHTML = directorytree.createRowElementContent(id, label);
+    this.rowElement.innerHTML = innerHTML;
+  }
+
+  /**
+   * The element containing the label text.
+   * @type {!HTMLElement}
+   * @override
+   */
+  get labelElement() {
+    return this.rowElement.querySelector('.label');
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DirectoryItem
 
 /**
  * An expandable directory in the tree. Each element represents one folder (sub

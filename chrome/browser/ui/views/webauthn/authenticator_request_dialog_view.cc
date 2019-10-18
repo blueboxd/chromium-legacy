@@ -26,6 +26,19 @@
 #include "ui/views/vector_icons.h"
 #include "ui/views/window/dialog_client_view.h"
 
+namespace {
+
+std::unique_ptr<views::View> CreateOtherTransportsButton(
+    views::ButtonListener* listener) {
+  auto other_transports_button =
+      std::make_unique<views::MdTextButtonWithDownArrow>(
+          listener,
+          l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL));
+  return other_transports_button;
+}
+
+}  // namespace
+
 // static
 void ShowAuthenticatorRequestDialog(
     content::WebContents* web_contents,
@@ -54,6 +67,8 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
     : content::WebContentsObserver(web_contents),
       model_(std::move(model)),
       sheet_(nullptr),
+      other_transports_button_(
+          DialogDelegate::SetExtraView(CreateOtherTransportsButton(this))),
       web_contents_hidden_(web_contents->GetVisibility() ==
                            content::Visibility::HIDDEN) {
   DCHECK(!model_->should_dialog_be_closed());
@@ -87,15 +102,6 @@ gfx::Size AuthenticatorRequestDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-std::unique_ptr<views::View> AuthenticatorRequestDialogView::CreateExtraView() {
-  auto other_transports_button =
-      std::make_unique<views::MdTextButtonWithDownArrow>(
-          this, l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL));
-  other_transports_button_ = other_transports_button.get();
-  ToggleOtherTransportsButtonVisibility();
-  return other_transports_button;
 }
 
 bool AuthenticatorRequestDialogView::Accept() {
@@ -371,10 +377,6 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
 }
 
 void AuthenticatorRequestDialogView::ToggleOtherTransportsButtonVisibility() {
-  // The button is not yet created when this is called for the first time.
-  if (!other_transports_button_)
-    return;
-
   other_transports_button_->SetVisible(ShouldOtherTransportsButtonBeVisible());
 }
 

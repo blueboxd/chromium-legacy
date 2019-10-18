@@ -31,6 +31,13 @@ class AvatarToolbarButton : public ToolbarButton,
                             public ui::MaterialDesignControllerObserver,
                             ToolbarIconContainerView::Observer {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    virtual void OnAvatarHighlightAnimationFinished() = 0;
+  };
+
   // TODO(crbug.com/922525): Remove this constructor when this button always has
   // ToolbarIconContainerView as a parent.
   explicit AvatarToolbarButton(Browser* browser);
@@ -41,6 +48,9 @@ class AvatarToolbarButton : public ToolbarButton,
   void UpdateText();
   void ShowAvatarHighlightAnimation();
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
                            HighlightMeetsMinimumContrast);
@@ -50,7 +60,6 @@ class AvatarToolbarButton : public ToolbarButton,
     kIncognitoProfile,
     kGuestSession,
     kGenericProfile,
-    kHighlightAnimation,
     kAnimatedUserIdentity,
     kSyncPaused,
     kSyncError,
@@ -136,8 +145,9 @@ class AvatarToolbarButton : public ToolbarButton,
   Profile* const profile_;
   ToolbarIconContainerView* const parent_;
 
-  // Whether the avatar highlight animation is visible. If true, hide avatar
-  // button sync paused/error state and update highlight color.
+  // Whether the avatar highlight animation is visible. The animation is shown
+  // when an Autofill datatype is saved. When this is true the avatar button
+  // sync paused/error state will be disabled.
   bool highlight_animation_visible_ = false;
 
   IdentityAnimationState identity_animation_state_ =
@@ -150,6 +160,8 @@ class AvatarToolbarButton : public ToolbarButton,
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>
       md_observer_{this};
+
+  base::ObserverList<Observer>::Unchecked observer_list_;
 
   base::WeakPtrFactory<AvatarToolbarButton> weak_ptr_factory_{this};
 

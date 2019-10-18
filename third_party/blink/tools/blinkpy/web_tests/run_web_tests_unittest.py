@@ -538,6 +538,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             ['--order', 'natural', 'failures/unexpected/reftest-mismatch-with-text-mismatch-with-stderr.html',],
             tests_included=True, host=host))
 
+    @unittest.skip('Need to make subprocesses use mock filesystem')
     def test_crash_log_is_saved_after_delay_using_multiple_jobs(self):
         # TODO(rmhasan): When web_test_runner.run() spawns multiple jobs it uses
         # the non mock file system. We should figure out how to make all subprocesses
@@ -572,6 +573,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             'failures/unexpected/crash-with-sample-sample.txt',
             'retry_1/failures/unexpected/crash-with-sample-sample.txt'])
 
+    @unittest.skip('Need to make subprocesses use mock filesystem')
     def test_crash_sample_file_is_saved_multiple_jobs(self):
         host = MockHost()
         self.assertTrue(logging_run(

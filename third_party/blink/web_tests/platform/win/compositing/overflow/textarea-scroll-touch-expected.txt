@@ -22,6 +22,12 @@
       "transform": 2
     },
     {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [190, 1],
+      "bounds": [15, 109],
+      "transform": 1
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [190, 110],
       "bounds": [15, 15],
@@ -40,6 +46,12 @@
       "contentsOpaque": true,
       "backgroundColor": "#CCCCCC",
       "transform": 4
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [190, 1],
+      "bounds": [15, 109],
+      "transform": 3
     },
     {
       "name": "Scroll Corner Layer",

@@ -19,7 +19,7 @@ FullscreenDelegateProxy::FullscreenDelegateProxy(
     JNIEnv* env,
     jobject obj,
     BrowserController* browser_controller)
-    : browser_controller_(browser_controller), java_observer_(env, obj) {
+    : browser_controller_(browser_controller), java_delegate_(env, obj) {
   browser_controller_->SetFullscreenDelegate(this);
 }
 
@@ -30,12 +30,12 @@ FullscreenDelegateProxy::~FullscreenDelegateProxy() {
 void FullscreenDelegateProxy::EnterFullscreen(base::OnceClosure exit_closure) {
   exit_fullscreen_closure_ = std::move(exit_closure);
   Java_FullscreenDelegateProxy_enterFullscreen(AttachCurrentThread(),
-                                               java_observer_);
+                                               java_delegate_);
 }
 
 void FullscreenDelegateProxy::ExitFullscreen() {
   Java_FullscreenDelegateProxy_exitFullscreen(AttachCurrentThread(),
-                                              java_observer_);
+                                              java_delegate_);
 }
 
 void FullscreenDelegateProxy::DoExitFullscreen(

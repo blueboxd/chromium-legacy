@@ -22,6 +22,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -78,7 +79,8 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
       base::ReadOnlySharedMemoryRegion data,
       media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& content_rect,
-      viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) final;
+      mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+          callbacks) final;
   void OnStopped() final;
 
   // These are called to notify when the capture target has changed or was
@@ -145,12 +147,12 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
 
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> capturer_;
 
-  // A vector that holds the "callbacks" mojo InterfacePtr for each frame while
-  // the frame is being processed by VideoFrameReceiver. The index corresponding
-  // to a particular frame is used as the BufferId passed to VideoFrameReceiver.
+  // A vector that holds the "callbacks" mojo::Remote for each frame while the
+  // frame is being processed by VideoFrameReceiver. The index corresponding to
+  // a particular frame is used as the BufferId passed to VideoFrameReceiver.
   // Therefore, non-null pointers in this vector must never move to a different
   // position.
-  std::vector<viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr>
+  std::vector<mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>>
       frame_callbacks_;
 
   // Set when OnFatalError() is called. This prevents any future

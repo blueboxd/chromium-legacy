@@ -38,13 +38,6 @@ HTMLFrameElement::HTMLFrameElement(Document& document)
       frame_border_(true),
       frame_border_set_(false) {}
 
-const AttrNameToTrustedType& HTMLFrameElement::GetCheckedAttributeTypes()
-    const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"src", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
-
 bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) const {
   // For compatibility, frames render even when display: none is set.
   return ContentFrame();

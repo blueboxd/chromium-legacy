@@ -60,13 +60,6 @@ HTMLTrackElement::HTMLTrackElement(Document& document)
 
 HTMLTrackElement::~HTMLTrackElement() = default;
 
-const AttrNameToTrustedType& HTMLTrackElement::GetCheckedAttributeTypes()
-    const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"src", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
-
 Node::InsertionNotificationRequest HTMLTrackElement::InsertedInto(
     ContainerNode& insertion_point) {
   DVLOG(TRACK_LOG_LEVEL) << "insertedInto";

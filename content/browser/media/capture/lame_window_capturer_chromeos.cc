@@ -15,7 +15,8 @@
 #include "media/base/video_util.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/gfx/geometry/rect.h"
 
 using media::VideoFrame;
@@ -364,11 +365,12 @@ void LameWindowCapturerChromeOS::DeliverFrame(
   const gfx::Rect content_rect = in_flight_frame->content_rect();
 
   // Create a mojo message pipe and bind to the InFlightFrame to wait for the
-  // Done() signal from the consumer. The mojo::StrongBinding takes ownership of
-  // the InFlightFrame.
-  viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks;
-  mojo::MakeStrongBinding(std::move(in_flight_frame),
-                          mojo::MakeRequest(&callbacks));
+  // Done() signal from the consumer. The mojo::SelfOwnedReceiver takes
+  // ownership of the InFlightFrame.
+  mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+      callbacks;
+  mojo::MakeSelfOwnedReceiver(std::move(in_flight_frame),
+                              callbacks.InitWithNewPipeAndPassReceiver());
 
   // Send the frame to the consumer.
   consumer_->OnFrameCaptured(std::move(handle), std::move(info), content_rect,

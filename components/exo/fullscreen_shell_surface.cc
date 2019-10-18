@@ -10,6 +10,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
@@ -206,6 +207,17 @@ void FullscreenShellSurface::OnWindowDestroying(aura::Window* window) {
   }
 
   window->RemoveObserver(this);
+}
+
+void FullscreenShellSurface::UpdateHostWindowBounds() {
+  // This method applies multiple changes to the window tree. Use ScopedPause
+  // to ensure that occlusion isn't recomputed before all changes have been
+  // applied.
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
+
+  host_window()->SetBounds(
+      gfx::Rect(root_surface()->window()->bounds().size()));
+  host_window()->SetTransparent(!root_surface()->FillsBoundsOpaquely());
 }
 
 void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(

@@ -79,7 +79,7 @@ class SaveCardBubbleControllerImpl
   // Sets up the controller for the sign in promo and shows the bubble.
   // This bubble is only shown after a local save is accepted and if
   // |ShouldShowSignInPromo()| returns true.
-  void ShowBubbleForSignInPromo();
+  void MaybeShowBubbleForSignInPromo();
 
   // Exists for testing purposes only. (Otherwise shown through ReshowBubble())
   // Sets up the controller for the Manage Cards view. This displays the card
@@ -100,6 +100,10 @@ class SaveCardBubbleControllerImpl
   void ShowBubbleForSaveCardFailureForTesting();
 
   void HideBubble();
+  // TODO(crbug.com/932818): Maybe move sign in promo completely out of this
+  // class, and merge with password sign in promo.
+  void HideBubbleForSignInPromo();
+
   void ReshowBubble();
 
   // SaveCardBubbleController:

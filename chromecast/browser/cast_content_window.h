@@ -94,9 +94,6 @@ class CastContentWindow {
     // Notify window destruction.
     virtual void OnWindowDestroyed() {}
 
-    // Notifies that a key event was triggered on the window.
-    virtual void OnKeyEvent(const ui::KeyEvent& key_event) {}
-
     // Check to see if the gesture can be handled by the delegate. This is
     // called prior to ConsumeGesture().
     virtual bool CanHandleGesture(GestureType gesture_type) = 0;

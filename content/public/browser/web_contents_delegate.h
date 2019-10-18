@@ -670,6 +670,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // solid color is displayed instead.
   virtual bool ShouldShowStaleContentOnEviction(WebContents* source);
 
+  // Determine if the frame is of a low priority.
+  virtual bool IsFrameLowPriority(const WebContents* web_contents,
+                                  const RenderFrameHost* render_frame_host);
+
  protected:
   virtual ~WebContentsDelegate();
 

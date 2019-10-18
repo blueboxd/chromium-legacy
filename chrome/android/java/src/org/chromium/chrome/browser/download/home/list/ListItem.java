@@ -40,6 +40,14 @@ public abstract class ListItem {
         }
     }
 
+    /** A {@link ListItem} representing a pagination header. */
+    public static class PaginationListItem extends ListItem {
+        /** Creates a {@link PaginationListItem} instance. */
+        public PaginationListItem() {
+            super(StableIds.PAGINATION_HEADER);
+        }
+    }
+
     /** A {@link ListItem} that involves a {@link Date}. */
     private abstract static class DateListItem extends ListItem {
         public final Date date;

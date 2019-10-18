@@ -12,9 +12,12 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_features.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_helper.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
@@ -75,17 +78,27 @@ void RecordFeatureUsage(content::RenderFrameHost* rfh,
       rfh, page_load_features);
 }
 
-std::string GetHeavyAdReportMessage(const FrameData& frame_data) {
+std::string GetHeavyAdReportMessage(const FrameData& frame_data,
+                                    bool reporting_only) {
   const char kChromeStatusMessage[] =
       "See https://www.chromestatus.com/feature/4800491902992384";
+  const char kReportingOnlyMessage[] =
+      "A future version of Chrome will remove this ad";
+  const char kInterventionMessage[] = "Ad was removed";
+
+  base::StringPiece intervention_mode =
+      reporting_only ? kReportingOnlyMessage : kInterventionMessage;
+
   switch (frame_data.heavy_ad_status()) {
     case FrameData::HeavyAdStatus::kNetwork:
-      return "Ad was removed because its network usage exceeded the limit. " +
-             std::string(kChromeStatusMessage);
+      return base::StrCat({intervention_mode,
+                           " because its network usage exceeded the limit. ",
+                           kChromeStatusMessage});
     case FrameData::HeavyAdStatus::kTotalCpu:
     case FrameData::HeavyAdStatus::kPeakCpu:
-      return "Ad was removed because its CPU usage exceeded the limit. " +
-             std::string(kChromeStatusMessage);
+      return base::StrCat({intervention_mode,
+                           " because its CPU usage exceeded the limit. ",
+                           kChromeStatusMessage});
     case FrameData::HeavyAdStatus::kNone:
       NOTREACHED();
       return "";
@@ -674,6 +687,10 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
           FrameData::InteractiveStatus::kPostInteractive);
   base::TimeDelta task_duration_total = task_duration_pre + task_duration_post;
   if (total_duration.InMilliseconds() > 0) {
+    ADS_HISTOGRAM("Cpu.AdFrames.Aggregate.TotalUsage", PAGE_LOAD_HISTOGRAM,
+                  visibility,
+                  aggregate_ad_info_by_visibility_[static_cast<int>(visibility)]
+                      .cpu_time);
     ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
                   task_duration_total);
     ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,
@@ -1014,18 +1031,34 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   // Ensure that this RenderFrameHost is a subframe.
   DCHECK(render_frame_host->GetParent());
 
-  const char kReportId[] = "HeavyAdIntervention";
-  std::string report_message = GetHeavyAdReportMessage(*frame_data);
+  // We already have a heavy ad at this point so we can query the field trial
+  // params safely.
+  if (!heavy_ad_reporting_enabled_) {
+    heavy_ad_reporting_enabled_ = base::GetFieldTrialParamByFeatureAsBool(
+        features::kHeavyAdIntervention, kHeavyAdReportingEnabledParamName,
+        true);
+  }
 
-  // Report to all child frames that will be unloaded. Once all reports are
-  // queued, the frame will be unloaded. Because the IPC messages are ordered
-  // wrt to each frames unload, we do not need to wait before loading the error
-  // page. Reports will be added to ReportingObserver queues synchronously when
-  // the IPC message is handled, which guarantees they will be available in the
-  // the unload handler.
-  for (content::RenderFrameHost* reporting_frame :
-       render_frame_host->GetFramesInSubtree()) {
-    reporting_frame->SendInterventionReport(kReportId, report_message);
+  if (!heavy_ad_send_reports_only_) {
+    heavy_ad_send_reports_only_ = base::GetFieldTrialParamByFeatureAsBool(
+        features::kHeavyAdIntervention, kHeavyAdReportingOnlyParamName, false);
+  }
+
+  if (*heavy_ad_reporting_enabled_) {
+    const char kReportId[] = "HeavyAdIntervention";
+    std::string report_message =
+        GetHeavyAdReportMessage(*frame_data, *heavy_ad_send_reports_only_);
+
+    // Report to all child frames that will be unloaded. Once all reports are
+    // queued, the frame will be unloaded. Because the IPC messages are ordered
+    // wrt to each frames unload, we do not need to wait before loading the
+    // error page. Reports will be added to ReportingObserver queues
+    // synchronously when the IPC message is handled, which guarantees they will
+    // be available in the the unload handler.
+    for (content::RenderFrameHost* reporting_frame :
+         render_frame_host->GetFramesInSubtree()) {
+      reporting_frame->SendInterventionReport(kReportId, report_message);
+    }
   }
 
   // Report intervention to the blocklist.
@@ -1036,10 +1069,8 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
         static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType));
   }
 
-  GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
-      render_frame_host, render_frame_host->GetLastCommittedURL(),
-      heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
-
+  // Record this UMA regardless of if we actually unload or not, as sending
+  // reports is subject to the same noise and throttling as the intervention.
   RecordFeatureUsage(render_frame_host,
                      blink::mojom::WebFeature::kHeavyAdIntervention);
 
@@ -1049,6 +1080,13 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   ADS_HISTOGRAM("HeavyAds.InterventionType2", UMA_HISTOGRAM_ENUMERATION,
                 frame_data->visibility(),
                 frame_data->heavy_ad_status_with_noise());
+
+  if (*heavy_ad_send_reports_only_)
+    return;
+
+  GetDelegate().GetWebContents()->GetController().LoadPostCommitErrorPage(
+      render_frame_host, render_frame_host->GetLastCommittedURL(),
+      heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
 }
 
 bool AdsPageLoadMetricsObserver::IsBlocklisted() {

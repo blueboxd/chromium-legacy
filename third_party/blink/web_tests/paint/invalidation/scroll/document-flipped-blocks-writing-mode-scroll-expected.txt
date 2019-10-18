@@ -5,6 +5,12 @@
       "bounds": [1516, 585],
       "contentsOpaque": true,
       "backgroundColor": "#008000"
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 585],
+      "bounds": [800, 15],
+      "contentsOpaque": true
     }
   ]
 }

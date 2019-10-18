@@ -273,3 +273,54 @@ fuzzer_test("browser_accessibility_fuzzer") {
     "//storage/browser:test_support",
   ]
 }
+
+source_set("indexed_db_fuzzer_support") {
+  public_deps = [
+    "//base",
+    "//content/browser",
+    "//content/public/browser:browser_sources",
+    "//third_party/blink/public/common:headers",
+  ]
+  testonly = true
+}
+
+fuzzer_test("indexed_db_leveldb_coding_encodeidbkey_fuzzer") {
+  sources = [
+    "../../browser/indexed_db/indexed_db_leveldb_coding_encodeidbkey_fuzzer.cc",
+  ]
+  deps = [
+    ":indexed_db_fuzzer_support",
+  ]
+  seed_corpus = "../../browser/indexed_db/fuzzer_corpus/indexed_db_key"
+}
+
+fuzzer_test("indexed_db_leveldb_coding_encodeidbkeypath_fuzzer") {
+  sources = [
+    "../../browser/indexed_db/indexed_db_leveldb_coding_encodeidbkeypath_fuzzer.cc",
+  ]
+  deps = [
+    ":indexed_db_fuzzer_support",
+  ]
+  seed_corpus = "../../browser/indexed_db/fuzzer_corpus/indexed_db_key_path"
+}
+
+fuzzer_test("indexed_db_leveldb_coding_decodeidbkey_fuzzer") {
+  sources = [
+    "../../browser/indexed_db/indexed_db_leveldb_coding_decodeidbkey_fuzzer.cc",
+  ]
+  deps = [
+    ":indexed_db_fuzzer_support",
+  ]
+  seed_corpus = "../../browser/indexed_db/fuzzer_corpus/encoded_indexed_db_key"
+}
+
+fuzzer_test("indexed_db_leveldb_coding_decodeidbkeypath_fuzzer") {
+  sources = [
+    "../../browser/indexed_db/indexed_db_leveldb_coding_decodeidbkeypath_fuzzer.cc",
+  ]
+  deps = [
+    ":indexed_db_fuzzer_support",
+  ]
+  seed_corpus =
+      "../../browser/indexed_db/fuzzer_corpus/encoded_indexed_db_key_path"
+}

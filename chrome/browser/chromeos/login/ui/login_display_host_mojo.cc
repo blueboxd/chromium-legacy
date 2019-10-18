@@ -288,11 +288,6 @@ void LoginDisplayHostMojo::HideOobeDialog() {
   HideDialog();
 }
 
-void LoginDisplayHostMojo::UpdateOobeDialogSize(int width, int height) {
-  if (dialog_)
-    dialog_->UpdateSizeAndPosition(width, height);
-}
-
 void LoginDisplayHostMojo::UpdateOobeDialogState(ash::OobeDialogState state) {
   if (dialog_)
     dialog_->SetState(state);

@@ -41,6 +41,7 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
   void Connect(
       const std::string& device_guid,
       mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+      mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
       ConnectCallback callback) override;
 
  private:
@@ -52,6 +53,7 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
   void CreateConnection(
       ConnectCallback callback,
       mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+      mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
       scoped_refptr<HidConnection> connection);
 
   // HidService::Observer:

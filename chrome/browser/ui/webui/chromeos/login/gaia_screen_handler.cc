@@ -716,8 +716,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddRawCallback("showAddUser", &GaiaScreenHandler::HandleShowAddUser);
   AddCallback("getIsSamlUserPasswordless",
               &GaiaScreenHandler::HandleGetIsSamlUserPasswordless);
-  AddCallback("updateOobeDialogSize",
-              &GaiaScreenHandler::HandleUpdateOobeDialogSize);
   AddCallback("hideOobeDialog", &GaiaScreenHandler::HandleHideOobeDialog);
   AddCallback("updateSigninUIState",
               &GaiaScreenHandler::HandleUpdateSigninUIState);
@@ -1002,11 +1000,6 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
     LOG(ERROR) << "HandleGaiaUIReady: There is no LoginDisplayHost";
   }
-}
-
-void GaiaScreenHandler::HandleUpdateOobeDialogSize(int width, int height) {
-  if (LoginDisplayHost::default_host())
-    LoginDisplayHost::default_host()->UpdateOobeDialogSize(width, height);
 }
 
 void GaiaScreenHandler::HandleHideOobeDialog() {

@@ -21,6 +21,13 @@ luci.bucket(
     ],
 )
 
+luci.gitiles_poller(
+    name = 'master-gitiles-trigger',
+    bucket = 'ci',
+    repo = 'https://chromium.googlesource.com/chromium/src',
+)
+
+
 luci.recipe.defaults.cipd_package.set(
     'infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
 
@@ -38,28 +45,35 @@ defaults.service_account.set(
 defaults.swarming_tags.set(['vpython:native-python-wrapper'])
 
 
-builder(
+def ci_builder(*, name, **kwargs):
+  return builder(
+      name = name,
+      triggered_by = ['master-gitiles-trigger'],
+      **kwargs
+  )
+
+ci_builder(
     name = 'Android N5 Swarm',
 )
 
-builder(
+ci_builder(
     name = 'Android N5X Swarm',
 )
 
-builder(
+ci_builder(
     name = 'ChromeOS Swarm',
 )
 
-builder(
+ci_builder(
     name = 'Linux Swarm',
 )
 
-builder(
+ci_builder(
     name = 'Mac Swarm',
     os = os.MAC_DEFAULT,
 )
 
-builder(
+ci_builder(
     name = 'Windows Swarm',
     os = os.WINDOWS_DEFAULT,
 )

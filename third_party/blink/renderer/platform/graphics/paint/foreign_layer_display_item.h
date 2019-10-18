@@ -13,6 +13,8 @@
 namespace blink {
 
 class GraphicsContext;
+class GraphicsLayer;
+class LayerAsJSONClient;
 
 // Represents foreign content (produced outside Blink) which draws to a layer.
 // A client supplies a layer which can be unwrapped and inserted into the full
@@ -24,10 +26,13 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
  public:
   ForeignLayerDisplayItem(Type,
                           scoped_refptr<cc::Layer>,
-                          const FloatPoint& offset);
+                          const FloatPoint& offset,
+                          const LayerAsJSONClient*);
   ~ForeignLayerDisplayItem() override;
 
   cc::Layer* GetLayer() const;
+
+  const LayerAsJSONClient* GetLayerAsJSONClient() const;
 
   // DisplayItem
   bool Equals(const DisplayItem&) const override;
@@ -39,16 +44,23 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
 
  private:
   FloatPoint offset_;
+  const LayerAsJSONClient* json_client_;
 };
 
 // Records a foreign layer into a GraphicsContext.
 // Use this where you would use a recorder class.
 PLATFORM_EXPORT void RecordForeignLayer(
-    GraphicsContext&,
-    DisplayItem::Type,
-    scoped_refptr<cc::Layer>,
+    GraphicsContext& context,
+    DisplayItem::Type type,
+    scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset,
     const base::Optional<PropertyTreeState>& = base::nullopt);
+
+// Records a graphics layer into a GraphicsContext.
+PLATFORM_EXPORT void RecordGraphicsLayerAsForeignLayer(
+    GraphicsContext& context,
+    DisplayItem::Type type,
+    const GraphicsLayer& graphics_layer);
 
 }  // namespace blink
 

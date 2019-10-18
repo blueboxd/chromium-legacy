@@ -47,6 +47,15 @@ constexpr char kLearnMoreUrl[] =
 // Tag value used to uniquely identify the "learn more" (?) button.
 constexpr int kLearnMoreButton = 100;
 
+std::unique_ptr<views::View> CreateExtraView(views::ButtonListener* listener) {
+  auto learn_more = views::CreateVectorImageButton(listener);
+  views::SetImageFromVectorIcon(learn_more.get(),
+                                vector_icons::kHelpOutlineIcon);
+  learn_more->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more->set_tag(kLearnMoreButton);
+  return learn_more;
+}
+
 class InvertBubbleView : public views::BubbleDialogDelegateView,
                          public views::LinkListener,
                          public views::ButtonListener {
@@ -56,7 +65,6 @@ class InvertBubbleView : public views::BubbleDialogDelegateView,
 
  private:
   // Overridden from views::BubbleDialogDelegateView:
-  std::unique_ptr<views::View> CreateExtraView() override;
   int GetDialogButtons() const override;
   void Init() override;
 
@@ -87,20 +95,12 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
       dark_theme_(nullptr) {
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
+  DialogDelegate::SetExtraView(::CreateExtraView(this));
   set_margins(gfx::Insets());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INVERT);
 }
 
 InvertBubbleView::~InvertBubbleView() {
-}
-
-std::unique_ptr<views::View> InvertBubbleView::CreateExtraView() {
-  auto learn_more = views::CreateVectorImageButton(this);
-  views::SetImageFromVectorIcon(learn_more.get(),
-                                vector_icons::kHelpOutlineIcon);
-  learn_more->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  learn_more->set_tag(kLearnMoreButton);
-  return learn_more;
 }
 
 int InvertBubbleView::GetDialogButtons() const {

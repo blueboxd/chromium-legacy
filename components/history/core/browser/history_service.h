@@ -25,6 +25,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -50,7 +51,7 @@ class TestingProfile;
 namespace base {
 class FilePath;
 class Thread;
-}
+}  // namespace base
 
 namespace favicon {
 class FaviconServiceImpl;
@@ -314,6 +315,20 @@ class HistoryService : public KeyedService {
   // Returns, via a callback, the number of Hosts visited in the last month.
   void CountUniqueHostsVisitedLastMonth(GetHistoryCountCallback callback,
                                         base::CancelableTaskTracker* tracker);
+
+  using GetLastVisitToHostCallback =
+      base::OnceCallback<void(HistoryLastVisitToHostResult)>;
+
+  // Gets the last time any webpage on the given host was visited within the
+  // time range [|begin_time|, |end_time|). If the given host has not been
+  // visited in the given time age, the callback will be called with a null
+  // base::Time.
+  base::CancelableTaskTracker::TaskId GetLastVisitToHost(
+      const GURL& host,
+      base::Time begin_time,
+      base::Time end_time,
+      GetLastVisitToHostCallback callback,
+      base::CancelableTaskTracker* tracker);
 
   // Database management operations --------------------------------------------
 

@@ -78,6 +78,12 @@ class TabStripController {
   // Closes the tab at the specified index in the model.
   virtual void CloseTab(int index, CloseTabSource source) = 0;
 
+  // Ungroups the tabs at the specified index in the model.
+  virtual void UngroupAllTabsInGroup(TabGroupId group) = 0;
+
+  // Adds a new tab to end of the tab group.
+  virtual void AddNewTabInGroup(TabGroupId group) = 0;
+
   // Moves the tab at |start_index| so that it is now at |final_index|, sliding
   // any tabs in between left or right as appropriate.
   virtual void MoveTab(int start_index, int final_index) = 0;

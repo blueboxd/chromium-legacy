@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Relative URL-like specifier keys / should absolutize strings prefixed with ./, ../, or / into the corresponding URLs
-FAIL Relative URL-like specifier keys / should not absolutize strings prefixed with ./, ../, or / with a data: URL base assert_equals: expected "{\"imports\":{\"../foo\":\"https://example.com/dotdotslash\",\"./foo\":\"https://example.com/dotslash\",\"/foo\":\"https://example.com/slash\"},\"scopes\":{}}" but got "{\"imports\":{\"http://web-platform.test:8001/foo\":\"https://example.com/slash\",\"http://web-platform.test:8001/import-maps/foo\":\"https://example.com/dotdotslash\",\"http://web-platform.test:8001/import-maps/imported/foo\":\"https://example.com/dotslash\"},\"scopes\":{}}"
+FAIL Relative URL-like specifier keys / should not absolutize strings prefixed with ./, ../, or / with a data: URL base test helper does not support data: base URLs
 PASS Relative URL-like specifier keys / should absolutize the literal strings ./, ../, or / with no suffix
 PASS Relative URL-like specifier keys / should treat percent-encoded variants of ./, ../, or / as bare specifiers
 PASS Absolute URL specifier keys / Accept all absolute URL specifier keys even with fetch schemes as URLs

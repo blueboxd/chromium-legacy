@@ -94,7 +94,8 @@ CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange&);
 CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange&,
                                         const CSSParserContext&);
 CSSStringValue* ConsumeString(CSSParserTokenRange&);
-StringView ConsumeUrlAsStringView(CSSParserTokenRange&);
+StringView ConsumeUrlAsStringView(CSSParserTokenRange&,
+                                  const CSSParserContext*);
 cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
                                   const CSSParserContext*);
 

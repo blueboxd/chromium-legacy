@@ -57,6 +57,8 @@ BookmarkEditorView::BookmarkEditorView(
   DCHECK(profile);
   DCHECK(bb_model_);
   DCHECK(bb_model_->client()->CanBeEditedByUser(parent));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   l10n_util::GetStringUTF16(IDS_SAVE));
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::CONTROL, views::CONTROL));
   Init();
@@ -69,13 +71,6 @@ BookmarkEditorView::~BookmarkEditorView() {
   if (tree_view_)
     tree_view_->SetModel(nullptr);
   bb_model_->RemoveObserver(this);
-}
-
-base::string16 BookmarkEditorView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_SAVE);
-  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {

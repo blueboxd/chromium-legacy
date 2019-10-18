@@ -45,7 +45,6 @@ class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
  private:
   // CastWebView::Delegate implementation:
   void OnWindowDestroyed() override;
-  void OnKeyEvent(const ui::KeyEvent& key_event) override;
   void OnVisibilityChange(VisibilityType visibility_type) override;
   bool CanHandleGesture(GestureType gesture_type) override;
   bool ConsumeGesture(GestureType gesture_type) override;

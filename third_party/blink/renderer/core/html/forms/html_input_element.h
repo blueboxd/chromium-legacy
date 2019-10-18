@@ -59,9 +59,6 @@ class CORE_EXPORT HTMLInputElement
   ~HTMLInputElement() override;
   void Trace(Visitor*) override;
 
-  // Returns attributes that should be checked against Trusted Types
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
-
   bool HasPendingActivity() const final;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitspeechchange, kWebkitspeechchange)

@@ -2055,7 +2055,7 @@ TEST_F(PasswordFormManagerTest, UsernameFirstFlow) {
   const base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
       saved_match_.signon_realm, 1u /* renderer_id */, possible_username,
-      base::Time::Now());
+      base::Time::Now(), 0 /* driver_id */);
 
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
@@ -2079,7 +2079,7 @@ TEST_F(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
   base::string16 possible_username = ASCIIToUTF16("possible_username");
   PossibleUsernameData possible_username_data(
       "https://another.domain.com", 1u /* renderer_id */, possible_username,
-      base::Time::Now());
+      base::Time::Now(), 0 /* driver_id */);
 
   FormData submitted_form = observed_form_only_password_fields_;
   submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
@@ -2090,6 +2090,53 @@ TEST_F(PasswordFormManagerTest, UsernameFirstFlowDifferentDomains) {
   // |possible_username_data| has different domain then |submitted_form|. Check
   // that no username is chosen.
   EXPECT_TRUE(form_manager_->GetPendingCredentials().username_value.empty());
+}
+
+// Tests that username is taken during username first flow.
+TEST_F(PasswordFormManagerTest, UsernameFirstFlowVotes) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
+
+  CreateFormManager(observed_form_only_password_fields_);
+  fetcher_->NotifyFetchCompleted();
+  const base::string16 possible_username = ASCIIToUTF16("possible_username");
+  constexpr uint64_t kUsernameFieldRendererId = 100;
+  PossibleUsernameData possible_username_data(
+      saved_match_.signon_realm, kUsernameFieldRendererId, possible_username,
+      base::Time::Now(), 0 /* driver_id */);
+
+  // Create form predictions and set them to |possible_username_data|.
+  FormPredictions predictions;
+  constexpr uint64_t kUsernameFormSignature = 1000;
+  predictions.form_signature = kUsernameFormSignature;
+  PasswordFieldPrediction field_prediction;
+  field_prediction.renderer_id = kUsernameFieldRendererId;
+  field_prediction.signature = 123;
+  field_prediction.type = autofill::SINGLE_USERNAME;
+  predictions.fields.push_back(field_prediction);
+  possible_username_data.form_predictions = predictions;
+
+  // Simulate submission a form without username. Data from
+  // |possible_username_data| will be taken for setting username.
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
+
+  ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                               &possible_username_data));
+
+  // Check that uploads for both username and password form happen.
+  testing::InSequence in_sequence;
+  // Upload for the password form.
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(_, false, _, _, true, nullptr));
+
+  // Upload for the username form.
+  EXPECT_CALL(mock_autofill_download_manager_,
+              StartUploadRequest(SignatureIs(kUsernameFormSignature), false, _,
+                                 _, true, nullptr));
+
+  form_manager_->Save();
 }
 
 }  // namespace

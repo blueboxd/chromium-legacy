@@ -9,7 +9,10 @@
 
 #include <delayimp.h>
 #include <stddef.h>
+#include <set>
+#include <string>
 
+#include "base/no_destructor.h"
 #include "base/win/current_module.h"
 
 namespace base {
@@ -47,6 +50,11 @@ struct PdbInfo {
   DWORD Age;
   char PdbFileName[1];
 };
+
+#define LDR_IS_DATAFILE(handle) (((ULONG_PTR)(handle)) & (ULONG_PTR)1)
+#define LDR_IS_IMAGEMAPPING(handle) (((ULONG_PTR)(handle)) & (ULONG_PTR)2)
+#define LDR_IS_RESOURCE(handle) \
+  (LDR_IS_IMAGEMAPPING(handle) || LDR_IS_DATAFILE(handle))
 
 }  // namespace
 
@@ -494,8 +502,12 @@ bool PEImage::EnumDelayImportChunks(EnumDelayImportChunksFunction callback,
         // current module is the module whose IAT we are enumerating.
         // Use the module_name as retrieved from the IAT because this method
         // is case sensitive.
-        if (module_ == CURRENT_MODULE())
-          ::__HrLoadAllImportsForDll(module_name);
+        if (module_ == CURRENT_MODULE() && !LDR_IS_RESOURCE(module_)) {
+          static base::NoDestructor<std::set<std::string>> loaded_dlls;
+          // pair.second is true if this is a new element
+          if (loaded_dlls.get()->emplace(module_name).second)
+            ::__HrLoadAllImportsForDll(module_name);
+        }
       }
 
       if (!callback(*this, delay_descriptor, module_name, name_table, iat,

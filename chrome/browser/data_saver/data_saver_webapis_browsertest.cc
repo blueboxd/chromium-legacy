@@ -38,17 +38,20 @@ class DataSaverWebAPIsBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
-  void VerifySaveDataAPI(bool expected_header_set) {
-    ui_test_utils::NavigateToURL(browser(),
+  void VerifySaveDataAPI(bool expected_header_set, Browser* browser = nullptr) {
+    if (!browser)
+      browser = InProcessBrowserTest::browser();
+    ui_test_utils::NavigateToURL(browser,
                                  test_server_.GetURL("/net_info.html"));
-    EXPECT_EQ(expected_header_set, RunScriptExtractBool("getSaveData()"));
+    EXPECT_EQ(expected_header_set,
+              RunScriptExtractBool(browser, "getSaveData()"));
   }
 
  private:
-  bool RunScriptExtractBool(const std::string& script) {
+  bool RunScriptExtractBool(Browser* browser, const std::string& script) {
     bool data;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        browser()->tab_strip_model()->GetActiveWebContents(), script, &data));
+        browser->tab_strip_model()->GetActiveWebContents(), script, &data));
     return data;
   }
 
@@ -79,4 +82,10 @@ IN_PROC_BROWSER_TEST_F(DataSaverWebAPIsBrowserTest, DataSaverToggleJS) {
 
   EnableDataSaver(false);
   VerifySaveDataAPI(false);
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverWebAPIsBrowserTest,
+                       DataSaverDisabledInIncognito) {
+  EnableDataSaver(true);
+  VerifySaveDataAPI(false, CreateIncognitoBrowser());
 }

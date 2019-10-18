@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -17,7 +18,7 @@ namespace {
 
 fuchsia::web::Cookie ConvertCanonicalCookie(
     const net::CanonicalCookie& canonical_cookie,
-    network::mojom::CookieChangeCause cause) {
+    net::CookieChangeCause cause) {
   fuchsia::web::CookieId id;
   id.set_name(canonical_cookie.Name());
   id.set_domain(canonical_cookie.Domain());
@@ -26,15 +27,15 @@ fuchsia::web::Cookie ConvertCanonicalCookie(
   fuchsia::web::Cookie cookie;
   cookie.set_id(std::move(id));
   switch (cause) {
-    case network::mojom::CookieChangeCause::INSERTED:
+    case net::CookieChangeCause::INSERTED:
       cookie.set_value(canonical_cookie.Value());
       break;
-    case network::mojom::CookieChangeCause::EXPLICIT:
-    case network::mojom::CookieChangeCause::UNKNOWN_DELETION:
-    case network::mojom::CookieChangeCause::OVERWRITE:
-    case network::mojom::CookieChangeCause::EXPIRED:
-    case network::mojom::CookieChangeCause::EVICTED:
-    case network::mojom::CookieChangeCause::EXPIRED_OVERWRITE:
+    case net::CookieChangeCause::EXPLICIT:
+    case net::CookieChangeCause::UNKNOWN_DELETION:
+    case net::CookieChangeCause::OVERWRITE:
+    case net::CookieChangeCause::EXPIRED:
+    case net::CookieChangeCause::EVICTED:
+    case net::CookieChangeCause::EXPIRED_OVERWRITE:
       break;
   };
 
@@ -60,8 +61,8 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
       fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator)
       : CookiesIteratorImpl(std::move(iterator)) {
     for (const auto& cookie : cookies) {
-      queued_cookies_[cookie.UniqueKey()] = ConvertCanonicalCookie(
-          cookie, network::mojom::CookieChangeCause::INSERTED);
+      queued_cookies_[cookie.UniqueKey()] =
+          ConvertCanonicalCookie(cookie, net::CookieChangeCause::INSERTED);
     }
   }
   // Same as above except it takes CookieStatusList instead of just CookieList.
@@ -72,7 +73,7 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
     for (const auto& cookie_with_status : cookies_with_statuses) {
       queued_cookies_[cookie_with_status.cookie.UniqueKey()] =
           ConvertCanonicalCookie(cookie_with_status.cookie,
-                                 network::mojom::CookieChangeCause::INSERTED);
+                                 net::CookieChangeCause::INSERTED);
     }
   }
   ~CookiesIteratorImpl() final = default;
@@ -130,9 +131,9 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
   }
 
   // network::mojom::CookieChangeListener implementation:
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      network::mojom::CookieChangeCause cause) final {
-    queued_cookies_[cookie.UniqueKey()] = ConvertCanonicalCookie(cookie, cause);
+  void OnCookieChange(const net::CookieChangeInfo& change) final {
+    queued_cookies_[change.cookie.UniqueKey()] =
+        ConvertCanonicalCookie(change.cookie, change.cause);
     MaybeSendQueuedCookies();
   }
 

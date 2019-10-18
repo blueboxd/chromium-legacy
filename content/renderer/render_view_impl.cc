@@ -1162,11 +1162,11 @@ void RenderViewImpl::DidCompletePageScaleAnimationForWidget() {
 }
 
 void RenderViewImpl::ResizeWebWidgetForWidget(
-    const gfx::Size& size,
+    const gfx::Size& widget_size,
     float top_controls_height,
     float bottom_controls_height,
     bool browser_controls_shrink_blink_size) {
-  webview()->ResizeWithBrowserControls(size, top_controls_height,
+  webview()->ResizeWithBrowserControls(widget_size, top_controls_height,
                                        bottom_controls_height,
                                        browser_controls_shrink_blink_size);
 }
@@ -1278,8 +1278,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
-    IPC_MESSAGE_HANDLER(PageMsg_UpdatePageVisualProperties,
-                        OnUpdatePageVisualProperties)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
     IPC_MESSAGE_HANDLER(PageMsg_PutPageIntoBackForwardCache,
                         PutPageIntoBackForwardCache)
@@ -1553,6 +1551,24 @@ void RenderViewImpl::SetDeviceScaleFactor(bool use_zoom_for_dsf,
     webview()->SetDeviceScaleFactor(device_scale_factor);
 }
 
+void RenderViewImpl::SetVisibleViewportSize(
+    const gfx::Size& visible_viewport_size) {
+  if (main_render_frame_) {
+    // A local main frame controls the size of the WebView through
+    // ResizeWebWidgetForWidget(). The VisualViewport is updated independently
+    // here.
+    webview()->ResizeVisualViewport(visible_viewport_size);
+  } else {
+    // RenderWidgets in a RenderView's frame tree without a local main frame
+    // set the size of the WebView to be the |visible_viewport_size|, in order
+    // to limit compositing in (out of process) child frames to what is visible.
+    //
+    // Note that child frames in the same process/RenderView frame tree as the
+    // main frame do not benefit from this.
+    webview()->Resize(visible_viewport_size);
+  }
+}
+
 void RenderViewImpl::PropagatePageZoomToNewlyAttachedFrame(
     bool use_zoom_for_dsf,
     float device_scale_factor) {
@@ -1685,21 +1701,6 @@ void RenderViewImpl::DidUpdateMainFrameLayout() {
 
   // The main frame may have changed size.
   needs_preferred_size_update_ = true;
-}
-
-void RenderViewImpl::NavigateBackForwardSoon(int offset,
-                                             bool has_user_gesture) {
-  history_navigation_virtual_time_pauser_ =
-      RenderThreadImpl::current()
-          ->GetWebMainThreadScheduler()
-          ->CreateWebScopedVirtualTimePauser(
-              "NavigateBackForwardSoon",
-              blink::WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
-  history_navigation_virtual_time_pauser_.PauseVirtualTime();
-}
-
-void RenderViewImpl::DidCommitProvisionalHistoryLoad() {
-  history_navigation_virtual_time_pauser_.UnpauseVirtualTime();
 }
 
 void RenderViewImpl::UpdateBrowserControlsState(
@@ -2003,29 +2004,6 @@ void RenderViewImpl::OnPageWasShown() {
 #endif
 
   ApplyPageHidden(/*hidden=*/false, /*initial_setting=*/false);
-}
-
-void RenderViewImpl::OnUpdatePageVisualProperties(
-    const gfx::Size& viewport_size_for_blink) {
-  // TODO(https://crbug.com/998273): Handle visual_properties appropriately.
-  // Using this pathway to update the visual viewport should only happen for
-  // remote main frames. Local main frames will update the viewport size by
-  // RenderWidget calling RenderViewImpl::ResizeVisualViewport() directly.
-  // TODO(danakj): This should be part of VisualProperties and walk down the
-  // RenderWidget tree like other VisualProperties do, in order to set the
-  // value in each WebView holds a part of the local frame tree.
-  if (!main_render_frame_)
-    webview()->Resize(viewport_size_for_blink);
-}
-
-void RenderViewImpl::ResizeVisualViewportForWidget(
-    const gfx::Size& scaled_viewport_size) {
-  // This function is currently only called for local main frames. Once remote
-  // main frames no longer have a RenderWidget, they may also route through
-  // here via RenderViewImpl::OnUpdateLocalMainFramePageVisualProperties(). In
-  // that case, WebViewImpl will need to implement its Size() function based on
-  // something other than the widget size.
-  webview()->ResizeVisualViewport(scaled_viewport_size);
 }
 
 void RenderViewImpl::SetPageFrozen(bool frozen) {

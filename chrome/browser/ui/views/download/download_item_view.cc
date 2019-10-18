@@ -340,6 +340,7 @@ void DownloadItemView::TransitionToNormalMode() {
   status_label_->SetText(GetStatusText());
   status_label_->GetViewAccessibility().OverrideIsIgnored(
       status_label_->GetText().empty());
+  AdjustTextAndGetSize(status_label_);
   file_name_label_->SetY(GetYForFilenameText());
   switch (model_->GetState()) {
     case DownloadItem::IN_PROGRESS:
@@ -397,7 +398,9 @@ void DownloadItemView::TransitionToNormalMode() {
       NOTREACHED();
   }
 
-  SchedulePaint();
+  // Force the shelf to layout as our size may have changed.
+  shelf_->Layout();
+  shelf_->SchedulePaint();
 }
 
 void DownloadItemView::OnDownloadDestroyed() {
@@ -476,8 +479,9 @@ void DownloadItemView::Layout() {
 
     int status_y =
         file_name_y + font_list_.GetBaseline() + kVerticalTextPadding;
-    status_label_->SetBoundsRect(gfx::Rect(mirrored_x, status_y, kTextWidth,
-                                           status_font_list_.GetHeight()));
+    status_label_->SetBoundsRect(gfx::Rect(
+        mirrored_x, status_y, status_label_->GetPreferredSize().width(),
+        status_font_list_.GetHeight()));
   }
 
   if (mode_ != DANGEROUS_MODE) {
@@ -526,8 +530,10 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
     }
 
   } else {
+    gfx::Size label_size = file_name_label_->GetPreferredSize();
+    label_size.SetToMax(status_label_->GetPreferredSize());
     width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding + kTextWidth + kEndPadding;
+            kProgressTextPadding + label_size.width() + kEndPadding;
   }
 
   if (mode_ != DANGEROUS_MODE)
@@ -828,7 +834,15 @@ void DownloadItemView::UpdateColorsFromTheme() {
   SkColor dimmed_text_color = SkColorSetA(GetTextColor(), 0xC7);
   file_name_label_->SetEnabledColor(GetEnabled() ? GetTextColor()
                                                  : dimmed_text_color);
-  status_label_->SetEnabledColor(dimmed_text_color);
+  if (model_->GetDangerType() ==
+      download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
+    status_label_->SetEnabledColor(SK_ColorGREEN);
+  } else if (model_->GetDangerType() ==
+             download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
+    status_label_->SetEnabledColor(SK_ColorRED);
+  } else {
+    status_label_->SetEnabledColor(dimmed_text_color);
+  }
   SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
   file_name_label_->SetBackgroundColor(background_color);
@@ -975,7 +989,9 @@ void DownloadItemView::ShowWarningDialog() {
   if (model_->GetDangerType() !=
           download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED &&
       model_->GetDangerType() !=
-          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED) {
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE &&
+      model_->GetDangerType() !=
+          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
     auto discard_button = views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
     discard_button_ = AddChildView(std::move(discard_button));
@@ -1017,19 +1033,17 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
+    case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
       return gfx::CreateVectorIcon(
           vector_icons::kWarningIcon, kWarningIconSize,
           GetNativeTheme()->GetSystemColor(
               ui::NativeTheme::kColorId_AlertSeverityHigh));
 
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
-      return gfx::CreateVectorIcon(
-          vector_icons::kErrorIcon, kErrorIconSize,
-          GetNativeTheme()->GetSystemColor(
-              ui::NativeTheme::kColorId_AlertSeverityMedium));
-
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-    case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
+      return gfx::CreateVectorIcon(vector_icons::kErrorIcon, kErrorIconSize,
+                                   gfx::kGoogleGrey600);
+
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -1097,7 +1111,7 @@ void DownloadItemView::ClearDeepScanningDialog() {
 gfx::Size DownloadItemView::GetButtonSize() const {
   gfx::Size size;
   if (discard_button_)
-    discard_button_->GetPreferredSize();
+    size.SetToMax(discard_button_->GetPreferredSize());
   if (save_button_)
     size.SetToMax(save_button_->GetPreferredSize());
   return size;
@@ -1335,6 +1349,16 @@ SkColor DownloadItemView::GetTextColor() const {
 }
 
 base::string16 DownloadItemView::GetStatusText() const {
+  if (model_->GetDangerType() ==
+      download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
+    return l10n_util::GetStringUTF16(IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_SAFE);
+  } else if (model_->GetDangerType() ==
+             download::DownloadDangerType::
+                 DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
+    return l10n_util::GetStringUTF16(
+        IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_OPENED_DANGEROUS);
+  }
+
   if (!model_->ShouldPromoteOrigin() ||
       model_->GetOriginalURL().GetOrigin().is_empty()) {
     // Use the default status text.

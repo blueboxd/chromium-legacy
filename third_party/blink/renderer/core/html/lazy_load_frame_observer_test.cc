@@ -1151,7 +1151,6 @@ class LazyLoadFramesTest : public SimTest {
     settings.SetLazyFrameLoadingDistanceThresholdPx4G(
         kLoadingDistanceThresholdPx);
     settings.SetLazyLoadEnabled(true);
-    settings.SetDataSaverHoldbackWebApi(false);
   }
 
   void TearDown() override {
@@ -1426,20 +1425,6 @@ TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverDisabledAndRestricted) {
       scoped_restrict_automatic_lazy_frame_loading_to_data_saver_for_test_(
           true);
 
-  WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(false);
-  TestCrossOriginFrameIsImmediatelyLoaded("");
-}
-
-TEST_F(LazyLoadFramesTest, LazyLoadWhenDataSaverEnabledHoldbackAndRestricted) {
-  ScopedLazyFrameLoadingForTest scoped_lazy_frame_loading_for_test(true);
-  ScopedAutomaticLazyFrameLoadingForTest
-      scoped_automatic_lazy_frame_loading_for_test(true);
-  ScopedRestrictAutomaticLazyFrameLoadingToDataSaverForTest
-      scoped_restrict_automatic_lazy_frame_loading_to_data_saver_for_test_(
-          true);
-
-  GetNetworkStateNotifier().SetSaveDataEnabledOverride(true);
-  WebView().GetPage()->GetSettings().SetDataSaverHoldbackWebApi(true);
   TestCrossOriginFrameIsImmediatelyLoaded("");
 }
 

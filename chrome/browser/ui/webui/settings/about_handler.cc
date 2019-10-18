@@ -675,8 +675,7 @@ void AboutHandler::OnGetEndOfLifeInfo(
     response.SetStringKey("aboutPageEndOfLifeMessage",
                           l10n_util::GetStringFUTF16(
                               IDS_SETTINGS_ABOUT_PAGE_END_OF_LIFE_MESSAGE,
-                              base::TimeFormatMonthAndYear(eol_info.eol_date),
-                              base::ASCIIToUTF16(chrome::kEolNotificationURL)));
+                              base::TimeFormatMonthAndYear(eol_info.eol_date)));
   } else {
     response.SetBoolKey("hasEndOfLife", false);
     response.SetStringKey("aboutPageEndOfLifeMessage", "");

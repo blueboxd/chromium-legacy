@@ -86,8 +86,6 @@ content::WebContents* CastBrowserTest::NavigateToURL(const GURL& url) {
 
 void CastBrowserTest::OnWindowDestroyed() {}
 
-void CastBrowserTest::OnKeyEvent(const ui::KeyEvent& key_event) {}
-
 void CastBrowserTest::OnVisibilityChange(VisibilityType visibility_type) {}
 
 bool CastBrowserTest::CanHandleGesture(GestureType gesture_type) {

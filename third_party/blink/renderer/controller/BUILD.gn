@@ -50,6 +50,8 @@ jumbo_component("controller") {
     sources += [
       "crash_memory_metrics_reporter_impl.cc",
       "crash_memory_metrics_reporter_impl.h",
+      "highest_pmf_reporter.cc",
+      "highest_pmf_reporter.h",
       "memory_usage_monitor_android.cc",
       "memory_usage_monitor_android.h",
       "oom_intervention_impl.cc",
@@ -152,6 +154,7 @@ jumbo_source_set("blink_unittests_sources") {
   sources += bindings_unittest_files
   if (is_android) {
     sources += [
+      "highest_pmf_reporter_test.cc",
       "memory_usage_monitor_android_test.cc",
       "memory_usage_monitor_test.cc",
       "oom_intervention_impl_test.cc",

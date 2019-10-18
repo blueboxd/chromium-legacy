@@ -497,7 +497,43 @@ var defaultTests = [
     chrome.autotestPrivate.arcAppTracingStart(chrome.test.callbackFail(
         'Failed to start custom tracing.'));
   },
+  // This test verifies that test can get the window list and set
+  // window state.
+  function getWindowInfoAndSetState() {
+    chrome.autotestPrivate.getAppWindowList(function(list) {
+      var found = false;
+      for (i = 0; i < list.length; i++) {
+        var window = list[i];
+        if (window.name != 'BrowserFrame') {
+          continue;
+        }
+        found = true;
+        // Sanity check
+        chrome.test.assertEq('BrowserFrame', window.name);
+        chrome.test.assertTrue(window.title.includes('New Tab') > 0);
+        chrome.test.assertEq('Browser', window.windowType);
+        chrome.test.assertTrue(window.isVisible);
+        chrome.test.assertTrue(window.targetVisibility);
+        chrome.test.assertFalse(window.isAnimating);
+        chrome.test.assertTrue(window.canFocus);
+        chrome.test.assertTrue(window.hasFocus);
+        chrome.test.assertTrue(window.isActive);
+        chrome.test.assertFalse(window.hasCapture);
 
+        var change = new Object();
+        change.eventType = 'WMEventMaximize';
+        chrome.autotestPrivate.setAppWindowState(
+            window.id,
+            change,
+            function(state) {
+              chrome.test.assertEq(state, 'Maximized');
+              chrome.test.assertNoLastError();
+              chrome.test.succeed();
+            });
+      }
+      chrome.test.assertTrue(found);
+    });
+  },
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
   // CHANGE THE SESSION STATE TO LOCKED STATE.
   function lockScreen() {
@@ -510,12 +546,12 @@ var defaultTests = [
 var arcEnabledTests = [
   // This test verifies that getArcState returns provisioned True in case ARC
   // provisioning is done.
-  function arcProvisioned() {chrome.autotestPrivate.getArcState(
-    function(state) {
-      chrome.test.assertTrue(state.provisioned);
-      chrome.test.assertNoLastError();
-      chrome.test.succeed();
-    });
+  function arcProvisioned() {
+    chrome.autotestPrivate.getArcState(function(state) {
+        chrome.test.assertTrue(state.provisioned);
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      });
   },
   // This test verifies that ARC Terms of Service are not needed in case ARC is
   // provisioned and Terms of Service are accepted.

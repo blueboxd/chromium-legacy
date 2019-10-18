@@ -103,13 +103,15 @@ void LogZeroStateResultsListMetrics(
   UMA_HISTOGRAM_COUNTS_100(
       "Apps.AppList.ZeroStateResultsList.NumImpressionTypes", type_set.size());
 
+  // Log whether any Drive files were impressed.
+  UMA_HISTOGRAM_BOOLEAN("Apps.AppList.ZeroStateResultsList.ContainsDriveFiles",
+                        type_set.contains(RankingItemType::kDriveQuickAccess));
+
   // Log CTR metrics. Note that all clicks are captured and indicated by a
   // non-negative launch index, while an index of -1 indicates that results were
   // impressed on screen for some amount of time.
   UMA_HISTOGRAM_BOOLEAN("Apps.AppList.ZeroStateResultsList.Clicked",
                         launched_index >= 0);
-
-  // TODO(999912): Add UMA metrics for file-specific CTR.
 }
 
 }  // namespace app_list

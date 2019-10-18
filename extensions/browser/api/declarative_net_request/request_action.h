@@ -18,8 +18,6 @@ namespace declarative_net_request {
 
 // A struct representing an action to be applied to a request based on DNR rule
 // matches. Each action is attributed to exactly one extension.
-// TODO(crbug.com/1009887): Actions should have a 1:1 mapping to matched DNR
-// rules.
 struct RequestAction {
   enum class Type {
     // Block the network request.
@@ -32,7 +30,7 @@ struct RequestAction {
     REMOVE_HEADERS,
   };
 
-  explicit RequestAction(Type type);
+  RequestAction(Type type, const ExtensionId& extension_id);
   ~RequestAction();
   RequestAction(RequestAction&&);
   RequestAction& operator=(RequestAction&&);
@@ -49,6 +47,11 @@ struct RequestAction {
   // static storage duration.
   std::vector<const char*> request_headers_to_remove;
   std::vector<const char*> response_headers_to_remove;
+
+  // Whether the action has already been tracked by the ActionTracker.
+  // TODO(crbug.com/983761): Move the tracking of actions matched to
+  // ActionTracker.
+  mutable bool tracked = false;
 
   DISALLOW_COPY_AND_ASSIGN(RequestAction);
 };

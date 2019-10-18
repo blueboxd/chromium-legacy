@@ -31,10 +31,11 @@
         android:layout_marginTop="5dp"
         android:textIsSelectable="true"/>
 
+    <!--suppress HardcodedText -->
     <Button
         android:id="@+id/crash_report_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/crash_report_button_text"/>
+        android:text="Provide more info"/>
 
 </LinearLayout>

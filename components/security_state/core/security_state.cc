@@ -194,7 +194,7 @@ SecurityLevel GetSecurityLevel(
   // Downgrade the security level for pages that trigger a Safety Tip.
   SecurityLevel safety_tip_level;
   if (ShouldSetSecurityLevelFromSafetyTip(
-          visible_security_state.safety_tip_status, &safety_tip_level)) {
+          visible_security_state.safety_tip_info.status, &safety_tip_level)) {
     return safety_tip_level;
   }
 
@@ -250,7 +250,6 @@ bool HasMajorCertificateError(
 
 VisibleSecurityState::VisibleSecurityState()
     : malicious_content_status(MALICIOUS_CONTENT_STATUS_NONE),
-      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
       connection_info_initialized(false),
       cert_status(0),
       connection_status(0),

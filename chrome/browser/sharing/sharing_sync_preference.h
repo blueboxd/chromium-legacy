@@ -92,6 +92,9 @@ class SharingSyncPreference {
 
   base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo() const;
 
+  base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo(
+      const syncer::DeviceInfo* device_info) const;
+
   void SetLocalSharingInfo(syncer::DeviceInfo::SharingInfo sharing_info);
 
   void ClearLocalSharingInfo();

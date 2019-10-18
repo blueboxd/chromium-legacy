@@ -38,8 +38,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 TextLinkColors::TextLinkColors() : text_color_(Color::kBlack) {
   ResetLinkColor();
   ResetVisitedLinkColor();
@@ -62,7 +60,7 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
                                         Color current_color,
                                         WebColorScheme color_scheme,
                                         bool for_visited_link) const {
-  if (auto* color_value = DynamicTo<CSSColorValue>(value))
+  if (auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value))
     return color_value->Value();
 
   if (auto* pair = DynamicTo<CSSLightDarkColorPair>(value)) {

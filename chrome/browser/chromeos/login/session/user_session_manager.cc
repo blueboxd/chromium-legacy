@@ -47,7 +47,6 @@
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
@@ -1465,9 +1464,6 @@ void UserSessionManager::InitProfilePreferences(
       user_manager::known_user::UpdateGaiaID(user_context.GetAccountId(),
                                              gaia_id);
     }
-
-    // DeviceSync initialization must occur after primary profile is available.
-    device_sync::DeviceSyncClientFactory::OnProfileInitialized(profile);
   }
 }
 

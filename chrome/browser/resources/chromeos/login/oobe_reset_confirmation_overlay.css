@@ -24,8 +24,8 @@
 }
 
 .reset-popup-content-area {
+  @apply --oobe-default-font;
   color: rgba(0, 0, 0, .54);
-  font: 13px Roboto, sans-serif;
   line-height: 20px;
   padding: 0 20px 20.5px;
 }

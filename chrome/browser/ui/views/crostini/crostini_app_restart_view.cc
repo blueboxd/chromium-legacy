@@ -40,14 +40,6 @@ int CrostiniAppRestartView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
 }
 
-base::string16 CrostiniAppRestartView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_CROSTINI_APP_RESTART_BUTTON);
-  DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-  return l10n_util::GetStringUTF16(IDS_CROSTINI_NOT_NOW_BUTTON);
-}
-
 bool CrostiniAppRestartView::ShouldShowCloseButton() const {
   return false;
 }
@@ -69,6 +61,13 @@ gfx::Size CrostiniAppRestartView::CalculatePreferredSize() const {
 CrostiniAppRestartView::CrostiniAppRestartView(const ash::ShelfID& id,
                                                int64_t display_id)
     : id_(id), display_id_(display_id) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CROSTINI_APP_RESTART_BUTTON));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_CROSTINI_NOT_NOW_BUTTON));
+
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

@@ -201,11 +201,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // in a UMA histogram.
   void RecordNegotiatedProtocol() const;
 
-  // Records the result of a handshake where early data was requested
-  // in the corresponding UMA histogram.  This will happen at most once
-  // during the lifetime of the socket.
-  void MaybeRecordEarlyDataResult();
-
   // Returns the net error corresponding to the most recent OpenSSL
   // error. ssl_error is the output of SSL_get_error.
   int MapLastOpenSSLError(int ssl_error,

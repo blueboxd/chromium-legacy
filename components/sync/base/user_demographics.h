@@ -102,9 +102,6 @@ class UserDemographicsResult {
   UserDemographicsStatus status_ = UserDemographicsStatus::kMaxValue;
 };
 
-// Log user demographic status in the UMA.UserDemographics.Status histogram.
-void LogUserDemographicsStatusInHistogram(UserDemographicsStatus status);
-
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_USER_DEMOGRAPHICS_H_

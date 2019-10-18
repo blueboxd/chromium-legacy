@@ -368,15 +368,17 @@ void LocationBarView::SelectAll() {
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, public LocationBar implementation:
 
-void LocationBarView::FocusLocation(bool select_all) {
+void LocationBarView::FocusLocation(bool is_user_initiated) {
   const bool omnibox_already_focused = omnibox_view_->HasFocus();
 
-  omnibox_view_->SetFocus();
+  omnibox_view_->SetFocus(is_user_initiated);
 
   if (omnibox_already_focused)
     omnibox_view()->model()->ClearKeyword();
 
-  if (!select_all)
+  // TODO(tommycli): Since we are now passing the |is_user_initiated| parameter
+  // onto OmniboxView, we can likely move the below code into SetFocus().
+  if (!is_user_initiated)
     return;
 
   omnibox_view_->SelectAll(true);
@@ -940,7 +942,8 @@ void LocationBarView::AcceptInput(base::TimeTicks match_selection_timestamp) {
 }
 
 void LocationBarView::FocusSearch() {
-  omnibox_view_->SetFocus();
+  // This is called by keyboard accelerator, so it's user-initiated.
+  omnibox_view_->SetFocus(/*is_user_initiated=*/true);
   omnibox_view_->EnterKeywordModeForDefaultSearchProvider();
 }
 
@@ -1012,7 +1015,9 @@ void LocationBarView::OnVisibleBoundsChanged() {
 }
 
 void LocationBarView::OnFocus() {
-  omnibox_view_->SetFocus();
+  // This is only called when the user explicitly focuses the location bar.
+  // Renderer-initated focuses go through the FocusLocation() call instead.
+  omnibox_view_->SetFocus(/*is_user_initiated=*/true);
 }
 
 void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {

@@ -79,7 +79,6 @@ class BookmarkEditorView : public BookmarkEditor,
   ~BookmarkEditorView() override;
 
   // views::DialogDelegateView:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   std::unique_ptr<views::View> CreateExtraView() override;
   ui::ModalType GetModalType() const override;

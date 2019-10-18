@@ -14,9 +14,22 @@
       "transform": 1
     },
     {
+      "name": "ContentsLayer for LayoutHTMLCanvas CANVAS id='canvas-simple'",
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "transform": 1
+    },
+    {
       "name": "LayoutHTMLCanvas CANVAS id='canvas-padding'",
       "bounds": [60, 60],
       "backgroundColor": "#008000",
+      "transform": 2
+    },
+    {
+      "name": "ContentsLayer for LayoutHTMLCanvas CANVAS id='canvas-padding'",
+      "position": [5, 5],
+      "bounds": [50, 50],
       "transform": 2
     },
     {
@@ -26,13 +39,30 @@
       "transform": 3
     },
     {
+      "name": "ContentsLayer for LayoutHTMLCanvas CANVAS id='canvas-border'",
+      "position": [5, 5],
+      "bounds": [50, 50],
+      "transform": 3
+    },
+    {
       "name": "LayoutHTMLCanvas CANVAS id='canvas-image'",
       "bounds": [50, 50],
       "backgroundColor": "#008000",
       "transform": 4
     },
     {
+      "name": "ContentsLayer for LayoutHTMLCanvas CANVAS id='canvas-image'",
+      "bounds": [50, 50],
+      "transform": 4
+    },
+    {
       "name": "LayoutHTMLCanvas CANVAS id='canvas-transparent-background'",
+      "bounds": [50, 50],
+      "backgroundColor": "#00FF0080",
+      "transform": 5
+    },
+    {
+      "name": "ContentsLayer for LayoutHTMLCanvas CANVAS id='canvas-transparent-background'",
       "bounds": [50, 50],
       "backgroundColor": "#00FF0080",
       "transform": 5

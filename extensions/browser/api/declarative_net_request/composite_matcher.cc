@@ -162,14 +162,17 @@ RedirectActionInfo CompositeMatcher::GetRedirectAction(
                             notify_request_withheld);
 }
 
-uint8_t CompositeMatcher::GetRemoveHeadersMask(const RequestParams& params,
-                                               uint8_t ignored_mask) const {
+uint8_t CompositeMatcher::GetRemoveHeadersMask(
+    const RequestParams& params,
+    uint8_t ignored_mask,
+    std::vector<RequestAction>* remove_headers_actions) const {
   uint8_t mask = 0;
   for (const auto& matcher : matchers_) {
     // The allow rule will override lower priority remove header rules.
     if (HasMatchingAllowRule(matcher.get(), params))
       return mask;
-    mask |= matcher->GetRemoveHeadersMask(params, mask | ignored_mask);
+    mask |= matcher->GetRemoveHeadersMask(params, mask | ignored_mask,
+                                          remove_headers_actions);
   }
 
   DCHECK(!(mask & ignored_mask));

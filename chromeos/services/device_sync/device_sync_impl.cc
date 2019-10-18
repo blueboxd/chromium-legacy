@@ -11,7 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
-#include "base/unguessable_token.h"
+#include "base/token.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -40,6 +40,19 @@ namespace chromeos {
 namespace device_sync {
 
 namespace {
+
+void RegisterDeviceSyncPrefs(PrefRegistrySimple* registry) {
+  CryptAuthGCMManager::RegisterPrefs(registry);
+  CryptAuthDeviceManager::RegisterPrefs(registry);
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kCryptAuthV2Enrollment)) {
+    CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(registry);
+    CryptAuthKeyRegistryImpl::RegisterPrefs(registry);
+    CryptAuthSchedulerImpl::RegisterPrefs(registry);
+  } else {
+    CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
+  }
+}
 
 constexpr base::TimeDelta kSetFeatureEnabledTimeout =
     base::TimeDelta::FromSeconds(5);
@@ -207,15 +220,32 @@ DeviceSyncImpl::Factory::~Factory() = default;
 std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
     signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
-    PrefService* profile_prefs,
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
     ClientAppMetadataProvider* client_app_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<base::OneShotTimer> timer) {
   return base::WrapUnique(new DeviceSyncImpl(
-      identity_manager, gcm_driver, profile_prefs, gcm_device_info_provider,
-      client_app_metadata_provider, std::move(url_loader_factory),
-      base::DefaultClock::GetInstance(), std::move(timer)));
+      identity_manager, gcm_driver, std::move(pref_store_connector),
+      gcm_device_info_provider, client_app_metadata_provider,
+      std::move(url_loader_factory), base::DefaultClock::GetInstance(),
+      std::make_unique<PrefConnectionDelegate>(), std::move(timer)));
+}
+
+DeviceSyncImpl::PrefConnectionDelegate::~PrefConnectionDelegate() = default;
+
+scoped_refptr<PrefRegistrySimple>
+DeviceSyncImpl::PrefConnectionDelegate::CreatePrefRegistry() {
+  return base::MakeRefCounted<PrefRegistrySimple>();
+}
+
+void DeviceSyncImpl::PrefConnectionDelegate::ConnectToPrefService(
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector,
+    scoped_refptr<PrefRegistrySimple> pref_registry,
+    prefs::ConnectCallback callback) {
+  prefs::ConnectToPrefService(std::move(pref_store_connector),
+                              std::move(pref_registry),
+                              base::Token::CreateRandom(), std::move(callback));
 }
 
 DeviceSyncImpl::PendingSetSoftwareFeatureRequest::
@@ -269,42 +299,29 @@ void DeviceSyncImpl::PendingSetSoftwareFeatureRequest::InvokeCallback(
   std::move(callback_).Run(result);
 }
 
-// static
-void DeviceSyncImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  CryptAuthGCMManager::RegisterPrefs(registry);
-  CryptAuthDeviceManager::RegisterPrefs(registry);
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kCryptAuthV2Enrollment)) {
-    CryptAuthV2EnrollmentManagerImpl::RegisterPrefs(registry);
-    CryptAuthKeyRegistryImpl::RegisterPrefs(registry);
-    CryptAuthSchedulerImpl::RegisterPrefs(registry);
-  } else {
-    CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
-  }
-}
-
 DeviceSyncImpl::DeviceSyncImpl(
     signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
-    PrefService* profile_prefs,
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
     ClientAppMetadataProvider* client_app_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::Clock* clock,
+    std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate,
     std::unique_ptr<base::OneShotTimer> timer)
     : DeviceSyncBase(),
       identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
-      profile_prefs_(profile_prefs),
+      pref_store_connector_(std::move(pref_store_connector)),
       gcm_device_info_provider_(gcm_device_info_provider),
       client_app_metadata_provider_(client_app_metadata_provider),
       url_loader_factory_(std::move(url_loader_factory)),
       clock_(clock),
+      pref_connection_delegate_(std::move(pref_connection_delegate)),
       set_software_feature_timer_(std::move(timer)),
-      status_(Status::WAITING_FOR_PROFILE_INIT) {
-  DCHECK(profile_prefs_);
+      status_(Status::FETCHING_ACCOUNT_INFO) {
   PA_LOG(VERBOSE) << "DeviceSyncImpl: Initializing.";
-  // Initialization will complete when the profile is fully loaded.
+  ProcessPrimaryAccountInfo(identity_manager_->GetPrimaryAccountInfo());
 }
 
 DeviceSyncImpl::~DeviceSyncImpl() {
@@ -534,11 +551,6 @@ void DeviceSyncImpl::OnSyncDeviceListChanged() {
   }
 }
 
-void DeviceSyncImpl::OnProfileInitialized() {
-  PA_LOG(VERBOSE) << "DeviceSyncImpl: OnProfileInitialized";
-  ProcessPrimaryAccountInfo(identity_manager_->GetPrimaryAccountInfo());
-}
-
 void DeviceSyncImpl::Shutdown() {
   software_feature_manager_.reset();
   remote_device_provider_.reset();
@@ -548,10 +560,10 @@ void DeviceSyncImpl::Shutdown() {
   cryptauth_key_registry_.reset();
   cryptauth_client_factory_.reset();
   cryptauth_gcm_manager_.reset();
+  pref_connection_delegate_.reset();
 
   identity_manager_ = nullptr;
   gcm_driver_ = nullptr;
-  profile_prefs_ = nullptr;
   gcm_device_info_provider_ = nullptr;
   client_app_metadata_provider_ = nullptr;
   url_loader_factory_ = nullptr;
@@ -570,12 +582,31 @@ void DeviceSyncImpl::ProcessPrimaryAccountInfo(
   }
 
   primary_account_info_ = primary_account_info;
+  ConnectToPrefStore();
+}
 
-  DCHECK(status_ == Status::WAITING_FOR_PROFILE_INIT);
+void DeviceSyncImpl::ConnectToPrefStore() {
+  DCHECK(status_ == Status::FETCHING_ACCOUNT_INFO);
+  status_ = Status::CONNECTING_TO_USER_PREFS;
+
+  auto pref_registry = pref_connection_delegate_->CreatePrefRegistry();
+  RegisterDeviceSyncPrefs(pref_registry.get());
+
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: Connecting to pref service.";
+  pref_connection_delegate_->ConnectToPrefService(
+      std::move(pref_store_connector_), std::move(pref_registry),
+      base::Bind(&DeviceSyncImpl::OnConnectedToPrefService,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DeviceSyncImpl::OnConnectedToPrefService(
+    std::unique_ptr<PrefService> pref_service) {
+  DCHECK(status_ == Status::CONNECTING_TO_USER_PREFS);
   status_ = Status::WAITING_FOR_ENROLLMENT;
 
-  PA_LOG(VERBOSE) << "DeviceSyncImpl: Profile initialized; initializing "
+  PA_LOG(VERBOSE) << "DeviceSyncImpl: Connected to pref service; initializing "
                   << "CryptAuth managers.";
+  pref_service_ = std::move(pref_service);
   InitializeCryptAuthManagementObjects();
 
   // If enrollment has not yet completed successfully, initialization cannot
@@ -595,7 +626,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
   // Initialize |cryptauth_gcm_manager_| and have it start listening for GCM
   // tickles.
   cryptauth_gcm_manager_ = CryptAuthGCMManagerImpl::Factory::NewInstance(
-      gcm_driver_, profile_prefs_);
+      gcm_driver_, pref_service_.get());
   cryptauth_gcm_manager_->StartListening();
 
   cryptauth_client_factory_ = std::make_unique<CryptAuthClientFactoryImpl>(
@@ -606,23 +637,25 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
   // called yet since the device has not completed enrollment.
   cryptauth_device_manager_ = CryptAuthDeviceManagerImpl::Factory::NewInstance(
       clock_, cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
-      profile_prefs_);
+      pref_service_.get());
 
   // Initialize |cryptauth_enrollment_manager_| and start observing, then call
   // Start() immediately to schedule enrollment.
   if (base::FeatureList::IsEnabled(
           chromeos::features::kCryptAuthV2Enrollment)) {
     cryptauth_key_registry_ =
-        CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(profile_prefs_);
+        CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(
+            pref_service_.get());
 
     cryptauth_scheduler_ =
-        CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(profile_prefs_);
+        CryptAuthSchedulerImpl::Factory::Get()->BuildInstance(
+            pref_service_.get());
 
     cryptauth_enrollment_manager_ =
         CryptAuthV2EnrollmentManagerImpl::Factory::Get()->BuildInstance(
             client_app_metadata_provider_, cryptauth_key_registry_.get(),
             cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
-            cryptauth_scheduler_.get(), profile_prefs_, clock_);
+            cryptauth_scheduler_.get(), pref_service_.get(), clock_);
   } else {
     cryptauth_enrollment_manager_ =
         CryptAuthEnrollmentManagerImpl::Factory::NewInstance(
@@ -631,7 +664,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
                 cryptauth_client_factory_.get()),
             multidevice::SecureMessageDelegateImpl::Factory::NewInstance(),
             gcm_device_info_provider_->GetGcmDeviceInfo(),
-            cryptauth_gcm_manager_.get(), profile_prefs_);
+            cryptauth_gcm_manager_.get(), pref_service_.get());
   }
 
   cryptauth_enrollment_manager_->AddObserver(this);
@@ -792,6 +825,11 @@ void DeviceSyncImpl::OnSetSoftwareFeatureTimerFired() {
         mojom::NetworkRequestResult::kRequestSucceededButUnexpectedResult);
     it = id_to_pending_set_software_feature_request_map_.erase(it);
   }
+}
+
+void DeviceSyncImpl::SetPrefConnectionDelegateForTesting(
+    std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate) {
+  pref_connection_delegate_ = std::move(pref_connection_delegate);
 }
 
 }  // namespace device_sync

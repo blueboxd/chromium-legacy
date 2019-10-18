@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_VIDEO_CAPTURE_SERVICE_H_
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_MOCK_VIDEO_CAPTURE_SERVICE_H_
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,18 +18,22 @@ class MockVideoCaptureService
   ~MockVideoCaptureService() override;
 
   void ConnectToDeviceFactory(
-      video_capture::mojom::DeviceFactoryRequest request) override;
+      mojo::PendingReceiver<video_capture::mojom::DeviceFactory> receiver)
+      override;
 
   void ConnectToVideoSourceProvider(
-      video_capture::mojom::VideoSourceProviderRequest request) override;
+      mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver)
+      override;
 
 #if defined(OS_CHROMEOS)
   void InjectGpuDependencies(
-      video_capture::mojom::AcceleratorFactoryPtr accelerator_factory) override;
+      mojo::PendingRemote<video_capture::mojom::AcceleratorFactory>
+          accelerator_factory) override;
 
   MOCK_METHOD1(
       DoInjectGpuDependencies,
-      void(video_capture::mojom::AcceleratorFactoryPtr& accelerator_factory));
+      void(mojo::PendingRemote<video_capture::mojom::AcceleratorFactory>
+               accelerator_factory));
 
   void ConnectToCameraAppDeviceBridge(
       mojo::PendingReceiver<cros::mojom::CameraAppDeviceBridge>) override {}
@@ -39,9 +44,11 @@ class MockVideoCaptureService
 
   MOCK_METHOD1(SetShutdownDelayInSeconds, void(float seconds));
   MOCK_METHOD1(DoConnectToDeviceFactory,
-               void(video_capture::mojom::DeviceFactoryRequest& request));
+               void(mojo::PendingReceiver<video_capture::mojom::DeviceFactory>
+                        receiver));
   MOCK_METHOD1(DoConnectToVideoSourceProvider,
-               void(video_capture::mojom::VideoSourceProviderRequest& request));
+               void(mojo::PendingReceiver<
+                    video_capture::mojom::VideoSourceProvider> receiver));
   MOCK_METHOD1(SetRetryCount, void(int32_t));
 };
 

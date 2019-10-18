@@ -10,12 +10,11 @@
       "name": "LayoutNGBlockFlow DIV id='masked'",
       "bounds": [400, 200],
       "backgroundColor": "#000000",
-      "maskLayer": [
-        {
-          "name": "Mask Layer",
-          "bounds": [400, 200]
-        }
-      ],
+      "transform": 1
+    },
+    {
+      "name": "Mask Layer",
+      "bounds": [400, 200],
       "transform": 1
     }
   ],

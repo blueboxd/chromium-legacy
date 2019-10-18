@@ -39,10 +39,6 @@ class SVGMPathElement final : public SVGElement, public SVGURIReference {
 
   void TargetPathChanged();
 
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
-    return SVGURIReference::GetCheckedAttributeTypes();
-  }
-
   void Trace(blink::Visitor*) override;
 
  private:

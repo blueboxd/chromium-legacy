@@ -605,7 +605,10 @@ void CookieStoreIOS::RunCallbacksForCookies(
   CookieChangeCallbackList* callbacks = hook_map_[key].get();
   for (const auto& cookie : cookies) {
     DCHECK_EQ(name, cookie.Name());
-    callbacks->Notify(cookie, cause);
+    // TODO(crbug.com/978172): Support CookieAccessSemantics values on iOS and
+    // use it to check IncludeForRequestURL before notifying?
+    callbacks->Notify(net::CookieChangeInfo(
+        cookie, net::CookieAccessSemantics::UNKNOWN, cause));
   }
 }
 

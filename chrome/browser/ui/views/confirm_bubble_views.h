@@ -15,7 +15,6 @@
 class ConfirmBubbleModel;
 
 namespace views {
-class ImageButton;
 class Label;
 }  // namespace views
 
@@ -38,7 +37,6 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
 
   // views::DialogDelegate implementation.
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
 
@@ -59,7 +57,7 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
   std::unique_ptr<ConfirmBubbleModel> model_;
 
   views::Label* label_;
-  views::ImageButton* help_button_;
+  views::View* help_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmBubbleViews);
 };

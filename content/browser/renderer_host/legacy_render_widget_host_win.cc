@@ -151,7 +151,8 @@ bool LegacyRenderWidgetHostHWND::Init() {
     // element B, then ask element B for its fragment root, without having sent
     // WM_GETOBJECT to element B's window. So we create the fragment root now to
     // ensure it's ready if asked for.
-    ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), this);
+    ax_fragment_root_ =
+        std::make_unique<ui::AXFragmentRootWin>(hwnd(), this, true);
     hr = S_OK;
   }
 

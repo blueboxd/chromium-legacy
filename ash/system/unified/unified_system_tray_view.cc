@@ -332,7 +332,7 @@ void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
   feature_pods_container_->SetMaxHeight(
       max_height - top_shortcuts_view_->GetPreferredSize().height() -
       page_indicator_view_->GetPreferredSize().height() -
-      sliders_container_->GetPreferredSize().height() -
+      sliders_container_->GetExpandedHeight() -
       system_info_view_->GetPreferredSize().height());
 
   if (!features::IsUnifiedMessageCenterRefactorEnabled()) {

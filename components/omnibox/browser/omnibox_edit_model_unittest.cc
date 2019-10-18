@@ -279,6 +279,7 @@ TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
 
   // Test that we don't clobber the unelided text with inline autocomplete text.
   EXPECT_EQ(base::string16(), view()->inline_autocomplete_text());
+  model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
   model()->OnPopupDataChanged(base::string16(), /*is_temporary_text=*/false,
                               base::string16(), false);
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
@@ -286,6 +287,28 @@ TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
   EXPECT_TRUE(view()->IsSelectAll());
 }
 #endif  // !defined(OS_IOS)
+
+TEST_F(OmniboxEditModelTest, RevertZeroSuggestTemporaryText) {
+  location_bar_model()->set_url(GURL("https://www.example.com/"));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("https://www.example.com/"));
+
+  EXPECT_TRUE(model()->ResetDisplayTexts());
+  model()->Revert();
+
+  // Simulate getting ZeroSuggestions and arrowing to a different match.
+  view()->SelectAll(true);
+  model()->ShowOnFocusSuggestionsIfAutocompleteIdle();
+  model()->OnPopupDataChanged(base::ASCIIToUTF16("fake_temporary_text"),
+                              /*is_temporary_text=*/true, base::string16(),
+                              false);
+
+  // Test that reverting brings back the original input text.
+  EXPECT_TRUE(model()->OnEscapeKeyPressed());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
+  EXPECT_FALSE(model()->user_input_in_progress());
+  EXPECT_TRUE(view()->IsSelectAll());
+}
 
 // This verifies the fix for a bug where calling OpenMatch() with a valid
 // alternate nav URL would fail a DCHECK if the input began with "http://".

@@ -998,6 +998,8 @@ extern const char kHatsSurveyMetadata[];
 extern const char kCorsMitigationList[];
 extern const char kCorsLegacyModeEnabled[];
 
+extern const char kExternalProtocolDialogShowAlwaysOpenCheckbox[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

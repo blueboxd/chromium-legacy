@@ -444,16 +444,14 @@ void CookieStoreManager::OnStorageWiped() {
   subscriptions_by_registration_.clear();
 }
 
-void CookieStoreManager::OnCookieChange(
-    const net::CanonicalCookie& cookie,
-    ::network::mojom::CookieChangeCause cause) {
+void CookieStoreManager::OnCookieChange(const net::CookieChangeInfo& change) {
   // Waiting for on-disk subscriptions to be loaded ensures that changes are
   // delivered to all service workers that subscribed to them in previous
   // browser sessions. Without waiting, workers might miss cookie changes.
   if (!done_loading_subscriptions_) {
     subscriptions_loaded_callbacks_.emplace_back(
         base::BindOnce(&CookieStoreManager::OnCookieChange,
-                       weak_factory_.GetWeakPtr(), cookie, cause));
+                       weak_factory_.GetWeakPtr(), change));
     return;
   }
 
@@ -464,7 +462,7 @@ void CookieStoreManager::OnCookieChange(
   //               net::CookieMonsterChangeDispatcher::DomainKey. Extract that
   //               implementation into net/cookies.cookie_util.h and call it.
   std::string url_key = net::registry_controlled_domains::GetDomainAndRegistry(
-      cookie.Domain(),
+      change.cookie.Domain(),
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   auto it = subscriptions_by_url_key_.find(url_key);
   if (it == subscriptions_by_url_key_.end())
@@ -475,7 +473,8 @@ void CookieStoreManager::OnCookieChange(
            subscriptions.head();
        node != subscriptions.end(); node = node->next()) {
     const CookieChangeSubscription* subscription = node->value();
-    if (subscription->ShouldObserveChangeTo(cookie)) {
+    if (subscription->ShouldObserveChangeTo(change.cookie,
+                                            change.access_semantics)) {
       interested_registration_ids.insert(
           subscription->service_worker_registration_id());
     }
@@ -487,8 +486,7 @@ void CookieStoreManager::OnCookieChange(
         registration_id,
         base::BindOnce(
             [](base::WeakPtr<CookieStoreManager> manager,
-               const net::CanonicalCookie& cookie,
-               ::network::mojom::CookieChangeCause cause,
+               const net::CookieChangeInfo& change,
                blink::ServiceWorkerStatusCode find_status,
                scoped_refptr<ServiceWorkerRegistration> registration) {
               if (find_status != blink::ServiceWorkerStatusCode::kOk)
@@ -497,17 +495,15 @@ void CookieStoreManager::OnCookieChange(
               DCHECK(registration);
               if (!manager)
                 return;
-              manager->DispatchChangeEvent(std::move(registration), cookie,
-                                           cause);
+              manager->DispatchChangeEvent(std::move(registration), change);
             },
-            weak_factory_.GetWeakPtr(), cookie, cause));
+            weak_factory_.GetWeakPtr(), change));
   }
 }
 
 void CookieStoreManager::DispatchChangeEvent(
     scoped_refptr<ServiceWorkerRegistration> registration,
-    const net::CanonicalCookie& cookie,
-    ::network::mojom::CookieChangeCause cause) {
+    const net::CookieChangeInfo& change) {
   scoped_refptr<ServiceWorkerVersion> active_version =
       registration->active_version();
   if (active_version->running_status() != EmbeddedWorkerStatus::RUNNING) {
@@ -515,7 +511,7 @@ void CookieStoreManager::DispatchChangeEvent(
         ServiceWorkerMetrics::EventType::COOKIE_CHANGE,
         base::BindOnce(&CookieStoreManager::DidStartWorkerForChangeEvent,
                        weak_factory_.GetWeakPtr(), std::move(registration),
-                       cookie, cause));
+                       change));
     return;
   }
 
@@ -523,17 +519,16 @@ void CookieStoreManager::DispatchChangeEvent(
       ServiceWorkerMetrics::EventType::COOKIE_CHANGE, base::DoNothing());
 
   active_version->endpoint()->DispatchCookieChangeEvent(
-      cookie, cause, active_version->CreateSimpleEventCallback(request_id));
+      change, active_version->CreateSimpleEventCallback(request_id));
 }
 
 void CookieStoreManager::DidStartWorkerForChangeEvent(
     scoped_refptr<ServiceWorkerRegistration> registration,
-    const net::CanonicalCookie& cookie,
-    ::network::mojom::CookieChangeCause cause,
+    const net::CookieChangeInfo& change,
     blink::ServiceWorkerStatusCode start_worker_status) {
   if (start_worker_status != blink::ServiceWorkerStatusCode::kOk)
     return;
-  DispatchChangeEvent(std::move(registration), cookie, cause);
+  DispatchChangeEvent(std::move(registration), change);
 }
 
 }  // namespace content

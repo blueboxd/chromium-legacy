@@ -20,6 +20,7 @@
 /**
  * An audio node. Based on the struct AudioNode found in audio_node.h.
  * @constructor
+ * @suppress {checkTypes}
  */
 var AudioNode = function() {
   // Whether node will input or output audio.
@@ -52,13 +53,11 @@ Polymer({
   properties: {
     /**
      * An AudioNode which is currently being edited.
-     * @type {AudioNode}
+     * @type {?AudioNode}
      */
     currentEditableObject: {
       type: Object,
-      value: function() {
-        return {};
-      }
+      value: null,
     },
 
     /**
@@ -138,7 +137,7 @@ Polymer({
 
   /**
    * This adds or modifies an audio node to the AudioNodeList.
-   * @param {model: {index: number}} e Event with a model containing
+   * @param {{model: {index: number}}} e Event with a model containing
    *     the index in |nodes| to add.
    */
   insertAudioNode: function(e) {
@@ -150,10 +149,8 @@ Polymer({
   /**
    * This adds/modifies the audio node |nodes[currentEditIndex]| to/from the
    * AudioNodeList.
-   * @param {model: {index: number}} e Event with a model containing
-   *     the index in |nodes| to add.
    */
-  insertEditedAudioNode: function(e) {
+  insertEditedAudioNode: function() {
     // Insert a new node or update an existing node using all the properties
     // in |node|.
     var node = this.nodes[this.currentEditIndex];
@@ -163,8 +160,8 @@ Polymer({
 
   /**
    * Removes the audio node with id |id|.
-   * @param {model: {index: number}} e Event with a model containing
-   *     the index in |nodes| to add.
+   * @param {{model: {index: number}}} e Event with a model containing
+   *     the index in |nodes| to remove.
    */
   removeAudioNode: function(e) {
     var info = this.nodes[e.model.index];

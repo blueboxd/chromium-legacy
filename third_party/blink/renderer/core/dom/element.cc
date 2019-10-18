@@ -35,10 +35,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
@@ -169,8 +168,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 enum class ClassStringContent { kEmpty, kWhiteSpaceOnly, kHasClasses };
 
 namespace {
@@ -228,7 +225,8 @@ bool IsRootEditableElementWithCounting(const Element& element) {
   if (!style)
     return is_editable;
   auto user_modify = style->UserModify();
-  const AtomicString& ce_value = element.FastGetAttribute(kContenteditableAttr);
+  const AtomicString& ce_value =
+      element.FastGetAttribute(html_names::kContenteditableAttr);
   if (ce_value.IsNull() || DeprecatedEqualIgnoringCase(ce_value, "false")) {
     if (user_modify == EUserModify::kReadWritePlaintextOnly) {
       UseCounter::Count(doc, WebFeature::kPlainTextEditingEffective);
@@ -529,12 +527,12 @@ void Element::SetTabIndexExplicitly() {
 }
 
 void Element::setTabIndex(int value) {
-  SetIntegralAttribute(kTabindexAttr, value);
+  SetIntegralAttribute(html_names::kTabindexAttr, value);
 }
 
 int Element::tabIndex() const {
   return HasElementFlag(ElementFlags::kTabIndexWasSetExplicitly)
-             ? GetIntegralAttribute(kTabindexAttr)
+             ? GetIntegralAttribute(html_names::kTabindexAttr)
              : 0;
 }
 
@@ -877,7 +875,7 @@ void Element::SynchronizeAllAttributes() const {
 inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
   if (!GetElementData())
     return;
-  if (UNLIKELY(name == kStyleAttr &&
+  if (UNLIKELY(name == html_names::kStyleAttr &&
                GetElementData()->style_attribute_is_dirty_)) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
@@ -896,7 +894,7 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
   if (!GetElementData())
     return;
   if (GetElementData()->style_attribute_is_dirty_ &&
-      LowercaseIfNecessary(local_name) == kStyleAttr.LocalName()) {
+      LowercaseIfNecessary(local_name) == html_names::kStyleAttr.LocalName()) {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
     return;
@@ -1926,7 +1924,7 @@ AccessibleNode* Element::accessibleNode() {
 }
 
 InvisibleState Element::Invisible() const {
-  const AtomicString& value = FastGetAttribute(kInvisibleAttr);
+  const AtomicString& value = FastGetAttribute(html_names::kInvisibleAttr);
   if (value.IsNull())
     return InvisibleState::kMissing;
   if (EqualIgnoringASCIICase(value, "static"))
@@ -2010,7 +2008,7 @@ void Element::DefaultEventHandler(Event& event) {
   if (RuntimeEnabledFeatures::InvisibleDOMEnabled() &&
       event.type() == event_type_names::kActivateinvisible &&
       event.target() == this) {
-    removeAttribute(kInvisibleAttr);
+    removeAttribute(html_names::kInvisibleAttr);
     event.SetDefaultHandled();
     return;
   }
@@ -2168,8 +2166,7 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
 
 void Element::setAttribute(
     const AtomicString& local_name,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
-        string_or_TT,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL& string_or_TT,
     ExceptionState& exception_state) {
   if (!Document::IsValidName(local_name)) {
     exception_state.ThrowDOMException(
@@ -2255,16 +2252,6 @@ void Element::setAttribute(const QualifiedName& name,
   }
 }
 
-void Element::setAttribute(const QualifiedName& name,
-                           const USVStringOrTrustedURL& stringOrURL,
-                           ExceptionState& exception_state) {
-  String valueString =
-      GetStringFromTrustedURL(stringOrURL, &GetDocument(), exception_state);
-  if (!exception_state.HadException()) {
-    setAttribute(name, AtomicString(valueString));
-  }
-}
-
 ALWAYS_INLINE void Element::SetAttributeInternal(
     wtf_size_t index,
     const QualifiedName& name,
@@ -2330,7 +2317,7 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
       GetElementData()->SetIdForStyleResolution(new_id);
       GetDocument().GetStyleEngine().IdChangedForElement(old_id, new_id, *this);
     }
-  } else if (name == kClassAttr) {
+  } else if (name == html_names::kClassAttr) {
     ClassAttributeChanged(params.new_value);
     if (HasRareData() && GetElementRareData()->GetClassList()) {
       GetElementRareData()->GetClassList()->DidUpdateAttributeValue(
@@ -2347,7 +2334,7 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   } else if (IsElementReflectionAttribute(name)) {
     SynchronizeContentAttributeAndElementReference(name);
   } else if (IsStyledElement()) {
-    if (name == kStyleAttr) {
+    if (name == html_names::kStyleAttr) {
       StyleAttributeChanged(params.new_value, params.reason);
     } else if (IsPresentationAttribute(name)) {
       GetElementData()->presentation_attribute_style_is_dirty_ = true;
@@ -2402,7 +2389,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
   }
 
   if (params.reason == AttributeModificationReason::kDirectly &&
-      name == kTabindexAttr && AdjustedFocusedElementInTreeScope() == this) {
+      name == html_names::kTabindexAttr &&
+      AdjustedFocusedElementInTreeScope() == this) {
     // The attribute change may cause supportsFocus() to return false
     // for the element which had focus.
     //
@@ -2623,7 +2611,7 @@ const AtomicString& Element::LocateNamespacePrefix(
 }
 
 const AtomicString Element::ImageSourceURL() const {
-  return getAttribute(kSrcAttr);
+  return getAttribute(html_names::kSrcAttr);
 }
 
 bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) const {
@@ -3837,7 +3825,7 @@ Attr* Element::removeAttributeNode(Attr* attr,
 }
 
 void Element::ParseAttribute(const AttributeModificationParams& params) {
-  if (params.name == kTabindexAttr) {
+  if (params.name == html_names::kTabindexAttr) {
     int tabindex = 0;
     if (params.new_value.IsEmpty() ||
         !ParseHTMLInteger(params.new_value, tabindex)) {
@@ -3877,8 +3865,7 @@ bool Element::ParseAttributeName(QualifiedName& out,
 void Element::setAttributeNS(
     const AtomicString& namespace_uri,
     const AtomicString& qualified_name,
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
-        string_or_TT,
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL& string_or_TT,
     ExceptionState& exception_state) {
   QualifiedName parsed_name = g_any_name;
   if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
@@ -3941,7 +3928,7 @@ void Element::removeAttribute(const AtomicString& name) {
   AtomicString local_name = LowercaseIfNecessary(name);
   wtf_size_t index = GetElementData()->Attributes().FindIndex(local_name);
   if (index == kNotFound) {
-    if (UNLIKELY(local_name == kStyleAttr) &&
+    if (UNLIKELY(local_name == html_names::kStyleAttr) &&
         GetElementData()->style_attribute_is_dirty_ && IsStyledElement())
       RemoveAllInlineStyleProperties();
     return;
@@ -4828,7 +4815,7 @@ String Element::TextFromChildren() {
 const AtomicString& Element::ShadowPseudoId() const {
   if (ShadowRoot* root = ContainingShadowRoot()) {
     if (root->IsUserAgent())
-      return FastGetAttribute(kPseudoAttr);
+      return FastGetAttribute(html_names::kPseudoAttr);
   }
   return g_null_atom;
 }
@@ -4838,7 +4825,7 @@ void Element::SetShadowPseudoId(const AtomicString& id) {
              CSSSelector::kPseudoWebKitCustomElement ||
          CSSSelector::ParsePseudoType(id, false) ==
              CSSSelector::kPseudoBlinkInternalElement);
-  setAttribute(kPseudoAttr, id);
+  setAttribute(html_names::kPseudoAttr, id);
 }
 
 bool Element::IsInDescendantTreeOf(const Element* shadow_host) const {
@@ -5257,8 +5244,10 @@ Element* Element::closest(const AtomicString& selectors) {
 DOMTokenList& Element::classList() {
   ElementRareData& rare_data = EnsureElementRareData();
   if (!rare_data.GetClassList()) {
-    auto* class_list = MakeGarbageCollected<DOMTokenList>(*this, kClassAttr);
-    class_list->DidUpdateAttributeValue(g_null_atom, getAttribute(kClassAttr));
+    auto* class_list =
+        MakeGarbageCollected<DOMTokenList>(*this, html_names::kClassAttr);
+    class_list->DidUpdateAttributeValue(g_null_atom,
+                                        getAttribute(html_names::kClassAttr));
     rare_data.SetClassList(class_list);
   }
   return *rare_data.GetClassList();
@@ -5276,7 +5265,7 @@ KURL Element::HrefURL() const {
   // doesn't <link> implement URLUtils?
   if (IsA<HTMLAnchorElement>(*this) || IsA<HTMLAreaElement>(*this) ||
       IsHTMLLinkElement(*this))
-    return GetURLAttribute(kHrefAttr);
+    return GetURLAttribute(html_names::kHrefAttr);
   if (auto* svg_a = ToSVGAElementOrNull(*this))
     return svg_a->LegacyHrefURL(GetDocument());
   return KURL();
@@ -5297,18 +5286,6 @@ void Element::GetURLAttribute(const QualifiedName& name,
                               StringOrTrustedScriptURL& result) const {
   KURL url = GetURLAttribute(name);
   result.SetString(url.GetString());
-}
-
-void Element::GetURLAttribute(const QualifiedName& name,
-                              USVStringOrTrustedURL& result) const {
-  String url = GetURLAttribute(name);
-  result.SetUSVString(url);
-}
-
-void Element::FastGetAttribute(const QualifiedName& name,
-                               USVStringOrTrustedURL& result) const {
-  String attr = FastGetAttribute(name);
-  result.SetUSVString(attr);
 }
 
 void Element::FastGetAttribute(const QualifiedName& name,
@@ -5441,7 +5418,7 @@ void Element::requestPointerLock(const PointerLockOptions* options) {
 }
 
 SpellcheckAttributeState Element::GetSpellcheckAttributeState() const {
-  const AtomicString& value = FastGetAttribute(kSpellcheckAttr);
+  const AtomicString& value = FastGetAttribute(html_names::kSpellcheckAttr);
   if (value == g_null_atom)
     return kSpellcheckAttributeDefault;
   if (DeprecatedEqualIgnoringCase(value, "true") ||
@@ -5872,7 +5849,7 @@ void Element::SynchronizeStyleAttributeInternal() const {
   GetElementData()->style_attribute_is_dirty_ = false;
   const CSSPropertyValueSet* inline_style = InlineStyle();
   const_cast<Element*>(this)->SetSynchronizedLazyAttribute(
-      kStyleAttr,
+      html_names::kStyleAttr,
       inline_style ? AtomicString(inline_style->AsText()) : g_empty_atom);
 }
 
@@ -5980,18 +5957,18 @@ void Element::InlineStyleChanged() {
 
   if (MutationObserverInterestGroup* recipients =
           MutationObserverInterestGroup::CreateForAttributesMutation(
-              *this, kStyleAttr)) {
+              *this, html_names::kStyleAttr)) {
     // We don't use getAttribute() here to get a style attribute value
     // before the change.
     AtomicString old_value;
     if (const Attribute* attribute =
-            GetElementData()->Attributes().Find(kStyleAttr))
+            GetElementData()->Attributes().Find(html_names::kStyleAttr))
       old_value = attribute->Value();
-    recipients->EnqueueMutationRecord(
-        MutationRecord::CreateAttributes(this, kStyleAttr, old_value));
+    recipients->EnqueueMutationRecord(MutationRecord::CreateAttributes(
+        this, html_names::kStyleAttr, old_value));
     // Need to synchronize every time so that following MutationRecords will
     // have correct oldValues.
-    SynchronizeAttribute(kStyleAttr);
+    SynchronizeAttribute(html_names::kStyleAttr);
   }
 }
 
@@ -6197,7 +6174,7 @@ DOMTokenList& Element::part() {
   ElementRareData& rare_data = EnsureElementRareData();
   DOMTokenList* part = rare_data.GetPart();
   if (!part) {
-    part = MakeGarbageCollected<DOMTokenList>(*this, kPartAttr);
+    part = MakeGarbageCollected<DOMTokenList>(*this, html_names::kPartAttr);
     rare_data.SetPart(part);
   }
   return *part;

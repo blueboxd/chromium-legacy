@@ -44,8 +44,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -726,7 +726,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 // It is safe to access the default profile here.
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
   if (g_browser_process->browser_policy_connector()
-          ->machine_level_user_cloud_policy_controller()
+          ->chrome_browser_cloud_management_controller()
           ->IsEnterpriseStartupDialogShowing()) {
     // As Chrome is not ready when the Enterprise startup dialog is being shown.
     // Store the notification as it will be reposted when the dialog is closed.
@@ -1712,7 +1712,7 @@ return NO;
 
 - (BOOL)isProfileReady {
   return !g_browser_process->browser_policy_connector()
-              ->machine_level_user_cloud_policy_controller()
+              ->chrome_browser_cloud_management_controller()
               ->IsEnterpriseStartupDialogShowing();
 }
 

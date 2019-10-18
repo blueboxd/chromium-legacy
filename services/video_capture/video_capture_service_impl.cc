@@ -15,6 +15,9 @@
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_system_impl.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/testing_controls_impl.h"
@@ -55,8 +58,9 @@ class VideoCaptureServiceImpl::GpuDependenciesContext {
 
 #if defined(OS_CHROMEOS)
   void InjectGpuDependencies(
-      mojom::AcceleratorFactoryPtrInfo accelerator_factory_info) {
+      mojo::PendingRemote<mojom::AcceleratorFactory> accelerator_factory_info) {
     DCHECK(gpu_io_task_runner_->RunsTasksInCurrentSequence());
+    accelerator_factory_.reset();
     accelerator_factory_.Bind(std::move(accelerator_factory_info));
   }
 
@@ -80,7 +84,7 @@ class VideoCaptureServiceImpl::GpuDependenciesContext {
   scoped_refptr<base::SequencedTaskRunner> gpu_io_task_runner_;
 
 #if defined(OS_CHROMEOS)
-  mojom::AcceleratorFactoryPtr accelerator_factory_;
+  mojo::Remote<mojom::AcceleratorFactory> accelerator_factory_;
 #endif  // defined(OS_CHROMEOS)
 
   base::WeakPtrFactory<GpuDependenciesContext> weak_factory_for_gpu_io_thread_{
@@ -94,7 +98,7 @@ VideoCaptureServiceImpl::VideoCaptureServiceImpl(
       ui_task_runner_(std::move(ui_task_runner)) {}
 
 VideoCaptureServiceImpl::~VideoCaptureServiceImpl() {
-  factory_bindings_.CloseAllBindings();
+  factory_receivers_.Clear();
   device_factory_.reset();
 
 #if defined(OS_CHROMEOS)
@@ -109,12 +113,12 @@ VideoCaptureServiceImpl::~VideoCaptureServiceImpl() {
 
 #if defined(OS_CHROMEOS)
 void VideoCaptureServiceImpl::InjectGpuDependencies(
-    mojom::AcceleratorFactoryPtr accelerator_factory) {
+    mojo::PendingRemote<mojom::AcceleratorFactory> accelerator_factory) {
   LazyInitializeGpuDependenciesContext();
   gpu_dependencies_context_->GetTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&GpuDependenciesContext::InjectGpuDependencies,
                                 gpu_dependencies_context_->GetWeakPtr(),
-                                accelerator_factory.PassInterface()));
+                                std::move(accelerator_factory)));
 }
 
 void VideoCaptureServiceImpl::ConnectToCameraAppDeviceBridge(
@@ -125,15 +129,15 @@ void VideoCaptureServiceImpl::ConnectToCameraAppDeviceBridge(
 #endif  // defined(OS_CHROMEOS)
 
 void VideoCaptureServiceImpl::ConnectToDeviceFactory(
-    mojom::DeviceFactoryRequest request) {
+    mojo::PendingReceiver<mojom::DeviceFactory> receiver) {
   LazyInitializeDeviceFactory();
-  factory_bindings_.AddBinding(device_factory_.get(), std::move(request));
+  factory_receivers_.Add(device_factory_.get(), std::move(receiver));
 }
 
 void VideoCaptureServiceImpl::ConnectToVideoSourceProvider(
-    mojom::VideoSourceProviderRequest request) {
+    mojo::PendingReceiver<mojom::VideoSourceProvider> receiver) {
   LazyInitializeVideoSourceProvider();
-  video_source_provider_->AddClient(std::move(request));
+  video_source_provider_->AddClient(std::move(receiver));
 }
 
 void VideoCaptureServiceImpl::SetRetryCount(int32_t count) {

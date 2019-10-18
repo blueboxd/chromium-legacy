@@ -297,6 +297,11 @@ let ntpApiHandle;
 
 // Helper methods.
 
+/** @return {boolean} */
+function areRealboxMatchesVisible() {
+  return $(IDS.REALBOX_INPUT_WRAPPER).classList.contains(CLASSES.SHOW_MATCHES);
+}
+
 /**
  * @param {number} style
  * @return {!Array<string>}
@@ -692,13 +697,6 @@ function handlePostMessage(event) {
 function hideNotification() {
   floatDownNotification(
       $(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER), /*showPromo=*/ true);
-}
-
-function hideRealboxMatches() {
-  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
-  realboxWrapper.classList.remove(CLASSES.SHOW_MATCHES);
-  realboxWrapper.removeEventListener('keydown', onRealboxKeyDown);
-  autocompleteMatches = [];
 }
 
 /**
@@ -1114,7 +1112,7 @@ function onDeleteAutocompleteMatch(result) {
   updateRealboxOutput({
     moveCursorToEnd: true,
     inline: '',
-    text: autocompleteMatches[newSelected].fillIntoEdit,
+    text: assert(autocompleteMatches[newSelected].fillIntoEdit),
   });
 }
 
@@ -1211,109 +1209,17 @@ function onRealboxCutCopy(e) {
   }
 }
 
-/** @param {Event} e */
-function onRealboxKeyDown(e) {
-  const key = e.key;
-
-  const realboxEl = $(IDS.REALBOX);
-  if (e.target === realboxEl && lastOutput.inline) {
-    const realboxValue = realboxEl.value;
-    const realboxSelected = realboxValue.substring(
-        realboxEl.selectionStart, realboxEl.selectionEnd);
-    // If the current state matches the default text + inline autocompletion
-    // and the user types the next key in the inline autocompletion, just move
-    // the selection and requery autocomplete. This is required to avoid flicker
-    // while setting .value and .selection{Start,End} to keep typing smooth.
-    if (realboxSelected === lastOutput.inline &&
-        realboxValue === lastOutput.text + lastOutput.inline &&
-        lastOutput.inline[0].toLocaleLowerCase() === key.toLocaleLowerCase()) {
-      updateRealboxOutput({
-        inline: lastOutput.inline.substr(1),
-        text: lastOutput.text + key,
-      });
-      window.chrome.embeddedSearch.searchBox.queryAutocomplete(lastOutput.text);
-      e.preventDefault();
-      return;
-    }
-  }
-
-  if (!REALBOX_KEYDOWN_HANDLED_KEYS.includes(key)) {
-    return;
-  }
-
-  const realboxMatchesEl = $(IDS.REALBOX_MATCHES);
-  const matchEls = Array.from(realboxMatchesEl.children);
-  const selected = matchEls.findIndex(matchEl => {
-    return matchEl.classList.contains(CLASSES.SELECTED);
-  });
-
-  if (key === 'Delete') {
-    if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
-        autocompleteMatches[selected].supportsDeletion) {
-      window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
-      e.preventDefault();
-    }
-    return;
-  }
-
-  const hasMods = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
-  if (hasMods && key !== 'Enter') {
-    return;
-  }
-
-  if (key === 'Enter') {
-    if (matchEls[selected] && matchEls.concat(realboxEl).includes(e.target)) {
-      // Note: dispatching a MouseEvent here instead of using e.g. .click() as
-      // this forwards key modifiers. This enables Shift+Enter to open a match
-      // in a new window, for example.
-      matchEls[selected].dispatchEvent(new MouseEvent('click', e));
-      e.preventDefault();
-    }
-    return;
-  }
-
-  e.preventDefault();
-
-  if (key === 'Escape' && selected === 0) {
-    updateRealboxOutput({inline: '', text: ''});
-    return;
-  }
-
-  /** @type {number} */ let newSelected;
-  if (key === 'ArrowDown') {
-    newSelected = selected + 1 < matchEls.length ? selected + 1 : 0;
-  } else if (key === 'ArrowUp') {
-    newSelected = selected - 1 >= 0 ? selected - 1 : matchEls.length - 1;
-  } else if (key === 'Escape' || key === 'PageUp') {
-    newSelected = 0;
-  } else if (key === 'PageDown') {
-    newSelected = matchEls.length - 1;
-  }
-  selectMatchEl(matchEls[newSelected]);
-
-  if (realboxMatchesEl.contains(document.activeElement)) {
-    // Selection should match focus if focus is currently in the matches.
-    matchEls[newSelected].focus();
-  }
-
-  const newMatch = autocompleteMatches[newSelected];
-  const newFill = newMatch.fillIntoEdit;
-  let newInline = '';
-  if (newMatch.allowedToBeDefaultMatch) {
-    newInline = newMatch.inlineAutocompletion;
-  }
-  const newFillEnd = newFill.length - newInline.length;
-  updateRealboxOutput({
-    moveCursorToEnd: true,
-    inline: newInline,
-    text: newFill.substr(0, newFillEnd),
-  });
-}
-
 function onRealboxInput() {
-  updateRealboxOutput({inline: '', text: $(IDS.REALBOX).value});
-  if (lastOutput.text.trim()) {
-    window.chrome.embeddedSearch.searchBox.queryAutocomplete(lastOutput.text);
+  const realboxValue = $(IDS.REALBOX).value;
+
+  updateRealboxOutput({inline: '', text: realboxValue});
+
+  if (realboxValue.trim()) {
+    window.chrome.embeddedSearch.searchBox.queryAutocomplete(realboxValue);
+  } else {
+    setRealboxMatchesVisible(false);
+    setRealboxWrapperListenForKeydown(false);
+    setAutocompleteMatches([]);
   }
 }
 
@@ -1348,11 +1254,126 @@ function onRealboxWrapperFocusOut(e) {
   }
 
   const relatedTarget = /** @type {Element} */ (e.relatedTarget);
-  if (!$(IDS.REALBOX_INPUT_WRAPPER).contains(relatedTarget)) {
-    hideRealboxMatches();  // Hide but don't clear input.
+  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+  if (!realboxWrapper.contains(relatedTarget)) {
+    setRealboxMatchesVisible(false);
+    // Note: intentionally leaving keydown listening and match data intact.
     window.chrome.embeddedSearch.searchBox.stopAutocomplete(
         /*clearResult=*/ true);
   }
+}
+
+/** @param {Event} e */
+function onRealboxWrapperKeydown(e) {
+  assert(autocompleteMatches.length > 0);
+
+  const key = e.key;
+
+  const realboxEl = $(IDS.REALBOX);
+  if (e.target === realboxEl && lastOutput.inline) {
+    const realboxValue = realboxEl.value;
+    const realboxSelected = realboxValue.substring(
+        realboxEl.selectionStart, realboxEl.selectionEnd);
+    // If the current state matches the default text + inline autocompletion
+    // and the user types the next key in the inline autocompletion, just move
+    // the selection and requery autocomplete. This is required to avoid flicker
+    // while setting .value and .selection{Start,End} to keep typing smooth.
+    if (realboxSelected === lastOutput.inline &&
+        realboxValue === lastOutput.text + lastOutput.inline &&
+        lastOutput.inline[0].toLocaleLowerCase() === key.toLocaleLowerCase()) {
+      updateRealboxOutput({
+        inline: lastOutput.inline.substr(1),
+        text: assert(lastOutput.text + key),
+      });
+      window.chrome.embeddedSearch.searchBox.queryAutocomplete(lastOutput.text);
+      e.preventDefault();
+      return;
+    }
+  }
+
+  if (!REALBOX_KEYDOWN_HANDLED_KEYS.includes(key)) {
+    return;
+  }
+
+  const realboxMatchesEl = $(IDS.REALBOX_MATCHES);
+  const matchEls = Array.from(realboxMatchesEl.children);
+  const selected = matchEls.findIndex(matchEl => {
+    return matchEl.classList.contains(CLASSES.SELECTED);
+  });
+  assert(autocompleteMatches[selected]);
+
+  if (key === 'Delete') {
+    if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
+        autocompleteMatches[selected].supportsDeletion) {
+      window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
+      e.preventDefault();
+    }
+    return;
+  }
+
+  const hasMods = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
+  if (hasMods && key !== 'Enter') {
+    return;
+  }
+
+  if (key === 'Enter') {
+    if (matchEls[selected] && matchEls.concat(realboxEl).includes(e.target)) {
+      // Note: dispatching a MouseEvent here instead of using e.g. .click() as
+      // this forwards key modifiers. This enables Shift+Enter to open a match
+      // in a new window, for example.
+      matchEls[selected].dispatchEvent(new MouseEvent('click', e));
+      e.preventDefault();
+    }
+    return;
+  }
+
+  if (!areRealboxMatchesVisible()) {
+    if (key === 'ArrowUp' || key === 'ArrowDown') {
+      setRealboxMatchesVisible(true);
+      e.preventDefault();
+    }
+    return;
+  }
+
+  if (key === 'Escape' && selected === 0) {
+    updateRealboxOutput({inline: '', text: ''});
+    setRealboxMatchesVisible(false);
+    setRealboxWrapperListenForKeydown(false);
+    setAutocompleteMatches([]);
+    e.preventDefault();
+    return;
+  }
+
+  /** @type {number} */ let newSelected;
+  if (key === 'ArrowDown') {
+    newSelected = selected + 1 < matchEls.length ? selected + 1 : 0;
+  } else if (key === 'ArrowUp') {
+    newSelected = selected - 1 >= 0 ? selected - 1 : matchEls.length - 1;
+  } else if (key === 'Escape' || key === 'PageUp') {
+    newSelected = 0;
+  } else if (key === 'PageDown') {
+    newSelected = matchEls.length - 1;
+  }
+  assert(selectMatchEl(assert(matchEls[newSelected])) >= 0);
+  e.preventDefault();
+
+  if (realboxMatchesEl.contains(document.activeElement)) {
+    // Selection should match focus if focus is currently in the matches.
+    matchEls[newSelected].focus();
+  }
+
+  const newMatch = autocompleteMatches[newSelected];
+  const newFill = newMatch.fillIntoEdit;
+  let newInline = '';
+  if (newMatch.allowedToBeDefaultMatch) {
+    newInline = newMatch.inlineAutocompletion;
+  }
+  const newFillEnd = newFill.length - newInline.length;
+  updateRealboxOutput({
+    moveCursorToEnd: true,
+    inline: newInline,
+    text: assert(newFill.substr(0, newFillEnd)),
+  });
 }
 
 /**
@@ -1495,18 +1516,12 @@ function populateAutocompleteMatches(matches) {
   $(IDS.REALBOX_MATCHES).remove();
   realboxMatchesEl.id = IDS.REALBOX_MATCHES;
 
-  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
-  realboxWrapper.appendChild(realboxMatchesEl);
+  $(IDS.REALBOX_INPUT_WRAPPER).appendChild(realboxMatchesEl);
 
-  if (matches.length > 0) {
-    realboxWrapper.classList.add(CLASSES.SHOW_MATCHES);
-    realboxWrapper.addEventListener('keydown', onRealboxKeyDown);
-    autocompleteMatches = matches;
-  } else {
-    // removesEventListener('keydown', onRealboxKeyDown) and also clears
-    // |autocompleteMatches|.
-    hideRealboxMatches();
-  }
+  const hasMatches = matches.length > 0;
+  setRealboxMatchesVisible(hasMatches);
+  setRealboxWrapperListenForKeydown(hasMatches);
+  setAutocompleteMatches(matches);
 }
 
 /**
@@ -1770,6 +1785,11 @@ function setAttributionVisibility(show) {
   $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
 }
 
+/** @param {!Array<!AutocompleteMatch>} matches */
+function setAutocompleteMatches(matches) {
+  autocompleteMatches = matches;
+}
+
 /**
  * Updates the NTP style according to theme.
  * @param {Object} themeInfo The information about the theme.
@@ -1807,6 +1827,21 @@ function setFakeboxFocus(focus) {
  */
 function setFakeboxVisibility(show) {
   document.body.classList.toggle(CLASSES.HIDE_FAKEBOX, !show);
+}
+
+/** @param {boolean} visible */
+function setRealboxMatchesVisible(visible) {
+  $(IDS.REALBOX_INPUT_WRAPPER).classList.toggle(CLASSES.SHOW_MATCHES, visible);
+}
+
+/** @param {boolean} listen */
+function setRealboxWrapperListenForKeydown(listen) {
+  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+  if (listen) {
+    realboxWrapper.addEventListener('keydown', onRealboxWrapperKeydown);
+  } else {
+    realboxWrapper.removeEventListener('keydown', onRealboxWrapperKeydown);
+  }
 }
 
 /**
@@ -1890,9 +1925,7 @@ function updateRealboxOutput(update) {
     needsSelectionUpdate = true;  // Setting .value blows away selection.
   }
 
-  if (!newAll.trim()) {
-    hideRealboxMatches();
-  } else if (needsSelectionUpdate) {
+  if (newAll.trim() && needsSelectionUpdate) {
     realboxEl.selectionStart =
         preserveSelection ? oldSelectionStart : newOutput.text.length;
     // If the selection shouldn't be preserved, set the selection end to the

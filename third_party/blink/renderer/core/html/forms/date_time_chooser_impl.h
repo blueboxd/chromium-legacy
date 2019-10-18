@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class ChromeClient;
 class DateTimeChooserClient;
 class LocalFrame;
 class PagePopup;
@@ -65,6 +66,7 @@ class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
   void SetValue(const String&) override;
   void CancelPopup() override;
   Element& OwnerElement() override;
+  ChromeClient& GetChromeClient() override;
   void DidClosePopup() override;
 
   Member<LocalFrame> frame_;

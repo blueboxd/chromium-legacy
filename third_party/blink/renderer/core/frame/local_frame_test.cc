@@ -17,17 +17,11 @@ namespace blink {
 
 namespace {
 
-void DisableLazyLoadAndDisableDataSaverHoldbackInSettings(Settings& settings) {
+void DisableLazyLoadInSettings(Settings& settings) {
   settings.SetLazyLoadEnabled(false);
-  settings.SetDataSaverHoldbackWebApi(false);
 }
-void EnableLazyLoadAndDisableDataSaverHoldbackInSettings(Settings& settings) {
+void EnableLazyLoadInSettings(Settings& settings) {
   settings.SetLazyLoadEnabled(true);
-  settings.SetDataSaverHoldbackWebApi(false);
-}
-void EnableLazyLoadAndEnableDataSaverHoldbackInSettings(Settings& settings) {
-  settings.SetLazyLoadEnabled(true);
-  settings.SetDataSaverHoldbackWebApi(true);
 }
 
 }  // namespace
@@ -44,7 +38,7 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithFeatureDisabled) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadAndDisableDataSaverHoldbackInSettings));
+      base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kDisabled,
             page_holder->GetFrame().GetLazyLoadImageSetting());
 }
@@ -53,7 +47,7 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithSettingDisabled) {
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr,
-      base::BindOnce(&DisableLazyLoadAndDisableDataSaverHoldbackInSettings));
+      base::BindOnce(&DisableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kDisabled,
             page_holder->GetFrame().GetLazyLoadImageSetting());
 }
@@ -64,7 +58,7 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWithAutomaticDisabled) {
       scoped_automatic_lazy_image_loading_for_test(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadAndDisableDataSaverHoldbackInSettings));
+      base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledExplicit,
             page_holder->GetFrame().GetLazyLoadImageSetting());
 }
@@ -78,7 +72,7 @@ TEST_F(LocalFrameTest, IsLazyLoadingImageAllowedWhenNotRestricted) {
           false);
   auto page_holder = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadAndDisableDataSaverHoldbackInSettings));
+      base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledAutomatic,
             page_holder->GetFrame().GetLazyLoadImageSetting());
 }
@@ -93,22 +87,7 @@ TEST_F(LocalFrameTest,
   GetNetworkStateNotifier().SetSaveDataEnabled(false);
   auto page_holder = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadAndDisableDataSaverHoldbackInSettings));
-  EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledExplicit,
-            page_holder->GetFrame().GetLazyLoadImageSetting());
-}
-
-TEST_F(LocalFrameTest,
-       IsLazyLoadingImageAllowedWhenRestrictedWithDataSaverEnabledHoldback) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(true);
-  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
-      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test(true);
-  GetNetworkStateNotifier().SetSaveDataEnabled(true);
-  auto page_holder = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadAndEnableDataSaverHoldbackInSettings));
+      base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledExplicit,
             page_holder->GetFrame().GetLazyLoadImageSetting());
 }
@@ -123,7 +102,7 @@ TEST_F(LocalFrameTest,
   GetNetworkStateNotifier().SetSaveDataEnabled(true);
   auto page_holder = std::make_unique<DummyPageHolder>(
       IntSize(800, 600), nullptr, nullptr,
-      base::BindOnce(&EnableLazyLoadAndDisableDataSaverHoldbackInSettings));
+      base::BindOnce(&EnableLazyLoadInSettings));
   EXPECT_EQ(LocalFrame::LazyLoadImageSetting::kEnabledAutomatic,
             page_holder->GetFrame().GetLazyLoadImageSetting());
 }

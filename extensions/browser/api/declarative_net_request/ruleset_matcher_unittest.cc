@@ -21,6 +21,8 @@
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/features/feature_channel.h"
+#include "net/http/http_request_headers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -185,34 +187,114 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
   EXPECT_FALSE(matcher->IsExtraHeadersMatcher());
 
   GURL example_url("http://example.com");
+  std::vector<RequestAction> remove_header_actions;
+
   RequestParams params;
   params.url = &example_url;
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
+                                              &remove_header_actions));
+  EXPECT_TRUE(remove_header_actions.empty());
 
   rule.action->type = std::string("removeHeaders");
   rule.action->remove_headers_list =
       std::vector<std::string>({"referer", "cookie", "setCookie"});
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
   EXPECT_TRUE(matcher->IsExtraHeadersMatcher());
-  EXPECT_EQ(kRemoveHeadersMask_Referer | kRemoveHeadersMask_Cookie |
-                kRemoveHeadersMask_SetCookie,
-            matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */));
+  uint8_t expected_mask = kRemoveHeadersMask_Referer |
+                          kRemoveHeadersMask_Cookie |
+                          kRemoveHeadersMask_SetCookie;
+
+  EXPECT_EQ(expected_mask,
+            matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
+                                          &remove_header_actions));
+
+  RequestAction expected_action =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  expected_action.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kCookie);
+  expected_action.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kReferer);
+  expected_action.response_headers_to_remove.push_back("set-cookie");
+
+  ASSERT_EQ(1u, remove_header_actions.size());
+  EXPECT_EQ(expected_action, remove_header_actions[0]);
+
+  remove_header_actions.clear();
 
   GURL google_url("http://google.com");
   params.url = &google_url;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
+                                              &remove_header_actions));
+  EXPECT_TRUE(remove_header_actions.empty());
 
   uint8_t ignored_mask =
       kRemoveHeadersMask_Referer | kRemoveHeadersMask_SetCookie;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, ignored_mask));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, ignored_mask,
+                                              &remove_header_actions));
+  EXPECT_TRUE(remove_header_actions.empty());
 
   // The current mask is ignored while matching and is not returned as part of
   // the result.
   params.url = &example_url;
   EXPECT_EQ(kRemoveHeadersMask_Cookie,
-            matcher->GetRemoveHeadersMask(params, ignored_mask));
+            matcher->GetRemoveHeadersMask(params, ignored_mask,
+                                          &remove_header_actions));
+
+  expected_action.request_headers_to_remove.clear();
+  expected_action.response_headers_to_remove.clear();
+  expected_action.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kCookie);
+
+  ASSERT_EQ(1u, remove_header_actions.size());
+  EXPECT_EQ(expected_action, remove_header_actions[0]);
+}
+
+// Tests that GetRemoveHeadersMask for multiple rules will return one
+// RequestAction per matching rule.
+TEST_F(RulesetMatcherTest, RemoveHeadersMultipleRules) {
+  TestRule rule_1 = CreateGenericRule();
+  rule_1.condition->url_filter = std::string("example.com");
+  rule_1.action->type = std::string("removeHeaders");
+  rule_1.action->remove_headers_list = std::vector<std::string>({"referer"});
+
+  TestRule rule_2 = CreateGenericRule();
+  rule_2.id = kMinValidID + 1;
+  rule_2.condition->url_filter = std::string("example.com");
+  rule_2.action->type = std::string("removeHeaders");
+  rule_2.action->remove_headers_list = std::vector<std::string>({"cookie"});
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher({rule_1, rule_2}, CreateTemporarySource(),
+                                    &matcher));
+  EXPECT_TRUE(matcher->IsExtraHeadersMatcher());
+
+  GURL example_url("http://example.com");
+  RequestParams params;
+  params.url = &example_url;
+  params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  params.is_third_party = true;
+
+  RequestAction rule_1_action =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  rule_1_action.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kReferer);
+
+  RequestAction rule_2_action =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  rule_2_action.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kCookie);
+
+  std::vector<RequestAction> expected_actions;
+  expected_actions.push_back(std::move(rule_1_action));
+  expected_actions.push_back(std::move(rule_2_action));
+
+  std::vector<RequestAction> remove_header_actions;
+  EXPECT_EQ(kRemoveHeadersMask_Referer | kRemoveHeadersMask_Cookie,
+            matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */,
+                                          &remove_header_actions));
+  EXPECT_TRUE(AreRequestActionsEqual(expected_actions, remove_header_actions));
 }
 
 // Tests a rule to redirect to an extension path.

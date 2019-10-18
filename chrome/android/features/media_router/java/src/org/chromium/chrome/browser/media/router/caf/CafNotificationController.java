@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.media.router.caf;
 
 import android.content.Intent;
 
+import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
-import org.chromium.chrome.browser.util.ChromeIntentUtil;
 import org.chromium.chrome.media.router.R;
 
 /** NotificationController implementation for presentation. */

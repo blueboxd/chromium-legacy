@@ -96,6 +96,7 @@ template("test") {
         "android_manifest",
         "android_manifest_dep",
         "enable_multidex",
+        "locale_config_java_packages",
         "min_sdk_version",
         "proguard_configs",
         "proguard_enabled",

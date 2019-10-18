@@ -139,9 +139,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
       "window.dialogArguments = {\n",
       data);
   AddProperty("anchorRectInScreen", parameters_->anchor_rect_in_screen, data);
-  float scale_factor =
-      frame_->View()->GetChromeClient()->WindowToViewportScalar(frame_, 1.0f);
-  AddProperty("zoomFactor", ZoomFactor() / scale_factor, data);
+  AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("min",
               ValueToDateTimeString(parameters_->minimum, parameters_->type),
               data);
@@ -237,6 +235,10 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
 
 Element& DateTimeChooserImpl::OwnerElement() {
   return client_->OwnerElement();
+}
+
+ChromeClient& DateTimeChooserImpl::GetChromeClient() {
+  return *frame_->View()->GetChromeClient();
 }
 
 Locale& DateTimeChooserImpl::GetLocale() {

@@ -64,7 +64,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "printing/backend/win_helper.h"
 #endif  // defined(OS_WIN)
@@ -549,24 +548,6 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::RecordUMAStatistics(&flags_storage);
-
-#if defined(OS_WIN)
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("ChromeWinClang",
-#if defined(__clang__)
-                                                            "Enabled"
-#else
-                                                            "Disabled"
-#endif
-                                                            );
-  // Log once here at browser start rather than at each renderer launch.
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("ChromeWinMultiDll",
-#if defined(CHROME_MULTIPLE_DLL_BROWSER)
-                                                            "Enabled"
-#else
-                                                            "Disabled"
-#endif
-                                                            );
-#endif  // defined(OS_WIN)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {

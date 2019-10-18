@@ -43,7 +43,9 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
   if (download_->GetDangerType() ==
           download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
       download_->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE) {
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
+      download_->GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
     model = GetInterruptedMenuModel(is_download);
   } else if (download_->IsMalicious()) {
     model = GetMaliciousMenuModel(is_download);

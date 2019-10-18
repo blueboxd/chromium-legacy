@@ -2866,6 +2866,14 @@
     "pref_mappings": [{ "pref": "allow_sync_xhr_in_page_dismissal" }]
   },
 
+  "ExternalProtocolDialogShowAlwaysOpenCheckbox": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "ExternalProtocolDialogShowAlwaysOpenCheckbox": true },
+    "pref_mappings": [
+      { "pref": "external_protocol_dialog.show_always_open_checkbox" }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

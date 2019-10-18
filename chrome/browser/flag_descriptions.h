@@ -770,6 +770,9 @@ extern const char kMediaRouterCastAllowAllIPsDescription[];
 extern const char kMimeHandlerViewInCrossProcessFrameName[];
 extern const char kMimeHandlerViewInCrossProcessFrameDescription[];
 
+extern const char kMixedContentSiteSettingName[];
+extern const char kMixedContentSiteSettingDescription[];
+
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
@@ -1388,9 +1391,6 @@ extern const char kAppNotificationStatusMessagingDescription[];
 extern const char kAsyncDnsName[];
 extern const char kAsyncDnsDescription[];
 
-extern const char kAutoFetchOnNetErrorPageName[];
-extern const char kAutoFetchOnNetErrorPageDescription[];
-
 extern const char kAutofillAccessoryViewName[];
 extern const char kAutofillAccessoryViewDescription[];
 
@@ -1639,6 +1639,9 @@ extern const char kUpdateMenuTypeInlineUpdateDownloadFailed[];
 extern const char kUpdateMenuTypeInlineUpdateDownloadCanceled[];
 extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 
+extern const char kUpdateNotificationSchedulingIntegrationName[];
+extern const char kUpdateNotificationSchedulingIntegrationDescription[];
+
 extern const char kUsageStatsDescription[];
 extern const char kUsageStatsName[];
 
@@ -1684,6 +1687,9 @@ extern const char kChromeColorsCustomColorPickerDescription[];
 
 extern const char kDialMediaRouteProviderName[];
 extern const char kDialMediaRouteProviderDescription[];
+
+extern const char kNtpConfirmSuggestionRemovalsName[];
+extern const char kNtpConfirmSuggestionRemovalsDescription[];
 
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];

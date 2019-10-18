@@ -43,7 +43,6 @@ class Document;
 class ExceptionState;
 class KURL;
 class LocalDOMWindow;
-class USVStringOrTrustedURL;
 
 // This class corresponds to the Location interface. Location is the only
 // interface besides Window that is accessible cross-origin and must handle
@@ -58,11 +57,11 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
   DOMWindow* DomWindow() const { return dom_window_.Get(); }
 
-  void setHref(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
-  void href(USVStringOrTrustedURL&) const;
+  void setHref(v8::Isolate*, const String&, ExceptionState&);
+  String href() const;
 
-  void assign(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
-  void replace(v8::Isolate*, const USVStringOrTrustedURL&, ExceptionState&);
+  void assign(v8::Isolate*, const String&, ExceptionState&);
+  void replace(v8::Isolate*, const String&, ExceptionState&);
   void reload();
 
   void setProtocol(v8::Isolate*, const String&, ExceptionState&);

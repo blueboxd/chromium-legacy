@@ -83,6 +83,10 @@ void CryptographerImpl::ClearDefaultEncryptionKey() {
   default_encryption_key_name_.clear();
 }
 
+bool CryptographerImpl::HasKey(const sync_pb::NigoriKey& key) const {
+  return key_bag_.HasKey(key);
+}
+
 sync_pb::NigoriKey CryptographerImpl::ExportDefaultKey() const {
   DCHECK(CanEncrypt());
   return key_bag_.ExportKey(default_encryption_key_name_);

@@ -410,6 +410,11 @@ BrowserView::~BrowserView() {
   // Immersive mode may need to reparent views before they are removed/deleted.
   immersive_mode_controller_.reset();
 
+  // Reset autofill bubble handler to make sure it does not out-live toolbar,
+  // since it is responsible for showing autofill related bubbles from toolbar's
+  // child views and it is an observer for avatar toolbar button if any.
+  autofill_bubble_handler_.reset();
+
   extensions::ExtensionCommandsGlobalRegistry* global_registry =
       extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
   if (global_registry->registry_for_active_window() ==
@@ -1078,7 +1083,7 @@ void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
   // Recreate the autofill bubble handler when toolbar button provider changes.
   autofill_bubble_handler_ =
       std::make_unique<autofill::AutofillBubbleHandlerImpl>(
-          toolbar_button_provider_, browser_->profile());
+          browser_.get(), toolbar_button_provider_);
 }
 
 bool BrowserView::UpdatePageActionIcon(PageActionIconType type) {
@@ -2952,6 +2957,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
       toolbar_button_provider_->GetAvatarToolbarButton();
   if (!avatar_button)
     return;
+
+  GetAutofillBubbleHandler()->HideSignInPromo();
 
   profiles::BubbleViewMode bubble_view_mode;
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, GetProfile(),

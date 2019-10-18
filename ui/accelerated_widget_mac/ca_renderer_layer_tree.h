@@ -160,6 +160,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                  const gfx::RectF& contents_rect,
                  const gfx::Rect& rect,
                  unsigned background_color,
+                 bool triggers_hdr,
                  unsigned edge_aa_mask,
                  float opacity,
                  unsigned filter);
@@ -181,6 +182,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     gfx::RectF contents_rect;
     gfx::RectF rect;
     unsigned background_color = 0;
+    const bool triggers_hdr;
     // Note that the CoreAnimation edge antialiasing mask is not the same as
     // the edge antialiasing mask passed to the constructor.
     CAEdgeAntialiasingMask ca_edge_aa_mask = 0;

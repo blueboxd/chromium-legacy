@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -195,6 +196,22 @@ std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
   return security_description;
 }
 
+std::unique_ptr<PageInfoUI::SecurityDescription>
+CreateSecurityDescriptionForLookalikeSafetyTip(const GURL& safe_url) {
+  std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
+      new PageInfoUI::SecurityDescription());
+  security_description->summary_style = PageInfoUI::SecuritySummaryColor::RED;
+
+  const base::string16 safe_host =
+      security_interstitials::common_string_util::GetFormattedHostName(
+          safe_url);
+  security_description->summary = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE, safe_host);
+  security_description->details = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION, safe_host);
+  return security_description;
+}
+
 // Gets the actual setting for a ContentSettingType, taking into account what
 // the default setting value is and whether Html5ByDefault is enabled.
 ContentSetting GetEffectiveSetting(Profile* profile,
@@ -234,7 +251,7 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
-      safety_tip_status(security_state::SafetyTipStatus::kUnknown),
+      safety_tip_info({security_state::SafetyTipStatus::kUnknown, GURL()}),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -279,21 +296,10 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                        IDS_PAGE_INFO_BILLING_DETAILS);
   }
 
-  switch (identity_info.safety_tip_status) {
-    case security_state::SafetyTipStatus::kBadReputation:
-      return CreateSecurityDescription(
-          SecuritySummaryColor::RED,
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
-          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
-    case security_state::SafetyTipStatus::kLookalike:
-      // Lookalikes have their own strings, but they're suggestions, not
-      // warnings, so we leave Page Info alone.
-    case security_state::SafetyTipStatus::kBadKeyword:
-      // Keyword safety tips are only used to collect metrics for now and are
-      // not visible to the user, so don't affect Page Info.
-    case security_state::SafetyTipStatus::kNone:
-    case security_state::SafetyTipStatus::kUnknown:
-      break;
+  std::unique_ptr<SecurityDescription> safety_tip_security_desc =
+      CreateSafetyTipSecurityDescription(identity_info.safety_tip_info);
+  if (safety_tip_security_desc) {
+    return safety_tip_security_desc;
   }
 
   switch (identity_info.identity_status) {
@@ -679,4 +685,30 @@ bool PageInfoUI::ContentSettingsTypeInPageInfo(ContentSettingsType type) {
       return true;
   }
   return false;
+}
+
+// static
+std::unique_ptr<PageInfoUI::SecurityDescription>
+PageInfoUI::CreateSafetyTipSecurityDescription(
+    const security_state::SafetyTipInfo& info) {
+  switch (info.status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      return CreateSecurityDescription(
+          SecuritySummaryColor::RED,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+    case security_state::SafetyTipStatus::kLookalike:
+      return CreateSecurityDescriptionForLookalikeSafetyTip(info.safe_url);
+
+    case security_state::SafetyTipStatus::kBadKeyword:
+      // Keyword safety tips are only used to collect metrics for now and are
+      // not visible to the user, so don't affect Page Info.
+      NOTREACHED();
+      break;
+
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+      break;
+  }
+  return nullptr;
 }

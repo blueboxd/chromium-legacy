@@ -80,8 +80,6 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   base::Optional<ModelError> ApplySyncChanges(
       base::Optional<EntityData> data) override;
   std::unique_ptr<EntityData> GetData() override;
-  ConflictResolution ResolveConflict(const EntityData& local_data,
-                                     const EntityData& remote_data) override;
   void ApplyDisableSyncChanges() override;
 
   // TODO(crbug.com/922900): investigate whether we need this getter outside of
@@ -128,6 +126,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // error occurs during serialization/encryption, corresponding preference
   // just won't be updated.
   void MaybeNotifyBootstrapTokenUpdated() const;
+
+  // Queues keystore rotation if current state assume it should happen.
+  void MaybeTriggerKeystoreKeyRotation();
 
   // Serializes state of the bridge and sync metadata into the proto.
   sync_pb::NigoriLocalData SerializeAsNigoriLocalData() const;

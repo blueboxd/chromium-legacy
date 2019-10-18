@@ -64,12 +64,6 @@ HTMLLinkElement::HTMLLinkElement(Document& document,
 
 HTMLLinkElement::~HTMLLinkElement() = default;
 
-const AttrNameToTrustedType& HTMLLinkElement::GetCheckedAttributeTypes() const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"href", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
-
 void HTMLLinkElement::ParseAttribute(
     const AttributeModificationParams& params) {
   const QualifiedName& name = params.name;

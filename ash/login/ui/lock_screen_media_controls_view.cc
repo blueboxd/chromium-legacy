@@ -11,6 +11,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_util.h"
@@ -41,7 +42,6 @@ using media_session::mojom::MediaSessionAction;
 
 namespace {
 
-constexpr SkColor kMediaControlsBackground = SkColorSetA(SK_ColorDKGRAY, 150);
 constexpr SkColor kMediaButtonColor = SK_ColorWHITE;
 constexpr SkColor kProgressBarForeground =
     SkColorSetARGB(0xFF, 0x8A, 0xB4, 0xF8);
@@ -215,7 +215,10 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, kMediaControlsInsets));
   contents_view_->SetBackground(views::CreateRoundedRectBackground(
-      kMediaControlsBackground, kMediaControlsCornerRadius));
+      AshColorProvider::Get()->GetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kTransparentWithBlur,
+          AshColorProvider::AshColorMode::kDark),
+      kMediaControlsCornerRadius));
 
   contents_view_->SetPaintToLayer();  // Needed for opacity animation.
   contents_view_->layer()->SetFillsBoundsOpaquely(false);

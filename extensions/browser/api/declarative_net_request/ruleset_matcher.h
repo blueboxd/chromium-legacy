@@ -126,8 +126,10 @@ class RulesetMatcher {
   // Returns the bitmask of headers to remove from the request. The bitmask
   // corresponds to RemoveHeadersMask type. |ignored_mask| denotes the mask of
   // headers to be skipped for evaluation and is excluded in the return value.
-  uint8_t GetRemoveHeadersMask(const RequestParams& params,
-                               uint8_t ignored_mask) const;
+  uint8_t GetRemoveHeadersMask(
+      const RequestParams& params,
+      uint8_t ignored_mask,
+      std::vector<RequestAction>* remove_headers_actions) const;
 
   // Returns whether this modifies "extraHeaders".
   bool IsExtraHeadersMatcher() const { return is_extra_headers_matcher_; }

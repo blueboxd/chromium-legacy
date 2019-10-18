@@ -65,6 +65,7 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   }
 
   config.bounds = properties.bounds;
+  config.icon = properties.icon;
   config.force_show_in_taskbar = properties.force_show_in_taskbar;
   config.keep_on_top = properties.keep_on_top;
   config.visible_on_all_workspaces = properties.visible_on_all_workspaces;

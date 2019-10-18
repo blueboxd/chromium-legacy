@@ -8894,6 +8894,7 @@ be describing additional metrics about the same event.
 
 <event name="XR.PageSession" singular="True">
   <owner>offenwanger@chromium.org</owner>
+  <owner>xr-dev@chromium.org</owner>
   <summary>
     Records properties of page use in XR, including VR browsing and WebXR
     presentation.
@@ -8905,42 +8906,81 @@ be describing additional metrics about the same event.
       get rounded to minutes and then hours as they get larger. This is done by
       SessionTracker::GetRoundedDurationInSeconds.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="EnteredFullscreen">
+  <metric name="EnteredFullscreen" enum="Boolean">
     <summary>
       A boolean that is set to 1 if the user requested fullscreen while in XR on
       some element on the page.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="EnteredVROnPageReason">
+  <metric name="EnteredVROnPageReason" enum="VRStartReason">
     <summary>
       An enum that indicates that the user entered VR on this page and what
       triggered the entry into VR, where 1 means VR was entered through headset
       activation, and 2 means that request presentation triggered the entry into
       VR.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="TimeOnPage">
+    <obsolete>
+      Deprecated.
+    </obsolete>
     <summary>
       Deprecated.
     </summary>
   </metric>
-  <metric name="WasOmniboxNavigation">
+  <metric name="WasOmniboxNavigation" enum="Boolean">
     <summary>
       A boolean that is set to 1 if this page was entered into the omnibox,
       either manually or using autocomplete.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="WasVoiceSearchNavigation">
+  <metric name="WasVoiceSearchNavigation" enum="Boolean">
     <summary>
       A boolean that is set to 1 if this page was specifically requested and
       recognized by a voice search.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
 <event name="XR.WebXR" singular="True">
   <owner>billorr@chromium.org</owner>
+  <owner>xr-dev@chromium.org</owner>
   <summary>
     Records information about WebXR methods that were used in a single
     navigation. The event will be recorded as the WebXR functions are called -
@@ -8956,43 +8996,92 @@ be describing additional metrics about the same event.
       site.
     </summary>
   </metric>
-  <metric name="DidGetXRInputSources">
+  <metric name="DidGetXRInputSources" enum="Boolean">
     <summary>
       Boolean value that indicates that the WebXR input API was used.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="DidRequestAvailableDevices">
+  <metric name="DidRequestAvailableDevices" enum="Boolean">
     <summary>
       Boolean value that indicates that the API to enumerate devices was called.
       This API is only exposed through WebVR.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="DidRequestPose">
+  <metric name="DidRequestPose" enum="Boolean">
     <summary>
       Boolean value that indicates that poses were requested.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="DidRequestPresentation">
+  <metric name="DidRequestPresentation" enum="Boolean">
     <summary>
       Boolean value that indicates that presentation was requested.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="DidUseNavigatorXR">
+  <metric name="DidUseNavigatorXR" enum="Boolean">
     <summary>
       Boolean value that indicates that the WebXR Device API was used.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="ReturnedDevice">
+  <metric name="ReturnedDevice" enum="Boolean">
     <summary>
       Boolean value that indicates that a device was returned by the API to
       enumerate devices. This API is only exposed through WebVR.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="ReturnedPresentationCapableDevice">
+  <metric name="ReturnedPresentationCapableDevice" enum="Boolean">
     <summary>
       Boolean value that indicates that a device was returned by the API to
       enumerate devices, and that the device supports presentation.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -9043,19 +9132,40 @@ be describing additional metrics about the same event.
       get larger. This is done by SessionTracker::GetRoundedDurationInSeconds.
       For inline sessions, this might get pretty large.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="IsLegacyWebVR">
+  <metric name="IsLegacyWebVR" enum="Boolean">
     <summary>
       Boolean value indicating whether a session was created using the legacy
       WebVR API rather than WebXR.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Mode">
+  <metric name="Mode" enum="XRSessionMode">
     <summary>
       An enum value specifying WebXR session's mode. See `device::SessionMode`
       for enum type declaration. 0: Unknown, catch all. 1: Inline session. 2:
       Immersive VR session. 3: Immersive AR session.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -9064,19 +9174,33 @@ be describing additional metrics about the same event.
   <summary>
     Recorded when promise returned by `requestSession` gets resolved / rejected.
   </summary>
-  <metric name="Mode">
+  <metric name="Mode" enum="XRSessionModeRequest">
     <summary>
       An enum value that indicates that the `requestSession` API was called to
       request session with this mode. See `device::SessionMode` for enum type
       declaration. 0: Unknown, catch all. 1: Inline session was requested. 2:
       Immersive VR session was requested. 3: Immersive AR session was requested.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Status">
+  <metric name="Status" enum="XRSessionRequestStatus">
     <summary>
       An enum value that describes the result of the call to `requestSession`
       method. See `` for enum type declaration. 0: Success. 1: Other failure.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

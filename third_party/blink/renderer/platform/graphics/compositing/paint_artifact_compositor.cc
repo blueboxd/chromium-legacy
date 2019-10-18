@@ -76,20 +76,40 @@ void PaintArtifactCompositor::WillBeRemovedFromFrame() {
   }
 }
 
-std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
-    LayerTreeFlags flags) const {
-  if (!tracks_raster_invalidations_)
-    flags &= ~kLayerTreeIncludesPaintInvalidations;
-  ContentLayerClientImpl::LayerAsJSONContext context(flags);
-  auto layers_json = std::make_unique<JSONArray>();
-  for (const auto& client : content_layer_clients_) {
-    layers_json->PushObject(client->LayerAsJSON(context));
+// Get a JSON representation of what layers exist for this PAC.  Note that
+// |paint_artifact| is only needed for pre-CAP mode.
+std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
+    LayerTreeFlags flags,
+    const PaintArtifact* paint_artifact) const {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+         paint_artifact);
+  LayersAsJSON layers_as_json(flags);
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    if (!tracks_raster_invalidations_)
+      flags &= ~kLayerTreeIncludesPaintInvalidations;
+    for (const auto& client : content_layer_clients_) {
+      layers_as_json.AddLayer(
+          client->Layer(),
+          FloatPoint(client->Layer().offset_to_transform_parent()),
+          client->State().Transform(), client.get());
+    }
+  } else {
+    for (const auto& paint_chunk : paint_artifact->PaintChunks()) {
+      const auto& display_item =
+          paint_artifact->GetDisplayItemList()[paint_chunk.begin_index];
+      DCHECK(display_item.IsForeignLayer());
+      const auto& foreign_layer_display_item =
+          static_cast<const ForeignLayerDisplayItem&>(display_item);
+      cc::Layer* layer = foreign_layer_display_item.GetLayer();
+      if ((layer->DrawsContent()) || (flags & kLayerTreeIncludesRootLayer)) {
+        layers_as_json.AddLayer(
+            *layer, foreign_layer_display_item.Offset(),
+            paint_chunk.properties.Transform(),
+            foreign_layer_display_item.GetLayerAsJSONClient());
+      }
+    }
   }
-  auto json = std::make_unique<JSONObject>();
-  json->SetArray("layers", std::move(layers_json));
-  if (context.transforms_json)
-    json->SetArray("transforms", std::move(context.transforms_json));
-  return json;
+  return layers_as_json.Finalize();
 }
 
 static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
@@ -104,11 +124,11 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
   if (!display_item.IsForeignLayer())
     return nullptr;
 
-  // When a foreign layer's offset_to_transform_parent() changes, we don't call
-  // PaintArtifaceCompositor::SetNeedsUpdate() because the update won't change
-  // anything but cause unnecessary commit. Though UpdateTouchActionRects()
-  // depends on offset_to_transform_parent(), a foreign layer chunk doesn't have
-  // hit_test_data.
+  // When a foreign layer's offset_to_transform_parent() changes, we don't
+  // call PaintArtifaceCompositor::SetNeedsUpdate() because the update won't
+  // change anything but cause unnecessary commit. Though
+  // UpdateTouchActionRects() depends on offset_to_transform_parent(), a
+  // foreign layer chunk doesn't have hit_test_data.
   DCHECK(!paint_chunk.hit_test_data);
 
   const auto& foreign_layer_display_item =
@@ -190,7 +210,8 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   // |scroll_hit_test->scroll_container_bounds|.
   auto bounds = scroll_node.ContainerRect().Size();
   // Mark the layer as scrollable.
-  // TODO(pdr): When CAP launches this parameter for bounds will not be needed.
+  // TODO(pdr): When CAP launches this parameter for bounds will not be
+  // needed.
   scroll_layer->SetScrollable(static_cast<gfx::Size>(bounds));
   // Set the layer's bounds equal to the container because the scroll layer
   // does not scroll.
@@ -316,9 +337,10 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
     if (!hit_test_data || !hit_test_data->scroll_hit_test)
       continue;
 
-    // Skip the scroll hit test rect if it is for scrolling this cc::Layer. This
-    // is only needed for CompositeAfterPaint because pre-CompositeAfterPaint
-    // does not paint scroll hit test data for composited scrollers.
+    // Skip the scroll hit test rect if it is for scrolling this cc::Layer.
+    // This is only needed for CompositeAfterPaint because
+    // pre-CompositeAfterPaint does not paint scroll hit test data for
+    // composited scrollers.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       if (layer->scrollable()) {
         const auto* scroll_offset =
@@ -444,14 +466,15 @@ static bool IsNonCompositingAncestorOf(
 // Determines whether drawings based on the 'guest' state can be painted into
 // a layer with the 'home' state. A number of criteria need to be met:
 // 1. The guest effect must be a descendant of the home effect. However this
-//    check is enforced by the layerization recursion. Here we assume the guest
-//    has already been upcasted to the same effect.
+//    check is enforced by the layerization recursion. Here we assume the
+//    guest has already been upcasted to the same effect.
 // 2. The guest transform and the home transform have compatible backface
 //    visibility.
 // 3. The guest clip must be a descendant of the home clip.
 // 4. The local space of each clip and effect node on the ancestor chain must
 //    be within compositing boundary of the home transform space.
-// 5. The guest transform space must be within compositing boundary of the home
+// 5. The guest transform space must be within compositing boundary of the
+// home
 //    transform space.
 static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home) {
@@ -566,9 +589,9 @@ static bool SkipGroupIfEffectivelyInvisible(
     const EffectPaintPropertyNode& unaliased_group,
     Vector<PaintChunk>::const_iterator& chunk_it) {
   // In pre-CompositeAfterPaint, existence of composited layers is decided
-  // during compositing update before paint. Each chunk contains a foreign layer
-  // corresponding a composited layer. We should not skip any of them to ensure
-  // correct composited hit testing and animation.
+  // during compositing update before paint. Each chunk contains a foreign
+  // layer corresponding a composited layer. We should not skip any of them to
+  // ensure correct composited hit testing and animation.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return false;
 
@@ -615,17 +638,17 @@ void PaintArtifactCompositor::LayerizeGroup(
   //     for overlapping.
   // d = (sum of) the depth of property trees.
   // The analysis as follows:
-  // Every paint chunk will be visited by the main loop below for exactly once,
-  // except for chunks that enter or exit groups (case B & C below).
-  // For normal chunk visit (case A), the only cost is determining squash,
-  // which costs O(qd), where d came from "canUpcastTo" and geometry mapping.
+  // Every paint chunk will be visited by the main loop below for exactly
+  // once, except for chunks that enter or exit groups (case B & C below). For
+  // normal chunk visit (case A), the only cost is determining squash, which
+  // costs O(qd), where d came from "canUpcastTo" and geometry mapping.
   // Subtotal: O(pqd)
   // For group entering and exiting, it could cost O(d) for each group, for
   // searching the shallowest subgroup (strictChildOfAlongPath), thus O(d^2)
   // in total.
   // Also when exiting group, the group may be decomposited and squashed to a
-  // previous layer. Again finding the host costs O(qd). Merging would cost O(p)
-  // due to copying the chunk list. Subtotal: O((qd + p)d) = O(qd^2 + pd)
+  // previous layer. Again finding the host costs O(qd). Merging would cost
+  // O(p) due to copying the chunk list. Subtotal: O((qd + p)d) = O(qd^2 + pd)
   // Assuming p > d, the total complexity would be O(pqd + qd^2 + pd) = O(pqd)
   while (chunk_it != paint_artifact.PaintChunks().end()) {
     // Look at the effect node of the next chunk. There are 3 possible cases:
@@ -662,10 +685,10 @@ void PaintArtifactCompositor::LayerizeGroup(
       wtf_size_t first_layer_in_subgroup = pending_layers_.size();
       LayerizeGroup(paint_artifact, settings, *unaliased_subgroup, chunk_it);
       // The above LayerizeGroup generated new layers in pending_layers_
-      // [first_layer_in_subgroup .. pending_layers.size() - 1]. If it generated
-      // 2 or more layer that we already know can't be merged together, we
-      // should not decomposite and try to merge any of them into the previous
-      // layers.
+      // [first_layer_in_subgroup .. pending_layers.size() - 1]. If it
+      // generated 2 or more layer that we already know can't be merged
+      // together, we should not decomposite and try to merge any of them into
+      // the previous layers.
       if (first_layer_in_subgroup != pending_layers_.size() - 1)
         continue;
       if (!DecompositeEffect(unaliased_group, first_layer_in_current_group,
@@ -859,10 +882,10 @@ void PaintArtifactCompositor::DecompositeTransforms(
   for (const auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;
 
-    // Lambda to handle marking a transform node false, and walking up all true
-    // parents and marking them false as well. This also handles inserting
-    // transform_node if it isn't in the map, and keeps track of clips or
-    // effects.
+    // Lambda to handle marking a transform node false, and walking up all
+    // true parents and marking them false as well. This also handles
+    // inserting transform_node if it isn't in the map, and keeps track of
+    // clips or effects.
     auto mark_not_decompositable =
         [&can_be_decomposited](
             const TransformPaintPropertyNode* transform_node) {
@@ -973,8 +996,8 @@ void PaintArtifactCompositor::Update(
   new_content_layer_clients.ReserveCapacity(pending_layers_.size());
   Vector<scoped_refptr<cc::Layer>> new_scroll_hit_test_layers;
 
-  // Maps from cc effect id to blink effects. Containing only the effects having
-  // composited layers.
+  // Maps from cc effect id to blink effects. Containing only the effects
+  // having composited layers.
   Vector<const EffectPaintPropertyNode*> blink_effects;
 
   for (auto& entry : synthesized_clip_cache_)
@@ -989,8 +1012,8 @@ void PaintArtifactCompositor::Update(
     const auto& clip = property_state.Clip();
 
     if (&clip.LocalTransformSpace() == &transform) {
-      // Limit layer bounds to hide the areas that will be never visible because
-      // of the clip.
+      // Limit layer bounds to hide the areas that will be never visible
+      // because of the clip.
       pending_layer.bounds.Intersect(clip.ClipRect().Rect());
     } else if (const auto* scroll = transform.ScrollNode()) {
       // Limit layer bounds to the scroll range to hide the areas that will
@@ -1047,11 +1070,11 @@ void PaintArtifactCompositor::Update(
         pending_layer.FirstPaintChunk(*paint_artifact).id.client.OwnerNodeId());
     // TODO(wangxianzhu): cc_picture_layer_->set_compositing_reasons(...);
 
-    // If the property tree state has changed between the layer and the root, we
-    // need to inform the compositor so damage can be calculated.
-    // Calling |PropertyTreeStateChanged| for every pending layer is
-    // O(|property nodes|^2) and could be optimized by caching the lookup of
-    // nodes known to be changed/unchanged.
+    // If the property tree state has changed between the layer and the root,
+    // we need to inform the compositor so damage can be calculated. Calling
+    // |PropertyTreeStateChanged| for every pending layer is O(|property
+    // nodes|^2) and could be optimized by caching the lookup of nodes known
+    // to be changed/unchanged.
     if (layer->subtree_property_changed() ||
         PropertyTreeStateChanged(property_state)) {
       layer->SetSubtreePropertyChanged();
@@ -1098,7 +1121,8 @@ void PaintArtifactCompositor::Update(
   if (VLOG_IS_ON(2)) {
     static String s_previous_output;
     LayerTreeFlags flags = VLOG_IS_ON(3) ? 0xffffffff : 0;
-    String new_output = LayersAsJSON(flags)->ToPrettyJSONString();
+    String new_output =
+        GetLayersAsJSON(flags, paint_artifact.get())->ToPrettyJSONString();
     if (new_output != s_previous_output) {
       LOG(ERROR) << "PaintArtifactCompositor::Update() done\n"
                  << "Composited layers:\n"
@@ -1110,9 +1134,9 @@ void PaintArtifactCompositor::Update(
 }
 
 cc::PropertyTrees* PaintArtifactCompositor::GetPropertyTreesForDirectUpdate() {
-  // Don't try to retrieve property trees if we need an update. The full update
-  // will update all of the nodes, so a direct update doesn't need to do
-  // anything.
+  // Don't try to retrieve property trees if we need an update. The full
+  // update will update all of the nodes, so a direct update doesn't need to
+  // do anything.
   if (needs_update_)
     return nullptr;
 
@@ -1184,10 +1208,11 @@ static cc::RenderSurfaceReason GetRenderSurfaceCandidateReason(
   return cc::RenderSurfaceReason::kNone;
 }
 
-// Every effect is supposed to have render surface enabled for grouping, but we
-// can omit one if the effect is opacity- or blend-mode-only, render surface is
-// not forced, and the effect has only one compositing child. This is both for
-// optimization and not introducing sub-pixel differences in web tests.
+// Every effect is supposed to have render surface enabled for grouping, but
+// we can omit one if the effect is opacity- or blend-mode-only, render
+// surface is not forced, and the effect has only one compositing child. This
+// is both for optimization and not introducing sub-pixel differences in web
+// tests.
 // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
 // decision until later phase of the pipeline. Remove premature optimization
 // here once the work is ready.
@@ -1195,8 +1220,8 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
     cc::EffectTree& effect_tree,
     const cc::LayerList& layers,
     const Vector<const EffectPaintPropertyNode*>& blink_effects) {
-  // This vector is indexed by effect node id. The value is the number of layers
-  // and sub-render-surfaces controlled by this effect.
+  // This vector is indexed by effect node id. The value is the number of
+  // layers and sub-render-surfaces controlled by this effect.
   Vector<int> effect_layer_counts(effect_tree.size());
   // Initialize the vector to count directly controlled layers.
   for (const auto& layer : layers) {
@@ -1255,8 +1280,8 @@ PaintArtifactCompositor::ExtraDataForTesting::ScrollHitTestWebLayerAt(
 
 #if DCHECK_IS_ON()
 void PaintArtifactCompositor::ShowDebugData() {
-  LOG(ERROR) << LayersAsJSON(kLayerTreeIncludesDebugInfo |
-                             kLayerTreeIncludesPaintInvalidations)
+  LOG(ERROR) << GetLayersAsJSON(kLayerTreeIncludesDebugInfo |
+                                kLayerTreeIncludesPaintInvalidations)
                     ->ToPrettyJSONString()
                     .Utf8();
 }

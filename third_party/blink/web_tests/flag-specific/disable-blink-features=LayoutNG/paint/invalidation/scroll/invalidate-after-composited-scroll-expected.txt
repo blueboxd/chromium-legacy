@@ -22,6 +22,12 @@
         }
       ],
       "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [185, 0],
+      "bounds": [15, 200],
+      "transform": 1
     }
   ],
   "transforms": [

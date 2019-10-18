@@ -20,6 +20,11 @@
 
 namespace leveldb {
 
+namespace internal {
+template <typename ResultType>
+struct DatabaseTaskTraits;
+}  // namespace internal
+
 // A temporary wrapper around the Storage Service's DomStorageDatabase class,
 // consumed by LocalStorageContextMojo, SessionStorageContextMojo, and related
 // classes.
@@ -73,28 +78,28 @@ class LevelDBDatabaseImpl {
       base::OnceCallback<void(Status status, const std::vector<uint8_t>&)>;
   void Get(const std::vector<uint8_t>& key, GetCallback callback);
 
-  using GetPrefixedCallback =
-      base::OnceCallback<void(Status status, std::vector<mojom::KeyValuePtr>)>;
-  void GetPrefixed(const std::vector<uint8_t>& key_prefix,
-                   GetPrefixedCallback callback);
-
   void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
                     const std::vector<uint8_t>& destination_key_prefix,
                     StatusCallback callback);
 
   template <typename ResultType>
-  void RunDatabaseTask(
-      base::OnceCallback<ResultType(const storage::DomStorageDatabase&)> task,
-      base::OnceCallback<void(ResultType)> callback) {
+  using DatabaseTask =
+      base::OnceCallback<ResultType(const storage::DomStorageDatabase&)>;
+
+  template <typename ResultType>
+  using TaskTraits = internal::DatabaseTaskTraits<ResultType>;
+
+  template <typename ResultType>
+  void RunDatabaseTask(DatabaseTask<ResultType> task,
+                       typename TaskTraits<ResultType>::CallbackType callback) {
     auto wrapped_task = base::BindOnce(
-        [](base::OnceCallback<ResultType(const storage::DomStorageDatabase&)>
-               task,
-           base::OnceCallback<void(ResultType)> callback,
+        [](DatabaseTask<ResultType> task,
+           typename TaskTraits<ResultType>::CallbackType callback,
            scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
            const storage::DomStorageDatabase& db) {
           callback_task_runner->PostTask(
-              FROM_HERE,
-              base::BindOnce(std::move(callback), std::move(task).Run(db)));
+              FROM_HERE, TaskTraits<ResultType>::RunTaskAndBindCallbackToResult(
+                             db, std::move(task), std::move(callback)));
         },
         std::move(task), std::move(callback),
         base::SequencedTaskRunnerHandle::Get());
@@ -106,9 +111,6 @@ class LevelDBDatabaseImpl {
   }
 
  private:
-  using StatusAndKeyValues =
-      std::tuple<Status, std::vector<mojom::KeyValuePtr>>;
-
   void OnDatabaseOpened(
       StatusCallback callback,
       base::SequenceBound<storage::DomStorageDatabase> database,
@@ -118,14 +120,56 @@ class LevelDBDatabaseImpl {
 
   base::SequenceBound<storage::DomStorageDatabase> database_;
 
-  using DatabaseTask =
+  using BoundDatabaseTask =
       base::OnceCallback<void(const storage::DomStorageDatabase&)>;
-  std::vector<DatabaseTask> tasks_to_run_on_open_;
+  std::vector<BoundDatabaseTask> tasks_to_run_on_open_;
 
   base::WeakPtrFactory<LevelDBDatabaseImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBDatabaseImpl);
 };
+
+namespace internal {
+
+template <typename ResultType>
+struct DatabaseTaskTraits {
+  using CallbackType = base::OnceCallback<void(ResultType)>;
+  static base::OnceClosure RunTaskAndBindCallbackToResult(
+      const storage::DomStorageDatabase& db,
+      LevelDBDatabaseImpl::DatabaseTask<ResultType> task,
+      CallbackType callback) {
+    return base::BindOnce(std::move(callback), std::move(task).Run(db));
+  }
+};
+
+// This specialization allows database tasks to return tuples while their
+// corresponding callback accepts the unpacked values of the tuple as separate
+// arguments.
+template <typename... Args>
+struct DatabaseTaskTraits<std::tuple<Args...>> {
+  using ResultType = std::tuple<Args...>;
+  using CallbackType = base::OnceCallback<void(Args...)>;
+
+  static base::OnceClosure RunTaskAndBindCallbackToResult(
+      const storage::DomStorageDatabase& db,
+      LevelDBDatabaseImpl::DatabaseTask<ResultType> task,
+      CallbackType callback) {
+    return BindTupleAsArgs(
+        std::move(callback), std::move(task).Run(db),
+        std::make_index_sequence<std::tuple_size<ResultType>::value>{});
+  }
+
+ private:
+  template <typename Tuple, size_t... Indices>
+  static base::OnceClosure BindTupleAsArgs(CallbackType callback,
+                                           Tuple tuple,
+                                           std::index_sequence<Indices...>) {
+    return base::BindOnce(std::move(callback),
+                          std::move(std::get<Indices>(tuple))...);
+  }
+};
+
+}  // namespace internal
 
 }  // namespace leveldb
 

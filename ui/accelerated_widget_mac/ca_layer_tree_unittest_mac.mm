@@ -16,6 +16,10 @@
 #include "ui/gl/ca_renderer_layer_params.h"
 #include "ui/gl/gl_image_io_surface.h"
 
+@interface CALayer (Private)
+@property BOOL wantsExtendedDynamicRangeContent;
+@end
+
 namespace gpu {
 
 namespace {
@@ -1100,6 +1104,72 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
     EXPECT_TRUE(CGRectEqualToRect([root_layer frame], CGRectZero));
     EXPECT_EQ([root_layer backgroundColor], nil);
   }
+}
+
+// Verify that sorting context zero is split at non-flat transforms.
+TEST_F(CALayerTreeTest, HDRTrigger) {
+  std::unique_ptr<ui::CARendererLayerTree> ca_layer_trees[3]{
+      std::make_unique<ui::CARendererLayerTree>(true, true),
+      std::make_unique<ui::CARendererLayerTree>(true, true),
+      std::make_unique<ui::CARendererLayerTree>(true, true),
+  };
+  CALayerProperties properties;
+  properties.is_clipped = false;
+  properties.clip_rect = gfx::Rect();
+  properties.rect = gfx::Rect(0, 0, 256, 256);
+  bool result = false;
+
+  // We'll use the IOSurface contents to identify the content layers.
+  scoped_refptr<gl::GLImageIOSurface> sdr_image =
+      CreateGLImage(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888, false);
+  scoped_refptr<gl::GLImageIOSurface> hdr_image =
+      CreateGLImage(gfx::Size(256, 256), gfx::BufferFormat::BGRA_8888, false);
+  sdr_image->SetColorSpace(gfx::ColorSpace::CreateSRGB());
+  hdr_image->SetColorSpace(gfx::ColorSpace::CreateExtendedSRGB());
+
+  // Schedule and commit the HDR layer.
+  properties.gl_image = hdr_image;
+  result = ScheduleCALayer(ca_layer_trees[0].get(), &properties);
+  EXPECT_TRUE(result);
+  ca_layer_trees[0]->CommitScheduledCALayers(
+      superlayer_, nullptr, properties.rect.size(), properties.scale_factor);
+
+  // Validate that the root layer has is triggering HDR.
+  CALayer* content_layer = nil;
+  if (@available(macos 10.15, *)) {
+    CALayer* root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    CALayer* clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    CALayer* clip_and_sorting_rounded_layer =
+        [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    CALayer* transform_layer =
+        [[clip_and_sorting_rounded_layer sublayers] objectAtIndex:0];
+    content_layer = [[transform_layer sublayers] objectAtIndex:0];
+    EXPECT_TRUE([content_layer wantsExtendedDynamicRangeContent]);
+  }
+
+  // Commit the SDR layer.
+  properties.gl_image = sdr_image;
+  result = ScheduleCALayer(ca_layer_trees[1].get(), &properties);
+  EXPECT_TRUE(result);
+  ca_layer_trees[1]->CommitScheduledCALayers(
+      superlayer_, std::move(ca_layer_trees[0]), properties.rect.size(),
+      properties.scale_factor);
+
+  // Validate that HDR is off.
+  if (@available(macos 10.15, *))
+    EXPECT_FALSE([content_layer wantsExtendedDynamicRangeContent]);
+
+  // Commit the HDR layer.
+  properties.gl_image = hdr_image;
+  result = ScheduleCALayer(ca_layer_trees[2].get(), &properties);
+  EXPECT_TRUE(result);
+  ca_layer_trees[2]->CommitScheduledCALayers(
+      superlayer_, std::move(ca_layer_trees[1]), properties.rect.size(),
+      properties.scale_factor);
+
+  // Validate that HDR is back on.
+  if (@available(macos 10.15, *))
+    EXPECT_TRUE([content_layer wantsExtendedDynamicRangeContent]);
 }
 
 }  // namespace gpu

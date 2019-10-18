@@ -12,6 +12,11 @@
       "transform": 1
     },
     {
+      "name": "ContentsLayer for LayoutImage IMG class='accelerated blended'",
+      "bounds": [160, 90],
+      "transform": 1
+    },
+    {
       "name": "LayoutBlockFlow HTML (foreground) Layer",
       "bounds": [800, 600]
     }

@@ -60,7 +60,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         Context context = ObjectWrapper.unwrap(webLayerContextWrapper, Context.class);
         ContextUtils.initApplicationContext(context);
-        ResourceBundle.setNoAvailableLocalePaks();
+        ResourceBundle.setAvailablePakLocales(new String[] {}, LocaleConfig.UNCOMPRESSED_LOCALES);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
         ChildProcessCreationParams.set(context.getPackageName(), false /* isExternalService */,

@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
@@ -41,18 +43,27 @@ TouchToFillController::~TouchToFillController() = default;
 
 void TouchToFillController::Show(base::span<const CredentialPair> credentials,
                                  base::WeakPtr<PasswordManagerDriver> driver) {
+  // Disable Touch To Fill for secure origins if specified by the server.
+  const GURL& url = driver->GetLastCommittedURL();
+  const TouchToFillView::IsOriginSecure is_origin_secure(
+      network::IsUrlPotentiallyTrustworthy(url));
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          autofill::features::kTouchToFillAndroid, "insecure-origins-only",
+          /*default_value=*/false) &&
+      is_origin_secure) {
+    driver->TouchToFillDismissed();
+    return;
+  }
+
   DCHECK(!driver_ || driver_.get() == driver.get());
   driver_ = std::move(driver);
 
   if (!view_)
     view_ = TouchToFillViewFactory::Create(this);
 
-  const GURL& url = driver_->GetLastCommittedURL();
   view_->Show(url_formatter::FormatUrlForSecurityDisplay(
                   url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS),
-              TouchToFillView::IsOriginSecure(
-                  network::IsUrlPotentiallyTrustworthy(url)),
-              credentials);
+              is_origin_secure, credentials);
 }
 
 void TouchToFillController::OnCredentialSelected(

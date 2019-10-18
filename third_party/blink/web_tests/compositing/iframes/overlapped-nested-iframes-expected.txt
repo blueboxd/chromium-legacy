@@ -67,6 +67,12 @@
       "name": "LayoutNGBlockFlow (positioned) DIV id='banner'",
       "bounds": [785, 120],
       "backgroundColor": "#00000080"
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

@@ -57,8 +57,9 @@ PY_TEMPLATE = textwrap.dedent(
     def ExpandWrappedPath(arg):
       m = _WRAPPED_PATH_RE.match(arg)
       if m:
-        return os.path.join(
+        relpath = os.path.join(
             os.path.relpath(_SCRIPT_DIR), _PATH_TO_OUTPUT_DIR, m.group(1))
+        return os.path.normpath(relpath)
       return arg
 
 

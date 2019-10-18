@@ -30,6 +30,12 @@ CASE 1, original layer tree:
       "position": [0, 100],
       "bounds": [200, 300],
       "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -109,6 +115,12 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
         }
       ],
       "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -172,6 +184,12 @@ CASE 3, scrolling y to 120, no repaints expected:
       "position": [0, 100],
       "bounds": [200, 300],
       "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -261,6 +279,12 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
         }
       ],
       "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

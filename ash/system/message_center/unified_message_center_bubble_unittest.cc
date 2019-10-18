@@ -21,6 +21,8 @@
 using message_center::MessageCenter;
 using message_center::Notification;
 
+#include <iostream>
+
 namespace ash {
 
 class UnifiedMessageCenterBubbleTest : public AshTestBase {
@@ -71,6 +73,10 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
 
   bool IsMessageCenterCollapsed() {
     return GetMessageCenterBubble()->message_center_view()->collapsed();
+  }
+
+  bool IsQuickSettingsCollapsed() {
+    return !GetSystemTrayBubble()->controller_for_test()->IsExpanded();
   }
 
   // Helper functions for focus cycle testing.
@@ -277,19 +283,23 @@ TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
       (4 * kMessageCenterCollapseThreshold);
   GetPrimaryUnifiedSystemTray()->CloseBubble();
 
-  // Message center should open in collapsed state when screen height is
+  // Message center should open in expanded state when screen height is
   // limited.
   UpdateDisplay(base::StringPrintf("1000x%d", small_display_height));
   GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  WaitForAnimation();
+  EXPECT_TRUE(IsQuickSettingsCollapsed());
+  EXPECT_FALSE(IsMessageCenterCollapsed());
+
+  // Message center should be collapsed when quick settings is expanded
+  // with limited screen height.
+  ToggleExpanded();
+  WaitForAnimation();
   EXPECT_TRUE(IsMessageCenterCollapsed());
 
   ToggleExpanded();
   WaitForAnimation();
   EXPECT_FALSE(IsMessageCenterCollapsed());
-
-  ToggleExpanded();
-  WaitForAnimation();
-  EXPECT_TRUE(IsMessageCenterCollapsed());
 
   GetPrimaryUnifiedSystemTray()->CloseBubble();
 

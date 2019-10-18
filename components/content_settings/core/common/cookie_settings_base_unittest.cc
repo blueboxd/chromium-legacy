@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -43,9 +44,11 @@ class CallbackCookieSettings : public CookieSettingsBase {
                                 ContentSetting* cookie_setting) const override {
     *cookie_setting = callback_.Run(url);
   }
-  void GetSettingForLegacyCookieAccess(const GURL& cookie_domain,
+  void GetSettingForLegacyCookieAccess(const std::string& cookie_domain,
                                        ContentSetting* setting) const override {
-    *setting = callback_.Run(cookie_domain);
+    GURL cookie_domain_url =
+        net::cookie_util::CookieOriginToURL(cookie_domain, false);
+    *setting = callback_.Run(cookie_domain_url);
   }
 
  private:
@@ -148,11 +151,11 @@ TEST(CookieSettingsBaseTest, LegacyCookieAccessSemantics) {
   CallbackCookieSettings settings1(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
   EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
-            settings1.GetCookieAccessSemanticsForDomain(GURL()));
+            settings1.GetCookieAccessSemanticsForDomain(std::string()));
   CallbackCookieSettings settings2(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
-            settings2.GetCookieAccessSemanticsForDomain(GURL()));
+            settings2.GetCookieAccessSemanticsForDomain(std::string()));
 }
 
 TEST(CookieSettingsBaseTest, IsCookieSessionOnlyWithAllowSetting) {

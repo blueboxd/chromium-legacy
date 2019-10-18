@@ -5,12 +5,10 @@
 
 #title {
   align-self: center;
-  color: var(--google-grey-900);
-  font-family: var(--oobe-button-font-family);
-  font-size: 28px;
-  font-weight: 400; /* regular */
+  color: var(--oobe-header-text-color);
   margin: 0;
   user-select: none;
+  @apply --oobe-header-font;
 }
 
 .welcome-illustration {

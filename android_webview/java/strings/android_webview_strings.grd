@@ -117,45 +117,6 @@
       <message name="IDS_LICENSE_ACTIVITY_TITLE" desc="The title of the activity that displays licenses of WebView. [CHAR-LIMIT=50]">
         System WebView licenses
       </message>
-      <!-- All WebView Developer UI strings below this line are intentionally marked as not translateable -->
-      <message name="IDS_CRASHES_LIST_ACTIVITY_TITLE" translateable="false">
-        WebView Crashes
-      </message>
-      <message name="IDS_MENU_REFRESH" translateable="false">
-        Refresh
-      </message>
-      <message name="IDS_CRASHES_NUM" translateable="false">
-        Crashes (<ph name="CRASHES_NUMBER"><ex>10</ex>%1$d</ph>)
-      </message>
-      <message name="IDS_CRASH_LABEL" translateable="false">
-        Crash (<ph name="CRASH_LOCAL_ID"><ex>abde213122d3ff0</ex>%1$s</ph>) - [<ph name="CRASH_STATUS"><ex>UPLOADED</ex>%2$s</ph>]
-      </message>
-      <message name="IDS_CRASH_REPORT_BUTTON_TEXT" translateable="false">
-        Provide more info
-      </message>
-      <message name="IDS_CRASH_REPORT_TEMPLATE" translateable="false">
-IMPORTANT: Your crash has already been automatically reported to our crash system. You only need to fill this out if you can share more information like steps to reproduce the crash.
-
-Device name:
-Android OS version:
-WebView version (On Android L-M, this is the version of the "Android System WebView" app. On Android N-P, it's most likely Chrome's version. You can find the version of any app under Settings > Apps > the 3 dots in the upper right > Show system.):
-Application: (Please link to its Play Store page if possible. You can get the link from inside the Play Store app by tapping the 3 dots in the upper right > Share > Copy to clipboard. Or you can find the app on the Play Store website: https://play.google.com/store/apps .)
-Application version:
-
-
-Steps to reproduce:
-(1)
-(2)
-(3)
-
-
-Expected result:
-(What should have happened?)
-
-
-****DO NOT CHANGE BELOW THIS LINE****
-Crash ID: http://crash/<ph name="CRASH_UPLOAD_ID"><ex>277008e5bac834706c</ex>%1$s</ph>
-      </message>
     </messages>
   </release>
 </grit>

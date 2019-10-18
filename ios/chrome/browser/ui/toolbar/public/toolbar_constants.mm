@@ -8,6 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
+const NSUInteger kControlStateSpotlighted = 0x00010000;
+
 const CGFloat kToolbarBackgroundColor = 0xF2F2F2;
 const CGFloat kIncognitoToolbarBackgroundColor = 0x505050;
 const CGFloat kNTPBackgroundColorBrightnessIncognito = 34.0 / 255.0;

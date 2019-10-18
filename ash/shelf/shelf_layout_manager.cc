@@ -1901,13 +1901,12 @@ void ShelfLayoutManager::UpdateGestureDrag(
   float scroll_x = gesture_in_screen.details().scroll_x();
   float scroll_y = gesture_in_screen.details().scroll_y();
 
-  if (ShouldHomeGestureHandleEvent(scroll_y)) {
-    HomeLauncherGestureHandler* home_launcher_handler =
-        Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler->OnScrollEvent(gesture_in_screen.location(),
-                                             scroll_x, scroll_y)) {
-      return;
-    }
+  HomeLauncherGestureHandler* home_launcher_handler =
+      Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
+  if (home_launcher_handler->IsDragInProgress() &&
+      home_launcher_handler->OnScrollEvent(gesture_in_screen.location(),
+                                           scroll_x, scroll_y)) {
+    return;
   }
 
   UpdateDrag(gesture_in_screen, scroll_x, scroll_y);

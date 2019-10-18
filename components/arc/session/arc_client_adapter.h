@@ -10,13 +10,11 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
+#include "components/arc/session/arc_start_params.h"
+#include "components/arc/session/arc_upgrade_params.h"
 
 namespace arc {
-
-using StartArcMiniContainerRequest =
-    login_manager::StartArcMiniContainerRequest;
-using UpgradeArcContainerRequest = login_manager::UpgradeArcContainerRequest;
 
 // An adapter to talk to a Chrome OS daemon to manage lifetime of ARC instance.
 class ArcClientAdapter {
@@ -33,11 +31,11 @@ class ArcClientAdapter {
 
   // StartMiniArc starts ARC with only a handful of ARC processes for Chrome OS
   // login screen.
-  virtual void StartMiniArc(const StartArcMiniContainerRequest& request,
+  virtual void StartMiniArc(StartParams params,
                             chromeos::VoidDBusMethodCallback callback) = 0;
 
   // UpgradeArc upgrades a mini ARC instance to a full ARC instance.
-  virtual void UpgradeArc(const UpgradeArcContainerRequest& request,
+  virtual void UpgradeArc(UpgradeParams params,
                           chromeos::VoidDBusMethodCallback callback) = 0;
 
   // Asynchronously stops the ARC instance.

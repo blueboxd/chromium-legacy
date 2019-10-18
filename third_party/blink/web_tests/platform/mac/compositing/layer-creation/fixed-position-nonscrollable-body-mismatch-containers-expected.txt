@@ -20,6 +20,18 @@ Even though the fixed-position element's container is nonscrollable, it should s
       "transform": 1
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [1, 286],
+      "bounds": [285, 15],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [286, 1],
+      "bounds": [15, 285],
+      "transform": 1
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [286, 286],
       "bounds": [15, 15],

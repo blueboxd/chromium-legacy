@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.widget.ChromeImageButton;
 
@@ -137,7 +137,7 @@ class BottomToolbarNewTabButton extends ChromeImageButton
         if (mThemeColorProvider == null || mIncognitoStateProvider == null) return;
 
         mBackground.setColorFilter(
-                ColorUtils.getTextBoxColorForToolbarBackground(mResources, false,
+                ToolbarColors.getTextBoxColorForToolbarBackground(mResources, false,
                         mThemeColorProvider.getThemeColor(),
                         mThemeColorProvider.useLight()
                                 && mIncognitoStateProvider.isIncognitoSelected()),

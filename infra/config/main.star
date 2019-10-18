@@ -22,7 +22,6 @@ lucicfg.config(
 # Copy the not-yet migrated files to the generated outputs
 # TODO(https://crbug.com/1011908) Migrate the configuration in these files to starlark
 [lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
-    'luci-milo.cfg',
     # TODO(https://crbug.com/1015148) lucicfg generates luci-notify.cfg very
     # differently from our hand-written file and doesn't do any normalization
     # for luci-notify.cfg so the semantic diff is large and confusing
@@ -45,6 +44,7 @@ luci.project(
     name = 'chromium',
     buildbucket = 'cr-buildbucket.appspot.com',
     logdog = 'luci-logdog.appspot.com',
+    milo = 'luci-milo.appspot.com',
     swarming = 'chromium-swarm.appspot.com',
     acls = [
         acl.entry(
@@ -71,10 +71,47 @@ luci.logdog(
     gs_bucket = 'chromium-luci-logdog',
 )
 
+luci.milo(
+    logo = 'https://storage.googleapis.com/chrome-infra-public/logo/chromium.svg',
+)
+
 exec('//buckets/ci.star')
 exec('//buckets/findit.star')
 exec('//buckets/try.star')
 exec('//buckets/webrtc.star')
 exec('//buckets/webrtc.fyi.star')
+
+exec('//consoles/angle.try.star')
+exec('//consoles/chromium.star')
+exec('//consoles/chromium.android.star')
+exec('//consoles/chromium.android.fyi.star')
+exec('//consoles/chromium.chromiumos.star')
+exec('//consoles/chromium.clang.star')
+exec('//consoles/chromium.dawn.star')
+exec('//consoles/chromium.fuzz.star')
+exec('//consoles/chromium.fyi.star')
+exec('//consoles/chromium.fyi.goma.star')
+exec('//consoles/chromium.goma.star')
+exec('//consoles/chromium.goma.fyi.star')
+exec('//consoles/chromium.goma.migration.star')
+exec('//consoles/chromium.gpu.star')
+exec('//consoles/chromium.gpu.fyi.star')
+exec('//consoles/chromium.linux.star')
+exec('//consoles/chromium.mac.star')
+exec('//consoles/chromium.memory.star')
+exec('//consoles/chromium.webrtc.star')
+exec('//consoles/chromium.webrtc.fyi.star')
+exec('//consoles/chromium.win.star')
+exec('//consoles/goma.latest.star')
+exec('//consoles/luci.chromium.goma.star')
+exec('//consoles/luci.chromium.try.star')
+exec('//consoles/main.star')
+exec('//consoles/sheriff.ios.star')
+exec('//consoles/tryserver.blink.star')
+exec('//consoles/tryserver.chromium.android.star')
+exec('//consoles/tryserver.chromium.chromiumos.star')
+exec('//consoles/tryserver.chromium.linux.star')
+exec('//consoles/tryserver.chromium.mac.star')
+exec('//consoles/tryserver.chromium.win.star')
 
 exec('//cq-builders-md.star')

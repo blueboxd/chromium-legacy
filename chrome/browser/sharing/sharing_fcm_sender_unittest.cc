@@ -29,6 +29,8 @@ const char kSenderFcmToken[] = "sender_fcm_token";
 const char kSenderP256dh[] = "sender_p256dh";
 const char kSenderAuthSecret[] = "sender_auth_secret";
 const char kAuthorizedEntity[] = "authorized_entity";
+const char kLocalGuid[] = "id";
+const char kLocalClientName[] = "name";
 const int kTtlSeconds = 10;
 
 class FakeGCMDriver : public gcm::FakeGCMDriver {
@@ -97,11 +99,9 @@ class SharingFCMSenderTest : public testing::Test {
  protected:
   SharingFCMSenderTest()
       : sync_prefs_(&prefs_, &fake_device_info_sync_service),
-        sharing_fcm_sender_(
-            &fake_gcm_driver_,
-            fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
-            &sync_prefs_,
-            &vapid_key_manager_) {
+        sharing_fcm_sender_(&fake_gcm_driver_,
+                            &sync_prefs_,
+                            &vapid_key_manager_) {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
@@ -120,13 +120,6 @@ class SharingFCMSenderTest : public testing::Test {
 
 TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
   sync_prefs_.ClearFCMRegistration();
-  syncer::DeviceInfo* local_device_info =
-      fake_device_info_sync_service.GetLocalDeviceInfoProvider()
-          ->GetMutableDeviceInfo();
-  local_device_info->set_sharing_info(syncer::DeviceInfo::SharingInfo(
-      kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
-      std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
-  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(true);
 
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
       crypto::ECPrivateKey::Create();
@@ -140,10 +133,10 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
   chrome_browser_sharing::SharingMessage sharing_message;
-  sharing_message.mutable_ping_message();
+  sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToDevice(
       std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      std::move(sharing_message), /*sender_device_info=*/nullptr,
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id));
 
@@ -153,13 +146,6 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
 TEST_F(SharingFCMSenderTest, NoVapidKey) {
   sync_prefs_.SetFCMRegistration(SharingSyncPreference::FCMRegistration(
       kAuthorizedEntity, base::Time::Now()));
-  syncer::DeviceInfo* local_device_info =
-      fake_device_info_sync_service.GetLocalDeviceInfoProvider()
-          ->GetMutableDeviceInfo();
-  local_device_info->set_sharing_info(syncer::DeviceInfo::SharingInfo(
-      kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
-      std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
-  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(true);
 
   ON_CALL(vapid_key_manager_, GetOrCreateKey())
       .WillByDefault(testing::Return(nullptr));
@@ -171,10 +157,10 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
   chrome_browser_sharing::SharingMessage sharing_message;
-  sharing_message.mutable_ping_message();
+  sharing_message.mutable_ack_message();
   sharing_fcm_sender_.SendMessageToDevice(
       std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      std::move(sharing_message), /*sender_device_info=*/nullptr,
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id));
 
@@ -184,38 +170,27 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
 struct SharingFCMSenderResultTestData {
   const gcm::SendWebPushMessageResult web_push_result;
   const SharingSendMessageResult expected_result;
-  const bool ready_before_send_message;
 } kSharingFCMSenderResultTestData[] = {
     {gcm::SendWebPushMessageResult::kSuccessful,
-     SharingSendMessageResult::kSuccessful,
-     /*ready_before_send_message=*/false},
+     SharingSendMessageResult::kSuccessful},
     {gcm::SendWebPushMessageResult::kSuccessful,
-     SharingSendMessageResult::kSuccessful,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kSuccessful},
     {gcm::SendWebPushMessageResult::kDeviceGone,
-     SharingSendMessageResult::kDeviceNotFound,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kDeviceNotFound},
     {gcm::SendWebPushMessageResult::kNetworkError,
-     SharingSendMessageResult::kNetworkError,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kNetworkError},
     {gcm::SendWebPushMessageResult::kPayloadTooLarge,
-     SharingSendMessageResult::kPayloadTooLarge,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kPayloadTooLarge},
     {gcm::SendWebPushMessageResult::kEncryptionFailed,
-     SharingSendMessageResult::kInternalError,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kInternalError},
     {gcm::SendWebPushMessageResult::kCreateJWTFailed,
-     SharingSendMessageResult::kInternalError,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kInternalError},
     {gcm::SendWebPushMessageResult::kServerError,
-     SharingSendMessageResult::kInternalError,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kInternalError},
     {gcm::SendWebPushMessageResult::kParseResponseFailed,
-     SharingSendMessageResult::kInternalError,
-     /*ready_before_send_message=*/true},
+     SharingSendMessageResult::kInternalError},
     {gcm::SendWebPushMessageResult::kVapidKeyInvalid,
-     SharingSendMessageResult::kInternalError,
-     /*ready_before_send_message=*/true}};
+     SharingSendMessageResult::kInternalError}};
 
 class SharingFCMSenderResultTest
     : public SharingFCMSenderTest,
@@ -224,14 +199,16 @@ class SharingFCMSenderResultTest
 TEST_P(SharingFCMSenderResultTest, ResultTest) {
   sync_prefs_.SetFCMRegistration(SharingSyncPreference::FCMRegistration(
       kAuthorizedEntity, base::Time::Now()));
-  syncer::DeviceInfo* local_device_info =
-      fake_device_info_sync_service.GetLocalDeviceInfoProvider()
-          ->GetMutableDeviceInfo();
-  local_device_info->set_sharing_info(syncer::DeviceInfo::SharingInfo(
-      kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
-      std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
-  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(
-      GetParam().ready_before_send_message);
+  std::unique_ptr<syncer::DeviceInfo> sender_device_info =
+      std::make_unique<syncer::DeviceInfo>(
+          "id", "name", "chrome_version", "user_agent",
+          sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
+          base::SysInfo::HardwareInfo{"model", "manufacturer", "serial"},
+          /*last_updated_timestamp=*/base::Time::Now(),
+          /*send_tab_to_self_receiving_enabled=*/false,
+          syncer::DeviceInfo::SharingInfo(
+              kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
+              std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
   fake_gcm_driver_.set_result(GetParam().web_push_result);
 
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
@@ -249,7 +226,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
   sharing_message.mutable_ping_message();
   sharing_fcm_sender_.SendMessageToDevice(
       std::move(target), base::TimeDelta::FromSeconds(kTtlSeconds),
-      std::move(sharing_message),
+      std::move(sharing_message), std::move(sender_device_info),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this), &result, &message_id));
 
@@ -267,10 +244,9 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
             fake_gcm_driver_.message().urgency);
   chrome_browser_sharing::SharingMessage message_sent;
   message_sent.ParseFromString(fake_gcm_driver_.message().payload);
-  EXPECT_EQ(local_device_info->guid(), message_sent.sender_guid());
   EXPECT_TRUE(message_sent.has_ping_message());
-  EXPECT_EQ(local_device_info->client_name(),
-            message_sent.sender_device_name());
+  EXPECT_EQ(kLocalGuid, message_sent.sender_guid());
+  EXPECT_EQ(kLocalClientName, message_sent.sender_device_name());
   EXPECT_TRUE(message_sent.has_sender_info());
   EXPECT_EQ(kSenderFcmToken, message_sent.sender_info().fcm_token());
   EXPECT_EQ(kSenderP256dh, message_sent.sender_info().p256dh());

@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -49,8 +50,7 @@ class CookiesEventRouter : public BrowserListObserver {
     ~CookieChangeListener() override;
 
     // network::mojom::CookieChangeListener:
-    void OnCookieChange(const net::CanonicalCookie& canonical_cookie,
-                        network::mojom::CookieChangeCause cause) override;
+    void OnCookieChange(const net::CookieChangeInfo& change) override;
 
    private:
     CookiesEventRouter* router_;
@@ -65,9 +65,7 @@ class CookiesEventRouter : public BrowserListObserver {
       Profile* profile);
   void OnConnectionError(
       mojo::Receiver<network::mojom::CookieChangeListener>* receiver);
-  void OnCookieChange(bool otr,
-                      const net::CanonicalCookie& canonical_cookie,
-                      network::mojom::CookieChangeCause cause);
+  void OnCookieChange(bool otr, const net::CookieChangeInfo& change);
 
   // This method dispatches events to the extension message service.
   void DispatchEvent(content::BrowserContext* context,

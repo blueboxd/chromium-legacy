@@ -455,15 +455,13 @@ void ChromePasswordProtectionService::OnModalWarningShownForEnterprisePassword(
 void ChromePasswordProtectionService::ShowInterstitial(
     content::WebContents* web_contents,
     ReusedPasswordAccountType password_type) {
-  DCHECK(password_type.account_type() == ReusedPasswordAccountType::GMAIL ||
-         password_type.account_type() ==
+  DCHECK(password_type.account_type() ==
              ReusedPasswordAccountType::NON_GAIA_ENTERPRISE ||
          password_type.account_type() == ReusedPasswordAccountType::GSUITE);
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
   if (web_contents->IsFullscreenForCurrentTab())
     web_contents->ExitFullscreen(/*will_cause_resize=*/true);
 
-  GURL trigger_url = web_contents->GetLastCommittedURL();
   content::OpenURLParams params(
       GURL(chrome::kChromeUIResetPasswordURL), content::Referrer(),
       WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,

@@ -566,7 +566,7 @@ LoginStatus SessionControllerImpl::CalculateLoginStatusForActiveSession()
     case user_manager::USER_TYPE_CHILD:
       return LoginStatus::SUPERVISED;
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
-      return LoginStatus::ARC_KIOSK_APP;
+      return LoginStatus::KIOSK_APP;
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
       // TODO: There is no LoginStatus for this.
       return LoginStatus::USER;

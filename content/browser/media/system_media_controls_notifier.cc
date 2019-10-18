@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -59,10 +60,10 @@ void SystemMediaControlsNotifier::Initialize() {
 
   // Connect to the MediaControllerManager and create a MediaController that
   // controls the active session so we can observe it.
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
-  connector_->BindInterface(media_session::mojom::kServiceName,
-                            mojo::MakeRequest(&controller_manager_ptr));
-  controller_manager_ptr->CreateActiveMediaController(
+  mojo::Remote<media_session::mojom::MediaControllerManager> controller_manager;
+  connector_->Connect(media_session::mojom::kServiceName,
+                      controller_manager.BindNewPipeAndPassReceiver());
+  controller_manager->CreateActiveMediaController(
       media_controller_.BindNewPipeAndPassReceiver());
 
   // Observe the active media controller for changes to playback state and

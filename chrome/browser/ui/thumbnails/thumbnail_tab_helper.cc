@@ -20,6 +20,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/scrollbar_size.h"
@@ -211,15 +212,19 @@ void ThumbnailTabHelper::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     ::media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& content_rect,
-    ::viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
+    mojo::PendingRemote<::viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        callbacks) {
   CHECK(video_capturer_);
 
   if (!ShouldKeepUpdatingThumbnail())
     StopVideoCapture();
 
+  mojo::Remote<::viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+      callbacks_remote(std::move(callbacks));
+
   // Process captured image.
   if (!data.IsValid()) {
-    callbacks->Done();
+    callbacks_remote->Done();
     return;
   }
   base::ReadOnlySharedMemoryMapping mapping = data.Map();
@@ -249,7 +254,7 @@ void ThumbnailTabHelper::OnFrameCaptured(
     base::ReadOnlySharedMemoryMapping mapping;
     // Prevents FrameSinkVideoCapturer from recycling the shared memory that
     // backs |frame_|.
-    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr releaser;
+    mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> releaser;
   };
 
   content::RenderWidgetHostView* const source_view = GetView();
@@ -284,7 +289,7 @@ void ThumbnailTabHelper::OnFrameCaptured(
       [](void* addr, void* context) {
         delete static_cast<FramePinner*>(context);
       },
-      new FramePinner{std::move(mapping), std::move(callbacks)});
+      new FramePinner{std::move(mapping), std::move(callbacks_remote)});
   frame.setImmutable();
 
   SkBitmap cropped_frame;

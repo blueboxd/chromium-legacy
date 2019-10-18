@@ -32,6 +32,12 @@
           "reason": "geometry"
         }
       ]
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 585],
+      "bounds": [800, 15],
+      "contentsOpaque": true
     }
   ]
 }

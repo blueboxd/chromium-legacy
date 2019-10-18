@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,6 +25,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -512,6 +514,89 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     ViewSourceWithSplitCacheTest,
     testing::Bool());
+
+using ViewSourceWithSplitCacheEnabledTest = ViewSourceWithSplitCacheTest;
+
+// Tests that the network isolation key for the view-source request is reused
+// in the back-navigation request to the view-source page.
+//
+// The test runs the following steps:
+// 1. Navigate to page a.com/title1.html
+// 2. Create a cross-site subframe b.com/title1.html
+// 3. View-source the subframe
+// 4. Navigate the view-source page to a c.com/title1.html
+// 5. Navigate back to the view-source page
+//
+// In the end, the test checks whether the back navigation request resource
+// exists in the cache. |exists_in_cache == true| implies the top_frame_origin
+// of the network isolation key is a.com (reused).
+IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
+                       NetworkIsolationKeyReusedForBackNavigation) {
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1. Navigate to page a.com/title1.html
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  content::WebContents* original_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    // 2. Create a cross-site subframe b.com/title1.html
+    std::string subframe_url =
+        GURL(embedded_test_server()->GetURL("b.com", "/title1.html")).spec();
+    std::string create_frame_script = base::StringPrintf(
+        "let frame = document.createElement('iframe');"
+        "frame.src = '%s';"
+        "document.body.appendChild(frame);",
+        subframe_url.c_str());
+    content::TestNavigationObserver navigation_observer(original_contents);
+    original_contents->GetMainFrame()->ExecuteJavaScriptForTests(
+        base::ASCIIToUTF16(create_frame_script), base::NullCallback());
+    navigation_observer.Wait();
+  }
+
+  // 3. View-source the subframe
+  content::WebContentsAddedObserver view_source_contents_observer;
+  original_contents->GetAllFrames()[1]->ViewSource();
+  content::WebContents* view_source_contents =
+      view_source_contents_observer.GetWebContents();
+  EXPECT_TRUE(WaitForLoadStop(view_source_contents));
+
+  // 4. Navigate the view-source page to a c.com/title1.html
+  ui_test_utils::NavigateToURL(
+      browser(), GURL(embedded_test_server()->GetURL("c.com", "/title1.html")));
+
+  bool exists_in_cache = false;
+  content::URLLoaderInterceptor interceptor(
+      base::BindLambdaForTesting(
+          [&](content::URLLoaderInterceptor::RequestParams* params) {
+            return false;
+          }),
+      base::BindLambdaForTesting(
+          [&](const GURL& request_url,
+              const network::URLLoaderCompletionStatus& status) {
+            exists_in_cache = status.exists_in_cache;
+          }),
+      {});
+
+  {
+    // 5. Navigate back to the view-source page
+    content::WebContents* new_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver navigation_observer(new_contents);
+    chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+    navigation_observer.Wait();
+  }
+
+  EXPECT_TRUE(exists_in_cache);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    ViewSourceWithSplitCacheEnabledTest,
+    ::testing::Values(true));
 
 // Verify that links clicked from view-source do not send a Referer header.
 // See https://crbug.com/834023.

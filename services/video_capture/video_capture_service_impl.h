@@ -9,9 +9,10 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/threading/thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 
@@ -34,15 +35,16 @@ class VideoCaptureServiceImpl : public mojom::VideoCaptureService {
 
   // mojom::VideoCaptureService implementation.
 #if defined(OS_CHROMEOS)
-  void InjectGpuDependencies(
-      mojom::AcceleratorFactoryPtr accelerator_factory) override;
+  void InjectGpuDependencies(mojo::PendingRemote<mojom::AcceleratorFactory>
+                                 accelerator_factory) override;
   void ConnectToCameraAppDeviceBridge(
       mojo::PendingReceiver<cros::mojom::CameraAppDeviceBridge> receiver)
       override;
 #endif  // defined(OS_CHROMEOS)
-  void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
+  void ConnectToDeviceFactory(
+      mojo::PendingReceiver<mojom::DeviceFactory> receiver) override;
   void ConnectToVideoSourceProvider(
-      mojom::VideoSourceProviderRequest request) override;
+      mojo::PendingReceiver<mojom::VideoSourceProvider> receiver) override;
   void SetRetryCount(int32_t count) override;
   void BindControlsForTesting(
       mojo::PendingReceiver<mojom::TestingControls> receiver) override;
@@ -56,7 +58,7 @@ class VideoCaptureServiceImpl : public mojom::VideoCaptureService {
   void OnLastSourceProviderClientDisconnected();
 
   mojo::Receiver<mojom::VideoCaptureService> receiver_;
-  mojo::BindingSet<mojom::DeviceFactory> factory_bindings_;
+  mojo::ReceiverSet<mojom::DeviceFactory> factory_receivers_;
   std::unique_ptr<VirtualDeviceEnabledDeviceFactory> device_factory_;
   std::unique_ptr<VideoSourceProviderImpl> video_source_provider_;
   std::unique_ptr<GpuDependenciesContext> gpu_dependencies_context_;

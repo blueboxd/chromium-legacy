@@ -43,6 +43,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
       const CommunicationErrorObserver* observer) override {}
   void AddAndFireStateObserver(StateObserver* observer) override;
   void RemoveStateObserver(const StateObserver* observer) override;
+  void SyncDeviceAppsStatus() override {}
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;

@@ -110,7 +110,7 @@ bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin) const {
 
 net::CookieAccessSemantics
 CookieSettingsBase::GetCookieAccessSemanticsForDomain(
-    const GURL& cookie_domain) const {
+    const std::string& cookie_domain) const {
   ContentSetting setting;
   GetSettingForLegacyCookieAccess(cookie_domain, &setting);
   DCHECK(IsValidSettingForLegacyAccess(setting));

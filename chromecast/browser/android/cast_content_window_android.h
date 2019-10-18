@@ -42,9 +42,6 @@ class CastContentWindowAndroid : public CastContentWindow {
   // Called through JNI.
   void OnActivityStopped(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jcaller);
-  void OnKeyDown(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& jcaller,
-                 int keycode);
   bool ConsumeGesture(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& jcaller,
                       int gesture_type);

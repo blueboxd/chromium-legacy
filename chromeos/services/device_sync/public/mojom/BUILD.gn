@@ -12,6 +12,7 @@ mojom("mojom") {
   public_deps = [
     "//chromeos/components/multidevice/mojom",
     "//mojo/public/mojom/base",
+    "//services/preferences/public/mojom",
   ]
 }
 

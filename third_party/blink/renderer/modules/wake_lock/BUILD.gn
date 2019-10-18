@@ -10,8 +10,6 @@ blink_modules_sources("wake_lock") {
     "navigator_wake_lock.h",
     "wake_lock.cc",
     "wake_lock.h",
-    "wake_lock_event.cc",
-    "wake_lock_event.h",
     "wake_lock_sentinel.cc",
     "wake_lock_sentinel.h",
     "wake_lock_state_record.cc",

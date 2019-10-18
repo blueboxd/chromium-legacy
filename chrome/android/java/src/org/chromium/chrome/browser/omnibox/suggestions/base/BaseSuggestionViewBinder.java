@@ -51,24 +51,28 @@ public class BaseSuggestionViewBinder
     private static void updateSuggestionIcon(PropertyModel model, BaseSuggestionView baseView) {
         final RoundedCornerImageView view = baseView.getSuggestionImageView();
         final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ICON);
-        final Resources res = view.getContext().getResources();
-        final int paddingStart = res.getDimensionPixelSize(sds.isLarge
-                        ? R.dimen.omnibox_suggestion_36dp_icon_margin_start
-                        : R.dimen.omnibox_suggestion_24dp_icon_margin_start);
 
-        final int paddingEnd = res.getDimensionPixelSize(sds.isLarge
-                        ? R.dimen.omnibox_suggestion_36dp_icon_margin_end
-                        : R.dimen.omnibox_suggestion_24dp_icon_margin_end);
+        if (sds != null) {
+            final Resources res = view.getContext().getResources();
+            final int paddingStart = res.getDimensionPixelSize(sds.isLarge
+                            ? R.dimen.omnibox_suggestion_36dp_icon_margin_start
+                            : R.dimen.omnibox_suggestion_24dp_icon_margin_start);
 
-        // TODO(ender): move logic applying corner rounding to updateIcon when action images use
-        // RoundedCornerImageView too.
-        RoundedCornerImageView rciv = (RoundedCornerImageView) view;
-        int radius = sds.useRoundedCorners
-                ? res.getDimensionPixelSize(R.dimen.default_rounded_corner_radius)
-                : 0;
-        rciv.setRoundedCorners(radius, radius, radius, radius);
+            final int paddingEnd = res.getDimensionPixelSize(sds.isLarge
+                            ? R.dimen.omnibox_suggestion_36dp_icon_margin_end
+                            : R.dimen.omnibox_suggestion_24dp_icon_margin_end);
 
-        view.setPadding(paddingStart, 0, paddingEnd, 0);
+            // TODO(ender): move logic applying corner rounding to updateIcon when action images use
+            // RoundedCornerImageView too.
+            RoundedCornerImageView rciv = (RoundedCornerImageView) view;
+            int radius = sds.useRoundedCorners
+                    ? res.getDimensionPixelSize(R.dimen.default_rounded_corner_radius)
+                    : 0;
+            rciv.setRoundedCorners(radius, radius, radius, radius);
+
+            view.setPadding(paddingStart, 0, paddingEnd, 0);
+        }
+
         updateIcon(view, sds, isDarkMode(model));
     }
 

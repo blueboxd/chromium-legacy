@@ -9,6 +9,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -140,4 +142,17 @@ TEST_F(TouchToFillControllerTest, Dismiss) {
 
   EXPECT_CALL(driver(), TouchToFillDismissed);
   touch_to_fill_controller().OnDismiss();
+}
+
+TEST_F(TouchToFillControllerTest, CanDisableOnHttps) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      autofill::features::kTouchToFillAndroid,
+      {
+          {"insecure-origins-only", "true"},
+      });
+
+  EXPECT_CALL(driver(), TouchToFillDismissed);
+  EXPECT_CALL(view(), Show).Times(0);
+  touch_to_fill_controller().Show({}, driver().AsWeakPtr());
 }

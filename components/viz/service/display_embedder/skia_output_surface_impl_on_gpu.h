@@ -26,6 +26,8 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/in_process_command_buffer.h"
+#include "gpu/ipc/service/context_url.h"
+#include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -71,14 +73,15 @@ struct RenderPassGeometry;
 
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
-class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
+class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
+                                   public gpu::DisplayContext {
  public:
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
                                    const gfx::Size& pixel_size)>;
   using BufferPresentedCallback =
       base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
-  using ContextLostCallback = base::RepeatingCallback<void()>;
+  using ContextLostCallback = base::OnceClosure;
 
   static std::unique_ptr<SkiaOutputSurfaceImplOnGpu> Create(
       SkiaOutputSurfaceDependency* deps,
@@ -189,6 +192,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void RenderToOverlay(gpu::Mailbox overlay_candidate_mailbox,
                        const gfx::Rect& bounds);
 
+  // gpu::DisplayContext implementation:
+  void MarkContextLost() override;
+
  private:
   class ScopedPromiseImageAccess;
 
@@ -229,7 +235,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   const gpu::SequenceId sequence_id_;
   const DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   const BufferPresentedCallback buffer_presented_callback_;
-  const ContextLostCallback context_lost_callback_;
+  ContextLostCallback context_lost_callback_;
   const GpuVSyncCallback gpu_vsync_callback_;
 
 #if defined(USE_OZONE)
@@ -284,6 +290,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   // Micro-optimization to get to issuing GPU SwapBuffers as soon as possible.
   std::vector<std::unique_ptr<SkDeferredDisplayList>> destroy_after_swap_;
+
+  const gpu::ContextUrl copier_active_url_;
 
   THREAD_CHECKER(thread_checker_);
 

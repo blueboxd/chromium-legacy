@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer.shell;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,6 +31,7 @@ import org.chromium.weblayer.BrowserController;
 import org.chromium.weblayer.BrowserFragment;
 import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
+import org.chromium.weblayer.DownloadDelegate;
 import org.chromium.weblayer.FullscreenDelegate;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Profile;
@@ -194,6 +196,16 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public void loadProgressChanged(double progress) {
                 mLoadProgressBar.setProgress((int) Math.round(100 * progress));
+            }
+        });
+        mBrowserController.setDownloadDelegate(new DownloadDelegate() {
+            @Override
+            public void downloadRequested(String url, String userAgent, String contentDisposition,
+                    String mimetype, long contentLength) {
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                request.setNotificationVisibility(
+                        DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                getSystemService(DownloadManager.class).enqueue(request);
             }
         });
     }

@@ -41,6 +41,8 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_constants.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -383,8 +385,9 @@ class IdentityManagerTest : public testing::Test {
   void SimulateCookieDeletedByUser(
       network::mojom::CookieChangeListener* listener,
       const net::CanonicalCookie& cookie) {
-    listener->OnCookieChange(cookie,
-                             network::mojom::CookieChangeCause::EXPLICIT);
+    listener->OnCookieChange(
+        net::CookieChangeInfo(cookie, net::CookieAccessSemantics::UNKNOWN,
+                              net::CookieChangeCause::EXPLICIT));
   }
 
   void SimulateOAuthMultiloginFinished(GaiaCookieManagerService* manager,
@@ -2061,7 +2064,8 @@ TEST_F(IdentityManagerTest, OnNetworkInitialized) {
       base::Time(), /*secure=*/true, false, net::CookieSameSite::NO_RESTRICTION,
       net::COOKIE_PRIORITY_DEFAULT);
   test_cookie_manager_ptr->DispatchCookieChange(
-      cookie, network::mojom::CookieChangeCause::EXPLICIT);
+      net::CookieChangeInfo(cookie, net::CookieAccessSemantics::UNKNOWN,
+                            net::CookieChangeCause::EXPLICIT));
   run_loop.Run();
 }
 

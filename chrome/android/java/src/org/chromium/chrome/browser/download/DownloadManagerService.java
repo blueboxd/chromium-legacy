@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueu
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
@@ -87,10 +86,9 @@ import java.util.concurrent.RejectedExecutionException;
  * handles all Android DownloadManager interactions. And DownloadManagerService should not know
  * download Id issued by Android DownloadManager.
  */
-public class DownloadManagerService
-        implements DownloadController.DownloadNotificationService,
-                   NetworkChangeNotifierAutoDetect.Observer, DownloadServiceDelegate,
-                   BackendProvider.DownloadDelegate, ProfileManager.Observer {
+public class DownloadManagerService implements DownloadController.DownloadNotificationService,
+                                               NetworkChangeNotifierAutoDetect.Observer,
+                                               DownloadServiceDelegate, ProfileManager.Observer {
     // Download status.
     @IntDef({DownloadStatus.IN_PROGRESS, DownloadStatus.COMPLETE, DownloadStatus.FAILED,
             DownloadStatus.CANCELLED, DownloadStatus.INTERRUPTED})
@@ -1174,7 +1172,6 @@ public class DownloadManagerService
      * @param isOffTheRecord Whether the download is off the record.
      * @param externallyRemoved If the file is externally removed by other applications.
      */
-    @Override
     public void removeDownload(
             final String downloadGuid, boolean isOffTheRecord, boolean externallyRemoved) {
         mHandler.post(() -> {
@@ -1196,7 +1193,6 @@ public class DownloadManagerService
      * @param mimeType MIME type of the file.
      * @return Whether the download is openable by the browser.
      */
-    @Override
     public boolean isDownloadOpenableInBrowser(boolean isOffTheRecord, String mimeType) {
         // TODO(qinmin): for audio and video, check if the codec is supported by Chrome.
         return isSupportedMimeType(mimeType);
@@ -1598,14 +1594,12 @@ public class DownloadManagerService
     }
 
     /** Adds a new DownloadObserver to the list. */
-    @Override
     public void addDownloadObserver(DownloadObserver observer) {
         mDownloadObservers.addObserver(observer);
         DownloadSharedPreferenceHelper.getInstance().addObserver(observer);
     }
 
     /** Removes a DownloadObserver from the list. */
-    @Override
     public void removeDownloadObserver(DownloadObserver observer) {
         mDownloadObservers.removeObserver(observer);
         DownloadSharedPreferenceHelper.getInstance().removeObserver(observer);
@@ -1618,7 +1612,6 @@ public class DownloadManagerService
      *
      * @param isOffTheRecord Whether or not to get downloads for the off the record profile.
      */
-    @Override
     public void getAllDownloads(boolean isOffTheRecord) {
         DownloadManagerServiceJni.get().getAllDownloads(
                 getNativeDownloadManagerService(), DownloadManagerService.this, isOffTheRecord);
@@ -1628,7 +1621,6 @@ public class DownloadManagerService
      * Fires an Intent that alerts the DownloadNotificationService that an action must be taken
      * for a particular item.
      */
-    @Override
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
         Context appContext = ContextUtils.getApplicationContext();
             Intent intent = DownloadNotificationFactory.buildActionIntent(appContext, action,
@@ -1638,7 +1630,6 @@ public class DownloadManagerService
             appContext.startService(intent);
     }
 
-    @Override
     public void renameDownload(ContentId id, String name,
             Callback<Integer /*RenameResult*/> callback, boolean isOffTheRecord) {
         DownloadManagerServiceJni.get().renameDownload(getNativeDownloadManagerService(),
@@ -1674,7 +1665,6 @@ public class DownloadManagerService
      * Checks if the files associated with any downloads have been removed by an external action.
      * @param isOffTheRecord Whether or not to check downloads for the off the record profile.
      */
-    @Override
     public void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
         DownloadManagerServiceJni.get().checkForExternallyRemovedDownloads(
                 getNativeDownloadManagerService(), DownloadManagerService.this, isOffTheRecord);
@@ -2059,7 +2049,6 @@ public class DownloadManagerService
      * @param downloadGuid Download GUID.
      * @param isOffTheRecord Whether the download is off the record.
      */
-    @Override
     public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {
         if (TextUtils.isEmpty(downloadGuid)) return;
 

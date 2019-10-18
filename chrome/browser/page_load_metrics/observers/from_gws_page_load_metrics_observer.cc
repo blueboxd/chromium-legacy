@@ -30,6 +30,9 @@ const char kHistogramFromGWSFirstImagePaint[] =
 const char kHistogramFromGWSFirstContentfulPaint[] =
     "PageLoad.Clients.FromGoogleSearch.PaintTiming."
     "NavigationToFirstContentfulPaint";
+const char kHistogramFromGWSLargestContentfulPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PaintTiming."
+    "NavigationToLargestContentfulPaint";
 const char kHistogramFromGWSParseStartToFirstContentfulPaint[] =
     "PageLoad.Clients.FromGoogleSearch.PaintTiming."
     "ParseStartToFirstContentfulPaint";
@@ -321,7 +324,8 @@ bool WasAbortedBeforeInteraction(
 
 }  // namespace
 
-FromGWSPageLoadMetricsLogger::FromGWSPageLoadMetricsLogger() {}
+FromGWSPageLoadMetricsLogger::FromGWSPageLoadMetricsLogger() = default;
+FromGWSPageLoadMetricsLogger::~FromGWSPageLoadMetricsLogger() = default;
 
 void FromGWSPageLoadMetricsLogger::SetPreviouslyCommittedUrl(const GURL& url) {
   previously_committed_url_is_search_results_ =
@@ -431,6 +435,17 @@ void FromGWSPageLoadMetricsObserver::OnUserInput(
   logger_.OnUserInput(event, timing, GetDelegate());
 }
 
+void FromGWSPageLoadMetricsObserver::OnTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  logger_.OnTimingUpdate(subframe_rfh, timing);
+}
+
+void FromGWSPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle) {
+  logger_.OnDidFinishSubFrameNavigation(navigation_handle, GetDelegate());
+}
+
 void FromGWSPageLoadMetricsLogger::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
@@ -445,6 +460,8 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
     const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (!ShouldLogPostCommitMetrics(delegate.GetUrl()))
     return;
+
+  LogMetricsOnComplete(delegate);
 
   page_load_metrics::PageAbortInfo abort_info = GetPageAbortInfo(delegate);
   if (!WasAbortedInForeground(delegate, abort_info))
@@ -644,5 +661,36 @@ void FromGWSPageLoadMetricsLogger::OnUserInput(
 void FromGWSPageLoadMetricsLogger::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
+  LogMetricsOnComplete(delegate);
   LogForegroundDurations(timing, delegate, base::TimeTicks::Now());
+}
+
+void FromGWSPageLoadMetricsLogger::OnTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
+  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
+                                                 subframe_rfh);
+}
+
+void FromGWSPageLoadMetricsLogger::OnDidFinishSubFrameNavigation(
+    content::NavigationHandle* navigation_handle,
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
+  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
+      navigation_handle, delegate);
+}
+
+void FromGWSPageLoadMetricsLogger::LogMetricsOnComplete(
+    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
+  if (!delegate.DidCommit() || !ShouldLogPostCommitMetrics(delegate.GetUrl()))
+    return;
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      all_frames_largest_contentful_paint =
+          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+  if (!all_frames_largest_contentful_paint.IsEmpty() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          all_frames_largest_contentful_paint.Time(), delegate)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLargestContentfulPaint,
+                        all_frames_largest_contentful_paint.Time().value());
+  }
 }

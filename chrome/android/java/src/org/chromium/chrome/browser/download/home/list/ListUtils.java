@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /** Utility methods for representing {@link ListItem}s in a {@link RecyclerView} list. */
@@ -27,7 +28,8 @@ public class ListUtils {
     /** The potential types of list items that could be displayed. */
     @IntDef({ViewType.DATE, ViewType.IN_PROGRESS, ViewType.GENERIC, ViewType.VIDEO, ViewType.IMAGE,
             ViewType.IMAGE_FULL_WIDTH, ViewType.CUSTOM_VIEW, ViewType.PREFETCH,
-            ViewType.SECTION_HEADER, ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE})
+            ViewType.SECTION_HEADER, ViewType.IN_PROGRESS_VIDEO, ViewType.IN_PROGRESS_IMAGE,
+            ViewType.PAGINATION_HEADER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int DATE = 0;
@@ -41,6 +43,7 @@ public class ListUtils {
         int SECTION_HEADER = 8;
         int IN_PROGRESS_VIDEO = 9;
         int IN_PROGRESS_IMAGE = 10;
+        int PAGINATION_HEADER = 11;
     }
 
     /**
@@ -76,6 +79,7 @@ public class ListUtils {
     public static @ViewType int getViewTypeForItem(ListItem item, DownloadManagerUiConfig config) {
         if (item instanceof ViewListItem) return ViewType.CUSTOM_VIEW;
         if (item instanceof ListItem.SectionHeaderListItem) return ViewType.SECTION_HEADER;
+        if (item instanceof ListItem.PaginationListItem) return ViewType.PAGINATION_HEADER;
 
         if (item instanceof OfflineItemListItem) {
             OfflineItemListItem offlineItem = (OfflineItemListItem) item;
@@ -164,6 +168,41 @@ public class ListUtils {
         int aPriority = getVisualPriorityForFilter(a);
         int bPriority = getVisualPriorityForFilter(b);
         return (aPriority < bPriority) ? -1 : ((aPriority == bPriority) ? 0 : 1);
+    }
+
+    /**
+     * Helper method to compare list items based on date. Two items have equal if they both got
+     * created on the same day.
+     * @return -1 if {@code a} should be shown before {@code b}.
+     *          0 if {@code a} == {@code b}.
+     *          1 if {@code a} should be shown after {@code b}.
+     */
+    public static int compareItemByDate(OfflineItem a, OfflineItem b) {
+        Date aDay = CalendarUtils.getStartOfDay(a.creationTimeMs).getTime();
+        Date bDay = CalendarUtils.getStartOfDay(b.creationTimeMs).getTime();
+        return bDay.compareTo(aDay);
+    }
+
+    /**
+     * Helper method to compare list items based on timestamp.
+     * @return -1 if {@code a} should be shown before {@code b}.
+     *          0 if {@code a} == {@code b}.
+     *          1 if {@code a} should be shown after {@code b}.
+     */
+    public static int compareItemByTimestamp(OfflineItem a, OfflineItem b) {
+        return Long.compare(b.creationTimeMs, a.creationTimeMs);
+    }
+
+    /**
+     * Helper method to compare list items based on ID.
+     * @return -1 if {@code a} should be shown before {@code b}.
+     *          0 if {@code a} == {@code b}.
+     *          1 if {@code a} should be shown after {@code b}.
+     */
+    public static int compareItemByID(OfflineItem a, OfflineItem b) {
+        int comparison = a.id.namespace.compareTo(b.id.namespace);
+        if (comparison != 0) return comparison;
+        return a.id.id.compareTo(b.id.id);
     }
 
     private static int getVisualPriorityForFilter(@FilterType int type) {

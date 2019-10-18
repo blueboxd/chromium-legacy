@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Relative URL-like addresses / should accept strings prefixed with ./, ../, or /
-FAIL Relative URL-like addresses / should not accept strings prefixed with ./, ../, or / for data: base URLs assert_equals: expected "{\"imports\":{\"dotDotSlash\":[],\"dotSlash\":[],\"slash\":[]},\"scopes\":{}}" but got "{\"imports\":{\"dotDotSlash\":[\"http://web-platform.test:8001/import-maps/builtin-support.tentative/foo\"],\"dotSlash\":[\"http://web-platform.test:8001/import-maps/builtin-support.tentative/imported/foo\"],\"slash\":[\"http://web-platform.test:8001/foo\"]},\"scopes\":{}}"
+FAIL Relative URL-like addresses / should not accept strings prefixed with ./, ../, or / for data: base URLs test helper does not support data: base URLs
 PASS Relative URL-like addresses / should accept the literal strings ./, ../, or / with no suffix
 PASS Relative URL-like addresses / should ignore percent-encoded variants of ./, ../, or /
 PASS Built-in module addresses / should accept URLs using the built-in module scheme

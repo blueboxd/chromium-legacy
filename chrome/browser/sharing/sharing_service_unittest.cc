@@ -63,6 +63,7 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
     p256dh_ = p256dh;
     auth_secret_ = auth_secret;
     fcm_token_ = fcm_token;
+    message_ = std::move(message);
     if (should_respond_)
       std::move(callback).Run(gcm::SendWebPushMessageResult::kSuccessful,
                               base::make_optional(kMessageId));
@@ -79,9 +80,11 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
   const std::string& p256dh() { return p256dh_; }
   const std::string& auth_secret() { return auth_secret_; }
   const std::string& fcm_token() { return fcm_token_; }
+  const gcm::WebPushMessage& message() { return message_; }
 
  private:
   std::string p256dh_, auth_secret_, fcm_token_;
+  gcm::WebPushMessage message_;
   bool should_respond_ = true;
 };
 
@@ -185,10 +188,8 @@ class SharingServiceTest : public testing::Test {
         /* pref_service= */ nullptr, sync_prefs_, &mock_instance_id_driver_,
         vapid_key_manager_,
         fake_device_info_sync_service.GetLocalDeviceInfoProvider());
-    fcm_sender_ = new SharingFCMSender(
-        &fake_gcm_driver_,
-        fake_device_info_sync_service.GetLocalDeviceInfoProvider(), sync_prefs_,
-        vapid_key_manager_);
+    fcm_sender_ = new SharingFCMSender(&fake_gcm_driver_, sync_prefs_,
+                                       vapid_key_manager_);
     fcm_handler_ = new testing::NiceMock<MockSharingFCMHandler>();
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
@@ -406,6 +407,13 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
   EXPECT_EQ(kP256dh, fake_gcm_driver_.p256dh());
   EXPECT_EQ(kAuthSecret, fake_gcm_driver_.auth_secret());
   EXPECT_EQ(kFcmToken, fake_gcm_driver_.fcm_token());
+
+  chrome_browser_sharing::SharingMessage sharing_message;
+  ASSERT_TRUE(
+      sharing_message.ParseFromString(fake_gcm_driver_.message().payload));
+  EXPECT_EQ("id", sharing_message.sender_guid());
+  EXPECT_EQ("model Computer manufacturer",
+            sharing_message.sender_device_name());
 
   // Simulate ack message received by AckMessageHandler.
   SharingMessageHandler* ack_message_handler = fcm_handler_->GetSharingHandler(
@@ -900,4 +908,16 @@ TEST_F(SharingServiceTest, DeviceCandidatesNames_Chromebooks) {
   ASSERT_EQ(2u, candidates.size());
   EXPECT_EQ("HP Chromebook", candidates[0]->client_name());
   EXPECT_EQ("Dell Chromebook", candidates[1]->client_name());
+}
+
+TEST_F(SharingServiceTest, GetDeviceByGuid) {
+  std::string guid = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> computer1 = CreateFakeDeviceInfo(
+      guid, "Fake device 1", sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+      {"Dell", "sno one", "serial no"});
+  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer1.get());
+
+  std::unique_ptr<syncer::DeviceInfo> device_info =
+      GetSharingService()->GetDeviceByGuid(guid);
+  EXPECT_EQ("Dell Computer sno one", device_info->client_name());
 }

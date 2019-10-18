@@ -621,6 +621,25 @@ bool AudioParamTimeline::HasValues(size_t current_frame,
     if (n_events == 0)
       return false;
 
+    // Handle the case where the first event (of certain types) is in the
+    // future.  Then, no sample-accurate processing is needed because the event
+    // hasn't started.
+    if (events_[0]->Time() >
+        (current_frame + audio_utilities::kRenderQuantumFrames) / sample_rate) {
+      switch (events_[0]->GetType()) {
+        case ParamEvent::kSetTarget:
+        case ParamEvent::kSetValue:
+        case ParamEvent::kSetValueCurve:
+          // If the first event is one of these types, and the event starts
+          // after the end of the current render quantum, we don't need to do
+          // the slow sample-accurate path.
+          return false;
+        default:
+          // Handle other event types below.
+          break;
+      }
+    }
+
     // If there are at least 2 events in the timeline, assume there are timeline
     // values.  This could be optimized to be more careful, but checking is
     // complicated and keeping this consistent with |ValuesForFrameRangeImpl()|

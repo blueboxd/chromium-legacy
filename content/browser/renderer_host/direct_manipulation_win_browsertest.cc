@@ -350,8 +350,7 @@ class PrecisionTouchpadBrowserTest : public DirectManipulationBrowserTestBase {
 
 // Confirm that preventDefault correctly prevents pinch zoom on precision
 // touchpad.
-IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
-                       DISABLED_PreventDefaultPinchZoom) {
+IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultPinchZoom) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
@@ -364,6 +363,12 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderWidgetHostImpl* rwhi = web_contents->GetRenderWidgetHostWithPageFocus();
 
+  // Wait for a frame to be produced or else the test will sometimes try to
+  // zoom too early and be unable to, causing flakiness.
+  MainThreadFrameObserver observer(
+      web_contents->GetRenderViewHost()->GetWidget());
+  observer.Wait();
+
   UseCenterPointAsMockCursorPosition(web_contents);
 
   EXPECT_EQ(1, EvalJs(web_contents, "window.visualViewport.scale"));
@@ -371,8 +376,15 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
   // Initial amount to try zooming by.
   const int kInitialZoom = 2;
 
+  // Used to confirm the gesture is ACK'd before checking the zoom state. The
+  // ACK result itself isn't relevant in this test.
+  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+      web_contents->GetRenderViewHost()->GetWidget(),
+      blink::WebInputEvent::kGesturePinchUpdate);
+
   // First, test a standard zoom.
   UpdateContents(kInitialZoom, 0, 0);
+  EXPECT_TRUE(input_msg_watcher->WaitForAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialZoom, EvalJs(web_contents, "window.visualViewport.scale"));
@@ -389,6 +401,7 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
 
   // Arbitrary zoom amount chosen here to make the test fail if it does zoom.
   UpdateContents(3.5, 0, 0);
+  EXPECT_TRUE(input_msg_watcher->WaitForAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialZoom, EvalJs(web_contents, "window.visualViewport.scale"));
@@ -404,6 +417,7 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
   const float kEndZoom = 0.5;
 
   UpdateContents(kEndZoom, 0, 0);
+  EXPECT_TRUE(input_msg_watcher->WaitForAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(static_cast<int>(kInitialZoom * kEndZoom),
@@ -412,8 +426,7 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
 
 // Confirm that preventDefault correctly prevents scrolling on precision
 // touchpad.
-IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
-                       DISABLED_PreventDefaultScroll) {
+IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest, PreventDefaultScroll) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
@@ -428,6 +441,12 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
       static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderWidgetHostImpl* rwhi = web_contents->GetRenderWidgetHostWithPageFocus();
 
+  // Wait for a frame to be produced or else the test will sometimes try to
+  // scroll too early and be unable to, causing flakiness.
+  MainThreadFrameObserver observer(
+      web_contents->GetRenderViewHost()->GetWidget());
+  observer.Wait();
+
   UseCenterPointAsMockCursorPosition(web_contents);
 
   EXPECT_EQ(0, EvalJs(web_contents, "document.documentElement.scrollLeft"));
@@ -438,8 +457,15 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
   // passed to UpdateContents.
   const int kInitialScrollDistance = 200;
 
+  // Used to confirm the gesture is ACK'd before checking the scroll state. The
+  // ACK result itself isn't relevant in this test.
+  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+      web_contents->GetRenderViewHost()->GetWidget(),
+      blink::WebInputEvent::kMouseWheel);
+
   // First, test scrolling vertically
   UpdateContents(1, 0, -kInitialScrollDistance);
+  EXPECT_TRUE(input_msg_watcher->WaitForAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(0, EvalJs(web_contents, "document.documentElement.scrollLeft"));
@@ -469,6 +495,7 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
   // Updating with arbitrarily chosen numbers that should make it obvious where
   // values are coming from when this test fails.
   UpdateContents(1, 354, 291);
+  EXPECT_TRUE(input_msg_watcher->WaitForAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialScrollDistance,
@@ -489,6 +516,7 @@ IN_PROC_BROWSER_TEST_F(PrecisionTouchpadBrowserTest,
   const int kScrollXDistance = 120;
   const int kScrollYDistance = 150;
   UpdateContents(1, kScrollXDistance, kScrollYDistance);
+  EXPECT_TRUE(input_msg_watcher->WaitForAck());
   RunUntilInputProcessed(rwhi);
 
   EXPECT_EQ(kInitialScrollDistance - kScrollXDistance,

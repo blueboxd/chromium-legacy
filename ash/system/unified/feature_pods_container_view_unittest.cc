@@ -267,7 +267,8 @@ TEST_F(FeaturePodsContainerViewTest, PaginationDynamicRows) {
   // Expect 2 rows of feature pods when there is enough height to display them.
   container()->SetMaxHeight(padding +
                             (2 * (kUnifiedFeaturePodSize.height() +
-                                  kUnifiedFeaturePodVerticalPadding)));
+                                  kUnifiedFeaturePodVerticalPadding)) +
+                            kMessageCenterCollapseThreshold);
   expected_number_of_pages =
       kNumberOfFeaturePods / (2 * kUnifiedFeaturePodItemsInRow);
   if (kNumberOfFeaturePods % (2 * kUnifiedFeaturePodItemsInRow))
@@ -276,7 +277,7 @@ TEST_F(FeaturePodsContainerViewTest, PaginationDynamicRows) {
 
   // Expect 3 rows of feature pods at max even when the max height is very
   // large.
-  container()->SetMaxHeight(100 * (kUnifiedFeaturePodSize.height()));
+  container()->SetMaxHeight(150 * (kUnifiedFeaturePodSize.height()));
   expected_number_of_pages =
       kNumberOfFeaturePods / (3 * kUnifiedFeaturePodItemsInRow);
   if (kNumberOfFeaturePods % (3 * kUnifiedFeaturePodItemsInRow))

@@ -66,7 +66,6 @@ class AuthenticatorRequestDialogView
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
@@ -106,7 +105,7 @@ class AuthenticatorRequestDialogView
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
 
   AuthenticatorRequestSheetView* sheet_ = nullptr;
-  views::Button* other_transports_button_ = nullptr;
+  views::View* other_transports_button_ = nullptr;
   std::unique_ptr<views::MenuRunner> other_transports_menu_runner_;
   bool first_shown_ = false;
 

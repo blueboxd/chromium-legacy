@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
-#include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
@@ -234,17 +233,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // Sets the kind of renderer process. Should be called on the main thread
   // once.
   virtual void SetRendererProcessType(WebRendererProcessType type);
-
-  // Returns a WebScopedVirtualTimePauser which can be used to vote for pausing
-  // virtual time. Virtual time will be paused if any WebScopedVirtualTimePauser
-  // votes to pause it, and only unpaused only if all
-  // WebScopedVirtualTimePausers are either destroyed or vote to unpause.  Note
-  // the WebScopedVirtualTimePauser returned by this method is initially
-  // unpaused.
-  virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const char* name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration duration =
-          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
 
  protected:
   WebThreadScheduler() = default;

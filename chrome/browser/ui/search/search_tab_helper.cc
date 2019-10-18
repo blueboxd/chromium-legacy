@@ -15,11 +15,13 @@
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service_factory.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -30,6 +32,8 @@
 #include "chrome/browser/ui/search/ntp_user_data_logger.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog.h"
+#include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/search.mojom.h"
 #include "chrome/common/url_constants.h"
@@ -42,7 +46,9 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -292,7 +298,10 @@ void SearchTabHelper::FocusOmnibox(bool focus) {
     return;
 
   if (focus) {
-    omnibox_view->SetFocus();
+    // This is an invisible focus to support "realbox" implementations on NTPs
+    // (including other search providers). We shouldn't consider it as the user
+    // explicitly focusing the omnibox.
+    omnibox_view->SetFocus(/*is_user_initiated=*/false);
     omnibox_view->model()->SetCaretVisibility(false);
     // If the user clicked on the fakebox, any text already in the omnibox
     // should get cleared when they start typing. Selecting all the existing
@@ -421,8 +430,11 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   if (text_to_paste.empty())
     return;
 
-  if (!omnibox_view->model()->has_focus())
-    omnibox_view->SetFocus();
+  if (!omnibox_view->model()->has_focus()) {
+    // Pasting into a "realbox" should not be considered the user explicitly
+    // focusing the omnibox.
+    omnibox_view->SetFocus(/*is_user_initiated=*/false);
+  }
 
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->model()->OnPaste();
@@ -610,14 +622,108 @@ void SearchTabHelper::QueryAutocomplete(
   autocomplete_controller_->Start(autocomplete_input);
 }
 
+namespace {
+
+class DeleteAutocompleteMatchConfirmDelegate
+    : public TabModalConfirmDialogDelegate {
+ public:
+  DeleteAutocompleteMatchConfirmDelegate(
+      content::WebContents* contents,
+      base::string16 search_provider_name,
+      base::OnceCallback<void(bool)> dialog_callback)
+      : TabModalConfirmDialogDelegate(contents),
+        search_provider_name_(search_provider_name),
+        dialog_callback_(std::move(dialog_callback)) {
+    DCHECK(dialog_callback_);
+  }
+
+  ~DeleteAutocompleteMatchConfirmDelegate() override {
+    DCHECK(!dialog_callback_);
+  }
+
+  base::string16 GetTitle() override {
+    return l10n_util::GetStringUTF16(
+        IDS_OMNIBOX_REMOVE_SUGGESTION_BUBBLE_TITLE);
+  }
+
+  base::string16 GetDialogMessage() override {
+    return l10n_util::GetStringFUTF16(
+        IDS_OMNIBOX_REMOVE_SUGGESTION_BUBBLE_DESCRIPTION,
+        search_provider_name_);
+  }
+
+  base::string16 GetAcceptButtonTitle() override {
+    return l10n_util::GetStringUTF16(IDS_REMOVE);
+  }
+
+  void OnAccepted() override { std::move(dialog_callback_).Run(true); }
+
+  void OnCanceled() override { std::move(dialog_callback_).Run(false); }
+
+  void OnClosed() override {
+    if (dialog_callback_)
+      OnCanceled();
+  }
+
+ private:
+  base::string16 search_provider_name_;
+  base::OnceCallback<void(bool)> dialog_callback_;
+};
+
+}  // namespace
+
 void SearchTabHelper::DeleteAutocompleteMatch(
     uint8_t line,
     chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback) {
+  DCHECK(autocomplete_controller_);
+
+  if (!search::DefaultSearchProviderIsGoogle(profile()) ||
+      autocomplete_controller_->result().size() <= line ||
+      !autocomplete_controller_->result().match_at(line).SupportsDeletion()) {
+    std::move(callback).Run(chrome::mojom::DeleteAutocompleteMatchResult::New(
+        false, std::vector<chrome::mojom::AutocompleteMatchPtr>()));
+    return;
+  }
+
+  if (!base::FeatureList::IsEnabled(features::kConfirmNtpSuggestionRemovals)) {
+    // If suggestion transparency is disabled, the UI is also disabled. This
+    // must've come from a keyboard shortcut, which are allowed to remove
+    // without confirmation.
+    OnDeleteAutocompleteMatchConfirm(line, std::move(callback), true);
+    return;
+  }
+
+  content::BrowserContext* context = web_contents_->GetBrowserContext();
+  Profile* profile = Profile::FromBrowserContext(context);
+  auto* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  const auto& match = autocomplete_controller_->result().match_at(line);
+
+  base::string16 search_provider_name;
+  const TemplateURL* template_url =
+      match.GetTemplateURL(template_url_service, false);
+  if (!template_url)
+    template_url = template_url_service->GetDefaultSearchProvider();
+  if (template_url)
+    search_provider_name = template_url->AdjustedShortNameForLocaleDirection();
+
+  auto delegate = std::make_unique<DeleteAutocompleteMatchConfirmDelegate>(
+      web_contents_, search_provider_name,
+      base::BindOnce(&SearchTabHelper::OnDeleteAutocompleteMatchConfirm,
+                     weak_factory_.GetWeakPtr(), line, std::move(callback)));
+  TabModalConfirmDialog::Create(std::move(delegate), web_contents_);
+}
+
+void SearchTabHelper::OnDeleteAutocompleteMatchConfirm(
+    uint8_t line,
+    chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback,
+    bool accepted) {
+  DCHECK(autocomplete_controller_);
+
   bool success = false;
   std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
 
-  if (search::DefaultSearchProviderIsGoogle(profile()) &&
-      autocomplete_controller_ &&
+  if (accepted && search::DefaultSearchProviderIsGoogle(profile()) &&
       autocomplete_controller_->result().size() > line) {
     const auto& match = autocomplete_controller_->result().match_at(line);
     if (match.SupportsDeletion()) {

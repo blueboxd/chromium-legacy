@@ -39,7 +39,7 @@ class BrowserContextData : public base::SupportsUserData::Data {
       Profile* profile,
       content::WebContents::Getter web_contents_getter,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryPtrInfo target_factory) {
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory) {
     auto* self = static_cast<BrowserContextData*>(
         profile->GetUserData(kBrowserContextUserDataKey));
     if (!self) {
@@ -398,7 +398,7 @@ ProxyingURLLoaderFactory::ProxyingURLLoaderFactory(
     std::unique_ptr<HeaderModificationDelegate> delegate,
     content::WebContents::Getter web_contents_getter,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
     DisconnectCallback on_disconnect) {
   DCHECK(proxy_receivers_.empty());
   DCHECK(!target_factory_.is_bound());
@@ -411,7 +411,7 @@ ProxyingURLLoaderFactory::ProxyingURLLoaderFactory(
   on_disconnect_ = std::move(on_disconnect);
 
   target_factory_.Bind(std::move(target_factory));
-  target_factory_.set_connection_error_handler(base::BindOnce(
+  target_factory_.set_disconnect_handler(base::BindOnce(
       &ProxyingURLLoaderFactory::OnTargetFactoryError, base::Unretained(this)));
 
   proxy_receivers_.Add(this, std::move(loader_receiver));
@@ -461,8 +461,8 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
 
   auto proxied_receiver = std::move(*factory_receiver);
   // TODO(crbug.com/955171): Replace this with PendingRemote.
-  network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-  *factory_receiver = mojo::MakeRequest(&target_factory_info);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote;
+  *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
 
   auto web_contents_getter =
       base::BindRepeating(&content::WebContents::FromFrameTreeNodeId,
@@ -470,7 +470,7 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
 
   BrowserContextData::StartProxying(profile, std::move(web_contents_getter),
                                     std::move(proxied_receiver),
-                                    std::move(target_factory_info));
+                                    std::move(target_factory_remote));
   return true;
 }
 

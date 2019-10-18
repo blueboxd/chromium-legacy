@@ -49,6 +49,9 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
   }
 
   gfx::Insets GetHostInsets() const override { return gfx::Insets(); }
+  gfx::Transform GetInsetsAndScaleTransform() const override {
+    return transform_;
+  }
 
  private:
   ~SimpleRootWindowTransformer() override = default;
@@ -86,7 +89,7 @@ void TransformerHelper::SetRootWindowTransformer(
   transformer_ = std::move(transformer);
   aura::WindowTreeHost* host = ash_host_->AsWindowTreeHost();
   aura::Window* window = host->window();
-  window->SetTransform(transformer_->GetTransform());
+  window->SetTransform(transformer_->GetInsetsAndScaleTransform());
   // If the layer is not animating with a transform animation, then we need to
   // update the root window size immediately.
   if (!window->layer()->GetAnimator()->IsAnimatingProperty(

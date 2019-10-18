@@ -253,20 +253,25 @@ public class ChromeActivitySessionTracker {
     }
 
     /**
-     * Records whether Chrome was started in a language other than the system language but we
-     * support the system language. That can happen if the user changes the system language and the
-     * required language split cannot be installed in time.
+     * Records whether Chrome was started in a language other than the system language.
+     * Also records if the UI and system languages differ but we support the system language. That
+     * can happen if the user changes the system language and the required language split cannot be
+     * installed in time.
      */
     private void recordWhetherSystemAndAppLanguagesDiffer() {
         String uiLanguage =
                 LocaleUtils.toLanguage(ChromeLocalizationUtils.getUiLocaleStringForCompressedPak());
         String systemLanguage =
                 LocaleUtils.toLanguage(LocaleUtils.toLanguageTag(Locale.getDefault()));
-        boolean isWrongLanguage = !systemLanguage.equals(uiLanguage)
-                && isLanguageSupported(
-                        systemLanguage, ResourceBundle.getAvailableCompressedPakLocales());
+
+        boolean systemLanguageIsUiLanguage = systemLanguage.equals(uiLanguage);
         RecordHistogram.recordBooleanHistogram(
-                "Android.Language.WrongLanguageAfterResume", isWrongLanguage);
+                "Android.Language.UiIsSystemLanguage", systemLanguageIsUiLanguage);
+
+        boolean systemLanguageIsSupported = isLanguageSupported(
+                systemLanguage, ResourceBundle.getAvailableCompressedPakLocales());
+        RecordHistogram.recordBooleanHistogram("Android.Language.WrongLanguageAfterResume",
+                !systemLanguageIsUiLanguage && systemLanguageIsSupported);
     }
 
     private static boolean isLanguageSupported(String language, String[] compressedLocales) {

@@ -243,7 +243,10 @@ void IOSChromeMetricsServiceClient::Initialize() {
     // is not forced.
     bool restrict_to_whitelist_entries = !IsMetricsReportingForceEnabled();
     ukm_service_ = std::make_unique<ukm::UkmService>(
-        local_state, this, restrict_to_whitelist_entries);
+        local_state, this, restrict_to_whitelist_entries,
+        std::make_unique<metrics::DemographicMetricsProvider>(
+            std::make_unique<metrics::ChromeBrowserStateClient>(),
+            metrics::MetricsLogUploader::MetricServiceType::UKM));
   }
 
   // Register metrics providers.
@@ -295,7 +298,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::DemographicMetricsProvider>(
-          std::make_unique<metrics::ChromeBrowserStateClient>()));
+          std::make_unique<metrics::ChromeBrowserStateClient>(),
+          metrics::MetricsLogUploader::MetricServiceType::UMA));
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {

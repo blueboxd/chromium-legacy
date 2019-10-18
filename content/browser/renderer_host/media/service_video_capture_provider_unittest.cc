@@ -17,6 +17,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"
@@ -80,10 +81,12 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
 
     ON_CALL(mock_video_capture_service_, DoConnectToVideoSourceProvider(_))
         .WillByDefault(Invoke(
-            [this](video_capture::mojom::VideoSourceProviderRequest& request) {
+            [this](
+                mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider>
+                    receiver) {
               if (source_provider_binding_.is_bound())
                 source_provider_binding_.Close();
-              source_provider_binding_.Bind(std::move(request));
+              source_provider_binding_.Bind(std::move(receiver));
               wait_for_connection_to_service_.Quit();
             }));
 

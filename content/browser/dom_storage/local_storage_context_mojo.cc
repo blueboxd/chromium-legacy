@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -87,6 +88,17 @@ storage::DomStorageDatabase::Key CreateMetaDataKey(const url::Origin& origin) {
   key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));
   key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
   return key;
+}
+
+base::Optional<url::Origin> ExtractOriginFromMetaDataKey(
+    const storage::DomStorageDatabase::Key& key) {
+  DCHECK_GT(key.size(), base::size(kMetaPrefix));
+  const base::StringPiece key_string(reinterpret_cast<const char*>(key.data()),
+                                     key.size());
+  const GURL url(key_string.substr(base::size(kMetaPrefix)));
+  if (!url.is_valid())
+    return base::nullopt;
+  return url::Origin::Create(url);
 }
 
 void SuccessResponse(base::OnceClosure callback, bool success) {
@@ -925,36 +937,36 @@ void LocalStorageContextMojo::RetrieveStorageUsage(
     return;
   }
 
-  database_->GetPrefixed(
-      std::vector<uint8_t>(kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix)),
+  database_->RunDatabaseTask(
+      base::BindOnce([](const storage::DomStorageDatabase& db) {
+        std::vector<storage::DomStorageDatabase::KeyValuePair> data;
+        db.GetPrefixed(base::make_span(kMetaPrefix), &data);
+        return data;
+      }),
       base::BindOnce(&LocalStorageContextMojo::OnGotMetaData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void LocalStorageContextMojo::OnGotMetaData(
     GetStorageUsageCallback callback,
-    leveldb::Status status,
-    std::vector<leveldb::mojom::KeyValuePtr> data) {
+    std::vector<storage::DomStorageDatabase::KeyValuePair> data) {
   std::vector<StorageUsageInfo> result;
   std::set<url::Origin> origins;
   for (const auto& row : data) {
-    DCHECK_GT(row->key.size(), base::size(kMetaPrefix));
-    GURL origin(leveldb::Uint8VectorToStdString(row->key).substr(
-        base::size(kMetaPrefix)));
-
-    origins.insert(url::Origin::Create(origin));
-    if (!origin.is_valid()) {
+    base::Optional<url::Origin> origin = ExtractOriginFromMetaDataKey(row.key);
+    origins.insert(origin.value_or(url::Origin()));
+    if (!origin) {
       // TODO(mek): Deal with database corruption.
       continue;
     }
 
     LocalStorageOriginMetaData row_data;
-    if (!row_data.ParseFromArray(row->value.data(), row->value.size())) {
+    if (!row_data.ParseFromArray(row.value.data(), row.value.size())) {
       // TODO(mek): Deal with database corruption.
       continue;
     }
     result.emplace_back(
-        url::Origin::Create(origin), row_data.size_bytes(),
+        *origin, row_data.size_bytes(),
         base::Time::FromInternalValue(row_data.last_modified()));
   }
   // Add any origins for which StorageAreas exist, but which haven't

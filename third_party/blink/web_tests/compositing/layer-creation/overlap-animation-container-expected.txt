@@ -33,6 +33,12 @@ Before:
       "position": [-51, 451],
       "bounds": [100, 100],
       "transform": 4
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -122,6 +128,12 @@ After:
       "position": [-51, 87],
       "bounds": [174, 464],
       "transform": 4
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

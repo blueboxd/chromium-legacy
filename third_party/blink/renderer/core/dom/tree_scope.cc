@@ -57,8 +57,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 TreeScope::TreeScope(ContainerNode& root_node, Document& document)
     : root_node_(&root_node),
       document_(&document),
@@ -594,8 +592,8 @@ Element* TreeScope::GetElementByAccessKey(const String& key) const {
   Element* result = nullptr;
   Node& root = RootNode();
   for (Element& element : ElementTraversal::DescendantsOf(root)) {
-    if (DeprecatedEqualIgnoringCase(element.FastGetAttribute(kAccesskeyAttr),
-                                    key))
+    if (DeprecatedEqualIgnoringCase(
+            element.FastGetAttribute(html_names::kAccesskeyAttr), key))
       result = &element;
     if (ShadowRoot* shadow_root = element.GetShadowRoot()) {
       if (Element* shadow_result = shadow_root->GetElementByAccessKey(key))

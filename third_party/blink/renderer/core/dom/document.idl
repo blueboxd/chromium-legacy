@@ -116,7 +116,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
 
     // dynamic markup insertion
     [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=DocumentOpenTwoArgs] Document open(optional DOMString type = "text/html", optional DOMString replace = "");
-    [CallWith=Isolate, RaisesException, MeasureAs=DocumentOpenThreeArgs] Window open(URLString url, DOMString name, DOMString features);
+    [CallWith=Isolate, RaisesException, MeasureAs=DocumentOpenThreeArgs] Window open(USVString url, DOMString name, DOMString features);
     [CEReactions, RaisesException] void close();
     [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void write(DOMString... text);
     [CallWith=Isolate, CEReactions, CustomElementCallbacks, RaisesException] void writeln(DOMString... text);

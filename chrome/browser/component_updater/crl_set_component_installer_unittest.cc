@@ -56,13 +56,13 @@ class CRLSetComponentInstallerTest : public PlatformTest {
     request.request_initiator = url::Origin();
 
     client_ = std::make_unique<network::TestURLLoaderClient>();
-    network::mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::Remote<network::mojom::URLLoaderFactory> loader_factory;
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = 0;
     params->is_corb_enabled = false;
-    network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                             std::move(params));
+    network_context_->CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 1, 1,
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse |

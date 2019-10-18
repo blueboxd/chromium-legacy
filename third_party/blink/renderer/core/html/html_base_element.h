@@ -27,21 +27,14 @@
 
 namespace blink {
 
-class ExceptionState;
-class USVStringOrTrustedURL;
-
 class HTMLBaseElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   explicit HTMLBaseElement(Document&);
 
-  // Returns attributes that should be checked against Trusted Types
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
-
   KURL href() const;
-  void href(USVStringOrTrustedURL&) const;
-  void setHref(const USVStringOrTrustedURL&, ExceptionState&);
+  void setHref(const AtomicString&);
 
  private:
   bool IsURLAttribute(const Attribute&) const override;

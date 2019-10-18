@@ -9,7 +9,7 @@
 
 namespace weblayer {
 
-bool OnJNIOnLoadInit(const std::string& pak_name);
+bool OnJNIOnLoadInit();
 
 }  // namespace weblayer
 

@@ -36,11 +36,6 @@ class NigoriSyncBridge {
   // Retrieve Nigori sync data.
   virtual std::unique_ptr<EntityData> GetData() = 0;
 
-  // Resolve a conflict between the client and server versions of data. They are
-  // guaranteed not to match (both be deleted or have identical specifics).
-  virtual ConflictResolution ResolveConflict(const EntityData& local_data,
-                                             const EntityData& remote_data) = 0;
-
   // Informs the bridge that sync has been disabed. The bridge is responsible
   // for deleting all data and metadata upon disabling sync.
   virtual void ApplyDisableSyncChanges() = 0;

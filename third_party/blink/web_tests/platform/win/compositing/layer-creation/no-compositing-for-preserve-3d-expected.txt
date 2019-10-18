@@ -20,6 +20,12 @@ This layer should be composited.
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
       "transform": 4
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

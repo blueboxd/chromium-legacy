@@ -48,8 +48,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   ~HTMLFormElement() override;
   void Trace(Visitor*) override;
 
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
-
   HTMLFormControlsCollection* elements();
   void GetNamedElements(const AtomicString&, HeapVector<Member<Element>>&);
 
@@ -57,8 +55,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   HTMLElement* item(unsigned index);
 
   String action() const;
-  void action(USVStringOrTrustedURL&) const;
-  void setAction(const USVStringOrTrustedURL&, ExceptionState&);
+  void setAction(const AtomicString&);
 
   String enctype() const { return attributes_.EncodingType(); }
   void setEnctype(const AtomicString&);

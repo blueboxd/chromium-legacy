@@ -18,8 +18,6 @@ jumbo_component("network_service") {
     "cookie_access_delegate_impl.h",
     "cookie_manager.cc",
     "cookie_manager.h",
-    "cookie_managers_shared.cc",
-    "cookie_managers_shared.h",
     "cookie_settings.cc",
     "cookie_settings.h",
     "cors/cors_url_loader.cc",

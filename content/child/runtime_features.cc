@@ -439,8 +439,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
        switches::kEnableAccessibilityObjectModel, true},
       {wrf::EnableAllowSyncXHRInPageDismissal,
        switches::kAllowSyncXHRInPageDismissal, true},
-      {wrf::EnableOutOfBlinkCors, network::switches::kEnableOutOfBlinkCors,
-       true},
   };
   for (const auto& mapping : switchToFeatureMapping) {
     if (command_line.HasSwitch(mapping.switch_name))
@@ -568,6 +566,12 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(
           switches::kDisableOriginTrialControlledBlinkFeatures)) {
     WebRuntimeFeatures::EnableOriginTrialControlledFeatures(false);
+  }
+
+  if (!command_line.HasSwitch(
+          network::switches::kForceToDisableOutOfBlinkCors) &&
+      base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) {
+    WebRuntimeFeatures::EnableOutOfBlinkCors(true);
   }
 
   // TODO(rodneyding): add doc explaining ways to add new runtime features

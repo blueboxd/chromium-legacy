@@ -143,9 +143,10 @@ MediaPerceptionAPIManager::~MediaPerceptionAPIManager() {
 }
 
 void MediaPerceptionAPIManager::ActivateMediaPerception(
-    chromeos::media_perception::mojom::MediaPerceptionRequest request) {
+    mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
+        receiver) {
   if (media_perception_controller_.is_bound())
-    media_perception_controller_->ActivateMediaPerception(std::move(request));
+    media_perception_controller_->ActivateMediaPerception(std::move(receiver));
 }
 
 void MediaPerceptionAPIManager::SetMountPointNonEmptyForTesting() {

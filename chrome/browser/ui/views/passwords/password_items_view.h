@@ -50,7 +50,6 @@ class PasswordItemsView : public PasswordBubbleViewBase,
   void RecreateLayout();
 
   // LocationBarBubbleDelegateView:
-  std::unique_ptr<views::View> CreateExtraView() override;
   int GetDialogButtons() const override;
   bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;

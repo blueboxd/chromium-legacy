@@ -6,7 +6,7 @@
 
 [Exposed=Window, HTMLConstructor, RuntimeEnabled=Portals]
 interface HTMLPortalElement : HTMLElement {
-  [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
+  [CEReactions, Reflect, URL] attribute USVString src;
   [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
 
   [CallWith=ScriptState, RaisesException] Promise<void> activate(optional PortalActivateOptions options);

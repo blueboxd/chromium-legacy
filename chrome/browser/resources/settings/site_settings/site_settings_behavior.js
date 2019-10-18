@@ -193,9 +193,6 @@ const SiteSettingsBehaviorImpl = {
     };
     // These categories are gated behind flags.
     addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.SERIAL_PORTS,
-        'enableExperimentalWebPlatformFeatures');
-    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(

@@ -43,13 +43,6 @@ HTMLButtonElement::HTMLButtonElement(Document& document)
       type_(SUBMIT),
       is_activated_submit_(false) {}
 
-const AttrNameToTrustedType& HTMLButtonElement::GetCheckedAttributeTypes()
-    const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"formaction", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
-
 void HTMLButtonElement::setType(const AtomicString& type) {
   setAttribute(kTypeAttr, type);
 }

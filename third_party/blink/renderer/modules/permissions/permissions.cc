@@ -158,6 +158,8 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
         NativeValueTraits<WakeLockPermissionDescriptor>::NativeValue(
             script_state->GetIsolate(), raw_permission.V8Value(),
             exception_state);
+    if (exception_state.HadException())
+      return nullptr;
     const String& type = wake_lock_permission->type();
     if (type == "screen") {
       return CreateWakeLockPermissionDescriptor(

@@ -152,8 +152,6 @@ class Tab : public gfx::AnimationDelegate,
   // throbbers in sync.
   void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
-  bool ShowingLoadingAnimation() const;
-
   // Sets the visibility of the indicator shown when the tab needs to indicate
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
@@ -214,7 +212,8 @@ class Tab : public gfx::AnimationDelegate,
   void UpdateForegroundColors();
 
   // Considers switching to hovered mode or [re-]showing the hover card based on
-  // the mouse moving over the tab.
+  // the mouse moving over the tab. If the tab is already hovered or mouse
+  // events are disabled because of touch input, this is a no-op.
   void MaybeUpdateHoverStatus(const ui::MouseEvent& event);
 
   // The controller, never nullptr.

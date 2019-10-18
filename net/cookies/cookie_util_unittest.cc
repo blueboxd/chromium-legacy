@@ -278,9 +278,16 @@ TEST(CookieUtilTest, TestComputeSameSiteContextForScriptGet) {
 
   // This isn't a full on origin check --- subdomains and different schema are
   // accepted.
-  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
             cookie_util::ComputeSameSiteContextForScriptGet(
                 GURL("https://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com"))));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                GURL("http://example.com"), GURL("https://example.com"),
                 url::Origin::Create(GURL("http://from-elsewhere.com"))));
 
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
@@ -299,6 +306,18 @@ TEST(CookieUtilTest, TestComputeSameSiteContextForScriptGet) {
             cookie_util::ComputeSameSiteContextForScriptGet(
                 GURL("http://example.com"), GURL("http://example.com"),
                 url::Origin::Create(GURL("http://example.com"))));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                GURL("https://example.com"), GURL("http://example.com"),
+                base::nullopt /*initiator*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForScriptGet(
+                GURL("http://example.com"), GURL("https://example.com"),
+                base::nullopt /*initiator*/));
 
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
             cookie_util::ComputeSameSiteContextForScriptGet(
@@ -337,6 +356,46 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 true /*attach_same_site_cookies*/));
 
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://example.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://example.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("https://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://example.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("https://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://example.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("http://example.com"), GURL("https://example.com"),
+                url::Origin::Create(GURL("http://example.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("http://example.com"), GURL("https://example.com"),
+                url::Origin::Create(GURL("http://example.com")),
+                false /*attach_same_site_cookies*/));
+
   // Normally, lax requests also require a safe method.
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
             cookie_util::ComputeSameSiteContextForRequest(
@@ -350,9 +409,44 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 false /*attach_same_site_cookies*/));
 
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("https://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "GET", GURL("http://example.com"), GURL("https://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
             cookie_util::ComputeSameSiteContextForRequest(
                 "POST", GURL("http://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("https://example.com"), GURL("http://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("http://example.com"), GURL("https://example.com"),
+                url::Origin::Create(GURL("http://from-elsewhere.com")),
+                false /*attach_same_site_cookies*/));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForRequest(
+                "POST", GURL("https://example.com"), GURL("http://example.com"),
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 false /*attach_same_site_cookies*/));
 }
@@ -369,13 +463,33 @@ TEST(CookieUtilTest, ComputeSameSiteContextForSet) {
 
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
             cookie_util::ComputeSameSiteContextForResponse(
+                GURL("http://example.com/dir"), GURL("http://sub.example.com"),
+                base::nullopt));
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+            cookie_util::ComputeSameSiteContextForResponse(
                 GURL("http://example.com/dir"), GURL("https://sub.example.com"),
+                base::nullopt));
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+            cookie_util::ComputeSameSiteContextForResponse(
+                GURL("https://example.com/dir"), GURL("http://sub.example.com"),
                 base::nullopt));
 
   EXPECT_EQ(
       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
       cookie_util::ComputeSameSiteContextForScriptSet(
+          GURL("http://example.com/dir"), GURL("http://sub.example.com")));
+  EXPECT_EQ(
+      CookieOptions::SameSiteCookieContext::
+          SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+      cookie_util::ComputeSameSiteContextForScriptSet(
           GURL("http://example.com/dir"), GURL("https://sub.example.com")));
+  EXPECT_EQ(
+      CookieOptions::SameSiteCookieContext::
+          SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+      cookie_util::ComputeSameSiteContextForScriptSet(
+          GURL("https://example.com/dir"), GURL("http://sub.example.com")));
 }
 
 TEST(CookieUtilTest, TestComputeSameSiteContextForSubresource) {
@@ -386,7 +500,8 @@ TEST(CookieUtilTest, TestComputeSameSiteContextForSubresource) {
 
   // This isn't a full on origin check --- subdomains and different schema are
   // accepted.
-  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::
+                SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
             cookie_util::ComputeSameSiteContextForSubresource(
                 GURL("https://example.com"), GURL("http://example.com")));
 

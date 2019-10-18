@@ -92,8 +92,6 @@ void CastServiceSimple::StopInternal() {
 
 void CastServiceSimple::OnWindowDestroyed() {}
 
-void CastServiceSimple::OnKeyEvent(const ui::KeyEvent& key_event) {}
-
 bool CastServiceSimple::CanHandleGesture(GestureType gesture_type) {
   return false;
 }

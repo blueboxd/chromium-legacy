@@ -19,15 +19,23 @@ found in the LICENSE file.
   <div id="contentWrap">
     <div id="mainContent">
       <div id="settingsContainer" class="desktopOnly">
-        <button id="settingsToggle" type="button" tabindex=0><i class="material-icons">text_format</i></button>
+        <button id="settingsToggle" type="button"
+            aria-label="Adjust appearance settings" tabindex=0>
+          <i class="material-icons">text_format</i>
+        </button>
         <dialog id="settingsDialog">
           <div id="settingsHeader">
             <h2>Reader Mode Styling</h2>
-            <button id="closeSettingsButton" type="button" tabindex=0><i class="material-icons">close</i></button>
+            <button id="closeSettingsButton" type="button" aria-label="Close settings"
+                tabindex=0>
+              <i class="material-icons">close</i>
+            </button>
           </div>
           <div id="settingsFields">
             <div class="setting">
-              <label for="fontFamilySelection" class="screenReaderOnly">Style</label>
+              <label for="fontFamilySelection" class="screenReaderOnly">
+                Font Style
+              </label>
               <select id="fontFamilySelection" name="fontFamily">
                 <option value="sans-serif" selected>Sans-Serif</option>
                 <option value="serif">Serif</option>
@@ -35,26 +43,37 @@ found in the LICENSE file.
               </select>
             </div>
             <fieldset id="themeSelection" class="setting">
-              <legend class="screenReaderOnly">Color</legend>
+              <legend class="screenReaderOnly">
+                Page Theme
+              </legend>
               <ul>
                 <li class="themeOption">
-                  <input type="radio" name="theme" value="light" checked id="themeOptionLight" class="light"/>
-                  <label for="themeOptionLight" class="screenReaderOnly">Light</label>
+                  <label for="themeOptionLight" class="screenReaderOnly">
+                    Light
+                  </label>
+                  <input type="radio" name="theme" value="light"
+                     id="themeOptionLight" class="light" checked/>
                 </li>
                 <li class="themeOption">
+                  <label for="themeOptionSepia" class="screenReaderOnly">
+                    Sepia
+                  </label>
                   <input type="radio" name="theme" value="sepia"
-                   id="themeOptionSepia" class="sepia"/>
-                  <label for="themeOptionSepia" class="screenReaderOnly">Sepia</label>
+                     id="themeOptionSepia" class="sepia"/>
                 </li>
                 <li class="themeOption">
+                  <label for="themeOptionDark" class="screenReaderOnly">
+                    Dark
+                  </label>
                   <input type="radio" name="theme" value="dark"
-                   id="themeOptionDark" class="dark"/>
-                  <label for="themeOptionDark" class="screenReaderOnly">Dark</label>
+                      id="themeOptionDark" class="dark"/>
                 </li>
               </ul>
             </fieldset>
             <div class="setting" id="fontSizeWrapper">
-              <label for="fontSizeSelection" class="screenReaderOnly">Font Size</label>
+              <label for="fontSizeSelection" class="screenReaderOnly">
+                Font Size
+              </label>
               <input id="fontSizeSelection"
                      type="range"
                      name="fontSize"

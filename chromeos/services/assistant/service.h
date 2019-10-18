@@ -108,6 +108,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnLockStateChanged(bool locked) override;
 
   // ash::AssistantStateObserver overrides:
+  void OnAssistantConsentStatusChanged(int consent_status) override;
   void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantHotwordEnabled(bool enabled) override;

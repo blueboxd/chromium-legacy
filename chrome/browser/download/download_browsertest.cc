@@ -4051,6 +4051,49 @@ IN_PROC_BROWSER_TEST_F(DownloadWakeLockTest, WakeLockAcquireAndCancel) {
                    device::mojom::WakeLockType::kPreventAppSuspension));
 }
 
+// Downloading a data URL that's bigger than url::kMaxURLChars should work.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadLargeDataURL) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto completion_observer =
+      std::make_unique<content::DownloadTestObserverTerminal>(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE);
+
+  // Navigating to large_data_url.html will trigger a download of a data URL
+  // that is larger than 2MB.
+  GURL url = embedded_test_server()->GetURL("/downloads/large_data_url.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  base::FilePath data_file = ui_test_utils::GetTestFilePath(
+      base::FilePath().AppendASCII("downloads"),
+      base::FilePath().AppendASCII("large_image.png"));
+  std::string png_data;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    CHECK(base::ReadFileToString(data_file, &png_data));
+  }
+
+  completion_observer->WaitForFinished();
+  EXPECT_EQ(
+      1u, completion_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+
+  // Validate that the correct file was downloaded via the context menu.
+  std::vector<DownloadItem*> download_items;
+  GetDownloads(browser(), &download_items);
+  ASSERT_EQ(base::FilePath(FILE_PATH_LITERAL("large.png")),
+            download_items[0]->GetFileNameToReportUser());
+
+  std::string downloaded_data;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    CHECK(base::ReadFileToString(download_items[0]->GetFullPath(),
+                                 &downloaded_data));
+  }
+  ASSERT_EQ(downloaded_data, png_data);
+}
+
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 
 namespace {

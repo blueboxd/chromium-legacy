@@ -16,6 +16,7 @@ class RenderFrameHost;
 namespace extensions {
 class Extension;
 class ExtensionHost;
+class ProcessManager;
 
 class ProcessManagerObserver : public base::CheckedObserver {
  public:
@@ -41,6 +42,9 @@ class ProcessManagerObserver : public base::CheckedObserver {
   virtual void OnExtensionFrameUnregistered(
       const std::string& extension_id,
       content::RenderFrameHost* render_frame_host) {}
+
+  // Called when the observed ProcessManager is shutting down.
+  virtual void OnProcessManagerShutdown(ProcessManager* manager) {}
 };
 
 }  // namespace extensions

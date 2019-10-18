@@ -105,8 +105,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/metrics/android_metrics_provider.h"
+#include "chrome/browser/metrics/chrome_android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
+#include "components/metrics/android_metrics_provider.h"
 #else
 #include "chrome/browser/metrics/browser_activity_watcher.h"
 #endif
@@ -424,6 +425,13 @@ class ProfileClientImpl
   DISALLOW_COPY_AND_ASSIGN(ProfileClientImpl);
 };
 
+std::unique_ptr<metrics::DemographicMetricsProvider>
+MakeDemographicMetricsProvider(
+    metrics::MetricsLogUploader::MetricServiceType metrics_service_type) {
+  return std::make_unique<metrics::DemographicMetricsProvider>(
+      std::make_unique<ProfileClientImpl>(), metrics_service_type);
+}
+
 }  // namespace
 
 // UKM suffix for field trial recording.
@@ -600,8 +608,10 @@ void ChromeMetricsServiceClient::Initialize() {
     // We only need to restrict to whitelisted Entries if metrics reporting
     // is not forced.
     bool restrict_to_whitelist_entries = !IsMetricsReportingForceEnabled();
-    ukm_service_.reset(
-        new ukm::UkmService(local_state, this, restrict_to_whitelist_entries));
+    ukm_service_.reset(new ukm::UkmService(
+        local_state, this, restrict_to_whitelist_entries,
+        MakeDemographicMetricsProvider(
+            metrics::MetricsLogUploader::MetricServiceType::UKM)));
     ukm_service_->SetIsWebstoreExtensionCallback(
         base::BindRepeating(&IsWebstoreExtension));
     RegisterUKMProviders();
@@ -663,13 +673,14 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<tracing::BackgroundTracingMetricsProvider>());
 
-  metrics_service_->RegisterMetricsProvider(
-      std::make_unique<metrics::DemographicMetricsProvider>(
-          std::make_unique<ProfileClientImpl>()));
+  metrics_service_->RegisterMetricsProvider(MakeDemographicMetricsProvider(
+      metrics::MetricsLogUploader::MetricServiceType::UMA));
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<AndroidMetricsProvider>());
+      std::make_unique<metrics::AndroidMetricsProvider>());
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<ChromeAndroidMetricsProvider>());
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<PageLoadMetricsProvider>());
 #endif  // defined(OS_ANDROID)

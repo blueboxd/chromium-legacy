@@ -173,8 +173,6 @@ class TabAndroid {
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
 
-  void AttachDetachedTab(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
  private:
   JavaObjectWeakGlobalRef weak_java_tab_;
 

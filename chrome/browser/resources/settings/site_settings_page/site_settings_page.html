@@ -189,21 +189,19 @@
             '$i18nPolymer{siteSettingsUsbDevicesAsk}',
             '$i18nPolymer{siteSettingsUsbDevicesBlock}')]]"></cr-link-row>
 
-    <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
-      <cr-link-row
-          class="hr two-line"
-          data-route="SITE_SETTINGS_SERIAL_PORTS"
-          icon-class="subpage-arrow"
-          id="serial-ports"
-          label="$i18n{siteSettingsSerialPorts}"
-          on-click="onTapNavigate_"
-          start-icon="settings:serial-port"
-          sub-label="[[defaultSettingLabel_(
-              default_.serialPorts,
-              '$i18nPolymer{siteSettingsSerialPortsAsk}',
-              '$i18nPolymer{siteSettingsSerialPortsBlock}')]]">
-      </cr-link-row>
-    </template>
+    <cr-link-row
+        class="hr two-line"
+        data-route="SITE_SETTINGS_SERIAL_PORTS"
+        icon-class="subpage-arrow"
+        id="serial-ports"
+        label="$i18n{siteSettingsSerialPorts}"
+        on-click="onTapNavigate_"
+        start-icon="settings:serial-port"
+        sub-label="[[defaultSettingLabel_(
+            default_.serialPorts,
+            '$i18nPolymer{siteSettingsSerialPortsAsk}',
+            '$i18nPolymer{siteSettingsSerialPortsBlock}')]]">
+    </cr-link-row>
 
     <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
       <cr-link-row class="hr two-line"

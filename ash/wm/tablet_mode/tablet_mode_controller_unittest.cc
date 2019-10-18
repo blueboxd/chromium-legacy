@@ -1729,6 +1729,21 @@ TEST_P(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
   EXPECT_FALSE(IsScreenshotShown());
 }
 
+// Tests that if we exit tablet mode before the screenshot is taken, there is no
+// crash. (See https://crbug.com/1012879).
+TEST_P(TabletModeControllerScreenshotTest, NoCrashWhenExitingWithoutWaiting) {
+  // One non-maximized window is needed for screenshot to be taken.
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+
+  SetTabletMode(true);
+  SetTabletMode(false);
+  EXPECT_FALSE(IsScreenshotShown());
+
+  // Tests that reentering tablet mode without waiting causes no crash either.
+  SetTabletMode(true);
+  EXPECT_FALSE(IsScreenshotShown());
+}
+
 INSTANTIATE_TEST_SUITE_P(, TabletModeControllerTest, testing::Bool());
 INSTANTIATE_TEST_SUITE_P(,
                          TabletModeControllerInitedFromPowerManagerClientTest,

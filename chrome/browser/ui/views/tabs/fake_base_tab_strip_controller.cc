@@ -84,6 +84,10 @@ void FakeBaseTabStripController::SetVisualDataForGroup(
   fake_group_data_ = visual_data;
 }
 
+void FakeBaseTabStripController::UngroupAllTabsInGroup(TabGroupId group) {}
+
+void FakeBaseTabStripController::AddNewTabInGroup(TabGroupId group) {}
+
 std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
     TabGroupId group) const {
   std::vector<int> result;

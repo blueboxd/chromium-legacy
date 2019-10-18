@@ -963,10 +963,6 @@ void LoginDisplayHostWebUI::HideOobeDialog() {
   NOTREACHED();
 }
 
-void LoginDisplayHostWebUI::UpdateOobeDialogSize(int width, int height) {
-  NOTREACHED();
-}
-
 void LoginDisplayHostWebUI::UpdateOobeDialogState(ash::OobeDialogState state) {
   NOTREACHED();
 }

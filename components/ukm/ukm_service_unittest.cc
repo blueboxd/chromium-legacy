@@ -20,8 +20,10 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
+#include "components/metrics/ukm_demographic_metrics_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_recorder_impl.h"
@@ -30,9 +32,11 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 #include "third_party/metrics_proto/ukm/source.pb.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace ukm {
@@ -96,6 +100,16 @@ class ScopedUkmFeatureParams {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedUkmFeatureParams);
+};
+
+class MockDemographicMetricsProvider
+    : public metrics::UkmDemographicMetricsProvider {
+ public:
+  ~MockDemographicMetricsProvider() override {}
+
+  // DemographicMetricsProvider:
+  MOCK_METHOD1(ProvideSyncedUserNoisedBirthYearAndGenderToReport,
+               void(ukm::Report* report));
 };
 
 class UkmServiceTest : public testing::Test {
@@ -164,7 +178,8 @@ class UkmServiceTest : public testing::Test {
 TEST_F(UkmServiceTest, ClientIdMigration) {
   prefs_.SetInt64(prefs::kUkmClientId, -1);
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   service.Initialize();
   uint64_t migrated_id = prefs_.GetUint64(prefs::kUkmClientId);
   // -1 migrates to the max UInt 64 value.
@@ -173,7 +188,8 @@ TEST_F(UkmServiceTest, ClientIdMigration) {
 
 TEST_F(UkmServiceTest, EnableDisableSchedule) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   EXPECT_FALSE(task_runner_->HasPendingTask());
   service.Initialize();
   EXPECT_FALSE(task_runner_->HasPendingTask());
@@ -186,11 +202,11 @@ TEST_F(UkmServiceTest, EnableDisableSchedule) {
 }
 
 TEST_F(UkmServiceTest, PersistAndPurge) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -213,7 +229,8 @@ TEST_F(UkmServiceTest, PersistAndPurge) {
 
 TEST_F(UkmServiceTest, Purge) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -234,7 +251,8 @@ TEST_F(UkmServiceTest, Purge) {
 
 TEST_F(UkmServiceTest, SourceSerialization) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -263,11 +281,11 @@ TEST_F(UkmServiceTest, SourceSerialization) {
 }
 
 TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   ASSERT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -286,11 +304,11 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
 }
 
 TEST_F(UkmServiceTest, MetricsProviderTest) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
 
   metrics::TestMetricsProvider* provider = new metrics::TestMetricsProvider();
@@ -320,9 +338,134 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   EXPECT_TRUE(provider->provide_system_profile_metrics_called());
 }
 
+TEST_F(UkmServiceTest, AddUserDemograhicsWhenAvailableAndFeatureEnabled) {
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeature(
+      UkmService::kReportUserNoisedUserBirthYearAndGender);
+
+  int number_of_invocations = 0;
+  int test_birth_year = 1983;
+  metrics::UserDemographicsProto::Gender test_gender =
+      metrics::UserDemographicsProto::GENDER_FEMALE;
+
+  auto provider = std::make_unique<MockDemographicMetricsProvider>();
+  // Expect the synced user's noised birth year and gender to be added 2 times
+  // to the UKM report: on the event trigger and when tearing down the UKM
+  // service.
+  EXPECT_CALL(*provider,
+              ProvideSyncedUserNoisedBirthYearAndGenderToReport(testing::_))
+      .Times(2)
+      .WillRepeatedly([&number_of_invocations, test_gender,
+                       test_birth_year](ukm::Report* report) {
+        report->mutable_user_demographics()->set_birth_year(test_birth_year);
+        report->mutable_user_demographics()->set_gender(test_gender);
+        ++number_of_invocations;
+      });
+
+  UkmService service(&prefs_, &client_,
+                     /*restrict_to_whitelisted_entries=*/true,
+                     std::move(provider));
+  TestRecordingHelper recorder(&service);
+
+  service.Initialize();
+
+  // Verify that the provider hasn't provided the synced user's noised birth
+  // year and gender yet.
+  EXPECT_EQ(0, number_of_invocations);
+
+  task_runner_->RunUntilIdle();
+  service.EnableRecording(/*extensions=*/false);
+  service.EnableReporting();
+
+  ukm::SourceId id = GetWhitelistedSourceId(0);
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  TestEvent1(id).Record(&service);
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+
+  // Verify that the synced user's noised birth year and gender were added to
+  // the UKM report.
+  Report proto_report = GetPersistedReport();
+  EXPECT_EQ(test_birth_year, proto_report.user_demographics().birth_year());
+  EXPECT_EQ(test_gender, proto_report.user_demographics().gender());
+
+  // Verify that the provider's method was only called once before the
+  // destruction of the service.
+  EXPECT_EQ(1, number_of_invocations);
+}
+
+TEST_F(UkmServiceTest,
+       DontAddUserDemograhicsWhenNotAvailableAndFeatureEnabled) {
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeature(
+      UkmService::kReportUserNoisedUserBirthYearAndGender);
+
+  auto provider = std::make_unique<MockDemographicMetricsProvider>();
+  EXPECT_CALL(*provider,
+              ProvideSyncedUserNoisedBirthYearAndGenderToReport(testing::_))
+      .Times(2)
+      .WillRepeatedly([](ukm::Report* report) {});
+
+  UkmService service(&prefs_, &client_,
+                     /*restrict_to_whitelisted_entries=*/true,
+                     std::move(provider));
+  TestRecordingHelper recorder(&service);
+  service.Initialize();
+
+  task_runner_->RunUntilIdle();
+  service.EnableRecording(/*extensions=*/false);
+  service.EnableReporting();
+
+  ukm::SourceId id = GetWhitelistedSourceId(0);
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  TestEvent1(id).Record(&service);
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+
+  // Verify that the synced user's noised birth year and gender are not in the
+  // report when they are not available.
+  Report proto_report = GetPersistedReport();
+  EXPECT_FALSE(proto_report.has_user_demographics());
+}
+
+TEST_F(UkmServiceTest, DontAddUserDemograhicsWhenFeatureDisabled) {
+  ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
+
+  // The demographics provider should not be called.
+  auto provider = std::make_unique<MockDemographicMetricsProvider>();
+  EXPECT_CALL(*provider,
+              ProvideSyncedUserNoisedBirthYearAndGenderToReport(testing::_))
+      .Times(0);
+
+  UkmService service(&prefs_, &client_,
+                     /*restrict_to_whitelisted_entries=*/true,
+                     std::move(provider));
+  TestRecordingHelper recorder(&service);
+
+  service.Initialize();
+
+  task_runner_->RunUntilIdle();
+  service.EnableRecording(/*extensions=*/false);
+  service.EnableReporting();
+
+  ukm::SourceId id = GetWhitelistedSourceId(0);
+  recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
+  TestEvent1(id).Record(&service);
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+
+  // Verify that the synced user's noised birth year and gender are not in the
+  // report when they are not available.
+  Report proto_report = GetPersistedReport();
+  EXPECT_FALSE(proto_report.has_user_demographics());
+}
+
 TEST_F(UkmServiceTest, LogsRotation) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -362,12 +505,12 @@ TEST_F(UkmServiceTest, LogsRotation) {
 }
 
 TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   // Testing two whitelisted Entries.
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -417,7 +560,8 @@ TEST_F(UkmServiceTest, GetNewSourceID) {
 TEST_F(UkmServiceTest, RecordRedirectedUrl) {
   ClearPrefs();
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -448,7 +592,6 @@ TEST_F(UkmServiceTest, RecordRedirectedUrl) {
 TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
   const GURL kURL = GURL("https://example.com/");
   for (bool restrict_to_whitelisted_source_ids : {true, false}) {
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
     ScopedUkmFeatureParams params(
         {{"RestrictToWhitelistedSourceIds",
           restrict_to_whitelisted_source_ids ? "true" : "false"},
@@ -456,7 +599,8 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
 
     ClearPrefs();
     UkmService service(&prefs_, &client_,
-                       true /* restrict_to_whitelisted_entries */);
+                       true /* restrict_to_whitelisted_entries */,
+                       std::make_unique<MockDemographicMetricsProvider>());
     TestRecordingHelper recorder(&service);
     EXPECT_EQ(GetPersistedLogCount(), 0);
     service.Initialize();
@@ -499,7 +643,8 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
 TEST_F(UkmServiceTest, RecordSessionId) {
   ClearPrefs();
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -519,13 +664,13 @@ TEST_F(UkmServiceTest, RecordSessionId) {
 }
 
 TEST_F(UkmServiceTest, SourceSize) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   // Set a threshold of number of Sources via Feature Params.
   ScopedUkmFeatureParams params({{"MaxSources", "2"}});
 
   ClearPrefs();
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -551,7 +696,8 @@ TEST_F(UkmServiceTest, SourceSize) {
 
 TEST_F(UkmServiceTest, PurgeMidUpload) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(GetPersistedLogCount(), 0);
   service.Initialize();
@@ -573,13 +719,13 @@ TEST_F(UkmServiceTest, PurgeMidUpload) {
 }
 
 TEST_F(UkmServiceTest, WhitelistEntryTest) {
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   // Testing two whitelisted Entries.
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   ClearPrefs();
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -616,7 +762,8 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
 
 TEST_F(UkmServiceTest, SourceURLLength) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -643,7 +790,6 @@ TEST_F(UkmServiceTest, SourceURLLength) {
 TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
   const GURL kURL("https://google.com/foobar");
   for (bool restrict_to_whitelisted_source_ids : {true, false}) {
-    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
     // Set a threshold of number of Sources via Feature Params.
     ScopedUkmFeatureParams params(
         {{"MaxKeptSources", "3"},
@@ -653,7 +799,8 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
 
     ClearPrefs();
     UkmService service(&prefs_, &client_,
-                       true /* restrict_to_whitelisted_entries */);
+                       true /* restrict_to_whitelisted_entries */,
+                       std::make_unique<MockDemographicMetricsProvider>());
     TestRecordingHelper recorder(&service);
     EXPECT_EQ(0, GetPersistedLogCount());
     service.Initialize();
@@ -784,13 +931,13 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
       {GURL("https://other.com"), false},
   };
 
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   for (const auto& test : test_cases) {
     ClearPrefs();
     UkmService service(&prefs_, &client_,
-                       true /* restrict_to_whitelisted_entries */);
+                       true /* restrict_to_whitelisted_entries */,
+                       std::make_unique<MockDemographicMetricsProvider>());
     TestRecordingHelper recorder(&service);
 
     ASSERT_EQ(GetPersistedLogCount(), 0);
@@ -879,10 +1026,10 @@ TEST_F(UkmServiceTest, SupportedSchemes) {
       {"www.google.ca/", false},
   };
 
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params({});
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   service.SetIsWebstoreExtensionCallback(
       base::BindRepeating(&TestIsWebstoreExtension));
@@ -938,10 +1085,10 @@ TEST_F(UkmServiceTest, SupportedSchemesNoExtensions) {
       {"www.google.ca/", false},
   };
 
-  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
   ScopedUkmFeatureParams params({});
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
 
   EXPECT_EQ(GetPersistedLogCount(), 0);
@@ -979,7 +1126,8 @@ TEST_F(UkmServiceTest, SupportedSchemesNoExtensions) {
 
 TEST_F(UkmServiceTest, SanitizeUrlAuthParams) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelisted_entries */);
+                     true /* restrict_to_whitelisted_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -1018,7 +1166,8 @@ TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
     ClearPrefs();
 
     UkmService service(&prefs_, &client_,
-                       true /* restrict_to_whitelisted_entries */);
+                       true /* restrict_to_whitelisted_entries */,
+                       std::make_unique<MockDemographicMetricsProvider>());
     TestRecordingHelper recorder(&service);
     service.SetIsWebstoreExtensionCallback(
         base::BindRepeating(&TestIsWebstoreExtension));
@@ -1044,7 +1193,8 @@ TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
 
 TEST_F(UkmServiceTest, MarkSourceForDeletion) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelist_entries */);
+                     true /* restrict_to_whitelist_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();
@@ -1092,7 +1242,8 @@ TEST_F(UkmServiceTest, MarkSourceForDeletion) {
 
 TEST_F(UkmServiceTest, PurgeNonNavigationSources) {
   UkmService service(&prefs_, &client_,
-                     true /* restrict_to_whitelist_entries */);
+                     true /* restrict_to_whitelist_entries */,
+                     std::make_unique<MockDemographicMetricsProvider>());
   TestRecordingHelper recorder(&service);
   EXPECT_EQ(0, GetPersistedLogCount());
   service.Initialize();

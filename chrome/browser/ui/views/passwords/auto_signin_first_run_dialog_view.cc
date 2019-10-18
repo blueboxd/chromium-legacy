@@ -22,6 +22,11 @@ AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
     CredentialManagerDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   l10n_util::GetStringUTF16(IDS_TURN_OFF));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::AUTO_SIGNIN_FIRST_RUN);
 }
 
@@ -83,13 +88,6 @@ bool AutoSigninFirstRunDialogView::Accept() {
 bool AutoSigninFirstRunDialogView::Close() {
   // Do nothing rather than running Cancel(), which would turn off auto-signin.
   return true;
-}
-
-base::string16 AutoSigninFirstRunDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_AUTO_SIGNIN_FIRST_RUN_OK
-                                       : IDS_TURN_OFF);
 }
 
 void AutoSigninFirstRunDialogView::InitWindow() {

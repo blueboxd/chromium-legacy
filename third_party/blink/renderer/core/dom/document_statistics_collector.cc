@@ -21,8 +21,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 // Saturate the length of a paragraph to save time.
@@ -120,19 +118,20 @@ void CollectFeatures(Element& root,
   for (Element& element : ElementTraversal::ChildrenOf(root)) {
     bool is_list_item = false;
     features.element_count++;
-    if (element.HasTagName(kATag)) {
+    if (element.HasTagName(html_names::kATag)) {
       features.anchor_count++;
-    } else if (element.HasTagName(kFormTag)) {
+    } else if (element.HasTagName(html_names::kFormTag)) {
       features.form_count++;
-    } else if (element.HasTagName(kInputTag)) {
+    } else if (element.HasTagName(html_names::kInputTag)) {
       const HTMLInputElement& input = ToHTMLInputElement(element);
       if (input.type() == input_type_names::kText) {
         features.text_input_count++;
       } else if (input.type() == input_type_names::kPassword) {
         features.password_input_count++;
       }
-    } else if (element.HasTagName(kPTag) || element.HasTagName(kPreTag)) {
-      if (element.HasTagName(kPTag)) {
+    } else if (element.HasTagName(html_names::kPTag) ||
+               element.HasTagName(html_names::kPreTag)) {
+      if (element.HasTagName(html_names::kPTag)) {
         features.p_count++;
       } else {
         features.pre_count++;
@@ -152,7 +151,7 @@ void CollectFeatures(Element& root,
         features.moz_score_all_linear = std::min(features.moz_score_all_linear,
                                                  kMozScoreAllLinearSaturation);
       }
-    } else if (element.HasTagName(kLiTag)) {
+    } else if (element.HasTagName(html_names::kLiTag)) {
       is_list_item = true;
     }
     CollectFeatures(element, features, under_list_item || is_list_item);

@@ -27,7 +27,7 @@ void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
   base::UmaHistogramEnumeration(
       security_state::GetSafetyTipHistogramName(
           "Security.SafetyTips.Interaction",
-          helper->GetVisibleSecurityState()->safety_tip_status),
+          helper->GetVisibleSecurityState()->safety_tip_info.status),
       interaction);
 }
 
@@ -52,7 +52,7 @@ void OpenHelpCenter(content::WebContents* web_contents) {
 
 base::string16 GetSafetyTipTitle(
     security_state::SafetyTipStatus safety_tip_status,
-    const GURL& url) {
+    const GURL& suggested_url) {
   switch (safety_tip_status) {
     case security_state::SafetyTipStatus::kBadReputation:
       return l10n_util::GetStringUTF16(
@@ -64,7 +64,7 @@ base::string16 GetSafetyTipTitle(
       return l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
           security_interstitials::common_string_util::GetFormattedHostName(
-              url));
+              suggested_url));
 #endif
     case security_state::SafetyTipStatus::kBadKeyword:
     case security_state::SafetyTipStatus::kUnknown:
@@ -78,16 +78,25 @@ base::string16 GetSafetyTipTitle(
 
 base::string16 GetSafetyTipDescription(
     security_state::SafetyTipStatus warning_type,
-    const GURL& url) {
+    const GURL& url,
+    const GURL& suggested_url) {
   switch (warning_type) {
     case security_state::SafetyTipStatus::kBadReputation:
       return l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
     case security_state::SafetyTipStatus::kLookalike:
+#if defined(OS_ANDROID)
+      return l10n_util::GetStringFUTF16(
+          IDS_SAFETY_TIP_ANDROID_LOOKALIKE_DESCRIPTION,
+          security_interstitials::common_string_util::GetFormattedHostName(url),
+          security_interstitials::common_string_util::GetFormattedHostName(
+              suggested_url));
+#else
       return l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION,
           security_interstitials::common_string_util::GetFormattedHostName(
-              url));
+              suggested_url));
+#endif
     case security_state::SafetyTipStatus::kBadKeyword:
     case security_state::SafetyTipStatus::kNone:
     case security_state::SafetyTipStatus::kUnknown:

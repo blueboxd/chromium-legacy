@@ -32,7 +32,7 @@ CookieSettings::CreateDeleteCookieOnExitPredicate() const {
 }
 
 void CookieSettings::GetSettingForLegacyCookieAccess(
-    const GURL& cookie_domain,
+    const std::string& cookie_domain,
     ContentSetting* setting) const {
   DCHECK(setting);
 
@@ -41,8 +41,36 @@ void CookieSettings::GetSettingForLegacyCookieAccess(
                  ? CONTENT_SETTING_BLOCK
                  : CONTENT_SETTING_ALLOW;
 
+  if (settings_for_legacy_cookie_access_.empty())
+    return;
+
+  // If there are no domain-specific settings, return early to avoid the cost of
+  // constructing a GURL to match against.
+  bool has_non_wildcard_setting = false;
   for (const auto& entry : settings_for_legacy_cookie_access_) {
-    if (entry.primary_pattern.Matches(cookie_domain)) {
+    if (!entry.primary_pattern.MatchesAllHosts()) {
+      has_non_wildcard_setting = true;
+      break;
+    }
+  }
+  if (!has_non_wildcard_setting) {
+    // Take the first entry because we know all entries match any host.
+    *setting = settings_for_legacy_cookie_access_[0].GetContentSetting();
+    DCHECK(IsValidSettingForLegacyAccess(*setting));
+    return;
+  }
+
+  // The content setting patterns are treated as domains, not URLs, so the
+  // scheme is irrelevant (so we can just arbitrarily pass false).
+  GURL cookie_domain_url = net::cookie_util::CookieOriginToURL(
+      cookie_domain, false /* secure scheme */);
+
+  for (const auto& entry : settings_for_legacy_cookie_access_) {
+    // TODO(crbug.com/1015611): This should ignore scheme and port, but
+    // currently takes them into account. It says in the policy description that
+    // specifying a scheme or port in the pattern may lead to undefined
+    // behavior, but this is not ideal.
+    if (entry.primary_pattern.Matches(cookie_domain_url)) {
       *setting = entry.GetContentSetting();
       DCHECK(IsValidSettingForLegacyAccess(*setting));
       return;

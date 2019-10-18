@@ -19,8 +19,3 @@ struct BatchedOperation {
   // Populated for operations of types PUT_KEY and COPY_PREFIXED_KEY.
   array<uint8>? value;
 };
-
-struct KeyValue {
-  array<uint8> key;
-  array<uint8> value;
-};

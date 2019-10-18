@@ -378,8 +378,9 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // preflight logic is implemented in Blink. So we return a "fallback required"
   // response to Blink.
   // TODO(falken): Remove this mechanism after OOB-CORS ships.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          network::switches::kEnableOutOfBlinkCors) &&
+  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
+           network::switches::kForceToDisableOutOfBlinkCors) ||
+       !base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) &&
       ((resource_request_.mode == network::mojom::RequestMode::kCors ||
         resource_request_.mode ==
             network::mojom::RequestMode::kCorsWithForcedPreflight) &&

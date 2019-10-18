@@ -132,8 +132,7 @@ bool ShouldLazilyLoadFrame(const Document& document,
   // holdback into consideration.
   if (RuntimeEnabledFeatures::
           RestrictAutomaticLazyFrameLoadingToDataSaverEnabled() &&
-      (document.GetSettings()->GetDataSaverHoldbackWebApi() ||
-       !GetNetworkStateNotifier().SaveDataEnabled())) {
+      !GetNetworkStateNotifier().SaveDataEnabled()) {
     return false;
   }
 

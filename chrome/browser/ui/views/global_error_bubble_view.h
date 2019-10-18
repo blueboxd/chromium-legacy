@@ -36,7 +36,6 @@ class GlobalErrorBubbleView : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView implementation.
   void Init() override;
   bool ShouldShowCloseButton() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   int GetDialogButtons() const override;
   std::unique_ptr<views::View> CreateExtraView() override;
   void OnDialogInitialized() override;

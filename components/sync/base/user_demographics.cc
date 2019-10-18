@@ -6,13 +6,9 @@
 
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/logging.h"
 
 namespace syncer {
-
-void LogUserDemographicsStatusInHistogram(UserDemographicsStatus status) {
-  UMA_HISTOGRAM_ENUMERATION("UMA.UserDemographics.Status", status);
-}
 
 // static
 UserDemographicsResult UserDemographicsResult::ForValue(

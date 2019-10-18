@@ -79,6 +79,10 @@ const base::Feature kSendPasswordReusePing {
 };
 #endif
 
+constexpr base::FeatureParam<bool> kShouldShowDomainsForSavedPassword{
+    &kPasswordProtectionForSavedPasswords, "ShouldShowDomainsForSavedPassword",
+    false};
+
 const base::Feature kSendSampledPingsForAllowlistDomains{
     "SafeBrowsingSendSampledPingsForAllowlistDomain",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -156,6 +160,10 @@ base::ListValue GetFeatureStatusList() {
 
 bool GetShouldFillOldPhishGuardProto() {
   return kShouldFillOldPhishGuardProto.Get();
+}
+
+bool ShouldShowDomainsForSavedPassword() {
+  return kShouldShowDomainsForSavedPassword.Get();
 }
 
 }  // namespace safe_browsing

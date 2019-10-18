@@ -463,6 +463,69 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest, BlockMultipleSubFrames) {
   DCHECK_EQ(GetBlockedFrames().size(), 0u);
 }
 
+IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest, TestBackButton) {
+  BlockHost(kIframeHost1);
+
+  GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/with_iframes.html");
+  ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
+  EXPECT_FALSE(IsInterstitialBeingShown(browser()));
+
+  auto blocked = GetBlockedFrames();
+  EXPECT_EQ(blocked.size(), 1u);
+
+  permission_creator()->SetPermissionResult(true);
+  permission_creator()->DelayHandlingForNextRequests();
+
+  RequestPermissionFromFrame(blocked[0]);
+
+  std::string command =
+      "domAutomationController.send("
+      "(document.getElementById('back-button').hidden));";
+
+  auto* render_frame_host = tracker()->GetHost(blocked[0]);
+  DCHECK(render_frame_host->IsRenderFrameLive());
+  bool value = false;
+  auto target = content::ToRenderFrameHost(render_frame_host);
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      target, command, &value));
+
+  // Back button should be hidden in iframes.
+  EXPECT_TRUE(value);
+}
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
+                       TestBackButtonMainFrame) {
+  BlockHost(kExampleHost);
+
+  GURL allowed_url_with_iframes = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/with_iframes.html");
+  ui_test_utils::NavigateToURL(browser(), allowed_url_with_iframes);
+  EXPECT_TRUE(IsInterstitialBeingShown(browser()));
+
+  auto blocked = GetBlockedFrames();
+  EXPECT_EQ(blocked.size(), 1u);
+
+  permission_creator()->SetPermissionResult(true);
+  permission_creator()->DelayHandlingForNextRequests();
+
+  RequestPermissionFromFrame(blocked[0]);
+
+  std::string command =
+      "domAutomationController.send("
+      "(document.getElementById('back-button').hidden));";
+  auto* render_frame_host = tracker()->GetHost(blocked[0]);
+  DCHECK(render_frame_host->IsRenderFrameLive());
+
+  bool value = false;
+  auto target = content::ToRenderFrameHost(render_frame_host);
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      target, command, &value));
+
+  // Back button should not be hidden in main frame.
+  EXPECT_FALSE(value);
+}
+
 class SupervisedUserNavigationThrottleNotSupervisedTest
     : public SupervisedUserNavigationThrottleTest {
  protected:

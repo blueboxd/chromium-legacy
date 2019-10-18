@@ -37,6 +37,12 @@ CASE 1, original layer tree:
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
       "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -107,6 +113,12 @@ CASE 2, scrolling y by 10 pixels, both the "container" and "inner" should scroll
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
       "transform": 4
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -186,6 +198,12 @@ CASE 3, scrolling y further so that "inner" no longer overlaps the fixed-pos lay
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

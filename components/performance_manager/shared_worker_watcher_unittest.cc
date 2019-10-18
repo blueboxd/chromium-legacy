@@ -86,6 +86,9 @@ class TestSharedWorkerService : public content::SharedWorkerService {
  private:
   base::ObserverList<Observer> observer_list_;
 
+  // The ID that the next SharedWorkerInstance will be assigned.
+  int64_t next_shared_worker_instance_id_ = 0;
+
   // Contains the set of clients for each running workers.
   base::flat_map<content::SharedWorkerInstance,
                  base::flat_set<std::pair<int, int>>>
@@ -118,7 +121,8 @@ content::SharedWorkerInstance TestSharedWorkerService::StartSharedWorker(
   // Create a new SharedWorkerInstance and add it to the map.
   GURL worker_url = GenerateWorkerUrl();
   content::SharedWorkerInstance instance(
-      worker_url, "SharedWorker", url::Origin::Create(worker_url), "",
+      next_shared_worker_instance_id_++, worker_url, "SharedWorker",
+      url::Origin::Create(worker_url), "",
       blink::mojom::ContentSecurityPolicyType::kReport,
       network::mojom::IPAddressSpace::kPublic,
       blink::mojom::SharedWorkerCreationContextType::kSecure);

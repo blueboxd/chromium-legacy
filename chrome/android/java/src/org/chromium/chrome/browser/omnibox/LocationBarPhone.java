@@ -43,9 +43,10 @@ public class LocationBarPhone extends LocationBarLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
+        mUrlBar = findViewById(R.id.url_bar);
+        updateUrlBarPaddingForSearchEngineIcon();
         // Assign the first visible view here only if it hasn't been set by the DSE icon experiment.
         // See onNativeLibrary ready for when this variable is set for the DSE icon case.
-        mUrlBar = findViewById(R.id.url_bar);
         mFirstVisibleFocusedView =
                 mFirstVisibleFocusedView == null ? mUrlBar : mFirstVisibleFocusedView;
 
@@ -90,12 +91,31 @@ public class LocationBarPhone extends LocationBarLayout {
                     shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
             mIconView = mStatusView.findViewById(R.id.location_bar_status_icon);
             mFirstVisibleFocusedView = mStatusView;
+            updateUrlBarPaddingForSearchEngineIcon();
 
             // When the search engine icon is enabled, icons are translations into the parent view's
             // padding area. Set clip padding to false to prevent them from getting clipped.
             setClipToPadding(false);
         }
         setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
+    }
+
+    /**
+     * Factor in extra padding added for the focused state when the search engine icon is active.
+     */
+    private void updateUrlBarPaddingForSearchEngineIcon() {
+        if (mUrlBar == null || mStatusView == null) return;
+
+        int endPadding = 0;
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(mToolbarDataProvider.isIncognito())) {
+            // This padding prevents the UrlBar's content from extending past the available space
+            // and into the next view.
+            endPadding = mStatusView.getEndPaddingPixelSizeForFocusState(true)
+                    - mStatusView.getEndPaddingPixelSizeForFocusState(false);
+        }
+
+        mUrlBar.setPaddingRelative(mUrlBar.getPaddingStart(), mUrlBar.getPaddingTop(), endPadding,
+                mUrlBar.getPaddingBottom());
     }
 
     /**
@@ -163,8 +183,8 @@ public class LocationBarPhone extends LocationBarLayout {
         // this translation will be the distance that the url bar needs to travel to arrive at the
         // desired padding when focused.
         float translation = urlExpansionPercent
-                * (mStatusView.getEndPaddingPixelSizeForState(true)
-                        - mStatusView.getEndPaddingPixelSizeForState(false));
+                * (mStatusView.getEndPaddingPixelSizeForFocusState(true)
+                        - mStatusView.getEndPaddingPixelSizeForFocusState(false));
 
         if (!hasFocus && mIconView.getVisibility() == VISIBLE
                 && mToolbarDataProvider.getNewTabPageForCurrentTab() != null
@@ -332,6 +352,7 @@ public class LocationBarPhone extends LocationBarLayout {
         boolean isIncognito = getToolbarDataProvider().isIncognito();
         boolean shouldShowSearchEngineLogo =
                 SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito);
+        updateUrlBarPaddingForSearchEngineIcon();
         if (mIconView != null) mIconView.setVisibility(shouldShowSearchEngineLogo ? VISIBLE : GONE);
         setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
         mFirstVisibleFocusedView = shouldShowSearchEngineLogo ? mStatusView : mUrlBar;

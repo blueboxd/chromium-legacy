@@ -49,32 +49,33 @@ CookieMonsterChangeDispatcher::Subscription::~Subscription() {
 }
 
 void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
-    const net::CanonicalCookie& cookie,
-    net::CookieChangeCause change_cause) {
+    const CookieChangeInfo& change) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  const CanonicalCookie& cookie = change.cookie;
 
   // The net::CookieOptions are hard-coded for now, but future APIs may set
   // different options. For example, JavaScript observers will not be allowed to
   // see HTTP-only changes.
   if (!url_.is_empty() &&
-      !cookie.IncludeForRequestURL(url_, CookieOptions::MakeAllInclusive())
+      !cookie
+           .IncludeForRequestURL(url_, CookieOptions::MakeAllInclusive(),
+                                 change.access_semantics)
            .IsInclude()) {
     return;
   }
 
   // TODO(mmenke, pwnall): Run callbacks synchronously?
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Subscription::DoDispatchChange,
-                     weak_ptr_factory_.GetWeakPtr(), cookie, change_cause));
+      FROM_HERE, base::BindOnce(&Subscription::DoDispatchChange,
+                                weak_ptr_factory_.GetWeakPtr(), change));
 }
 
 void CookieMonsterChangeDispatcher::Subscription::DoDispatchChange(
-    const net::CanonicalCookie& cookie,
-    net::CookieChangeCause change_cause) const {
+    const CookieChangeInfo& change) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  callback_.Run(cookie, change_cause);
+  callback_.Run(change);
 }
 
 CookieMonsterChangeDispatcher::CookieMonsterChangeDispatcher() {}
@@ -151,19 +152,17 @@ CookieMonsterChangeDispatcher::AddCallbackForAllChanges(
 }
 
 void CookieMonsterChangeDispatcher::DispatchChange(
-    const CanonicalCookie& cookie,
-    CookieChangeCause cause,
+    const CookieChangeInfo& change,
     bool notify_global_hooks) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  DispatchChangeToDomainKey(cookie, cause, DomainKey(cookie.Domain()));
+  DispatchChangeToDomainKey(change, DomainKey(change.cookie.Domain()));
   if (notify_global_hooks)
-    DispatchChangeToDomainKey(cookie, cause, std::string(kGlobalDomainKey));
+    DispatchChangeToDomainKey(change, std::string(kGlobalDomainKey));
 }
 
 void CookieMonsterChangeDispatcher::DispatchChangeToDomainKey(
-    const CanonicalCookie& cookie,
-    CookieChangeCause cause,
+    const CookieChangeInfo& change,
     const std::string& domain_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -171,14 +170,12 @@ void CookieMonsterChangeDispatcher::DispatchChangeToDomainKey(
   if (it == cookie_domain_map_.end())
     return;
 
-  DispatchChangeToNameKey(cookie, cause, it->second, NameKey(cookie.Name()));
-  DispatchChangeToNameKey(cookie, cause, it->second,
-                          std::string(kGlobalNameKey));
+  DispatchChangeToNameKey(change, it->second, NameKey(change.cookie.Name()));
+  DispatchChangeToNameKey(change, it->second, std::string(kGlobalNameKey));
 }
 
 void CookieMonsterChangeDispatcher::DispatchChangeToNameKey(
-    const CanonicalCookie& cookie,
-    CookieChangeCause cause,
+    const CookieChangeInfo& change,
     CookieNameMap& cookie_name_map,
     const std::string& name_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -190,7 +187,7 @@ void CookieMonsterChangeDispatcher::DispatchChangeToNameKey(
   SubscriptionList& subscription_list = it->second;
   for (base::LinkNode<Subscription>* node = subscription_list.head();
        node != subscription_list.end(); node = node->next()) {
-    node->value()->DispatchChange(cookie, cause);
+    node->value()->DispatchChange(change);
   }
 }
 

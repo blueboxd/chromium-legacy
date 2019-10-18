@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
+#include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/single_task_sequence.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/skia_util.h"
@@ -52,18 +53,43 @@ sk_sp<SkPromiseImageTexture> Fulfill(void* texture_context) {
 void DoNothing(void* texture_context) {}
 
 template <typename... Args>
-void PostAsyncTask(SkiaOutputSurfaceDependency* dependency,
-                   const base::RepeatingCallback<void(Args...)>& callback,
-                   Args... args) {
+void PostAsyncTaskRepeatedly(
+    SkiaOutputSurfaceDependency* dependency,
+    const base::RepeatingCallback<void(Args...)>& callback,
+    Args... args) {
   dependency->PostTaskToClientThread(base::BindOnce(callback, args...));
 }
 
 template <typename... Args>
-base::RepeatingCallback<void(Args...)> CreateSafeCallback(
+base::RepeatingCallback<void(Args...)> CreateSafeRepeatingCallback(
     SkiaOutputSurfaceDependency* dependency,
     const base::RepeatingCallback<void(Args...)>& callback) {
   DCHECK(dependency);
-  return base::BindRepeating(&PostAsyncTask<Args...>, dependency, callback);
+  return base::BindRepeating(&PostAsyncTaskRepeatedly<Args...>, dependency,
+                             callback);
+}
+
+template <typename... Args>
+void PostAsyncTaskOnce(SkiaOutputSurfaceDependency* dependency,
+                       base::OnceCallback<void(Args...)> callback,
+                       Args... args) {
+  dependency->PostTaskToClientThread(
+      base::BindOnce(std::move(callback), args...));
+}
+
+template <typename... Args>
+base::OnceCallback<void(Args...)> CreateSafeOnceCallback(
+    SkiaOutputSurfaceDependency* dependency,
+    base::OnceCallback<void(Args...)> callback) {
+  DCHECK(dependency);
+  return base::BindOnce(&PostAsyncTaskOnce<Args...>, dependency,
+                        std::move(callback));
+}
+
+gpu::ContextUrl& GetActiveUrl() {
+  static base::NoDestructor<gpu::ContextUrl> active_url(
+      GURL("chrome://gpu/SkiaRenderer"));
+  return *active_url;
 }
 
 }  // namespace
@@ -656,17 +682,17 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event,
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  auto did_swap_buffer_complete_callback = CreateSafeCallback(
+  auto did_swap_buffer_complete_callback = CreateSafeRepeatingCallback(
       dependency_.get(),
       base::BindRepeating(&SkiaOutputSurfaceImpl::DidSwapBuffersComplete,
                           weak_ptr_));
-  auto buffer_presented_callback = CreateSafeCallback(
+  auto buffer_presented_callback = CreateSafeRepeatingCallback(
       dependency_.get(),
       base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_));
-  auto context_lost_callback = CreateSafeCallback(
+  auto context_lost_callback = CreateSafeOnceCallback(
       dependency_.get(),
-      base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_));
-  auto gpu_vsync_callback = CreateSafeCallback(
+      base::BindOnce(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_));
+  auto gpu_vsync_callback = CreateSafeRepeatingCallback(
       dependency_.get(),
       base::BindRepeating(&SkiaOutputSurfaceImpl::OnGpuVSync, weak_ptr_));
 
@@ -765,7 +791,14 @@ void SkiaOutputSurfaceImpl::ScheduleGpuTaskForTesting(
 void SkiaOutputSurfaceImpl::ScheduleGpuTask(
     base::OnceClosure callback,
     std::vector<gpu::SyncToken> sync_tokens) {
-  task_sequence_->ScheduleTask(std::move(callback), std::move(sync_tokens));
+  auto wrapped_closure = base::BindOnce(
+      [](base::OnceClosure callback) {
+        gpu::ContextUrl::SetActiveUrl(GetActiveUrl());
+        std::move(callback).Run();
+      },
+      std::move(callback));
+  task_sequence_->ScheduleTask(std::move(wrapped_closure),
+                               std::move(sync_tokens));
 }
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(

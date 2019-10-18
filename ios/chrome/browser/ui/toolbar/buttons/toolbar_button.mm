@@ -103,10 +103,10 @@ const CGFloat kSpotlightCornerRadius = 7;
 }
 
 - (UIControlState)state {
-  DCHECK(ControlStateSpotlighted & UIControlStateApplication);
+  DCHECK(kControlStateSpotlighted & UIControlStateApplication);
   UIControlState state = [super state];
   if (self.spotlighted)
-    state |= ControlStateSpotlighted;
+    state |= kControlStateSpotlighted;
   return state;
 }
 

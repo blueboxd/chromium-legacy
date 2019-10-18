@@ -24,10 +24,8 @@ class PersonalDataManagerObserver {
 
   // Notifies the observer whenever at least one (can be multiple) credit card
   // is suceesfully saved.
-  // TODO(crbug.com/964127): Need to add a bool to separate server card save and
-  // local card save to decide whether to show the Autofill sign-in after local
-  // save promo bubble.
-  virtual void OnCreditCardSaved() {}
+  virtual void OnCreditCardSaved(bool should_show_sign_in_promo_if_applicable) {
+  }
 
  protected:
   virtual ~PersonalDataManagerObserver() {}

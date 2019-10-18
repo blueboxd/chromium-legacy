@@ -416,7 +416,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
         if (isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
-            return ColorUtils.getThemedToolbarIconTintRes(true);
+            return ToolbarColors.getThemedToolbarIconTintRes(true);
         }
 
         if (isPreview()) {
@@ -433,7 +433,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             // For theme colors which are not dark and are also not
             // light enough to warrant an opaque URL bar, use dark
             // icons.
-            return ColorUtils.getThemedToolbarIconTintRes(false);
+            return ToolbarColors.getThemedToolbarIconTintRes(false);
         }
 
         // TODO(https://crbug.com/940134): Change the color here and also #needLightIcon logic.
@@ -449,7 +449,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return R.color.google_green_600;
         }
 
-        return ColorUtils.getThemedToolbarIconTintRes(false);
+        return ToolbarColors.getThemedToolbarIconTintRes(false);
     }
 
     @Override

@@ -118,8 +118,8 @@ display::Display DesktopScreenX11::GetDisplayNearestWindow(
   // aura::Window's screen bounds.
   aura::WindowTreeHost* host = window->GetHost();
   if (host) {
-    auto* rwh = DesktopWindowTreeHostLinux::GetHostForWidget(
-        host->GetAcceleratedWidget());
+    DesktopWindowTreeHostX11* rwh =
+        DesktopWindowTreeHostX11::GetHostForXID(host->GetAcceleratedWidget());
     if (rwh) {
       const gfx::Rect pixel_rect = rwh->GetBoundsInPixels();
       const gfx::Rect dip_rect =

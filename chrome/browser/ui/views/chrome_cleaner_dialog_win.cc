@@ -61,6 +61,10 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   DCHECK(dialog_controller_);
   DCHECK(cleaner_controller_);
 
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL));
+
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(
       layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
@@ -138,17 +142,6 @@ bool ChromeCleanerDialog::ShouldShowCloseButton() const {
 }
 
 // DialogDelegate overrides.
-
-base::string16 ChromeCleanerDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
-  DCHECK(dialog_controller_);
-
-  return button == ui::DIALOG_BUTTON_OK
-             ? l10n_util::GetStringUTF16(
-                   IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL)
-             : DialogDelegate::GetDialogButtonLabel(button);
-}
 
 std::unique_ptr<views::View> ChromeCleanerDialog::CreateExtraView() {
   DCHECK(!details_button_);

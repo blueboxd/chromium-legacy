@@ -13,6 +13,10 @@
 
 namespace {
 
+using MatchType = LookalikeUrlInterstitialPage::MatchType;
+
+const base::FeatureParam<bool> kEnableLookalikeTopSites{
+    &security_state::features::kSafetyTipUI, "topsites", false};
 const base::FeatureParam<bool> kEnableLookalikeEditDistance{
     &security_state::features::kSafetyTipUI, "editdistance", false};
 const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
@@ -29,7 +33,7 @@ bool ShouldTriggerSafetyTipFromLookalike(
     const std::vector<lookalikes::DomainInfo>& engaged_sites,
     GURL* safe_url) {
   std::string matched_domain;
-  LookalikeUrlInterstitialPage::MatchType match_type;
+  MatchType match_type;
 
   if (!lookalikes::LookalikeUrlNavigationThrottle::GetMatchingDomain(
           navigated_domain, engaged_sites, &matched_domain, &match_type)) {
@@ -44,16 +48,23 @@ bool ShouldTriggerSafetyTipFromLookalike(
 
   *safe_url = GURL(std::string(url::kHttpScheme) +
                    url::kStandardSchemeSeparator + matched_domain);
-  // Edit distance has higher false positives, so it gets its own feature param
-  if (match_type == LookalikeUrlInterstitialPage::MatchType::kEditDistance) {
-    return kEnableLookalikeEditDistance.Get();
-  }
-  if (match_type ==
-      LookalikeUrlInterstitialPage::MatchType::kEditDistanceSiteEngagement) {
-    return kEnableLookalikeEditDistanceSiteEngagement.Get();
+  switch (match_type) {
+    case MatchType::kTopSite:
+      return kEnableLookalikeTopSites.Get();
+    case MatchType::kEditDistance:
+      return kEnableLookalikeEditDistance.Get();
+    case MatchType::kEditDistanceSiteEngagement:
+      return kEnableLookalikeEditDistanceSiteEngagement.Get();
+    case MatchType::kSiteEngagement:
+      // ShouldDisplayInterstitial always returns true on kSiteEngagement (i.e.
+      // an interstitial is always shown for this form of lookalike), so no
+      // Safety Tip is ever shown.
+    case MatchType::kNone:
+      NOTREACHED();
   }
 
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 bool ShouldTriggerSafetyTipFromKeywordInURL(

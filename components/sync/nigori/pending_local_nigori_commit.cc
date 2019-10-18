@@ -163,6 +163,36 @@ class KeystoreInitializer : public PendingLocalNigoriCommit {
   DISALLOW_COPY_AND_ASSIGN(KeystoreInitializer);
 };
 
+class KeystoreKeyRotator : public PendingLocalNigoriCommit {
+ public:
+  KeystoreKeyRotator() = default;
+  ~KeystoreKeyRotator() override = default;
+
+  bool TryApply(NigoriState* state) const override {
+    if (!state->NeedsKeystoreKeyRotation()) {
+      return false;
+    }
+    // TODO(crbug.com/922900): ensure that |cryptographer| contains all
+    // keystore keys? (In theory it's safe to add only last one).
+    const std::string new_default_key_name = state->cryptographer->EmplaceKey(
+        state->keystore_keys_cryptographer->keystore_keys().back(),
+        KeyDerivationParams::CreateForPbkdf2());
+    state->cryptographer->SelectDefaultEncryptionKey(new_default_key_name);
+    return true;
+  }
+
+  void OnSuccess(const NigoriState& state,
+                 SyncEncryptionHandler::Observer* observer) override {
+    observer->OnCryptographerStateChanged(state.cryptographer.get(),
+                                          /*has_pending_keys=*/false);
+  }
+
+  void OnFailure(SyncEncryptionHandler::Observer* observer) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeystoreKeyRotator);
+};
+
 }  // namespace
 
 // static
@@ -178,6 +208,12 @@ PendingLocalNigoriCommit::ForSetCustomPassphrase(
 std::unique_ptr<PendingLocalNigoriCommit>
 PendingLocalNigoriCommit::ForKeystoreInitialization() {
   return std::make_unique<KeystoreInitializer>();
+}
+
+// static
+std::unique_ptr<PendingLocalNigoriCommit>
+PendingLocalNigoriCommit::ForKeystoreKeyRotation() {
+  return std::make_unique<KeystoreKeyRotator>();
 }
 
 }  // namespace syncer

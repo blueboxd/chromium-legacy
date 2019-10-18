@@ -74,6 +74,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // Attempts to start a drag if one is not already in progress. Returns true if
   // successful. |end_closure| is run when the drag completes, including if the
@@ -191,6 +192,23 @@ class ASH_EXPORT ToplevelWindowEventHandler
 
   // True if swiping from left edge to go to previous page is in progress.
   bool going_back_started_ = false;
+
+  // Tracks the y-axis drag amount through touch events. Used for back gesture
+  // affordance in tablet mode. The gesture movement of back gesture can't be
+  // recognized by GestureRecognizer, which leads to wrong gesture locations of
+  // back gesture. See crbug.com/1015464 for the details.
+  int y_drag_amount_ = 0;
+
+  // Tracks the x-axis drag amount through gesture events. Used for back gesture
+  // affordance in tablet mode. Note, gets the drag amount from gesture events
+  // instead of touch events, since the x location of the gestures is reliable
+  // during back gesture movements.
+  int x_drag_amount_ = 0;
+
+  // Position of last touch event. Used to calculate |y_drag_amount_|. Note,
+  // only touch events from |first_touch_id_| will be recorded.
+  gfx::Point last_touch_point_;
+  ui::PointerId first_touch_id_ = ui::kPointerIdUnknown;
 
   // Used to show the affordance while swiping from left edge to go to the
   // previout page.

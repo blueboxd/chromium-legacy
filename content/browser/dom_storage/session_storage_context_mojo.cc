@@ -737,6 +737,22 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+SessionStorageContextMojo::ValueAndStatus::ValueAndStatus() = default;
+
+SessionStorageContextMojo::ValueAndStatus::ValueAndStatus(ValueAndStatus&&) =
+    default;
+
+SessionStorageContextMojo::ValueAndStatus::~ValueAndStatus() = default;
+
+SessionStorageContextMojo::KeyValuePairsAndStatus::KeyValuePairsAndStatus() =
+    default;
+
+SessionStorageContextMojo::KeyValuePairsAndStatus::KeyValuePairsAndStatus(
+    KeyValuePairsAndStatus&&) = default;
+
+SessionStorageContextMojo::KeyValuePairsAndStatus::~KeyValuePairsAndStatus() =
+    default;
+
 void SessionStorageContextMojo::OnDatabaseOpened(leveldb::Status status) {
   if (!status.ok()) {
     UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.DatabaseOpenError",
@@ -769,37 +785,36 @@ void SessionStorageContextMojo::OnDatabaseOpened(leveldb::Status status) {
 
   database_->RunDatabaseTask(
       base::BindOnce([](const storage::DomStorageDatabase& db) {
-        DatabaseMetadataResult result;
-        result.version_status = db.Get(
+        ValueAndStatus version;
+        version.status = db.Get(
             base::make_span(SessionStorageMetadata::kDatabaseVersionBytes),
-            &result.version);
-        result.next_map_id_status =
-            db.Get(base::make_span(SessionStorageMetadata::kNextMapIdKeyBytes),
-                   &result.next_map_id);
-        result.namespaces_status = db.GetPrefixed(
+            &version.value);
+
+        KeyValuePairsAndStatus namespaces;
+        namespaces.status = db.GetPrefixed(
             base::make_span(SessionStorageMetadata::kNamespacePrefixBytes),
-            &result.namespaces);
-        return result;
+            &namespaces.key_value_pairs);
+
+        ValueAndStatus next_map_id;
+        next_map_id.status =
+            db.Get(base::make_span(SessionStorageMetadata::kNextMapIdKeyBytes),
+                   &next_map_id.value);
+
+        return std::make_tuple(std::move(version), std::move(namespaces),
+                               std::move(next_map_id));
       }),
       base::BindOnce(&SessionStorageContextMojo::OnGotDatabaseMetadata,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-SessionStorageContextMojo::DatabaseMetadataResult::DatabaseMetadataResult() =
-    default;
-
-SessionStorageContextMojo::DatabaseMetadataResult::DatabaseMetadataResult(
-    DatabaseMetadataResult&&) = default;
-
-SessionStorageContextMojo::DatabaseMetadataResult::~DatabaseMetadataResult() =
-    default;
-
 void SessionStorageContextMojo::OnGotDatabaseMetadata(
-    DatabaseMetadataResult result) {
+    ValueAndStatus version,
+    KeyValuePairsAndStatus namespaces,
+    ValueAndStatus next_map_id) {
   std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations;
 
   MetadataParseResult version_parse =
-      ParseDatabaseVersion(&result, &migration_operations);
+      ParseDatabaseVersion(std::move(version), &migration_operations);
   if (version_parse.open_result != OpenResult::kSuccess) {
     LogDatabaseOpenResult(version_parse.open_result);
     DeleteAndRecreateDatabase(version_parse.histogram_name);
@@ -807,14 +822,15 @@ void SessionStorageContextMojo::OnGotDatabaseMetadata(
   }
 
   MetadataParseResult namespaces_parse =
-      ParseNamespaces(&result, std::move(migration_operations));
+      ParseNamespaces(std::move(namespaces), std::move(migration_operations));
   if (namespaces_parse.open_result != OpenResult::kSuccess) {
     LogDatabaseOpenResult(namespaces_parse.open_result);
     DeleteAndRecreateDatabase(namespaces_parse.histogram_name);
     return;
   }
 
-  MetadataParseResult next_map_id_parse = ParseNextMapId(&result);
+  MetadataParseResult next_map_id_parse =
+      ParseNextMapId(std::move(next_map_id));
   if (next_map_id_parse.open_result != OpenResult::kSuccess) {
     LogDatabaseOpenResult(next_map_id_parse.open_result);
     DeleteAndRecreateDatabase(next_map_id_parse.histogram_name);
@@ -826,10 +842,10 @@ void SessionStorageContextMojo::OnGotDatabaseMetadata(
 
 SessionStorageContextMojo::MetadataParseResult
 SessionStorageContextMojo::ParseDatabaseVersion(
-    DatabaseMetadataResult* result,
+    ValueAndStatus version,
     std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations) {
-  if (result->version_status.ok()) {
-    if (!metadata_.ParseDatabaseVersion(std::move(result->version),
+  if (version.status.ok()) {
+    if (!metadata_.ParseDatabaseVersion(std::move(version.value),
                                         migration_operations)) {
       return {OpenResult::kInvalidVersion,
               "SessionStorageContext.OpenResultAfterInvalidVersion"};
@@ -838,7 +854,7 @@ SessionStorageContextMojo::ParseDatabaseVersion(
     return {OpenResult::kSuccess, ""};
   }
 
-  if (result->version_status.IsNotFound()) {
+  if (version.status.IsNotFound()) {
     // treat as v0 or new database
     metadata_.ParseDatabaseVersion(base::nullopt, migration_operations);
     return {OpenResult::kSuccess, ""};
@@ -847,7 +863,7 @@ SessionStorageContextMojo::ParseDatabaseVersion(
   // Other read error, Possibly database corruption
   UMA_HISTOGRAM_ENUMERATION(
       "SessionStorageContext.ReadVersionError",
-      leveldb_env::GetLevelDBStatusUMAValue(result->version_status),
+      leveldb_env::GetLevelDBStatusUMAValue(version.status),
       leveldb_env::LEVELDB_STATUS_MAX);
   return {OpenResult::kVersionReadError,
           "SessionStorageContext.OpenResultAfterReadVersionError"};
@@ -855,21 +871,21 @@ SessionStorageContextMojo::ParseDatabaseVersion(
 
 SessionStorageContextMojo::MetadataParseResult
 SessionStorageContextMojo::ParseNamespaces(
-    DatabaseMetadataResult* result,
+    KeyValuePairsAndStatus namespaces,
     std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
 
-  if (!result->namespaces_status.ok()) {
+  if (!namespaces.status.ok()) {
     UMA_HISTOGRAM_ENUMERATION(
         "SessionStorageContext.ReadNamespacesError",
-        leveldb_env::GetLevelDBStatusUMAValue(result->namespaces_status),
+        leveldb_env::GetLevelDBStatusUMAValue(namespaces.status),
         leveldb_env::LEVELDB_STATUS_MAX);
     return {OpenResult::kNamespacesReadError,
             "SessionStorageContext.OpenResultAfterReadNamespacesError"};
   }
 
   bool parsing_success = metadata_.ParseNamespaces(
-      std::move(result->namespaces), &migration_operations);
+      std::move(namespaces.key_value_pairs), &migration_operations);
 
   if (!parsing_success) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -903,21 +919,21 @@ SessionStorageContextMojo::ParseNamespaces(
 }
 
 SessionStorageContextMojo::MetadataParseResult
-SessionStorageContextMojo::ParseNextMapId(DatabaseMetadataResult* result) {
-  if (!result->next_map_id_status.ok()) {
-    if (result->next_map_id_status.IsNotFound())
+SessionStorageContextMojo::ParseNextMapId(ValueAndStatus next_map_id) {
+  if (!next_map_id.status.ok()) {
+    if (next_map_id.status.IsNotFound())
       return {OpenResult::kSuccess, ""};
 
     // Other read error. Possibly database corruption.
     UMA_HISTOGRAM_ENUMERATION(
         "SessionStorageContext.ReadNextMapIdError",
-        leveldb_env::GetLevelDBStatusUMAValue(result->next_map_id_status),
+        leveldb_env::GetLevelDBStatusUMAValue(next_map_id.status),
         leveldb_env::LEVELDB_STATUS_MAX);
     return {OpenResult::kNamespacesReadError,
             "SessionStorageContext.OpenResultAfterReadNextMapIdError"};
   }
 
-  metadata_.ParseNextMapId(std::move(result->next_map_id));
+  metadata_.ParseNextMapId(std::move(next_map_id.value));
   return {OpenResult::kSuccess, ""};
 }
 

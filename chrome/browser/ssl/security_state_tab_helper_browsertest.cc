@@ -2301,11 +2301,15 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SafetyTipFormHistogram) {
         browser()->tab_strip_model()->GetActiveWebContents(),
         "document.getElementById('submit').click();"));
     navigation_observer.Wait();
-    ASSERT_EQ(security_state::SafetyTipStatus::kNone,
-              SecurityStateTabHelper::FromWebContents(
-                  browser()->tab_strip_model()->GetActiveWebContents())
-                  ->GetVisibleSecurityState()
-                  ->safety_tip_status);
+
+    const security_state::SafetyTipInfo safety_tip_info =
+        SecurityStateTabHelper::FromWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents())
+            ->GetVisibleSecurityState()
+            ->safety_tip_info;
+    ASSERT_EQ(security_state::SafetyTipStatus::kNone, safety_tip_info.status);
+    ASSERT_EQ(GURL(), safety_tip_info.safe_url);
+
     // Check that the histogram count logs the safety tip status of the page
     // containing the form, not of the form target page.
     histograms.ExpectUniqueSample(

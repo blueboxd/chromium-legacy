@@ -25,6 +25,7 @@ import org.chromium.android_webview.ui.util.WebViewCrashInfoCollector;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * An activity to show a list of recent WebView crashes.
@@ -37,11 +38,41 @@ public class CrashesListActivity extends Activity {
     private TextView mCrashesSummaryView;
     private WebViewCrashInfoCollector mCrashCollector;
 
+    private static final String CRASH_REPORT_TEMPLATE = ""
+            + "IMPORTANT: Your crash has already been automatically reported to our crash system. "
+            + "You only need to fill this out if you can share more information like steps to "
+            + "reproduce the crash.\n"
+            + "\n"
+            + "Device name:\n"
+            + "Android OS version:\n"
+            + "WebView version (On Android L-M, this is the version of the 'Android System "
+            + "WebView' app. On Android N-P, it's most likely Chrome's version. You can find the "
+            + "version of any app under Settings > Apps > the 3 dots in the upper right > Show "
+            + "system.):\n"
+            + "Application: (Please link to its Play Store page if possible. You can get the link "
+            + "from inside the Play Store app by tapping the 3 dots in the upper right > Share > "
+            + "Copy to clipboard. Or you can find the app on the Play Store website: "
+            + "https://play.google.com/store/apps.)\n"
+            + "Application version:\n"
+            + "\n"
+            + "\n"
+            + "Steps to reproduce:\n"
+            + "(1)\n"
+            + "(2)\n"
+            + "(3)\n"
+            + "\n"
+            + "\n"
+            + "Expected result:\n"
+            + "(What should have happened?)\n"
+            + "\n"
+            + "\n"
+            + "****DO NOT CHANGE BELOW THIS LINE****\n"
+            + "Crash ID: http://crash/%s\n";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setTitle(R.string.crashes_list_activity_title);
         setContentView(R.layout.activity_crashes_list);
 
         mCrashListView = findViewById(R.id.crashes_list);
@@ -94,7 +125,7 @@ public class CrashesListActivity extends Activity {
         private String getCrashInfoLabelText(CrashInfo crashInfo) {
             String status =
                     crashInfo.uploadState == null ? "UNKOWN" : crashInfo.uploadState.toString();
-            return getString(R.string.crash_label, crashInfo.localId, status);
+            return String.format(Locale.US, "Crash (%s) - [%s]", crashInfo.localId, status);
         }
 
         /**
@@ -144,7 +175,7 @@ public class CrashesListActivity extends Activity {
                     .path("/p/chromium/issues/entry")
                     .appendQueryParameter("template", "Webview+Bugs")
                     .appendQueryParameter("comment",
-                            getString(R.string.crash_report_template, crashInfo.uploadId))
+                            String.format(Locale.US, CRASH_REPORT_TEMPLATE, crashInfo.uploadId))
                     .appendQueryParameter("labels", "User-Submitted")
                     .build();
         }
@@ -154,7 +185,7 @@ public class CrashesListActivity extends Activity {
         List<CrashInfo> crashesList = mCrashCollector.loadCrashesInfo(MAX_CRASHES_NUMBER);
         mCrashListView.setAdapter(new CrashListAdapter(crashesList));
 
-        mCrashesSummaryView.setText(getString(R.string.crashes_num, crashesList.size()));
+        mCrashesSummaryView.setText(String.format(Locale.US, "Crashes (%d)", crashesList.size()));
     }
 
     @Override

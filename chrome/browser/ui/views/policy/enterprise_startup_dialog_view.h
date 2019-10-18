@@ -47,7 +47,6 @@ class EnterpriseStartupDialogView : public views::DialogDelegateView {
   bool Close() override;
   bool ShouldShowWindowTitle() const override;
   ui::ModalType GetModalType() const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
 
   // override ui::DialogModal
   int GetDialogButtons() const override;

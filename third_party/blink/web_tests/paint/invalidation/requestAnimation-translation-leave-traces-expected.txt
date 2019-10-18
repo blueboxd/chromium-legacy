@@ -40,6 +40,12 @@ Tested locations: 1200,1500
           "reason": "paint property change"
         }
       ]
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 585],
+      "bounds": [800, 15],
+      "contentsOpaque": true
     }
   ]
 }

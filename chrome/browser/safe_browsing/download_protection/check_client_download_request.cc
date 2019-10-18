@@ -83,9 +83,36 @@ void DeepScanningClientResponseToDownloadCheckResult(
     return;
   }
 
-  // TODO(drubery): Handle DLP violations here as well.
-  *download_result = DownloadCheckResult::SAFE;
-  *download_reason = DownloadCheckResultReason::REASON_DOWNLOAD_SAFE;
+  if (response.has_dlp_scan_verdict()) {
+    bool should_dlp_block = std::any_of(
+        response.dlp_scan_verdict().triggered_rules().begin(),
+        response.dlp_scan_verdict().triggered_rules().end(),
+        [](const DlpDeepScanningVerdict::TriggeredRule& rule) {
+          return rule.action() == DlpDeepScanningVerdict::TriggeredRule::BLOCK;
+        });
+    if (should_dlp_block) {
+      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
+      *download_reason =
+          DownloadCheckResultReason::REASON_SENSITIVE_CONTENT_BLOCK;
+      return;
+    }
+
+    bool should_dlp_warn = std::any_of(
+        response.dlp_scan_verdict().triggered_rules().begin(),
+        response.dlp_scan_verdict().triggered_rules().end(),
+        [](const DlpDeepScanningVerdict::TriggeredRule& rule) {
+          return rule.action() == DlpDeepScanningVerdict::TriggeredRule::WARN;
+        });
+    if (should_dlp_warn) {
+      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_WARNING;
+      *download_reason =
+          DownloadCheckResultReason::REASON_SENSITIVE_CONTENT_WARNING;
+      return;
+    }
+  }
+
+  *download_result = DownloadCheckResult::DEEP_SCANNED_SAFE;
+  *download_reason = DownloadCheckResultReason::REASON_DEEP_SCANNED_SAFE;
 }
 
 }  // namespace

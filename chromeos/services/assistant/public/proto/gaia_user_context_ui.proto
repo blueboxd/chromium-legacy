@@ -25,4 +25,8 @@ message GaiaUserContextUi {
   // Whether Assistant is disabled by Dasher domain admin.
   // This bit only makes sense for GAIA traffic.
   optional bool assistant_disabled_by_dasher_domain = 4;
+
+  // Whether Device Apps is enabled to store user's apps which could help
+  // improve user experience across Google services.
+  optional bool device_apps_enabled = 6;
 }

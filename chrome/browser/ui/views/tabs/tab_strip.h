@@ -294,6 +294,9 @@ class TabStrip : public views::AccessiblePaneView,
       TabGroupId group) const override;
   void SetVisualDataForGroup(TabGroupId group,
                              TabGroupVisualData visual_data) override;
+  void CloseAllTabsInGroup(TabGroupId group) override;
+  void UngroupAllTabsInGroup(TabGroupId group) override;
+  void AddNewTabInGroup(TabGroupId group) override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;

@@ -203,9 +203,7 @@ interface ServiceWorker {
   // https://github.com/WICG/cookie-store/
   // The callback is called once the event handler has run and the waitUntil()
   // promise has settled.
-  DispatchCookieChangeEvent(
-      network.mojom.CanonicalCookie cookie,
-      network.mojom.CookieChangeCause cause)
+  DispatchCookieChangeEvent(network.mojom.CookieChangeInfo change)
       => (ServiceWorkerEventStatus status);
 
   // The Dispatch*FetchEvent() callback is called once the event finishes,

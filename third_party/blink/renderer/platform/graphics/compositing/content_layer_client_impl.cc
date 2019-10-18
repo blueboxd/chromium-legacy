@@ -35,113 +35,26 @@ ContentLayerClientImpl::~ContentLayerClientImpl() {
   cc_picture_layer_->ClearClient();
 }
 
-static int GetTransformId(const TransformPaintPropertyNode* transform,
-                          ContentLayerClientImpl::LayerAsJSONContext& context) {
-  if (!transform)
-    return 0;
-
-  auto transform_lookup_result = context.transform_id_map.find(transform);
-  if (transform_lookup_result != context.transform_id_map.end())
-    return transform_lookup_result->value;
-
-  int parent_id = GetTransformId(transform->Parent(), context);
-  if (transform->IsIdentity() && !transform->RenderingContextId()) {
-    context.transform_id_map.Set(transform, parent_id);
-    return parent_id;
-  }
-
-  int transform_id = context.next_transform_id++;
-  context.transform_id_map.Set(transform, transform_id);
-
-  auto json = std::make_unique<JSONObject>();
-  json->SetInteger("id", transform_id);
-  if (parent_id)
-    json->SetInteger("parent", parent_id);
-
-  if (!transform->IsIdentity())
-    json->SetArray("transform", TransformAsJSONArray(transform->SlowMatrix()));
-
-  if (!transform->IsIdentityOr2DTranslation() &&
-      !transform->Matrix().IsIdentityOrTranslation())
-    json->SetArray("origin", PointAsJSONArray(transform->Origin()));
-
-  if (!transform->FlattensInheritedTransform())
-    json->SetBoolean("flattenInheritedTransform", false);
-
-  if (auto rendering_context = transform->RenderingContextId()) {
-    auto context_lookup_result =
-        context.rendering_context_map.find(rendering_context);
-    int rendering_id = context.rendering_context_map.size() + 1;
-    if (context_lookup_result == context.rendering_context_map.end())
-      context.rendering_context_map.Set(rendering_context, rendering_id);
-    else
-      rendering_id = context_lookup_result->value;
-
-    json->SetInteger("renderingContext", rendering_id);
-  }
-
-  if (!context.transforms_json)
-    context.transforms_json = std::make_unique<JSONArray>();
-  context.transforms_json->PushObject(std::move(json));
-
-  return transform_id;
-}
-
-// This is the CAP version of GraphicsLayer::LayerAsJSONInternal().
-std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
-    LayerAsJSONContext& context) const {
-  auto json = std::make_unique<JSONObject>();
-  json->SetString("name", debug_name_);
-
-  if (context.flags & kLayerTreeIncludesDebugInfo)
-    json->SetString("this", String::Format("%p", cc_picture_layer_.get()));
-
-  FloatPoint position(cc_picture_layer_->offset_to_transform_parent().x(),
-                      cc_picture_layer_->offset_to_transform_parent().y());
-  if (position != FloatPoint())
-    json->SetArray("position", PointAsJSONArray(position));
-
-  IntSize bounds(cc_picture_layer_->bounds().width(),
-                 cc_picture_layer_->bounds().height());
-  if (!bounds.IsEmpty())
-    json->SetArray("bounds", SizeAsJSONArray(bounds));
-
-  if (cc_picture_layer_->contents_opaque())
-    json->SetBoolean("contentsOpaque", true);
-
-  if (!cc_picture_layer_->DrawsContent())
-    json->SetBoolean("drawsContent", false);
-
-  if (!cc_picture_layer_->double_sided())
-    json->SetString("backfaceVisibility", "hidden");
-
-  Color background_color(cc_picture_layer_->background_color());
-  if (background_color.Alpha()) {
-    json->SetString("backgroundColor",
-                    background_color.NameForLayoutTreeAsText());
-  }
-
+void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
+    LayerTreeFlags flags,
+    const cc::Layer& layer,
+    JSONObject& json) const {
 #if DCHECK_IS_ON()
-  if (context.flags & kLayerTreeIncludesDebugInfo)
-    json->SetValue("paintChunkContents", paint_chunk_debug_data_->Clone());
+  if (flags & kLayerTreeIncludesDebugInfo)
+    json.SetValue("paintChunkContents", paint_chunk_debug_data_->Clone());
 #endif
 
-  if ((context.flags & kLayerTreeIncludesPaintInvalidations) &&
+  if ((flags & kLayerTreeIncludesPaintInvalidations) &&
       raster_invalidator_.GetTracking())
-    raster_invalidator_.GetTracking()->AsJSON(json.get());
-
-  if (int transform_id = GetTransformId(&layer_state_.Transform(), context))
-    json->SetInteger("transform", transform_id);
+    raster_invalidator_.GetTracking()->AsJSON(&json);
 
 #if DCHECK_IS_ON()
-  if (context.flags & kLayerTreeIncludesPaintRecords) {
+  if (flags & kLayerTreeIncludesPaintRecords) {
     LoggingCanvas canvas;
     cc_display_item_list_->Raster(&canvas);
-    json->SetValue("paintRecord", canvas.Log());
+    json.SetValue("paintRecord", canvas.Log());
   }
 #endif
-
-  return json;
 }
 
 std::unique_ptr<base::trace_event::TracedValue>

@@ -66,6 +66,11 @@ const char kTypeErrorResult[] = "TypeError";
 #define EXPECT_UNSUPPORTED(test) EXPECT_EQ(kUnsupportedResult, test)
 #define EXPECT_TYPEERROR(test) EXPECT_EQ(kTypeErrorResult, test)
 
+// Any support is acceptable. This can be used around new CDM check-in time
+// where test expectations can change based on the new CDM's capability.
+// For any usage of EXPECT_ANY, add a TODO explaining the plan to fix it.
+#define EXPECT_ANY(test) ignore_result(test)
+
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 #define EXPECT_AV1 EXPECT_SUCCESS
 #else
@@ -1009,9 +1014,11 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_WebM) {
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
                                             audio_webm_codecs()));
 
+  // TODO(crbug.com/996372): Change to EXPECT_WV_SUCCESS after new CDM is in.
+  EXPECT_ANY(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
+                                    vp9_profile2_codecs()));
+
   // Invalid or non-Webm codecs.
-  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
-                                            vp9_profile2_codecs()));
   EXPECT_UNSUPPORTED(
       IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType, invalid_codecs()));
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoWebMMimeType,
@@ -1061,9 +1068,11 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Video_MP4) {
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
                                             audio_mp4_flac_codecs()));
 
+  // TODO(crbug.com/996372): Change to EXPECT_WV_SUCCESS after new CDM is in.
+  EXPECT_ANY(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
+                                    vp9_profile2_codecs()));
+
   // Invalid or non-MP4 codecs.
-  EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,
-                                            vp9_profile2_codecs()));
   EXPECT_UNSUPPORTED(
       IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType, invalid_codecs()));
   EXPECT_UNSUPPORTED(IsSupportedByKeySystem(kWidevine, kVideoMP4MimeType,

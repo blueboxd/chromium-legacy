@@ -549,6 +549,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE:
       MigrateLocalCards(browser_);
       break;
+    case IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE:
+      MaybeShowSaveLocalCardSignInPromo(browser_);
+      break;
+    case IDC_CLOSE_SIGN_IN_PROMO:
+      CloseSaveLocalCardSignInPromo(browser_);
+      break;
     case IDC_TRANSLATE_PAGE:
       Translate(browser_);
       break;
@@ -995,6 +1001,9 @@ void BrowserCommandController::InitCommandState() {
   if (normal_window)
     command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
 #endif
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE, true);
+  command_updater_.UpdateCommandEnabled(IDC_CLOSE_SIGN_IN_PROMO, true);
 
   UpdateShowSyncState(true);
 

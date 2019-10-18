@@ -1484,7 +1484,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_46),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_39)};
+                              quic::QUIC_VERSION_43)};
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions));
@@ -1536,7 +1536,7 @@ TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
       "{\"alternative_service\":[{"
-      "\"advertised_versions\":[39,46],\"expiration\":\"13756212000000000\","
+      "\"advertised_versions\":[43,46],\"expiration\":\"13756212000000000\","
       "\"port\":443,\"protocol_str\":\"quic\"},{\"advertised_versions\":[],"
       "\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
       "\"port\":1234,\"protocol_str\":\"h2\"}],"
@@ -1567,7 +1567,7 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
       "{\"port\":443,\"protocol_str\":\"quic\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
       "\"expiration\":\"9223372036854775807\","
-      "\"advertised_versions\":[46,39]}]}");
+      "\"advertised_versions\":[46,43]}]}");
   ASSERT_TRUE(server_value);
   base::DictionaryValue* server_dict;
   ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
@@ -1605,7 +1605,7 @@ TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
       alternative_service_info_vector[1].advertised_versions();
   EXPECT_EQ(2u, loaded_advertised_versions.size());
   EXPECT_EQ(quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                                    quic::QUIC_VERSION_39),
+                                    quic::QUIC_VERSION_43),
             loaded_advertised_versions[0]);
   EXPECT_EQ(quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                                     quic::QUIC_VERSION_46),
@@ -1681,7 +1681,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_46),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_39)};
+                              quic::QUIC_VERSION_43)};
   alternative_service_info_vector_2.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           quic_alternative_service1, expiration1, advertised_versions));
@@ -1701,7 +1701,7 @@ TEST_F(HttpServerPropertiesManagerTest,
       "\"server_id\":\"https://mail.google.com:80\","
       "\"server_info\":\"quic_server_info1\"}],"
       "\"servers\":["
-      "{\"alternative_service\":[{\"advertised_versions\":[39,46],"
+      "{\"alternative_service\":[{\"advertised_versions\":[43,46],"
       "\"expiration\":\"13756212000000000\",\"port\":443,"
       "\"protocol_str\":\"quic\"}],"
       "\"isolation\":[],"
@@ -1717,7 +1717,7 @@ TEST_F(HttpServerPropertiesManagerTest,
   // A same set of QUIC versions but listed in a different order.
   quic::ParsedQuicVersionVector advertised_versions_2 = {
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                              quic::QUIC_VERSION_39),
+                              quic::QUIC_VERSION_43),
       quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                               quic::QUIC_VERSION_46)};
   alternative_service_info_vector_3.push_back(

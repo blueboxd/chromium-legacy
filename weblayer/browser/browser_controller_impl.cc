@@ -13,6 +13,7 @@
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/browser_observer.h"
+#include "weblayer/public/download_delegate.h"
 #include "weblayer/public/fullscreen_delegate.h"
 
 #if !defined(OS_ANDROID)
@@ -73,6 +74,10 @@ BrowserControllerImpl* BrowserControllerImpl::FromWebContents(
   return reinterpret_cast<UserData*>(
              web_contents->GetUserData(&kWebContentsUserDataKey))
       ->controller;
+}
+
+void BrowserControllerImpl::SetDownloadDelegate(DownloadDelegate* delegate) {
+  download_delegate_ = delegate;
 }
 
 void BrowserControllerImpl::SetFullscreenDelegate(

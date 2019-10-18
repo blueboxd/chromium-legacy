@@ -12,18 +12,22 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
@@ -414,6 +418,25 @@ bool ManagePasswordsBubbleModel::ShouldShowFooter() const {
 
 const base::string16& ManagePasswordsBubbleModel::GetCurrentUsername() const {
   return pending_password_.username_value;
+}
+
+int ManagePasswordsBubbleModel::GetTopIllustration(bool dark_mode) const {
+  if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+      state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
+    int image = base::GetFieldTrialParamByFeatureAsInt(
+        password_manager::features::kPasswordSaveIllustration, "image", 0);
+    switch (image) {
+      case 1:
+        return dark_mode ? IDR_SAVE_PASSWORD1_DARK : IDR_SAVE_PASSWORD1;
+      case 2:
+        return dark_mode ? IDR_SAVE_PASSWORD2_DARK : IDR_SAVE_PASSWORD2;
+      case 3:
+        return dark_mode ? IDR_SAVE_PASSWORD3_DARK : IDR_SAVE_PASSWORD3;
+      default:
+        return 0;
+    }
+  }
+  return 0;
 }
 
 bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {

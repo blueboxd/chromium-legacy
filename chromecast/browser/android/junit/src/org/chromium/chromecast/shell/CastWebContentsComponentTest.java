@@ -68,8 +68,8 @@ public class CastWebContentsComponentTest {
     public void testStartStartsWebContentsActivity() {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.start(mStartParams);
         Intent intent = mShadowActivity.getNextStartedActivity();
         Assert.assertEquals(
@@ -87,8 +87,8 @@ public class CastWebContentsComponentTest {
         LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
                 .registerReceiver(receiver, intentFilter);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.start(mStartParams);
         component.stop(ContextUtils.getApplicationContext());
 
@@ -102,8 +102,8 @@ public class CastWebContentsComponentTest {
     public void testStartBindsWebContentsService() {
         Assume.assumeTrue(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.start(mStartParams);
         component.stop(mActivity);
 
@@ -118,8 +118,8 @@ public class CastWebContentsComponentTest {
     public void testStopUnbindsWebContentsService() {
         Assume.assumeTrue(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.start(mStartParams);
         component.stop(mActivity);
 
@@ -136,8 +136,8 @@ public class CastWebContentsComponentTest {
         LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
                 .registerReceiver(receiver, intentFilter);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.enableTouchInput(true);
 
         LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
@@ -151,8 +151,8 @@ public class CastWebContentsComponentTest {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
         Assume.assumeFalse(BuildConfig.ENABLE_CAST_FRAGMENT);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.enableTouchInput(true);
 
         component.start(mStartParams);
@@ -167,8 +167,8 @@ public class CastWebContentsComponentTest {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
         Assume.assumeFalse(BuildConfig.ENABLE_CAST_FRAGMENT);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.enableTouchInput(false);
 
         component.start(mStartParams);
@@ -183,8 +183,8 @@ public class CastWebContentsComponentTest {
         CastWebContentsComponent.OnComponentClosedHandler callback =
                 Mockito.mock(CastWebContentsComponent.OnComponentClosedHandler.class);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, callback, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, callback, null, false, false, false, true);
         component.start(mStartParams);
         CastWebContentsComponent.onComponentClosed(SESSION_ID);
         verify(callback).onComponentClosed();
@@ -193,23 +193,9 @@ public class CastWebContentsComponentTest {
     }
 
     @Test
-    public void testOnKeyDownCallsCallback() {
-        CastWebContentsComponent.OnKeyDownHandler callback =
-                Mockito.mock(CastWebContentsComponent.OnKeyDownHandler.class);
-
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, callback, null, false, false, false, true);
-        component.start(mStartParams);
-        CastWebContentsComponent.onKeyDown(SESSION_ID, 42);
-        component.stop(mActivity);
-
-        verify(callback).onKeyDown(42);
-    }
-
-    @Test
     public void testStopDoesNotUnbindServiceIfStartWasNotCalled() {
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
 
         component.stop(mActivity);
 
@@ -221,8 +207,8 @@ public class CastWebContentsComponentTest {
         CastWebContentsComponent.SurfaceEventHandler callback =
                 Mockito.mock(CastWebContentsComponent.SurfaceEventHandler.class);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, callback, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, callback, false, false, false, true);
         component.start(mStartParams);
         CastWebContentsComponent.onVisibilityChange(SESSION_ID, 2);
         component.stop(mActivity);
@@ -235,8 +221,8 @@ public class CastWebContentsComponentTest {
         CastWebContentsComponent.SurfaceEventHandler callback =
                 Mockito.mock(CastWebContentsComponent.SurfaceEventHandler.class);
 
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, callback, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, callback, false, false, false, true);
         component.start(mStartParams);
         CastWebContentsComponent.onGesture(SESSION_ID, 1);
         component.stop(mActivity);
@@ -246,8 +232,8 @@ public class CastWebContentsComponentTest {
 
     @Test
     public void testStartWebContentsComponentMultipleTimes() {
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         CastWebContentsComponent.Delegate delegate = mock(CastWebContentsComponent.Delegate.class);
         component.setDelegate(delegate);
         component.start(mStartParams);
@@ -268,8 +254,8 @@ public class CastWebContentsComponentTest {
         // Sending focus events to a started Activity is unnecessary because the Activity is always
         // in focus, and issues with onNewIntent() and duplicate detection can cause unintended
         // side effects.
-        CastWebContentsComponent component = new CastWebContentsComponent(
-                SESSION_ID, null, null, null, false, false, false, true);
+        CastWebContentsComponent component =
+                new CastWebContentsComponent(SESSION_ID, null, null, false, false, false, true);
         component.setDelegate(component.new ActivityDelegate());
         component.start(mStartParams);
         Assert.assertEquals(mShadowActivity.getNextStartedActivity().getComponent().getClassName(),

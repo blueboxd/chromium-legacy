@@ -138,6 +138,9 @@ class ManagePasswordsBubbleModel {
   // Returns the value for the username field when the bubble is opened.
   const base::string16& GetCurrentUsername() const;
 
+  // Returns the ID of the picture to show above the title.
+  int GetTopIllustration(bool dark_mode) const;
+
   // Returns true and updates the internal state iff the Save bubble should
   // switch to show a promotion after the password was saved. Otherwise,
   // returns false and leaves the current state.

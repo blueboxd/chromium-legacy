@@ -22,6 +22,6 @@
     Exposed=Window,
     HTMLConstructor
 ] interface HTMLBaseElement : HTMLElement {
-    [CEReactions, RaisesException=Setter] attribute URLString href;
+    [CEReactions] attribute USVString href;
     [CEReactions, Reflect] attribute DOMString target;
 };

@@ -1141,6 +1141,15 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Malformed response"/>
 </enum>
 
+<enum name="AggregatedSearchRankerError">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="LoadModelFailed"/>
+  <int value="2" label="CreateGraphFailed"/>
+  <int value="3" label="LoadExamplePreprocessorConfigFailed"/>
+  <int value="4" label="VectorizeFeaturesFailed"/>
+  <int value="5" label="InferenceExecutionFailed"/>
+</enum>
+
 <enum name="AlsaSampleFormatType">
   <int value="-1" label="SND_PCM_FORMAT_UNKNOWN"/>
   <int value="0" label="SND_PCM_FORMAT_S8"/>
@@ -6687,6 +6696,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanPresent">
   <int value="0" label="Not Present"/>
   <int value="1" label="Present"/>
+</enum>
+
+<enum name="BooleanPreviouslyVisited">
+  <int value="0" label="Was not visited before"/>
+  <int value="1" label="Was visited before"/>
 </enum>
 
 <enum name="BooleanProcessReuseDisallowed">
@@ -18330,11 +18344,12 @@ Called by update_net_error_codes.py.-->
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
   <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
-  <int value="627" label="ForceDisableAudioSandbox"/>
+  <int value="627" label="AudioSandboxEnabled"/>
   <int value="628" label="DeviceLoginScreenScreenMagnifierType"/>
   <int value="629" label="CorsMitigationList"/>
   <int value="630" label="CorsLegacyModeEnabled"/>
   <int value="631" label="ExternalPrintServersWhitelist"/>
+  <int value="632" label="ExternalProtocolDialogShowAlwaysOpenCheckbox"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -20899,6 +20914,9 @@ Called by update_net_error_codes.py.-->
   <int value="1391" label="AUTOTESTPRIVATE_WAITFORDISPLAYROTATION"/>
   <int value="1392" label="AUTOTESTPRIVATE_ARCAPPTRACINGSTART"/>
   <int value="1393" label="AUTOTESTPRIVATE_ARCAPPTRACINGSTOPANDANALYZE"/>
+  <int value="1394" label="AUTOTESTPRIVATE_GETAPPWINDOWLIST"/>
+  <int value="1395" label="AUTOTESTPRIVATE_SETAPPWINDOWSTATE"/>
+  <int value="1396" label="AUTOTESTPRIVATE_CLOSEAPPWINDOW"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -35936,6 +35954,8 @@ from previous Chrome versions.
   <int value="-1046627610" label="password-import:enabled"/>
   <int value="-1045900007" label="NoCreditCardAbort:disabled"/>
   <int value="-1045882995" label="UseNewDoodleApi:enabled"/>
+  <int value="-1044244605"
+      label="UpdateNotificationSchedulingIntegration:enabled"/>
   <int value="-1042579955" label="ChromeOSParentalControlsSettings:enabled"/>
   <int value="-1041650038" label="enable-forced-migration-to-tabbed-mode"/>
   <int value="-1040000888" label="ContextMenuSearchWithGoogleLens:disabled"/>
@@ -37044,6 +37064,7 @@ from previous Chrome versions.
   <int value="416887895" label="enable-password-change-support"/>
   <int value="417709910"
       label="AutofillSendExperimentIdsInPaymentsRPCs:disabled"/>
+  <int value="418769094" label="MixedContentSiteSetting:enabled"/>
   <int value="422307097" label="PhysicalWeb:disabled"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
@@ -37164,6 +37185,8 @@ from previous Chrome versions.
   <int value="603326800" label="UsePasswordSeparatedSigninFlow:enabled"/>
   <int value="603988014" label="NetworkService:enabled"/>
   <int value="605150752" label="WebUSB:disabled"/>
+  <int value="606061406"
+      label="UpdateNotificationSchedulingIntegration:disabled"/>
   <int value="606288133" label="enable-print-preview-register-promos"/>
   <int value="606512202" label="AutofillCreditCardPopupLayout:enabled"/>
   <int value="606723570" label="SharingUseDeviceInfo:disabled"/>
@@ -37326,6 +37349,7 @@ from previous Chrome versions.
   <int value="807447752" label="ChromeMemex:disabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
   <int value="809698565" label="WebRtcHybridAgc:enabled"/>
+  <int value="811057677" label="ConfirmNtpSuggestionRemovals:disabled"/>
   <int value="811374216" label="disable-new-bookmark-apps"/>
   <int value="811726957" label="SlideTopChromeWithPageScrolls:enabled"/>
   <int value="812710781" label="SyncUSSBookmarks:disabled"/>
@@ -37943,6 +37967,7 @@ from previous Chrome versions.
   <int value="1639190590" label="UseMessagesGoogleComDomain:enabled"/>
   <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
+  <int value="1645447927" label="MixedContentSiteSetting:disabled"/>
   <int value="1645479440" label="HistoryManipulationIntervention:disabled"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>
   <int value="1649121568" label="DynamicTcmallocTuning:disabled"/>
@@ -38027,6 +38052,7 @@ from previous Chrome versions.
   <int value="1766676896" label="affiliation-based-matching:disabled"/>
   <int value="1767411597" label="DisallowUnsafeHttpDownloads:enabled"/>
   <int value="1768759000" label="AutofillProfileServerValidation:disabled"/>
+  <int value="1770189877" label="ConfirmNtpSuggestionRemovals:enabled"/>
   <int value="1771548551" label="DisableKeepaliveFetch:enabled"/>
   <int value="1772454319" label="enable-storage-manager"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
@@ -53980,6 +54006,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Lax method unsafe"/>
   <int value="2" label="Laxly same-site"/>
   <int value="3" label="Strictly same-site"/>
+  <int value="33"
+      label="Lax method unsafe insecure site-for-cookies to secure request"/>
+  <int value="34"
+      label="Laxly same-site insecure site-for-cookies to secure request"/>
+  <int value="35"
+      label="Strictly same-site insecure site-for-cookies to secure request"/>
+  <int value="65"
+      label="Lax method unsafe secure site-for-cookies to insecure request"/>
+  <int value="66"
+      label="Laxly same-site secure site-for-cookies to insecure request"/>
+  <int value="67"
+      label="Strictly same-site secure site-for-cookies to insecure request"/>
 </enum>
 
 <enum name="SamlInSessionPasswordChangeEvent">
@@ -54328,6 +54366,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="ASYNC_SCANNING"/>
   <int value="8" label="BLOCKED_PASSWORD_PROTECTED"/>
   <int value="9" label="BLOCKED_TOO_LARGE"/>
+  <int value="10" label="SENSITIVE_CONTENT_WARNING"/>
+  <int value="11" label="SENSITIVE_CONTENT_BLOCK"/>
+  <int value="12" label="DEEP_SCANNED_SAFE"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">
@@ -63612,6 +63653,13 @@ Full version information for the fingerprint enum values:
   </int>
 </enum>
 
+<enum name="VRStartReason">
+  <int value="1" label="Headset Activation"/>
+  <int value="2" label="Presentation Requset"/>
+  <int value="3" label="(obsolete) Deep linked app"/>
+  <int value="4" label="Intent Launch"/>
+</enum>
+
 <enum name="VRSuppressedElement">
   <int value="0" label="File chooser was suppressed in VR"/>
   <int value="1" label="Bluetooth picker was suppressed in VR"/>
@@ -67287,11 +67335,29 @@ Full version information for the fingerprint enum values:
   <int value="1" label="OpenVR"/>
 </enum>
 
+<enum name="XRSessionMode">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Inline"/>
+  <int value="2" label="Immersive VR"/>
+  <int value="3" label="Immersive AR"/>
+</enum>
+
+<enum name="XRSessionModeRequest">
+  <int value="0" label="Inline"/>
+  <int value="1" label="Immersive VR"/>
+  <int value="2" label="Immersive AR"/>
+</enum>
+
 <enum name="XRSessionRequestDialogAction">
   <int value="0" label="UserConsented"/>
   <int value="1" label="UserDenied"/>
   <int value="2" label="UserAbortedConsentFlow"/>
   <int value="3" label="UserConsentedAfterBounce"/>
+</enum>
+
+<enum name="XRSessionRequestStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error"/>
 </enum>
 
 <enum name="YoungGenerationHandling">

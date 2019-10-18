@@ -18,12 +18,11 @@ class MainDelegateImpl : public MainDelegate {
 };
 
 // This is called by the VM when the shared library is first loaded.
-bool OnJNIOnLoadInit(const std::string& pak_name) {
+bool OnJNIOnLoadInit() {
   if (!content::android::OnJNIOnLoadInit())
     return false;
   weblayer::MainParams params;
   params.delegate = new weblayer::MainDelegateImpl;
-  params.pak_name = pak_name;
   params.brand = "WebLayer";
 
   base::android::SetVersionNumber(PRODUCT_VERSION);

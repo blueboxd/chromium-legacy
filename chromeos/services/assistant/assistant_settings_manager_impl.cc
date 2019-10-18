@@ -195,6 +195,22 @@ void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
           });
 }
 
+void AssistantSettingsManagerImpl::SyncDeviceAppsStatus(
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
+
+  SettingsUiSelector selector;
+  ConsentFlowUiSelector* consent_flow_ui =
+      selector.mutable_consent_flow_ui_selector();
+  consent_flow_ui->set_flow_id(
+      ActivityControlSettingsUiSelector::ASSISTANT_SUW_ONBOARDING_ON_CHROME_OS);
+  selector.set_gaia_user_context_ui(true);
+  GetSettings(
+      selector.SerializeAsString(),
+      base::BindOnce(&AssistantSettingsManagerImpl::HandleDeviceAppsStatusSync,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void AssistantSettingsManagerImpl::HandleSpeakerIdEnrollmentUpdate(
     const assistant_client::SpeakerIdEnrollmentUpdate& update) {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
@@ -261,6 +277,34 @@ void AssistantSettingsManagerImpl::HandleStopSpeakerIdEnrollment(
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
   speaker_id_enrollment_client_.reset();
   callback.Run();
+}
+
+void AssistantSettingsManagerImpl::HandleDeviceAppsStatusSync(
+    base::OnceCallback<void(bool)> callback,
+    const std::string& settings) {
+  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
+
+  SettingsUi settings_ui;
+  if (!settings_ui.ParseFromString(settings)) {
+    LOG(ERROR) << "Failed to parse the response proto, set the DA bit to false";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!settings_ui.has_gaia_user_context_ui()) {
+    LOG(ERROR) << "Failed to get gaia user context, set the DA bit to false";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  const auto& gaia_user_context_ui = settings_ui.gaia_user_context_ui();
+  if (!gaia_user_context_ui.has_device_apps_enabled()) {
+    LOG(ERROR) << "Failed to get the device apps bit, set it to false";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(gaia_user_context_ui.device_apps_enabled());
 }
 
 void AssistantSettingsManagerImpl::UpdateServerDeviceSettings() {

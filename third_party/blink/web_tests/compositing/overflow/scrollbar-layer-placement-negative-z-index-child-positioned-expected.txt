@@ -38,6 +38,12 @@
       "bounds": [220, 236],
       "backgroundColor": "#FFFFFF",
       "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [218, 5],
+      "bounds": [7, 160],
+      "transform": 2
     }
   ],
   "transforms": [

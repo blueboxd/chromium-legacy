@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download;
 import android.graphics.Bitmap;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.download.ResumeMode;
 import org.chromium.components.offline_items_collection.ContentId;

@@ -359,12 +359,8 @@ void Connector::ResumeIncomingMethodCallProcessing() {
     if (!weak_self)
       return;
   } else {
-    for (size_t i = 0; i < dispatch_queue_.size(); ++i) {
-      task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                        &Connector::DispatchNextMessageInQueue),
-                                    weak_self_));
-    }
+    while (num_pending_dispatch_tasks_ < dispatch_queue_.size())
+      PostDispatchNextMessageInQueue();
   }
 
   paused_ = false;
@@ -619,6 +615,19 @@ bool Connector::DispatchMessage(Message message) {
   return true;
 }
 
+void Connector::PostDispatchNextMessageInQueue() {
+  DCHECK_LT(num_pending_dispatch_tasks_, dispatch_queue_.size());
+  ++num_pending_dispatch_tasks_;
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Connector::CallDispatchNextMessageInQueue, weak_self_));
+}
+
+void Connector::CallDispatchNextMessageInQueue() {
+  --num_pending_dispatch_tasks_;
+  DispatchNextMessageInQueue();
+}
+
 bool Connector::DispatchNextMessageInQueue() {
   if (error_ || paused_)
     return false;
@@ -681,10 +690,8 @@ void Connector::ReadAllAvailableMessages() {
         return;
     } else {
       dispatch_queue_.push(std::move(message));
-      task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(base::IgnoreResult(
-                                        &Connector::DispatchNextMessageInQueue),
-                                    weak_self_));
+      if (num_pending_dispatch_tasks_ < dispatch_queue_.size())
+        PostDispatchNextMessageInQueue();
     }
 
     first_message_in_batch = false;

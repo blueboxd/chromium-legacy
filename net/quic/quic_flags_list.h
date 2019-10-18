@@ -393,3 +393,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_50, false)
 
 // If true, enable QUIC MTU discovery version 2.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_mtu_discovery_v2, false)
+
+// If true, QUIC connection close packet will be sent at all available
+// encryption levels.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_close_all_encryptions_levels,
+          false)

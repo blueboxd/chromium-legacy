@@ -286,6 +286,18 @@ AXPlatformNodeWinTest::GetRootIRawElementProviderFragment() {
   return QueryInterfaceFromNode<IRawElementProviderFragment>(GetRootNode());
 }
 
+Microsoft::WRL::ComPtr<IRawElementProviderFragment>
+AXPlatformNodeWinTest::IRawElementProviderFragmentFromNode(AXNode* node) {
+  AXPlatformNode* platform_node = AXPlatformNodeFromNode(node);
+  gfx::NativeViewAccessible native_view =
+      platform_node->GetNativeViewAccessible();
+  ComPtr<IUnknown> unknown_node = native_view;
+  ComPtr<IRawElementProviderFragment> fragment_node;
+  unknown_node.As(&fragment_node);
+
+  return fragment_node;
+}
+
 ComPtr<IAccessible> AXPlatformNodeWinTest::IAccessibleFromNode(AXNode* node) {
   return QueryInterfaceFromNode<IAccessible>(node);
 }
@@ -368,11 +380,19 @@ ComPtr<IAccessibleTableCell> AXPlatformNodeWinTest::GetCellInTable() {
 
 void AXPlatformNodeWinTest::InitFragmentRoot() {
   test_fragment_root_delegate_ = std::make_unique<TestFragmentRootDelegate>();
-  test_fragment_root_delegate_->child_ =
-      AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
+  ax_fragment_root_.reset(InitNodeAsFragmentRoot(
+      GetRootNode(), test_fragment_root_delegate_.get()));
+}
 
-  ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(
-      gfx::kMockAcceleratedWidget, test_fragment_root_delegate_.get());
+AXFragmentRootWin* AXPlatformNodeWinTest::InitNodeAsFragmentRoot(
+    AXNode* node,
+    TestFragmentRootDelegate* delegate) {
+  delegate->child_ = AXPlatformNodeFromNode(node)->GetNativeViewAccessible();
+  if (node->parent())
+    delegate->parent_ =
+        AXPlatformNodeFromNode(node->parent())->GetNativeViewAccessible();
+
+  return new AXFragmentRootWin(gfx::kMockAcceleratedWidget, delegate);
 }
 
 ComPtr<IRawElementProviderFragmentRoot>

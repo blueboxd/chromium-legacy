@@ -993,7 +993,7 @@ class BBJSONGenerator(object):
         os.path.join(os.path.dirname(__file__),
                      '..', '..', 'infra', 'config'))
     milo_configs = [
-        os.path.join(infra_config_dir, 'luci-milo.cfg'),
+        os.path.join(infra_config_dir, 'generated', 'luci-milo.cfg'),
         os.path.join(infra_config_dir, 'luci-milo-dev.cfg'),
     ]
     for c in milo_configs:

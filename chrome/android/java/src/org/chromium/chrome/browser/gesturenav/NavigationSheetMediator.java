@@ -16,6 +16,7 @@ import android.view.View;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconUtils;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
@@ -42,6 +43,8 @@ class NavigationSheetMediator {
     private final int mFaviconSize;
     private final ModelList mModelList;
     private final Drawable mHistoryIcon;
+    private final Drawable mDefaultIcon;
+    private final String mNewTabText;
 
     private NavigationHistory mHistory;
 
@@ -80,6 +83,9 @@ class NavigationSheetMediator {
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mHistoryIcon = TintedDrawable.constructTintedDrawable(
                 context, R.drawable.ic_history_googblue_24dp, R.color.default_icon_color);
+        mDefaultIcon = TintedDrawable.constructTintedDrawable(
+                context, R.drawable.ic_chrome, R.color.default_icon_color);
+        mNewTabText = context.getResources().getString(R.string.menu_new_tab);
     }
 
     /**
@@ -131,14 +137,22 @@ class NavigationSheetMediator {
         if (mModelList.size() == 0) return;
         for (int i = 0; i < mHistory.getEntryCount(); i++) {
             if (TextUtils.equals(pageUrl, mHistory.getEntryAtIndex(i).getUrl())) {
-                if (favicon == null) favicon = mIconGenerator.generateIconForUrl(pageUrl);
-                mModelList.get(i).model.set(ItemProperties.ICON, new BitmapDrawable(favicon));
+                Drawable drawable;
+                if (favicon == null) {
+                    drawable = NewTabPage.isNTPUrl(pageUrl)
+                            ? mDefaultIcon
+                            : new BitmapDrawable(mIconGenerator.generateIconForUrl(pageUrl));
+                } else {
+                    drawable = new BitmapDrawable(favicon);
+                }
+                mModelList.get(i).model.set(ItemProperties.ICON, drawable);
             }
         }
     }
 
-    private static String getEntryText(NavigationEntry entry) {
+    private String getEntryText(NavigationEntry entry) {
         String entryText = entry.getTitle();
+        if (NewTabPage.isNTPUrl(entry.getUrl())) entryText = mNewTabText;
         if (TextUtils.isEmpty(entryText)) entryText = entry.getVirtualUrl();
         if (TextUtils.isEmpty(entryText)) entryText = entry.getUrl();
         return entryText;

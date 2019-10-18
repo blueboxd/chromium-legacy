@@ -315,6 +315,15 @@ void BrowserTabStripController::CloseTab(int model_index,
                              TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 }
 
+void BrowserTabStripController::UngroupAllTabsInGroup(TabGroupId group) {
+  model_->RemoveFromGroup(ListTabsInGroup(group));
+}
+
+void BrowserTabStripController::AddNewTabInGroup(TabGroupId group) {
+  const std::vector<int> tabs = ListTabsInGroup(group);
+  model_->delegate()->AddTabAt(GURL(), tabs.back() + 1, true, group);
+}
+
 void BrowserTabStripController::MoveTab(int start_index, int final_index) {
   model_->MoveWebContentsAt(start_index, final_index, false);
 }

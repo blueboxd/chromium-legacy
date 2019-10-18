@@ -81,6 +81,9 @@ AccountChooserDialogView::AccountChooserDialogView(
       show_signin_button_(false) {
   DCHECK(controller);
   DCHECK(web_contents);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN));
   set_close_on_deactivate(false);
   SetArrow(views::BubbleBorder::NONE);
   set_margins(gfx::Insets(margins().top(), 0, margins().bottom(), 0));
@@ -131,18 +134,6 @@ int AccountChooserDialogView::GetDialogButtons() const {
   if (show_signin_button_)
     return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
   return ui::DIALOG_BUTTON_CANCEL;
-}
-
-base::string16 AccountChooserDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  int message_id = 0;
-  if (button == ui::DIALOG_BUTTON_OK)
-    message_id = IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN;
-  else if (button == ui::DIALOG_BUTTON_CANCEL)
-    message_id = IDS_APP_CANCEL;
-  else
-    NOTREACHED();
-  return l10n_util::GetStringUTF16(message_id);
 }
 
 std::unique_ptr<views::View> AccountChooserDialogView::CreateFootnoteView() {

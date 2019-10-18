@@ -622,7 +622,7 @@ ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
 }
 
 // static
-network::mojom::URLLoaderFactoryPtrInfo
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 ChromeContentBrowserClientExtensionsPart::
     CreateURLLoaderFactoryForNetworkRequests(
         content::RenderProcessHost* process,

@@ -31,6 +31,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace extensions {
@@ -613,16 +614,16 @@ ContentHash::FetchKey ContentVerifier::GetFetchKey(
 
   // Create a new mojo pipe. It's safe to pass this around and use immediately,
   // even though it needs to finish initialization on the UI thread.
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      url_loader_factory_remote;
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ContentVerifier::BindURLLoaderFactoryReceiverOnUIThread,
-                     this, mojo::MakeRequest(&url_loader_factory_ptr)));
-  network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_info =
-      url_loader_factory_ptr.PassInterface();
+      base::BindOnce(
+          &ContentVerifier::BindURLLoaderFactoryReceiverOnUIThread, this,
+          url_loader_factory_remote.InitWithNewPipeAndPassReceiver()));
   return ContentHash::FetchKey(
       extension_id, extension_root, extension_version,
-      std::move(url_loader_factory_info),
+      std::move(url_loader_factory_remote),
       delegate_->GetSignatureFetchUrl(extension_id, extension_version),
       delegate_->GetPublicKey());
 }

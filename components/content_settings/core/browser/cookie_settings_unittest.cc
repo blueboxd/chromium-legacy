@@ -18,7 +18,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
-#include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -475,27 +474,19 @@ TEST_F(CookieSettingsTest, ThirdPartySettingObserver) {
 TEST_F(CookieSettingsTest, LegacyCookieAccessAllowAll) {
   settings_map_->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, CONTENT_SETTING_ALLOW);
-  EXPECT_EQ(
-      net::CookieAccessSemantics::LEGACY,
-      cookie_settings_->GetCookieAccessSemanticsForDomain(
-          net::cookie_util::CookieOriginToURL(kDomain, true /* is_https */)));
   EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
-            cookie_settings_->GetCookieAccessSemanticsForDomain(
-                net::cookie_util::CookieOriginToURL(kDotDomain,
-                                                    true /* is_https */)));
+            cookie_settings_->GetCookieAccessSemanticsForDomain(kDomain));
+  EXPECT_EQ(net::CookieAccessSemantics::LEGACY,
+            cookie_settings_->GetCookieAccessSemanticsForDomain(kDotDomain));
 }
 
 TEST_F(CookieSettingsTest, LegacyCookieAccessBlockAll) {
   settings_map_->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, CONTENT_SETTING_BLOCK);
-  EXPECT_EQ(
-      net::CookieAccessSemantics::NONLEGACY,
-      cookie_settings_->GetCookieAccessSemanticsForDomain(
-          net::cookie_util::CookieOriginToURL(kDomain, true /* is_https */)));
   EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
-            cookie_settings_->GetCookieAccessSemanticsForDomain(
-                net::cookie_util::CookieOriginToURL(kDotDomain,
-                                                    false /* is_https */)));
+            cookie_settings_->GetCookieAccessSemanticsForDomain(kDomain));
+  EXPECT_EQ(net::CookieAccessSemantics::NONLEGACY,
+            cookie_settings_->GetCookieAccessSemanticsForDomain(kDotDomain));
 }
 
 // Test SameSite-by-default disabled (default semantics is LEGACY)
@@ -525,11 +516,7 @@ TEST_F(CookieSettingsTest,
       {net::CookieAccessSemantics::LEGACY, kOtherDomain}};
   for (const auto& test : kTestCases) {
     EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, true /* is_https */)));
-    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, false /* is_https */)));
+                               test.cookie_domain));
   }
 }
 
@@ -560,11 +547,7 @@ TEST_F(CookieSettingsTest,
       {net::CookieAccessSemantics::LEGACY, kOtherDomain}};
   for (const auto& test : kTestCases) {
     EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, true /* is_https */)));
-    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, false /* is_https */)));
+                               test.cookie_domain));
   }
 }
 
@@ -606,11 +589,7 @@ TEST_F(SameSiteByDefaultCookieSettingsTest,
       {net::CookieAccessSemantics::NONLEGACY, kOtherDomain}};
   for (const auto& test : kTestCases) {
     EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, true /* is_https */)));
-    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, false /* is_https */)));
+                               test.cookie_domain));
   }
 }
 
@@ -640,11 +619,7 @@ TEST_F(SameSiteByDefaultCookieSettingsTest,
       {net::CookieAccessSemantics::NONLEGACY, kOtherDomain}};
   for (const auto& test : kTestCases) {
     EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, true /* is_https */)));
-    EXPECT_EQ(test.status, cookie_settings_->GetCookieAccessSemanticsForDomain(
-                               net::cookie_util::CookieOriginToURL(
-                                   test.cookie_domain, false /* is_https */)));
+                               test.cookie_domain));
   }
 }
 

@@ -817,29 +817,49 @@ class AXPosition {
     if (IsNullPosition() || !AnchorChildCount())
       return AsTextPosition();
 
-    AXPositionInstance tree_position = AsTreePosition();
     // Adjust the text offset.
     // No need to check for "before text" positions here because they are only
     // present on leaf anchor nodes.
-    int adjusted_offset = AsTextPosition()->text_offset_;
-    AXPositionInstance child_position = tree_position->CreateChildPositionAt(0);
-    DCHECK(child_position);
-    for (int i = 1;
-         i <= tree_position->child_index_ &&
-         i < tree_position->AnchorChildCount() && adjusted_offset > 0;
-         ++i) {
-      adjusted_offset -= child_position->MaxTextOffsetInParent();
-      child_position = tree_position->CreateChildPositionAt(i);
+    AXPositionInstance text_position = AsTextPosition();
+    int adjusted_offset = text_position->text_offset_;
+    do {
+      AXPositionInstance child_position =
+          text_position->CreateChildPositionAt(0);
       DCHECK(child_position);
-    }
 
-    child_position = child_position->AsTextPosition();
-    child_position->text_offset_ = adjusted_offset;
-    // Maintain affinity from parent so that we'll be able to choose the correct
-    // leaf anchor if the text offset is right on the boundary between two
-    // leaves.
-    child_position->affinity_ = affinity_;
-    return child_position->AsLeafTextPosition();
+      // If the text offset corresponds to multiple child positions because some
+      // of the children have empty text, the condition "adjusted_offset > 0"
+      // below ensures that the first child will be chosen.
+      for (int i = 1;
+           i < text_position->AnchorChildCount() && adjusted_offset > 0; ++i) {
+        const int max_text_offset_in_parent =
+            child_position->MaxTextOffsetInParent();
+        if (adjusted_offset < max_text_offset_in_parent) {
+          break;
+        }
+        if (affinity_ == ax::mojom::TextAffinity::kUpstream &&
+            adjusted_offset == max_text_offset_in_parent) {
+          // Maintain upstream affinity so that we'll be able to choose the
+          // correct leaf anchor if the text offset is right on the boundary
+          // between two leaves.
+          child_position->affinity_ = ax::mojom::TextAffinity::kUpstream;
+          break;
+        }
+        child_position = text_position->CreateChildPositionAt(i);
+        adjusted_offset -= max_text_offset_in_parent;
+      }
+
+      text_position = std::move(child_position);
+    } while (text_position->AnchorChildCount());
+
+    DCHECK(text_position);
+    DCHECK(text_position->IsLeafTextPosition());
+    text_position->text_offset_ = adjusted_offset;
+    // Leaf Text positions are always downstream since there is no ambiguity
+    // as to whether it refers to the end of the current or the start of
+    // the next line.
+    text_position->affinity_ = ax::mojom::TextAffinity::kDownstream;
+    return text_position;
   }
 
   // Searches backwards and forwards from this position until it finds the given

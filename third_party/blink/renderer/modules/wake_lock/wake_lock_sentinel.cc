@@ -5,10 +5,9 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_sentinel.h"
 
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
-#include "third_party/blink/renderer/modules/wake_lock/wake_lock_event.h"
-#include "third_party/blink/renderer/modules/wake_lock/wake_lock_event_init.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_state_record.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -69,8 +68,7 @@ void WakeLockSentinel::DoRelease() {
   manager_->UnregisterSentinel(this);
   manager_.Clear();
 
-  DispatchEvent(
-      *MakeGarbageCollected<WakeLockEvent>(event_type_names::kRelease, this));
+  DispatchEvent(*Event::Create(event_type_names::kRelease));
 }
 
 }  // namespace blink

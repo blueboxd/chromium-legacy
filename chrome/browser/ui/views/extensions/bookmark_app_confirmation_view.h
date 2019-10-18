@@ -37,7 +37,6 @@ class BookmarkAppConfirmationView : public views::DialogDelegateView,
 
   // Overriden from views::DialogDelegateView:
   bool Accept() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // Overridden from views::TextfieldController:

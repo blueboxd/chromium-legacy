@@ -419,8 +419,12 @@ struct NetworkContextParams {
   // Extra CORS safelisted request headers names.
   array<string> cors_extra_safelisted_request_header_names;
 
-  // Specifies to enable OOR-CORS.
-  bool enable_cors = false;
+  // Specifies the CORS mode.
+  //   kDefault - Decided by base::Feature
+  //   kEnable  - Enable CORS in Network Service (aka OOR-CORS)
+  //   kDisable - Don't enable CORS (Blink will take care of it)
+  enum CorsMode {kDefault, kDisable, kEnable};
+  CorsMode cors_mode = kDefault;
 
   // Points to a sqlite database containing persisted Reporting clients and NEL
   // policies. If Reporting and NEL persistence is disabled, then we'll ignore

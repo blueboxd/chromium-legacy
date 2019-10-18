@@ -32,6 +32,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -580,7 +581,9 @@ void GaiaCookieManagerService::ForceOnCookieChangeProcessing() {
           base::Time(), base::Time(), base::Time(), true /* secure */,
           false /* httponly */, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_DEFAULT));
-  OnCookieChange(*cookie, network::mojom::CookieChangeCause::UNKNOWN_DELETION);
+  OnCookieChange(
+      net::CookieChangeInfo(*cookie, net::CookieAccessSemantics::UNKNOWN,
+                            net::CookieChangeCause::UNKNOWN_DELETION));
 }
 
 void GaiaCookieManagerService::LogOutAllAccounts(gaia::GaiaSource source) {
@@ -658,13 +661,13 @@ void GaiaCookieManagerService::MarkListAccountsStale() {
 }
 
 void GaiaCookieManagerService::OnCookieChange(
-    const net::CanonicalCookie& cookie,
-    network::mojom::CookieChangeCause cause) {
-  DCHECK_EQ(kGaiaCookieName, cookie.Name());
-  DCHECK(cookie.IsDomainMatch(GaiaUrls::GetInstance()->google_url().host()));
+    const net::CookieChangeInfo& change) {
+  DCHECK_EQ(kGaiaCookieName, change.cookie.Name());
+  DCHECK(change.cookie.IsDomainMatch(
+      GaiaUrls::GetInstance()->google_url().host()));
   list_accounts_stale_ = true;
 
-  if (cause == network::mojom::CookieChangeCause::EXPLICIT) {
+  if (change.cause == net::CookieChangeCause::EXPLICIT) {
     DCHECK(net::CookieChangeCauseIsDeletion(net::CookieChangeCause::EXPLICIT));
     if (gaia_cookie_deleted_by_user_action_callback_) {
       gaia_cookie_deleted_by_user_action_callback_.Run();

@@ -125,8 +125,10 @@ function initialize() {
 /**
  * Updates the interstitial to show that the request failed or was sent.
  * @param {boolean} isSuccessful Whether the request was successful or not.
+ * @param {boolean} isMainFrame Whether the interstitial is being shown in main
+ *     frame.
  */
-function setRequestStatus(isSuccessful) {
+function setRequestStatus(isSuccessful, isMainFrame) {
   console.log('setRequestStatus(' + isSuccessful +')');
   $('block-page-header').hidden = true;
   $('block-page-message').hidden = true;
@@ -137,7 +139,7 @@ function setRequestStatus(isSuccessful) {
   if (isSuccessful) {
     $('request-failed-message').hidden = true;
     $('request-sent-message').hidden = false;
-    $('back-button').hidden = false;
+    $('back-button').hidden = !isMainFrame;
     $('request-access-button').hidden = true;
     $('show-details-link').hidden = true;
   } else {

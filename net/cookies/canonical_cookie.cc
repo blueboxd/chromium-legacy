@@ -448,6 +448,7 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   UMA_HISTOGRAM_ENUMERATION("Cookie.RequestSameSiteContext",
                             options.same_site_cookie_context(),
                             CookieOptions::SameSiteCookieContext::COUNT);
+
   switch (effective_same_site) {
     case CookieEffectiveSameSite::STRICT_MODE:
       if (options.same_site_cookie_context() <
@@ -517,6 +518,22 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
       SameSite(), effective_same_site, IsSecure(),
       options.same_site_cookie_context(), &status);
 
+  if (status.IsInclude()) {
+    UMA_HISTOGRAM_ENUMERATION("Cookie.IncludedRequestEffectiveSameSite",
+                              effective_same_site,
+                              CookieEffectiveSameSite::COUNT);
+
+    if (options.IsDifferentScheme() &&
+        ((effective_same_site == CookieEffectiveSameSite::LAX_MODE) ||
+         (effective_same_site == CookieEffectiveSameSite::STRICT_MODE) ||
+         (effective_same_site ==
+          CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE))) {
+      UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteDifferentSchemeRequest",
+                                options.same_site_cookie_context_full(),
+                                CookieOptions::SameSiteCookieContext::COUNT);
+    }
+  }
+
   // TODO(chlily): Log metrics.
   return status;
 }
@@ -573,6 +590,22 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IsSetPermittedInContext(
   ApplySameSiteCookieWarningToStatus(
       SameSite(), effective_same_site, IsSecure(),
       options.same_site_cookie_context(), &status);
+
+  if (status.IsInclude()) {
+    UMA_HISTOGRAM_ENUMERATION("Cookie.IncludedResponseEffectiveSameSite",
+                              effective_same_site,
+                              CookieEffectiveSameSite::COUNT);
+
+    if (options.IsDifferentScheme() &&
+        ((effective_same_site == CookieEffectiveSameSite::LAX_MODE) ||
+         (effective_same_site == CookieEffectiveSameSite::STRICT_MODE) ||
+         (effective_same_site ==
+          CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE))) {
+      UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteDifferentSchemeResponse",
+                                options.same_site_cookie_context_full(),
+                                CookieOptions::SameSiteCookieContext::COUNT);
+    }
+  }
 
   // TODO(chlily): Log metrics.
   return status;

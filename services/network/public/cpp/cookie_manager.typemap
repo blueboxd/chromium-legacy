@@ -3,6 +3,7 @@ public_headers = [
   "//ipc/ipc_message_utils.h",
   "//net/cookies/cookie_options.h",
   "//net/cookies/canonical_cookie.h",
+  "//net/cookies/cookie_change_dispatcher.h",
   "//net/cookies/cookie_constants.h",
 ]
 traits_headers =
@@ -24,4 +25,6 @@ type_mappings = [
   "network.mojom.CookieInclusionStatus=::net::CanonicalCookie::CookieInclusionStatus[move_only]",
   "network.mojom.CookieWithStatus=::net::CookieWithStatus",
   "network.mojom.CookieAndLineWithStatus=::net::CookieAndLineWithStatus",
+  "network.mojom.CookieChangeCause=::net::CookieChangeCause",
+  "network.mojom.CookieChangeInfo=::net::CookieChangeInfo",
 ]

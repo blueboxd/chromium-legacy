@@ -136,7 +136,6 @@ suite('SiteDetails', function() {
           settings.ContentSettingsTypes.PROTECTED_CONTENT);
     }
     const experimentalSiteDetailsContentSettingsTypes = [
-      settings.ContentSettingsTypes.SERIAL_PORTS,
       settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
     ];
 

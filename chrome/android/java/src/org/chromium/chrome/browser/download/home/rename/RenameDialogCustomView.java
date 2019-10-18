@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.home.rename;
 import static android.content.Context.INPUT_METHOD_SERVICE;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -16,6 +17,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ui.widget.text.AlertDialogEditText;
 import org.chromium.chrome.download.R;
@@ -25,7 +27,7 @@ import org.chromium.components.offline_items_collection.RenameResult;
  * Content View of dialog in Download Home that allows users to rename a downloaded file.
  */
 public class RenameDialogCustomView extends ScrollView {
-    private TextView mSubtitleView;
+    private TextView mErrorMessageView;
     private AlertDialogEditText mFileName;
     private Callback</*Empty*/ Boolean> mEmptyFileNameObserver;
 
@@ -37,7 +39,7 @@ public class RenameDialogCustomView extends ScrollView {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mSubtitleView = findViewById(R.id.subtitle);
+        mErrorMessageView = findViewById(R.id.error_message);
         mFileName = findViewById(R.id.file_name);
         mFileName.addTextChangedListener(new TextWatcher() {
             @Override
@@ -68,24 +70,22 @@ public class RenameDialogCustomView extends ScrollView {
      */
     public void updateToErrorView(String suggestedName, @RenameResult int renameResult) {
         if (renameResult == RenameResult.SUCCESS) return;
-        if (!TextUtils.isEmpty(suggestedName)) {
-            mFileName.setText(suggestedName);
-        }
-        mFileName.clearFocus();
-        highlightEditText(suggestedName);
-        mSubtitleView.setVisibility(View.VISIBLE);
+
+        setEditText(suggestedName);
+        setEditTextStyle(true);
+        setErrorMessageVisibility(true);
         switch (renameResult) {
             case RenameResult.FAILURE_NAME_CONFLICT:
-                mSubtitleView.setText(R.string.rename_failure_name_conflict);
+                mErrorMessageView.setText(R.string.rename_failure_name_conflict);
                 break;
             case RenameResult.FAILURE_NAME_TOO_LONG:
-                mSubtitleView.setText(R.string.rename_failure_name_too_long);
+                mErrorMessageView.setText(R.string.rename_failure_name_too_long);
                 break;
             case RenameResult.FAILURE_NAME_INVALID:
-                mSubtitleView.setText(R.string.rename_failure_name_invalid);
+                mErrorMessageView.setText(R.string.rename_failure_name_invalid);
                 break;
             case RenameResult.FAILURE_UNAVAILABLE:
-                mSubtitleView.setText(R.string.rename_failure_unavailable);
+                mErrorMessageView.setText(R.string.rename_failure_unavailable);
                 break;
             default:
                 break;
@@ -97,12 +97,9 @@ public class RenameDialogCustomView extends ScrollView {
      * Initialize components in view: hide subtitle and reset value in the editTextBox.
      */
     public void initializeView(String suggestedName) {
-        mSubtitleView.setVisibility(View.GONE);
-        if (!TextUtils.isEmpty(suggestedName)) {
-            mFileName.setText(suggestedName);
-        }
-        mFileName.clearFocus();
-        highlightEditText(suggestedName);
+        setEditText(suggestedName);
+        setEditTextStyle(false);
+        setErrorMessageVisibility(false);
     }
 
     /**
@@ -145,6 +142,31 @@ public class RenameDialogCustomView extends ScrollView {
                     (InputMethodManager) mFileName.getContext().getSystemService(
                             INPUT_METHOD_SERVICE);
             inputMethodManager.showSoftInput(mFileName, InputMethodManager.SHOW_FORCED);
+        }
+    }
+
+    private void setErrorMessageVisibility(boolean hasError) {
+        mErrorMessageView.setTextColor(
+                ApiCompatibilityUtils.getColor(getResources(), R.color.error_text_color));
+        mErrorMessageView.setVisibility(hasError ? View.VISIBLE : View.GONE);
+    }
+
+    private void setEditText(String suggestedName) {
+        if (!TextUtils.isEmpty(suggestedName)) {
+            mFileName.setText(suggestedName);
+        }
+        mFileName.clearFocus();
+        highlightEditText(suggestedName);
+    }
+
+    private void setEditTextStyle(boolean hasError) {
+        if (hasError) {
+            // Change the edit text box underline tint color.
+            mFileName.getBackground().setColorFilter(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_red),
+                    PorterDuff.Mode.SRC_IN);
+        } else {
+            mFileName.getBackground().clearColorFilter();
         }
     }
 }

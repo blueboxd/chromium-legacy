@@ -28,7 +28,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -47,8 +46,6 @@
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -214,13 +211,6 @@ void HTMLAnchorElement::SetActive(bool active) {
   HTMLElement::SetActive(active);
 }
 
-const AttrNameToTrustedType& HTMLAnchorElement::GetCheckedAttributeTypes()
-    const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"href", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
-
 void HTMLAnchorElement::AttributeChanged(
     const AttributeModificationParams& params) {
   HTMLElement::AttributeChanged(params);
@@ -306,11 +296,6 @@ KURL HTMLAnchorElement::Href() const {
 
 void HTMLAnchorElement::SetHref(const AtomicString& value) {
   setAttribute(kHrefAttr, value);
-}
-
-void HTMLAnchorElement::setHref(const USVStringOrTrustedURL& stringOrTrustedURL,
-                                ExceptionState& exception_state) {
-  setAttribute(kHrefAttr, stringOrTrustedURL, exception_state);
 }
 
 KURL HTMLAnchorElement::Url() const {

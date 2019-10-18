@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
@@ -23,18 +24,24 @@ constexpr base::TimeDelta kMaxDelayBetweenTypingUsernameAndSubmission =
 // username during username first flow.
 struct PossibleUsernameData {
   PossibleUsernameData(std::string signon_realm,
-                       int32_t renderer_id,
+                       uint32_t renderer_id,
                        base::string16 value,
-                       base::Time last_change);
+                       base::Time last_change,
+                       int driver_id);
+  PossibleUsernameData(const PossibleUsernameData&);
   ~PossibleUsernameData();
 
   std::string signon_realm;
-  int32_t renderer_id;
+  uint32_t renderer_id;
   base::string16 value;
   base::Time last_change;
 
+  // Id of PasswordManagerDriver which corresponds to the frame of this field.
+  // Paired with the |renderer_id|, this identifies a field globally.
+  int driver_id;
+
   // Predictions for the form which contains a field with |renderer_id|.
-  FormPredictions* form_predictions = nullptr;
+  base::Optional<FormPredictions> form_predictions;
 };
 
 // Checks that |possible_username| might represent an username:

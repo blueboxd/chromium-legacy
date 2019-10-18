@@ -18,9 +18,22 @@ namespace device {
 class HidConnectionImpl : public mojom::HidConnection,
                           public HidConnection::Client {
  public:
+  // Creates a strongly-bound HidConnectionImpl owned by |receiver| and
+  // |watcher|. |connection| provides access to the HID device. If
+  // |connection_client| is bound, it will be notified when input reports are
+  // received. |watcher|, if bound, will be disconnected when the connection is
+  // closed.
+  static void Create(
+      scoped_refptr<device::HidConnection> connection,
+      mojo::PendingReceiver<mojom::HidConnection> receiver,
+      mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+      mojo::PendingRemote<mojom::HidConnectionWatcher> watcher);
+
   HidConnectionImpl(
       scoped_refptr<device::HidConnection> connection,
-      mojo::PendingRemote<mojom::HidConnectionClient> connection_client);
+      mojo::PendingReceiver<mojom::HidConnection> receiver,
+      mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+      mojo::PendingRemote<mojom::HidConnectionWatcher> watcher);
   ~HidConnectionImpl() final;
 
   // HidConnection::Client implementation:
@@ -50,8 +63,13 @@ class HidConnectionImpl : public mojom::HidConnection,
                           size_t size);
   void OnSendFeatureReport(SendFeatureReportCallback callback, bool success);
 
+  mojo::Receiver<mojom::HidConnection> receiver_;
+
   scoped_refptr<device::HidConnection> hid_connection_;
+
+  // Client interfaces.
   mojo::Remote<mojom::HidConnectionClient> client_;
+  mojo::Remote<mojom::HidConnectionWatcher> watcher_;
 
   base::WeakPtrFactory<HidConnectionImpl> weak_factory_{this};
 

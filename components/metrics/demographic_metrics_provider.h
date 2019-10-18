@@ -8,9 +8,13 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_provider.h"
+#include "components/metrics/ukm_demographic_metrics_provider.h"
+#include "components/sync/base/user_demographics.h"
 #include "components/sync/driver/sync_service.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 namespace base {
 struct Feature;
@@ -26,7 +30,8 @@ namespace metrics {
 // - helping Chrome ensure features are useful to a wide range of users. Users
 // can avoid aggregation of usage data by birth year and gender by either a)
 // turning off sending usage statistics to Google or b) turning off sync.
-class DemographicMetricsProvider : public MetricsProvider {
+class DemographicMetricsProvider : public MetricsProvider,
+                                   public UkmDemographicMetricsProvider {
  public:
   // Interface that represents the client that retrieves Profile information.
   class ProfileClient {
@@ -44,19 +49,56 @@ class DemographicMetricsProvider : public MetricsProvider {
     virtual base::Time GetNetworkTime() const = 0;
   };
 
-  explicit DemographicMetricsProvider(
-      std::unique_ptr<ProfileClient> profile_client);
+  DemographicMetricsProvider(
+      std::unique_ptr<ProfileClient> profile_client,
+      MetricsLogUploader::MetricServiceType metrics_service_type);
   ~DemographicMetricsProvider() override;
+
+  // Provides the synced user's noised birth year and gender to a metrics report
+  // of type ReportType. This function is templated to support any type of proto
+  // metrics report, e.g., ukm::Report and metrics::ChromeUserMetricsExtension.
+  // The ReportType should be a proto message class that has a
+  // metrics::UserDemographicsProto message field.
+  template <class ReportType>
+  void ProvideSyncedUserNoisedBirthYearAndGender(ReportType* report) {
+    DCHECK(report);
+
+    base::Optional<syncer::UserDemographics> user_demographics =
+        ProvideSyncedUserNoisedBirthYearAndGender();
+    if (user_demographics.has_value()) {
+      report->mutable_user_demographics()->set_birth_year(
+          user_demographics.value().birth_year);
+      report->mutable_user_demographics()->set_gender(
+          user_demographics.value().gender);
+    }
+  }
 
   // MetricsProvider:
   void ProvideCurrentSessionData(
       ChromeUserMetricsExtension* uma_proto) override;
 
+  // UkmDemographicMetricsProvider:
+  void ProvideSyncedUserNoisedBirthYearAndGenderToReport(
+      ukm::Report* report) override;
+
   // Feature switch to report user's noised birth year and gender.
   static const base::Feature kDemographicMetricsReporting;
 
+ protected:
+  // Provides the synced user's noised birth year and gender. Virtual for
+  // testing.
+  virtual base::Optional<syncer::UserDemographics>
+  ProvideSyncedUserNoisedBirthYearAndGender();
+
  private:
+  void LogUserDemographicsStatusInHistogram(
+      syncer::UserDemographicsStatus status);
+
   std::unique_ptr<ProfileClient> profile_client_;
+
+  // The type of the metrics service for which to emit the user demographics
+  // status histogram (e.g., UMA).
+  const MetricsLogUploader::MetricServiceType metrics_service_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DemographicMetricsProvider);
 };

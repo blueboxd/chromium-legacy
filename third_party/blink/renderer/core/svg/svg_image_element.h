@@ -78,10 +78,6 @@ class CORE_EXPORT SVGImageElement final
     GetImageLoader().SetImageForTest(content);
   }
 
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override {
-    return SVGURIReference::GetCheckedAttributeTypes();
-  }
-
  private:
   bool IsStructurallyExternal() const override {
     return !HrefString().IsNull();

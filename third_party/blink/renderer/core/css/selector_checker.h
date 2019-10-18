@@ -115,7 +115,8 @@ class SelectorChecker {
           in_rightmost_compound(true),
           has_scrollbar_pseudo(false),
           has_selection_pseudo(false),
-          treat_shadow_host_as_normal_scope(false) {}
+          treat_shadow_host_as_normal_scope(false),
+          is_from_vtt(false) {}
 
     const CSSSelector* selector;
     Member<Element> element;
@@ -128,6 +129,7 @@ class SelectorChecker {
     bool has_scrollbar_pseudo;
     bool has_selection_pseudo;
     bool treat_shadow_host_as_normal_scope;
+    bool is_from_vtt;
   };
 
   struct MatchResult {
@@ -140,11 +142,7 @@ class SelectorChecker {
     unsigned specificity;
   };
 
-  bool Match(const SelectorCheckingContext& context,
-             MatchResult& result) const {
-    DCHECK(context.selector);
-    return MatchSelector(context, result) == kSelectorMatches;
-  }
+  bool Match(const SelectorCheckingContext& context, MatchResult& result) const;
 
   bool Match(const SelectorCheckingContext& context) const {
     MatchResult ignore_result;
@@ -196,6 +194,8 @@ class SelectorChecker {
   MatchStatus MatchForPseudoShadow(const SelectorCheckingContext&,
                                    const ContainerNode*,
                                    MatchResult&) const;
+  bool MatchVTTBlockSelector(const SelectorCheckingContext& context,
+                             MatchResult& result) const;
   bool CheckPseudoClass(const SelectorCheckingContext&, MatchResult&) const;
   bool CheckPseudoElement(const SelectorCheckingContext&, MatchResult&) const;
   bool CheckScrollbarPseudoClass(const SelectorCheckingContext&,

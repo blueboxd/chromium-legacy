@@ -27,7 +27,6 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/constants.h"
-#include "net/http/http_request_headers.h"
 #include "url/origin.h"
 
 namespace extensions {
@@ -50,8 +49,6 @@ enum class PageAllowingInitiatorCheck {
   kBothCandidatesMatchInitiator = 4,
   kMaxValue = kBothCandidatesMatchInitiator,
 };
-
-constexpr const char kSetCookieResponseHeader[] = "set-cookie";
 
 // Returns true if |request| came from a page from the set of
 // |allowed_pages|. This necessitates finding the main frame url
@@ -167,44 +164,6 @@ void NotifyRequestWithheld(const ExtensionId& extension_id,
   DCHECK(ExtensionsAPIClient::Get());
   ExtensionsAPIClient::Get()->NotifyWebRequestWithheld(
       request.render_process_id, request.frame_id, extension_id);
-}
-
-// Populates the list of headers corresponding to |mask|.
-void PopulateHeadersFromMask(uint8_t mask,
-                             std::vector<const char*>* request_headers,
-                             std::vector<const char*>* response_headers) {
-  DCHECK(request_headers);
-  DCHECK(response_headers);
-
-  uint8_t bit = 0;
-  // Iterate over each RemoveHeaderType value.
-  for (int i = 0; mask && i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
-    switch (i) {
-      case dnr_api::REMOVE_HEADER_TYPE_NONE:
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
-        bit = kRemoveHeadersMask_Cookie;
-        if (mask & bit) {
-          mask &= ~bit;
-          request_headers->push_back(net::HttpRequestHeaders::kCookie);
-        }
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
-        bit = kRemoveHeadersMask_Referer;
-        if (mask & bit) {
-          mask &= ~bit;
-          request_headers->push_back(net::HttpRequestHeaders::kReferer);
-        }
-        break;
-      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
-        bit = kRemoveHeadersMask_SetCookie;
-        if (mask & bit) {
-          mask &= ~bit;
-          response_headers->push_back(kSetCookieResponseHeader);
-        }
-        break;
-    }
-  }
 }
 
 }  // namespace
@@ -458,17 +417,15 @@ std::vector<RequestAction> RulesetManager::GetRemoveHeadersActions(
   // matching rules for headers already slated to be removed.
   uint8_t combined_mask = 0;
   for (const ExtensionRulesetData* ruleset : rulesets) {
-    uint8_t ruleset_mask = ruleset->matcher->GetRemoveHeadersMask(
-        params, combined_mask /* ignored_mask */);
-    if (!ruleset_mask)
+    uint8_t extension_ruleset_mask = ruleset->matcher->GetRemoveHeadersMask(
+        params, combined_mask /* ignored_mask */, &remove_headers_actions);
+    if (!extension_ruleset_mask)
       continue;
 
-    RequestAction action(RequestAction::Type::REMOVE_HEADERS);
-    PopulateHeadersFromMask(ruleset_mask, &action.request_headers_to_remove,
-                            &action.response_headers_to_remove);
-    action.extension_id = ruleset->extension_id;
-    remove_headers_actions.push_back(std::move(action));
-    combined_mask |= ruleset_mask;
+    // Sanity check that extension matchers do not try to remove a header that
+    // has already been marked as removed.
+    DCHECK(!(extension_ruleset_mask & combined_mask));
+    combined_mask |= extension_ruleset_mask;
   }
 
   return remove_headers_actions;

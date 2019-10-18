@@ -7,6 +7,7 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//weblayer/variables.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -41,18 +42,12 @@ if (is_android) {
 
     android_manifest_for_lint = weblayer_browsertests_manifest
   }
-}
 
-if (is_android) {
   android_assets("weblayer_test_assets") {
     testonly = true
-    sources = [
-      "$root_out_dir/weblayer.pak",
-    ]
     disable_compression = true
     deps = [
       "//third_party/icu:icu_assets",
-      "//weblayer/shell:pak",
     ]
     if (use_v8_context_snapshot) {
       deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
@@ -106,6 +101,8 @@ test("weblayer_browsertests") {
     deps += [
       ":weblayer_browsertests_java",
       ":weblayer_test_assets",
+      "//android_webview:locale_pak_assets",
+      "//android_webview:pak_file_assets",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/test:android_test_message_pump_support",
       "//content/test:android_test_message_pump_support",
@@ -122,5 +119,6 @@ test("weblayer_browsertests") {
     android_manifest_dep = ":weblayer_browsertests_manifest"
     use_default_launcher = false
     shared_resources = true
+    locale_config_java_packages = [ weblayer_locale_config_java_package ]
   }
 }

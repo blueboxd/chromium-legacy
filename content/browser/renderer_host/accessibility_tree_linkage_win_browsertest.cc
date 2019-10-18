@@ -82,18 +82,11 @@ IN_PROC_BROWSER_TEST_P(AccessibilityTreeLinkageWinBrowserTest, Linkage) {
   // the WebView's parent
   gfx::NativeViewAccessible native_view_accessible =
       GetView()->GetNativeViewAccessible();
-  if (GetParam().is_uia_enabled && !GetParam().is_legacy_window_disabled) {
-    EXPECT_EQ(native_view_accessible,
-              ui::AXFragmentRootWin::GetForAcceleratedWidget(
-                  GetView()->AccessibilityGetAcceleratedWidget())
-                  ->GetNativeViewAccessible());
-  } else {
-    EXPECT_EQ(native_view_accessible, GetView()
-                                          ->host()
-                                          ->GetRootBrowserAccessibilityManager()
-                                          ->GetRoot()
-                                          ->GetNativeViewAccessible());
-  }
+  EXPECT_EQ(native_view_accessible, GetView()
+                                        ->host()
+                                        ->GetRootBrowserAccessibilityManager()
+                                        ->GetRoot()
+                                        ->GetNativeViewAccessible());
 
   // Used by LegacyRenderWidgetHostHWND to find the parent of the UIA fragment
   // root for web content

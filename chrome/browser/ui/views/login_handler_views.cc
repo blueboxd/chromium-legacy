@@ -86,6 +86,10 @@ class LoginHandlerViews : public LoginHandler {
            const base::string16& explanation,
            LoginHandler::LoginModelData* login_model_data)
         : handler_(handler), login_view_(nullptr), widget_(nullptr) {
+      DialogDelegate::set_button_label(
+          ui::DIALOG_BUTTON_OK,
+          l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL));
+
       // Create a new LoginView and set the model for it.  The model (password
       // manager) is owned by the WebContents, but the view is parented to the
       // browser window, so the view may be destroyed after the password
@@ -107,13 +111,6 @@ class LoginHandlerViews : public LoginHandler {
 
     // views::DialogDelegate:
     bool ShouldShowCloseButton() const override { return false; }
-
-    base::string16 GetDialogButtonLabel(
-        ui::DialogButton button) const override {
-      if (button == ui::DIALOG_BUTTON_OK)
-        return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
-      return DialogDelegate::GetDialogButtonLabel(button);
-    }
 
     base::string16 GetWindowTitle() const override {
       return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE);

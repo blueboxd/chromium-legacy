@@ -3572,12 +3572,11 @@ class CookieMonsterNotificationTest : public CookieMonsterTest {
 
 void RecordCookieChanges(std::vector<CanonicalCookie>* out_cookies,
                          std::vector<CookieChangeCause>* out_causes,
-                         const CanonicalCookie& cookie,
-                         CookieChangeCause cause) {
+                         const CookieChangeInfo& change) {
   DCHECK(out_cookies);
-  out_cookies->push_back(cookie);
+  out_cookies->push_back(change.cookie);
   if (out_causes)
-    out_causes->push_back(cause);
+    out_causes->push_back(change.cause);
 }
 
 TEST_F(CookieMonsterNotificationTest, GlobalNotBroadcast) {

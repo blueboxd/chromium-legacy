@@ -319,6 +319,8 @@
 }
 
 - (void)saveRestorableState {
+  if (!bridge_)
+    return;
   if (![self _isConsideredOpenForPersistentState])
     return;
   base::scoped_nsobject<NSMutableData> restorableStateData(

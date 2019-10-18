@@ -85,6 +85,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
   // state value.
   virtual void AddAndFireStateObserver(StateObserver* observer) = 0;
   virtual void RemoveStateObserver(const StateObserver* observer) = 0;
+
+  // Sync the device apps user consent status.
+  virtual void SyncDeviceAppsStatus() = 0;
 };
 
 // Observes all state changes made to the |AssistantManagerService::State|.

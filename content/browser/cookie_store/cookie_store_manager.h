@@ -96,8 +96,7 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   void OnStorageWiped() override;
 
   // ::network::mojom::CookieChangeListener
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      ::network::mojom::CookieChangeCause cause) override;
+  void OnCookieChange(const net::CookieChangeInfo& change) override;
 
  private:
   // Updates internal state with the result of loading disk subscription data.
@@ -132,20 +131,17 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   //
   // Must only be called after the on-disk subscription data is successfully
   // loaded.
-  void DispatchCookieChange(const net::CanonicalCookie& cookie,
-                            ::network::mojom::CookieChangeCause cause);
+  void DispatchCookieChange(const net::CookieChangeInfo& change);
 
   // Sends a cookie change event to one service worker.
   void DispatchChangeEvent(
       scoped_refptr<ServiceWorkerRegistration> registration,
-      const net::CanonicalCookie& cookie,
-      ::network::mojom::CookieChangeCause cause);
+      const net::CookieChangeInfo& change);
 
   // Called after a service worker was started so it can get a cookie change.
   void DidStartWorkerForChangeEvent(
       scoped_refptr<ServiceWorkerRegistration> registration,
-      const net::CanonicalCookie& cookie,
-      ::network::mojom::CookieChangeCause cause,
+      const net::CookieChangeInfo& change,
       blink::ServiceWorkerStatusCode start_worker_status);
 
   // Used to efficiently implement OnRegistrationDeleted().

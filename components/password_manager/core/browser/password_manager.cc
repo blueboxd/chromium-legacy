@@ -279,6 +279,8 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
     }
   }
   form_managers_.clear();
+
+  TryToFindPredictionsToPossibleUsernameData();
   predictions_.clear();
   store_password_called_ = false;
 }
@@ -322,6 +324,7 @@ void PasswordManager::DropFormManagers() {
   form_managers_.clear();
   owned_submitted_form_manager_.reset();
   all_visible_forms_.clear();
+  TryToFindPredictionsToPossibleUsernameData();
   predictions_.clear();
 }
 
@@ -386,8 +389,10 @@ void PasswordManager::OnUserModifiedNonPasswordField(
     PasswordManagerDriver* driver,
     int32_t renderer_id,
     const base::string16& value) {
+  // |driver| might be empty on iOS or in tests.
+  int driver_id = driver ? driver->GetId() : 0;
   possible_username_.emplace(GetSignonRealm(driver->GetLastCommittedURL()),
-                             renderer_id, value, base::Time::Now());
+                             renderer_id, value, base::Time::Now(), driver_id);
 }
 
 void PasswordManager::ShowManualFallbackForSaving(
@@ -586,6 +591,7 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
     return nullptr;
   }
 
+  TryToFindPredictionsToPossibleUsernameData();
   const PossibleUsernameData* possible_username =
       possible_username_ ? &possible_username_.value() : nullptr;
   if (!matched_manager->ProvisionallySave(submitted_form, driver,
@@ -1048,6 +1054,22 @@ void PasswordManager::ReportSubmittedFormFrameMetric(
                       IFRAME_WITH_DIFFERENT_SIGNON_REALM;
   }
   metrics_util::LogSubmittedFormFrame(frame);
+}
+
+void PasswordManager::TryToFindPredictionsToPossibleUsernameData() {
+  if (!possible_username_ || possible_username_->form_predictions)
+    return;
+
+  for (auto it : predictions_) {
+    if (it.second.driver_id != possible_username_->driver_id)
+      continue;
+    for (const PasswordFieldPrediction& field : it.second.fields) {
+      if (field.renderer_id == possible_username_->renderer_id) {
+        possible_username_->form_predictions = it.second;
+        return;
+      }
+    }
+  }
 }
 
 }  // namespace password_manager

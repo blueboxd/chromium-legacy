@@ -271,9 +271,9 @@ class PageInfo : public content::WebContentsObserver {
   // Safe Browsing status of the website.
   SafeBrowsingStatus safe_browsing_status_;
 
-  // Safety tip status of the website. Set regardless of whether the feature is
+  // Safety tip info of the website. Set regardless of whether the feature is
   // enabled to show the UI.
-  security_state::SafetyTipStatus safety_tip_status_;
+  security_state::SafetyTipInfo safety_tip_info_;
 
   // For secure connection |certificate_| is set to the server certificate.
   scoped_refptr<net::X509Certificate> certificate_;

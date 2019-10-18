@@ -30,11 +30,10 @@ class AwProxyingRestrictedCookieManagerListener
         aw_restricted_cookie_manager_(aw_restricted_cookie_manager),
         client_listener_(std::move(client_listener)) {}
 
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      network::mojom::CookieChangeCause cause) override {
+  void OnCookieChange(const net::CookieChangeInfo& change) override {
     if (aw_restricted_cookie_manager_ &&
         aw_restricted_cookie_manager_->AllowCookies(url_, site_for_cookies_))
-      client_listener_->OnCookieChange(cookie, cause);
+      client_listener_->OnCookieChange(change);
   }
 
  private:

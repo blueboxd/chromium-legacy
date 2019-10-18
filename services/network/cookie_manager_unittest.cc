@@ -1781,15 +1781,6 @@ TEST_F(CookieManagerTest, DeleteByAll) {
 // Receives and records notifications from the mojom::CookieManager.
 class CookieChangeListener : public mojom::CookieChangeListener {
  public:
-  // Records a cookie change received from CookieManager.
-  struct Change {
-    Change(const net::CanonicalCookie& cookie, mojom::CookieChangeCause cause)
-        : cookie(cookie), cause(cause) {}
-
-    net::CanonicalCookie cookie;
-    mojom::CookieChangeCause cause;
-  };
-
   CookieChangeListener(
       mojo::PendingReceiver<mojom::CookieChangeListener> receiver)
       : run_loop_(nullptr), receiver_(this, std::move(receiver)) {}
@@ -1806,20 +1797,19 @@ class CookieChangeListener : public mojom::CookieChangeListener {
 
   void ClearObservedChanges() { observed_changes_.clear(); }
 
-  const std::vector<Change>& observed_changes() const {
+  const std::vector<net::CookieChangeInfo>& observed_changes() const {
     return observed_changes_;
   }
 
   // mojom::CookieChangeListener
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      mojom::CookieChangeCause cause) override {
-    observed_changes_.push_back(Change(cookie, cause));
+  void OnCookieChange(const net::CookieChangeInfo& change) override {
+    observed_changes_.push_back(change);
     if (run_loop_)
       run_loop_->Quit();
   }
 
  private:
-  std::vector<Change> observed_changes_;
+  std::vector<net::CookieChangeInfo> observed_changes_;
 
   // Loop to signal on receiving a notification if not null.
   base::RunLoop* run_loop_;
@@ -1882,12 +1872,12 @@ TEST_F(CookieManagerTest, AddCookieChangeListener) {
 
   // Expect to observe a cookie change.
   listener.WaitForChange();
-  std::vector<CookieChangeListener::Change> observed_changes =
+  std::vector<net::CookieChangeInfo> observed_changes =
       listener.observed_changes();
   ASSERT_EQ(1u, observed_changes.size());
   EXPECT_EQ(listener_cookie_name, observed_changes[0].cookie.Name());
   EXPECT_EQ(listener_url_host, observed_changes[0].cookie.Domain());
-  EXPECT_EQ(mojom::CookieChangeCause::INSERTED, observed_changes[0].cause);
+  EXPECT_EQ(net::CookieChangeCause::INSERTED, observed_changes[0].cause);
   listener.ClearObservedChanges();
 
   // Delete all cookies matching the domain.  This includes one for which
@@ -1906,7 +1896,7 @@ TEST_F(CookieManagerTest, AddCookieChangeListener) {
   ASSERT_EQ(1u, observed_changes.size());
   EXPECT_EQ(listener_cookie_name, observed_changes[0].cookie.Name());
   EXPECT_EQ(listener_url_host, observed_changes[0].cookie.Domain());
-  EXPECT_EQ(mojom::CookieChangeCause::EXPLICIT, observed_changes[0].cause);
+  EXPECT_EQ(net::CookieChangeCause::EXPLICIT, observed_changes[0].cause);
 }
 
 TEST_F(CookieManagerTest, AddGlobalChangeListener) {
@@ -1936,14 +1926,14 @@ TEST_F(CookieManagerTest, AddGlobalChangeListener) {
   EXPECT_EQ(0u, listener.observed_changes().size());
 
   base::RunLoop().RunUntilIdle();
-  std::vector<CookieChangeListener::Change> observed_changes =
+  std::vector<net::CookieChangeInfo> observed_changes =
       listener.observed_changes();
   ASSERT_EQ(1u, observed_changes.size());
   EXPECT_EQ("Thing1", observed_changes[0].cookie.Name());
   EXPECT_EQ("val", observed_changes[0].cookie.Value());
   EXPECT_EQ(kExampleHost, observed_changes[0].cookie.Domain());
   EXPECT_EQ("/", observed_changes[0].cookie.Path());
-  EXPECT_EQ(mojom::CookieChangeCause::INSERTED, observed_changes[0].cause);
+  EXPECT_EQ(net::CookieChangeCause::INSERTED, observed_changes[0].cause);
   listener.ClearObservedChanges();
 
   // Set two cookies in a row on different domains and confirm they are both
@@ -1967,9 +1957,9 @@ TEST_F(CookieManagerTest, AddGlobalChangeListener) {
   observed_changes = listener.observed_changes();
   ASSERT_EQ(2u, observed_changes.size());
   EXPECT_EQ("Thing1", observed_changes[0].cookie.Name());
-  EXPECT_EQ(mojom::CookieChangeCause::INSERTED, observed_changes[0].cause);
+  EXPECT_EQ(net::CookieChangeCause::INSERTED, observed_changes[0].cause);
   EXPECT_EQ("Thing2", observed_changes[1].cookie.Name());
-  EXPECT_EQ(mojom::CookieChangeCause::INSERTED, observed_changes[1].cause);
+  EXPECT_EQ(net::CookieChangeCause::INSERTED, observed_changes[1].cause);
   listener.ClearObservedChanges();
 
   // Delete cookies matching one domain; should produce one notification.
@@ -1986,7 +1976,7 @@ TEST_F(CookieManagerTest, AddGlobalChangeListener) {
   ASSERT_EQ(1u, observed_changes.size());
   EXPECT_EQ("Thing1", observed_changes[0].cookie.Name());
   EXPECT_EQ(kThisHost, observed_changes[0].cookie.Domain());
-  EXPECT_EQ(mojom::CookieChangeCause::EXPLICIT, observed_changes[0].cause);
+  EXPECT_EQ(net::CookieChangeCause::EXPLICIT, observed_changes[0].cause);
 }
 
 // Confirm the service operates properly if a returned notification interface

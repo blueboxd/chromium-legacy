@@ -1465,10 +1465,10 @@ Your Google account may have other forms of browsing history like searches and a
        Rename unavailable
       </message>
       <message name="IDS_RENAME_EXTENSION_CONFIRMATION" desc="Subtitle for rename extension dialog in the case that user try to rename the file extension.">
-       Are you sure you want to change the file extension?
+        Change file extension?
       </message>
       <message name="IDS_RENAME_EXTENSION_MESSAGE" desc="Message to warn users the danger of changing file extension.">
-        Changing the file extension may result in unexpected behavior and be harmful to your device.
+        If you change the file extension, the file may open in a different application and potentially be a hazard to your device.
       </message>
 
       <!-- About Chrome preferences -->
@@ -2473,6 +2473,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_IMAGES" desc="Indicates that clicking on this button shows only downloaded images.">
         Images
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_PAGINATION" desc="Indicates that clicking on this button will show more items in the list.">
+        Load more…
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_DOCUMENTS" desc="Indicates that clicking on this button shows only documents.">
         Documents

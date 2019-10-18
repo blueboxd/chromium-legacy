@@ -103,6 +103,13 @@ std::unique_ptr<views::LabelButton> CreateUndoButton(
   return undo_button;
 }
 
+std::unique_ptr<views::View> CreateManageButton(
+    views::ButtonListener* listener) {
+  return views::MdTextButton::CreateSecondaryUiButton(
+      listener,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON));
+}
+
 }  // namespace
 
 std::unique_ptr<views::Label> CreateUsernameLabel(
@@ -240,6 +247,7 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
                              anchor_view,
                              reason,
                              /*easily_dismissable=*/true) {
+  DialogDelegate::SetExtraView(CreateManageButton(this));
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, model()->state());
 
   if (model()->local_credentials().empty()) {
@@ -292,13 +300,6 @@ void PasswordItemsView::NotifyPasswordFormAction(
   // After the view is consistent, notify the model that the password needs to
   // be updated (either removed or put back into the store, as appropriate.
   model()->OnPasswordAction(password_form, action);
-}
-
-std::unique_ptr<views::View> PasswordItemsView::CreateExtraView() {
-  auto view = views::MdTextButton::CreateSecondaryUiButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON));
-  return view;
 }
 
 int PasswordItemsView::GetDialogButtons() const {

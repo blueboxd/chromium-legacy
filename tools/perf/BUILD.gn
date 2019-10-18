@@ -43,11 +43,15 @@ group("perf") {
 }
 
 if (is_android) {
-  import("//build/config/android/rules.gni")
+  import("//build/util/generate_wrapper.gni")
 
-  wrapper_script("run_benchmark_wrapper") {
-    target = "run_benchmark"
-    flag_name = "--chromium-output-directory"
+  generate_wrapper("run_benchmark_wrapper") {
+    executable = "run_benchmark"
+    wrapper_script = "$root_build_dir/bin/run_benchmark"
+    executable_args = [
+      "--chromium-output-directory",
+      "@WrappedPath(.)",
+    ]
   }
 }
 

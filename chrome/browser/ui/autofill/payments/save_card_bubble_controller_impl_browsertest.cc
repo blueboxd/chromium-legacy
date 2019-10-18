@@ -98,7 +98,7 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
                                      base::DoNothing());
         break;
       case BubbleType::SIGN_IN_PROMO:
-        controller_->ShowBubbleForSignInPromo();
+        controller_->MaybeShowBubbleForSignInPromo();
         break;
       case BubbleType::MANAGE_CARDS:
         controller_->ShowBubbleForManageCardsForTesting(test::GetCreditCard());

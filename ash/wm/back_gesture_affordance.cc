@@ -60,6 +60,13 @@ constexpr base::TimeDelta kCompleteAnimationTimeout =
 
 constexpr SkColor kRippleColor = SkColorSetA(gfx::kGoogleBlue600, 0x4C);  // 30%
 
+// Y-axis drag distance to achieve full y drag progress.
+constexpr float kDistanceForFullYProgress = 80.f;
+
+// Maximium y-axis movement of the affordance. Note, the affordance can move
+// both up and down.
+constexpr float kMaxYMovement = 8.f;
+
 class AffordanceView : public views::View {
  public:
   AffordanceView() {
@@ -159,18 +166,25 @@ BackGestureAffordance::BackGestureAffordance(const gfx::Point& location) {
 
 BackGestureAffordance::~BackGestureAffordance() {}
 
-void BackGestureAffordance::SetDragProgress(int x_location) {
+void BackGestureAffordance::SetDragProgress(int x_drag_amount,
+                                            int y_drag_amount) {
   DCHECK_EQ(State::DRAGGING, state_);
   DCHECK_LE(0.f, drag_progress_);
 
   // Since affordance is put outside of the display, add the distance from its
   // center point to the left edge of the display to be the actual drag
   // distance.
-  const float progress =
-      (x_location + kBackgroundRadius) / kDistanceForFullProgress;
-  if (drag_progress_ == progress)
+  float progress =
+      (x_drag_amount + kBackgroundRadius) / kDistanceForFullProgress;
+  progress = std::min(progress, kMaxDragProgress);
+
+  float y_progress = y_drag_amount / kDistanceForFullYProgress;
+  y_progress = std::min(1.0f, std::max(-1.0f, y_progress));
+
+  if (drag_progress_ == progress && y_progress == y_drag_progress_)
     return;
-  drag_progress_ = std::min(progress, kMaxDragProgress);
+  drag_progress_ = progress;
+  y_drag_progress_ = y_progress;
 
   UpdateTransform();
   SchedulePaint();
@@ -225,8 +239,10 @@ void BackGestureAffordance::UpdateTransform() {
   } else {
     offset = progress * kDistanceForFullProgress;
   }
+
+  float y_offset = kMaxYMovement * y_drag_progress_;
   gfx::Transform transform;
-  transform.Translate(offset, 0);
+  transform.Translate(offset, y_offset);
   affordance_widget_->GetContentsView()->SetTransform(transform);
 }
 

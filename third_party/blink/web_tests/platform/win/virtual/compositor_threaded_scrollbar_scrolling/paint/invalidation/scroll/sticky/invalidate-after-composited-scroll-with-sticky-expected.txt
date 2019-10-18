@@ -17,9 +17,21 @@
       "transform": 3
     },
     {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [345, 0],
+      "bounds": [15, 640],
+      "transform": 2
+    },
+    {
       "name": "LayoutNGBlockFlow (sticky positioned) DIV id='sticky'",
       "bounds": [345, 20],
       "transform": 4
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

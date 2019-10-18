@@ -28,6 +28,13 @@ const char kAppListZeroStateSuggestionOpenTypeHistogram[] =
 // launcher issues to the search providers.
 constexpr char kAppListLauncherIssuedSearchQueryLength[] =
     "Apps.AppListLauncherIssuedSearchQueryLength";
+// The UMA histogram that logs the length of the query that resulted in an app
+// launch from search box.
+constexpr char kSearchQueryLengthAppLaunch[] =
+    "Apps.AppList.SearchQueryLength.Apps";
+// The UMA histogram that logs the number of app launches from the search box
+// with non-empty queries.
+constexpr char kSearchSuccessAppLaunch[] = "Apps.AppList.SearchSuccess.Apps";
 
 // Maximum query length logged for user typed query in characters.
 constexpr int kMaxLoggedUserQueryLength = 20;
@@ -88,6 +95,15 @@ void RecordLauncherIssuedSearchQueryLength(int query_length) {
         kAppListLauncherIssuedSearchQueryLength,
         std::min(query_length, kMaxLoggedUserQueryLength),
         kMaxLoggedUserQueryLength);
+  }
+}
+
+void RecordSuccessfulAppLaunchUsingSearch(
+    ash::AppListLaunchedFrom launched_from,
+    int query_length) {
+  if (query_length > 0) {
+    UMA_HISTOGRAM_ENUMERATION(kSearchSuccessAppLaunch, launched_from);
+    UMA_HISTOGRAM_COUNTS_100(kSearchQueryLengthAppLaunch, query_length);
   }
 }
 

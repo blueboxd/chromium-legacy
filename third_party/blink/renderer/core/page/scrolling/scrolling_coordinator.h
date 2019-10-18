@@ -31,10 +31,8 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace cc {
 class AnimationHost;
@@ -46,7 +44,6 @@ class CompositorAnimationTimeline;
 class LocalFrame;
 class LocalFrameView;
 class Page;
-class Region;
 class ScrollableArea;
 
 using MainThreadScrollingReasons = uint32_t;
@@ -59,7 +56,6 @@ using ScrollbarId = uint64_t;
 // It's responsible for propagating scroll offsets, main-thread scrolling
 // reasons, touch action regions, and non-fast-scrollable regions into the
 // compositor, as well as creating and managing scrollbar layers.
-
 class CORE_EXPORT ScrollingCoordinator final
     : public GarbageCollected<ScrollingCoordinator> {
  public:
@@ -108,7 +104,7 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void WillDestroyScrollableArea(ScrollableArea*);
 
-  // Udates scroll offset, if the appropriate composited layers exist,
+  // Updates scroll offset, if the appropriate composited layers exist,
   // and if successful, returns true. Otherwise returns false.
   bool UpdateCompositedScrollOffset(ScrollableArea* scrollable_area);
 
@@ -125,21 +121,6 @@ class CORE_EXPORT ScrollingCoordinator final
                                              ScrollbarOrientation);
   // LocalFrame* must be a local root if non-null.
   void TouchEventTargetRectsDidChange(LocalFrame*);
-
-  // Computes the NonFastScrollableRegions for the given local root frame. It
-  // outputs a separate region for areas that scroll with the viewport and
-  // those that are fixed to it since these regions will need to go on separate
-  // layers.
-  // |scrolling_region| is for rects that scroll with the main frame. Since
-  // they they will be stored on the root frame's scrolling contents layer,
-  // they must be specified in the root frame's document coordinates.
-  // |fixed_region| is for rects that are fixed to the main frame. Since they
-  // are stored on the visual viewport's scrolling contents layer, they must be
-  // specified in root frame coordinates.
-  void ComputeShouldHandleScrollGestureOnMainThreadRegion(
-      const LocalFrame*,
-      Region* scrolling_region,
-      Region* fixed_region) const;
 
   void UpdateNonFastScrollableRegions(LocalFrame*);
   void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
@@ -163,12 +144,11 @@ class CORE_EXPORT ScrollingCoordinator final
   void Reset(LocalFrame*);
 
  protected:
-  bool IsForRootLayer(ScrollableArea*) const;
   bool IsForMainFrame(ScrollableArea*) const;
 
   Member<Page> page_;
 
-  // Dirty flags used to idenfity what really needs to be computed after
+  // Dirty flags used to identify what really needs to be computed after
   // compositing is updated.
   bool touch_event_target_rects_are_dirty_;
   bool should_scroll_on_main_thread_dirty_;

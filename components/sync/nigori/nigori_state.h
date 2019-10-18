@@ -49,6 +49,8 @@ struct NigoriState {
   // Makes a deep copy of |this|.
   NigoriState Clone() const;
 
+  bool NeedsKeystoreKeyRotation() const;
+
   std::unique_ptr<CryptographerImpl> cryptographer;
 
   // Pending keys represent a remote update that contained a keybag that cannot

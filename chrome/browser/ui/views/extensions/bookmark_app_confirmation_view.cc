@@ -44,6 +44,9 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
     chrome::AppInstallationAcceptanceCallback callback)
     : web_app_info_(std::move(web_app_info)), callback_(std::move(callback)) {
   DCHECK(web_app_info_);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_BUTTON_LABEL));
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(layout_provider->GetDialogInsetsForContentType(views::CONTROL,
                                                              views::TEXT));
@@ -128,13 +131,6 @@ bool BookmarkAppConfirmationView::Accept() {
       open_as_window_checkbox_ && open_as_window_checkbox_->GetChecked();
   std::move(callback_).Run(true, std::move(web_app_info_));
   return true;
-}
-
-base::string16 BookmarkAppConfirmationView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_CREATE_SHORTCUTS_BUTTON_LABEL
-                                       : IDS_CANCEL);
 }
 
 bool BookmarkAppConfirmationView::IsDialogButtonEnabled(

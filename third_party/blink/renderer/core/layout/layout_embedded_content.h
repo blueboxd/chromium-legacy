@@ -24,6 +24,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_EMBEDDED_CONTENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
 namespace blink {
@@ -36,7 +37,7 @@ class WebPluginContainerImpl;
 // LayoutEmbeddedObject.
 class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
  public:
-  explicit LayoutEmbeddedContent(Element*);
+  explicit LayoutEmbeddedContent(HTMLFrameOwnerElement*);
   ~LayoutEmbeddedContent() override;
 
   bool RequiresAcceleratedCompositing() const;
@@ -89,6 +90,10 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
       const HitTestLocation&,
       const PhysicalOffset& accumulated_offset,
       HitTestAction);
+
+  HTMLFrameOwnerElement* GetFrameOwnerElement() const {
+    return To<HTMLFrameOwnerElement>(GetNode());
+  }
 
   int ref_count_;
 };

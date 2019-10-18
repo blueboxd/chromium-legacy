@@ -100,8 +100,7 @@ StorageAreaImpl::~StorageAreaImpl() {
 void StorageAreaImpl::InitializeAsEmpty() {
   DCHECK_EQ(map_state_, MapState::UNLOADED);
   map_state_ = MapState::LOADING_FROM_DATABASE;
-  OnMapLoaded(leveldb::Status::OK(),
-              std::vector<leveldb::mojom::KeyValuePtr>());
+  OnMapLoaded(leveldb::Status::OK(), {});
 }
 
 void StorageAreaImpl::Bind(
@@ -572,19 +571,26 @@ void StorageAreaImpl::LoadMap(base::OnceClosure completion_callback) {
   map_state_ = MapState::LOADING_FROM_DATABASE;
 
   if (!database_) {
-    OnMapLoaded(leveldb::Status::IOError(""),
-                std::vector<leveldb::mojom::KeyValuePtr>());
+    OnMapLoaded(leveldb::Status::IOError(""), {});
     return;
   }
 
-  database_->GetPrefixed(prefix_,
-                         base::BindOnce(&StorageAreaImpl::OnMapLoaded,
-                                        weak_ptr_factory_.GetWeakPtr()));
+  database_->RunDatabaseTask(
+      base::BindOnce(
+          [](const storage::DomStorageDatabase::Key& prefix,
+             const storage::DomStorageDatabase& db) {
+            std::vector<storage::DomStorageDatabase::KeyValuePair> data;
+            leveldb::Status status = db.GetPrefixed(prefix, &data);
+            return std::make_tuple(status, std::move(data));
+          },
+          prefix_),
+      base::BindOnce(&StorageAreaImpl::OnMapLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void StorageAreaImpl::OnMapLoaded(
     leveldb::Status status,
-    std::vector<leveldb::mojom::KeyValuePtr> data) {
+    std::vector<storage::DomStorageDatabase::KeyValuePair> data) {
   DCHECK(keys_values_map_.empty());
   DCHECK_EQ(map_state_, MapState::LOADING_FROM_DATABASE);
 
@@ -598,11 +604,11 @@ void StorageAreaImpl::OnMapLoaded(
   map_state_ = MapState::LOADED_KEYS_AND_VALUES;
 
   keys_values_map_.clear();
-  for (auto& it : data) {
-    DCHECK_GE(it->key.size(), prefix_.size());
-    keys_values_map_[std::vector<uint8_t>(it->key.begin() + prefix_.size(),
-                                          it->key.end())] =
-        std::move(it->value);
+  for (auto& entry : data) {
+    DCHECK_GE(entry.key.size(), prefix_.size());
+    keys_values_map_[storage::DomStorageDatabase::Key(
+        entry.key.begin() + prefix_.size(), entry.key.end())] =
+        std::move(entry.value);
   }
   CalculateStorageAndMemoryUsed();
 

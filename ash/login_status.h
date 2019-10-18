@@ -14,8 +14,7 @@ enum class LoginStatus {
   GUEST,          // A guest is logged in (i.e. incognito)
   PUBLIC,         // A public account is logged in
   SUPERVISED,     // A supervised user is logged in
-  KIOSK_APP,      // Is in kiosk app mode
-  ARC_KIOSK_APP   // Is in ARC kiosk mode
+  KIOSK_APP       // In kiosk mode for Chrome app, ARC, or PWA.
 };
 
 }  // namespace ash

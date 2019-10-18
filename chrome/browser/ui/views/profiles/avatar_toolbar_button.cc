@@ -235,14 +235,6 @@ void AvatarToolbarButton::UpdateText() {
           *GetProfileAttributesEntry(profile_), profile_);
       break;
     }
-    case State::kHighlightAnimation:
-      // If the highlight animation is visible, hide the avatar sync
-      // paused/error state even if there is no autofill icon visible in the
-      // parent container.
-      color = AdjustHighlightColorForContrast(
-          GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
-          gfx::kGoogleBlue050, gfx::kGoogleBlue900);
-      break;
     case State::kSyncError:
       color = AdjustHighlightColorForContrast(
           GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
@@ -262,7 +254,11 @@ void AvatarToolbarButton::UpdateText() {
       break;
     case State::kGenericProfile:
     case State::kNormal:
-      // Default treatment -- no text, no color.
+      if (highlight_animation_visible_) {
+        color = AdjustHighlightColorForContrast(
+            GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
+            gfx::kGoogleBlue050, gfx::kGoogleBlue900);
+      }
       break;
   }
 
@@ -282,6 +278,14 @@ void AvatarToolbarButton::ShowAvatarHighlightAnimation() {
       base::BindOnce(&AvatarToolbarButton::HideHighlightAnimation,
                      weak_ptr_factory_.GetWeakPtr()),
       kAvatarHighlightAnimationDuration);
+}
+
+void AvatarToolbarButton::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AvatarToolbarButton::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
@@ -467,7 +471,6 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
       return l10n_util::GetStringFUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED_TOOLTIP,
                                         GetProfileName());
     case State::kNormal:
-    case State::kHighlightAnimation:
       return GetProfileName();
   }
   NOTREACHED();
@@ -500,7 +503,6 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
       return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
                                    icon_color);
     case State::kAnimatedUserIdentity:
-    case State::kHighlightAnimation:
     case State::kSyncError:
     case State::kSyncPaused:
     case State::kNormal:
@@ -551,12 +553,9 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
     return State::kAnimatedUserIdentity;
   }
 
-  if (highlight_animation_visible_)
-    return State::kHighlightAnimation;
-
 #if !defined(OS_CHROMEOS)
   if (identity_manager->HasPrimaryAccount() && profile_->IsSyncAllowed() &&
-      error_controller_.HasAvatarError()) {
+      error_controller_.HasAvatarError() && !highlight_animation_visible_) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
     int unused;
@@ -605,10 +604,25 @@ void AvatarToolbarButton::OnUserIdentityChanged(
 
 void AvatarToolbarButton::ShowHighlightAnimation() {
   highlight_animation_visible_ = true;
+  // TODO(crbug.com/932818): Avatar highlight animation should not be shown when
+  // the sign-in animation is visible. We will figure out the direction moving
+  // forward when all the pieces come together.
+  // Button state should be checked before text is updated, but after the
+  // |highlight_animation_visible_| is set to true.
+  DCHECK(GetState() == State::kNormal || GetState() == State::kGenericProfile ||
+         GetState() == State::kAnimatedUserIdentity);
   UpdateText();
 }
 
 void AvatarToolbarButton::HideHighlightAnimation() {
+  // TODO(crbug.com/932818): Avatar highlight animation should not be shown when
+  // the sign-in animation is visible. We will figure out the direction moving
+  // forward when all the pieces come together.
+  DCHECK(GetState() == State::kNormal || GetState() == State::kGenericProfile ||
+         GetState() == State::kAnimatedUserIdentity);
   highlight_animation_visible_ = false;
   UpdateText();
+
+  for (AvatarToolbarButton::Observer& observer : observer_list_)
+    observer.OnAvatarHighlightAnimationFinished();
 }

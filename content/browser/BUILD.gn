@@ -29,6 +29,7 @@ jumbo_source_set("browser") {
     "//content/public/browser:browser_sources",
     "//content/test/fuzzer:appcache_fuzzer",
     "//content/test/fuzzer:browser_accessibility_fuzzer",
+    "//content/test/fuzzer:indexed_db_fuzzer_support",
   ]
 
   configs += [
@@ -802,6 +803,8 @@ jumbo_source_set("browser") {
     "dom_storage/session_storage_namespace_impl_mojo.h",
     "dom_storage/storage_area_impl.cc",
     "dom_storage/storage_area_impl.h",
+    "download/data_url_blob_reader.cc",
+    "download/data_url_blob_reader.h",
     "download/download_item_utils.cc",
     "download/download_manager_impl.cc",
     "download/download_manager_impl.h",
@@ -2042,6 +2045,7 @@ jumbo_source_set("browser") {
   }
 
   if (is_mac) {
+    libs += [ "AppKit.framework" ]
     sources += [
       "../app_shim_remote_cocoa/web_contents_ns_view_bridge.h",
       "../app_shim_remote_cocoa/web_contents_ns_view_bridge.mm",

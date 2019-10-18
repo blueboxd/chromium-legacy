@@ -58,9 +58,6 @@ class CORE_EXPORT HTMLImageElement final
  public:
   class ViewportChangeListener;
 
-  // Returns attributes that should be checked against Trusted Types
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
-
   static HTMLImageElement* CreateForJSConstructor(Document&);
   static HTMLImageElement* CreateForJSConstructor(Document&, unsigned width);
   static HTMLImageElement* CreateForJSConstructor(Document&,

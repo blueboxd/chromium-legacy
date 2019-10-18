@@ -1,77 +1,52 @@
 <style>
-  @keyframes fade-in {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  }
-
-  @keyframes fade-out {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-
   :host {
     -webkit-mask: center / contain no-repeat;
-    animation: fade-in 200ms ease-in forwards;
     background-color: currentColor;
     display: block;
     height: 100%;
-    opacity: 0;
+    overflow: hidden;
     width: 16px;
   }
 
-  :host([fade-out]) {
-    animation: fade-out 1000ms ease-in;
+  :host([alert-state_='0']),
+  :host([alert-state_='8']) {
+    -webkit-mask-image: url(alert_indicators/tab_media_recording.svg);
+    background-color: var(--tabstrip-indicator-recording-color);
   }
 
-  :host([alert-state='pip']) {
-    -webkit-mask-image: url(alert_indicators/picture_in_picture_alt.svg);
-    background-color: var(--tabstrip-indicator-pip-color);
-  }
-
-  :host([alert-state='serial']) {
-    -webkit-mask-image: url(alert_indicators/serial_port.svg);
-  }
-
-  :host([alert-state='muted']) {
-    -webkit-mask-image: url(alert_indicators/tab_audio_muting_rounded.svg);
-  }
-
-  :host([alert-state='audio']) {
-    -webkit-mask-image: url(alert_indicators/tab_audio_rounded.svg);
-  }
-
-  :host([alert-state='bluetooth']) {
-    -webkit-mask-image: url(alert_indicators/tab_bluetooth_connected.svg);
-  }
-
-  :host([alert-state='capturing']) {
+  :host([alert-state_='1']) {
     -webkit-mask-image:
         url(alert_indicators/tab_media_capturing_with_arrow.svg);
     background-color: var(--tabstrip-indicator-capturing-color);
   }
 
-  :host([alert-state='recording']) {
-    -webkit-mask-image: url(alert_indicators/tab_media_recording.svg);
-    background-color: var(--tabstrip-indicator-recording-color);
+  :host([alert-state_='2']) {
+    -webkit-mask-image: url(alert_indicators/tab_audio_rounded.svg);
   }
 
-  :host([alert-state='usb']) {
+  :host([alert-state_='3']) {
+    -webkit-mask-image: url(alert_indicators/tab_audio_muting_rounded.svg);
+  }
+
+  :host([alert-state_='4']) {
+    -webkit-mask-image: url(alert_indicators/tab_bluetooth_connected.svg);
+  }
+
+  :host([alert-state_='5']) {
     -webkit-mask-image: url(alert_indicators/tab_usb_connected.svg);
     -webkit-mask-size: 20px;
   }
 
-  :host([alert-state='vr']) {
-    -webkit-mask-image: url(alert_indicators/vr_headset.svg);
+  :host([alert-state_='6']) {
+    -webkit-mask-image: url(alert_indicators/serial_port.svg);
   }
 
-  :host([alert-state='capturing']),
-  :host([alert-state='recording']) {
-    animation:
-        fade-in 200ms ease-in 0,
-        fade-out 1000ms ease-in 200ms,
-        fade-in 200ms ease-in 1200s,
-        fade-out 1000ms ease-in 1400ms,
-        fade-in 200ms ease-in 2400ms;
-    animation-fill-mode: forwards;
+  :host([alert-state_='7']) {
+    -webkit-mask-image: url(alert_indicators/picture_in_picture_alt.svg);
+    background-color: var(--tabstrip-indicator-pip-color);
+  }
+
+  :host([alert-state_='9']) {
+    -webkit-mask-image: url(alert_indicators/vr_headset.svg);
   }
 </style>

@@ -17,6 +17,10 @@ namespace ui {
 
 const int kSeparatorId = -1;
 
+// Text items are rendered as enabled but are non-interactive with no actions
+// and cannot be highlighted.
+const int kTitleId = -2;
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel::Delegate, public:
 
@@ -140,6 +144,10 @@ void SimpleMenuModel::AddHighlightedItemWithIcon(int command_id,
   Item item(command_id, TYPE_HIGHLIGHTED, label);
   item.icon = gfx::Image(icon);
   AppendItem(std::move(item));
+}
+
+void SimpleMenuModel::AddTitle(const base::string16& label) {
+  AppendItem(Item(kTitleId, TYPE_TITLE, label));
 }
 
 void SimpleMenuModel::AddSeparator(MenuSeparatorType separator_type) {
@@ -460,6 +468,9 @@ ButtonMenuItemModel* SimpleMenuModel::GetButtonMenuItemAt(int index) const {
 
 bool SimpleMenuModel::IsEnabledAt(int index) const {
   int command_id = GetCommandIdAt(index);
+  if (command_id == kTitleId)
+    return false;
+
   if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
     return items_[ValidateItemIndex(index)].enabled;
 
@@ -469,7 +480,8 @@ bool SimpleMenuModel::IsEnabledAt(int index) const {
 
 bool SimpleMenuModel::IsVisibleAt(int index) const {
   int command_id = GetCommandIdAt(index);
-  if (!delegate_ || command_id == kSeparatorId || GetButtonMenuItemAt(index))
+  if (!delegate_ || command_id == kSeparatorId || command_id == kTitleId ||
+      GetButtonMenuItemAt(index))
     return items_[ValidateItemIndex(index)].visible;
 
   return delegate_->IsCommandIdVisible(command_id) &&

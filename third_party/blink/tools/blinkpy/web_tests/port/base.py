@@ -182,6 +182,9 @@ class Port(object):
     # The following is used for concetenating WebDriver test names.
     WEBDRIVER_SUBTEST_SEPARATOR = '>>'
 
+    # The following is used for concetenating WebDriver test names in pytest format.
+    WEBDRIVER_SUBTEST_PYTEST_SEPARATOR = '::'
+
     # The following two constants must match. When adding a new WPT root, also
     # remember to add an alias rule to third_party/wpt/wpt.config.json.
     # WPT_DIRS maps WPT roots on the file system to URL prefixes on wptserve.
@@ -1813,6 +1816,9 @@ class Port(object):
         if subtest_name:
             return test_name + Port.WEBDRIVER_SUBTEST_SEPARATOR + subtest_name
         return test_name
+
+    def add_webdriver_subtest_pytest_suffix(self, test_name, subtest_name):
+        return test_name + self.WEBDRIVER_SUBTEST_PYTEST_SEPARATOR + subtest_name
 
 
 class VirtualTestSuite(object):

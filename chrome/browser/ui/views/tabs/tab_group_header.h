@@ -34,6 +34,9 @@ class TabGroupHeader : public TabSlotView {
   // Updates our visual state according to the TabGroupVisualData for our group.
   void VisualsChanged();
 
+  // Removes {editor_bubble_tracker_} from observing the widget.
+  void RemoveObserverFromWidget(views::Widget* widget);
+
  private:
   // Calculate the width for this View.
   int CalculateWidth() const;

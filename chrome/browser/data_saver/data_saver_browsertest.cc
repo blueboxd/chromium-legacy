@@ -180,12 +180,15 @@ class DataSaverBrowserTest : public InProcessBrowserTest {
     SetDataSaverEnabled(browser()->profile(), enabled);
   }
 
-  void VerifySaveDataHeader(const std::string& expected_header_value) {
+  void VerifySaveDataHeader(const std::string& expected_header_value,
+                            Browser* browser = nullptr) {
+    if (!browser)
+      browser = InProcessBrowserTest::browser();
     ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("/echoheader?Save-Data"));
+        browser, embedded_test_server()->GetURL("/echoheader?Save-Data"));
     std::string header_value;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents(),
+        browser->tab_strip_model()->GetActiveWebContents(),
         "window.domAutomationController.send(document.body.textContent);",
         &header_value));
     EXPECT_EQ(expected_header_value, header_value);
@@ -202,6 +205,12 @@ IN_PROC_BROWSER_TEST_F(DataSaverBrowserTest, DataSaverDisabled) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EnableDataSaver(false);
   VerifySaveDataHeader("None");
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverBrowserTest, DataSaverDisabledInIncognito) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EnableDataSaver(true);
+  VerifySaveDataHeader("None", CreateIncognitoBrowser());
 }
 
 class DataSaverWithServerBrowserTest : public InProcessBrowserTest {

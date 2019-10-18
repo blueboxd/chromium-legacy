@@ -289,7 +289,7 @@ class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
   // |keys_only_map_| and sets the |map_state_| to LOADED_KEYS_ONLY
   void LoadMap(base::OnceClosure completion_callback);
   void OnMapLoaded(leveldb::Status status,
-                   std::vector<leveldb::mojom::KeyValuePtr> data);
+                   std::vector<storage::DomStorageDatabase::KeyValuePair> data);
   void OnGotMigrationData(std::unique_ptr<ValueMap> data);
   void CalculateStorageAndMemoryUsed();
   void OnLoadComplete();

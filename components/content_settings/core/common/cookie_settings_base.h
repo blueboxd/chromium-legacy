@@ -108,16 +108,20 @@ class CookieSettingsBase {
                         ContentSetting* cookie_setting) const;
 
   // Returns the cookie access semantics (legacy or nonlegacy) to be applied for
-  // cookies on the given domain.
+  // cookies on the given domain. The |cookie_domain| can be provided as the
+  // direct output of CanonicalCookie::Domain(), i.e. any leading dot does not
+  // have to be removed.
   //
   // This may be called on any thread.
   net::CookieAccessSemantics GetCookieAccessSemanticsForDomain(
-      const GURL& cookie_domain) const;
+      const std::string& cookie_domain) const;
 
   // Gets the setting that controls whether legacy access is allowed for a given
-  // cookie domain (provided as a URL).
+  // cookie domain. The |cookie_domain| can be provided as the direct output of
+  // CanonicalCookie::Domain(), i.e. any leading dot does not have to be
+  // removed.
   virtual void GetSettingForLegacyCookieAccess(
-      const GURL& cookie_domain,
+      const std::string& cookie_domain,
       ContentSetting* setting) const = 0;
 
   // Determines whether |setting| is a valid content setting for cookies.

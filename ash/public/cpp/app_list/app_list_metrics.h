@@ -94,6 +94,10 @@ ASH_PUBLIC_EXPORT void RecordZeroStateSuggestionOpenTypeHistogram(
 
 ASH_PUBLIC_EXPORT void RecordLauncherIssuedSearchQueryLength(int query_length);
 
+ASH_PUBLIC_EXPORT void RecordSuccessfulAppLaunchUsingSearch(
+    ash::AppListLaunchedFrom launched_from,
+    int query_length);
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_METRICS_H_

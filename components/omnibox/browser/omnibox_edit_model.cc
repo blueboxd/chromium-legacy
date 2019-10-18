@@ -1287,7 +1287,7 @@ void OmniboxEditModel::OnPopupDataChanged(const base::string16& text,
     view_->OnInlineAutocompleteTextCleared();
 
   const base::string16& user_text =
-      user_input_in_progress_ ? user_text_ : view_->GetText();
+      user_input_in_progress_ ? user_text_ : input_.text();
   if (keyword_state_changed && is_keyword_selected() &&
       inline_autocomplete_text_.empty()) {
     // If we reach here, the user most likely entered keyword mode by inserting
@@ -1538,6 +1538,15 @@ void OmniboxEditModel::RevertTemporaryTextAndPopup() {
 
   if (popup_model())
     popup_model()->ResetToDefaultMatch();
+
+  // If user input is not in progress, we are reverting an on-focus suggestion.
+  // Set the window text back to the original input, rather than the top match.
+  // The original selection will be restored in OnRevertTemporaryText() below.
+  if (!user_input_in_progress_) {
+    view_->SetWindowTextAndCaretPos(input_.text(), /*caret_pos=*/0,
+                                    /*update_popup=*/false,
+                                    /*notify_text_changed=*/true);
+  }
 
   const AutocompleteMatch& match = CurrentMatch(nullptr);
   view_->OnRevertTemporaryText(match.fill_into_edit, match);

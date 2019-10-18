@@ -46,6 +46,12 @@
           type="chrome_html"
           compress="gzip"/>
       <structure
+          name="IDR_TAB_STRIP_ALERT_INDICATORS_JS"
+          file="${root_gen_dir}/chrome/browser/resources/tab_strip/alert_indicators.js"
+          use_base_dir="false"
+          type="chrome_html"
+          compress="gzip"/>
+      <structure
           name="IDR_TAB_STRIP_EMBEDDER_PROXY_JS"
           file="tab_strip_embedder_proxy.js"
           type="chrome_html"

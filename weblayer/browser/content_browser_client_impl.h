@@ -41,6 +41,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
+  void OnNetworkServiceCreated(
+      network::mojom::NetworkService* network_service) override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(

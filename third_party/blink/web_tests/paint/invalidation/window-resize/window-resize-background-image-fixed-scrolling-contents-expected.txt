@@ -12,6 +12,12 @@
           "reason": "background"
         }
       ]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [585, 0],
+      "bounds": [15, 250],
+      "contentsOpaque": true
     }
   ]
 }
@@ -29,6 +35,12 @@
           "reason": "background"
         }
       ]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [385, 0],
+      "bounds": [15, 250],
+      "contentsOpaque": true
     }
   ]
 }
@@ -46,6 +58,12 @@
           "reason": "background"
         }
       ]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [385, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ]
 }
@@ -63,6 +81,12 @@
           "reason": "background"
         }
       ]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ]
 }

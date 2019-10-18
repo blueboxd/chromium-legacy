@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/common/extension_id.h"
 
 namespace content {
@@ -29,6 +30,23 @@ enum class ExtensionLoadType {
   PACKED,
   UNPACKED,
 };
+
+// Factory method to construct a RequestAction given a RequestAction type and
+// optionally, an ExtensionId.
+RequestAction CreateRequestActionForTesting(
+    RequestAction::Type type,
+    const ExtensionId& extension_id = "extensionid");
+
+bool operator==(const RequestAction& lhs, const RequestAction& rhs);
+
+// Tests that the request actions contained in |rhs| are the same as the ones
+// specified in |lhs| though not necessarily in the same order. Note: this
+// method is used for RequestAction instead of testing::UnorderedElementsAre
+// because the latter does not support move-only types.
+// TODO(crbug.com/1015642): Find a way to use testing::UnorderedElementsAre and
+// make this obsolete.
+bool AreRequestActionsEqual(const std::vector<RequestAction>& lhs,
+                            const std::vector<RequestAction>& rhs);
 
 // Returns true if the given extension has a valid indexed ruleset. Should be
 // called on a sequence where file IO is allowed.

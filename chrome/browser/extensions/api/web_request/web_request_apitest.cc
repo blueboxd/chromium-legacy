@@ -89,6 +89,7 @@
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
@@ -297,16 +298,17 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
       const char* expected_content_regular_window,
       const char* exptected_content_incognito_window);
 
-  network::mojom::URLLoaderFactoryPtr CreateURLLoaderFactory() {
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  CreateURLLoaderFactory() {
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = network::mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
-    network::mojom::URLLoaderFactoryPtr loader_factory;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory;
     content::BrowserContext::GetDefaultStoragePartition(profile())
         ->GetNetworkContext()
-        ->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
-                                 std::move(params));
+        ->CreateURLLoaderFactory(
+            loader_factory.InitWithNewPipeAndPassReceiver(), std::move(params));
     return loader_factory;
   }
 
@@ -1745,20 +1747,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
     return;
   }
 
-  auto loader_factory = CreateURLLoaderFactory();
+  mojo::Remote<network::mojom::URLLoaderFactory> loader_factory(
+      CreateURLLoaderFactory());
   bool has_connection_error = false;
-  loader_factory.set_connection_error_handler(
+  loader_factory.set_disconnect_handler(
       base::BindLambdaForTesting([&]() { has_connection_error = true; }));
 
   InstallWebRequestExtension("extension1");
   content::BrowserContext::GetDefaultStoragePartition(profile())
       ->FlushNetworkInterfaceForTesting();
   EXPECT_TRUE(has_connection_error);
+  loader_factory.reset();
 
   // The second time there should be no connection error.
-  loader_factory = CreateURLLoaderFactory();
+  loader_factory.Bind(CreateURLLoaderFactory());
   has_connection_error = false;
-  loader_factory.set_connection_error_handler(
+  loader_factory.set_disconnect_handler(
       base::BindLambdaForTesting([&]() { has_connection_error = true; }));
   InstallWebRequestExtension("extension2");
   content::BrowserContext::GetDefaultStoragePartition(profile())

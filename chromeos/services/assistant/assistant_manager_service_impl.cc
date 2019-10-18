@@ -367,6 +367,12 @@ void AssistantManagerServiceImpl::RemoveStateObserver(
   state_observers_.RemoveObserver(observer);
 }
 
+void AssistantManagerServiceImpl::SyncDeviceAppsStatus() {
+  assistant_settings_manager_->SyncDeviceAppsStatus(
+      base::BindOnce(&AssistantManagerServiceImpl::OnDeviceAppsEnabled,
+                     weak_factory_.GetWeakPtr()));
+}
+
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
   platform_api_->SetMicState(true);
   assistant_manager_->StartAssistantInteraction();
@@ -1167,6 +1173,8 @@ void AssistantManagerServiceImpl::OnStartFinished() {
       base::TimeTicks::Now() - started_time_;
   UMA_HISTOGRAM_TIMES("Assistant.ServiceReadyTime", time_since_started);
 
+  SyncDeviceAppsStatus();
+
   RegisterFallbackMediaHandler();
   AddMediaControllerObserver();
 
@@ -1506,6 +1514,12 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
   // options to turn on/off A11Y features in LibAssistant.
   if (assistant_manager_internal_)
     UpdateInternalOptions(assistant_manager_internal_);
+}
+
+void AssistantManagerServiceImpl::OnDeviceAppsEnabled(bool enabled) {
+  display_connection_->SetDeviceAppsEnabled(enabled);
+  action_module_->SetAppSupportEnabled(
+      assistant::features::IsAppSupportEnabled() && enabled);
 }
 
 void AssistantManagerServiceImpl::StopAlarmTimerRinging() {

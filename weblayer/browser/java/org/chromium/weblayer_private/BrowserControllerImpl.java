@@ -21,6 +21,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.IDownloadDelegateClient;
 import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
 import org.chromium.weblayer_private.aidl.INavigationControllerClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
@@ -43,6 +44,7 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     private WebContents mWebContents;
     private BrowserObserverProxy mBrowserObserverProxy;
     private NavigationControllerImpl mNavigationController;
+    private DownloadDelegateProxy mDownloadDelegateProxy;
     private FullscreenDelegateProxy mFullscreenDelegateProxy;
 
     private static class InternalAccessDelegateImpl
@@ -130,6 +132,21 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     }
 
     @Override
+    public void setDownloadDelegateClient(IDownloadDelegateClient client) {
+        if (client != null) {
+            if (mDownloadDelegateProxy == null) {
+                mDownloadDelegateProxy =
+                        new DownloadDelegateProxy(mNativeBrowserController, client);
+            } else {
+                mDownloadDelegateProxy.setClient(client);
+            }
+        } else if (mDownloadDelegateProxy != null) {
+            mDownloadDelegateProxy.destroy();
+            mDownloadDelegateProxy = null;
+        }
+    }
+
+    @Override
     public void setFullscreenDelegateClient(IFullscreenDelegateClient client) {
         if (client != null) {
             if (mFullscreenDelegateProxy == null) {
@@ -152,6 +169,10 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         if (mBrowserObserverProxy != null) {
             mBrowserObserverProxy.destroy();
             mBrowserObserverProxy = null;
+        }
+        if (mDownloadDelegateProxy != null) {
+            mDownloadDelegateProxy.destroy();
+            mDownloadDelegateProxy = null;
         }
         if (mFullscreenDelegateProxy != null) {
             mFullscreenDelegateProxy.destroy();

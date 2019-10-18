@@ -31,8 +31,8 @@
 #include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/apk_assets.h"
 #include "base/android/path_utils.h"
+#include "ui/base/resource/resource_bundle_android.h"
 #include "weblayer/browser/android_descriptors.h"
 #endif
 
@@ -135,16 +135,29 @@ ContentBrowserClientImpl::CreateNetworkContext(
   return network_context;
 }
 
+void ContentBrowserClientImpl::OnNetworkServiceCreated(
+    network::mojom::NetworkService* network_service) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
+  content::GetNetworkService()->SetCryptConfig(std::move(config));
+#endif
+}
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     content::PosixFileDescriptorInfo* mappings) {
 #if defined(OS_ANDROID)
-  mappings->ShareWithRegion(
-      kPakDescriptor,
-      base::GlobalDescriptors::GetInstance()->Get(kPakDescriptor),
-      base::GlobalDescriptors::GetInstance()->GetRegion(kPakDescriptor));
+  base::MemoryMappedFile::Region region;
+  int fd = ui::GetMainAndroidPackFd(&region);
+  mappings->ShareWithRegion(kWebLayerMainPakDescriptor, fd, region);
+
+  fd = ui::GetCommonResourcesPackFd(&region);
+  mappings->ShareWithRegion(kWebLayer100PercentPakDescriptor, fd, region);
+
+  fd = ui::GetLocalePackFd(&region);
+  mappings->ShareWithRegion(kWebLayerLocalePakDescriptor, fd, region);
 #endif
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)

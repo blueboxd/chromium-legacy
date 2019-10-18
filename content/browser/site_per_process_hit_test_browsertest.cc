@@ -901,11 +901,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
   ack_observer.Wait();
 
   // Check compositor layers.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      nested_iframe_node->current_frame_host(),
-      "window.domAutomationController.send("
-      "window.internals.layerTreeAsText(document));",
-      &str));
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractString(nested_iframe_node->current_frame_host(),
+                                    "window.domAutomationController.send("
+                                    "window.internals.layerTreeAsText(document,"
+                                    " internals.OUTPUT_AS_LAYER_TREE));",
+                                    &str));
   // We expect the nested OOPIF to not have any compositor layers.
   EXPECT_EQ(std::string(), str);
 

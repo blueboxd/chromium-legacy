@@ -56,8 +56,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /** Unit tests for auto-fetch-on-net-error-page. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.
-Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=AutoFetchOnNetErrorPage"})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class OfflinePageAutoFetchTest {
     private static final String TAG = "AutoFetchTest";
     private static final long WAIT_TIMEOUT_MS = 20000;
@@ -69,7 +68,13 @@ public class OfflinePageAutoFetchTest {
     public TestWatcher mTestWatcher = new TestWatcher() {
         @Override
         protected void failed(Throwable e, Description description) {
-            logAdditionalContext();
+            try {
+                logAdditionalContext();
+            } catch (Exception ex) {
+                // Exceptions here are typical if the test failed to start. Catch them, or it will
+                // obscure the actual failure.
+                Log.w(TAG, "Failed to log additional context: " + ex.toString());
+            }
         }
     };
 
@@ -494,7 +499,9 @@ public class OfflinePageAutoFetchTest {
         String[] keys = newValues.keySet().toArray(new String[] {});
         Arrays.sort(keys);
         for (String key : keys) {
-            int diff = newValues.get(key) - oldValues.get(key);
+            Integer oldValue = oldValues.get(key);
+            oldValue = oldValue == null ? 0 : oldValue;
+            int diff = newValues.get(key) - oldValue;
             if (diff > 0) {
                 if (result.length() > 0) result.append("\n");
                 result.append(key);
@@ -546,9 +553,13 @@ public class OfflinePageAutoFetchTest {
         return TabModelUtils.getCurrentTab(getCurrentTabModel());
     }
     private void logAdditionalContext() {
+        TabModel tabModel = getCurrentTabModel();
+        // Return early if the test setup didn't complete.
+        if (mInitialHistograms == null || tabModel == null) {
+            return;
+        }
         Log.d(TAG, "Logging additional context");
         Log.d(TAG, "Histogram Diff: " + histogramDiff(mInitialHistograms, histogramSnapshot()));
-        TabModel tabModel = getCurrentTabModel();
         int tabCount = tabModel.getCount();
         Log.d(TAG, "Tab Count: " + tabCount);
         for (int i = 0; i < tabCount; ++i) {

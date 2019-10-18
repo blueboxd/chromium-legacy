@@ -9,6 +9,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/host_id.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -62,7 +63,7 @@ class URLLoaderFactoryManager {
   // default, extensions-agnostic URLLoaderFactory should be used (if either
   // |initiator_origin| is not associated with an extension, or the extension
   // doesn't need a special URLLoaderFactory).
-  static network::mojom::URLLoaderFactoryPtrInfo CreateFactory(
+  static mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateFactory(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*

@@ -142,7 +142,6 @@ core_idl_files =
                     "trustedtypes/trusted_script_url.idl",
                     "trustedtypes/trusted_type_policy.idl",
                     "trustedtypes/trusted_type_policy_factory.idl",
-                    "trustedtypes/trusted_url.idl",
                     "editing/selection.idl",
                     "events/animation_event.idl",
                     "events/animation_playback_event.idl",

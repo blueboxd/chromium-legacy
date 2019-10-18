@@ -258,6 +258,24 @@ class CastViewsDelegate : public views::ViewsDelegate {
 
 #endif  // defined(USE_AURA)
 
+#if defined(OS_LINUX)
+
+base::FilePath GetApplicationFontsDir() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string fontconfig_sysroot;
+  if (env->GetVar("FONTCONFIG_SYSROOT", &fontconfig_sysroot)) {
+    // Running with hermetic fontconfig; using the full path will not work.
+    // Assume the root is base::DIR_MODULE as set by base::SetUpFontconfig().
+    return base::FilePath("/fonts");
+  } else {
+    base::FilePath dir_module;
+    base::PathService::Get(base::DIR_MODULE, &dir_module);
+    return dir_module.Append("fonts");
+  }
+}
+
+#endif  // defined(OS_LINUX)
+
 }  // namespace
 
 namespace chromecast {
@@ -437,10 +455,6 @@ void CastBrowserMainParts::ToolkitInitialized() {
 #endif  // defined(USE_AURA)
 
 #if defined(OS_LINUX)
-  base::FilePath dir_module;
-  base::PathService::Get(base::DIR_MODULE, &dir_module);
-  base::FilePath dir_font = dir_module.Append("fonts");
-
   // Setting rescan interval to 0 will disable re-scan. More details in
   // b/141204302#comment41.
   // TODO(crbug/1015146): move re-scan disable logic to GetGlobalFontConfig().
@@ -448,6 +462,7 @@ void CastBrowserMainParts::ToolkitInitialized() {
     LOG(WARNING) << "Cannot disable fontconfig rescan.";
   }
 
+  base::FilePath dir_font = GetApplicationFontsDir();
   const FcChar8 *dir_font_char8 = reinterpret_cast<const FcChar8*>(dir_font.value().data());
   if (!FcConfigAppFontAddDir(gfx::GetGlobalFontConfig(), dir_font_char8)) {
     LOG(ERROR) << "Cannot load fonts from " << dir_font_char8;

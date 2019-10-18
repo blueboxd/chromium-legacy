@@ -43,6 +43,7 @@ const char kTargetExtension5[] = "efghijklmnopabcdefghijklmnopabcd";
 const char kTargetExtension6[] = "fghijklmnopabcdefghijklmnopabcde";
 const char kTargetExtension7[] = "ghijklmnopabcdefghijklmnopabcdef";
 const char kTargetExtension8[] = "hijklmnopabcdefghijklmnopabcdefg";
+const char kTargetExtension9[] = "ijklmnopabcdefghijklmnopabcdefgh";
 const char kExampleUpdateUrl[] = "http://example.com/update_url";
 
 const char kNonExistingExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -77,6 +78,9 @@ const char kExampleDictPreference[] =
   },
   "ghijklmnopabcdefghijklmnopabcdef,hijklmnopabcdefghijklmnopabcdefg,": {
     "installation_mode": "allowed",
+  },
+  "ijklmnopabcdefghijklmnopabcdefgh": {
+    "installation_mode": "removed",
   },
   "update_url:http://example.com/update_url": {
     "installation_mode": "allowed",
@@ -820,6 +824,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
   const char* forced  = kTargetExtension2;
   const char* recommended = kTargetExtension3;
   const char* blocked = kTargetExtension4;
+  const char* removed = kTargetExtension9;
   const char* not_specified = kNonExistingExtension;
 
   // BlacklistedByDefault() is true in example preference.
@@ -828,14 +833,13 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
   EXPECT_TRUE(
       extension_management_->IsInstallationExplicitlyAllowed(recommended));
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyAllowed(blocked));
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyAllowed(removed));
   EXPECT_FALSE(
       extension_management_->IsInstallationExplicitlyAllowed(not_specified));
 
-  {
-    // Set BlacklistedByDefault() to false.
-    PrefUpdater pref(pref_service_);
-    pref.SetBlacklistedByDefault(false);
-  }
+  // Set BlacklistedByDefault() to false.
+  PrefUpdater pref(pref_service_);
+  pref.SetBlacklistedByDefault(false);
 
   // The result should remain the same.
   EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(allowed));
@@ -843,8 +847,44 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
   EXPECT_TRUE(
       extension_management_->IsInstallationExplicitlyAllowed(recommended));
   EXPECT_FALSE(extension_management_->IsInstallationExplicitlyAllowed(blocked));
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyAllowed(removed));
   EXPECT_FALSE(
       extension_management_->IsInstallationExplicitlyAllowed(not_specified));
+}
+
+TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyBlocked) {
+  SetExampleDictPref(kExampleDictPreference);
+
+  // Constant name indicates the installation_mode of extensions in example
+  // preference.
+  const char* allowed = kTargetExtension;
+  const char* forced = kTargetExtension2;
+  const char* recommended = kTargetExtension3;
+  const char* blocked = kTargetExtension4;
+  const char* removed = kTargetExtension9;
+  const char* not_specified = kNonExistingExtension;
+
+  // BlacklistedByDefault() is true in example preference.
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(allowed));
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(forced));
+  EXPECT_FALSE(
+      extension_management_->IsInstallationExplicitlyBlocked(recommended));
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyBlocked(blocked));
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyBlocked(removed));
+  EXPECT_FALSE(
+      extension_management_->IsInstallationExplicitlyBlocked(not_specified));
+
+  PrefUpdater pref(pref_service_);
+  pref.SetBlacklistedByDefault(false);
+
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(allowed));
+  EXPECT_FALSE(extension_management_->IsInstallationExplicitlyBlocked(forced));
+  EXPECT_FALSE(
+      extension_management_->IsInstallationExplicitlyBlocked(recommended));
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyBlocked(blocked));
+  EXPECT_TRUE(extension_management_->IsInstallationExplicitlyBlocked(removed));
+  EXPECT_FALSE(
+      extension_management_->IsInstallationExplicitlyBlocked(not_specified));
 }
 
 #if !defined(OS_CHROMEOS)

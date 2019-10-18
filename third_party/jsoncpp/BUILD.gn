@@ -51,16 +51,18 @@ source_set("jsoncpp") {
   }
 }
 
-fuzzer_test("jsoncpp_fuzzer") {
-  sources = [
-    "fuzzers/json_fuzzer.cc",
-  ]
+if (build_with_chromium) {
+  fuzzer_test("jsoncpp_fuzzer") {
+    sources = [
+      "fuzzers/json_fuzzer.cc",
+    ]
 
-  deps = [
-    ":jsoncpp",
-  ]
+    deps = [
+      ":jsoncpp",
+    ]
 
-  include_dirs = [ "generated" ]
+    include_dirs = [ "generated" ]
 
-  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+    dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+  }
 }

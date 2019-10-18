@@ -34,8 +34,8 @@ constexpr int kContainerCrashedEarly =
 constexpr int kContainerCrashed =
     static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_CRASHED);
 
-ArcSession::UpgradeParams DefaultUpgradeParams() {
-  ArcSession::UpgradeParams params;
+UpgradeParams DefaultUpgradeParams() {
+  UpgradeParams params;
   params.locale = "en-US";
   return params;
 }

@@ -27,7 +27,7 @@
     // FIXME: The disabled attribute has been removed from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=14703
     [Reflect, Measure] attribute boolean disabled;
-    [Reflect, URL, RaisesException=Setter] attribute URLString href;
+    [Reflect, URL] attribute USVString href;
     [CEReactions, Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;
     [CEReactions, Reflect] attribute DOMString rel;
     [SameObject, PutForwards=value] readonly attribute DOMTokenList relList;

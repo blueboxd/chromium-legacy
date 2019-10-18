@@ -515,7 +515,8 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   // to element B's window.
   // So we create the fragment root now to ensure it's ready if asked for.
   if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
-    ax_fragment_root_ = std::make_unique<ui::AXFragmentRootWin>(hwnd(), this);
+    ax_fragment_root_ =
+        std::make_unique<ui::AXFragmentRootWin>(hwnd(), this, true);
 
   // Disable pen flicks (http://crbug.com/506977)
   base::win::DisableFlicks(hwnd());

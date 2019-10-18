@@ -305,6 +305,7 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
   recovery.version = version;
   recovery.pk_hash.assign(kRecoverySha2Hash,
                           &kRecoverySha2Hash[sizeof(kRecoverySha2Hash)]);
+  recovery.app_id = update_client::GetCrxIdFromPublicKeyHash(recovery.pk_hash);
   recovery.supports_group_policy_enable_component_updates = true;
   recovery.requires_network_encryption = false;
   recovery.crx_format_requirement =

@@ -1,39 +1,37 @@
+function layerSubtreeHasCompositedScrollLayer(layer, contents_opaque = undefined) {
+    return layer.children && layer.children.some(function (child) {
+        if (child.name == "Scrolling Contents Layer") {
+            if (contents_opaque === undefined)
+                return true;
+            if (contents_opaque == !!child.contentsOpaque)
+                return true;
+        }
+        if (layerSubtreeHasCompositedScrollLayer(child, contents_opaque))
+            return true;
+        return false;
+    });
+}
+
 function elementSubtreeHasCompositedScrollLayers(element) {
     var layerTree = internals.elementLayerTreeAsText(element);
     if (layerTree === '')
         return false;
-    var layers = JSON.parse(layerTree);
-    var foundScrollingContentsLayer = false;
-    layers["layers"].forEach(function(layer) {
-        if (layer.name == "Scrolling Contents Layer")
-            foundScrollingContentsLayer = true;
-    });
-
-    return foundScrollingContentsLayer;
+    var layer = JSON.parse(layerTree);
+    return layerSubtreeHasCompositedScrollLayer(layer);
 }
 
 function elementSubtreeHasOpaqueCompositedScrollingContentsLayer(element) {
     var layerTree = internals.elementLayerTreeAsText(element);
     if (layerTree === '')
         return false;
-    var layers = JSON.parse(layerTree);
-    var found = false;
-    layers["layers"].forEach(function(layer) {
-      if (layer.name == "Scrolling Contents Layer")
-        found = found || layer.contentsOpaque;
-    });
-    return found;
+    var layer = JSON.parse(layerTree);
+    return layerSubtreeHasCompositedScrollLayer(layer, true);
 }
 
 function elementSubtreeHasNotOpaqueCompositedScrollingContentsLayer(element) {
     var layerTree = internals.elementLayerTreeAsText(element);
     if (layerTree === '')
         return false;
-    var layers = JSON.parse(layerTree);
-    var found = false;
-    layers["layers"].forEach(function(layer) {
-      if (layer.name == "Scrolling Contents Layer")
-        found = found || !layer.contentsOpaque;
-    });
-    return found;
+    var layer = JSON.parse(layerTree);
+    return layerSubtreeHasCompositedScrollLayer(layer, false);
 }

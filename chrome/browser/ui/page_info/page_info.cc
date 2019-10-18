@@ -333,7 +333,7 @@ PageInfo::PageInfo(
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status_(SAFE_BROWSING_STATUS_NONE),
-      safety_tip_status_(security_state::SafetyTipStatus::kUnknown),
+      safety_tip_info_({security_state::SafetyTipStatus::kUnknown, GURL()}),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button_(false),
       content_settings_(HostContentSettingsMapFactory::GetForProfile(profile)),
@@ -385,11 +385,11 @@ PageInfo::~PageInfo() {
           kPageInfoTimePrefix, security_level_),
       base::TimeTicks::Now() - start_time_,
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
-  base::UmaHistogramCustomTimes(security_state::GetSafetyTipHistogramName(
-                                    kPageInfoTimePrefix, safety_tip_status_),
-                                base::TimeTicks::Now() - start_time_,
-                                base::TimeDelta::FromMilliseconds(1),
-                                base::TimeDelta::FromHours(1), 100);
+  base::UmaHistogramCustomTimes(
+      security_state::GetSafetyTipHistogramName(kPageInfoTimePrefix,
+                                                safety_tip_info_.status),
+      base::TimeTicks::Now() - start_time_,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1), 100);
 
   if (did_perform_action_) {
     base::UmaHistogramCustomTimes(
@@ -400,7 +400,7 @@ PageInfo::~PageInfo() {
         100);
     base::UmaHistogramCustomTimes(
         security_state::GetSafetyTipHistogramName(kPageInfoTimeActionPrefix,
-                                                  safety_tip_status_),
+                                                  safety_tip_info_.status),
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
@@ -413,7 +413,7 @@ PageInfo::~PageInfo() {
         100);
     base::UmaHistogramCustomTimes(
         security_state::GetSafetyTipHistogramName(kPageInfoTimeNoActionPrefix,
-                                                  safety_tip_status_),
+                                                  safety_tip_info_.status),
         base::TimeTicks::Now() - start_time_,
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromHours(1),
         100);
@@ -435,7 +435,7 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
 
   base::UmaHistogramEnumeration(
       security_state::GetSafetyTipHistogramName(
-          "Security.SafetyTips.PageInfo.Action", safety_tip_status_),
+          "Security.SafetyTips.PageInfo.Action", safety_tip_info_.status),
       action, PAGE_INFO_COUNT);
 
   std::string histogram_name;
@@ -762,14 +762,15 @@ void PageInfo::ComputeUIInputs(
 #endif
   }
 
-  safety_tip_status_ = visible_security_state.safety_tip_status;
-  if (visible_security_state.safety_tip_status !=
-          security_state::SafetyTipStatus::kNone &&
-      visible_security_state.safety_tip_status !=
-          security_state::SafetyTipStatus::kUnknown &&
-      base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
-    site_details_message_ = l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+  safety_tip_info_ = visible_security_state.safety_tip_info;
+  if (base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+    // site_details_message_ is only displayed on Android when the user taps
+    // "Details" link on the page info. Reuse the description from page info UI.
+    std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
+        PageInfoUI::CreateSafetyTipSecurityDescription(safety_tip_info_);
+    if (security_description) {
+      site_details_message_ = security_description->details;
+    }
   }
 
   // Site Connection
@@ -985,7 +986,7 @@ void PageInfo::PresentSiteIdentity() {
   info.identity_status = site_identity_status_;
   info.safe_browsing_status = safe_browsing_status_;
   if (base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
-    info.safety_tip_status = safety_tip_status_;
+    info.safety_tip_info = safety_tip_info_;
   }
   info.identity_status_description = UTF16ToUTF8(site_details_message_);
   info.certificate = certificate_;

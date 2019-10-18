@@ -32,12 +32,6 @@ public class CastWebContentsComponent {
     public interface OnComponentClosedHandler { void onComponentClosed(); }
 
     /**
-     * Callback interface for passing along keyDown events. This only applies
-     * to CastWebContentsActivity, really.
-     */
-    public interface OnKeyDownHandler { void onKeyDown(int keyCode); }
-
-    /**
      * Callback interface for when UI events occur.
      */
     public interface SurfaceEventHandler {
@@ -157,7 +151,6 @@ public class CastWebContentsComponent {
     private static final boolean DEBUG = true;
 
     private final OnComponentClosedHandler mComponentClosedHandler;
-    private final OnKeyDownHandler mKeyDownHandler;
     private final String mSessionId;
     private final SurfaceEventHandler mSurfaceEventHandler;
     private final Controller<WebContents> mHasWebContentsState = new Controller<>();
@@ -168,7 +161,7 @@ public class CastWebContentsComponent {
     private final boolean mTurnOnScreen;
 
     public CastWebContentsComponent(String sessionId,
-            OnComponentClosedHandler onComponentClosedHandler, OnKeyDownHandler onKeyDownHandler,
+            OnComponentClosedHandler onComponentClosedHandler,
             SurfaceEventHandler surfaceEventHandler, boolean isHeadless, boolean enableTouchInput,
             boolean isRemoteControlMode, boolean turnOnScreen) {
         if (DEBUG) {
@@ -180,7 +173,6 @@ public class CastWebContentsComponent {
 
         mComponentClosedHandler = onComponentClosedHandler;
         mEnableTouchInput = enableTouchInput;
-        mKeyDownHandler = onKeyDownHandler;
         mSessionId = sessionId;
         mSurfaceEventHandler = surfaceEventHandler;
         mIsRemoteControlMode = isRemoteControlMode;
@@ -215,10 +207,6 @@ public class CastWebContentsComponent {
         if (CastWebContentsIntentUtils.isIntentOfActivityStopped(intent)) {
             if (DEBUG) Log.d(TAG, "onReceive ACTION_ACTIVITY_STOPPED instance=" + mSessionId);
             if (mComponentClosedHandler != null) mComponentClosedHandler.onComponentClosed();
-        } else if (CastWebContentsIntentUtils.isIntentOfKeyEvent(intent)) {
-            if (DEBUG) Log.d(TAG, "onReceive ACTION_KEY_EVENT instance=" + mSessionId);
-            int keyCode = CastWebContentsIntentUtils.getKeyCode(intent);
-            if (mKeyDownHandler != null) mKeyDownHandler.onKeyDown(keyCode);
         } else if (CastWebContentsIntentUtils.isIntentOfVisibilityChange(intent)) {
             int visibilityType = CastWebContentsIntentUtils.getVisibilityType(intent);
             if (DEBUG) {
@@ -290,10 +278,11 @@ public class CastWebContentsComponent {
     }
 
     public void requestVisibilityPriority(int visibilityPriority) {
-        if (DEBUG)
+        if (DEBUG) {
             Log.d(TAG,
                     "requestVisibilityPriority: " + mSessionId
                             + "; Visibility:" + visibilityPriority);
+        }
         sendIntentSync(CastWebContentsIntentUtils.requestVisibilityPriority(
                 mSessionId, visibilityPriority));
     }
@@ -312,11 +301,6 @@ public class CastWebContentsComponent {
     public static void onComponentClosed(String sessionId) {
         if (DEBUG) Log.d(TAG, "onComponentClosed");
         sendIntentSync(CastWebContentsIntentUtils.onActivityStopped(sessionId));
-    }
-
-    public static void onKeyDown(String sessionId, int keyCode) {
-        if (DEBUG) Log.d(TAG, "onKeyDown");
-        sendIntentSync(CastWebContentsIntentUtils.onKeyDown(sessionId, keyCode));
     }
 
     public static void onVisibilityChange(String sessionId, int visibilityType) {

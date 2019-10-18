@@ -151,13 +151,4 @@ void SVGURIReference::UnobserveTarget(Member<IdTargetObserver>& observer) {
   observer = nullptr;
 }
 
-const AttrNameToTrustedType& SVGURIReference::GetCheckedAttributeTypes() {
-  DEFINE_STATIC_LOCAL(
-      AttrNameToTrustedType, attribute_map,
-      ({
-          {svg_names::kHrefAttr.LocalName(), SpecificTrustedType::kTrustedURL},
-      }));
-  return attribute_map;
-}
-
 }  // namespace blink

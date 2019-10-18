@@ -24,8 +24,7 @@ bool ArcNotificationManagerDelegateImpl::IsPublicSessionOrKiosk() const {
       Shell::Get()->session_controller()->login_status();
 
   return login_status == LoginStatus::PUBLIC ||
-         login_status == LoginStatus::KIOSK_APP ||
-         login_status == LoginStatus::ARC_KIOSK_APP;
+         login_status == LoginStatus::KIOSK_APP;
 }
 
 void ArcNotificationManagerDelegateImpl::ShowMessageCenter() {

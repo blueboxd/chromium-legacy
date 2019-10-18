@@ -12,6 +12,7 @@
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -47,7 +48,8 @@ class DevToolsEyeDropper : public content::WebContentsObserver,
       base::ReadOnlySharedMemoryRegion data,
       ::media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& content_rect,
-      viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) override;
+      mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+          callbacks) override;
   void OnStopped() override;
 
   EyeDropperCallback callback_;

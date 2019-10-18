@@ -22,6 +22,7 @@
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/file_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -73,16 +74,16 @@ class ContentHashFetcherTest : public ExtensionsTest {
       return nullptr;
     }
 
-    network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
-    test_url_loader_factory_.Clone(mojo::MakeRequest(&url_loader_factory_ptr));
-    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info =
-        url_loader_factory_ptr.PassInterface();
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        url_loader_factory_remote;
+    test_url_loader_factory_.Clone(
+        url_loader_factory_remote.InitWithNewPipeAndPassReceiver());
 
     std::unique_ptr<ContentHashResult> result =
         ContentHashWaiter().CreateAndWaitForCallback(
             ContentHash::FetchKey(extension_->id(), extension_->path(),
                                   extension_->version(),
-                                  std::move(url_loader_factory_ptr_info),
+                                  std::move(url_loader_factory_remote),
                                   fetch_url_, delegate_->GetPublicKey()),
             ContentVerifierDelegate::VerifierSourceType::SIGNED_HASHES);
 

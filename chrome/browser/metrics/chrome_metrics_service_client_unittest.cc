@@ -162,8 +162,9 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 #endif                   // defined(ENABLE_EXTENSIONS)
 
 #if defined(OS_ANDROID)
-  // AndroidMetricsProvider and PageLoadMetricsProvider.
-  expected_providers += 2;
+  // AndroidMetricsProvider, ChromeAndroidMetricsProvider, and
+  // PageLoadMetricsProvider.
+  expected_providers += 3;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

@@ -61,7 +61,7 @@ class TestSecurityStateHelper {
         is_error_page_(false),
         is_view_source_(false),
         has_policy_certificate_(false),
-        safety_tip_status_(security_state::SafetyTipStatus::kUnknown) {}
+        safety_tip_info_({security_state::SafetyTipStatus::kUnknown, GURL()}) {}
   virtual ~TestSecurityStateHelper() {}
 
   void SetCertificate(scoped_refptr<net::X509Certificate> cert) {
@@ -109,7 +109,7 @@ class TestSecurityStateHelper {
 
   void set_safety_tip_status(
       security_state::SafetyTipStatus safety_tip_status) {
-    safety_tip_status_ = safety_tip_status;
+    safety_tip_info_.status = safety_tip_status;
   }
 
   std::unique_ptr<VisibleSecurityState> GetVisibleSecurityState() const {
@@ -126,7 +126,7 @@ class TestSecurityStateHelper {
     state->is_error_page = is_error_page_;
     state->is_view_source = is_view_source_;
     state->insecure_input_events = insecure_input_events_;
-    state->safety_tip_status = safety_tip_status_;
+    state->safety_tip_info = safety_tip_info_;
     return state;
   }
 
@@ -153,7 +153,7 @@ class TestSecurityStateHelper {
   bool is_view_source_;
   bool has_policy_certificate_;
   InsecureInputEventData insecure_input_events_;
-  security_state::SafetyTipStatus safety_tip_status_;
+  security_state::SafetyTipInfo safety_tip_info_;
 };
 
 }  // namespace

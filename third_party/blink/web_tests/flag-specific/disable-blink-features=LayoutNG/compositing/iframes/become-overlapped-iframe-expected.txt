@@ -25,6 +25,12 @@
       "transform": 3
     },
     {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [305, 0],
+      "bounds": [15, 170],
+      "transform": 2
+    },
+    {
       "name": "LayoutBlockFlow (positioned) DIV id='overlay'",
       "bounds": [150, 150],
       "backgroundColor": "#00000099",

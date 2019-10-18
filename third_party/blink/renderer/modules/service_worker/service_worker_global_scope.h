@@ -447,8 +447,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
           response_callback,
       DispatchPaymentRequestEventCallback callback) override;
   void DispatchCookieChangeEvent(
-      const WebCanonicalCookie& cookie,
-      ::network::mojom::blink::CookieChangeCause cause,
+      network::mojom::blink::CookieChangeInfoPtr change,
       DispatchCookieChangeEventCallback callback) override;
   void DispatchContentDeleteEvent(
       const String& id,

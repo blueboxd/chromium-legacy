@@ -237,6 +237,15 @@ class DISPLAY_EXPORT Display final {
       const gfx::ColorSpace& color_space,
       float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
+  // Default values for color_depth and depth_per_component.
+  static constexpr int kDefaultBitsPerPixel = 24;
+  static constexpr int kDefaultBitsPerComponent = 8;
+
+  // The following values are abused by media query APIs to detect HDR
+  // capability.
+  static constexpr int kHDR10BitsPerPixel = 30;
+  static constexpr int kHDR10BitsPerComponent = 10;
+
   // The number of bits per pixel. Used by media query APIs.
   int color_depth() const { return color_depth_; }
   void set_color_depth(int color_depth) {
@@ -266,6 +275,9 @@ class DISPLAY_EXPORT Display final {
 
  private:
   friend struct mojo::StructTraits<mojom::DisplayDataView, Display>;
+
+  static constexpr int kSCRGBLinearBitsPerPixel = 48;
+  static constexpr int kSCRGBLinearBitsPerComponent = 16;
 
   int64_t id_ = kInvalidDisplayId;
   gfx::Rect bounds_;

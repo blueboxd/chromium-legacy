@@ -14,6 +14,7 @@ import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/features/dev_ui/dev_ui_module.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//weblayer/variables.gni")
 import("channel.gni")
 
 declare_args() {
@@ -344,6 +345,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       locale_config_java_packages = [
         "org.chromium.chrome.browser",
         webview_locale_config_java_package,
+        weblayer_locale_config_java_package,
       ]
       if (android_64bit_target_cpu) {
         # Build //android_webview:monochrome with the opposite bitness that

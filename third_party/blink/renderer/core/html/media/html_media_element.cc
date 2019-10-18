@@ -415,13 +415,6 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
   return result;
 }
 
-const AttrNameToTrustedType& HTMLMediaElement::GetCheckedAttributeTypes()
-    const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"src", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
-
 bool HTMLMediaElement::IsHLSURL(const KURL& url) {
   // Keep the same logic as in media_codec_util.h.
   if (url.IsNull() || url.IsEmpty())
@@ -784,11 +777,6 @@ MediaError* HTMLMediaElement::error() const {
 
 void HTMLMediaElement::SetSrc(const AtomicString& url) {
   setAttribute(kSrcAttr, url);
-}
-
-void HTMLMediaElement::SetSrc(const USVStringOrTrustedURL& stringOrURL,
-                              ExceptionState& exception_state) {
-  setAttribute(kSrcAttr, stringOrURL, exception_state);
 }
 
 void HTMLMediaElement::SetSrcObject(MediaStreamDescriptor* src_object) {

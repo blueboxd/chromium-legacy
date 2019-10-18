@@ -101,7 +101,7 @@ void TLSDeprecationConfigComponentInstallerPolicy::ComponentReady(
   // gave us without checking the default proto from the resource bundle.
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&LoadTLSDeprecationConfigProtoFromDisk, pb_path),
       base::BindOnce(&SetRemoteTLSDeprecationConfigProto));
 }

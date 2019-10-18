@@ -284,6 +284,7 @@ void VulkanInstance::CollectInfo() {
       ycbcr_converson_features.pNext = &protected_memory_feature;
 
       vkGetPhysicalDeviceFeatures2(device, &features_2);
+      info.features = features_2.features;
       info.feature_sampler_ycbcr_conversion =
           ycbcr_converson_features.samplerYcbcrConversion;
       info.feature_protected_memory = protected_memory_feature.protectedMemory;

@@ -26,11 +26,14 @@
     </style>
     <div class="settings-box two-line">
       <div class="start">
-        <div>$i18n{aboutChannelLabel}</div>
-        <div class="secondary">[[currentlyOnChannelText_]]</div>
+        <div role="heading" aria-level="2">$i18n{aboutChannelLabel}</div>
+        <div id="currentlyOnChannelText" aria-hidden="true" class="secondary">
+          [[currentlyOnChannelText_]]
+        </div>
       </div>
       <div class="separator"></div>
       <cr-button on-click="onChangeChannelTap_"
+          aria-describedby="currentlyOnChannelText"
           disabled="[[!canChangeChannel_]]">
         $i18n{aboutChangeChannel}
       </cr-button>
@@ -51,8 +54,15 @@
     <div id="endOfLifeSectionContainer"
         class="settings-box two-line single-column"
         hidden="[[!eolMessageWithMonthAndYear]]">
-      <div>$i18n{aboutEndOfLifeTitle}</div>
-      <div class="secondary" inner-h-t-m-l="[[eolMessageWithMonthAndYear]]">
+      <div role="heading" aria-level="2">$i18n{aboutEndOfLifeTitle}</div>
+      <div class="secondary">
+        <span id="eolMessageWithMonthAndYear" aria-hidden="true">
+          [[eolMessageWithMonthAndYear]]
+        </span>
+        <a href="$i18nRaw{endOfLifeLearnMoreURL}"
+            aria-describedby="eolMessageWithMonthAndYear" target="_blank">
+          $i18n{learnMore}
+        </a>
       </div>
     </div>
     <cr-link-row class="hr" label="$i18n{aboutBuildDetailsTitle}"

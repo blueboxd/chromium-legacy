@@ -9,15 +9,17 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/common/pref_names.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/layout/fill_layout.h"
@@ -44,9 +46,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   new ExternalProtocolDialog(std::move(delegate), web_contents);
 }
 
-ExternalProtocolDialog::~ExternalProtocolDialog() {
-  delete remember_decision_checkbox_;
-}
+ExternalProtocolDialog::~ExternalProtocolDialog() {}
 
 gfx::Size ExternalProtocolDialog::CalculatePreferredSize() const {
   constexpr int kDialogContentWidth = 400;
@@ -76,7 +76,7 @@ bool ExternalProtocolDialog::Accept() {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                            base::TimeTicks::Now() - creation_time_);
 
-  const bool remember = remember_decision_checkbox_->GetChecked();
+  const bool remember = message_box_view_->IsCheckBoxSelected();
   ExternalProtocolHandler::RecordHandleStateMetrics(
       remember, ExternalProtocolHandler::DONT_BLOCK);
 
@@ -92,6 +92,17 @@ views::View* ExternalProtocolDialog::GetContentsView() {
 
 ui::ModalType ExternalProtocolDialog::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
+}
+
+void ExternalProtocolDialog::ShowRememberSelectionCheckbox() {
+  message_box_view_->SetCheckBoxLabel(delegate_->GetCheckboxText());
+}
+
+void ExternalProtocolDialog::SetRememberSelectionCheckboxCheckedForTesting(
+    bool checked) {
+  if (!message_box_view_->HasCheckBox())
+    ShowRememberSelectionCheckbox();
+  message_box_view_->SetCheckBoxSelected(checked);
 }
 
 ExternalProtocolDialog::ExternalProtocolDialog(
@@ -115,14 +126,12 @@ ExternalProtocolDialog::ExternalProtocolDialog(
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  remember_decision_checkbox_ =
-      new views::Checkbox(delegate_->GetCheckboxText());
-  remember_decision_checkbox_->SetChecked(false);
-
-  // TODO(982341): We intentionally don't add |remember_decision_checkbox_| to
-  // the dialog, as we're reevaluating whether we actually want persistence
-  // for this mechanism going forward.
-
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (profile->GetPrefs()->GetBoolean(
+          prefs::kExternalProtocolDialogShowAlwaysOpenCheckbox)) {
+    ShowRememberSelectionCheckbox();
+  }
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTERNAL_PROTOCOL);
 }

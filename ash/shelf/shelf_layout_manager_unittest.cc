@@ -19,6 +19,7 @@
 #include "ash/keyboard/ui/keyboard_ui.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
@@ -3537,6 +3538,46 @@ TEST_P(HotseatShelfLayoutManagerTest, HotseatFlushWithScreenBottomInClamshell) {
                                  ->GetWindowBoundsInScreen()
                                  .bottom();
   EXPECT_EQ(hotseat_bottom, display_height);
+}
+
+// Tests that when hotseat and drag-window-to-overview features are both
+// enabled, HomeLauncherGestureHandler can receive and process events properly.
+TEST_P(HotseatShelfLayoutManagerTest, DragActiveWindowInTabletMode) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kDragFromShelfToHomeOrOverview);
+
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // Swipe up to bring up the hotseat first.
+  SwipeUpOnShelf();
+  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Now swipe up again to start drag the active window.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Rect bottom_shelf_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  generator->MoveMouseTo(bottom_shelf_bounds.CenterPoint());
+  generator->PressTouch();
+  EXPECT_TRUE(window->layer()->transform().IsIdentity());
+
+  // Drag upward, test the window transform changes.
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  generator->MoveTouch(display_bounds.CenterPoint());
+  const gfx::Transform upward_transform = window->layer()->transform();
+  EXPECT_FALSE(upward_transform.IsIdentity());
+  // Drag downwad, test the window tranfrom changes.
+  generator->MoveTouch(display_bounds.bottom_center());
+  const gfx::Transform downward_transform = window->layer()->transform();
+  EXPECT_NE(upward_transform, downward_transform);
+
+  generator->ReleaseTouch();
+  EXPECT_TRUE(window->layer()->transform().IsIdentity());
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {

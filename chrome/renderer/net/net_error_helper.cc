@@ -108,7 +108,7 @@ bool IsOfflineContentOnNetErrorFeatureEnabled() {
 
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
+  return true;
 }
 #else   // OS_ANDROID
 bool IsAutoFetchFeatureEnabled() {

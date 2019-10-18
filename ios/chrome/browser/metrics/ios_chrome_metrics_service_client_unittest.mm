@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_client.h"
 
 #include "base/metrics/persistent_histogram_allocator.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/metrics/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/ukm/ukm_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
@@ -19,6 +22,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace ukm {
+class UkmService;
+}
 
 class IOSChromeMetricsServiceClientTest : public PlatformTest {
  public:
@@ -97,4 +104,42 @@ TEST_F(IOSChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
             chrome_metrics_service_client->GetMetricsService()
                 ->delegating_provider_.GetProviders()
                 .size());
+}
+
+TEST_F(IOSChromeMetricsServiceClientTest,
+       TestRegisterUkmProvidersWhenUKMFeatureEnabled) {
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeature(ukm::kUkmFeature);
+
+  std::unique_ptr<IOSChromeMetricsServiceClient> chrome_metrics_service_client =
+      IOSChromeMetricsServiceClient::Create(metrics_state_manager_.get());
+  // Verify that the UKM service is instantiated when enabled.
+  EXPECT_TRUE(chrome_metrics_service_client->GetUkmService());
+}
+
+TEST_F(IOSChromeMetricsServiceClientTest,
+       TestRegisterUkmProvidersWhenForceMetricsReporting) {
+  // Disable the feature of reporting UKM metrics.
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndDisableFeature(ukm::kUkmFeature);
+
+  // Force metrics reporting using the commandline switch.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      metrics::switches::kForceEnableMetricsReporting);
+
+  std::unique_ptr<IOSChromeMetricsServiceClient> chrome_metrics_service_client =
+      IOSChromeMetricsServiceClient::Create(metrics_state_manager_.get());
+  // Verify that the UKM service is instantiated when enabled.
+  EXPECT_TRUE(chrome_metrics_service_client->GetUkmService());
+}
+
+TEST_F(IOSChromeMetricsServiceClientTest, TestUkmProvidersWhenDisabled) {
+  // Enable demographics reporting feature.
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndDisableFeature(ukm::kUkmFeature);
+
+  std::unique_ptr<IOSChromeMetricsServiceClient> chrome_metrics_service_client =
+      IOSChromeMetricsServiceClient::Create(metrics_state_manager_.get());
+  // Verify that the UKM service is not instantiated when disabled.
+  EXPECT_FALSE(chrome_metrics_service_client->GetUkmService());
 }

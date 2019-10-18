@@ -299,6 +299,11 @@ class PasswordManager : public FormSubmissionObserver {
   void ReportSubmittedFormFrameMetric(const PasswordManagerDriver* driver,
                                       const autofill::PasswordForm& form);
 
+  //  If |possible_username_.form_predictions| is missing, this functions tries
+  //  to find predictions for the form which contains |possible_username_| in
+  //  |predictions_|.
+  void TryToFindPredictionsToPossibleUsernameData();
+
   // PasswordFormManager transition schemes:
   // 1. HTML submission with navigation afterwads.
   // form "seen"

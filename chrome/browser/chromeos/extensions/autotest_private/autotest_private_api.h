@@ -33,6 +33,7 @@ enum class CrostiniResult;
 namespace extensions {
 
 class AssistantInteractionHelper;
+class WindowStateChangeObserver;
 
 class AutotestPrivateInitializeEventsFunction : public ExtensionFunction {
  public:
@@ -784,8 +785,6 @@ class AutotestPrivateSetArcAppWindowStateFunction : public ExtensionFunction {
                              AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE)
 
  private:
-  class WindowStateChangeObserver;
-
   ~AutotestPrivateSetArcAppWindowStateFunction() override;
   ResponseAction Run() override;
 
@@ -892,6 +891,42 @@ class AutotestPrivateWaitForDisplayRotationFunction
   display::Display::Rotation target_rotation_ = display::Display::ROTATE_0;
   // A reference to keep the instance alive while waiting for rotation.
   scoped_refptr<ExtensionFunction> self_;
+};
+
+class AutotestPrivateGetAppWindowListFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetAppWindowListFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getAppWindowList",
+                             AUTOTESTPRIVATE_GETAPPWINDOWLIST)
+
+ private:
+  ~AutotestPrivateGetAppWindowListFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateSetAppWindowStateFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateSetAppWindowStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setAppWindowState",
+                             AUTOTESTPRIVATE_SETAPPWINDOWSTATE)
+
+ private:
+  ~AutotestPrivateSetAppWindowStateFunction() override;
+  ResponseAction Run() override;
+
+  void WindowStateChanged(ash::WindowStateType expected_type, bool success);
+
+  std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
+};
+
+class AutotestPrivateCloseAppWindowFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.closeAppWindow",
+                             AUTOTESTPRIVATE_CLOSEAPPWINDOW)
+
+ private:
+  ~AutotestPrivateCloseAppWindowFunction() override;
+  ResponseAction Run() override;
 };
 
 template <>

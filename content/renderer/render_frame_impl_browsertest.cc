@@ -209,33 +209,44 @@ TEST_F(RenderFrameImplTest, SubframeWidget) {
 // Verify a subframe RenderWidget properly processes its viewport being
 // resized.
 TEST_F(RenderFrameImplTest, FrameResize) {
+  // Make an update where the widget's size and the visible_viewport_size
+  // are not the same.
   VisualProperties visual_properties;
-  gfx::Size size(200, 200);
-  visual_properties.screen_info = ScreenInfo();
-  visual_properties.new_size = size;
-  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(size);
-  visual_properties.visible_viewport_size = size;
-  visual_properties.top_controls_height = 0.f;
-  visual_properties.browser_controls_shrink_blink_size = false;
-  visual_properties.is_fullscreen_granted = false;
+  gfx::Size widget_size(400, 200);
+  gfx::Size visible_size(350, 170);
+  visual_properties.new_size = widget_size;
+  visual_properties.compositor_viewport_pixel_rect = gfx::Rect(widget_size);
+  visual_properties.visible_viewport_size = visible_size;
+
+  RenderWidget* main_frame_widget =
+      GetMainRenderFrame()->GetLocalRootRenderWidget();
 
   // The main frame's widget will receive the resize message before the
   // subframe's widget, and it will set the size for the WebView.
-  RenderWidget* main_frame_widget =
-      GetMainRenderFrame()->GetLocalRootRenderWidget();
-  WidgetMsg_UpdateVisualProperties resize_message(
-      main_frame_widget->routing_id(), visual_properties);
+  {
+    WidgetMsg_UpdateVisualProperties resize_message(
+        main_frame_widget->routing_id(), visual_properties);
+    main_frame_widget->OnMessageReceived(resize_message);
+  }
+  // The main frame widget's size is the "widget size", not the visible viewport
+  // size, which is given to blink separately.
+  EXPECT_EQ(gfx::Size(view_->GetWebView()->MainFrameWidget()->Size()),
+            widget_size);
+  EXPECT_EQ(gfx::SizeF(view_->GetWebView()->VisualViewportSize()),
+            gfx::SizeF(visible_size));
+  // The main frame doesn't change other local roots directly.
+  EXPECT_NE(gfx::Size(frame_widget()->GetWebWidget()->Size()), visible_size);
 
-  main_frame_widget->OnMessageReceived(resize_message);
-  EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
-            blink::WebSize(size));
-  EXPECT_NE(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+  // A subframe in the same process does not modify the WebView.
+  {
+    WidgetMsg_UpdateVisualProperties resize_message_subframe(
+        frame_widget()->routing_id(), visual_properties);
+    frame_widget()->OnMessageReceived(resize_message_subframe);
+  }
+  EXPECT_EQ(gfx::Size(frame_widget()->GetWebWidget()->Size()), widget_size);
 
-  // The subframe sets the size only for itself.
-  WidgetMsg_UpdateVisualProperties resize_message_subframe(
-      frame_widget()->routing_id(), visual_properties);
-  frame_widget()->OnMessageReceived(resize_message_subframe);
-  EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+  // A subframe in another process would use the |visible_viewport_size| as its
+  // size.
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.
@@ -298,7 +309,7 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
 TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
+      FrameHostMsg_DownloadUrl::ID);
   EXPECT_FALSE(msg1);
   render_thread_->sink().ClearMessages();
 
@@ -308,38 +319,30 @@ TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
   frame()->SaveImageFromDataURL(WebString::FromUTF8(image_data_url));
   base::RunLoop().RunUntilIdle();
   const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
+      FrameHostMsg_DownloadUrl::ID);
   EXPECT_TRUE(msg2);
 
-  FrameHostMsg_SaveImageFromDataURL::Param param1;
-  FrameHostMsg_SaveImageFromDataURL::Read(msg2, &param1);
-  EXPECT_EQ(std::get<0>(param1), image_data_url);
+  FrameHostMsg_DownloadUrl::Param param1;
+  FrameHostMsg_DownloadUrl::Read(msg2, &param1);
+  EXPECT_EQ(std::get<0>(param1).url, GURL());
 
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
-  const std::string large_data_url(1024 * 1024 * 20 - 1, 'd');
+  const std::string large_data_url(1024 * 1024 * 20, 'd');
 
   frame()->SaveImageFromDataURL(WebString::FromUTF8(large_data_url));
   base::RunLoop().RunUntilIdle();
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
+      FrameHostMsg_DownloadUrl::ID);
   EXPECT_TRUE(msg3);
 
-  FrameHostMsg_SaveImageFromDataURL::Param param2;
-  FrameHostMsg_SaveImageFromDataURL::Read(msg3, &param2);
-  EXPECT_EQ(std::get<0>(param2), large_data_url);
+  FrameHostMsg_DownloadUrl::Param param2;
+  FrameHostMsg_DownloadUrl::Read(msg3, &param2);
+  EXPECT_EQ(std::get<0>(param2).url, GURL());
 
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
-
-  const std::string exceeded_data_url(1024 * 1024 * 20 + 1, 'd');
-
-  frame()->SaveImageFromDataURL(WebString::FromUTF8(exceeded_data_url));
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg4 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_SaveImageFromDataURL::ID);
-  EXPECT_FALSE(msg4);
 }
 
 // Tests that url download are throttled when reaching the limit.

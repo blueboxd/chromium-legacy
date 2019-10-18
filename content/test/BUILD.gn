@@ -2221,6 +2221,7 @@ test("content_unittests") {
       "dwrite.lib",
       "wtsapi32.lib",
     ]
+    configs += [ "//build/config/win:delayloads" ]
   }
   if (is_mac) {
     deps += [

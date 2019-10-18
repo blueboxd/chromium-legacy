@@ -48,7 +48,7 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #endif
 
@@ -82,8 +82,8 @@ bool ProviderHasPolicies(const ConfigurationPolicyProvider* provider) {
 ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
     : BrowserPolicyConnector(base::Bind(&BuildHandlerList)) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  machine_level_user_cloud_policy_controller_ =
-      std::make_unique<MachineLevelUserCloudPolicyController>();
+  chrome_browser_cloud_management_controller_ =
+      std::make_unique<ChromeBrowserCloudManagementController>();
 #endif
 }
 
@@ -127,7 +127,7 @@ void ChromeBrowserPolicyConnector::Shutdown() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Reset the controller before calling base class so that
   // shutdown occurs in correct sequence.
-  machine_level_user_cloud_policy_controller_.reset();
+  chrome_browser_cloud_management_controller_.reset();
 #endif
 
   BrowserPolicyConnector::Shutdown();
@@ -155,7 +155,7 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   std::unique_ptr<MachineLevelUserCloudPolicyManager>
       machine_level_user_cloud_policy_manager =
-          MachineLevelUserCloudPolicyController::CreatePolicyManager(
+          ChromeBrowserCloudManagementController::CreatePolicyManager(
               platform_provider_);
   if (machine_level_user_cloud_policy_manager) {
     AddMigrators(machine_level_user_cloud_policy_manager.get());

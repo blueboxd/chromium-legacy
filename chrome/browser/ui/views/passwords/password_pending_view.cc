@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
@@ -27,6 +28,7 @@
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -197,6 +199,23 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL));
   return combobox;
 }
+
+std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
+  auto image_view = std::make_unique<NonAccessibleImageView>();
+  image_view->SetImage(
+      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id));
+  gfx::Size preferred_size = image_view->GetPreferredSize();
+  if (preferred_size.width()) {
+    float scale =
+        static_cast<float>(ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_BUBBLE_PREFERRED_WIDTH)) /
+        preferred_size.width();
+    preferred_size = gfx::ScaleToRoundedSize(preferred_size, scale);
+    image_view->SetImageSize(preferred_size);
+  }
+  return image_view;
+}
+
 }  // namespace
 
 PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
@@ -389,6 +408,13 @@ bool PasswordPendingView::ShouldShowCloseButton() const {
 void PasswordPendingView::AddedToWidget() {
   static_cast<views::Label*>(GetBubbleFrameView()->title())
       ->SetAllowCharacterBreak(true);
+}
+
+void PasswordPendingView::OnThemeChanged() {
+  if (int id = model()->GetTopIllustration(
+          GetNativeTheme()->ShouldUseDarkColors())) {
+    GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
+  }
 }
 
 void PasswordPendingView::TogglePasswordVisibility() {

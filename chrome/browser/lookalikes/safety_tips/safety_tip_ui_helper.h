@@ -34,13 +34,14 @@ void OpenHelpCenter(content::WebContents* web_contents);
 
 // Get the titles, descriptions, and button strings or IDs needed to describe
 // the applicable warning type.  Handles both Android and desktop warnings.
-// |url| is the suggested URL to navigate to, and is used in formatting some
-// strings.
+// |url| is the URL of the current page. |suggested_url| is the suggested URL to
+// navigate to. Both URLs are used in formatting some strings.
 base::string16 GetSafetyTipTitle(security_state::SafetyTipStatus warning_type,
-                                 const GURL& url);
+                                 const GURL& suggested_url);
 base::string16 GetSafetyTipDescription(
     security_state::SafetyTipStatus warning_type,
-    const GURL& url);
+    const GURL& url,
+    const GURL& suggested_url);
 int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type);
 
 }  // namespace safety_tips

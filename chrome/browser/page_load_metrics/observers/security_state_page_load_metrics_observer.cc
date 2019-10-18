@@ -133,7 +133,8 @@ void SecurityStatePageLoadMetricsObserver::OnComplete(
     return;
 
   security_state::SafetyTipStatus safety_tip_status =
-      security_state_tab_helper_->GetVisibleSecurityState()->safety_tip_status;
+      security_state_tab_helper_->GetVisibleSecurityState()
+          ->safety_tip_info.status;
 
   if (engagement_service_) {
     double final_engagement_score =

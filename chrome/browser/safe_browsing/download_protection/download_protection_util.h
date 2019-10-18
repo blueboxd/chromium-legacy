@@ -25,6 +25,9 @@ enum class DownloadCheckResult {
   ASYNC_SCANNING,
   BLOCKED_PASSWORD_PROTECTED,
   BLOCKED_TOO_LARGE,
+  SENSITIVE_CONTENT_WARNING,
+  SENSITIVE_CONTENT_BLOCK,
+  DEEP_SCANNED_SAFE
 };
 
 // Enum to keep track why a particular download verdict was chosen.
@@ -61,6 +64,9 @@ enum DownloadCheckResultReason {
   REASON_DOWNLOAD_DESTROYED = 28,
   REASON_BLOCKED_PASSWORD_PROTECTED = 29,
   REASON_BLOCKED_TOO_LARGE = 30,
+  REASON_SENSITIVE_CONTENT_WARNING = 31,
+  REASON_SENSITIVE_CONTENT_BLOCK = 32,
+  REASON_DEEP_SCANNED_SAFE = 33,
   REASON_MAX  // Always add new values before this one.
 };
 

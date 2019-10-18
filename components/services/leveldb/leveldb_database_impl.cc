@@ -173,32 +173,6 @@ void LevelDBDatabaseImpl::Get(const std::vector<uint8_t>& key,
                       std::move(callback)));
 }
 
-void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
-                                      GetPrefixedCallback callback) {
-  struct GetPrefixedResult {
-    Status status;
-    std::vector<storage::DomStorageDatabase::KeyValuePair> entries;
-  };
-
-  RunDatabaseTask(
-      base::BindOnce(
-          [](const std::vector<uint8_t>& prefix,
-             const storage::DomStorageDatabase& db) {
-            GetPrefixedResult result;
-            result.status = db.GetPrefixed(prefix, &result.entries);
-            return result;
-          },
-          key_prefix),
-      base::BindOnce(
-          [](GetPrefixedCallback callback, GetPrefixedResult result) {
-            std::vector<mojom::KeyValuePtr> entries;
-            for (auto& entry : result.entries)
-              entries.push_back(mojom::KeyValue::New(entry.key, entry.value));
-            std::move(callback).Run(result.status, std::move(entries));
-          },
-          std::move(callback)));
-}
-
 void LevelDBDatabaseImpl::CopyPrefixed(
     const std::vector<uint8_t>& source_key_prefix,
     const std::vector<uint8_t>& destination_key_prefix,
@@ -223,7 +197,7 @@ void LevelDBDatabaseImpl::OnDatabaseOpened(
     base::SequenceBound<storage::DomStorageDatabase> database,
     leveldb::Status status) {
   database_ = std::move(database);
-  std::vector<DatabaseTask> tasks;
+  std::vector<BoundDatabaseTask> tasks;
   std::swap(tasks, tasks_to_run_on_open_);
   if (status.ok()) {
     for (auto& task : tasks)

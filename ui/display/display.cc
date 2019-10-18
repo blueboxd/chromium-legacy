@@ -21,15 +21,6 @@
 namespace display {
 namespace {
 
-constexpr int kDefaultBitsPerPixel = 24;
-constexpr int kDefaultBitsPerComponent = 8;
-
-constexpr int kHDR10BitsPerPixel = 30;
-constexpr int kHDR10BitsPerComponent = 10;
-
-constexpr int kSCRGBLinearBitsPerPixel = 48;
-constexpr int kSCRGBLinearBitsPerComponent = 16;
-
 // This variable tracks whether the forced device scale factor switch needs to
 // be read from the command line, i.e. if it is set to -1 then the command line
 // is checked.

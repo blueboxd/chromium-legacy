@@ -17,7 +17,7 @@
 
 namespace policy {
 
-using RegisterResult = MachineLevelUserCloudPolicyController::RegisterResult;
+using RegisterResult = ChromeBrowserCloudManagementController::RegisterResult;
 
 const char
     ChromeBrowserCloudManagementRegisterWatcher::kStartupDialogHistogramName[] =
@@ -25,7 +25,7 @@ const char
 
 ChromeBrowserCloudManagementRegisterWatcher::
     ChromeBrowserCloudManagementRegisterWatcher(
-        MachineLevelUserCloudPolicyController* controller)
+        ChromeBrowserCloudManagementController* controller)
     : controller_(controller) {
   controller_->AddObserver(this);
 }

@@ -2574,10 +2574,8 @@ static void RecordGraphicsLayerAsForeignLayer(
   // layers are still attached. In future we will disable all those layer
   // hierarchy code so we won't need this line.
   graphics_layer->CcLayer()->RemoveAllChildren();
-  RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
-                     graphics_layer->CcLayer(),
-                     FloatPoint(graphics_layer->GetOffsetFromTransformNode()),
-                     graphics_layer->GetPropertyTreeState());
+  RecordGraphicsLayerAsForeignLayer(context, DisplayItem::kForeignLayerWrapper,
+                                    *graphics_layer);
 }
 
 static void CollectDrawableLayersForLayerListRecursively(
@@ -2807,10 +2805,13 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(
     LayerTreeFlags flags) {
-  return GetFrame()
-      .LocalFrameRoot()
-      .View()
-      ->paint_artifact_compositor_->LayersAsJSON(flags);
+  auto* root_frame_view = GetFrame().LocalFrameRoot().View();
+  if (root_frame_view->GetPaintController()) {
+    return root_frame_view->paint_artifact_compositor_->GetLayersAsJSON(
+        flags, &root_frame_view->GetPaintController()->GetPaintArtifact());
+  } else {
+    return std::make_unique<JSONObject>();
+  }
 }
 
 void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
@@ -3942,8 +3943,8 @@ void LocalFrameView::DeliverSynchronousIntersectionObservations() {
 void LocalFrameView::CrossOriginStatusChanged() {
   // If any of these conditions hold, then a change in cross-origin status does
   // not affect throttling.
-  if (lifecycle_updates_throttled_ ||
-      IsSubtreeThrottled() || !IsHiddenForThrottling()) {
+  if (lifecycle_updates_throttled_ || IsSubtreeThrottled() ||
+      !IsHiddenForThrottling()) {
     return;
   }
   RenderThrottlingStatusChanged();

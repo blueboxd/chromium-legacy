@@ -5,15 +5,12 @@
 package org.chromium.chrome.browser.download.ui;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
 
 import android.os.Handler;
 import android.os.Looper;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.download.DownloadItem;
-import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -27,80 +24,10 @@ import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /** Stubs out backends used by the Download Home UI. */
-public class StubbedProvider implements BackendProvider {
-
-    /** Stubs out the DownloadManagerService. */
-    public class StubbedDownloadDelegate implements DownloadDelegate {
-        public final CallbackHelper addCallback = new CallbackHelper();
-        public final CallbackHelper removeCallback = new CallbackHelper();
-        public final CallbackHelper checkExternalCallback = new CallbackHelper();
-        public final CallbackHelper removeDownloadCallback = new CallbackHelper();
-
-        public final List<DownloadItem> regularItems = new ArrayList<>();
-        public final List<DownloadItem> offTheRecordItems = new ArrayList<>();
-        private DownloadObserver mObserver;
-
-        @Override
-        public void addDownloadObserver(DownloadObserver observer) {
-            addCallback.notifyCalled();
-            assertNull(mObserver);
-            mObserver = observer;
-        }
-
-        @Override
-        public void removeDownloadObserver(DownloadObserver observer) {
-            removeCallback.notifyCalled();
-            mObserver = null;
-        }
-
-        @Override
-        public void getAllDownloads(final boolean isOffTheRecord) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mObserver.onAllDownloadsRetrieved(
-                            isOffTheRecord ? offTheRecordItems : regularItems, isOffTheRecord);
-                }
-            });
-        }
-
-        @Override
-        public void broadcastDownloadAction(DownloadItem downloadItem, String action) {}
-
-        @Override
-        public void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
-            checkExternalCallback.notifyCalled();
-        }
-
-        @Override
-        public void removeDownload(
-                final String guid, final boolean isOffTheRecord, boolean externallyRemoved) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    mObserver.onDownloadItemRemoved(guid, isOffTheRecord);
-                    removeDownloadCallback.notifyCalled();
-                }
-            });
-        }
-
-        @Override
-        public boolean isDownloadOpenableInBrowser(boolean isOffTheRecord, String mimeType) {
-            return false;
-        }
-
-        @Override
-        public void updateLastAccessTime(String downloadGuid, boolean isOffTheRecord) {}
-
-        @Override
-        public void renameDownload(ContentId id, String name,
-                Callback<Integer /*RenameResult*/> callback, boolean isOffTheRecord) {}
-    }
-
+public class StubbedProvider {
     /** Stubs out the OfflineContentProvider. */
     public class StubbedOfflineContentProvider implements OfflineContentProvider {
         public final CallbackHelper addCallback = new CallbackHelper();
@@ -180,12 +107,10 @@ public class StubbedProvider implements BackendProvider {
     private static final long ONE_GIGABYTE = 1024L * 1024L * 1024L;
 
     private final Handler mHandler;
-    private final StubbedDownloadDelegate mDownloadDelegate;
     private final StubbedOfflineContentProvider mOfflineContentProvider;
 
     public StubbedProvider() {
         mHandler = new Handler(Looper.getMainLooper());
-        mDownloadDelegate = new StubbedDownloadDelegate();
         mOfflineContentProvider = new StubbedOfflineContentProvider();
     }
 
@@ -235,5 +160,4 @@ public class StubbedProvider implements BackendProvider {
     private static long dateToEpoch(String dateStr) throws Exception {
         return new SimpleDateFormat("yyyyMMdd HH:mm", Locale.getDefault()).parse(dateStr).getTime();
     }
-
 }

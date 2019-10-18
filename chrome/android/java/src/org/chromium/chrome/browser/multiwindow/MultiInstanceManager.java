@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -314,7 +315,7 @@ public class MultiInstanceManager
         if (intent == null) return;
 
         onMultiInstanceModeStarted();
-        tab.detachAndStartReparenting(intent,
+        ReparentingTask.from(tab).begin(mContext, intent,
                 mMultiWindowModeStateDispatcher.getOpenInOtherWindowActivityOptions(), null);
     }
 }

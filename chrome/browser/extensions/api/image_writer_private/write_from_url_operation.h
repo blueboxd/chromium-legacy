@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
@@ -24,13 +25,14 @@ class OperationManager;
 // Encapsulates a write of an image accessed via URL.
 class WriteFromUrlOperation : public Operation {
  public:
-  WriteFromUrlOperation(base::WeakPtr<OperationManager> manager,
-                        const ExtensionId& extension_id,
-                        network::mojom::URLLoaderFactoryPtrInfo factory_info,
-                        GURL url,
-                        const std::string& hash,
-                        const std::string& storage_unit_id,
-                        const base::FilePath& download_folder);
+  WriteFromUrlOperation(
+      base::WeakPtr<OperationManager> manager,
+      const ExtensionId& extension_id,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote,
+      GURL url,
+      const std::string& hash,
+      const std::string& storage_unit_id,
+      const base::FilePath& download_folder);
   void StartImpl() override;
 
  protected:
@@ -61,7 +63,8 @@ class WriteFromUrlOperation : public Operation {
   void VerifyDownloadComplete(base::OnceClosure continuation);
 
   // Arguments
-  network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      url_loader_factory_remote_;
   GURL url_;
   const std::string hash_;
 

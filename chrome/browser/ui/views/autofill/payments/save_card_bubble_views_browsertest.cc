@@ -2853,6 +2853,61 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
       GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
 }
 
+// Tests the sign in promo bubble. Ensures that clicking the [Save] button
+// on the local save bubble successfully causes the sign in promo to show from
+// the avatar toolbar button.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       Local_ClickingSaveShowsSigninPromo) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+
+  // Click [Save] should close the offer-to-save bubble
+  // and pop up the sign-in promo.
+  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Ensures the credit card icon is not visible.
+  EXPECT_FALSE(GetSaveCardIconView()->GetVisible());
+  // Sign-in promo should be showing.
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::SIGN_IN_PROMO_VIEW)->GetVisible());
+}
+
+// Tests the manage cards bubble. Ensures that it will not pop up after the
+// sign-in promo is closed.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+    Local_ClosingSigninPromoDoesNotShowNeitherIconNorManageCardsBubble) {
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Adding an event observer to the controller so we can wait for the bubble to
+  // show.
+  AddEventObserverToController();
+  ResetEventWaiterForSequence(
+      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+
+  // Click [Save] should close the offer-to-save bubble
+  // and pop up the sign-in promo.
+  ClickOnDialogViewWithId(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Close the sign-in promo.
+  ResetEventWaiterForSequence({DialogEvent::BUBBLE_CLOSED});
+  ClickOnCloseButton();
+  WaitForObservedEvent();
+
+  // Ensures the neither credit card icon nor the manage cards bubble is
+  // showing.
+  EXPECT_FALSE(GetSaveCardIconView()->GetVisible());
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+}
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace autofill

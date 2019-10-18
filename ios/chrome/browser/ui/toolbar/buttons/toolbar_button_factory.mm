@@ -152,7 +152,7 @@
   ToolbarButton* bookmarkButton = [ToolbarButton
       toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_bookmark"]];
   [bookmarkButton setImage:[UIImage imageNamed:@"toolbar_bookmark_active"]
-                  forState:ControlStateSpotlighted];
+                  forState:kControlStateSpotlighted];
   [self configureButton:bookmarkButton width:kAdaptiveToolbarButtonWidth];
   bookmarkButton.adjustsImageWhenHighlighted = NO;
   [bookmarkButton

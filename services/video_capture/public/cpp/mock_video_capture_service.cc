@@ -4,6 +4,8 @@
 
 #include "services/video_capture/public/cpp/mock_video_capture_service.h"
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+
 namespace video_capture {
 
 MockVideoCaptureService::MockVideoCaptureService() {}
@@ -11,19 +13,20 @@ MockVideoCaptureService::MockVideoCaptureService() {}
 MockVideoCaptureService::~MockVideoCaptureService() = default;
 
 void MockVideoCaptureService::ConnectToDeviceFactory(
-    video_capture::mojom::DeviceFactoryRequest request) {
-  DoConnectToDeviceFactory(request);
+    mojo::PendingReceiver<video_capture::mojom::DeviceFactory> receiver) {
+  DoConnectToDeviceFactory(std::move(receiver));
 }
 
 void MockVideoCaptureService::ConnectToVideoSourceProvider(
-    video_capture::mojom::VideoSourceProviderRequest request) {
-  DoConnectToVideoSourceProvider(request);
+    mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver) {
+  DoConnectToVideoSourceProvider(std::move(receiver));
 }
 
 #if defined(OS_CHROMEOS)
 void MockVideoCaptureService::InjectGpuDependencies(
-    video_capture::mojom::AcceleratorFactoryPtr accelerator_factory) {
-  DoInjectGpuDependencies(accelerator_factory);
+    mojo::PendingRemote<video_capture::mojom::AcceleratorFactory>
+        accelerator_factory) {
+  DoInjectGpuDependencies(std::move(accelerator_factory));
 }
 #endif  // defined(OS_CHROMEOS)
 

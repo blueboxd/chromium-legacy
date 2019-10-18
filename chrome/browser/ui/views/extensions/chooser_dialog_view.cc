@@ -54,6 +54,9 @@ ChooserDialogView::ChooserDialogView(
   device_chooser_content_view_->SetBorder(views::CreateEmptyBorder(
       ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
           views::CONTROL, views::CONTROL)));
+
+  DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER);
 }
 
@@ -78,10 +81,6 @@ bool ChooserDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
 views::View* ChooserDialogView::GetInitiallyFocusedView() {
   const views::DialogClientView* dcv = GetDialogClientView();
   return dcv ? dcv->cancel_button() : nullptr;
-}
-
-std::unique_ptr<views::View> ChooserDialogView::CreateExtraView() {
-  return device_chooser_content_view_->CreateExtraView();
 }
 
 bool ChooserDialogView::Accept() {

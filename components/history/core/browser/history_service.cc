@@ -724,6 +724,22 @@ void HistoryService::CountUniqueHostsVisitedLastMonth(
       std::move(callback));
 }
 
+base::CancelableTaskTracker::TaskId HistoryService::GetLastVisitToHost(
+    const GURL& host,
+    base::Time begin_time,
+    base::Time end_time,
+    GetLastVisitToHostCallback callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  return tracker->PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&HistoryBackend::GetLastVisitToHost, history_backend_,
+                     host, begin_time, end_time),
+      std::move(callback));
+}
+
 // Downloads -------------------------------------------------------------------
 
 // Handle creation of a download by creating an entry in the history service's
@@ -760,9 +776,8 @@ void HistoryService::QueryDownloads(DownloadQueryCallback callback) {
 
 // Handle updates for a particular download. This is a 'fire and forget'
 // operation, so we don't need to be called back.
-void HistoryService::UpdateDownload(
-    const DownloadRow& data,
-    bool should_commit_immediately) {
+void HistoryService::UpdateDownload(const DownloadRow& data,
+                                    bool should_commit_immediately) {
   TRACE_EVENT0("browser", "HistoryService::UpdateDownload");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());

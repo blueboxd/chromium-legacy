@@ -289,4 +289,16 @@ NigoriState NigoriState::Clone() const {
   return result;
 }
 
+bool NigoriState::NeedsKeystoreKeyRotation() const {
+  if (keystore_keys_cryptographer->IsEmpty() ||
+      passphrase_type != sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE ||
+      pending_keys.has_value()) {
+    return false;
+  }
+
+  const sync_pb::NigoriKey rotated_default_key =
+      keystore_keys_cryptographer->ToCryptographerImpl()->ExportDefaultKey();
+  return !cryptographer->HasKey(rotated_default_key);
+}
+
 }  // namespace syncer

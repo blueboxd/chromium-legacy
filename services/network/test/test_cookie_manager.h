@@ -57,8 +57,7 @@ class TestCookieManager : public network::mojom::CookieManager {
   void SetContentSettingsForLegacyCookieAccess(
       const std::vector<::ContentSettingPatternSource>& settings) override {}
 
-  void DispatchCookieChange(const net::CanonicalCookie& cookie,
-                            network::mojom::CookieChangeCause cause);
+  void DispatchCookieChange(const net::CookieChangeInfo& change);
 
  private:
   // List of observers receiving cookie change notifications.

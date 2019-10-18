@@ -7,7 +7,10 @@
 #include <utility>
 
 #include "cc/layers/layer.h"
+#include "cc/layers/picture_layer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -48,13 +51,16 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
 
 }  // anonymous namespace
 
-ForeignLayerDisplayItem::ForeignLayerDisplayItem(Type type,
-                                                 scoped_refptr<cc::Layer> layer,
-                                                 const FloatPoint& offset)
+ForeignLayerDisplayItem::ForeignLayerDisplayItem(
+    Type type,
+    scoped_refptr<cc::Layer> layer,
+    const FloatPoint& offset,
+    const LayerAsJSONClient* json_client)
     : DisplayItem(*new ForeignLayerDisplayItemClient(std::move(layer), offset),
                   type,
                   sizeof(*this)),
-      offset_(offset) {
+      offset_(offset),
+      json_client_(json_client) {
   DCHECK(IsForeignLayerType(type));
   DCHECK(GetLayer());
   DCHECK(!IsCacheable());
@@ -69,6 +75,10 @@ ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {
 
 cc::Layer* ForeignLayerDisplayItem::GetLayer() const {
   return static_cast<const ForeignLayerDisplayItemClient&>(Client()).GetLayer();
+}
+
+const LayerAsJSONClient* ForeignLayerDisplayItem::GetLayerAsJSONClient() const {
+  return json_client_;
 }
 
 bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
@@ -86,11 +96,13 @@ void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
 }
 #endif
 
-void RecordForeignLayer(GraphicsContext& context,
-                        DisplayItem::Type type,
-                        scoped_refptr<cc::Layer> layer,
-                        const FloatPoint& offset,
-                        const base::Optional<PropertyTreeState>& properties) {
+void RecordForeignLayerInternal(
+    GraphicsContext& context,
+    DisplayItem::Type type,
+    scoped_refptr<cc::Layer> layer,
+    const FloatPoint& offset,
+    const LayerAsJSONClient* json_client,
+    const base::Optional<PropertyTreeState>& properties) {
   PaintController& paint_controller = context.GetPaintController();
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;
@@ -104,11 +116,28 @@ void RecordForeignLayer(GraphicsContext& context,
                                                        *properties);
   }
   paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
-      type, std::move(layer), offset);
+      type, std::move(layer), offset, json_client);
   if (properties) {
     paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
                                                        *previous_properties);
   }
+}
+
+void RecordForeignLayer(GraphicsContext& context,
+                        DisplayItem::Type type,
+                        scoped_refptr<cc::Layer> layer,
+                        const FloatPoint& offset,
+                        const base::Optional<PropertyTreeState>& properties) {
+  RecordForeignLayerInternal(context, type, layer, offset, nullptr, properties);
+}
+
+void RecordGraphicsLayerAsForeignLayer(GraphicsContext& context,
+                                       DisplayItem::Type type,
+                                       const GraphicsLayer& graphics_layer) {
+  RecordForeignLayerInternal(
+      context, type, graphics_layer.CcLayer(),
+      FloatPoint(graphics_layer.GetOffsetFromTransformNode()), &graphics_layer,
+      graphics_layer.GetPropertyTreeState());
 }
 
 }  // namespace blink

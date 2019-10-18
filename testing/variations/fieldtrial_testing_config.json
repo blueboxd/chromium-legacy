@@ -678,21 +678,6 @@
             ]
         }
     ],
-    "AutoFetchOnNetErrorPage": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutoFetchOnNetErrorPage"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillDoNotMigrateUnsupportedLocalCards": [
         {
             "platforms": [

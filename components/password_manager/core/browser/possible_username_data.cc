@@ -12,13 +12,17 @@ using base::TimeDelta;
 namespace password_manager {
 
 PossibleUsernameData::PossibleUsernameData(std::string signon_realm,
-                                           int32_t renderer_id,
+                                           uint32_t renderer_id,
                                            base::string16 value,
-                                           base::Time last_change)
+                                           base::Time last_change,
+                                           int driver_id)
     : signon_realm(std::move(signon_realm)),
       renderer_id(renderer_id),
       value(std::move(value)),
-      last_change(last_change) {}
+      last_change(last_change),
+      driver_id(driver_id) {}
+PossibleUsernameData::PossibleUsernameData(const PossibleUsernameData&) =
+    default;
 PossibleUsernameData::~PossibleUsernameData() = default;
 
 bool IsPossibleUsernameValid(const PossibleUsernameData& possible_username,

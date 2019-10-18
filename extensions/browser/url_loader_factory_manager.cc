@@ -32,6 +32,7 @@
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/user_script.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
@@ -307,7 +308,7 @@ bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
   }
 }
 
-network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
+mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateURLLoaderFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -335,10 +336,10 @@ network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
   params->request_initiator_site_lock = url::Origin::Create(extension.url());
 
   // Create the URLLoaderFactory.
-  network::mojom::URLLoaderFactoryPtrInfo factory_info;
-  network_context->CreateURLLoaderFactory(mojo::MakeRequest(&factory_info),
-                                          std::move(params));
-  return factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
+  network_context->CreateURLLoaderFactory(
+      factory_remote.InitWithNewPipeAndPassReceiver(), std::move(params));
+  return factory_remote;
 }
 
 void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
@@ -516,7 +517,8 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
 }
 
 // static
-network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+URLLoaderFactoryManager::CreateFactory(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
@@ -535,7 +537,7 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
 
   // Don't create a factory for something that is not an extension.
   if (precursor_origin.scheme() != kExtensionScheme)
-    return network::mojom::URLLoaderFactoryPtrInfo();
+    return mojo::NullRemote();
 
   // Find the |extension| associated with |initiator_origin|.
   const Extension* extension =
@@ -545,7 +547,7 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     // RenderFrameHost::MarkIsolatedWorldAsRequiringSeparateURLLoaderFactory is
     // called and the time
     // ContentBrowserClient::CreateURLLoaderFactory is called.
-    return network::mojom::URLLoaderFactoryPtrInfo();
+    return mojo::NullRemote();
   }
 
   // Figure out if the factory is needed for content scripts VS extension
@@ -557,7 +559,7 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
 
   // Create the factory (but only if really needed).
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
-    return network::mojom::URLLoaderFactoryPtrInfo();
+    return mojo::NullRemote();
   return CreateURLLoaderFactory(process, network_context, header_client,
                                 *extension, network_isolation_key);
 }

@@ -29,6 +29,11 @@ class AutofillBubbleHandler {
       SaveCardBubbleController* controller,
       bool is_user_gesture) = 0;
 
+  // Shows the sign in promo bubble from the avatar button.
+  virtual SaveCardBubbleView* ShowSaveCardSignInPromoBubble(
+      content::WebContents* contents,
+      SaveCardBubbleController* controller) = 0;
+
   virtual LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
       content::WebContents* web_contents,
       LocalCardMigrationBubbleController* controller,
@@ -38,6 +43,8 @@ class AutofillBubbleHandler {
   // save to be landed to see if we need to merge password saved and credit card
   // saved functions.
   virtual void OnPasswordSaved() = 0;
+
+  virtual void HideSignInPromo() = 0;
 
   // TODO(crbug.com/964127): Move password bubble here.
   // TODO(crbug.com/964127): Add ShowSyncPromoBubble().

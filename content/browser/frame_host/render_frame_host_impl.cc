@@ -46,6 +46,7 @@
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
+#include "content/browser/download/data_url_blob_reader.h"
 #include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/fileapi/file_system_manager_impl.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
@@ -548,6 +549,66 @@ void GetRestrictedCookieManager(
       std::move(receiver));
 }
 
+// Helper method to download a URL on UI thread.
+void DownloadUrlOnUIThread(
+    std::unique_ptr<download::DownloadUrlParameters> parameters,
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(parameters->render_process_host_id());
+  if (!render_process_host)
+    return;
+
+  BrowserContext* browser_context = render_process_host->GetBrowserContext();
+
+  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
+  if (blob_url_token) {
+    blob_url_loader_factory =
+        ChromeBlobStorageContext::URLLoaderFactoryForToken(
+            browser_context, std::move(blob_url_token));
+  }
+
+  DownloadManager* download_manager =
+      BrowserContext::GetDownloadManager(browser_context);
+  parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
+  download_manager->DownloadUrl(std::move(parameters),
+                                std::move(blob_url_loader_factory));
+}
+
+// Called on the IO thread when the data URL in the BlobDataHandle
+// is read.
+void OnDataURLRetrieved(
+    std::unique_ptr<download::DownloadUrlParameters> parameters,
+    GURL data_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  parameters->set_url(std::move(data_url));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
+                                mojo::NullRemote()));
+}
+// Called on the IO thread when the BlobDataHandle for the data URL
+// is retrieved.
+void OnDataURLBlobRetrieved(
+    std::unique_ptr<download::DownloadUrlParameters> parameters,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DataURLBlobReader::ReadDataURLFromBlob(
+      std::move(blob_data_handle),
+      base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
+}
+
+// Called to retrieve the data URL on the IO thread.
+void RetrieveDataURLOnIOThread(
+    std::unique_ptr<download::DownloadUrlParameters> parameters,
+    mojo::PendingRemote<blink::mojom::Blob> data_url_blob,
+    scoped_refptr<ChromeBlobStorageContext> blob_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  blob_context->context()->GetBlobDataFromBlobRemote(
+      std::move(data_url_blob),
+      base::BindOnce(&OnDataURLBlobRetrieved, std::move(parameters)));
+}
+
 // TODO(crbug.com/977040): Remove when no longer needed.
 const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 
@@ -970,6 +1031,10 @@ RenderFrameHostImpl::RenderFrameHostImpl(
           frame_tree_->render_widget_delegate(), GetProcess(),
           widget_routing_id, std::move(widget), /*hidden=*/true);
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
+#if defined(OS_ANDROID)
+      owned_render_widget_host_->SetForceEnableZoom(
+          render_view_host_->GetWebkitPreferences().force_enable_zoom);
+#endif  // defined(OS_ANDROID)
     }
 
     if (!frame_tree_node_->parent())
@@ -1018,6 +1083,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   ClearAllWebUI();
 
   SetLastCommittedSiteUrl(GURL());
+  if (last_committed_document_priority_) {
+    GetProcess()->UpdateFrameWithPriority(last_committed_document_priority_,
+                                          base::nullopt);
+  }
 
   if (overlay_routing_token_)
     g_token_frame_map.Get().erase(*overlay_routing_token_);
@@ -1619,8 +1688,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RenderFallbackContentInParentProcess,
                         OnRenderFallbackContentInParentProcess)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DownloadUrl, OnDownloadUrl)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SaveImageFromDataURL,
-                        OnSaveImageFromDataURL)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -2393,6 +2460,18 @@ void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
   last_committed_url_ = url;
 }
 
+void RenderFrameHostImpl::UpdateRenderProcessHostFramePriorities() {
+  const auto new_committed_document_priority =
+      (delegate_ && delegate_->IsFrameLowPriority(this))
+          ? RenderProcessHostImpl::FramePriority::kLow
+          : RenderProcessHostImpl::FramePriority::kNormal;
+  if (last_committed_document_priority_ != new_committed_document_priority) {
+    GetProcess()->UpdateFrameWithPriority(last_committed_document_priority_,
+                                          new_committed_document_priority);
+    last_committed_document_priority_ = new_committed_document_priority;
+  }
+}
+
 void RenderFrameHostImpl::OnDetach() {
   if (!parent_) {
     bad_message::ReceivedBadMessage(GetProcess(),
@@ -2673,6 +2752,11 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
 
 GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
   return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
+}
+
+bool RenderFrameHostImpl::HasPendingCommitNavigation() const {
+  return navigation_request_ || same_document_navigation_request_ ||
+         !navigation_requests_.empty();
 }
 
 void RenderFrameHostImpl::ResetNavigationRequests() {
@@ -4028,22 +4112,13 @@ void RenderFrameHostImpl::OnDownloadUrl(
   if (!VerifyDownloadUrlParams(GetSiteInstance(), params, &blob_url_token))
     return;
 
+  mojo::ScopedMessagePipeHandle data_url_blob(std::move(params.data_url_blob));
+  mojo::PendingRemote<blink::mojom::Blob> blob_data_remote(
+      std::move(data_url_blob), blink::mojom::Blob::Version_);
+
   DownloadUrl(params.url, params.referrer, params.initiator_origin,
               params.suggested_name, false, params.cross_origin_redirects,
-              std::move(blob_url_token));
-}
-
-void RenderFrameHostImpl::OnSaveImageFromDataURL(const std::string& url_str) {
-  // Please refer to RenderFrameImpl::SaveImageFromDataURL().
-  if (url_str.length() >= kMaxLengthOfDataURLString)
-    return;
-
-  GURL data_url(url_str);
-  if (!data_url.is_valid() || !data_url.SchemeIs(url::kDataScheme))
-    return;
-
-  DownloadUrl(data_url, Referrer(), url::Origin(), base::string16(), true,
-              network::mojom::RedirectMode::kFollow, mojo::NullRemote());
+              std::move(blob_url_token), std::move(blob_data_remote));
 }
 
 void RenderFrameHostImpl::DownloadUrl(
@@ -4053,7 +4128,8 @@ void RenderFrameHostImpl::DownloadUrl(
     const base::string16& suggested_name,
     const bool use_prompt,
     const network::mojom::RedirectMode cross_origin_redirects,
-    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
+    mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
+    mojo::PendingRemote<blink::mojom::Blob> data_url_blob) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("renderer_initiated_download", R"(
         semantics {
@@ -4094,17 +4170,17 @@ void RenderFrameHostImpl::DownloadUrl(
   parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
 
   BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
-  scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
-  if (blob_url_token) {
-    blob_url_loader_factory =
-        ChromeBlobStorageContext::URLLoaderFactoryForToken(
-            browser_context, std::move(blob_url_token));
+  if (data_url_blob) {
+    scoped_refptr<ChromeBlobStorageContext> blob_context =
+        ChromeBlobStorageContext::GetFor(browser_context);
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&RetrieveDataURLOnIOThread, std::move(parameters),
+                       std::move(data_url_blob), blob_context));
+    return;
   }
 
-  DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(browser_context);
-  download_manager->DownloadUrl(std::move(parameters),
-                                std::move(blob_url_loader_factory));
+  DownloadUrlOnUIThread(std::move(parameters), std::move(blob_url_token));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -7138,6 +7214,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   last_http_status_code_ = validated_params->http_status_code;
   last_http_method_ = validated_params->method;
   UpdateSiteURL(validated_params->url, validated_params->url_is_unreachable);
+  if (!is_same_document_navigation)
+    UpdateRenderProcessHostFramePriorities();
 
   // Set the state whether this navigation is to an MHTML document, since there
   // are certain security checks that we cannot apply to subframes in MHTML
@@ -7917,10 +7995,6 @@ BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   if (!navigation_entry)
     return nullptr;
   return navigation_entry->back_forward_cache_metrics();
-}
-
-bool RenderFrameHostImpl::HasPendingCommitNavigationForTesting() {
-  return navigation_request_ || !navigation_requests_.empty();
 }
 
 }  // namespace content

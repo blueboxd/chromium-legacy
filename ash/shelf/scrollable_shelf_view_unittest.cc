@@ -10,7 +10,8 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/test/ash_test_base.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/display/manager/display_manager.h"
 
 namespace ash {
@@ -40,6 +41,9 @@ class ScrollableShelfViewTest : public AshTestBase {
   ~ScrollableShelfViewTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kShelfScrollable}, {});
+
     AshTestBase::SetUp();
     scrollable_shelf_view_ = GetPrimaryShelf()
                                  ->shelf_widget()
@@ -99,6 +103,7 @@ class ScrollableShelfViewTest : public AshTestBase {
     EXPECT_TRUE(visible_space_in_screen.Contains(first_tappable_icon_bounds));
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
   ShelfView* shelf_view_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_api_;

@@ -19,6 +19,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
+#include "components/metrics/android_metrics_provider.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/enabled_state_provider.h"
@@ -110,6 +111,8 @@ std::unique_ptr<metrics::MetricsService> CreateMetricsService(
   service->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
           content::CreateNetworkConnectionTrackerAsyncGetter()));
+  service->RegisterMetricsProvider(
+      std::make_unique<metrics::AndroidMetricsProvider>());
   service->RegisterMetricsProvider(
       std::make_unique<metrics::CPUMetricsProvider>());
   service->RegisterMetricsProvider(

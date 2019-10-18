@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var BatterySettings = Polymer({
+Polymer({
   is: 'battery-settings',
 
   properties: {
@@ -115,11 +115,11 @@ var BatterySettings = Polymer({
     /** The ID of the current power source, or the empty string. */
     selectedPowerSourceId: String,
 
-    /** A string representing the time left until the battery is discharged. */
-    timeUntilEmpty: String,
+    /** A number representing the time left until the battery is discharged. */
+    timeUntilEmpty: Number,
 
-    /** A string representing the time left until the battery is at 100%. */
-    timeUntilFull: String,
+    /** A number representing the time left until the battery is at 100%. */
+    timeUntilFull: Number,
   },
 
   observers: [
@@ -131,7 +131,7 @@ var BatterySettings = Polymer({
   },
 
   onBatteryPercentChange: function(e) {
-    this.percent = parseInt(e.target.value);
+    this.percent = parseInt(e.target.value, 10);
     if (!isNaN(this.percent))
       chrome.send('updateBatteryPercent', [this.percent]);
   },
@@ -161,13 +161,13 @@ var BatterySettings = Polymer({
   },
 
   onTimeUntilEmptyChange: function(e) {
-    this.timeUntilEmpty = parseInt(e.target.value);
+    this.timeUntilEmpty = parseInt(e.target.value, 10);
     if (!isNaN(this.timeUntilEmpty))
       chrome.send('updateTimeToEmpty', [this.timeUntilEmpty]);
   },
 
   onTimeUntilFullChange: function(e) {
-    this.timeUntilFull = parseInt(e.target.value);
+    this.timeUntilFull = parseInt(e.target.value, 10);
     if (!isNaN(this.timeUntilFull))
       chrome.send('updateTimeToFull', [this.timeUntilFull]);
   },
@@ -176,13 +176,21 @@ var BatterySettings = Polymer({
     e.model.set('item.power', e.target.value);
   },
 
-  updatePowerProperties: function(power_properties) {
-    this.batteryPercent = power_properties.battery_percent;
-    this.batteryState =
-        this.batteryStateOptions[power_properties.battery_state];
-    this.timeUntilEmpty = power_properties.battery_time_to_empty_sec;
-    this.timeUntilFull = power_properties.battery_time_to_full_sec;
-    this.selectedPowerSourceId = power_properties.external_power_source_id;
+  /**
+   * @param {{
+   *   battery_percent: number,
+   *   battery_state: number,
+   *   battery_time_to_empty_sec: number,
+   *   battery_time_to_full_sec: number,
+   *   external_power_source_id: string,
+   * }} properties
+   */
+  updatePowerProperties: function(properties) {
+    this.batteryPercent = properties.battery_percent;
+    this.batteryState = this.batteryStateOptions[properties.battery_state];
+    this.timeUntilEmpty = properties.battery_time_to_empty_sec;
+    this.timeUntilFull = properties.battery_time_to_full_sec;
+    this.selectedPowerSourceId = properties.external_power_source_id;
   },
 
   isBatteryPresent: function() {

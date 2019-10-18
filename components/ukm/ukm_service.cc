@@ -18,12 +18,14 @@
 #include "base/time/time.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_service_client.h"
+#include "components/metrics/ukm_demographic_metrics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_rotation_scheduler.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 namespace ukm {
 
@@ -75,13 +77,17 @@ int32_t LoadAndIncrementSessionId(PrefService* pref_service) {
 
 UkmService::UkmService(PrefService* pref_service,
                        metrics::MetricsServiceClient* client,
-                       bool restrict_to_whitelist_entries)
+                       bool restrict_to_whitelist_entries,
+                       std::unique_ptr<metrics::UkmDemographicMetricsProvider>
+                           demographics_provider)
     : pref_service_(pref_service),
       restrict_to_whitelist_entries_(restrict_to_whitelist_entries),
       client_(client),
+      demographics_provider_(std::move(demographics_provider)),
       reporting_service_(client, pref_service) {
   DCHECK(pref_service_);
   DCHECK(client_);
+  DCHECK(demographics_provider_);
   DVLOG(1) << "UkmService::Constructor";
 
   reporting_service_.Initialize();
@@ -239,6 +245,14 @@ void UkmService::RotateLog() {
   scheduler_->RotationFinished();
 }
 
+void UkmService::AddSyncedUserNoiseBirthYearAndGenderToReport(Report* report) {
+  if (!base::FeatureList::IsEnabled(kReportUserNoisedUserBirthYearAndGender))
+    return;
+
+  demographics_provider_->ProvideSyncedUserNoisedBirthYearAndGenderToReport(
+      report);
+}
+
 void UkmService::BuildAndStoreLog() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "UkmService::BuildAndStoreLog";
@@ -262,6 +276,8 @@ void UkmService::BuildAndStoreLog() {
   metrics_providers_.ProvideSystemProfileMetricsWithLogCreationTime(
       log_creation_time_, report.mutable_system_profile());
 
+  AddSyncedUserNoiseBirthYearAndGenderToReport(&report);
+
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
   reporting_service_.ukm_log_store()->StoreLog(serialized_log);
@@ -279,5 +295,8 @@ void UkmService::SetInitializationCompleteCallbackForTesting(base::OnceClosure c
     initialization_complete_callback_ = std::move(callback);
   }
 }
+
+const base::Feature UkmService::kReportUserNoisedUserBirthYearAndGender = {
+    "UkmReportNoisedUserBirthYearAndGender", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace ukm

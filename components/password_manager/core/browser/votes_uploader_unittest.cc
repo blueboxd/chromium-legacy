@@ -405,7 +405,7 @@ TEST_F(VotesUploaderTest, UploadSingleUsername) {
     form_predictions.fields.back().signature = kUsernameFieldSignature;
 
     votes_uploader.set_single_username_vote_data(kUsernameRendererId,
-                                                 &form_predictions);
+                                                 form_predictions);
 
     ServerFieldTypeSet expected_types = {credentials_saved ? SINGLE_USERNAME
                                                            : NOT_USERNAME};

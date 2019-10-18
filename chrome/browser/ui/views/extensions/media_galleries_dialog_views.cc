@@ -71,6 +71,8 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       auxiliary_button_(nullptr),
       confirm_available_(false),
       accepted_(false) {
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   controller_->GetAcceptButtonText());
   InitChildViews();
   if (ControllerHasWebContents()) {
     constrained_window::ShowWebModalDialogViews(this,
@@ -234,13 +236,6 @@ const views::Widget* MediaGalleriesDialogViews::GetWidget() const {
 
 views::View* MediaGalleriesDialogViews::GetContentsView() {
   return contents_;
-}
-
-base::string16 MediaGalleriesDialogViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return controller_->GetAcceptButtonText();
-  return l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_CANCEL);
 }
 
 bool MediaGalleriesDialogViews::IsDialogButtonEnabled(

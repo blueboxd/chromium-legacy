@@ -41,6 +41,13 @@
       "bounds": [60, 128],
       "backfaceVisibility": "hidden",
       "transform": 3
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [94, 1],
+      "bounds": [7, 100],
+      "backfaceVisibility": "hidden",
+      "transform": 1
     }
   ],
   "transforms": [

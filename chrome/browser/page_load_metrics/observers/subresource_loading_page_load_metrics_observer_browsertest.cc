@@ -30,16 +30,39 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
-                       SimpleDoesAllPlumbingWork) {
+                       BeforeFCPPlumbing) {
   GURL url = embedded_test_server()->GetURL("origin.com", "/index.html");
 
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), url);
-
-  // Navigate away to force the histogram recording.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 2,
       1);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
+                       HistoryPlumbing) {
+  GURL url = embedded_test_server()->GetURL("origin.com", "/index.html");
+
+  base::HistogramTester histogram_tester;
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
+
+  // Revisit and expect a 0 days-ago entry.
+  ui_test_utils::NavigateToURL(browser(), url);
+  base::RunLoop().RunUntilIdle();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0, 1);
 }

@@ -1345,15 +1345,15 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
 };
 #endif  // !OS_ANDROID
 
-// TODO(crbug.com/991082): Remove after proper service worker support for
-// back-forward cache is implemented.
-const FeatureEntry::FeatureParam kBackForwardCache_ServiceWorkerSupport[] = {
-    {"service_worker_supported", "true"},
+// TODO(crbug.com/991082,1015377): Remove after proper support for back-forward
+// cache is implemented.
+const FeatureEntry::FeatureParam kBackForwardCache_ExtendedSupport[] = {
+    {"experimental extended supported feature set", "true"},
 };
 
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
-    {" even for ServiceWorker-controlled pages",
-     kBackForwardCache_ServiceWorkerSupport, 1, nullptr},
+    {"experimental extended supported feature set",
+     kBackForwardCache_ExtendedSupport, 1, nullptr},
 };
 
 #if defined(OS_CHROMEOS)
@@ -3080,6 +3080,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeColorsCustomColorPickerDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeColorsCustomColorPicker)},
 
+    {"ntp-confirm-suggestion-removals",
+     flag_descriptions::kNtpConfirmSuggestionRemovalsName,
+     flag_descriptions::kNtpConfirmSuggestionRemovalsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kConfirmNtpSuggestionRemovals)},
+
     {"ntp-customization-menu-v2",
      flag_descriptions::kNtpCustomizationMenuV2Name,
      flag_descriptions::kNtpCustomizationMenuV2Description, kOsDesktop,
@@ -3142,19 +3147,21 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kDownloadRename)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"update-notification-scheduling-integration",
+     flag_descriptions::kUpdateNotificationSchedulingIntegrationName,
+     flag_descriptions::kUpdateNotificationSchedulingIntegrationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kUpdateNotificationSchedulingIntegration)},
+#endif
+
     {"download-resumption-without-strong-validators",
      flag_descriptions::kDownloadResumptionWithoutStrongValidatorsName,
      flag_descriptions::kDownloadResumptionWithoutStrongValidatorsDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(
          download::features::kAllowDownloadResumptionWithoutStrongValidators)},
-
-#if defined(OS_ANDROID)
-    {"auto-fetch-on-net-error-page",
-     flag_descriptions::kAutoFetchOnNetErrorPageName,
-     flag_descriptions::kAutoFetchOnNetErrorPageDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kAutoFetchOnNetErrorPage)},
-#endif  // defined(OS_ANDROID)
 
     {"tab-hover-cards", flag_descriptions::kTabHoverCardsName,
      flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
@@ -4670,6 +4677,12 @@ const FeatureEntry kFeatureEntries[] = {
          kCrOSActionRecorderVariations,
          "CrOSActionRecorderTypeVariations")},
 #endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
+    {"mixed-content-setting", flag_descriptions::kMixedContentSiteSettingName,
+     flag_descriptions::kMixedContentSiteSettingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMixedContentSiteSetting)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

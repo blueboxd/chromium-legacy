@@ -836,7 +836,7 @@ void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
          layout_view_.GetFrameView()->ShouldThrottleRendering());
 #endif
 
-  if (GraphicsLayer* root_layer = RootGraphicsLayer())
+  if (GraphicsLayer* root_layer = PaintRootGraphicsLayer())
     UpdateTrackingRasterInvalidationsRecursive(root_layer);
 }
 

@@ -1,0 +1,38 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/closure_compiler/compile_js.gni")
+
+js_type_check("closure_compile") {
+  deps = [
+    ":audio_settings",
+    ":battery_settings",
+    ":bluetooth_settings",
+    ":device_emulator_pages",
+    ":input_device_settings",
+  ]
+}
+
+js_library("audio_settings") {
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("bluetooth_settings") {
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("battery_settings") {
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("input_device_settings") {
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
+js_library("device_emulator_pages") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}

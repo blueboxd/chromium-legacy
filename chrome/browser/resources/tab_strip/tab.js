@@ -5,6 +5,7 @@
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 
+import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {TabData, TabNetworkState, TabsApiProxy} from './tabs_api_proxy.js';
@@ -18,6 +19,13 @@ export class TabElement extends CustomElement {
 
   constructor() {
     super();
+
+    this.alertIndicatorsEl_ = /** @type {!AlertIndicatorsElement} */
+        (this.shadowRoot.querySelector('tabstrip-alert-indicators'));
+    // Normally, custom elements will get upgraded automatically once added to
+    // the DOM, but TabElement may need to update properties on
+    // AlertIndicatorElement before this happens, so upgrade it manually.
+    customElements.upgrade(this.alertIndicatorsEl_);
 
     /** @private {!HTMLElement} */
     this.closeButtonEl_ =
@@ -77,7 +85,7 @@ export class TabElement extends CustomElement {
         'loading_',
         !tab.shouldHideThrobber &&
             tab.networkState === TabNetworkState.LOADING);
-    this.toggleAttribute('pinned_', tab.pinned);
+    this.toggleAttribute('pinned', tab.pinned);
     this.toggleAttribute('blocked_', tab.blocked);
     this.setAttribute('draggable', tab.pinned);
     this.toggleAttribute('crashed_', tab.crashed);
@@ -98,6 +106,11 @@ export class TabElement extends CustomElement {
 
     // Expose the ID to an attribute to allow easy querySelector use
     this.setAttribute('data-tab-id', tab.id);
+
+    this.alertIndicatorsEl_.updateAlertStates(tab.alertStates)
+        .then((alertIndicatorsCount) => {
+          this.toggleAttribute('has-alert-states_', alertIndicatorsCount > 0);
+        });
 
     if (!this.tab_ || this.tab_.id !== tab.id) {
       this.tabsApi_.trackThumbnailForTab(tab.id);

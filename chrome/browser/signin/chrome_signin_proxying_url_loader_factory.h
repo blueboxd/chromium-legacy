@@ -11,7 +11,9 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 #include <memory>
@@ -40,7 +42,7 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
       std::unique_ptr<HeaderModificationDelegate> delegate,
       content::WebContents::Getter web_contents_getter,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      network::mojom::URLLoaderFactoryPtrInfo target_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       DisconnectCallback on_disconnect);
   ~ProxyingURLLoaderFactory() override;
 
@@ -86,7 +88,7 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
   std::set<std::unique_ptr<InProgressRequest>, base::UniquePtrComparator>
       requests_;
-  network::mojom::URLLoaderFactoryPtr target_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
   DisconnectCallback on_disconnect_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyingURLLoaderFactory);

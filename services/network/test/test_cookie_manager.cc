@@ -36,10 +36,9 @@ void TestCookieManager::AddCookieChangeListener(
 }
 
 void TestCookieManager::DispatchCookieChange(
-    const net::CanonicalCookie& cookie,
-    network::mojom::CookieChangeCause cause) {
+    const net::CookieChangeInfo& change) {
   for (auto& cookie_change_listener_ : cookie_change_listeners_) {
-    cookie_change_listener_->OnCookieChange(cookie, cause);
+    cookie_change_listener_->OnCookieChange(change);
   }
 }
 

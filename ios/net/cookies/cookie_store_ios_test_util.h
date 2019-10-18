@@ -76,8 +76,7 @@ class ScopedTestingCookieStoreIOSClient {
 
 void RecordCookieChanges(std::vector<net::CanonicalCookie>* out_cookies,
                          std::vector<bool>* out_removes,
-                         const net::CanonicalCookie& cookie,
-                         net::CookieChangeCause cause);
+                         const net::CookieChangeInfo& change);
 
 // Sets a cookie.
 void SetCookie(const std::string& cookie_line,

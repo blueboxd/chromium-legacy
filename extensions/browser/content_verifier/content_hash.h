@@ -16,6 +16,7 @@
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -58,19 +59,20 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     base::Version extension_version;
 
     // Fetch parameters.
-    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        url_loader_factory_remote;
     GURL fetch_url;
 
     // The key used to validate verified_contents.json.
     ContentVerifierKey verifier_key;
 
-    FetchKey(
-        const ExtensionId& extension_id,
-        const base::FilePath& extension_root,
-        const base::Version& extension_version,
-        network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info,
-        const GURL& fetch_url,
-        ContentVerifierKey verifier_key);
+    FetchKey(const ExtensionId& extension_id,
+             const base::FilePath& extension_root,
+             const base::Version& extension_version,
+             mojo::PendingRemote<network::mojom::URLLoaderFactory>
+                 url_loader_factory_remote,
+             const GURL& fetch_url,
+             ContentVerifierKey verifier_key);
     ~FetchKey();
 
     FetchKey(FetchKey&& other);

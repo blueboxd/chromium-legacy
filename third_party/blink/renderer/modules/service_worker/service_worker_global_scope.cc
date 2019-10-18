@@ -1956,8 +1956,7 @@ void ServiceWorkerGlobalScope::DispatchPaymentRequestEvent(
 }
 
 void ServiceWorkerGlobalScope::DispatchCookieChangeEvent(
-    const WebCanonicalCookie& cookie,
-    ::network::mojom::CookieChangeCause change_cause,
+    network::mojom::blink::CookieChangeInfoPtr change,
     DispatchCookieChangeEventCallback callback) {
   DCHECK(IsContextThread());
   int event_id = timeout_timer_->StartEvent(
@@ -1974,7 +1973,8 @@ void ServiceWorkerGlobalScope::DispatchCookieChangeEvent(
 
   HeapVector<Member<CookieListItem>> changed;
   HeapVector<Member<CookieListItem>> deleted;
-  CookieChangeEvent::ToEventInfo(cookie, change_cause, changed, deleted);
+  CookieChangeEvent::ToEventInfo(change->cookie, change->cause, changed,
+                                 deleted);
   Event* event = ExtendableCookieChangeEvent::Create(
       event_type_names::kCookiechange, std::move(changed), std::move(deleted),
       observer);

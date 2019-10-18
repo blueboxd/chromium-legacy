@@ -700,8 +700,10 @@ bool PasswordFormManager::ProvisionallySave(
                               base::Time::Now())) {
     parsed_submitted_form_->username_value = possible_username->value;
     metrics_recorder_->set_possible_username_used(true);
-    votes_uploader_.set_single_username_vote_data(
-        possible_username->renderer_id, possible_username->form_predictions);
+    if (possible_username->form_predictions) {
+      votes_uploader_.set_single_username_vote_data(
+          possible_username->renderer_id, *possible_username->form_predictions);
+    }
   }
   CreatePendingCredentials();
   return true;

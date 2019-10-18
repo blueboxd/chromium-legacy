@@ -17,7 +17,8 @@
 #include "content/public/browser/video_capture_service.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 
@@ -214,12 +215,14 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
 
   auto ui_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 #if defined(OS_CHROMEOS)
-  video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
+  mojo::PendingRemote<video_capture::mojom::AcceleratorFactory>
+      accelerator_factory;
   if (!create_accelerator_factory_cb_)
     create_accelerator_factory_cb_ =
         base::BindRepeating(&CreateAcceleratorFactory);
-  mojo::MakeStrongBinding(create_accelerator_factory_cb_.Run(),
-                          mojo::MakeRequest(&accelerator_factory));
+  mojo::MakeSelfOwnedReceiver(
+      create_accelerator_factory_cb_.Run(),
+      accelerator_factory.InitWithNewPipeAndPassReceiver());
   GetVideoCaptureService().InjectGpuDependencies(
       std::move(accelerator_factory));
 #endif  // defined(OS_CHROMEOS)

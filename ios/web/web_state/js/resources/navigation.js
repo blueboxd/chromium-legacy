@@ -63,6 +63,14 @@ __gCrWeb['replaceWebViewURL'] = function(url, stateObject) {
   originalWindowHistoryReplaceState.call(history, stateObject, '', url);
 };
 
+function DataCloneError() {
+  // The name and code for this error are defined by the WebIDL spec. See
+  // https://heycam.github.io/webidl/#datacloneerror
+  this.name = 'DataCloneError';
+  this.code = 25;
+  this.message = "Cyclic structures are not supported.";
+}
+
 /**
  * Intercepts window.history methods so native code can differentiate between
  * same-document navigation that are state navigations vs. hash navigations.
@@ -73,10 +81,18 @@ __gCrWeb['replaceWebViewURL'] = function(url, stateObject) {
  */
 window.history.pushState = function(stateObject, pageTitle, pageUrl) {
   __gCrWeb.message.invokeOnHost({'command': 'navigation.willChangeState'});
-  // Calling stringify() on undefined causes a JSON parse error.
-  var serializedState = typeof (stateObject) == 'undefined' ?
-      '' :
-      __gCrWeb.common.JSONStringify(stateObject);
+
+  // JSONStringify throws an exception when given a cyclical object. This
+  // internal implementation detail should not be exposed to callers of
+  // pushState. Instead, throw a standard exception when stringification fails.
+  try {
+    // Calling stringify() on undefined causes a JSON parse error.
+    var serializedState = typeof (stateObject) == 'undefined' ?
+        '' :
+        __gCrWeb.common.JSONStringify(stateObject);
+  } catch (e) {
+    throw new DataCloneError();
+  }
   pageUrl = pageUrl || window.location.href;
   originalWindowHistoryPushState.call(history, stateObject, pageTitle, pageUrl);
   __gCrWeb.message.invokeOnHost({
@@ -90,10 +106,18 @@ window.history.pushState = function(stateObject, pageTitle, pageUrl) {
 window.history.replaceState = function(stateObject, pageTitle, pageUrl) {
   __gCrWeb.message.invokeOnHost({'command': 'navigation.willChangeState'});
 
-  // Calling stringify() on undefined causes a JSON parse error.
-  var serializedState = typeof (stateObject) == 'undefined' ?
-      '' :
-      __gCrWeb.common.JSONStringify(stateObject);
+ // JSONStringify throws an exception when given a cyclical object. This
+ // internal implementation detail should not be exposed to callers of
+ // replaceState. Instead, throw a standard exception when stringification
+ // fails.
+  try {
+    // Calling stringify() on undefined causes a JSON parse error.
+    var serializedState = typeof (stateObject) == 'undefined' ?
+        '' :
+        __gCrWeb.common.JSONStringify(stateObject);
+  } catch (e) {
+    throw new DataCloneError();
+  }
   pageUrl = pageUrl || window.location.href;
   originalWindowHistoryReplaceState.call(
       history, stateObject, pageTitle, pageUrl);

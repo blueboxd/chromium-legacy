@@ -252,22 +252,6 @@ base::string16 IntentPickerBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_WITH);
 }
 
-base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button != ui::DIALOG_BUTTON_OK) {
-    return l10n_util::GetStringUTF16(
-        IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME);
-  }
-
-  if (icon_type_ == PageActionIconType::kClickToCall) {
-    return l10n_util::GetStringUTF16(
-        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL);
-  }
-
-  DCHECK(icon_type_ == PageActionIconType::kIntentPicker);
-  return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN);
-}
-
 IntentPickerBubbleView::IntentPickerBubbleView(
     views::View* anchor_view,
     PageActionIconView* icon_view,
@@ -285,6 +269,16 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       show_remember_selection_(show_remember_selection),
       icon_view_(icon_view),
       icon_type_(icon_type) {
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          icon_type_ == PageActionIconType::kClickToCall
+              ? IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_CALL_BUTTON_LABEL
+              : IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME));
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 

@@ -37,8 +37,6 @@ source_set("browser") {
     "chrome_constants.h",
     "chrome_root_coordinator.h",
     "chrome_root_coordinator.mm",
-    "chrome_switches.cc",
-    "chrome_switches.h",
     "chrome_url_util.h",
     "chrome_url_util.mm",
     "file_metadata_util.h",
@@ -57,17 +55,12 @@ source_set("browser") {
     "notification_promo.h",
     "pref_names.cc",
     "pref_names.h",
-    "procedural_block_types.h",
-    "system_flags.h",
-    "system_flags.mm",
   ]
 
   deps = [
     ":settings_resources",
     "//base",
-    "//build:branding_buildflags",
     "//components/autofill/core/browser",
-    "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/dom_distiller/core",
     "//components/feature_engagement",
@@ -99,7 +92,6 @@ source_set("browser") {
     "//components/ukm/ios:features",
     "//components/unified_consent",
     "//components/url_formatter",
-    "//components/variations",
     "//components/variations/net",
     "//components/variations/service",
     "//components/version_info",
@@ -108,14 +100,12 @@ source_set("browser") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/app_launcher:feature_flags",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/browsing_data:feature_flags",
     "//ios/chrome/browser/complex_tasks",
     "//ios/chrome/browser/crash_report:flags",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/find_in_page:feature_flags",
     "//ios/chrome/browser/itunes_urls",
-    "//ios/chrome/browser/passwords:feature_flags",
     "//ios/chrome/browser/payments:constants",
     "//ios/chrome/browser/reading_list:features",
     "//ios/chrome/browser/signin:feature_flags",
@@ -125,7 +115,6 @@ source_set("browser") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/dialogs:feature_flags",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
-    "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/omnibox",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",
     "//ios/chrome/browser/ui/toolbar_container:feature_flags",
@@ -137,7 +126,6 @@ source_set("browser") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
     "//ios/web/common",
-    "//ios/web/common:web_view_creation_util",
     "//ios/web/public",
     "//net",
     "//rlz/buildflags",
@@ -146,12 +134,35 @@ source_set("browser") {
   public_deps = [
     ":chrome_paths",
     ":chrome_url_constants",
+    ":utils",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/browser_state",
   ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("utils") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "chrome_switches.cc",
+    "chrome_switches.h",
+    "procedural_block_types.h",
+    "system_flags.h",
+    "system_flags.mm",
+  ]
+  deps = [
+    "//base",
+    "//build:branding_buildflags",
+    "//components/autofill/core/common",
+    "//components/password_manager/core/common",
+    "//components/variations",
+    "//ios/chrome/browser/browsing_data:feature_flags",
+    "//ios/chrome/browser/passwords:feature_flags",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/infobars:feature_flags",
+  ]
 }
 
 source_set("chrome_url_constants") {
@@ -218,7 +229,6 @@ source_set("browser_impl") {
     "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/translate",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/update_client",
     "//ios/chrome/common",
     "//ios/chrome/common/app_group",

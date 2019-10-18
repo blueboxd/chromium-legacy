@@ -152,8 +152,6 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
-
-  UpdateBorder();
 }
 
 BrowserAppMenuButton::~BrowserAppMenuButton() {}
@@ -284,18 +282,9 @@ void BrowserAppMenuButton::UpdateIcon() {
           ui::MaterialDesignController::touch_ui(), GetPromoHighlightColor()));
 }
 
-void BrowserAppMenuButton::SetTrailingMargin(int margin) {
-  gfx::Insets* const internal_padding = GetProperty(views::kInternalPaddingKey);
-  if (internal_padding->right() == margin)
-    return;
-  internal_padding->set_right(margin);
-  UpdateBorder();
-  InvalidateLayout();
-}
-
 void BrowserAppMenuButton::OnTouchUiChanged() {
   UpdateIcon();
-  UpdateBorder();
+  UpdateColorsAndInsets();
   PreferredSizeChanged();
 }
 
@@ -310,13 +299,6 @@ const char* BrowserAppMenuButton::GetClassName() const {
   return "BrowserAppMenuButton";
 }
 
-void BrowserAppMenuButton::UpdateBorder() {
-  gfx::Insets new_insets = GetLayoutInsets(TOOLBAR_BUTTON) +
-                           *GetProperty(views::kInternalPaddingKey);
-  if (!border() || border()->GetInsets() != new_insets)
-    SetBorder(views::CreateEmptyBorder(new_insets));
-}
-
 base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
   if (promo_feature_) {
     return ToolbarButton::AdjustHighlightColorForContrast(
@@ -327,21 +309,6 @@ base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
   }
 
   return base::nullopt;
-}
-
-gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {
-  gfx::Rect bounds = GetBoundsInScreen();
-  gfx::Insets insets = GetToolbarInkDropInsets(this);
-  // If the button is extended, don't inset the trailing edge. The anchored menu
-  // should extend to the screen edge as well so the menu is easier to hit
-  // (Fitts's law).
-  // TODO(pbos): Make sure the button is aware of that it is being extended or
-  // not (margin_trailing_ cannot be used as it can be 0 in fullscreen on
-  // Touch). When this is implemented, use 0 as a replacement for
-  // margin_trailing_ in fullscreen only. Always keep the rest.
-  insets.Set(insets.top(), 0, insets.bottom(), 0);
-  bounds.Inset(insets);
-  return bounds;
 }
 
 bool BrowserAppMenuButton::GetDropFormats(

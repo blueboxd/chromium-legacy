@@ -6,7 +6,10 @@
 
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/resource_context.h"
+#include "weblayer/browser/browser_controller_impl.h"
+#include "weblayer/public/download_delegate.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
@@ -24,6 +27,38 @@ class ResourceContextImpl : public content::ResourceContext {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResourceContextImpl);
+};
+
+class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate {
+ public:
+  DownloadManagerDelegateImpl() = default;
+  ~DownloadManagerDelegateImpl() override = default;
+
+  bool InterceptDownloadIfApplicable(
+      const GURL& url,
+      const std::string& user_agent,
+      const std::string& content_disposition,
+      const std::string& mime_type,
+      const std::string& request_origin,
+      int64_t content_length,
+      bool is_transient,
+      content::WebContents* web_contents) override {
+    // If there's no DownloadDelegate, the download is simply dropped.
+    auto* browser = BrowserControllerImpl::FromWebContents(web_contents);
+    if (!browser)
+      return true;
+
+    DownloadDelegate* delegate = browser->download_delegate();
+    if (!delegate)
+      return true;
+
+    delegate->DownloadRequested(url, user_agent, content_disposition, mime_type,
+                                content_length);
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateImpl);
 };
 
 }  // namespace
@@ -50,7 +85,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
   bool IsOffTheRecord() override { return path_.empty(); }
 
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override {
-    return nullptr;
+    return &download_delegate_;
   }
 
   content::ResourceContext* GetResourceContext() override {
@@ -108,6 +143,7 @@ class ProfileImpl::BrowserContextImpl : public content::BrowserContext {
  private:
   base::FilePath path_;
   std::unique_ptr<ResourceContextImpl> resource_context_;
+  DownloadManagerDelegateImpl download_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextImpl);
 };

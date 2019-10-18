@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
@@ -58,6 +59,12 @@ const uint64_t kFirstSavedTime =
     5;  // Totally random number chosen by dice roll. ;)
 const uint32_t kMaxNumMillisToWait = 2019;
 const int kMaxFdsSimpleCache = 10;
+
+// Known colliding key values taken from SimpleCacheCreateCollision unittest.
+const std::string kCollidingKey1 =
+    "\xfb\x4e\x9c\x1d\x66\x71\xf7\x54\xa3\x11\xa0\x7e\x16\xa5\x68\xf6";
+const std::string kCollidingKey2 =
+    "\xbc\x60\x64\x92\xbc\xa0\x5c\x15\x17\x93\x29\x2d\xe4\x21\xbd\x03";
 
 #define IOTYPES_APPLY(F) \
   F(WriteData)           \
@@ -228,7 +235,15 @@ inline base::RepeatingCallback<void(int)> GetIOCallback(IOType iot) {
 }
 
 std::string ToKey(uint64_t key_num) {
-  return "Key" + std::to_string(key_num);
+  // Use one of the two colliding key values in 1% of executions.
+  if (key_num % 100 == 99)
+    return kCollidingKey1;
+  if (key_num % 100 == 98)
+    return kCollidingKey2;
+
+  // Otherwise, use a value based on the key id and fuzzy padding.
+  std::string padding(key_num & 0xFFFF, 'A');
+  return "Key" + padding + base::NumberToString(key_num);
 }
 
 net::RequestPriority GetRequestPriority(
@@ -420,6 +435,11 @@ bool DiskCacheLPMFuzzer::IsValidEntry(EntryInfo* ei) {
 
 void DiskCacheLPMFuzzer::RunCommands(
     const disk_cache_fuzzer::FuzzCommands& commands) {
+  // Skip too long command sequences, they are counterproductive for fuzzing.
+  // The number was chosen empirically using the existing fuzzing corpus.
+  if (commands.fuzz_commands_size() > 129)
+    return;
+
   uint32_t mask =
       commands.has_set_mask() ? (commands.set_mask() ? 0x1 : 0xf) : 0;
   net::CacheType type =

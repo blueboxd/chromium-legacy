@@ -12,10 +12,20 @@
       "transform": 1
     },
     {
+      "name": "ContentsLayer for LayoutImage IMG class='accelerated blended'",
+      "bounds": [160, 90],
+      "transform": 1
+    },
+    {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
       "bounds": [160, 90],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
+      "transform": 2
+    },
+    {
+      "name": "ContentsLayer for LayoutImage IMG class='accelerated blended'",
+      "bounds": [160, 90],
       "transform": 2
     },
     {

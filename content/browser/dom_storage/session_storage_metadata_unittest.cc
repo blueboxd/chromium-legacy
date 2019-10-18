@@ -487,7 +487,6 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
     for (; it->Valid(); it->Next()) {
       if (!it->key().starts_with(leveldb::Slice("namespace-")))
         break;
-      leveldb::mojom::KeyValuePtr kv = leveldb::mojom::KeyValue::New();
       values.emplace_back(leveldb::GetVectorFor(it->key()),
                           leveldb::GetVectorFor(it->value()));
     }

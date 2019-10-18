@@ -20,7 +20,9 @@
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -136,18 +138,21 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
 class MockFrameSinkVideoConsumerFrameCallbacks
     : public viz::mojom::FrameSinkVideoConsumerFrameCallbacks {
  public:
-  MockFrameSinkVideoConsumerFrameCallbacks() : binding_(this) {}
+  MockFrameSinkVideoConsumerFrameCallbacks() = default;
 
-  void Bind(viz::mojom::FrameSinkVideoConsumerFrameCallbacksRequest request) {
+  void Bind(
+      mojo::PendingReceiver<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+          receiver) {
     DCHECK_NOT_ON_DEVICE_THREAD();
-    binding_.Bind(std::move(request));
+    receiver_.Bind(std::move(receiver));
   }
 
   MOCK_METHOD0(Done, void());
   MOCK_METHOD1(ProvideFeedback, void(double utilization));
 
  private:
-  mojo::Binding<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> binding_;
+  mojo::Receiver<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> receiver_{
+      this};
 };
 
 // Mock for the VideoFrameReceiver, the point-of-injection of video frames into
@@ -365,16 +370,16 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
     memset(region.mapping.memory(), GetFrameFillValue(frame_number),
            region.mapping.size());
 
-    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks_ptr;
-    callbacks->Bind(mojo::MakeRequest(&callbacks_ptr));
-    // |callbacks_ptr| is bound on the main thread, so it needs to be re-bound
-    // to the device thread before calling OnFrameCaptured().
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        callbacks_remote;
+    callbacks->Bind(callbacks_remote.InitWithNewPipeAndPassReceiver());
+    // |callbacks_remote| is bound on the main thread, so it needs to be
+    // re-bound to the device thread before calling OnFrameCaptured().
     POST_DEVICE_TASK(base::BindOnce(
         [](FrameSinkVideoCaptureDevice* device,
            base::ReadOnlySharedMemoryRegion data, int frame_number,
-           mojo::InterfacePtrInfo<
-               viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
-               callbacks_info) {
+           mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+               callbacks_remote) {
           device->OnFrameCaptured(
               std::move(data),
               media::mojom::VideoFrameInfo::New(
@@ -382,12 +387,10 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
                   base::Value(base::Value::Type::DICTIONARY), kFormat,
                   kResolution, gfx::Rect(kResolution),
                   gfx::ColorSpace::CreateREC709(), nullptr),
-              gfx::Rect(kResolution),
-              viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr(
-                  std::move(callbacks_info)));
+              gfx::Rect(kResolution), std::move(callbacks_remote));
         },
         base::Unretained(device_.get()), std::move(region.region), frame_number,
-        callbacks_ptr.PassInterface()));
+        std::move(callbacks_remote)));
   }
 
   // Returns a byte value based on the given |frame_number|.

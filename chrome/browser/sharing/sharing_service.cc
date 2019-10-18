@@ -216,7 +216,10 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
   if (!IsSyncEnabled())
     return nullptr;
 
-  return device_info_tracker_->GetDeviceInfo(guid);
+  std::unique_ptr<syncer::DeviceInfo> device_info =
+      device_info_tracker_->GetDeviceInfo(guid);
+  return CloneDevice(device_info.get(),
+                     GetDeviceNames(device_info.get()).full_name);
 }
 
 SharingService::SharingDeviceList SharingService::GetDeviceCandidates(
@@ -278,16 +281,40 @@ void SharingService::SendMessageToDevice(
                      SharingSendMessageResult::kAckTimeout),
       kSendMessageTimeout);
 
-  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
+  // TODO(crbug/1015411): Here we assume caller gets |device_guid| from
+  // GetDeviceCandidates, so both DeviceInfoTracker and LocalDeviceInfoProvider
+  // are already ready. It's better to queue up the message and wait until
+  // DeviceInfoTracker and LocalDeviceInfoProvider are ready.
+  base::Optional<syncer::DeviceInfo::SharingInfo> target_sharing_info =
       sync_prefs_->GetSharingInfo(device_guid);
-  if (!sharing_info) {
+  if (!target_sharing_info) {
     InvokeSendMessageCallback(message_guid, message_type,
                               SharingSendMessageResult::kDeviceNotFound);
     return;
   }
 
+  const syncer::DeviceInfo* local_device_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  if (!local_device_info) {
+    InvokeSendMessageCallback(message_guid, message_type,
+                              SharingSendMessageResult::kInternalError);
+    return;
+  }
+
+  std::unique_ptr<syncer::DeviceInfo> sender_device_info = CloneDevice(
+      local_device_info, GetDeviceNames(local_device_info).full_name);
+  sender_device_info->set_sharing_info(
+      sync_prefs_->GetLocalSharingInfo(local_device_info));
+
+  if (!sender_device_info->sharing_info()) {
+    InvokeSendMessageCallback(message_guid, message_type,
+                              SharingSendMessageResult::kInternalError);
+    return;
+  }
+
   fcm_sender_->SendMessageToDevice(
-      std::move(*sharing_info), time_to_live, std::move(message),
+      std::move(*target_sharing_info), time_to_live, std::move(message),
+      std::move(sender_device_info),
       base::BindOnce(&SharingService::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                      message_guid, message_type));

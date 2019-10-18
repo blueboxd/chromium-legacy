@@ -116,6 +116,10 @@ void TabGroupHeader::VisualsChanged() {
                                       title_chip_->GetPreferredSize())));
 }
 
+void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {
+  widget->RemoveObserver(&editor_bubble_tracker_);
+}
+
 void TabGroupHeader::EditorBubbleTracker::Opened(views::Widget* bubble_widget) {
   DCHECK(bubble_widget);
   DCHECK(!is_open_);

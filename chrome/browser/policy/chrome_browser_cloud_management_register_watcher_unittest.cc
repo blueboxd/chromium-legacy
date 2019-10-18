@@ -21,7 +21,7 @@ using ::testing::_;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using RegisterResult =
-    policy::MachineLevelUserCloudPolicyController::RegisterResult;
+    policy::ChromeBrowserCloudManagementController::RegisterResult;
 
 namespace policy {
 
@@ -31,18 +31,18 @@ constexpr char kEnrollmentToken[] = "enrollment-token";
 constexpr char kDMToken[] = "dm-token";
 constexpr char kClientId[] = "client-id";
 
-// A fake MachineLevelUserCloudPolicyController that notifies all observers the
-// machine level user cloud policy enrollment process has been finished.
-class FakeMachineLevelUserCloudPolicyController
-    : public MachineLevelUserCloudPolicyController {
+// A fake ChromeBrowserCloudManagementController that notifies all observers the
+// chrome browser cloud management enrollment process has been finished.
+class FakeChromeBrowserCloudManagementController
+    : public ChromeBrowserCloudManagementController {
  public:
-  FakeMachineLevelUserCloudPolicyController() = default;
+  FakeChromeBrowserCloudManagementController() = default;
   void FireNotification(bool succeeded) {
     NotifyPolicyRegisterFinished(succeeded);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeMachineLevelUserCloudPolicyController);
+  DISALLOW_COPY_AND_ASSIGN(FakeChromeBrowserCloudManagementController);
 };
 
 // A mock EnterpriseStartDialog to mimic the behavior of real dialog.
@@ -100,7 +100,7 @@ class ChromeBrowserCloudManagementRegisterWatcherTest : public ::testing::Test {
 
  protected:
   FakeBrowserDMTokenStorage* storage() { return &storage_; }
-  FakeMachineLevelUserCloudPolicyController* controller() {
+  FakeChromeBrowserCloudManagementController* controller() {
     return &controller_;
   }
   ChromeBrowserCloudManagementRegisterWatcher* watcher() { return &watcher_; }
@@ -115,7 +115,7 @@ class ChromeBrowserCloudManagementRegisterWatcherTest : public ::testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
 
-  FakeMachineLevelUserCloudPolicyController controller_;
+  FakeChromeBrowserCloudManagementController controller_;
   ChromeBrowserCloudManagementRegisterWatcher watcher_;
   FakeBrowserDMTokenStorage storage_;
   std::unique_ptr<MockEnterpriseStartupDialog> dialog_;
@@ -147,7 +147,7 @@ TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest, EnrollmentSucceed) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          &FakeChromeBrowserCloudManagementController::FireNotification,
           base::Unretained(controller()), true));
   EXPECT_EQ(RegisterResult::kEnrollmentSuccess,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
@@ -173,7 +173,7 @@ TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          &FakeChromeBrowserCloudManagementController::FireNotification,
           base::Unretained(controller()), true));
   EXPECT_EQ(RegisterResult::kEnrollmentSuccess,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
@@ -201,7 +201,7 @@ TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          &FakeChromeBrowserCloudManagementController::FireNotification,
           base::Unretained(controller()), false));
   EXPECT_EQ(RegisterResult::kQuitDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
@@ -229,7 +229,7 @@ TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          &FakeChromeBrowserCloudManagementController::FireNotification,
           base::Unretained(controller()), false));
   EXPECT_EQ(RegisterResult::kRestartDueToFailure,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());
@@ -325,7 +325,7 @@ TEST_F(ChromeBrowserCloudManagementRegisterWatcherTest,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &FakeMachineLevelUserCloudPolicyController::FireNotification,
+          &FakeChromeBrowserCloudManagementController::FireNotification,
           base::Unretained(controller()), false));
   EXPECT_EQ(RegisterResult::kEnrollmentFailedSilently,
             watcher()->WaitUntilCloudPolicyEnrollmentFinished());

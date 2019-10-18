@@ -262,6 +262,17 @@ void Service::OnLockStateChanged(bool locked) {
   UpdateListeningState();
 }
 
+void Service::OnAssistantConsentStatusChanged(int consent_status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Notify device apps status when user accepts activity control.
+  if (assistant_manager_service_ &&
+      assistant_manager_service_->GetState() ==
+          AssistantManagerService::State::RUNNING) {
+    assistant_manager_service_->SyncDeviceAppsStatus();
+  }
+}
+
 void Service::OnAssistantHotwordAlwaysOn(bool hotword_always_on) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No need to update hotword status if power source is connected.

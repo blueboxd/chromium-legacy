@@ -41,19 +41,24 @@ TEST(QuicHttpUtilsTest, ConvertQuicPriorityToRequestPriority) {
 }
 
 TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
+  // Supported versions are versions A and C, the alt service
+  // versions are versions B and C. FilterSupportedAltSvcVersions
+  // finds the intersection of the two sets ... version C.  Note that
+  // as QUIC versions are defined/undefined, the exact version numbers
+  // used may need to change.
   quic::ParsedQuicVersionVector supported_versions = {
-      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46),
-      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_39),
+      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_47),
+      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43),
   };
 
-  std::vector<uint32_t> alt_svc_versions_google = {quic::QUIC_VERSION_46,
-                                                   quic::QUIC_VERSION_43};
+  std::vector<uint32_t> alt_svc_versions_google = {quic::QUIC_VERSION_47,
+                                                   quic::QUIC_VERSION_46};
   std::vector<uint32_t> alt_svc_versions_ietf = {
-      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_46),
-      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_43)};
+      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_47),
+      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_46)};
 
   quic::ParsedQuicVersionVector supported_alt_svc_versions = {
-      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46)};
+      ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_47)};
   spdy::SpdyAltSvcWireFormat::AlternativeService altsvc;
 
   altsvc.protocol_id = "quic";

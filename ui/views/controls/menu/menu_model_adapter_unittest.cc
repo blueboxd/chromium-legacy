@@ -213,6 +213,9 @@ void CheckSubmenu(const RootModel& model,
 
     // Check type.
     switch (model_item.type) {
+      case ui::MenuModel::TYPE_TITLE:
+        EXPECT_EQ(views::MenuItemView::TITLE, item->GetType());
+        break;
       case ui::MenuModel::TYPE_COMMAND:
         EXPECT_EQ(views::MenuItemView::NORMAL, item->GetType());
         break;
@@ -287,6 +290,9 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
 
     // Check type.
     switch (model_item.type) {
+      case ui::MenuModel::TYPE_TITLE:
+        EXPECT_EQ(views::MenuItemView::TITLE, item->GetType());
+        break;
       case ui::MenuModel::TYPE_COMMAND:
         EXPECT_EQ(views::MenuItemView::NORMAL, item->GetType());
         break;

@@ -531,9 +531,6 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
   if (!window_host)
     return static_cast<gfx::NativeViewAccessible>(NULL);
 
-  if (legacy_render_widget_host_HWND_)
-    return legacy_render_widget_host_HWND_->GetOrCreateWindowRootAccessible();
-
   BrowserAccessibilityManager* manager =
       host()->GetOrCreateRootBrowserAccessibilityManager();
   if (manager)

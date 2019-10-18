@@ -1,1 +1,6 @@
-# These tests currently fail when run with --enable-features=BackForwardCache
+# Every android_browsertests are failing on the android-bfcache-debug bot and
+# are passing locally.
+# See https://crbug.com/1014981
+#
+# This filter enables only one test. This prevents the bot from timing out.
+AndroidBrowserTest.Smoke

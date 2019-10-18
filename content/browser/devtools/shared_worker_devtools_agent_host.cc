@@ -88,7 +88,9 @@ void SharedWorkerDevToolsAgentHost::DetachSession(DevToolsSession* session) {
 }
 
 bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {
-  return instance_.Matches(worker_host->instance());
+  return instance_.Matches(worker_host->instance().url(),
+                           worker_host->instance().name(),
+                           worker_host->instance().constructor_origin());
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection(

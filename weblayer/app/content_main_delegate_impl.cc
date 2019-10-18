@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -22,8 +23,12 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
+#include "base/android/locale_utils.h"
+#include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
 #include "content/public/browser/android/compositor.h"
+#include "ui/base/resource/resource_bundle_android.h"
+#include "ui/base/ui_base_switches.h"
 #include "weblayer/browser/android_descriptors.h"
 #endif
 
@@ -118,34 +123,49 @@ int ContentMainDelegateImpl::RunProcess(
 
 void ContentMainDelegateImpl::InitializeResourceBundle() {
 #if defined(OS_ANDROID)
-  // On Android, the renderer runs with a different UID and can never access
-  // the file system. Use the file descriptor passed in at launch time.
-  auto* global_descriptors = base::GlobalDescriptors::GetInstance();
-  int pak_fd = global_descriptors->MaybeGet(kPakDescriptor);
-  base::MemoryMappedFile::Region pak_region;
-  if (pak_fd >= 0) {
-    pak_region = global_descriptors->GetRegion(kPakDescriptor);
-  } else {
-    pak_fd = base::android::OpenApkAsset(
-        std::string("assets/") + params_.pak_name, &pak_region);
-    if (pak_fd < 0) {
-      base::FilePath pak_file;
-      bool r = base::PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_file);
-      DCHECK(r);
-      pak_file = pak_file.Append(FILE_PATH_LITERAL("paks"));
-      pak_file = pak_file.AppendASCII(params_.pak_name);
-      int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-      pak_fd = base::File(pak_file, flags).TakePlatformFile();
-      pak_region = base::MemoryMappedFile::Region::kWholeFile;
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  bool is_browser_process =
+      command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+  if (is_browser_process) {
+    ui::SetLocalePaksStoredInApk(true);
+    std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
+        base::android::GetDefaultLocaleString(), nullptr,
+        ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+    if (locale.empty()) {
+      LOG(WARNING) << "Failed to load locale .pak from apk.";
     }
-    global_descriptors->Set(kPakDescriptor, pak_fd, pak_region);
+    base::i18n::SetICUDefaultLocale(locale);
+
+    // Try to directly mmap the resources.pak from the apk. Fall back to load
+    // from file, using PATH_SERVICE, otherwise.
+    base::FilePath pak_file_path;
+    base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
+    pak_file_path = pak_file_path.AppendASCII("resources.pak");
+    ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
+  } else {
+    base::i18n::SetICUDefaultLocale(
+        command_line.GetSwitchValueASCII(switches::kLang));
+
+    auto* global_descriptors = base::GlobalDescriptors::GetInstance();
+    int pak_fd = global_descriptors->Get(kWebLayerLocalePakDescriptor);
+    base::MemoryMappedFile::Region pak_region =
+        global_descriptors->GetRegion(kWebLayerLocalePakDescriptor);
+    ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
+                                                            pak_region);
+
+    std::pair<int, ui::ScaleFactor> extra_paks[] = {
+        {kWebLayerMainPakDescriptor, ui::SCALE_FACTOR_NONE},
+        {kWebLayer100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
+
+    for (const auto& pak_info : extra_paks) {
+      pak_fd = global_descriptors->Get(pak_info.first);
+      pak_region = global_descriptors->GetRegion(pak_info.first);
+      ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+          base::File(pak_fd), pak_region, pak_info.second);
+    }
   }
-  DCHECK_GE(pak_fd, 0);
-  // This is clearly wrong. See crbug.com/330930
-  ui::ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
-                                                          pak_region);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-      base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
 #else
   base::FilePath pak_file;
   bool r = base::PathService::Get(base::DIR_ASSETS, &pak_file);

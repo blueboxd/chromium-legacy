@@ -58,6 +58,8 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
                    sk_sp<SkColorSpace> color_space);
   ~ImageContextImpl() final;
 
+  void OnContextLost() final;
+
   RenderPassId render_pass_id() const { return render_pass_id_; }
   GrMipMapped mipmap() const { return mipmap_; }
 

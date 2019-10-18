@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
-#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/page_rule_collector.h"
 #include "third_party/blink/renderer/core/css/part_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -66,7 +65,6 @@
 #include "third_party/blink/renderer/core/css/resolver/css_variable_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
-#include "third_party/blink/renderer/core/css/resolver/media_query_result.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
@@ -90,6 +88,9 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -312,6 +313,38 @@ static void MatchSlottedRules(const Element& element,
   }
 }
 
+const static TextTrack* GetTextTrackFromElement(const Element& element) {
+  if (auto* vtt_element = DynamicTo<VTTElement>(element))
+    return vtt_element->GetTrack();
+  if (auto* vtt_cue_background_box = DynamicTo<VTTCueBackgroundBox>(element))
+    return vtt_cue_background_box->GetTrack();
+  return nullptr;
+}
+
+static void MatchVTTRules(const Element& element,
+                                  ElementRuleCollector& collector) {
+  const TextTrack* text_track = GetTextTrackFromElement(element);
+  if (!text_track)
+    return;
+  const HeapVector<Member<CSSStyleSheet>>& styles =
+      text_track->GetCSSStyleSheets();
+  if (!styles.IsEmpty()) {
+    int style_sheet_index = 0;
+    collector.ClearMatchedRules();
+    for (CSSStyleSheet* style : styles) {
+      RuleSet* rule_set =
+          element.GetDocument().GetStyleEngine().RuleSetForSheet(*style);
+      if (rule_set) {
+        collector.CollectMatchingRules(
+            MatchRequest(rule_set, nullptr /* scope */, style,
+                         style_sheet_index, true /* is_from_webvtt */));
+        style_sheet_index++;
+      }
+    }
+    collector.SortAndTransferMatchedRules();
+  }
+}
+
 // Matches rules from the element's scope. The selectors may cross shadow
 // boundaries during matching, like for :host-context.
 static void MatchElementScopeRules(const Element& element,
@@ -324,6 +357,7 @@ static void MatchElementScopeRules(const Element& element,
     collector.SortAndTransferMatchedRules();
   }
 
+  MatchVTTRules(element, collector);
   if (element.IsStyledElement() && element.InlineStyle() &&
       !collector.IsCollectingForPseudoElement()) {
     // Inline style is immutable as long as there is no CSSOM wrapper.

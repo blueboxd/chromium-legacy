@@ -22,6 +22,12 @@
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
       "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "transform": 1
     }
   ],
   "transforms": [

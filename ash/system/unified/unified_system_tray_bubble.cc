@@ -103,6 +103,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   int max_height = CalculateMaxHeight();
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
+  controller_->ResetToCollapsedIfRequired();
   bubble_view_->AddChildView(new ContainerView(unified_view_));
 
   bubble_view_->set_color(SK_ColorTRANSPARENT);

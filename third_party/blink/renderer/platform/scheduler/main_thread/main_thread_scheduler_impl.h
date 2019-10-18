@@ -215,9 +215,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void AddRAILModeObserver(RAILModeObserver* observer) override;
   void RemoveRAILModeObserver(RAILModeObserver const* observer) override;
   void SetRendererProcessType(WebRendererProcessType type) override;
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
-      const char* name,
-      WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   PendingUserInputInfo GetPendingUserInputInfo() const override;
   bool IsBeginMainFrameScheduled() const override;
 
@@ -856,7 +853,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         renderer_pause_count;  // Renderer is paused if non-zero.
     TraceableState<RAILMode, TracingCategoryName::kInfo>
         rail_mode_for_tracing;  // Don't use except for tracing.
-    TraceableState<bool, TracingCategoryName::kDebug> renderer_hidden;
+    TraceableState<bool, TracingCategoryName::kTopLevel> renderer_hidden;
     TraceableState<bool, TracingCategoryName::kTopLevel> renderer_backgrounded;
     TraceableState<bool, TracingCategoryName::kDefault>
         keep_active_fetch_or_worker;

@@ -66,6 +66,8 @@ class CORE_EXPORT ColorChooserPopupUIController final
   void DidClosePopup() override;
 
  private:
+  ChromeClient& GetChromeClient() override;
+
   void OpenPopup();
   void Dispose();
 

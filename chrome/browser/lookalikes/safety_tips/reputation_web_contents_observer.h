@@ -36,11 +36,10 @@ class ReputationWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
-  // Returns the type of the Safety Tip (if any) that was assigned to the
+  // Returns the info about the Safety Tip (if any) that was assigned to the
   // currently visible navigation entry. This field will be set even if the UI
   // was not actually shown because the feature was disabled.
-  security_state::SafetyTipStatus GetSafetyTipStatusForVisibleNavigation()
-      const;
+  security_state::SafetyTipInfo GetSafetyTipInfoForVisibleNavigation() const;
 
   // Allows tests to register a callback to be called when the next reputation
   // check finishes.
@@ -67,12 +66,12 @@ class ReputationWebContentsObserver
   void MaybeCallReputationCheckCallback();
 
   Profile* profile_;
-  // Used to cache the last safety tip type (and associated navigation entry ID)
+  // Used to cache the last safety tip info (and associated navigation entry ID)
   // so that Page Info can fetch this information without performing a
-  // reputation check. Resets to kNone on new top frame navigations. Set even if
-  // the feature to show the UI is disabled.
-  security_state::SafetyTipStatus last_navigation_safety_tip_status_ =
-      security_state::SafetyTipStatus::kNone;
+  // reputation check. Resets type to kNone and safe_url to empty on new top
+  // frame navigations. Set even if the feature to show the UI is disabled.
+  security_state::SafetyTipInfo last_navigation_safety_tip_info_;
+
   int last_safety_tip_navigation_entry_id_ = 0;
 
   base::OnceClosure reputation_check_callback_for_testing_;

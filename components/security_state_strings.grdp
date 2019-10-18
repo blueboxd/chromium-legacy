@@ -143,9 +143,11 @@
   </message>
 
   <!-- Safety tips -->
-
-  <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_SUMMARY" desc="Message to display in devtools security tab when the page you are on triggered a safety tip.">
-    This page is suspicious.
+  <message name="IDS_SECURITY_TAB_SAFETY_TIP_TITLE" desc="Title of the devtools security tab when the page you are on triggered a safety tip.">
+    This page is suspicious (flagged by Chrome).
+  </message>
+  <message name="IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_SUMMARY" desc="Message to display in devtools security tab when the page you are on triggered a safety tip.">
+    This page is suspicious
   </message>
   <message name="IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION" desc="Body of
     message to display in devtools security tab when you are viewing a page that

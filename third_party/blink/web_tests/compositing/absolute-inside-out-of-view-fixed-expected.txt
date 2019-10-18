@@ -11,6 +11,12 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='fixed'",
       "bounds": [100, 100],
       "contentsOpaque": true
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

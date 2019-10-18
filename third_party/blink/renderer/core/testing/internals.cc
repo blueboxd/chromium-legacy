@@ -2088,10 +2088,6 @@ String Internals::elementLayerTreeAsText(
     Element* element,
     ExceptionState& exception_state) const {
   DCHECK(element);
-  LocalFrameView* frame_view = element->GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
-
   return elementLayerTreeAsText(element, 0, exception_state);
 }
 
@@ -2156,7 +2152,10 @@ String Internals::elementLayerTreeAsText(
     unsigned flags,
     ExceptionState& exception_state) const {
   DCHECK(element);
-  element->GetDocument().UpdateStyleAndLayout();
+
+  LocalFrameView* frame_view = element->GetDocument().View();
+  frame_view->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object || !layout_object->IsBox()) {
@@ -2175,7 +2174,8 @@ String Internals::elementLayerTreeAsText(
   }
 
   return GraphicsLayerTreeAsTextForTesting(
-      layer->GetCompositedLayerMapping()->MainGraphicsLayer(), flags);
+      layer->GetCompositedLayerMapping()->MainGraphicsLayer(),
+      flags | kOutputAsLayerTree);
 }
 
 String Internals::scrollingStateTreeAsText(Document*) const {

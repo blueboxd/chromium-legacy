@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/skia/include/core/SkFilterQuality.h"
 
 namespace blink {
 
@@ -509,15 +510,20 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           std::move(serialized_script_value_->MojoHandles()[index]));
     }
     case kOffscreenCanvasTransferTag: {
-      uint32_t width = 0, height = 0, canvas_id = 0, client_id = 0, sink_id = 0;
+      uint32_t width = 0, height = 0, canvas_id = 0, client_id = 0, sink_id = 0,
+               filter_quality = 0;
       if (!ReadUint32(&width) || !ReadUint32(&height) ||
           !ReadUint32(&canvas_id) || !ReadUint32(&client_id) ||
-          !ReadUint32(&sink_id))
+          !ReadUint32(&sink_id) || !ReadUint32(&filter_quality))
         return nullptr;
       OffscreenCanvas* canvas = OffscreenCanvas::Create(
           ExecutionContext::From(GetScriptState()), width, height);
       canvas->SetPlaceholderCanvasId(canvas_id);
       canvas->SetFrameSinkId(client_id, sink_id);
+      if (filter_quality == 0)
+        canvas->SetFilterQuality(kNone_SkFilterQuality);
+      else
+        canvas->SetFilterQuality(kLow_SkFilterQuality);
       return canvas;
     }
     case kReadableStreamTransferTag: {

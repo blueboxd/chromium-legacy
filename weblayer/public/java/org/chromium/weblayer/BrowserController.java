@@ -11,6 +11,7 @@ import android.webkit.ValueCallback;
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
+import org.chromium.weblayer_private.aidl.IDownloadDelegateClient;
 import org.chromium.weblayer_private.aidl.IFullscreenDelegateClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
@@ -20,6 +21,7 @@ public final class BrowserController {
     private FullscreenDelegateClientImpl mFullscreenDelegateClient;
     private final NavigationController mNavigationController;
     private final ObserverList<BrowserObserver> mObservers;
+    private DownloadDelegateClientImpl mDownloadDelegateClient;
 
     BrowserController(IBrowserController impl) {
         mImpl = impl;
@@ -33,6 +35,20 @@ public final class BrowserController {
         mNavigationController = NavigationController.create(mImpl);
     }
 
+    public void setDownloadDelegate(DownloadDelegate delegate) {
+        try {
+            if (delegate != null) {
+                mDownloadDelegateClient = new DownloadDelegateClientImpl(delegate);
+                mImpl.setDownloadDelegateClient(mDownloadDelegateClient);
+            } else {
+                mDownloadDelegateClient = null;
+                mImpl.setDownloadDelegateClient(null);
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public void setFullscreenDelegate(FullscreenDelegate delegate) {
         try {
             if (delegate != null) {
@@ -44,6 +60,10 @@ public final class BrowserController {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
+    }
+
+    public DownloadDelegate getDownloadDelegate() {
+        return mDownloadDelegateClient != null ? mDownloadDelegateClient.getDelegate() : null;
     }
 
     public FullscreenDelegate getFullscreenDelegate() {
@@ -92,6 +112,25 @@ public final class BrowserController {
             for (BrowserObserver observer : mObservers) {
                 observer.loadProgressChanged(progress);
             }
+        }
+    }
+
+    private final class DownloadDelegateClientImpl extends IDownloadDelegateClient.Stub {
+        private final DownloadDelegate mDelegate;
+
+        DownloadDelegateClientImpl(DownloadDelegate delegate) {
+            mDelegate = delegate;
+        }
+
+        public DownloadDelegate getDelegate() {
+            return mDelegate;
+        }
+
+        @Override
+        public void downloadRequested(String url, String userAgent, String contentDisposition,
+                String mimetype, long contentLength) {
+            mDelegate.downloadRequested(
+                    url, userAgent, contentDisposition, mimetype, contentLength);
         }
     }
 

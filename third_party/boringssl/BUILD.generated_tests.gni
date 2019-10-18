@@ -129,6 +129,7 @@ crypto_test_data = [
   "src/crypto/evp/scrypt_tests.txt",
   "src/crypto/fipsmodule/aes/aes_tests.txt",
   "src/crypto/fipsmodule/bn/bn_tests.txt",
+  "src/crypto/fipsmodule/bn/miller_rabin_tests.txt",
   "src/crypto/fipsmodule/ec/ec_scalar_base_mult_tests.txt",
   "src/crypto/fipsmodule/ec/p256-x86_64_tests.txt",
   "src/crypto/fipsmodule/ecdsa/ecdsa_sign_tests.txt",

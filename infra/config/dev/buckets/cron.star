@@ -30,6 +30,8 @@ builder(
     name = 'Snapshot Builder',
     executable = luci.recipe(name = 'snapshots/builder'),
     os = os.LINUX_DEFAULT,
+    # TODO(smut): Adjust frequency
+    schedule = 'with 300s interval',
     service_account = 'snapshot-builder@chops-service-accounts.iam.gserviceaccount.com',
 )
 

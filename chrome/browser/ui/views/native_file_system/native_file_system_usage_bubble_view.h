@@ -10,11 +10,9 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/base/models/table_model.h"
-#include "ui/views/controls/button/button.h"
 #include "url/origin.h"
 
-class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView,
-                                        public views::ButtonListener {
+class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
  public:
   struct Usage {
     Usage();
@@ -63,17 +61,15 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView,
 
   // LocationBarBubbleDelegateView:
   base::string16 GetAccessibleWindowTitle() const override;
-  int GetDialogButtons() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
   void Init() override;
+  bool Cancel() override;
+  bool Close() override;
   void WindowClosing() override;
   void CloseBubble() override;
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  std::unique_ptr<views::View> CreateExtraView() override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Singleton instance of the bubble. The bubble can only be shown on the
   // active browser window, so there is no case in which it will be shown

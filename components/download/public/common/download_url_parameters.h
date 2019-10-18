@@ -305,6 +305,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   }
   bool prompt() const { return save_info_.prompt_for_save_location; }
   const GURL& url() const { return url_; }
+  void set_url(GURL url) { url_ = std::move(url); }
   bool do_not_prompt_for_login() const { return do_not_prompt_for_login_; }
   network::mojom::RedirectMode cross_origin_redirects() const {
     return cross_origin_redirects_;

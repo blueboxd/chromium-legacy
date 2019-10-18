@@ -444,7 +444,7 @@ bool OpaqueBrowserFrameView::IsTabStripVisible() const {
 
 bool OpaqueBrowserFrameView::IsToolbarVisible() const {
   return browser_view()->IsToolbarVisible() &&
-      !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
+         !browser_view()->toolbar()->GetPreferredSize().IsEmpty();
 }
 
 int OpaqueBrowserFrameView::GetTabStripHeight() const {
@@ -704,8 +704,8 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(
 
 void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(
     gfx::Canvas* canvas) const {
-  frame_background_->set_maximized_top_inset(
-      GetTopInset(true) - GetTopInset(false));
+  frame_background_->set_maximized_top_inset(GetTopInset(true) -
+                                             GetTopInset(false));
   frame_background_->PaintMaximized(canvas, this);
 }
 
@@ -713,18 +713,12 @@ void OpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
   const bool tabstrip_visible = browser_view()->IsTabStripVisible();
   const gfx::Rect client_bounds =
       layout_->CalculateClientAreaBounds(width(), height());
-  int y = client_bounds.y();
-  // If the toolbar isn't going to draw a top edge for us, draw one ourselves.
-  if (!tabstrip_visible) {
-    canvas->DrawLine(gfx::Point(client_bounds.x(), client_bounds.y() - 1),
-                     gfx::Point(client_bounds.right(), client_bounds.y() - 1),
-                     GetToolbarTopSeparatorColor());
-  }
 
   // In maximized mode, the only edge to draw is the top one, so we're done.
   if (IsFrameCondensed())
     return;
 
+  int y = client_bounds.y();
   const gfx::Rect toolbar_bounds = browser_view()->toolbar()->bounds();
   if (tabstrip_visible) {
     // The client edges start at the top of the toolbar.

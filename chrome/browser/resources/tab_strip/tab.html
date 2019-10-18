@@ -66,7 +66,7 @@
                 opacity 0ms;
   }
 
-  :host([pinned_]) #faviconContainer {
+  :host([pinned]) #faviconContainer {
     margin: 0;
   }
 
@@ -168,11 +168,16 @@
   }
 
   #titleText {
+    flex: 1;
     font-size: 100%;
     font-weight: normal;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  :host([has-alert-states_]) #titleText {
+    margin-inline-end: 4px;
   }
 
   #close {
@@ -186,7 +191,6 @@
     flex-shrink: 0;
     height: 100%;
     justify-content: center;
-    margin-inline-start: auto;
     padding: 0;
     position: relative;
     width: 36px;
@@ -224,19 +228,23 @@
   }
 
   /* Pinned tab styles */
-  :host([pinned_]) {
+  :host([pinned]) {
     height: var(--tabstrip-pinned-tab-size);
     width: var(--tabstrip-pinned-tab-size);
   }
 
-  :host([pinned_]) #title {
+  :host([pinned]) #title {
     border-block-end: 0;
     height: 100%;
   }
 
-  :host([pinned_]) #titleText,
-  :host([pinned_]) #close,
-  :host([pinned_]) #thumbnail {
+  :host([pinned]) #titleText,
+  :host([pinned]) #close,
+  :host([pinned]) #thumbnail {
+    display: none;
+  }
+
+  :host([pinned][has-alert-states_]) #faviconContainer {
     display: none;
   }
 
@@ -268,6 +276,7 @@
       <div id="blocked"></div>
     </div>
     <h2 id="titleText"></h2>
+    <tabstrip-alert-indicators></tabstrip-alert-indicators>
     <button id="close">
       <span id="closeIcon"></span>
     </button>

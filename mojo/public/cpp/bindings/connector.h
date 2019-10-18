@@ -227,6 +227,13 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // validation).
   bool DispatchMessage(Message message);
 
+  // Posts a task to dispatch the next message in |dispatch_queue_|. These two
+  // functions keep |num_pending_dispatch_tasks_| up to date, so as to allow
+  // bounding the number of posted tasks when the Connector is e.g. paused and
+  // resumed repeatedly.
+  void PostDispatchNextMessageInQueue();
+  void CallDispatchNextMessageInQueue();
+
   // Used to schedule dispatch of a single message from the front of
   // |dispatch_queue_|. Returns |true| if the dispatch succeeded and |false|
   // otherwise (e.g. if the message failed validation).
@@ -327,6 +334,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // |true| iff the Connector is currently dispatching a message. Used to detect
   // nested dispatch operations.
   bool is_dispatching_ = false;
+
+  // The number of outstanding tasks for CallDispatchNextMessageInQueue.
+  size_t num_pending_dispatch_tasks_ = 0;
 
 #if defined(ENABLE_IPC_FUZZER)
   std::unique_ptr<MessageReceiver> message_dumper_;

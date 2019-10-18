@@ -26,6 +26,12 @@
     {
       "name": "LayoutNGBlockFlow HTML (foreground) Layer",
       "bounds": [785, 1021]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

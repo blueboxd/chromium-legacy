@@ -60,6 +60,8 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
       StopSpeakerIdEnrollmentCallback callback) override;
   void SyncSpeakerIdEnrollmentStatus() override;
 
+  void SyncDeviceAppsStatus(base::OnceCallback<void(bool)> callback);
+
   void UpdateServerDeviceSettings();
 
  private:
@@ -68,6 +70,8 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
   void HandleStopSpeakerIdEnrollment(base::RepeatingCallback<void()> callback);
   void HandleSpeakerIdEnrollmentStatusSync(
       const assistant_client::SpeakerIdEnrollmentStatus& status);
+  void HandleDeviceAppsStatusSync(base::OnceCallback<void(bool)> callback,
+                                  const std::string& settings);
 
   ash::AssistantStateBase* assistant_state();
   mojom::AssistantController* assistant_controller();

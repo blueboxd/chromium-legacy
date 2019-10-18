@@ -475,6 +475,10 @@ Element& InternalPopupMenu::OwnerElement() {
   return *owner_element_;
 }
 
+ChromeClient& InternalPopupMenu::GetChromeClient() {
+  return *chrome_client_;
+}
+
 Locale& InternalPopupMenu::GetLocale() {
   return Locale::DefaultLocale();
 }

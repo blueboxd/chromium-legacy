@@ -24,7 +24,6 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
-#include "services/network/cookie_managers_shared.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -113,21 +112,24 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 
  private:
   // net::CookieChangeDispatcher callback.
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      net::CookieChangeCause cause) {
+  void OnCookieChange(const net::CookieChangeInfo& change) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!cookie.IncludeForRequestURL(url_, options_).IsInclude())
+    if (!change.cookie
+             .IncludeForRequestURL(url_, options_, change.access_semantics)
+             .IsInclude()) {
       return;
+    }
 
     // When a user blocks a site's access to cookies, the existing cookies are
     // not deleted. This check prevents the site from observing their cookies
     // being deleted at a later time, which can happen due to eviction or due to
     // the user explicitly deleting all cookies.
     if (!restricted_cookie_manager_->cookie_settings()->IsCookieAccessAllowed(
-            url_, site_for_cookies_, top_frame_origin_))
+            url_, site_for_cookies_, top_frame_origin_)) {
       return;
+    }
 
-    mojo_listener_->OnCookieChange(cookie, ToCookieChangeCause(cause));
+    mojo_listener_->OnCookieChange(change);
   }
 
   // The CookieChangeDispatcher subscription used by this listener.

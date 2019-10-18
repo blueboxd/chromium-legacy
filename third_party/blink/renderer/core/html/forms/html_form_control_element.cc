@@ -24,7 +24,6 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -60,19 +59,16 @@ void HTMLFormControlElement::Trace(Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-void HTMLFormControlElement::formAction(USVStringOrTrustedURL& result) const {
+String HTMLFormControlElement::formAction() const {
   const AtomicString& action = FastGetAttribute(kFormactionAttr);
   if (action.IsEmpty()) {
-    result.SetUSVString(GetDocument().Url());
-    return;
+    return GetDocument().Url();
   }
-  result.SetUSVString(
-      GetDocument().CompleteURL(StripLeadingAndTrailingHTMLSpaces(action)));
+  return GetDocument().CompleteURL(StripLeadingAndTrailingHTMLSpaces(action));
 }
 
-void HTMLFormControlElement::setFormAction(const USVStringOrTrustedURL& value,
-                                           ExceptionState& exception_state) {
-  setAttribute(kFormactionAttr, value, exception_state);
+void HTMLFormControlElement::setFormAction(const AtomicString& value) {
+  setAttribute(kFormactionAttr, value);
 }
 
 String HTMLFormControlElement::formEnctype() const {

@@ -118,6 +118,9 @@ bool IsDownloadAllowedBySafeBrowsing(
     case Result::ASYNC_SCANNING:
     case Result::BLOCKED_PASSWORD_PROTECTED:
     case Result::BLOCKED_TOO_LARGE:
+    case Result::SENSITIVE_CONTENT_BLOCK:
+    case Result::SENSITIVE_CONTENT_WARNING:
+    case Result::DEEP_SCANNED_SAFE:
       NOTREACHED();
       return true;
   }

@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script_url.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -111,14 +110,6 @@ bool TrustedTypePolicyFactory::isScriptURL(ScriptState* script_state,
          wrapper_type_info->Equals(V8TrustedScriptURL::GetWrapperTypeInfo());
 }
 
-bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
-                                     const ScriptValue& script_value) {
-  const WrapperTypeInfo* wrapper_type_info =
-      GetWrapperTypeInfoFromScriptValue(script_state, script_value);
-  return wrapper_type_info &&
-         wrapper_type_info->Equals(V8TrustedURL::GetWrapperTypeInfo());
-}
-
 TrustedHTML* TrustedTypePolicyFactory::emptyHTML() const {
   return empty_html_.Get();
 }
@@ -136,20 +127,8 @@ const struct {
   bool is_not_property : 1;
   bool is_not_attribute : 1;
 } kTypeTable[] = {
-    {"a", "href", nullptr, SpecificTrustedType::kTrustedURL},
-    {"area", "href", nullptr, SpecificTrustedType::kTrustedURL},
-    {"audio", "src", nullptr, SpecificTrustedType::kTrustedURL},
-    {"base", "href", nullptr, SpecificTrustedType::kTrustedURL},
-    {"button", "formAction", nullptr, SpecificTrustedType::kTrustedURL},
     {"embed", "src", nullptr, SpecificTrustedType::kTrustedScriptURL},
-    {"form", "action", nullptr, SpecificTrustedType::kTrustedURL},
-    {"frame", "src", nullptr, SpecificTrustedType::kTrustedURL},
-    {"iframe", "src", nullptr, SpecificTrustedType::kTrustedURL},
     {"iframe", "srcdoc", nullptr, SpecificTrustedType::kTrustedHTML},
-    {"img", "src", nullptr, SpecificTrustedType::kTrustedURL},
-    {"input", "formAction", nullptr, SpecificTrustedType::kTrustedURL},
-    {"input", "src", nullptr, SpecificTrustedType::kTrustedURL},
-    {"link", "href", nullptr, SpecificTrustedType::kTrustedURL},
     {"object", "codeBase", nullptr, SpecificTrustedType::kTrustedScriptURL},
     {"object", "data", nullptr, SpecificTrustedType::kTrustedScriptURL},
     {"script", "innerText", nullptr, SpecificTrustedType::kTrustedScript, false,
@@ -159,9 +138,6 @@ const struct {
      true},
     {"script", "textContent", nullptr, SpecificTrustedType::kTrustedScript,
      false, true},
-    {"source", "src", nullptr, SpecificTrustedType::kTrustedURL},
-    {"track", "src", nullptr, SpecificTrustedType::kTrustedURL},
-    {"video", "src", nullptr, SpecificTrustedType::kTrustedURL},
     {"*", "innerHTML", nullptr, SpecificTrustedType::kTrustedHTML, false, true},
     {"*", "outerHTML", nullptr, SpecificTrustedType::kTrustedHTML, false, true},
     {"*", "on*", nullptr, SpecificTrustedType::kTrustedScript, true, false},
@@ -202,8 +178,6 @@ String getTrustedTypeName(SpecificTrustedType type) {
       return "TrustedScript";
     case SpecificTrustedType::kTrustedScriptURL:
       return "TrustedScriptURL";
-    case SpecificTrustedType::kTrustedURL:
-      return "TrustedURL";
     case SpecificTrustedType::kNone:
       return String();
   }

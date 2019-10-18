@@ -1100,6 +1100,32 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_rfh_a.WaitUntilDeleted();
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SubframeWithOngoingNavigationNotCached) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/hung");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to a page with an iframe.
+  TestNavigationObserver navigation_observer1(web_contents());
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/back_forward_cache/page_with_hung_iframe.html"));
+  shell()->LoadURL(main_url);
+  navigation_observer1.WaitForNavigationFinished();
+
+  RenderFrameHostImpl* main_frame = current_frame_host();
+  RenderFrameDeletedObserver frame_deleted_observer(main_frame);
+  response.WaitForRequest();
+
+  // Navigate away.
+  TestNavigationObserver navigation_observer2(web_contents());
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  navigation_observer2.WaitForNavigationFinished();
+
+  // The page with the unsupported feature should be deleted (not cached).
+  frame_deleted_observer.WaitUntilDeleted();
+}
+
 // Check that unload event handlers are not dispatched when the page goes
 // into BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2176,7 +2202,7 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
 
  protected:
   base::FieldTrialParams GetFeatureParams() override {
-    return {{"service_worker_supported", "true"}};
+    return {{"experimental extended supported feature set", "true"}};
   }
 };
 
@@ -2278,6 +2304,10 @@ class GeolocationBackForwardCacheBrowserTest
     : public BackForwardCacheBrowserTest {
  protected:
   GeolocationBackForwardCacheBrowserTest() : geo_override_(0.0, 0.0) {}
+
+  base::FieldTrialParams GetFeatureParams() override {
+    return {{"experimental extended supported feature set", "true"}};
+  }
 
   device::ScopedGeolocationOverrider geo_override_;
 };
@@ -2959,6 +2989,69 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Navigate away. |redirect_target_url|'s page should not be cached.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   delete_observer_rfh.WaitUntilDeleted();
+}
+
+namespace {
+
+const char kResponseWithNoCache[] =
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: text/html; charset=utf-8\r\n"
+    "Cache-Control: no-store\r\n"
+    "\r\n"
+    "The server speaks HTTP!";
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       MainFrameWithNoStoreNotCached) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/main_document");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/main_document"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1. Load the document and specify no-store for the main resource.
+  TestNavigationObserver observer(web_contents());
+  shell()->LoadURL(url_a);
+  response.WaitForRequest();
+  response.Send(kResponseWithNoCache);
+  response.Done();
+  observer.Wait();
+
+  // 2. Navigate away and expect frame to be deleted.
+  RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  delete_observer_rfh_a.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeWithNoStoreCached) {
+  // iframe will try to load title1.html.
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/title1.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Load the document and specify no-store for the main resource.
+  TestNavigationObserver observer(web_contents());
+  shell()->LoadURL(url_a);
+  response.WaitForRequest();
+  response.Send(kResponseWithNoCache);
+  response.Done();
+  observer.Wait();
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 3) Navigate back and expect everything to be restored.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_EQ(rfh_a, current_frame_host());
 }
 
 }  // namespace content

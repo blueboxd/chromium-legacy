@@ -121,9 +121,9 @@ constexpr base::FeatureParam<int>
 constexpr base::FeatureParam<int>
     SiteCharacteristicsDatabaseParams::kNotificationsUsageObservationWindow;
 constexpr base::FeatureParam<int>
-    SiteCharacteristicsDatabaseParams::kTitleOrFaviconChangeGracePeriod;
+    SiteCharacteristicsDatabaseParams::kTitleOrFaviconChangePostLoadGracePeriod;
 constexpr base::FeatureParam<int>
-    SiteCharacteristicsDatabaseParams::kAudioUsageGracePeriod;
+    SiteCharacteristicsDatabaseParams::kFeatureUsagePostBackgroundGracePeriod;
 
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams() =
     default;
@@ -235,12 +235,15 @@ SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams() {
       SiteCharacteristicsDatabaseParams::kNotificationsUsageObservationWindow
           .Get());
 
-  params.title_or_favicon_change_grace_period = base::TimeDelta::FromSeconds(
-      SiteCharacteristicsDatabaseParams::kTitleOrFaviconChangeGracePeriod
-          .Get());
+  params.title_or_favicon_change_post_load_grace_period =
+      base::TimeDelta::FromSeconds(
+          SiteCharacteristicsDatabaseParams::
+              kTitleOrFaviconChangePostLoadGracePeriod.Get());
 
-  params.audio_usage_grace_period = base::TimeDelta::FromSeconds(
-      SiteCharacteristicsDatabaseParams::kAudioUsageGracePeriod.Get());
+  params.feature_usage_post_background_grace_period =
+      base::TimeDelta::FromSeconds(
+          SiteCharacteristicsDatabaseParams::
+              kFeatureUsagePostBackgroundGracePeriod.Get());
 
   return params;
 }

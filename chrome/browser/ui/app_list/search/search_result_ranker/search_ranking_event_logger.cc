@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -51,6 +52,21 @@ constexpr base::TimeDelta kDelayForHistoryService =
 // ukm::GetExponentialBucketMinForCounts1000). The first value skipped by
 // bucketing is 10.
 constexpr float kBucketExponentForSeconds = 1.045;
+
+// The UMA histogram that logs the error occurs in inference code.
+constexpr char kInferenceError[] = "Apps.AppList.AggregatedSearchRankerError";
+
+// Represents type of error in inference. These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+enum class InferenceError {
+  kUnknown = 0,
+  kLoadModelFailed = 1,
+  kCreateGraphFailed = 2,
+  kLoadExamplePreprocessorConfigFailed = 3,
+  kVectorizeFeaturesFailed = 4,
+  kInferenceExecutionFailed = 5,
+  kMaxValue = kInferenceExecutionFailed,
+};
 
 // Represents the type of a search result. The indices of these values
 // persist to logs, so existing values should not be modified.
@@ -135,20 +151,24 @@ Category CategoryFromResultType(ash::AppListSearchResultType type,
   return Category::UNKNOWN;
 }
 
+void LogInferenceError(const InferenceError& error) {
+  UMA_HISTOGRAM_ENUMERATION(kInferenceError, error);
+}
+
 int GetExponentialBucketMinForSeconds(int64_t sample) {
   return ukm::GetExponentialBucketMin(sample, kBucketExponentForSeconds);
 }
 void LoadModelCallback(LoadModelResult result) {
   if (result != LoadModelResult::OK) {
     LOG(ERROR) << "Failed to load Search Ranker model.";
-    // TODO(crbug.com/1006133): Add UMA metrics here.
+    LogInferenceError(InferenceError::kLoadModelFailed);
   }
 }
 
 void CreateGraphExecutorCallback(CreateGraphExecutorResult result) {
   if (result != CreateGraphExecutorResult::OK) {
     LOG(ERROR) << "Failed to create a Search Ranker Graph Executor.";
-    // TODO(crbug.com/1006133): Add UMA metrics here.
+    LogInferenceError(InferenceError::kCreateGraphFailed);
   }
 }
 
@@ -201,13 +221,13 @@ LoadExamplePreprocessorConfig() {
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res_id);
   if (!raw_config || !raw_config->front()) {
     LOG(ERROR) << "Failed to load SearchRanker example preprocessor config.";
-    // TODO(crbug.com/1006133): Add UMA metrics here.
+    LogInferenceError(InferenceError::kLoadExamplePreprocessorConfigFailed);
     return nullptr;
   }
 
   if (!config->ParseFromArray(raw_config->front(), raw_config->size())) {
     LOG(ERROR) << "Failed to parse SearchRanker example preprocessor config.";
-    // TODO(crbug.com/1006133): Add UMA metrics here.
+    LogInferenceError(InferenceError::kLoadExamplePreprocessorConfigFailed);
     return nullptr;
   }
 
@@ -521,7 +541,7 @@ bool SearchRankingEventLogger::PreprocessInput(
 
   if (!preprocessor_config_) {
     LOG(ERROR) << "Failed to create preprocessor config.";
-    // TODO(crbug.com/1006133): Add UMA metrics here.
+    LogInferenceError(InferenceError::kLoadExamplePreprocessorConfigFailed);
     return false;
   }
 
@@ -536,7 +556,7 @@ bool SearchRankingEventLogger::PreprocessInput(
       preprocessor_error !=
           assist_ranker::ExamplePreprocessor::kNoFeatureIndexFound) {
     LOG(ERROR) << "Failed to vectorize features using ExamplePreprocessor.";
-    // TODO(crbug.com/1006133): Add UMA metrics here.
+    LogInferenceError(InferenceError::kVectorizeFeaturesFailed);
     return false;
   }
 
@@ -605,7 +625,7 @@ void SearchRankingEventLogger::ExecuteCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != ExecuteResult::OK) {
     LOG(ERROR) << "Search Ranker inference execution failed.";
-    // TODO(crbug.com/1006133): Add UMA metrics here.
+    LogInferenceError(InferenceError::kInferenceExecutionFailed);
     return;
   }
   prediction_[id] = outputs.value()[0]->data->get_float_list()->value[0];

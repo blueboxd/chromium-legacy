@@ -23,7 +23,7 @@ aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
   ignore_ = ignore;
 
   std::vector<aura::Window*> local_process_windows =
-      DesktopWindowTreeHostLinux::GetAllOpenWindows();
+      DesktopWindowTreeHostX11::GetAllOpenWindows();
   if (std::none_of(local_process_windows.cbegin(), local_process_windows.cend(),
                    [this](auto* window) {
                      return ShouldStopIteratingAtLocalProcessWindow(window);
@@ -31,8 +31,7 @@ aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
     return nullptr;
 
   ui::EnumerateTopLevelWindows(this);
-  return DesktopWindowTreeHostLinux::GetContentWindowForWidget(
-      static_cast<gfx::AcceleratedWidget>(toplevel_));
+  return DesktopWindowTreeHostX11::GetContentWindowForXID(toplevel_);
 }
 
 XID X11TopmostWindowFinder::FindWindowAt(
@@ -46,8 +45,8 @@ bool X11TopmostWindowFinder::ShouldStopIterating(XID xid) {
   if (!ui::IsWindowVisible(xid))
     return false;
 
-  auto* window = DesktopWindowTreeHostLinux::GetContentWindowForWidget(
-      static_cast<gfx::AcceleratedWidget>(xid));
+  aura::Window* window =
+      views::DesktopWindowTreeHostX11::GetContentWindowForXID(xid);
   if (window) {
     if (ShouldStopIteratingAtLocalProcessWindow(window)) {
       toplevel_ = xid;
@@ -73,11 +72,9 @@ bool X11TopmostWindowFinder::ShouldStopIteratingAtLocalProcessWindow(
   if (!window->IsVisible())
     return false;
 
-  auto* host = DesktopWindowTreeHostLinux::GetHostForWidget(
+  DesktopWindowTreeHostX11* host = DesktopWindowTreeHostX11::GetHostForXID(
       window->GetHost()->GetAcceleratedWidget());
-  if (!static_cast<DesktopWindowTreeHostX11*>(host)
-           ->GetXRootWindowOuterBounds()
-           .Contains(screen_loc_in_pixels_))
+  if (!host->GetXRootWindowOuterBounds().Contains(screen_loc_in_pixels_))
     return false;
 
   aura::client::ScreenPositionClient* screen_position_client =

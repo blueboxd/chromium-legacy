@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/services/device_sync/device_sync_service.h"
+
 #include <memory>
 
 #include "base/bind.h"
@@ -495,16 +497,66 @@ class FakeSoftwareFeatureManagerFactory
 
 }  // namespace
 
-// TODO(jamescook): Rename to DeviceSyncImplTest because it's actually testing
-// the DeviceSync implementation.
 class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
  public:
+  class FakePrefConnectionDelegate
+      : public DeviceSyncImpl::PrefConnectionDelegate {
+   public:
+    FakePrefConnectionDelegate(
+        std::unique_ptr<TestingPrefServiceSimple> test_pref_service)
+        : test_pref_service_(std::move(test_pref_service)),
+          test_pref_registry_(
+              base::WrapRefCounted(test_pref_service_->registry())) {}
+
+    ~FakePrefConnectionDelegate() override = default;
+
+    void InvokePendingCallback() {
+      EXPECT_FALSE(pending_callback_.is_null());
+      std::move(pending_callback_).Run(std::move(test_pref_service_));
+
+      // Note: |pending_callback_| was passed from within the service, so it is
+      // necessary to let the rest of the current RunLoop run to ensure that
+      // the callback is executed before returning from this function.
+      base::RunLoop().RunUntilIdle();
+    }
+
+    bool HasStartedPrefConnection() {
+      return HasFinishedPrefConnection() || !pending_callback_.is_null();
+    }
+
+    bool HasFinishedPrefConnection() { return !test_pref_service_.get(); }
+
+    // DeviceSyncImpl::PrefConnectionDelegate:
+    scoped_refptr<PrefRegistrySimple> CreatePrefRegistry() override {
+      return test_pref_registry_;
+    }
+
+    void ConnectToPrefService(
+        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+            pref_store_connector,
+        scoped_refptr<PrefRegistrySimple> pref_registry,
+        prefs::ConnectCallback callback) override {
+      EXPECT_EQ(test_pref_service_->registry(), pref_registry.get());
+      pending_callback_ = std::move(callback);
+    }
+
+   private:
+    std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+    scoped_refptr<PrefRegistrySimple> test_pref_registry_;
+
+    prefs::ConnectCallback pending_callback_;
+  };
+
   class FakeDeviceSyncImplFactory : public DeviceSyncImpl::Factory {
    public:
     FakeDeviceSyncImplFactory(
+        std::unique_ptr<FakePrefConnectionDelegate>
+            fake_pref_connection_delegate,
         std::unique_ptr<base::MockOneShotTimer> mock_timer,
         base::SimpleTestClock* simple_test_clock)
-        : mock_timer_(std::move(mock_timer)),
+        : fake_pref_connection_delegate_(
+              std::move(fake_pref_connection_delegate)),
+          mock_timer_(std::move(mock_timer)),
           simple_test_clock_(simple_test_clock) {}
 
     ~FakeDeviceSyncImplFactory() override = default;
@@ -513,18 +565,21 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
     std::unique_ptr<DeviceSyncBase> BuildInstance(
         signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
-        PrefService* profile_prefs,
+        mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+            pref_store_connector,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
         ClientAppMetadataProvider* client_app_metadata_provider,
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         std::unique_ptr<base::OneShotTimer> timer) override {
       return base::WrapUnique(new DeviceSyncImpl(
-          identity_manager, gcm_driver, profile_prefs, gcm_device_info_provider,
-          client_app_metadata_provider, std::move(url_loader_factory),
-          simple_test_clock_, std::move(mock_timer_)));
+          identity_manager, gcm_driver, std::move(pref_store_connector),
+          gcm_device_info_provider, client_app_metadata_provider,
+          std::move(url_loader_factory), simple_test_clock_,
+          std::move(fake_pref_connection_delegate_), std::move(mock_timer_)));
     }
 
    private:
+    std::unique_ptr<FakePrefConnectionDelegate> fake_pref_connection_delegate_;
     std::unique_ptr<base::MockOneShotTimer> mock_timer_;
     base::SimpleTestClock* simple_test_clock_;
   };
@@ -549,7 +604,8 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
 
     fake_gcm_driver_ = std::make_unique<gcm::FakeGCMDriver>();
 
-    test_pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    auto test_pref_service = std::make_unique<TestingPrefServiceSimple>();
+    test_pref_service_ = test_pref_service.get();
 
     simple_test_clock_ = std::make_unique<base::SimpleTestClock>();
 
@@ -561,15 +617,15 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
     identity_test_environment_->MakePrimaryAccountAvailable(kTestEmail);
 
     fake_cryptauth_gcm_manager_factory_ =
-        std::make_unique<FakeCryptAuthGCMManagerFactory>(
-            fake_gcm_driver_.get(), test_pref_service_.get());
+        std::make_unique<FakeCryptAuthGCMManagerFactory>(fake_gcm_driver_.get(),
+                                                         test_pref_service_);
     CryptAuthGCMManagerImpl::Factory::SetInstanceForTesting(
         fake_cryptauth_gcm_manager_factory_.get());
 
     fake_cryptauth_device_manager_factory_ =
         std::make_unique<FakeCryptAuthDeviceManagerFactory>(
             simple_test_clock_.get(), fake_cryptauth_gcm_manager_factory_.get(),
-            test_pref_service_.get());
+            test_pref_service_);
     CryptAuthDeviceManagerImpl::Factory::SetInstanceForTesting(
         fake_cryptauth_device_manager_factory_.get());
 
@@ -578,14 +634,12 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
           std::make_unique<FakeClientAppMetadataProvider>();
 
       fake_cryptauth_key_registry_factory_ =
-          std::make_unique<FakeCryptAuthKeyRegistryFactory>(
-              test_pref_service_.get());
+          std::make_unique<FakeCryptAuthKeyRegistryFactory>(test_pref_service_);
       CryptAuthKeyRegistryImpl::Factory::SetFactoryForTesting(
           fake_cryptauth_key_registry_factory_.get());
 
       fake_cryptauth_scheduler_factory_ =
-          std::make_unique<FakeCryptAuthSchedulerFactory>(
-              test_pref_service_.get());
+          std::make_unique<FakeCryptAuthSchedulerFactory>(test_pref_service_);
       CryptAuthSchedulerImpl::Factory::SetFactoryForTesting(
           fake_cryptauth_scheduler_factory_.get());
 
@@ -594,7 +648,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
               fake_client_app_metadata_provider_.get(),
               fake_cryptauth_key_registry_factory_.get(),
               fake_cryptauth_gcm_manager_factory_.get(),
-              fake_cryptauth_scheduler_factory_.get(), test_pref_service_.get(),
+              fake_cryptauth_scheduler_factory_.get(), test_pref_service_,
               simple_test_clock_.get());
       CryptAuthV2EnrollmentManagerImpl::Factory::SetFactoryForTesting(
           fake_cryptauth_v2_enrollment_manager_factory_.get());
@@ -602,8 +656,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
       fake_cryptauth_enrollment_manager_factory_ =
           std::make_unique<FakeCryptAuthEnrollmentManagerFactory>(
               simple_test_clock_.get(),
-              fake_cryptauth_gcm_manager_factory_.get(),
-              test_pref_service_.get());
+              fake_cryptauth_gcm_manager_factory_.get(), test_pref_service_);
       CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(
           fake_cryptauth_enrollment_manager_factory_.get());
     }
@@ -622,12 +675,18 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
     SoftwareFeatureManagerImpl::Factory::SetInstanceForTesting(
         fake_software_feature_manager_factory_.get());
 
+    auto fake_pref_connection_delegate =
+        std::make_unique<FakePrefConnectionDelegate>(
+            std::move(test_pref_service));
+    fake_pref_connection_delegate_ = fake_pref_connection_delegate.get();
+
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
 
     fake_device_sync_impl_factory_ =
-        std::make_unique<FakeDeviceSyncImplFactory>(std::move(mock_timer),
-                                                    simple_test_clock_.get());
+        std::make_unique<FakeDeviceSyncImplFactory>(
+            std::move(fake_pref_connection_delegate), std::move(mock_timer),
+            simple_test_clock_.get());
     DeviceSyncImpl::Factory::SetInstanceForTesting(
         fake_device_sync_impl_factory_.get());
 
@@ -642,12 +701,20 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
             }));
 
     fake_device_sync_observer_ = std::make_unique<FakeDeviceSyncObserver>();
-
-    device_sync_ = DeviceSyncImpl::Factory::Get()->BuildInstance(
+    mojo::Remote<mojom::DeviceSyncServiceInitializer> initializer;
+    service_ = std::make_unique<DeviceSyncService>(
         identity_test_environment_->identity_manager(), fake_gcm_driver_.get(),
-        test_pref_service_.get(), fake_gcm_device_info_provider_.get(),
+        fake_gcm_device_info_provider_.get(),
         fake_client_app_metadata_provider_.get(), shared_url_loader_factory,
-        std::make_unique<base::OneShotTimer>());
+        initializer.BindNewPipeAndPassReceiver());
+
+    // FakePrefConnectionDelegate precludes the service ever actually sending
+    // messages over this interface, so we provided the service with a
+    // bound but disconnected endpoint.
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector;
+    ignore_result(pref_store_connector.InitWithNewPipeAndPassReceiver());
+    initializer->Initialize(remote_service_.BindNewPipeAndPassReceiver(),
+                            std::move(pref_store_connector));
   }
 
   void TearDown() override {
@@ -664,7 +731,8 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
     DBusThreadManager::Shutdown();
   }
 
-  void InitializeDeviceSync(bool device_already_enrolled_in_cryptauth) {
+  void ConnectToDeviceSyncService(bool device_already_enrolled_in_cryptauth) {
+    // Used in CompleteConnectionToPrefService().
     device_already_enrolled_in_cryptauth_ =
         device_already_enrolled_in_cryptauth;
 
@@ -678,12 +746,21 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
               device_already_enrolled_in_cryptauth);
     }
 
-    device_sync_->OnProfileInitialized();
+    remote_service_->BindDeviceSync(mojo::MakeRequest(&device_sync_));
 
     // Set |fake_device_sync_observer_|.
     CallAddObserver();
+  }
 
-    // CryptAuth classes are expected to be created and initialized.
+  void CompleteConnectionToPrefService() {
+    EXPECT_TRUE(fake_pref_connection_delegate()->HasStartedPrefConnection());
+    EXPECT_FALSE(fake_pref_connection_delegate()->HasFinishedPrefConnection());
+
+    fake_pref_connection_delegate_->InvokePendingCallback();
+    EXPECT_TRUE(fake_pref_connection_delegate()->HasFinishedPrefConnection());
+
+    // When connection to preferences is complete, CryptAuth classes are
+    // expected to be created and initialized.
     EXPECT_TRUE(fake_cryptauth_gcm_manager_factory_->instance()
                     ->has_started_listening());
     EXPECT_TRUE(fake_cryptauth_enrollment_manager()->has_started());
@@ -762,7 +839,8 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   }
 
   void InitializeServiceSuccessfully() {
-    InitializeDeviceSync(true /* device_already_enrolled_in_cryptauth */);
+    ConnectToDeviceSyncService(true /* device_already_enrolled_in_cryptauth */);
+    CompleteConnectionToPrefService();
     VerifyInitializationStatus(true /* expected_to_be_initialized */);
 
     base::RunLoop().RunUntilIdle();
@@ -786,6 +864,10 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
 
   FakeDeviceSyncObserver* fake_device_sync_observer() {
     return fake_device_sync_observer_.get();
+  }
+
+  FakePrefConnectionDelegate* fake_pref_connection_delegate() {
+    return fake_pref_connection_delegate_;
   }
 
   base::MockOneShotTimer* mock_timer() { return mock_timer_; }
@@ -1064,7 +1146,8 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   const std::vector<cryptauth::ExternalDeviceInfo> test_device_infos_;
   const std::vector<cryptauth::IneligibleDevice> test_ineligible_devices_;
 
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  TestingPrefServiceSimple* test_pref_service_;
+  FakePrefConnectionDelegate* fake_pref_connection_delegate_;
   base::MockOneShotTimer* mock_timer_;
   std::unique_ptr<base::SimpleTestClock> simple_test_clock_;
   std::unique_ptr<FakeDeviceSyncImplFactory> fake_device_sync_impl_factory_;
@@ -1091,6 +1174,9 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
   std::unique_ptr<FakeGcmDeviceInfoProvider> fake_gcm_device_info_provider_;
 
+  std::unique_ptr<DeviceSyncService> service_;
+  mojo::Remote<mojom::DeviceSyncService> remote_service_;
+
   bool device_already_enrolled_in_cryptauth_;
   bool last_force_enrollment_now_result_;
   bool last_force_sync_now_result_;
@@ -1104,7 +1190,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   base::Optional<mojom::DebugInfo> last_debug_info_result_;
 
   std::unique_ptr<FakeDeviceSyncObserver> fake_device_sync_observer_;
-  std::unique_ptr<DeviceSyncBase> device_sync_;
+  mojom::DeviceSyncPtr device_sync_;
 
   base::HistogramTester histogram_tester_;
 
@@ -1114,9 +1200,27 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncServiceTest);
 };
 
+TEST_P(DeviceSyncServiceTest, PreferencesNeverConnect) {
+  ConnectToDeviceSyncService(false /* device_already_enrolled_in_cryptauth */);
+
+  // A connection to the Preferences service should have started.
+  EXPECT_TRUE(fake_pref_connection_delegate()->HasStartedPrefConnection());
+  EXPECT_FALSE(fake_pref_connection_delegate()->HasFinishedPrefConnection());
+
+  // Do not complete the connection; without this step, the other API functions
+  // should fail.
+  VerifyApiFunctionsFailBeforeInitialization();
+
+  // No observer callbacks should have been invoked.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, fake_device_sync_observer()->num_enrollment_events());
+  EXPECT_EQ(0u, fake_device_sync_observer()->num_sync_events());
+}
+
 TEST_P(DeviceSyncServiceTest,
        DeviceNotAlreadyEnrolledInCryptAuth_FailsEnrollment) {
-  InitializeDeviceSync(false /* device_already_enrolled_in_cryptauth */);
+  ConnectToDeviceSyncService(false /* device_already_enrolled_in_cryptauth */);
+  CompleteConnectionToPrefService();
 
   // Simulate enrollment failing.
   SimulateEnrollment(false /* success */);
@@ -1137,7 +1241,8 @@ TEST_P(DeviceSyncServiceTest,
 
 TEST_P(DeviceSyncServiceTest,
        DeviceNotAlreadyEnrolledInCryptAuth_FailsEnrollment_ThenSucceeds) {
-  InitializeDeviceSync(false /* device_already_enrolled_in_cryptauth */);
+  ConnectToDeviceSyncService(false /* device_already_enrolled_in_cryptauth */);
+  CompleteConnectionToPrefService();
 
   // Initialization has not yet completed, so no devices should be available.
   EXPECT_FALSE(CallGetSyncedDevices());

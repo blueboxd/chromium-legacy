@@ -3463,7 +3463,6 @@ TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_48},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_47},
       {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43},
-      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_39},
   };
   AlternativeServiceInfoVector alternatives =
       http_server_properties_.GetAlternativeServiceInfos(origin,

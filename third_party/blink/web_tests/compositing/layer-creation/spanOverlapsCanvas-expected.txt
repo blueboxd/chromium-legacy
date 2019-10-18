@@ -12,6 +12,11 @@
       "transform": 1
     },
     {
+      "name": "ContentsLayer for LayoutHTMLCanvas CANVAS id='world'",
+      "bounds": [100, 50],
+      "transform": 1
+    },
+    {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='output')",
       "bounds": [100, 50],
       "transform": 1

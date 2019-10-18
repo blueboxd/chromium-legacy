@@ -6,11 +6,13 @@
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "components/content_settings/core/common/content_settings.h"
 #import "components/sync/base/model_type.h"
 
 @class ElementSelector;
+@class NamedGuide;
 
 // ChromeEarlGreyAppInterface contains the app-side implementation for helpers
 // that primarily work via direct model access. These helpers are compiled into
@@ -36,6 +38,10 @@
 
 // Reloads the page without waiting for the page to load.
 + (void)startReloading;
+
+// Returns the NamedGuide with the given |name|, if one is attached to |view|
+// or one of |view|'s ancestors.  If no guide is found, returns nil.
++ (NamedGuide*)guideWithName:(NSString*)name view:(UIView*)view;
 
 #pragma mark - Tab Utilities (EG2)
 

@@ -668,13 +668,14 @@ CSSStringValue* ConsumeString(CSSParserTokenRange& range) {
       range.ConsumeIncludingWhitespace().Value().ToString());
 }
 
-StringView ConsumeUrlAsStringView(CSSParserTokenRange& range) {
+StringView ConsumeUrlAsStringView(CSSParserTokenRange& range,
+                                  const CSSParserContext* context) {
+  StringView url;
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kUrlToken) {
     range.ConsumeIncludingWhitespace();
-    return token.Value();
-  }
-  if (token.FunctionId() == CSSValueID::kUrl) {
+    url = token.Value();
+  } else if (token.FunctionId() == CSSValueID::kUrl) {
     CSSParserTokenRange url_range = range;
     CSSParserTokenRange url_args = url_range.ConsumeBlock();
     const CSSParserToken& next = url_args.ConsumeIncludingWhitespace();
@@ -683,15 +684,27 @@ StringView ConsumeUrlAsStringView(CSSParserTokenRange& range) {
     DCHECK_EQ(next.GetType(), kStringToken);
     range = url_range;
     range.ConsumeWhitespace();
-    return next.Value();
+    url = next.Value();
   }
 
-  return StringView();
+  // Invalidate the URL if only data URLs are allowed and the protocol is not
+  // data.
+  if (!url.IsNull() &&
+      context->ResourceFetchRestriction() ==
+          ResourceFetchRestriction::kOnlyDataUrls &&
+      !ProtocolIs(url.ToString(), "data")) {
+    // The StringView must be instantiated with an empty string otherwise the
+    // URL will incorrectly be identified as null. The resource should behave as
+    // if it failed to load.
+    url = StringView("");
+  }
+
+  return url;
 }
 
 CSSURIValue* ConsumeUrl(CSSParserTokenRange& range,
                         const CSSParserContext* context) {
-  StringView url = ConsumeUrlAsStringView(range);
+  StringView url = ConsumeUrlAsStringView(range, context);
   if (url.IsNull())
     return nullptr;
   String url_string = url.ToString();
@@ -1758,7 +1771,8 @@ static CSSValue* ConsumeImageSet(CSSParserTokenRange& range,
   CSSParserTokenRange args = ConsumeFunction(range_copy);
   auto* image_set = MakeGarbageCollected<CSSImageSetValue>(context->Mode());
   do {
-    AtomicString url_value = ConsumeUrlAsStringView(args).ToAtomicString();
+    AtomicString url_value =
+        ConsumeUrlAsStringView(args, context).ToAtomicString();
     if (url_value.IsNull())
       return nullptr;
 
@@ -1801,7 +1815,7 @@ static bool IsGeneratedImage(CSSValueID id) {
 CSSValue* ConsumeImage(CSSParserTokenRange& range,
                        const CSSParserContext* context,
                        ConsumeGeneratedImagePolicy generated_image) {
-  AtomicString uri = ConsumeUrlAsStringView(range).ToAtomicString();
+  AtomicString uri = ConsumeUrlAsStringView(range, context).ToAtomicString();
   if (!uri.IsNull())
     return CreateCSSImageValueWithReferrer(uri, context);
   if (range.Peek().GetType() == kFunctionToken) {

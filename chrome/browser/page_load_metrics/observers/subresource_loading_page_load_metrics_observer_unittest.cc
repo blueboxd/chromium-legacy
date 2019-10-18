@@ -27,11 +27,23 @@ page_load_metrics::mojom::ResourceDataUpdatePtr CreateBaseResource(
 
 }  // namespace
 
+class TestSubresourceLoadingPageLoadMetricsObserver
+    : public SubresourceLoadingPageLoadMetricsObserver {
+ public:
+  void CallOnOriginLastVisitResult(
+      history::HistoryLastVisitToHostResult result) {
+    OnOriginLastVisitResult(result);
+  }
+};
+
 class SubresourceLoadingPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
   SubresourceLoadingPageLoadMetricsObserverTest() = default;
 
+  TestSubresourceLoadingPageLoadMetricsObserver* plm_observer() {
+    return plm_observer_;
+  }
   void set_navigation_url(const GURL& url) { navigation_url_ = url; }
   void set_in_main_frame(bool in_main_frame) { in_main_frame_ = in_main_frame; }
 
@@ -85,8 +97,10 @@ class SubresourceLoadingPageLoadMetricsObserverTest
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
-    tracker->AddObserver(
-        std::make_unique<SubresourceLoadingPageLoadMetricsObserver>());
+    std::unique_ptr<TestSubresourceLoadingPageLoadMetricsObserver> observer =
+        std::make_unique<TestSubresourceLoadingPageLoadMetricsObserver>();
+    plm_observer_ = observer.get();
+    tracker->AddObserver(std::move(observer));
   }
 
  private:
@@ -102,6 +116,7 @@ class SubresourceLoadingPageLoadMetricsObserverTest
     PopulateRequiredTimingFields(&timing_);
   }
 
+  TestSubresourceLoadingPageLoadMetricsObserver* plm_observer_ = nullptr;
   page_load_metrics::mojom::PageLoadTiming timing_;
 
   GURL navigation_url_ = kTestUrl;
@@ -327,4 +342,67 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, DontRecordForNonHttp) {
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 0);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Cached", 0);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_None) {
+  StartTest(true /* data_saver_enabled */);
+
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Fail) {
+  StartTest(true /* data_saver_enabled */);
+  plm_observer()->CallOnOriginLastVisitResult(
+      {false /* success */, base::Time()});
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
+       LastVisitToHost_NullTime) {
+  StartTest(true /* data_saver_enabled */);
+  plm_observer()->CallOnOriginLastVisitResult(
+      {true /* success */, base::Time()});
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Today) {
+  StartTest(true /* data_saver_enabled */);
+  plm_observer()->CallOnOriginLastVisitResult(
+      {true /* success */, base::Time::Now()});
+
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0, 1);
+}
+
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
+       LastVisitToHost_Yesterday) {
+  StartTest(true /* data_saver_enabled */);
+  plm_observer()->CallOnOriginLastVisitResult(
+      {true /* success */, base::Time::Now() - base::TimeDelta::FromDays(1)});
+
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 1, 1);
 }

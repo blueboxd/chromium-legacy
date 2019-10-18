@@ -12,8 +12,6 @@
 
 @class ToolbarConfiguration;
 
-const NSUInteger ControlStateSpotlighted = 0x00010000;
-
 // UIButton subclass used as a Toolbar component.
 @interface ToolbarButton : UIButton
 

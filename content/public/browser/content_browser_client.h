@@ -32,6 +32,7 @@
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -358,9 +359,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Cross-Origin Read Blocking enforcement as needed by some extensions).
   //
   // If the embedder doesn't want to override the URLLoaderFactory for the given
-  // |request_initiator|, then it should return an invalid
-  // mojo::InterfacePtrInfo.
-  virtual network::mojom::URLLoaderFactoryPtrInfo
+  // |request_initiator|, then it should return an mojo::NullRemote().
+  virtual mojo::PendingRemote<network::mojom::URLLoaderFactory>
   CreateURLLoaderFactoryForNetworkRequests(
       RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
@@ -1568,7 +1568,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const base::Optional<url::Origin>& initiating_origin,
-      network::mojom::URLLoaderFactoryPtr* out_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory);
 
   // Creates an OverlayWindow to be used for Picture-in-Picture. This window
   // will house the content shown when in Picture-in-Picture mode. This will

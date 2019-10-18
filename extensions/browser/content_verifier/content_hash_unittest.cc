@@ -196,8 +196,8 @@ class ContentHashUnittest : public ExtensionsTest {
       const std::vector<uint8_t>& content_verifier_public_key) {
     ContentHash::FetchKey key(
         extension->id(), extension->path(), extension->version(),
-        nullptr /* url_loader_factory_ptr_info */, GURL() /* fetch_url */,
-        content_verifier_public_key);
+        mojo::NullRemote() /* url_loader_factory_remote */,
+        GURL() /* fetch_url */, content_verifier_public_key);
     return ContentHashWaiter().CreateAndWaitForCallback(std::move(key),
                                                         source_type);
   }

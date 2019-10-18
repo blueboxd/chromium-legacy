@@ -64,7 +64,8 @@ enum SerializationTag {
                           // -> ImageBitmap (ref)
   kImageBitmapTransferTag =
       'G',  // index:uint32_t -> ImageBitmap. For ImageBitmap transfer
-  kOffscreenCanvasTransferTag = 'H',  // index, width, height, id:uint32_t ->
+  kOffscreenCanvasTransferTag = 'H',  // index, width, height, id,
+                                      // filter_quality::uint32_t ->
                                       // OffscreenCanvas. For OffscreenCanvas
                                       // transfer
   kReadableStreamTransferTag = 'r',   // index:uint32_t

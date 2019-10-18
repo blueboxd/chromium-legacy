@@ -64,7 +64,6 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   std::unique_ptr<views::View> CreateExtraView() override;
   std::unique_ptr<views::View> CreateFootnoteView() override;
   bool Cancel() override;

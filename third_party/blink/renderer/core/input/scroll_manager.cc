@@ -209,6 +209,17 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
   if (current_node.GetLayoutBox()->IsGlobalRootScroller())
     return true;
 
+  // If this is the main LayoutView, and it's not the root scroller, that means
+  // we have a non-default root scroller on the page. In this case, attempts to
+  // scroll the LayoutView should cause panning of the visual viewport as well
+  // so ensure it gets added to the scroll chain. See LTHI::ApplyScroll for the
+  // equivalent behavior in CC. Node::NativeApplyScroll contains a special
+  // handler for this case.
+  if (current_node.GetLayoutBox()->IsLayoutView() &&
+      current_node.GetDocument().GetFrame()->IsMainFrame()) {
+    return true;
+  }
+
   ScrollableArea* scrollable_area =
       current_node.GetLayoutBox()->GetScrollableArea();
 

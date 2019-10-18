@@ -127,8 +127,12 @@ StackedNotificationBar::StackedNotificationBar(
               IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL))) {
   SetVisible(false);
 
+  int left_padding = features::IsUnifiedMessageCenterRefactorEnabled()
+                         ? 0
+                         : kStackingNotificationClearAllButtonPadding.left();
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, left_padding, 0, 0)));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 

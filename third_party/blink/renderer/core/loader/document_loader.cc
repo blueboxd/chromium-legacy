@@ -926,6 +926,9 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
   DCHECK(!IsReloadLoadType(frame_load_type));
   DCHECK(frame_->GetDocument());
 
+  if (Page* page = frame_->GetPage())
+    page->HistoryNavigationVirtualTimePauser().UnpauseVirtualTime();
+
   if (!frame_->IsNavigationAllowed())
     return mojom::CommitResult::Aborted;
 

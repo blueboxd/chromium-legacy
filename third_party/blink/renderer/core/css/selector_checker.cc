@@ -88,8 +88,10 @@ static bool MatchesListBoxPseudoClass(const Element& element) {
   return html_select_element && !html_select_element->UsesMenuList();
 }
 
-static bool MatchesTagName(const Element& element,
-                           const QualifiedName& tag_q_name) {
+static bool MatchesTagName(
+    const Element& element,
+    const QualifiedName& tag_q_name,
+    const SelectorChecker::SelectorCheckingContext& context) {
   if (tag_q_name == AnyQName())
     return true;
   const AtomicString& local_name = tag_q_name.LocalName();
@@ -105,8 +107,12 @@ static bool MatchesTagName(const Element& element,
       return false;
   }
   const AtomicString& namespace_uri = tag_q_name.NamespaceURI();
-  return namespace_uri == g_star_atom ||
-         namespace_uri == element.namespaceURI();
+  if (namespace_uri == g_star_atom)
+    return true;
+  // VTT style sheets should apply to a hypothetical document with no namespace
+  if (context.is_from_vtt)
+    return namespace_uri.IsEmpty();
+  return namespace_uri == element.namespaceURI();
 }
 
 static Element* ParentElement(
@@ -202,6 +208,26 @@ static bool IsFirstOfType(Element& element, const QualifiedName& type) {
 
 static bool IsLastOfType(Element& element, const QualifiedName& type) {
   return !ElementTraversal::NextSibling(element, HasTagName(type));
+}
+
+bool SelectorChecker::Match(const SelectorCheckingContext& context,
+                            MatchResult& result) const {
+  DCHECK(context.selector);
+  if (context.is_from_vtt)
+    return MatchVTTBlockSelector(context, result);
+  return MatchSelector(context, result) == kSelectorMatches;
+}
+
+bool SelectorChecker::MatchVTTBlockSelector(
+    const SelectorCheckingContext& context,
+    MatchResult& result) const {
+  DCHECK(context.selector);
+  if (context.selector->IsLastInTagHistory() ||
+      context.selector->TagHistory()->Specificity() != 0) {
+    return false;
+  }
+
+  return MatchSelector(context, result) == kSelectorMatches;
 }
 
 // Recursive check of selectors and combinators
@@ -329,6 +355,14 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
   next_context.is_sub_selector = false;
   next_context.previous_element = context.element;
   next_context.pseudo_id = kPseudoIdNone;
+
+  // Rules that come from a WebVTT STYLE block apply to a hypothetical
+  // document with a single empty element with no explicit name, no namespace,
+  // no attribute, no classes, no IDs, and unknown primary language that acts
+  // as the originating element for the cue pseudo-elements. This element
+  // must not be generally selectable.
+  if (context.is_from_vtt && relation != CSSSelector::kShadowPseudo)
+    return kSelectorFailsCompletely;
 
   switch (relation) {
     case CSSSelector::kShadowDeepAsDescendant:
@@ -690,7 +724,7 @@ bool SelectorChecker::CheckOne(const SelectorCheckingContext& context,
 
   switch (selector.Match()) {
     case CSSSelector::kTag:
-      return MatchesTagName(element, selector.TagQName());
+      return MatchesTagName(element, selector.TagQName(), context);
     case CSSSelector::kClass:
       return element.HasClass() &&
              element.ClassNames().Contains(selector.Value());
@@ -896,7 +930,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       for (sub_context.selector = selector.SelectorList()->First();
            sub_context.selector; sub_context.selector = CSSSelectorList::Next(
                                      *sub_context.selector)) {
-        if (Match(sub_context))
+        MatchResult sub_result;
+        if (MatchSelector(sub_context, sub_result) == kSelectorMatches)
           return true;
       }
     } break;
@@ -1150,7 +1185,8 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       for (sub_context.selector = selector.SelectorList()->First();
            sub_context.selector; sub_context.selector = CSSSelectorList::Next(
                                      *sub_context.selector)) {
-        if (Match(sub_context))
+        MatchResult sub_result;
+        if (MatchSelector(sub_context, sub_result) == kSelectorMatches)
           return true;
       }
       return false;

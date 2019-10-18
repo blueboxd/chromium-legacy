@@ -978,10 +978,6 @@
       </intent-filter>
     </activity>
     <activity
-        android:label="@string/crashes_list_activity_title"
-        android:name="org.chromium.android_webview.ui.CrashesListActivity"
-        android:process=":webview_apk"/>
-    <activity
         android:label="@string/license_activity_title"
         android:name="com.android.webview.chromium.LicenseActivity"
         android:process=":webview_apk">
@@ -993,6 +989,11 @@
           android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
           android:value="true"/>
     </activity>
+    <activity
+        android:label="WebView
+        Crashes"
+        android:name="org.chromium.android_webview.ui.CrashesListActivity"
+        android:process=":webview_apk"/>
     <activity
         android:enabled="false"
         android:excludeFromRecents="true"

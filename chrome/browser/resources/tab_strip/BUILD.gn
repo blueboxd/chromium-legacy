@@ -8,6 +8,7 @@ import("//tools/polymer/polymer.gni")
 js_type_check("closure_compile") {
   deps = [
     ":alert_indicator",
+    ":alert_indicators",
     ":custom_element",
     ":tab",
     ":tab_list",
@@ -17,6 +18,9 @@ js_type_check("closure_compile") {
 }
 
 js_library("alert_indicator") {
+}
+
+js_library("alert_indicators") {
 }
 
 js_library("custom_element") {
@@ -47,6 +51,7 @@ js_library("tab_strip_embedder_proxy") {
 group("tab_strip_modules") {
   deps = [
     ":alert_indicator_module",
+    ":alert_indicators_module",
     ":tab_list_module",
     ":tab_module",
   ]
@@ -55,6 +60,12 @@ group("tab_strip_modules") {
 polymer_modulizer("alert_indicator") {
   js_file = "alert_indicator.js"
   html_file = "alert_indicator.html"
+  html_type = "v3-ready"
+}
+
+polymer_modulizer("alert_indicators") {
+  js_file = "alert_indicators.js"
+  html_file = "alert_indicators.html"
   html_type = "v3-ready"
 }
 

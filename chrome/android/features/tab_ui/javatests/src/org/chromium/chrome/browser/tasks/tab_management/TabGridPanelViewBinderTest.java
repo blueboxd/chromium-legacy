@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -162,7 +162,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     @UiThreadTest
     public void testSetTint() {
-        ColorStateList tint = ColorUtils.getThemedToolbarIconTint(getActivity(), true);
+        ColorStateList tint = ToolbarColors.getThemedToolbarIconTint(getActivity(), true);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Assert.assertNotEquals(tint, mLeftButton.getImageTintList());
             Assert.assertNotEquals(tint, mRightButton.getImageTintList());

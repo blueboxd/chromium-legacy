@@ -112,6 +112,15 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
       app_list::RankingItemTypeFromSearchResult(*result);
   app_launch_data.launch_type = launch_type;
   app_launch_data.launched_from = launched_from;
+
+  if (launch_type == ash::AppListLaunchType::kAppSearchResult &&
+      launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox &&
+      app_launch_data.ranking_item_type == app_list::RankingItemType::kApp &&
+      search_controller_->GetLastQueryLength() != 0) {
+    ash::RecordSuccessfulAppLaunchUsingSearch(
+        launched_from, search_controller_->GetLastQueryLength());
+  }
+
   // Send training signal to search controller.
   search_controller_->Train(std::move(app_launch_data));
 

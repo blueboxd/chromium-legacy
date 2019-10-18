@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -171,6 +172,14 @@ class SearchTabHelper : public content::WebContentsObserver,
   // active tab is in mode SEARCH_SUGGESTIONS.
   bool IsInputInProgress() const;
 
+  // Called when a user confirms deleting an autocomplete match. Note: might be
+  // called synchronously with accepted = true if this feature is disabled
+  // (which defaults the behavior to silent deletions).
+  void OnDeleteAutocompleteMatchConfirm(
+      uint8_t line,
+      chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback,
+      bool accepted);
+
   content::WebContents* web_contents_;
 
   SearchIPCRouter ipc_router_;
@@ -190,6 +199,8 @@ class SearchTabHelper : public content::WebContentsObserver,
       query_autocomplete_callback_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
+
+  base::WeakPtrFactory<SearchTabHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

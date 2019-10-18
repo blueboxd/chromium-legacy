@@ -319,6 +319,14 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Sets the hint for calculating OOBE dialog inner padding.
+     * @param {OobeTypes.DialogPaddingMode} mode.
+     */
+    setDialogPaddingMode: function(mode) {
+      document.documentElement.setAttribute('dialog-padding', mode);
+    },
+
+    /**
      * Toggles background of main body between transparency and solid.
      * @param {boolean} solid Whether to show a solid background.
      */
@@ -785,10 +793,6 @@ cr.define('cr.ui.login', function() {
         screen.style.width = width + 'px';
         screen.style.height = height + 'px';
         screen.style.margin = 'auto';
-      }
-
-      if (this.showingViewsLogin) {
-        chrome.send('updateOobeDialogSize', [width, height]);
       }
     },
 

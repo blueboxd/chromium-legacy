@@ -317,8 +317,12 @@ base::string16 NativeFileSystemUsageBubbleView::GetAccessibleWindowTitle()
       ->GetTextForTooltipAndAccessibleName();
 }
 
-int NativeFileSystemUsageBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
+base::string16 NativeFileSystemUsageBubbleView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  int message_id = IDS_DONE;
+  if (button == ui::DIALOG_BUTTON_CANCEL)
+    message_id = IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS;
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 bool NativeFileSystemUsageBubbleView::ShouldShowCloseButton() const {
@@ -383,6 +387,29 @@ void NativeFileSystemUsageBubbleView::Init() {
   }
 }
 
+bool NativeFileSystemUsageBubbleView::Cancel() {
+  base::RecordAction(
+      base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
+
+  if (!web_contents())
+    return true;
+
+  content::BrowserContext* profile = web_contents()->GetBrowserContext();
+  auto* context =
+      NativeFileSystemPermissionContextFactory::GetForProfileIfExists(profile);
+  if (!context)
+    return true;
+
+  context->RevokeGrantsForOriginAndTab(
+      origin_, web_contents()->GetMainFrame()->GetProcess()->GetID(),
+      web_contents()->GetMainFrame()->GetRoutingID());
+  return true;
+}
+
+bool NativeFileSystemUsageBubbleView::Close() {
+  return true;  // Do not revoke permissions via Cancel() when closing normally.
+}
+
 void NativeFileSystemUsageBubbleView::WindowClosing() {
   // |bubble_| can be a new bubble by this point (as Close(); doesn't
   // call this right away). Only set to nullptr when it's this bubble.
@@ -408,30 +435,4 @@ void NativeFileSystemUsageBubbleView::ChildPreferredSizeChanged(
     views::View* child) {
   LocationBarBubbleDelegateView::ChildPreferredSizeChanged(child);
   SizeToContents();
-}
-
-std::unique_ptr<views::View>
-NativeFileSystemUsageBubbleView::CreateExtraView() {
-  return views::MdTextButton::CreateSecondaryUiButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));
-}
-
-void NativeFileSystemUsageBubbleView::ButtonPressed(views::Button* sender,
-                                                    const ui::Event& event) {
-  base::RecordAction(
-      base::UserMetricsAction("NativeFileSystemAPI.RevokePermissions"));
-
-  if (!web_contents())
-    return;
-
-  content::BrowserContext* profile = web_contents()->GetBrowserContext();
-  auto* context =
-      NativeFileSystemPermissionContextFactory::GetForProfileIfExists(profile);
-  if (!context)
-    return;
-
-  context->RevokeGrantsForOriginAndTab(
-      origin_, web_contents()->GetMainFrame()->GetProcess()->GetID(),
-      web_contents()->GetMainFrame()->GetRoutingID());
 }

@@ -38,6 +38,11 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gl/trace_util.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "ui/gfx/mac/io_surface.h"
+#endif
+
 namespace media {
 
 // Implementation of a pool of GpuMemoryBuffers used to back VideoFrames.
@@ -563,14 +568,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
 
   bool passthrough = false;
 #if defined(OS_MACOSX)
-  // GPU memory buffers do not support full-range YUV video on mac.
-  // Fortunately, the hardware decoders never produce full-range video.
-  // https://crbug/882627
-  gfx::ColorSpace color_space = video_frame->ColorSpace();
-  gfx::ColorSpace as_rgb = color_space.GetAsRGB();
-  gfx::ColorSpace as_full_range_rgb = color_space.GetAsFullRangeRGB();
-
-  if (color_space != as_rgb && as_rgb == as_full_range_rgb)
+  if (!IOSurfaceCanSetColorSpace(video_frame->ColorSpace()))
     passthrough = true;
 #endif
   if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
@@ -937,6 +935,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
       // TODO(mcasas): Enable this for ChromeOS https://crbug.com/776093.
       allow_overlay = false;
+#if defined(OS_MACOSX)
+      allow_overlay = IOSurfaceCanSetColorSpace(video_frame->ColorSpace());
+#endif
       // We've converted the YUV to RGB, fix the color space.
       // TODO(hubbe): The libyuv YUV to RGB conversion may not have
       // honored the color space conversion 100%. We should either fix

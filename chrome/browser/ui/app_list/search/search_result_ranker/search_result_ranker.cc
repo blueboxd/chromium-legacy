@@ -492,7 +492,6 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
   auto model = ModelForType(app_launch_data.ranking_item_type);
   if (model == Model::MIXED_TYPES) {
     if (app_launch_data.query.empty() && zero_state_group_ranker_) {
-      LogZeroStateLaunchType(app_launch_data.ranking_item_type);
       zero_state_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
     } else if (results_list_group_ranker_) {
@@ -507,14 +506,17 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
     app_ranker_->Record(NormalizeAppId(app_launch_data.id));
   }
 
-  if (model == Model::MIXED_TYPES && app_launch_data.query.empty() &&
-      zero_state_group_ranker_) {
-    std::vector<std::string> weights;
-    for (const auto& pair : *zero_state_group_ranker_->GetTargetData())
-      weights.push_back(base::StrCat(
-          {pair.first, ":", base::NumberToString(pair.second.last_score)}));
-    VLOG(1) << "Zero state files model weights: ["
-            << base::JoinString(weights, ", ") << "]";
+  if (model == Model::MIXED_TYPES && app_launch_data.query.empty()) {
+    LogZeroStateLaunchType(app_launch_data.ranking_item_type);
+
+    if (zero_state_group_ranker_) {
+      std::vector<std::string> weights;
+      for (const auto& pair : *zero_state_group_ranker_->GetTargetData())
+        weights.push_back(base::StrCat(
+            {pair.first, ":", base::NumberToString(pair.second.last_score)}));
+      VLOG(1) << "Zero state files model weights: ["
+              << base::JoinString(weights, ", ") << "]";
+    }
   }
 }
 

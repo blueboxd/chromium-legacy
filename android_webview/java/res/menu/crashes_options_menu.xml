@@ -7,8 +7,9 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!--suppress HardcodedText -->
     <item
         android:id="@+id/options_menu_refresh"
-        android:title="@string/menu_refresh"
+        android:title="Refresh"
         android:showAsAction="never" />
 </menu>

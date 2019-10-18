@@ -17,7 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
@@ -430,11 +430,11 @@ std::string DeepScanningDialogDelegate::GetDMToken() {
 
 #if !defined(OS_CHROMEOS)
   // This is not compiled on chromeos because
-  // MachineLevelUserCloudPolicyController does not exist.  Also,
+  // ChromeBrowserCloudManagementController does not exist.  Also,
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
   // valid token either.  Once these are fixed the #if !defined can be removed.
 
-  if (dm_token.empty() && policy::MachineLevelUserCloudPolicyController::
+  if (dm_token.empty() && policy::ChromeBrowserCloudManagementController::
                               IsMachineLevelUserCloudPolicyEnabled()) {
     dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   }

@@ -64,67 +64,67 @@
   "mac": {
     "mix_blend_mode_animation_screen": {
       "avg": 96.183,
-      "ci_095": 5.162
+      "ci_095": 2.947
     },
     "twitch_2018": {
       "avg": 33.002,
-      "ci_095": 13.557
+      "ci_095": 18.294
     },
     "balls_javascript_canvas": {
       "avg": 40.793,
-      "ci_095": 3.571
+      "ci_095": 1.419
     },
     "transform_transitions_js_block": {
       "avg": 16.758,
-      "ci_095": 0.01
+      "ci_095": 0.442
     },
     "web_animations_staggered_infinite_iterations": {
       "avg": 16.692,
-      "ci_095": 0.02
+      "ci_095": 0.291
     },
     "fill_shapes": {
       "avg": 36.591,
-      "ci_095": 3.295
+      "ci_095": 1.719
     },
     "css_value_type_shadow": {
       "avg": 65.745,
-      "ci_095": 19.875
+      "ci_095": 16.053
     },
     "animometer_webgl_attrib_arrays": {
       "avg": 16.862,
-      "ci_095": 0.19
+      "ci_095": 0.636
     },
     "web_animation_value_type_transform_simple": {
       "avg": 48.286,
-      "ci_095": 5.704
+      "ci_095": 2.421
     },
     "canvas_05000_pixels_per_second": {
       "avg": 16.685,
-      "ci_095": 0.012
+      "ci_095": 0.333
     },
     "bouncing_clipped_rectangles": {
       "avg": 537.025,
-      "ci_095": 72.711
+      "ci_095": 168.527
     },
     "ie_chalkboard": {
       "avg": 66.825,
-      "ci_095": 15.637
+      "ci_095": 39.904
     },
     "new_tilings": {
       "avg": 23.163,
-      "ci_095": 1.583
+      "ci_095": 1.13
     },
     "chip_tune": {
       "avg": 16.737,
-      "ci_095": 0.044
+      "ci_095": 0.453
     },
     "extra_large_texture_uploads": {
       "avg": 58.721,
-      "ci_095": 1.167
+      "ci_095": 2.462
     },
     "css_value_type_filter": {
       "avg": 86.254,
-      "ci_095": 12.391
+      "ci_095": 1.79
     }
   },
   "android": {

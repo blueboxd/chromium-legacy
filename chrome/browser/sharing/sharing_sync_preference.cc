@@ -193,7 +193,12 @@ SharingSyncPreference::GetSharingInfo(
 
 base::Optional<syncer::DeviceInfo::SharingInfo>
 SharingSyncPreference::GetLocalSharingInfo() const {
-  auto* device_info = local_device_info_provider_->GetLocalDeviceInfo();
+  return GetLocalSharingInfo(local_device_info_provider_->GetLocalDeviceInfo());
+}
+
+base::Optional<syncer::DeviceInfo::SharingInfo>
+SharingSyncPreference::GetLocalSharingInfo(
+    const syncer::DeviceInfo* device_info) const {
   if (!device_info)
     return base::nullopt;
 

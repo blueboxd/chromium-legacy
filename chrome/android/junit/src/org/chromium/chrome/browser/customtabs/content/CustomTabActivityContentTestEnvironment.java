@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.customtabs.shadows.ShadowExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -49,6 +50,7 @@ import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
+import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -69,6 +71,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public final Intent intent = new Intent();
 
+    // clang-format off
     @Mock public CustomTabDelegateFactory customTabDelegateFactory;
     @Mock public ChromeActivity activity;
     @Mock public CustomTabsConnection connection;
@@ -85,13 +88,16 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public CustomTabsSessionToken session;
     @Mock public TabModelSelectorImpl tabModelSelector;
     @Mock public TabModel tabModel;
+    @Mock public ReparentingTaskProvider reparentingTaskProvider;
+    @Mock public ReparentingTask reparentingTask;
     @Mock public CustomTabNavigationEventObserver navigationEventObserver;
     @Mock public CloseButtonNavigator closeButtonNavigator;
     @Mock public ToolbarManager toolbarManager;
     @Mock public ChromeBrowserInitializer browserInitializer;
     @Mock public ChromeFullscreenManager fullscreenManager;
-    @Mock
-    public StartupTabPreloader startupTabPreloader;
+    @Mock public StartupTabPreloader startupTabPreloader;
+    // clang-format on
+
     public final CustomTabActivityTabProvider tabProvider = new CustomTabActivityTabProvider();
 
     @Captor public ArgumentCaptor<ActivityTabObserver> activityTabObserverCaptor;
@@ -121,7 +127,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         when(toolbarManager.back()).thenReturn(null);
 
         when(startupTabPreloader.takeTabIfMatchingOrDestroy(any(), anyInt())).thenReturn(null);
-
+        when(reparentingTaskProvider.get(any())).thenReturn(reparentingTask);
         doNothing().when(activityTabProvider).addObserverAndTrigger(
                 activityTabObserverCaptor.capture());
     }
@@ -134,18 +140,15 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         ShadowExternalNavigationDelegateImpl.setWillChromeHandleIntent(false);
     }
 
+    // clang-format off
     public CustomTabActivityTabController createTabController() {
-        return new CustomTabActivityTabController(activity,
-                ()
-                        -> customTabDelegateFactory,
+        return new CustomTabActivityTabController(activity, () -> customTabDelegateFactory,
                 connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
-                ()
-                        -> compositorViewHolder,
-                lifecycleDispatcher, warmupManager, tabPersistencePolicy, tabFactory,
-                ()
-                        -> customTabObserver,
-                webContentsFactory, navigationEventObserver, tabProvider, startupTabPreloader);
+                () -> compositorViewHolder, lifecycleDispatcher, warmupManager,
+                tabPersistencePolicy, tabFactory, () -> customTabObserver, webContentsFactory,
+                navigationEventObserver, tabProvider, startupTabPreloader, reparentingTaskProvider);
     }
+    // clang-format on
 
     public CustomTabActivityNavigationController createNavigationController(
             CustomTabActivityTabController tabController) {

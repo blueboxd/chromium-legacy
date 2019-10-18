@@ -139,7 +139,7 @@ bool ContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
   return false;
 }
 
-network::mojom::URLLoaderFactoryPtrInfo
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
@@ -147,7 +147,7 @@ ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
         header_client,
     const url::Origin& request_initiator,
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
-  return network::mojom::URLLoaderFactoryPtrInfo();
+  return mojo::NullRemote();
 }
 
 void ContentBrowserClient::GetAdditionalViewSourceSchemes(
@@ -904,7 +904,7 @@ bool ContentBrowserClient::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const base::Optional<url::Origin>& initiating_origin,
-    network::mojom::URLLoaderFactoryPtr* out_factory) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   return true;
 }
 

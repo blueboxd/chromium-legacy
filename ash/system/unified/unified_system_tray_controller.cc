@@ -6,6 +6,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
@@ -36,6 +37,7 @@
 #include "ash/system/unified/detailed_view_controller.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
+#include "ash/system/unified/feature_pods_container_view.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_notifier_settings_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -102,14 +104,6 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   brightness_slider_controller_ =
       std::make_unique<UnifiedBrightnessSliderController>(model_);
   unified_view_->AddSliderView(brightness_slider_controller_->CreateView());
-
-  // Collapse system tray if there isn't enough space to show notifications when
-  // it is first opened.
-  if (bubble_ && bubble_->CalculateMaxHeight() -
-                         unified_view_->GetExpandedSystemTrayHeight() <
-                     kUnifiedNotificationMinimumHeight) {
-    ResetToCollapsed();
-  }
 
   return unified_view_;
 }
@@ -359,11 +353,11 @@ void UnifiedSystemTrayController::OnAudioSettingsButtonClicked() {
 void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
+  AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<CastFeaturePodController>(this));
-  AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<VPNFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
@@ -426,9 +420,14 @@ void UnifiedSystemTrayController::UpdateExpandedAmount() {
     model_->set_expanded_on_open(expanded_amount == 1.0);
 }
 
-void UnifiedSystemTrayController::ResetToCollapsed() {
-  unified_view_->SetExpandedAmount(0.0);
-  animation_->Reset(0);
+void UnifiedSystemTrayController::ResetToCollapsedIfRequired() {
+  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+    if (unified_view_->feature_pods_container()->row_count() ==
+        kUnifiedFeaturePodMinRows) {
+      unified_view_->SetExpandedAmount(0.0);
+      animation_->Reset(0);
+    }
+  }
 }
 
 double UnifiedSystemTrayController::GetDragExpandedAmount(

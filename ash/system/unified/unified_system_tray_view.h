@@ -148,6 +148,10 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   void OnWillChangeFocus(views::View* before, views::View* now) override;
   void OnDidChangeFocus(views::View* before, views::View* now) override;
 
+  FeaturePodsContainerView* feature_pods_container() {
+    return feature_pods_container_;
+  }
+
   NotificationHiddenView* notification_hidden_view_for_testing() {
     return notification_hidden_view_;
   }

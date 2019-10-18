@@ -161,11 +161,12 @@ SecurityStateTabHelper::GetVisibleSecurityState() {
   safety_tips::ReputationWebContentsObserver* reputation_web_contents_observer =
       safety_tips::ReputationWebContentsObserver::FromWebContents(
           web_contents());
-  state->safety_tip_status =
+  state->safety_tip_info =
       reputation_web_contents_observer
           ? reputation_web_contents_observer
-                ->GetSafetyTipStatusForVisibleNavigation()
-          : security_state::SafetyTipStatus::kUnknown;
+                ->GetSafetyTipInfoForVisibleNavigation()
+          : security_state::SafetyTipInfo(
+                {security_state::SafetyTipStatus::kUnknown, GURL()});
   return state;
 }
 
@@ -175,8 +176,9 @@ void SecurityStateTabHelper::DidStartNavigation(
     UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
                               GetSecurityLevel(),
                               security_state::SECURITY_LEVEL_COUNT);
-    UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.FormSubmission",
-                              GetVisibleSecurityState()->safety_tip_status);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Security.SafetyTips.FormSubmission",
+        GetVisibleSecurityState()->safety_tip_info.status);
   }
 }
 

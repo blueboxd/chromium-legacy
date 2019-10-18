@@ -289,6 +289,9 @@ void ProcessManager::Shutdown() {
   DCHECK(background_hosts_.empty());
   content::DevToolsAgentHost::RemoveObserver(this);
   site_instance_ = nullptr;
+
+  for (auto& observer : observer_list_)
+    observer.OnProcessManagerShutdown(this);
 }
 
 void ProcessManager::RegisterRenderFrameHost(

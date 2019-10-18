@@ -177,11 +177,9 @@ class HistoryBackendHelper : public base::SupportsUserData {
   ~HistoryBackendHelper() override;
 };
 
-HistoryBackendHelper::HistoryBackendHelper() {
-}
+HistoryBackendHelper::HistoryBackendHelper() = default;
 
-HistoryBackendHelper::~HistoryBackendHelper() {
-}
+HistoryBackendHelper::~HistoryBackendHelper() = default;
 
 // HistoryBackend --------------------------------------------------------------
 
@@ -1133,6 +1131,16 @@ HistoryCountResult HistoryBackend::CountUniqueHostsVisitedLastMonth() {
   return {!!db_, db_ ? db_->CountUniqueHostsVisitedLastMonth() : 0};
 }
 
+HistoryLastVisitToHostResult HistoryBackend::GetLastVisitToHost(
+    const GURL& host,
+    base::Time begin_time,
+    base::Time end_time) {
+  base::Time last_visit;
+  return {
+      db_ && db_->GetLastVisitToHost(host, begin_time, end_time, &last_visit),
+      last_visit};
+}
+
 // Keyword visits --------------------------------------------------------------
 
 void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
@@ -1226,9 +1234,8 @@ std::vector<DownloadRow> HistoryBackend::QueryDownloads() {
 }
 
 // Update a particular download entry.
-void HistoryBackend::UpdateDownload(
-    const DownloadRow& data,
-    bool should_commit_immediately) {
+void HistoryBackend::UpdateDownload(const DownloadRow& data,
+                                    bool should_commit_immediately) {
   TRACE_EVENT0("browser", "HistoryBackend::UpdateDownload");
   if (!db_)
     return;
@@ -2366,8 +2373,7 @@ void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
     const GURL& page_url) {
   RedirectList redirect_list = GetCachedRecentRedirects(page_url);
   if (!redirect_list.empty()) {
-    std::set<GURL> favicons_changed(redirect_list.begin(),
-                                       redirect_list.end());
+    std::set<GURL> favicons_changed(redirect_list.begin(), redirect_list.end());
     NotifyFaviconsChanged(favicons_changed, GURL());
   }
 }

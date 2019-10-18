@@ -213,6 +213,10 @@ static_library("arc_base") {
     "session/arc_session_impl.h",
     "session/arc_session_runner.cc",
     "session/arc_session_runner.h",
+    "session/arc_start_params.cc",
+    "session/arc_start_params.h",
+    "session/arc_upgrade_params.cc",
+    "session/arc_upgrade_params.h",
     "session/arc_vm_client_adapter.cc",
     "session/arc_vm_client_adapter.h",
   ]

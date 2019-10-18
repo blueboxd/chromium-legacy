@@ -551,6 +551,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int nav_entry_id() const { return nav_entry_id_; }
   void set_nav_entry_id(int nav_entry_id) { nav_entry_id_ = nav_entry_id; }
 
+  // Return true if this contains at least one NavigationRequest waiting to
+  // commit in this RenderFrameHost.
+  bool HasPendingCommitNavigation() const;
+
   // A NavigationRequest for a pending cross-document navigation in this frame,
   // if any. This is cleared when the navigation commits.
   NavigationRequest* navigation_request() { return navigation_request_.get(); }
@@ -1196,10 +1200,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return media_device_id_salt_base_;
   }
 
-  // Return true if this contains at least one NavigationRequest waiting to
-  // commit in this RenderFrameHost.
-  bool HasPendingCommitNavigationForTesting();
-
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
 
   // blink::mojom::LocalFrameHost
@@ -1347,6 +1347,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            UnloadHandlersArePowerfulGrandChild);
 
   class DroppedInterfaceRequestLogger;
+
+  // Update the RenderProcessHost priority when a navigation occurs.
+  void UpdateRenderProcessHostFramePriorities();
 
   // IPC Message handlers.
   void OnDetach();
@@ -1935,7 +1938,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::string16& suggested_name,
       const bool use_prompt,
       const network::mojom::RedirectMode cross_origin_redirects,
-      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token);
+      mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
+      mojo::PendingRemote<blink::mojom::Blob> data_url_blob);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -1984,6 +1988,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Track this frame's last committed URL.
   GURL last_committed_url_;
+
+  // Track the frame priority of the last committed document, which is nullopt
+  // prior to the first commit.
+  base::Optional<RenderProcessHostImpl::FramePriority>
+      last_committed_document_priority_;
 
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;

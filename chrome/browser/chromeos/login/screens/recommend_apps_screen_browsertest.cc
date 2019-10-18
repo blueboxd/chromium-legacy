@@ -605,7 +605,8 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, DISABLED_NoRecommendedApps) {
   EXPECT_EQ(base::Value(base::Value::Type::LIST), *fast_reinstall_packages);
 }
 
-IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, ParseError) {
+// Disabled due to flakiness: https://crbug.com/1015013
+IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, DISABLED_ParseError) {
   recommend_apps_screen_->Show();
 
   OobeScreenWaiter screen_waiter(RecommendAppsScreenView::kScreenId);

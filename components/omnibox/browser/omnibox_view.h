@@ -143,8 +143,10 @@ class OmniboxView {
   // defines a method with that name.
   virtual void CloseOmniboxPopup();
 
-  // Sets the focus to the omnibox.
-  virtual void SetFocus() = 0;
+  // Sets the focus to the omnibox. |is_user_initiated| is true when the user
+  // explicitly focused the omnibox, and false when the omnibox was
+  // automatically focused (like for browser startup or NTP load).
+  virtual void SetFocus(bool is_user_initiated) = 0;
 
   // Shows or hides the caret based on whether the model's is_caret_visible() is
   // true.

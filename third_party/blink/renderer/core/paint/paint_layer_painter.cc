@@ -78,17 +78,6 @@ PaintResult PaintLayerPainter::Paint(
   // https://code.google.com/p/chromium/issues/detail?id=343772
   DisableCompositingQueryAsserts disabler;
 
-  if (paint_layer_.GetCompositingState() != kNotComposited) {
-    if (painting_info.GetGlobalPaintFlags() &
-        kGlobalPaintFlattenCompositingLayers) {
-      // FIXME: ok, but what about GlobalPaintFlattenCompositingLayers? That's
-      // for printing and drag-image.
-      // FIXME: why isn't the code here global, as opposed to being set on each
-      // paint() call?
-      paint_flags |= kPaintLayerUncachedClipRects;
-    }
-  }
-
   // Non self-painting layers without self-painting descendants don't need to be
   // painted as their layoutObject() should properly paint itself.
   if (!paint_layer_.IsSelfPaintingLayer() &&
@@ -146,8 +135,8 @@ static bool ShouldCreateSubsequence(const PaintLayer& paint_layer,
   if (painting_info.GetGlobalPaintFlags() &
       kGlobalPaintFlattenCompositingLayers)
     return false;
-  if (paint_flags & (kPaintLayerPaintingOverlayOverflowControls |
-                     kPaintLayerUncachedClipRects))
+
+  if (paint_flags & kPaintLayerPaintingOverlayOverflowControls)
     return false;
 
   return true;

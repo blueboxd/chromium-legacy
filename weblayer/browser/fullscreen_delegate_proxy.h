@@ -36,7 +36,7 @@ class FullscreenDelegateProxy : public FullscreenDelegate {
 
  private:
   BrowserController* browser_controller_;
-  base::android::ScopedJavaGlobalRef<jobject> java_observer_;
+  base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   base::OnceClosure exit_fullscreen_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenDelegateProxy);

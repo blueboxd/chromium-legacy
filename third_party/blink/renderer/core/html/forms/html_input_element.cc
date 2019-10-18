@@ -141,14 +141,6 @@ void HTMLInputElement::Trace(Visitor* visitor) {
   TextControlElement::Trace(visitor);
 }
 
-const AttrNameToTrustedType& HTMLInputElement::GetCheckedAttributeTypes()
-    const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"formaction", SpecificTrustedType::kTrustedURL},
-                        {"src", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
-}
-
 bool HTMLInputElement::HasPendingActivity() const {
   return ImageLoader() && ImageLoader()->HasPendingActivity();
 }

@@ -32,7 +32,8 @@ class MediaPerceptionAPIDelegate {
       const base::FilePath& mount_point)>;
 
   using MediaPerceptionRequestHandler = base::RepeatingCallback<void(
-      chromeos::media_perception::mojom::MediaPerceptionRequest request)>;
+      mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
+          receiver)>;
 
   virtual ~MediaPerceptionAPIDelegate() {}
 
@@ -54,10 +55,11 @@ class MediaPerceptionAPIDelegate {
   virtual void SetMediaPerceptionRequestHandler(
       MediaPerceptionRequestHandler handler) = 0;
 
-  // Receives an incoming media perception request and forwards it to the
-  // request handler if set.
-  virtual void ForwardMediaPerceptionRequest(
-      chromeos::media_perception::mojom::MediaPerceptionRequest request,
+  // Receives an incoming media perception receiver and forwards it to the
+  // receiver handler if set.
+  virtual void ForwardMediaPerceptionReceiver(
+      mojo::PendingReceiver<chromeos::media_perception::mojom::MediaPerception>
+          receiver,
       content::RenderFrameHost* render_frame_host) = 0;
 };
 

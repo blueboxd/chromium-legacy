@@ -122,6 +122,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
       const CommunicationErrorObserver* observer) override;
   void AddAndFireStateObserver(StateObserver* observer) override;
   void RemoveStateObserver(const StateObserver* observer) override;
+  void SyncDeviceAppsStatus() override;
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
@@ -272,6 +273,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnPlayMedia(const std::string play_media_args_proto);
   void OnMediaControlAction(const std::string& action_name,
                             const std::string& media_action_args_proto);
+
+  void OnDeviceAppsEnabled(bool enabled);
 
   void RegisterFallbackMediaHandler();
   void AddMediaControllerObserver();

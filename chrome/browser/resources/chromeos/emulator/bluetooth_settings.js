@@ -68,7 +68,7 @@ Polymer({
 
     /**
      * A set of predefined bluetooth devices.
-     * @type !Array<!Bluetooth>
+     * @type !Array<!BluetoothDevice>
      */
     predefinedDevices: {
       type: Array,
@@ -79,13 +79,11 @@ Polymer({
 
     /**
      * A bluetooth device object which is currently being edited.
-     * @type {BluetoothDevice}
+     * @type {?BluetoothDevice}
      */
     currentEditableObject: {
       type: Object,
-      value: function() {
-        return {};
-      }
+      value: null,
     },
 
     /**
@@ -104,7 +102,7 @@ Polymer({
      * A set of options for the possible bluetooth device classes/types.
      * Object |value| attribute comes from values in the WebUI, set in
      * setDeviceClassOptions.
-     * @type !Array<! {text: string, value: int} >
+     * @type !Array<!{text: string, value: number}>
      */
     deviceClassOptions: {
       type: Array,
@@ -270,13 +268,17 @@ Polymer({
    * @return {boolean} Whether the PIN/passkey input field should be shown.
    */
   showAuthToken: function(pairMethod) {
-    return pairMethod && pairMethod != 'None';
+    return !!pairMethod && pairMethod != 'None';
   },
 
   /**
    * Called by the WebUI which provides a list of devices which are connected
    * to the main adapter.
-   * @param {!Array<!BluetoothDevice>} devices A list of bluetooth devices.
+   * @param {!Array<!BluetoothDevice>} predefinedDevices A list of bluetooth
+   *     devices.
+   * @param {!Array<!BluetoothDevice>} loadedCustomDevices
+   * @param {!Array<string>} pairingMethodOptions
+   * @param {!Array<string>} pairingActionOptions
    */
   updateBluetoothInfo: function(
       predefinedDevices, loadedCustomDevices, pairingMethodOptions,
@@ -289,7 +291,7 @@ Polymer({
 
   /**
    * Builds complete BluetoothDevice objects for each element in |devices_list|.
-   * @param {!Array<!BluetoothDevice>} devices_list A list of incomplete
+   * @param {!Array<!BluetoothDevice>} devices A list of incomplete
    *     BluetoothDevice provided by the C++ WebUI.
    * @param {boolean} predefined Whether or not the device is a predefined one.
    */
@@ -522,6 +524,7 @@ Polymer({
       if (this.deviceClassOptions[i].value == classValue)
         return this.deviceClassOptions[i].text;
     }
+    return '';
   },
 
   /**

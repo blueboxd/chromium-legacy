@@ -14,6 +14,7 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -168,7 +169,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // going to be removed from its frame.
   void WillBeRemovedFromFrame();
 
-  std::unique_ptr<JSONObject> LayersAsJSON(LayerTreeFlags) const;
+  std::unique_ptr<JSONObject> GetLayersAsJSON(
+      LayerTreeFlags,
+      const PaintArtifact* = nullptr) const;
 
 #if DCHECK_IS_ON()
   void ShowDebugData();

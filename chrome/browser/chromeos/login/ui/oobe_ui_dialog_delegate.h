@@ -8,8 +8,6 @@
 #include <string>
 
 #include "ash/public/cpp/login_types.h"
-#include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -18,8 +16,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "ui/display/display_observer.h"
-#include "ui/display/screen.h"
+#include "ui/views/view_observer.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace content {
@@ -31,6 +28,7 @@ class Accelerator;
 }
 
 namespace views {
+class View;
 class WebDialogView;
 class Widget;
 }  // namespace views
@@ -38,8 +36,10 @@ class Widget;
 namespace chromeos {
 
 class CaptivePortalDialogDelegate;
+class LayoutWidgetDelegateView;
 class LoginDisplayHostMojo;
 class OobeUI;
+class OobeWebDialogView;
 
 // This class manages the behavior of the Oobe UI dialog.
 // And its lifecycle is managed by the widget created in Show().
@@ -48,11 +48,10 @@ class OobeUI;
 //         |
 //         V
 //   clientView---->Widget's view hierarchy
-class OobeUIDialogDelegate : public display::DisplayObserver,
-                             public ash::TabletModeObserver,
-                             public ui::WebDialogDelegate,
+class OobeUIDialogDelegate : public ui::WebDialogDelegate,
                              public ChromeKeyboardControllerClient::Observer,
-                             public CaptivePortalWindowProxy::Observer {
+                             public CaptivePortalWindowProxy::Observer,
+                             public views::ViewObserver {
  public:
   explicit OobeUIDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
   ~OobeUIDialogDelegate() override;
@@ -80,20 +79,10 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
 
   content::WebContents* GetWebContents();
 
-  void UpdateSizeAndPosition(int width, int height);
   OobeUI* GetOobeUI() const;
   gfx::NativeWindow GetNativeWindow() const;
 
  private:
-  // display::DisplayObserver:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
-  // ash::TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
-
-  void OnTabletModeToggled(bool enabled);
-
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;
@@ -103,7 +92,8 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   void GetDialogSize(gfx::Size* size) const override;
   bool CanResizeDialog() const override;
   std::string GetDialogArgs() const override;
-  // NOTE: This function deletes this object at the end.
+  // NOTE: This function starts cleanup sequence that would call FinishCleanup
+  // and delete this object in the end.
   void OnDialogClosed(const std::string& json_retval) override;
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
@@ -112,6 +102,10 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
                          const content::ContextMenuParams& params) override;
   std::vector<ui::Accelerator> GetAccelerators() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* observed_view) override;
+  void OnViewIsDeleting(views::View* observed_view) override;
 
   // ChromeKeyboardControllerClient::Observer:
   void OnKeyboardVisibilityChanged(bool visible) override;
@@ -124,17 +118,14 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
 
   base::WeakPtr<CaptivePortalDialogDelegate> captive_portal_delegate_;
 
-  // This is owned by the underlying native widget.
-  // Before its deletion, onDialogClosed will get called and delete this object.
-  views::Widget* dialog_widget_ = nullptr;
-  views::WebDialogView* dialog_view_ = nullptr;
-  gfx::Size size_;
-  bool showing_fullscreen_ = false;
+  // Root widget. It is assumed that widget is placed as a full-screen inside
+  // LockContainer.
+  views::Widget* widget_ = nullptr;
+  // Reference to view owned by widget_.
+  LayoutWidgetDelegateView* layout_view_ = nullptr;
+  // Reference to dialog view stored in widget_.
+  OobeWebDialogView* dialog_view_ = nullptr;
 
-  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_{
-      this};
-  ScopedObserver<ash::TabletMode, ash::TabletModeObserver>
-      tablet_mode_observer_{this};
   ScopedObserver<ChromeKeyboardControllerClient,
                  ChromeKeyboardControllerClient::Observer>
       keyboard_observer_{this};

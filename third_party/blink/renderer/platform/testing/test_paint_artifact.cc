@@ -97,7 +97,7 @@ TestPaintArtifact& TestPaintArtifact::ForeignLayer(
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset) {
   display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
-      DisplayItem::kForeignLayerFirst, std::move(layer), offset);
+      DisplayItem::kForeignLayerFirst, std::move(layer), offset, nullptr);
   return *this;
 }
 

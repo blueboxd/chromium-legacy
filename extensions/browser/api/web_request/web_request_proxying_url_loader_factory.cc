@@ -940,7 +940,7 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
     mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
         header_client_receiver,
     WebRequestAPI::ProxySet* proxies,
@@ -960,8 +960,8 @@ WebRequestProxyingURLLoaderFactory::WebRequestProxyingURLLoaderFactory(
           ->Subscribe(base::BindRepeating(&WebRequestAPI::ProxySet::RemoveProxy,
                                           base::Unretained(proxies_), this));
 
-  target_factory_.Bind(std::move(target_factory_info));
-  target_factory_.set_connection_error_handler(
+  target_factory_.Bind(std::move(target_factory_remote));
+  target_factory_.set_disconnect_handler(
       base::BindOnce(&WebRequestProxyingURLLoaderFactory::OnTargetFactoryError,
                      base::Unretained(this)));
   proxy_receivers_.Add(this, std::move(loader_receiver));
@@ -979,7 +979,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
     mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
         header_client_receiver,
     WebRequestAPI::ProxySet* proxies,
@@ -989,7 +989,7 @@ void WebRequestProxyingURLLoaderFactory::StartProxying(
   auto proxy = std::make_unique<WebRequestProxyingURLLoaderFactory>(
       browser_context, render_process_id, std::move(request_id_generator),
       std::move(navigation_ui_data), std::move(loader_receiver),
-      std::move(target_factory_info), std::move(header_client_receiver),
+      std::move(target_factory_remote), std::move(header_client_receiver),
       proxies, loader_factory_type);
 
   proxies->AddProxy(std::move(proxy));

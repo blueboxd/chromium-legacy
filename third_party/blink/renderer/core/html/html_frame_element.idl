@@ -26,7 +26,7 @@
 ] interface HTMLFrameElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;
     [CEReactions, Reflect] attribute DOMString scrolling;
-    [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
+    [CEReactions, Reflect, URL] attribute USVString src;
     [CEReactions, Reflect] attribute DOMString frameBorder;
     [CEReactions, Reflect, URL] attribute USVString longDesc;
     [CEReactions, Reflect] attribute boolean noResize;

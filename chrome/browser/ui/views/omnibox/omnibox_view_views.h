@@ -127,7 +127,7 @@ class OmniboxViewViews : public OmniboxView,
                           base::string16::size_type* end) const override;
   void SelectAll(bool reversed) override;
   void RevertAll() override;
-  void SetFocus() override;
+  void SetFocus(bool is_user_initiated) override;
   bool IsImeComposing() const override;
   gfx::NativeView GetRelativeWindowForPopup() const override;
   bool IsImeShowingPopup() const override;

@@ -107,8 +107,12 @@ base::ListValue GetFeatureStatusList();
 
 // Returns whether or not to stop filling in the SyncAccountType and
 // ReusedPasswordType enums. This is used in the
-// kPasswordProtectionForSignedInUsers experiment.
+// |kPasswordProtectionForSignedInUsers| experiment.
 bool GetShouldFillOldPhishGuardProto();
+
+// Returns whether or not to show a list of domains the saved password was used
+// on. This is used in the |kPasswordProtectionForSavedPasswords| experiment.
+bool ShouldShowDomainsForSavedPassword();
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_FEATURES_H_

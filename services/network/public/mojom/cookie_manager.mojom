@@ -58,7 +58,13 @@ enum CookieSameSiteContext {
   CROSS_SITE,
   SAME_SITE_LAX_METHOD_UNSAFE,
   SAME_SITE_LAX,
-  SAME_SITE_STRICT
+  SAME_SITE_STRICT,
+  SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_SECURE_URL,
+  SAME_SITE_LAX_CROSS_SCHEME_SECURE_URL,
+  SAME_SITE_STRICT_CROSS_SCHEME_SECURE_URL,
+  SAME_SITE_LAX_METHOD_UNSAFE_CROSS_SCHEME_INSECURE_URL,
+  SAME_SITE_LAX_CROSS_SCHEME_INSECURE_URL,
+  SAME_SITE_STRICT_CROSS_SCHEME_INSECURE_URL
 };
 
 // What rules to apply when determining whether access to a particular cookie is
@@ -121,8 +127,7 @@ struct CookieAndLineWithStatus {
   CookieInclusionStatus status;
 };
 
-// Keep values here in sync with net::CookieStore::ChangeCause.
-// (Not typemapped to avoid forcing clients to know about net::CookieStore.)
+// Keep values here in sync with net::CookieChangeCause.
 enum CookieChangeCause {
   // The cookie was inserted.
   INSERTED,
@@ -139,6 +144,14 @@ enum CookieChangeCause {
   EVICTED,
   // The cookie was overwritten with an already-expired expiration date.
   EXPIRED_OVERWRITE
+};
+
+struct CookieChangeInfo {
+  // The cookie that changed, in its post-change state.
+  CanonicalCookie cookie;
+  // Access semantics of the cookie at the time of the change.
+  CookieAccessSemantics access_semantics;
+  CookieChangeCause cause;
 };
 
 // Session cookies are cookies that expire at the end of the browser session.
@@ -209,7 +222,7 @@ struct CookieDeletionFilter {
 
 interface CookieChangeListener {
   // TODO(rdsmith): Should this be made a batch interface?
-  OnCookieChange(CanonicalCookie cookie, CookieChangeCause cause);
+  OnCookieChange(CookieChangeInfo change);
 };
 
 interface CookieManager {

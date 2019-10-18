@@ -10,8 +10,6 @@ source_set("public") {
     "primary_toolbar_coordinator.h",
     "side_swipe_toolbar_interacting.h",
     "side_swipe_toolbar_snapshot_providing.h",
-    "toolbar_constants.h",
-    "toolbar_constants.mm",
     "toolbar_coordinating.h",
     "toolbar_utils.h",
     "toolbar_utils.mm",
@@ -25,6 +23,17 @@ source_set("public") {
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser/voice",
+  ]
+  public_deps = [
+    ":constants",
+  ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "toolbar_constants.h",
+    "toolbar_constants.mm",
   ]
 }
 

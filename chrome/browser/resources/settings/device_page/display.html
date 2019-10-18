@@ -142,7 +142,7 @@
       <!-- Display zoom selection slider -->
       <div class="settings-box indented two-line">
         <div class="start text-area layout vertical">
-          <div>$i18n{displayZoomTitle}</div>
+          <div id="displayZoomTitle">$i18n{displayZoomTitle}</div>
           <div class="secondary self-start">$i18n{displayZoomSublabel}</div>
           <div class="secondary self-start"
               hidden$="[[!logicalResolutionText_]]">
@@ -157,6 +157,7 @@
           </cr-policy-pref-indicator>
         </template>
         <settings-slider id="displaySizeSlider"
+            aria-labelledby="displayZoomTitle"
             ticks="[[zoomValues_]]" pref="{{selectedZoomPref_}}"
             label-min="$i18n{displaySizeSliderMinLabel}"
             label-max="$i18n{displaySizeSliderMaxLabel}"

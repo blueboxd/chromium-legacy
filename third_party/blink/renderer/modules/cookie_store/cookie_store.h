@@ -86,8 +86,8 @@ class CookieStore final : public EventTargetWithInlineData,
   void RemoveAllEventListeners() override;
 
   // RestrictedCookieChangeListener
-  void OnCookieChange(const WebCanonicalCookie&,
-                      network::mojom::blink::CookieChangeCause) override;
+  void OnCookieChange(
+      network::mojom::blink::CookieChangeInfoPtr change) override;
 
  protected:
   // EventTarget overrides.

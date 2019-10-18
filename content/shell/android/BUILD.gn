@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/android/jni_generator/config.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//third_party/icu/config.gni")
@@ -266,8 +267,12 @@ if (current_cpu != "x64") {
     testonly = true
     deps = [
       ":content_shell_assets",
+      ":content_shell_java",
       ":linker_resources",
-      ":linker_test_apk_all_java",
+      "//base:base_java",
+      "//base:jni_java",
+      "//content/public/android:content_java",
+      "//ui/android:ui_java",
     ]
     android_manifest = chromium_linker_test_manifest
     android_manifest_dep = ":chromium_linker_test_manifest"
@@ -276,24 +281,13 @@ if (current_cpu != "x64") {
     use_chromium_linker = true
     enable_chromium_linker_tests = true
     jni_registration_header = _linker_test_jni_registration_header
-  }
-
-  android_library("linker_test_apk_all_java") {
-    testonly = true
-    deps = [
-      ":content_shell_java",
-      ":linker_resources",
-      "//base:base_java",
-      "//base:jni_java",
-      "//content/public/android:content_java",
-      "//ui/android:ui_java",
-    ]
     java_files = [
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/ChromiumLinkerTestActivity.java",
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/ChromiumLinkerTestApplication.java",
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+    processor_args_javac = [ skip_gen_jni_arg ]
   }
 
   test_runner_script(_linker_test_apk_test_runner_target_name) {

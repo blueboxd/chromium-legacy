@@ -11,6 +11,11 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
+namespace base {
+class TestMockTimeTaskRunner;
+class TickClock;
+}  // namespace base
+
 namespace blink {
 
 // nan means data not available.
@@ -21,6 +26,7 @@ struct MemoryUsage {
   double private_footprint_bytes = std::numeric_limits<double>::quiet_NaN();
   double swap_bytes = std::numeric_limits<double>::quiet_NaN();
   double vm_size_bytes = std::numeric_limits<double>::quiet_NaN();
+  double peak_resident_bytes = std::numeric_limits<double>::quiet_NaN();
 };
 
 // Periodically checks the memory usage and notifies its observers. Monitoring
@@ -52,6 +58,10 @@ class CONTROLLER_EXPORT MemoryUsageMonitor {
   bool TimerIsActive() const { return timer_.IsRunning(); }
 
  protected:
+  MemoryUsageMonitor(
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner_for_testing,
+      const base::TickClock* clock_for_testing);
+
   // Adds V8 related memory usage data to the given struct.
   void GetV8MemoryUsage(MemoryUsage&);
   // Adds Blink related memory usage data to the given struct.

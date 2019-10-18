@@ -7,13 +7,19 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/test/mock_callback.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::TestWithParam;
 using ::testing::Values;
 
 namespace {
+
+// Callback to be executed post os authentication.
+using PostAuthCallback = base::OnceCallback<void(bool)>;
 
 enum class ReauthResult { PASS, FAIL };
 bool FakeOsReauthCall(bool* reauth_called,
@@ -32,7 +38,11 @@ class PasswordAccessAuthenticatorTest
   ~PasswordAccessAuthenticatorTest() = default;
 
  protected:
+  base::test::TaskEnvironment& task_env() { return task_env_; }
   password_manager::ReauthPurpose purpose_;
+
+ private:
+  base::test::TaskEnvironment task_env_;
 };
 
 // Check that a passed authentication does not expire before
@@ -48,20 +58,27 @@ TEST_P(PasswordAccessAuthenticatorTest, Expiration) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
+  base::MockCallback<PostAuthCallback> callback;
+  EXPECT_CALL(callback, Run(true));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 
   clock.Advance(base::TimeDelta::FromSeconds(
       PasswordAccessAuthenticator::kAuthValidityPeriodSeconds - 1));
   reauth_called = false;
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
+  EXPECT_CALL(callback, Run(true));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_FALSE(reauth_called);
 
   clock.Advance(base::TimeDelta::FromSeconds(2));
   reauth_called = false;
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
+  EXPECT_CALL(callback, Run(true));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 }
 
@@ -76,14 +93,19 @@ TEST_P(PasswordAccessAuthenticatorTest, ForceReauth) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
+  base::MockCallback<PostAuthCallback> callback;
+  EXPECT_CALL(callback, Run(true));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 
   clock.Advance(base::TimeDelta::FromSeconds(
-      PasswordAccessAuthenticator::kAuthValidityPeriodSeconds - 1));
+      PasswordAccessAuthenticator::kAuthValidityPeriodSeconds + 1));
   reauth_called = false;
 
-  EXPECT_TRUE(authenticator.ForceUserReauthentication(purpose_));
+  EXPECT_CALL(callback, Run(true));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 }
 
@@ -99,7 +121,10 @@ TEST_P(PasswordAccessAuthenticatorTest, Failed) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::FAIL));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated(purpose_));
+  base::MockCallback<PostAuthCallback> callback;
+  EXPECT_CALL(callback, Run(false));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 
   // Advance just a little bit, so that if |authenticator| starts the grace
@@ -107,7 +132,9 @@ TEST_P(PasswordAccessAuthenticatorTest, Failed) {
   clock.Advance(base::TimeDelta::FromSeconds(1));
   reauth_called = false;
 
-  EXPECT_FALSE(authenticator.EnsureUserIsAuthenticated(purpose_));
+  EXPECT_CALL(callback, Run(false));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 }
 
@@ -124,7 +151,10 @@ TEST_P(PasswordAccessAuthenticatorTest, TimeZero) {
       &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
   authenticator.SetClockForTesting(&clock);
 
-  EXPECT_TRUE(authenticator.EnsureUserIsAuthenticated(purpose_));
+  base::MockCallback<PostAuthCallback> callback;
+  EXPECT_CALL(callback, Run(true));
+  authenticator.EnsureUserIsAuthenticatedAsync(purpose_, callback.Get());
+  task_env().RunUntilIdle();
   EXPECT_TRUE(reauth_called);
 }
 

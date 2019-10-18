@@ -35,11 +35,11 @@
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_session.h"
 
 namespace arc {
 namespace {
@@ -179,6 +179,8 @@ vm_tools::concierge::CreateDiskImageRequest CreateArcDiskRequest(
   return request;
 }
 
+// TODO(yusukes): ArcSessionImpl already has this info through the delegate.
+// Use it and remove this function.
 std::string GetReleaseChannel() {
   constexpr const char kUnknown[] = "unknown";
   const std::set<std::string> channels = {"beta",    "canary", "dev",
@@ -215,50 +217,46 @@ std::string MonotonicTimestamp() {
 }
 
 std::vector<std::string> GenerateKernelCmdline(
-    int32_t lcd_density,
-    const base::Optional<bool>& play_store_auto_update,
+    const StartParams& start_params,
     const FileSystemStatus& file_system_status,
     bool is_dev_mode,
     bool is_host_on_vm) {
-  const std::string release_channel = GetReleaseChannel();
-  const bool stable_or_beta =
-      release_channel == "stable" || release_channel == "beta";
-
   std::vector<std::string> result = {
       "androidboot.hardware=bertha",
       "androidboot.container=1",
-      // TODO(b/139480143): when ArcNativeBridgeExperiment is enabled, switch
-      // to ndk_translation.
+      // TODO(b/139480143): when |start_params.native_bridge_experiment| is
+      // enabled, switch to ndk_translation.
       "androidboot.native_bridge=libhoudini.so",
       base::StringPrintf("androidboot.dev_mode=%d", is_dev_mode),
       base::StringPrintf("androidboot.disable_runas=%d", !is_dev_mode),
       base::StringPrintf("androidboot.vm=%d", is_host_on_vm),
       base::StringPrintf("androidboot.debuggable=%d",
                          file_system_status.is_android_debuggable()),
-      base::StringPrintf("androidboot.lcd_density=%d", lcd_density),
-      base::StringPrintf(
-          "androidboot.arc_file_picker=%d",
-          base::FeatureList::IsEnabled(kFilePickerExperimentFeature)),
-      base::StringPrintf(
-          "androidboot.arc_custom_tabs=%d",
-          base::FeatureList::IsEnabled(kCustomTabsExperimentFeature) &&
-              !stable_or_beta),
-      base::StringPrintf(
-          "androidboot.arc_print_spooler=%d",
-          base::FeatureList::IsEnabled(kPrintSpoolerExperimentFeature) &&
-              !stable_or_beta),
-      "androidboot.chromeos_channel=" + release_channel,
+      base::StringPrintf("androidboot.lcd_density=%d",
+                         start_params.lcd_density),
+      base::StringPrintf("androidboot.arc_file_picker=%d",
+                         start_params.arc_file_picker_experiment),
+      base::StringPrintf("androidboot.arc_custom_tabs=%d",
+                         start_params.arc_custom_tabs_experiment),
+      base::StringPrintf("androidboot.arc_print_spooler=%d",
+                         start_params.arc_print_spooler_experiment),
+      "androidboot.chromeos_channel=" + GetReleaseChannel(),
       "androidboot.boottime_offset=" + MonotonicTimestamp(),
       // TODO(yusukes): remove this once arcvm supports SELinux.
       "androidboot.selinux=permissive",
   };
 
-  if (play_store_auto_update) {
-    result.push_back(base::StringPrintf("androidboot.play_store_auto_update=%d",
-                                        *play_store_auto_update));
+  switch (start_params.play_store_auto_update) {
+    case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_DEFAULT:
+      break;
+    case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_ON:
+      result.push_back("androidboot.play_store_auto_update=1");
+      break;
+    case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF:
+      result.push_back("androidboot.play_store_auto_update=0");
+      break;
   }
 
-  // TODO(yusukes): include command line parameters from arcbootcontinue.
   return result;
 }
 
@@ -359,25 +357,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   }
 
   // ArcClientAdapter overrides:
-  void StartMiniArc(const StartArcMiniContainerRequest& request,
+  void StartMiniArc(StartParams params,
                     chromeos::VoidDBusMethodCallback callback) override {
     // TODO(yusukes): Support mini ARC.
     VLOG(2) << "Mini ARCVM instance is not supported.";
-    // Save the lcd density and auto update mode for the later call to
-    // UpgradeArc.
-    lcd_density_ = request.lcd_density();
-    cpus_ = base::SysInfo::NumberOfProcessors() - request.num_cores_disabled();
-    DCHECK_LT(0u, cpus_);
-    if (request.play_store_auto_update() ==
-        login_manager::
-            StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_ON) {
-      play_store_auto_update_ = true;
-    } else if (
-        request.play_store_auto_update() ==
-        login_manager::
-            StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_OFF) {
-      play_store_auto_update_ = false;
-    }
+
+    // Save the parameters for the later call to UpgradeArc.
+    start_params_ = std::move(params);
+
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(),
@@ -388,13 +375,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void UpgradeArc(const UpgradeArcContainerRequest& request,
+  void UpgradeArc(UpgradeParams params,
                   chromeos::VoidDBusMethodCallback callback) override {
     VLOG(1) << "Starting arcvm-server-proxy";
     chromeos::UpstartClient::Get()->StartJob(
         kArcVmServerProxyJobName, /*environment=*/{},
         base::BindOnce(&ArcVmClientAdapter::OnArcVmServerProxyJobStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
   }
 
   void StopArcInstance() override {
@@ -431,7 +419,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     should_notify_observers_ = true;
   }
 
-  void OnConciergeStarted(chromeos::VoidDBusMethodCallback callback,
+  void OnConciergeStarted(UpgradeParams params,
+                          chromeos::VoidDBusMethodCallback callback,
                           bool success) {
     if (!success) {
       LOG(ERROR) << "Failed to start Concierge service for arcvm";
@@ -449,10 +438,13 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                        base::FilePath(kHomeDirectory)),
         base::BindOnce(&ArcVmClientAdapter::CreateDiskImageAfterSizeCheck,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
   }
 
-  void CreateDiskImageAfterSizeCheck(chromeos::VoidDBusMethodCallback callback,
+  void CreateDiskImageAfterSizeCheck(UpgradeParams params,
+                                     chromeos::VoidDBusMethodCallback callback,
                                      int64_t free_disk_bytes) {
     VLOG(2) << "Got free disk size: " << free_disk_bytes;
     if (user_id_hash_.empty()) {
@@ -464,12 +456,14 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     GetConciergeClient()->CreateDiskImage(
         CreateArcDiskRequest(user_id_hash_, free_disk_bytes),
         base::BindOnce(&ArcVmClientAdapter::OnDiskImageCreated,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
   }
 
   // TODO(pliard): Export host-side /data to the VM, and remove the first half
   // of the function.
   void OnDiskImageCreated(
+      UpgradeParams params,
       chromeos::VoidDBusMethodCallback callback,
       base::Optional<vm_tools::concierge::CreateDiskImageResponse> reply) {
     if (!reply.has_value()) {
@@ -496,21 +490,28 @@ class ArcVmClientAdapter : public ArcClientAdapter,
          base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&FileSystemStatus::GetFileSystemStatusBlocking),
         base::BindOnce(&ArcVmClientAdapter::OnFileSystemStatus,
-                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback),
                        base::FilePath(response.disk_path())));
   }
 
-  void OnFileSystemStatus(chromeos::VoidDBusMethodCallback callback,
+  void OnFileSystemStatus(UpgradeParams params,
+                          chromeos::VoidDBusMethodCallback callback,
                           const base::FilePath& data_disk_path,
                           FileSystemStatus file_system_status) {
     VLOG(2) << "Got file system status";
+    const int32_t cpus =
+        base::SysInfo::NumberOfProcessors() - start_params_.num_cores_disabled;
+    DCHECK_LT(0, cpus);
+
+    // TODO(yusukes): Use |params| for generating kernel command line too.
     DCHECK(is_dev_mode_);
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
-        lcd_density_, play_store_auto_update_, file_system_status,
-        *is_dev_mode_, is_host_on_vm_);
+        start_params_, file_system_status, *is_dev_mode_, is_host_on_vm_);
     auto start_request =
-        CreateStartArcVmRequest(user_id_hash_, cpus_, data_disk_path,
+        CreateStartArcVmRequest(user_id_hash_, cpus, data_disk_path,
                                 file_system_status, std::move(kernel_cmdline));
+
     GetConciergeClient()->StartArcVm(
         start_request,
         base::BindOnce(&ArcVmClientAdapter::OnStartArcVmReply,
@@ -571,7 +572,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     OnArcInstanceStopped();
   }
 
-  void OnArcVmServerProxyJobStarted(chromeos::VoidDBusMethodCallback callback,
+  void OnArcVmServerProxyJobStarted(UpgradeParams params,
+                                    chromeos::VoidDBusMethodCallback callback,
                                     bool result) {
     if (!result) {
       LOG(ERROR) << "Failed to start arcvm-server-proxy job";
@@ -582,7 +584,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "Starting Concierge service";
     chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StartConcierge(
         base::BindOnce(&ArcVmClientAdapter::OnConciergeStarted,
-                       weak_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_factory_.GetWeakPtr(), std::move(params),
+                       std::move(callback)));
   }
 
   void OnArcVmServerProxyJobStopped(bool result) {
@@ -596,10 +599,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // A hash of the primary profile user ID.
   std::string user_id_hash_;
 
-  int32_t lcd_density_;
-  uint32_t cpus_;
-  base::Optional<bool> play_store_auto_update_;
-
+  StartParams start_params_;
   bool should_notify_observers_ = false;
 
   // For callbacks.

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
 #include "chrome/common/webui_url_constants.h"
@@ -42,6 +43,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace {
 
@@ -247,6 +249,13 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
     tab_data.SetBoolean("crashed", tab_renderer_data.IsCrashed());
     // TODO(johntlee): Add the rest of TabRendererData
 
+    auto alert_states = std::make_unique<base::ListValue>();
+    for (const auto alert_state :
+         chrome::GetTabAlertStatesForContents(contents)) {
+      alert_states->Append(static_cast<int>(alert_state));
+    }
+    tab_data.SetList("alertStates", std::move(alert_states));
+
     return tab_data;
   }
 
@@ -396,6 +405,9 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUITabStripHost);
 
+  html_source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
+
   std::string generated_path =
       "@out_folder@/gen/chrome/browser/resources/tab_strip/";
 
@@ -406,6 +418,8 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
     }
     html_source->AddResourcePath(path, kTabStripResources[i].value);
   }
+  html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
   html_source->SetDefaultResource(IDR_TAB_STRIP_HTML);
 

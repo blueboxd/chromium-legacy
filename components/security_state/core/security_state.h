@@ -129,6 +129,16 @@ enum class SafetyTipStatus {
   kMaxValue = kBadKeyword,
 };
 
+// Information about the last safety tip shown in the UI. This is used in page
+// info and security tab (in devtools) to give more information about the safety
+// tip.
+struct SafetyTipInfo {
+  SafetyTipStatus status = SafetyTipStatus::kUnknown;
+  // The URL the safety tip suggested ("Did you mean?"). Only filled in for
+  // lookalike matches.
+  GURL safe_url;
+};
+
 // Contains the security state relevant to computing the SecurityLevel
 // for a page. This is the input to GetSecurityLevel().
 struct VisibleSecurityState {
@@ -142,7 +152,7 @@ struct VisibleSecurityState {
   // field will be set even if the Safety Tip UI was not actually shown due to
   // the feature being disabled (so that this field can be used to record
   // metrics independent of whether the UI actually showed).
-  SafetyTipStatus safety_tip_status;
+  SafetyTipInfo safety_tip_info;
 
   // CONNECTION SECURITY FIELDS
   // Whether the connection security fields are initialized.

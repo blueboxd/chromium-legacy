@@ -142,13 +142,8 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     return;
   }
 
-  SharedWorkerInstance instance(
-      info->url, info->name, constructor_origin, info->content_security_policy,
-      info->content_security_policy_type, info->creation_address_space,
-      creation_context_type);
-
-  SharedWorkerHost* host = FindMatchingSharedWorkerHost(
-      instance.url(), instance.name(), instance.constructor_origin());
+  SharedWorkerHost* host =
+      FindMatchingSharedWorkerHost(info->url, info->name, constructor_origin);
   if (host) {
     // Non-secure contexts cannot connect to secure workers, and secure contexts
     // cannot connect to non-secure workers:
@@ -184,6 +179,11 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       storage_partition_->browser_context(), site_instance->GetSiteURL(),
       /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
 
+  SharedWorkerInstance instance(
+      next_shared_worker_instance_id_++, info->url, info->name,
+      constructor_origin, info->content_security_policy,
+      info->content_security_policy_type, info->creation_address_space,
+      creation_context_type);
   CreateWorker(instance, std::move(outside_fetch_client_settings_object),
                std::move(client), client_process_id, frame_id, storage_domain,
                message_port, std::move(blob_url_loader_factory));

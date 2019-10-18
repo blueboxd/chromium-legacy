@@ -2820,4 +2820,7 @@ const char kCorsMitigationList[] = "cors.mitigation.list";
 // TODO(crbug.com/1001450): Remove this once we fully shipped OOR-CORS.
 const char kCorsLegacyModeEnabled[] = "cors.legacy_mode.enabled";
 
+const char kExternalProtocolDialogShowAlwaysOpenCheckbox[] =
+    "external_protocol_dialog.show_always_open_checkbox";
+
 }  // namespace prefs

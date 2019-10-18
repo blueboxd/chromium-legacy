@@ -7,7 +7,9 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
@@ -27,7 +29,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
  public:
   // Shows the editor for |group|. Returns an *unowned* pointer to the
   // bubble's widget.
-  static views::Widget* Show(views::View* anchor_view,
+  static views::Widget* Show(TabGroupHeader* anchor_view,
                              TabController* tab_controller,
                              TabGroupId group);
 
@@ -38,7 +40,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   int GetDialogButtons() const override;
 
  private:
-  TabGroupEditorBubbleView(views::View* anchor_view,
+  TabGroupEditorBubbleView(TabGroupHeader* anchor_view,
                            TabController* tab_controller,
                            TabGroupId group);
   ~TabGroupEditorBubbleView() override;
@@ -63,6 +65,24 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   };
 
   TitleFieldController title_field_controller_;
+
+  class ButtonListener : public views::ButtonListener {
+   public:
+    explicit ButtonListener(TabController* tab_controller,
+                            TabGroupHeader* anchor_view,
+                            TabGroupId group);
+
+    // views::ButtonListener:
+    void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+   private:
+    TabController* const tab_controller_;
+    TabGroupHeader* anchor_view_;
+    const TabGroupId group_;
+  };
+
+  ButtonListener menu_button_listener_;
+
   views::Textfield* title_field_;
 
   ColorPickerView* color_selector_;

@@ -79,7 +79,8 @@ void ReputationWebContentsObserver::DidFinishNavigation(
     return;
   }
 
-  last_navigation_safety_tip_status_ = security_state::SafetyTipStatus::kNone;
+  last_navigation_safety_tip_info_ = {security_state::SafetyTipStatus::kNone,
+                                      GURL()};
   last_safety_tip_navigation_entry_id_ = 0;
 
   MaybeShowSafetyTip();
@@ -90,15 +91,16 @@ void ReputationWebContentsObserver::OnVisibilityChanged(
   MaybeShowSafetyTip();
 }
 
-security_state::SafetyTipStatus
-ReputationWebContentsObserver::GetSafetyTipStatusForVisibleNavigation() const {
+security_state::SafetyTipInfo
+ReputationWebContentsObserver::GetSafetyTipInfoForVisibleNavigation() const {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetVisibleEntry();
   if (!entry)
-    return security_state::SafetyTipStatus::kUnknown;
+    return {security_state::SafetyTipStatus::kUnknown, GURL()};
   return last_safety_tip_navigation_entry_id_ == entry->GetUniqueID()
-             ? last_navigation_safety_tip_status_
-             : security_state::SafetyTipStatus::kNone;
+             ? last_navigation_safety_tip_info_
+             : security_state::SafetyTipInfo(
+                   {security_state::SafetyTipStatus::kNone, GURL()});
 }
 
 void ReputationWebContentsObserver::RegisterReputationCheckCallbackForTesting(
@@ -110,7 +112,10 @@ ReputationWebContentsObserver::ReputationWebContentsObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  last_navigation_safety_tip_info_ = {security_state::SafetyTipStatus::kNone,
+                                      GURL()};
+}
 
 void ReputationWebContentsObserver::MaybeShowSafetyTip() {
   if (web_contents()->GetMainFrame()->GetVisibilityState() !=
@@ -154,7 +159,8 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
   // Set this field independent of whether the feature to show the UI is
   // enabled/disabled. Metrics code uses this field and we want to record
   // metrics regardless of the feature being enabled/disabled.
-  last_navigation_safety_tip_status_ = safety_tip_status;
+  last_navigation_safety_tip_info_ = {safety_tip_status, suggested_url};
+
   // A navigation entry should always exist because reputation checks are only
   // triggered when a committed navigation finishes.
   last_safety_tip_navigation_entry_id_ =

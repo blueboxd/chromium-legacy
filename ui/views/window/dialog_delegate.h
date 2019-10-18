@@ -103,6 +103,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Override this function to display an extra view adjacent to the buttons.
   // Overrides may construct the view; this will only be called once per dialog.
+  // DEPRECATED: Prefer to use SetExtraView() below; this method is being
+  // removed. See https://crbug.com/1011446.
   virtual std::unique_ptr<View> CreateExtraView();
 
   // Override this function to display a footnote view below the buttons.
@@ -140,6 +142,13 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   const gfx::Insets& margins() const { return margins_; }
   void set_margins(const gfx::Insets& margins) { margins_ = margins; }
+
+  template <typename T>
+  T* SetExtraView(std::unique_ptr<T> extra_view) {
+    T* view = extra_view.get();
+    extra_view_ = std::move(extra_view);
+    return view;
+  }
 
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.
@@ -193,6 +202,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Dialog parameters for this dialog.
   Params params_;
+
+  // The extra view for this dialog, if there is one.
+  std::unique_ptr<View> extra_view_ = nullptr;
 
   // Observers for DialogModel changes.
   base::ObserverList<DialogObserver>::Unchecked observer_list_;

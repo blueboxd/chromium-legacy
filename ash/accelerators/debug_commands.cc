@@ -76,6 +76,9 @@ void PrintWindowHierarchy(const aura::Window* active_window,
   *out << indent_str;
   *out << name << " (" << window << ")"
        << " type=" << window->type();
+  int window_id = window->id();
+  if (window_id != aura::Window::kInitialId)
+    *out << " id=" << window_id;
   if (window->GetProperty(kWindowStateKey))
     *out << " " << WindowState::Get(window)->GetStateType();
   *out << ((window == active_window) ? " [active]" : "")

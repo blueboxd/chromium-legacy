@@ -30,7 +30,6 @@ class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // Sets up the child views.
   void InitWindow();

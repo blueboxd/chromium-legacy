@@ -56,7 +56,7 @@ class COMPONENT_EXPORT(SQL) Statement {
   // be valid. Use is_valid() to check if it's OK.
   void Assign(scoped_refptr<Database::StatementRef> ref);
 
-  // Resets the statement to an uninitialized state corrosponding to
+  // Resets the statement to an uninitialized state corresponding to
   // the default constructor, releasing the StatementRef.
   void Clear();
 

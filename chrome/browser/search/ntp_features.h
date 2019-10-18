@@ -14,6 +14,8 @@ namespace features {
 
 extern const base::Feature kChromeColors;
 extern const base::Feature kChromeColorsCustomColorPicker;
+extern const base::Feature kConfirmNtpSuggestionRemovals;
+extern const base::Feature kDismissNtpPromos;
 extern const base::Feature kNtpCustomizationMenuV2;
 
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
@@ -23,8 +25,6 @@ extern const base::Feature kNtpRealbox;
 // are enabled; or omnibox::kOnFocusSuggestions is enabled and configured to
 // show suggestions of some type in the NTP Realbox.
 bool IsNtpRealboxEnabled();
-
-extern const base::Feature kDismissNtpPromos;
 
 }  // namespace features
 

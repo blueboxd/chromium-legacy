@@ -519,11 +519,8 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   ASSERT_TRUE(stream->Open());
   RunThreadsUntilIdle();
 
-  // Set to busy, so that the OnPushBufferComplete callback is not called after
-  // the backend is stopped.
   FakeAudioDecoder* audio_decoder = GetAudioDecoder();
   ASSERT_TRUE(audio_decoder);
-  audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_BUSY);
 
   ::media::MockAudioSourceCallback source_callback;
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
@@ -531,8 +528,13 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   stream->Stop();
+  EXPECT_CALL(source_callback, OnMoreData(_, _, _, _)).Times(0);
+  RunThreadsUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(&source_callback);
 
   // Ensure we fetch new data when restarting.
+  EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
   int last_on_more_data_call_count = on_more_data_call_count_;
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
@@ -551,8 +553,6 @@ TEST_F(CastAudioOutputStreamTest, StopPreventsCallbacks) {
   ASSERT_TRUE(stream->Open());
   RunThreadsUntilIdle();
 
-  // Set to busy, so that the OnPushBufferComplete callback is not called after
-  // the backend is stopped.
   FakeAudioDecoder* audio_decoder = GetAudioDecoder();
   ASSERT_TRUE(audio_decoder);
 

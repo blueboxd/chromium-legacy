@@ -195,6 +195,8 @@
 #define IDC_INSTALL_PWA                 40254
 #define IDC_SHOW_MANAGEMENT_PAGE             40255
 #define IDC_PASTE_AND_GO                40256
+#define IDC_SHOW_SAVE_LOCAL_CARD_SIGN_IN_PROMO_IF_APPLICABLE 40257
+#define IDC_CLOSE_SIGN_IN_PROMO        40258
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

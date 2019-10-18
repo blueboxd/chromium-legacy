@@ -71,8 +71,7 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       blink::mojom::BackgroundFetchRegistrationPtr registration,
       DispatchBackgroundFetchSuccessEventCallback callback) override;
   void DispatchCookieChangeEvent(
-      const net::CanonicalCookie& cookie,
-      ::network::mojom::CookieChangeCause cause,
+      const net::CookieChangeInfo& change,
       DispatchCookieChangeEventCallback callback) override;
   void DispatchFetchEventForMainResource(
       blink::mojom::DispatchFetchEventParamsPtr params,

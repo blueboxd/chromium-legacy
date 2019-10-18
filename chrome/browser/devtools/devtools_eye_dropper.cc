@@ -21,6 +21,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -266,7 +267,8 @@ void DevToolsEyeDropper::OnFrameCaptured(
     base::ReadOnlySharedMemoryRegion data,
     ::media::mojom::VideoFrameInfoPtr info,
     const gfx::Rect& content_rect,
-    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
+    mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+        callbacks) {
   gfx::Size view_size = host_->GetView()->GetViewBounds().size();
   if (view_size != content_rect.size()) {
     video_capturer_->SetResolutionConstraints(view_size, view_size, true);
@@ -274,8 +276,11 @@ void DevToolsEyeDropper::OnFrameCaptured(
     return;
   }
 
+  mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+      callbacks_remote(std::move(callbacks));
+
   if (!data.IsValid()) {
-    callbacks->Done();
+    callbacks_remote->Done();
     return;
   }
   base::ReadOnlySharedMemoryMapping mapping = data.Map();
@@ -305,7 +310,7 @@ void DevToolsEyeDropper::OnFrameCaptured(
     base::ReadOnlySharedMemoryMapping mapping;
     // Prevents FrameSinkVideoCapturer from recycling the shared memory that
     // backs |frame_|.
-    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr releaser;
+    mojo::Remote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> releaser;
   };
   frame_.installPixels(
       SkImageInfo::MakeN32(content_rect.width(), content_rect.height(),
@@ -317,7 +322,7 @@ void DevToolsEyeDropper::OnFrameCaptured(
       [](void* addr, void* context) {
         delete static_cast<FramePinner*>(context);
       },
-      new FramePinner{std::move(mapping), std::move(callbacks)});
+      new FramePinner{std::move(mapping), std::move(callbacks_remote)});
   frame_.setImmutable();
 
   UpdateCursor();

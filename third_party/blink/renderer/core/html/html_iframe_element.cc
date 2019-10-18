@@ -64,8 +64,7 @@ HTMLIFrameElement::~HTMLIFrameElement() = default;
 const AttrNameToTrustedType& HTMLIFrameElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"src", SpecificTrustedType::kTrustedURL},
-                        {"srcdoc", SpecificTrustedType::kTrustedHTML}}));
+                      ({{"srcdoc", SpecificTrustedType::kTrustedHTML}}));
   return attribute_map;
 }
 

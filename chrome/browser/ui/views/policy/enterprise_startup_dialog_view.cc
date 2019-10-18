@@ -66,12 +66,35 @@ std::unique_ptr<views::Label> CreateText(const base::string16& message) {
   return text;
 }
 
+std::unique_ptr<views::View> CreateLogoView() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Show Google Chrome Enterprise logo only for official build.
+  auto logo_image = std::make_unique<views::ImageView>();
+  logo_image->SetImage(
+      ui::ResourceBundle::GetSharedInstance()
+          .GetImageNamed((logo_image->GetNativeTheme()->ShouldUseDarkColors())
+                             ? IDR_PRODUCT_LOGO_ENTERPRISE_WHITE
+                             : IDR_PRODUCT_LOGO_ENTERPRISE)
+          .AsImageSkia());
+  logo_image->set_tooltip_text(
+      l10n_util::GetStringUTF16(IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT));
+  gfx::Rect logo_bounds = logo_image->GetImageBounds();
+  logo_image->SetImageSize(gfx::Size(
+      logo_bounds.width() * kLogoHeight / logo_bounds.height(), kLogoHeight));
+  logo_image->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
+  return logo_image;
+#else
+  return nullptr;
+#endif
+}
+
 }  // namespace
 
 EnterpriseStartupDialogView::EnterpriseStartupDialogView(
     EnterpriseStartupDialog::DialogResultCallback callback)
     : callback_(std::move(callback)) {
   DialogDelegate::set_draggable(true);
+  DialogDelegate::SetExtraView(CreateLogoView());
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
 #if defined(OS_MACOSX)
@@ -169,28 +192,6 @@ bool EnterpriseStartupDialogView::ShouldShowWindowTitle() const {
 
 ui::ModalType EnterpriseStartupDialogView::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
-}
-
-std::unique_ptr<views::View> EnterpriseStartupDialogView::CreateExtraView() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Show Google Chrome Enterprise logo only for official build.
-  auto logo_image = std::make_unique<views::ImageView>();
-  logo_image->SetImage(
-      ui::ResourceBundle::GetSharedInstance()
-          .GetImageNamed((logo_image->GetNativeTheme()->ShouldUseDarkColors())
-                             ? IDR_PRODUCT_LOGO_ENTERPRISE_WHITE
-                             : IDR_PRODUCT_LOGO_ENTERPRISE)
-          .AsImageSkia());
-  logo_image->set_tooltip_text(
-      l10n_util::GetStringUTF16(IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT));
-  gfx::Rect logo_bounds = logo_image->GetImageBounds();
-  logo_image->SetImageSize(gfx::Size(
-      logo_bounds.width() * kLogoHeight / logo_bounds.height(), kLogoHeight));
-  logo_image->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
-  return logo_image;
-#else
-  return nullptr;
-#endif
 }
 
 int EnterpriseStartupDialogView::GetDialogButtons() const {

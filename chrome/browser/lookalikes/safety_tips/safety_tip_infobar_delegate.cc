@@ -119,5 +119,5 @@ void SafetyTipInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 SafetyTipInfoBarDelegate::GetDescriptionText() const {
-  return GetSafetyTipDescription(safety_tip_status_, suggested_url_);
+  return GetSafetyTipDescription(safety_tip_status_, url_, suggested_url_);
 }

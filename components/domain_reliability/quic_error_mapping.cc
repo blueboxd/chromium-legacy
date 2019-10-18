@@ -312,6 +312,10 @@ const struct QuicErrorMapping {
     {quic::QUIC_TRANSPORT_INVALID_CLIENT_INDICATION,
      "quic.transport.invalid.client.indication"},
 
+    {quic::QUIC_QPACK_DECOMPRESSION_FAILED, "QUIC.QPACK.DECOMPRESSION.FAILED"},
+    {quic::QUIC_QPACK_ENCODER_STREAM_ERROR, "QUIC.QPACK.ENCODER.STREAM.ERROR"},
+    {quic::QUIC_QPACK_DECODER_STREAM_ERROR, "QUIC.QPACK.DECODER.STREAM.ERROR"},
+
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be
     // an entry for it, but the symbol is gone.

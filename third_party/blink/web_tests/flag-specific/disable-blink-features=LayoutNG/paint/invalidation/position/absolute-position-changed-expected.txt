@@ -34,6 +34,16 @@
         }
       ],
       "transform": 3
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 600],
+      "bounds": [800, 0]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [800, 0],
+      "bounds": [0, 600]
     }
   ],
   "transforms": [

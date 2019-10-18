@@ -87,12 +87,6 @@ bool IsKioskModeActive() {
          LoginStatus::KIOSK_APP;
 }
 
-// Returns true if ARC kiosk mode is active.
-bool IsArcKioskModeActive() {
-  return Shell::Get()->session_controller()->login_status() ==
-         LoginStatus::ARC_KIOSK_APP;
-}
-
 // Returns true if there is an active user and their session isn't currently
 // locked.
 bool IsUserActive() {
@@ -495,7 +489,7 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
 }
 
 bool UserMetricsRecorder::IsUserInActiveDesktopEnvironment() const {
-  return IsUserActive() && !IsKioskModeActive() && !IsArcKioskModeActive();
+  return IsUserActive() && !IsKioskModeActive();
 }
 
 void UserMetricsRecorder::StartTimer() {

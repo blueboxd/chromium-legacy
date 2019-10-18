@@ -22,11 +22,12 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   explicit BackGestureAffordance(const gfx::Point& location);
   ~BackGestureAffordance() override;
 
-  // Sets drag progress. 0 means no progress. 1 means full progress and drag
-  // will be completed with full progress. Values more than 1 are also allowed
-  // for achieving burst ripple. But the maximium value is limited as
-  // |kBurstTransform| / |kMaxTransform|.
-  void SetDragProgress(int x_location);
+  // Sets the x-axis and y-axis drag progress. 0 means no progress and 1 means
+  // full progress. Drag will be completed with full x-axis progress. For x-axis
+  // progress, values more than 1 are also allowed for achieving burst ripple.
+  // Y-axis progress is used to control the y-axis movement distance of the
+  // affordance.
+  void SetDragProgress(int x_drag_amount, int y_drag_amount);
 
   // Aborts the affordance and animates it back.
   void Abort();
@@ -59,6 +60,7 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   // Values that determine current state of the affordance.
   State state_ = State::DRAGGING;
   float drag_progress_ = 0.f;
+  float y_drag_progress_ = 0.f;
   float abort_progress_ = 0.f;
   float complete_progress_ = 0.f;
 

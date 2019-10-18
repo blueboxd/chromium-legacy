@@ -46,8 +46,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 struct PresentationAttributeCacheKey {
   PresentationAttributeCacheKey() : tag_name(nullptr) {}
   StringImpl* tag_name;
@@ -105,7 +103,7 @@ static void MakePresentationAttributeCacheKey(
       return;
     // FIXME: Background URL may depend on the base URL and can't be shared.
     // Disallow caching.
-    if (attr.GetName() == kBackgroundAttr)
+    if (attr.GetName() == html_names::kBackgroundAttr)
       return;
     result.attributes_and_values.push_back(
         std::make_pair(attr.LocalName().Impl(), attr.Value()));

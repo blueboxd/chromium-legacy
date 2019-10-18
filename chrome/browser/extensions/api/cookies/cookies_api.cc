@@ -95,9 +95,8 @@ CookiesEventRouter::CookieChangeListener::CookieChangeListener(
 CookiesEventRouter::CookieChangeListener::~CookieChangeListener() = default;
 
 void CookiesEventRouter::CookieChangeListener::OnCookieChange(
-    const net::CanonicalCookie& canonical_cookie,
-    network::mojom::CookieChangeCause cause) {
-  router_->OnCookieChange(otr_, canonical_cookie, cause);
+    const net::CookieChangeInfo& change) {
+  router_->OnCookieChange(otr_, change);
 }
 
 CookiesEventRouter::CookiesEventRouter(content::BrowserContext* context)
@@ -110,50 +109,48 @@ CookiesEventRouter::~CookiesEventRouter() {
   BrowserList::RemoveObserver(this);
 }
 
-void CookiesEventRouter::OnCookieChange(
-    bool otr,
-    const net::CanonicalCookie& canonical_cookie,
-    network::mojom::CookieChangeCause cause) {
+void CookiesEventRouter::OnCookieChange(bool otr,
+                                        const net::CookieChangeInfo& change) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean(cookies_api_constants::kRemovedKey,
-                   cause != network::mojom::CookieChangeCause::INSERTED);
+                   change.cause != net::CookieChangeCause::INSERTED);
 
   Profile* profile =
       otr ? profile_->GetOffTheRecordProfile() : profile_->GetOriginalProfile();
   api::cookies::Cookie cookie = cookies_helpers::CreateCookie(
-      canonical_cookie, cookies_helpers::GetStoreIdFromProfile(profile));
+      change.cookie, cookies_helpers::GetStoreIdFromProfile(profile));
   dict->Set(cookies_api_constants::kCookieKey, cookie.ToValue());
 
   // Map the internal cause to an external string.
   std::string cause_dict_entry;
-  switch (cause) {
+  switch (change.cause) {
     // Report an inserted cookie as an "explicit" change cause. All other causes
     // only make sense for deletions.
-    case network::mojom::CookieChangeCause::INSERTED:
-    case network::mojom::CookieChangeCause::EXPLICIT:
+    case net::CookieChangeCause::INSERTED:
+    case net::CookieChangeCause::EXPLICIT:
       cause_dict_entry = cookies_api_constants::kExplicitChangeCause;
       break;
 
-    case network::mojom::CookieChangeCause::OVERWRITE:
+    case net::CookieChangeCause::OVERWRITE:
       cause_dict_entry = cookies_api_constants::kOverwriteChangeCause;
       break;
 
-    case network::mojom::CookieChangeCause::EXPIRED:
+    case net::CookieChangeCause::EXPIRED:
       cause_dict_entry = cookies_api_constants::kExpiredChangeCause;
       break;
 
-    case network::mojom::CookieChangeCause::EVICTED:
+    case net::CookieChangeCause::EVICTED:
       cause_dict_entry = cookies_api_constants::kEvictedChangeCause;
       break;
 
-    case network::mojom::CookieChangeCause::EXPIRED_OVERWRITE:
+    case net::CookieChangeCause::EXPIRED_OVERWRITE:
       cause_dict_entry = cookies_api_constants::kExpiredOverwriteChangeCause;
       break;
 
-    case network::mojom::CookieChangeCause::UNKNOWN_DELETION:
+    case net::CookieChangeCause::UNKNOWN_DELETION:
       NOTREACHED();
   }
   dict->SetString(cookies_api_constants::kCauseKey, cause_dict_entry);
@@ -162,7 +159,7 @@ void CookiesEventRouter::OnCookieChange(
 
   DispatchEvent(profile, events::COOKIES_ON_CHANGED,
                 api::cookies::OnChanged::kEventName, std::move(args),
-                cookies_helpers::GetURLFromCanonicalCookie(canonical_cookie));
+                cookies_helpers::GetURLFromCanonicalCookie(change.cookie));
 }
 
 void CookiesEventRouter::OnBrowserAdded(Browser* browser) {

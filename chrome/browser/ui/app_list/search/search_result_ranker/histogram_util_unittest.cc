@@ -67,4 +67,28 @@ TEST_F(HistogramUtilTest, TestNumImpressionTypes) {
       "Apps.AppList.ZeroStateResultsList.NumImpressionTypes", 2, 1);
 }
 
+TEST_F(HistogramUtilTest, TestContainsDriveFiles) {
+  // No Drive files
+  LogZeroStateResultsListMetrics(
+      {RankingItemType::kOmniboxGeneric, RankingItemType::kZeroStateFile}, 0);
+  histogram_tester_.ExpectUniqueSample(
+      "Apps.AppList.ZeroStateResultsList.ContainsDriveFiles", 0, 1);
+
+  // One Drive file
+  LogZeroStateResultsListMetrics(
+      {RankingItemType::kOmniboxGeneric, RankingItemType::kDriveQuickAccess,
+       RankingItemType::kZeroStateFile},
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResultsList.ContainsDriveFiles", 1, 1);
+
+  // Many Drive files
+  LogZeroStateResultsListMetrics(
+      {RankingItemType::kDriveQuickAccess, RankingItemType::kDriveQuickAccess,
+       RankingItemType::kDriveQuickAccess},
+      0);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResultsList.ContainsDriveFiles", 1, 2);
+}
+
 }  // namespace app_list

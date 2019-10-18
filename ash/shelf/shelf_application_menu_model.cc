@@ -20,7 +20,7 @@ ShelfApplicationMenuModel::ShelfApplicationMenuModel(
     Items items,
     ShelfItemDelegate* delegate)
     : ui::SimpleMenuModel(this), delegate_(delegate) {
-  AddItem(std::numeric_limits<int>::max(), title);
+  AddTitle(title);
   for (size_t i = 0; i < items.size(); i++)
     AddItemWithIcon(i, items[i].first, items[i].second);
   AddSeparator(ui::SPACING_SEPARATOR);

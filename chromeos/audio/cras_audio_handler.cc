@@ -22,6 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -1186,10 +1187,10 @@ void CrasAudioHandler::PauseAllStreams() {
     LOG(ERROR) << "Failed to get connector";
     return;
   }
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
-  connector_->BindInterface(media_session::mojom::kServiceName,
-                            mojo::MakeRequest(&controller_manager_ptr));
-  controller_manager_ptr->SuspendAllSessions();
+  mojo::Remote<media_session::mojom::MediaControllerManager> controller_manager;
+  connector_->Connect(media_session::mojom::kServiceName,
+                      controller_manager.BindNewPipeAndPassReceiver());
+  controller_manager->SuspendAllSessions();
 }
 
 void CrasAudioHandler::HandleNonHotplugNodesChange(

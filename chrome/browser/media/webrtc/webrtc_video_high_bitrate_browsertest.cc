@@ -12,7 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
-#include "testing/perf/perf_result_reporter.h"
+#include "testing/perf/perf_test.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -21,19 +21,6 @@ static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_video_display_perf_test.html";
 static const char kInboundRtp[] = "inbound-rtp";
 static const char kOutboundRtp[] = "outbound-rtp";
-
-constexpr int kBitsPerByte = 8;
-
-constexpr char kMetricPrefixHighBitrate[] = "WebRtcHighBitrateVideo.";
-constexpr char kMetricSendRateBitsPerS[] = "send_rate";
-constexpr char kMetricReceiveRateBitsPerS[] = "receive_rate";
-
-perf_test::PerfResultReporter SetUpReporter(const std::string& story) {
-  perf_test::PerfResultReporter reporter(kMetricPrefixHighBitrate, story);
-  reporter.RegisterFyiMetric(kMetricSendRateBitsPerS, "bits/s");
-  reporter.RegisterFyiMetric(kMetricReceiveRateBitsPerS, "bits/s");
-  return reporter;
-}
 
 // Sums up "RTC[In/Out]boundRTPStreamStats.bytes_[received/sent]" values.
 double GetTotalRTPStreamBytes(content::TestStatsReportDictionary* report,
@@ -151,10 +138,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoHighBitrateBrowserTest,
       (video_bytes_received_after - video_bytes_received_before) /
       duration_in_seconds;
 
-  auto reporter = SetUpReporter("baseline_story");
-  reporter.AddResult(kMetricSendRateBitsPerS, video_send_rate * kBitsPerByte);
-  reporter.AddResult(kMetricReceiveRateBitsPerS,
-                     video_receive_rate * kBitsPerByte);
+  perf_test::PrintResult("video", "", "send_rate", video_send_rate,
+                         "bytes/second", false);
+  perf_test::PrintResult("video", "", "receive_rate", video_receive_rate,
+                         "bytes/second", false);
 
   HangUp(left_tab);
   HangUp(right_tab);

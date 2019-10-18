@@ -79,6 +79,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -509,12 +510,16 @@ bool FilterResponseHeaders(net::HttpResponseHeaders* response_headers,
 void OnDNRActionMatched(content::BrowserContext* browser_context,
                         const DNRRequestAction& action,
                         int tab_id) {
+  if (action.tracked)
+    return;
+
   declarative_net_request::ActionTracker& action_tracker =
       declarative_net_request::RulesMonitorService::Get(browser_context)
           ->ruleset_manager()
           ->action_tracker();
 
   action_tracker.OnRuleMatched(action.extension_id, tab_id);
+  action.tracked = true;
 }
 
 // Helper to remove request headers based on a matched DNR action. Returns
@@ -730,8 +735,8 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   }
 
   auto proxied_receiver = std::move(*factory_receiver);
-  network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-  *factory_receiver = mojo::MakeRequest(&target_factory_info);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote;
+  *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
 
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data;
   const bool is_navigation = (type == URLLoaderFactoryType::kNavigation);
@@ -760,7 +765,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   WebRequestProxyingURLLoaderFactory::StartProxying(
       browser_context, is_navigation ? -1 : render_process_id,
       request_id_generator_, std::move(navigation_ui_data),
-      std::move(proxied_receiver), std::move(target_factory_info),
+      std::move(proxied_receiver), std::move(target_factory_remote),
       std::move(header_client_receiver), proxies_.get(), type);
   return true;
 }

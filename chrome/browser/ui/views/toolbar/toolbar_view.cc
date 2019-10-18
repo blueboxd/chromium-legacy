@@ -738,10 +738,14 @@ void ToolbarView::LayoutCommon() {
       GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN);
   layout_manager_->SetInteriorMargin(interior_margin);
 
-  const bool maximized =
-      browser_->window() && browser_->window()->IsMaximized();
-  back_->SetLeadingMargin(maximized ? interior_margin.left() : 0);
-  app_menu_button_->SetTrailingMargin(maximized ? interior_margin.right() : 0);
+  // Extend buttons to the window edge if we're either in a maximized or
+  // fullscreen window. This makes the buttons easier to hit, see Fitts' law.
+  const bool extend_buttons_to_edge =
+      browser_->window() &&
+      (browser_->window()->IsMaximized() || browser_->window()->IsFullscreen());
+  back_->SetLeadingMargin(extend_buttons_to_edge ? interior_margin.left() : 0);
+  app_menu_button_->SetTrailingMargin(
+      extend_buttons_to_edge ? interior_margin.right() : 0);
 
   // Cast button visibility is controlled externally.
 }

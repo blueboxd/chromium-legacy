@@ -624,12 +624,16 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       buffer_presented_callback_(std::move(buffer_presented_callback)),
       context_lost_callback_(std::move(context_lost_callback)),
       gpu_vsync_callback_(std::move(gpu_vsync_callback)),
-      gpu_preferences_(dependency_->GetGpuPreferences()) {
+      gpu_preferences_(dependency_->GetGpuPreferences()),
+      copier_active_url_(GURL("chrome://gpu/SkiaRendererGLRendererCopier")) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  dependency_->RegisterDisplayContext(this);
 }
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  dependency_->UnregisterDisplayContext(this);
 
   // |context_provider_| and clients want either the context to be lost or made
   // current on destruction.
@@ -947,6 +951,9 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
 
   bool use_gl_renderer_copier =
       !is_using_vulkan() && !features::IsUsingSkiaForGLReadback();
+  if (use_gl_renderer_copier)
+    gpu::ContextUrl::SetActiveUrl(copier_active_url_);
+
   // Lazy initialize GLRendererCopier before draw because
   // DirectContextProvider ctor the backbuffer.
   if (use_gl_renderer_copier && !copier_) {
@@ -1156,6 +1163,7 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleDelayedWork() {
 
 void SkiaOutputSurfaceImplOnGpu::PerformDelayedWork() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  gpu::ContextUrl::SetActiveUrl(copier_active_url_);
   ScopedUseContextProvider use_context_provider(this, /*texture_client_id=*/0);
 
   delayed_work_pending_ = false;
@@ -1214,7 +1222,10 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
   DCHECK(!image_contexts.empty());
   // The window could be destroyed already, and the MakeCurrent will fail with
   // an destroyed window, so MakeCurrent without requiring the fbo0.
-  MakeCurrent(false /* need_fbo0 */);
+  if (!MakeCurrent(false /* need_fbo0 */)) {
+    for (const auto& context : image_contexts)
+      context->OnContextLost();
+  }
 
   // |image_contexts| goes out of scope here.
 }
@@ -1354,13 +1365,17 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 
 bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_fbo0) {
   if (!is_using_vulkan()) {
+    if (context_state_->context_lost())
+      return false;
+
     // Only make current with |gl_surface_|, if following operations will use
     // fbo0.
     if (!context_state_->MakeCurrent(need_fbo0 ? gl_surface_.get() : nullptr)) {
       LOG(ERROR) << "Failed to make current.";
-      context_lost_callback_.Run();
-      if (context_provider_)
-        context_provider_->MarkContextLost();
+      dependency_->DidLoseContext(
+          !need_fbo0 /* offscreen */, gpu::error::kMakeCurrentFailed,
+          GURL("chrome://gpu/SkiaOutputSurfaceImplOnGpu::MakeCurrent"));
+      MarkContextLost();
       return false;
     }
     context_state_->set_need_context_state_reset(true);
@@ -1472,6 +1487,15 @@ void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
   shared_image_overlay->BeginReadAccess();
   shared_image_overlay->EndReadAccess();
 #endif
+}
+
+void SkiaOutputSurfaceImplOnGpu::MarkContextLost() {
+  context_state_->MarkContextLost();
+  if (context_lost_callback_) {
+    std::move(context_lost_callback_).Run();
+    if (context_provider_)
+      context_provider_->MarkContextLost();
+  }
 }
 
 }  // namespace viz

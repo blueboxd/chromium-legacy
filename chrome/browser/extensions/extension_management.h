@@ -112,6 +112,10 @@ class ExtensionManagement : public KeyedService {
   // policy or not.
   bool IsInstallationExplicitlyAllowed(const ExtensionId& id) const;
 
+  // Returns if an extension with id |id| is explicitly blocked by enterprise
+  // policy or not.
+  bool IsInstallationExplicitlyBlocked(const ExtensionId& id) const;
+
   // Returns true if an extension download should be allowed to proceed.
   bool IsOffstoreInstallAllowed(const GURL& url,
                                 const GURL& referrer_url) const;

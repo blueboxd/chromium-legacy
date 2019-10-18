@@ -20,6 +20,10 @@ ExternalUseClient::ImageContext::ImageContext(
 
 ExternalUseClient::ImageContext::~ImageContext() = default;
 
+void ExternalUseClient::ImageContext::OnContextLost() {
+  NOTREACHED();
+}
+
 void ExternalUseClient::ImageContext::SetImage(sk_sp<SkImage> image,
                                                GrBackendFormat backend_format) {
   DCHECK(!image_);

@@ -9,6 +9,7 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidator.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -23,7 +24,8 @@ class PaintArtifact;
 class PaintChunkSubset;
 
 class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
-                                               public cc::LayerClient {
+                                               public cc::LayerClient,
+                                               public LayerAsJSONClient {
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
  public:
@@ -50,20 +52,17 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   std::string LayerDebugName(const cc::Layer*) const override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override {}
 
+  // LayerAsJSONClient implementation
+  void AppendAdditionalInfoAsJSON(LayerTreeFlags,
+                                  const cc::Layer&,
+                                  JSONObject&) const override;
+
+  const cc::Layer& Layer() const { return *cc_picture_layer_.get(); }
+  const PropertyTreeState& State() const { return layer_state_; }
+
   bool Matches(const PaintChunk& paint_chunk) const {
     return id_ && paint_chunk.Matches(*id_);
   }
-
-  struct LayerAsJSONContext {
-    LayerAsJSONContext(LayerTreeFlags flags) : flags(flags) {}
-
-    const LayerTreeFlags flags;
-    int next_transform_id = 1;
-    std::unique_ptr<JSONArray> transforms_json;
-    HashMap<const TransformPaintPropertyNode*, int> transform_id_map;
-    HashMap<int, int> rendering_context_map;
-  };
-  std::unique_ptr<JSONObject> LayerAsJSON(LayerAsJSONContext&) const;
 
   scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
       scoped_refptr<const PaintArtifact>,

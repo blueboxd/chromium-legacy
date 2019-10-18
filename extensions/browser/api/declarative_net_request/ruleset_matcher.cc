@@ -24,6 +24,7 @@
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "net/http/http_request_headers.h"
 #include "url/url_constants.h"
 
 namespace extensions {
@@ -32,6 +33,8 @@ namespace flat_rule = url_pattern_index::flat;
 namespace dnr_api = api::declarative_net_request;
 
 namespace {
+
+constexpr const char kSetCookieResponseHeader[] = "set-cookie";
 
 using FindRuleStrategy =
     url_pattern_index::UrlPatternIndexMatcher::FindRuleStrategy;
@@ -313,6 +316,35 @@ GURL GetUpgradedUrl(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
+// Populates the list of headers corresponding to |mask|.
+RequestAction GetRemoveHeadersActionForMask(const ExtensionId& extension_id,
+                                            uint8_t mask) {
+  RequestAction action(RequestAction::Type::REMOVE_HEADERS, extension_id);
+
+  for (int i = 0; mask && i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
+    switch (i) {
+      case dnr_api::REMOVE_HEADER_TYPE_NONE:
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
+        if (mask & kRemoveHeadersMask_Cookie)
+          action.request_headers_to_remove.push_back(
+              net::HttpRequestHeaders::kCookie);
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_REFERER:
+        if (mask & kRemoveHeadersMask_Referer)
+          action.request_headers_to_remove.push_back(
+              net::HttpRequestHeaders::kReferer);
+        break;
+      case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
+        if (mask & kRemoveHeadersMask_SetCookie)
+          action.response_headers_to_remove.push_back(kSetCookieResponseHeader);
+        break;
+    }
+  }
+
+  return action;
+}
+
 }  // namespace
 
 RequestParams::RequestParams(const WebRequestInfo& info)
@@ -374,12 +406,9 @@ base::Optional<RequestAction> RulesetMatcher::GetBlockOrCollapseAction(
   if (!rule)
     return base::nullopt;
 
-  RequestAction action = ShouldCollapseResourceType(params.element_type)
-                             ? RequestAction(RequestAction::Type::COLLAPSE)
-                             : RequestAction(RequestAction::Type::BLOCK);
-
-  action.extension_id = extension_id_;
-  return action;
+  return ShouldCollapseResourceType(params.element_type)
+             ? RequestAction(RequestAction::Type::COLLAPSE, extension_id_)
+             : RequestAction(RequestAction::Type::BLOCK, extension_id_);
 }
 
 base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(
@@ -391,8 +420,7 @@ base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(
   if (!redirect_rule)
     return base::nullopt;
 
-  RequestAction redirect_action(RequestAction::Type::REDIRECT);
-  redirect_action.extension_id = extension_id_;
+  RequestAction redirect_action(RequestAction::Type::REDIRECT, extension_id_);
   redirect_action.redirect_url = std::move(redirect_rule_url);
 
   return redirect_action;
@@ -405,8 +433,7 @@ base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
   if (!upgrade_rule)
     return base::nullopt;
 
-  RequestAction upgrade_action(RequestAction::Type::REDIRECT);
-  upgrade_action.extension_id = extension_id_;
+  RequestAction upgrade_action(RequestAction::Type::REDIRECT, extension_id_);
   upgrade_action.redirect_url = GetUpgradedUrl(*params.url);
 
   return upgrade_action;
@@ -434,15 +461,16 @@ RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
                                : std::move(redirect_rule_url);
   }
 
-  RequestAction action(RequestAction::Type::REDIRECT);
-  action.extension_id = extension_id_;
+  RequestAction action(RequestAction::Type::REDIRECT, extension_id_);
   action.redirect_url = std::move(highest_priority_url);
 
   return action;
 }
 
-uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
-                                             uint8_t ignored_mask) const {
+uint8_t RulesetMatcher::GetRemoveHeadersMask(
+    const RequestParams& params,
+    uint8_t ignored_mask,
+    std::vector<RequestAction>* remove_headers_actions) const {
   uint8_t mask = 0;
 
   static_assert(kRemoveHeadersMask_Max <= std::numeric_limits<uint8_t>::max(),
@@ -450,32 +478,50 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
 
   // Iterate over each RemoveHeaderType value.
   uint8_t bit = 0;
+
+  // Rules with the same IDs may be split across different action indices. To
+  // ensure we return one RequestAction for one ID, maintain a map from the rule
+  // ID to the mask of rules removed for that rule ID.
+  base::flat_map<uint32_t, uint8_t> rule_id_to_mask;
+  auto handle_remove_header_bit = [this, &params, ignored_mask,
+                                   &rule_id_to_mask, &mask](
+                                      uint8_t bit, flat::ActionIndex index) {
+    if (ignored_mask & bit)
+      return;
+
+    const flat_rule::UrlRule* rule = GetMatchingRule(params, index);
+    if (!rule)
+      return;
+
+    rule_id_to_mask[rule->id()] |= bit;
+    mask |= bit;
+  };
+
   for (int i = 0; i <= dnr_api::REMOVE_HEADER_TYPE_LAST; ++i) {
     switch (i) {
       case dnr_api::REMOVE_HEADER_TYPE_NONE:
         break;
       case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
         bit = kRemoveHeadersMask_Cookie;
-        if (ignored_mask & bit)
-          break;
-        if (GetMatchingRule(params, flat::ActionIndex_remove_cookie_header))
-          mask |= bit;
+        handle_remove_header_bit(bit, flat::ActionIndex_remove_cookie_header);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_REFERER:
         bit = kRemoveHeadersMask_Referer;
-        if (ignored_mask & bit)
-          break;
-        if (GetMatchingRule(params, flat::ActionIndex_remove_referer_header))
-          mask |= bit;
+        handle_remove_header_bit(bit, flat::ActionIndex_remove_referer_header);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
         bit = kRemoveHeadersMask_SetCookie;
-        if (ignored_mask & bit)
-          break;
-        if (GetMatchingRule(params, flat::ActionIndex_remove_set_cookie_header))
-          mask |= bit;
+        handle_remove_header_bit(bit,
+                                 flat::ActionIndex_remove_set_cookie_header);
         break;
     }
+  }
+
+  for (auto it = rule_id_to_mask.begin(); it != rule_id_to_mask.end(); ++it) {
+    uint8_t mask_for_rule = it->second;
+    DCHECK(mask_for_rule);
+    remove_headers_actions->push_back(
+        GetRemoveHeadersActionForMask(extension_id_, mask_for_rule));
   }
 
   DCHECK(!(mask & ignored_mask));

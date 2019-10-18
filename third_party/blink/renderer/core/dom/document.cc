@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
@@ -278,7 +277,6 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
@@ -346,8 +344,6 @@ bool IsInIndeterminateObjectAncestor(const Element* element) {
 }
 
 }  // namespace
-
-using namespace html_names;
 
 class DocumentOutliveTimeReporter : public BlinkGCObserver {
  public:
@@ -3864,7 +3860,7 @@ Document* Document::open(v8::Isolate* isolate,
 }
 
 DOMWindow* Document::open(v8::Isolate* isolate,
-                          const USVStringOrTrustedURL& string_or_url,
+                          const String& url_string,
                           const AtomicString& name,
                           const AtomicString& features,
                           ExceptionState& exception_state) {
@@ -3874,7 +3870,7 @@ DOMWindow* Document::open(v8::Isolate* isolate,
     return nullptr;
   }
 
-  return domWindow()->open(isolate, string_or_url, name, features,
+  return domWindow()->open(isolate, url_string, name, features,
                            exception_state);
 }
 
@@ -4637,12 +4633,13 @@ void Document::ProcessBaseElement() {
        base && (!href || !target);
        base = Traversal<HTMLBaseElement>::Next(*base)) {
     if (!href) {
-      const AtomicString& value = base->FastGetAttribute(kHrefAttr);
+      const AtomicString& value = base->FastGetAttribute(html_names::kHrefAttr);
       if (!value.IsNull())
         href = &value;
     }
     if (!target) {
-      const AtomicString& value = base->FastGetAttribute(kTargetAttr);
+      const AtomicString& value =
+          base->FastGetAttribute(html_names::kTargetAttr);
       if (!value.IsNull())
         target = &value;
     }
@@ -5819,12 +5816,14 @@ void Document::WillChangeFrameOwnerProperties(int margin_width,
   // check before each call.
   if (margin_width != owner->MarginWidth()) {
     if (auto* body_element = body()) {
-      body_element->SetIntegralAttribute(kMarginwidthAttr, margin_width);
+      body_element->SetIntegralAttribute(html_names::kMarginwidthAttr,
+                                         margin_width);
     }
   }
   if (margin_height != owner->MarginHeight()) {
     if (auto* body_element = body()) {
-      body_element->SetIntegralAttribute(kMarginheightAttr, margin_height);
+      body_element->SetIntegralAttribute(html_names::kMarginheightAttr,
+                                         margin_height);
     }
   }
   if (scrolling_mode != owner->ScrollingMode() && View()) {
@@ -7414,8 +7413,6 @@ void Document::CancelPostAnimationFrame(int id) {
 }
 
 void Document::RunPostAnimationFrameCallbacks() {
-  FlushAutofocusCandidates();
-
   bool was_throttled = current_frame_is_throttled_;
   current_frame_is_throttled_ = false;
   if (was_throttled || !scripted_animation_controller_)
@@ -7762,6 +7759,8 @@ void Document::EnqueueAutofocusCandidate(Element& element) {
   if (index != WTF::kNotFound)
     autofocus_candidates_.EraseAt(index);
   autofocus_candidates_.push_back(element);
+  // ScriptedAnimationController invokes FlushAutofocusCandidates().
+  EnsureScriptedAnimationController();
 }
 
 bool Document::HasAutofocusCandidates() const {
@@ -7827,7 +7826,6 @@ void Document::FlushAutofocusCandidates() {
     // fallback state is not fixed yet.
     // TODO(tkent): Standardize this behavior.
     if (IsInIndeterminateObjectAncestor(&element)) {
-      GetPage()->Animator().ScheduleVisualUpdate(GetFrame());
       return;
     }
 
@@ -7869,6 +7867,7 @@ void Document::FlushAutofocusCandidates() {
     }
 
     // 9. If element is a focusable area, then:
+    element.GetDocument().UpdateStyleAndLayoutTree();
     if (element.IsFocusable()) {
       // 9.1. Empty candidates.
       autofocus_candidates_.clear();
@@ -7917,48 +7916,48 @@ void Document::SetBodyAttribute(const QualifiedName& name,
 }
 
 const AtomicString& Document::bgColor() const {
-  return BodyAttributeValue(kBgcolorAttr);
+  return BodyAttributeValue(html_names::kBgcolorAttr);
 }
 
 void Document::setBgColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kBgcolorAttr, value);
+    SetBodyAttribute(html_names::kBgcolorAttr, value);
 }
 
 const AtomicString& Document::fgColor() const {
-  return BodyAttributeValue(kTextAttr);
+  return BodyAttributeValue(html_names::kTextAttr);
 }
 
 void Document::setFgColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kTextAttr, value);
+    SetBodyAttribute(html_names::kTextAttr, value);
 }
 
 const AtomicString& Document::alinkColor() const {
-  return BodyAttributeValue(kAlinkAttr);
+  return BodyAttributeValue(html_names::kAlinkAttr);
 }
 
 void Document::setAlinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kAlinkAttr, value);
+    SetBodyAttribute(html_names::kAlinkAttr, value);
 }
 
 const AtomicString& Document::linkColor() const {
-  return BodyAttributeValue(kLinkAttr);
+  return BodyAttributeValue(html_names::kLinkAttr);
 }
 
 void Document::setLinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kLinkAttr, value);
+    SetBodyAttribute(html_names::kLinkAttr, value);
 }
 
 const AtomicString& Document::vlinkColor() const {
-  return BodyAttributeValue(kVlinkAttr);
+  return BodyAttributeValue(html_names::kVlinkAttr);
 }
 
 void Document::setVlinkColor(const AtomicString& value) {
   if (!IsFrameSet())
-    SetBodyAttribute(kVlinkAttr, value);
+    SetBodyAttribute(html_names::kVlinkAttr, value);
 }
 
 template <unsigned type>

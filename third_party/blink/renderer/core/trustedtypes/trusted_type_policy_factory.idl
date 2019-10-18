@@ -15,7 +15,6 @@
     [CallWith=ScriptState, Unforgeable] boolean isHTML(any checkedObject);
     [CallWith=ScriptState, Unforgeable] boolean isScript(any checkedObject);
     [CallWith=ScriptState, Unforgeable] boolean isScriptURL(any checkedObject);
-    [CallWith=ScriptState, Unforgeable] boolean isURL(any checkedObject);
     [Unforgeable] readonly attribute TrustedHTML emptyHTML;
 
     // Trusted Types metadata, following the proposal in:

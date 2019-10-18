@@ -131,23 +131,3 @@ python_library("bundle_wrapper_script_py") {
     "//third_party/android_build_tools/bundletool/bundletool-all-0.10.3.jar",
   ]
 }
-
-# Create wrapper scripts in out/bin that takes care of setting the
-# --output-directory.
-_scripts_to_wrap = [
-  "asan_symbolize.py",
-  "tombstones.py",
-]
-
-_wrapper_targets = []
-foreach(script, _scripts_to_wrap) {
-  _target_name = get_path_info(script, "name") + "_wrapper"
-  _wrapper_targets += [ ":$_target_name" ]
-  wrapper_script(_target_name) {
-    target = script
-  }
-}
-
-group("wrapper_scripts") {
-  deps = _wrapper_targets
-}

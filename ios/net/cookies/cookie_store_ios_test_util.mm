@@ -121,12 +121,11 @@ ScopedTestingCookieStoreIOSClient::~ScopedTestingCookieStoreIOSClient() {
 
 void RecordCookieChanges(std::vector<net::CanonicalCookie>* out_cookies,
                          std::vector<bool>* out_removes,
-                         const net::CanonicalCookie& cookie,
-                         net::CookieChangeCause cause) {
+                         const net::CookieChangeInfo& change) {
   DCHECK(out_cookies);
-  out_cookies->push_back(cookie);
+  out_cookies->push_back(change.cookie);
   if (out_removes)
-    out_removes->push_back(net::CookieChangeCauseIsDeletion(cause));
+    out_removes->push_back(net::CookieChangeCauseIsDeletion(change.cause));
 }
 
 void SetCookie(const std::string& cookie_line,

@@ -13,6 +13,12 @@
         }
       ],
       "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 235],
+      "bounds": [600, 15],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -42,6 +48,12 @@
         }
       ],
       "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 235],
+      "bounds": [400, 15],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

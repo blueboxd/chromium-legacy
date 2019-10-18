@@ -148,7 +148,9 @@ void WebviewRpcInstance::InitComplete(bool ok) {
 
 void WebviewRpcInstance::ReadComplete(bool ok) {
   if (!ok) {
-    io_.Finish(grpc::Status(), &destroy_callback_);
+    // Ensure we don't call finish twice.
+    if (!errored_)
+      io_.Finish(grpc::Status(), &destroy_callback_);
   } else if (webview_) {
     task_runner_->PostTask(
         FROM_HERE,

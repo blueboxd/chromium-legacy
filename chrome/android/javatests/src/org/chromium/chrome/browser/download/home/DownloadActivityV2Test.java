@@ -92,6 +92,7 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         features.put(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION, false);
         features.put(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER, false);
         features.put(ChromeFeatureList.DOWNLOAD_RENAME, true);
+        features.put(ChromeFeatureList.OFFLINE_HOME, false);
         ChromeFeatureList.setTestFeatures(features);
 
         mStubbedOfflineContentProvider = new StubbedOfflineContentProvider();

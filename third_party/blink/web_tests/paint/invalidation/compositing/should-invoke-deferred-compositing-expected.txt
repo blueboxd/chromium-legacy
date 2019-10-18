@@ -16,6 +16,10 @@
           "reason": "full layer"
         }
       ]
+    },
+    {
+      "name": "ContentsLayer for LayoutHTMLCanvas (positioned) CANVAS",
+      "bounds": [200, 200]
     }
   ]
 }

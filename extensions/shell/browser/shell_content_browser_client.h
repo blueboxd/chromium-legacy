@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "storage/browser/quota/quota_settings.h"
 
 class GURL;
@@ -100,8 +102,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const base::Optional<url::Origin>& initiating_origin,
-      network::mojom::URLLoaderFactoryPtr* out_factory) override;
-  network::mojom::URLLoaderFactoryPtrInfo
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory)
+      override;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,

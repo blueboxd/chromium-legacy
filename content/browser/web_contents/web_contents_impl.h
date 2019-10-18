@@ -640,6 +640,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       FrameTreeNode* frame_tree_node) override;
   void OnThemeColorChanged(RenderFrameHostImpl* source,
                            const base::Optional<SkColor>& theme_color) override;
+  bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -757,8 +758,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;
   InputEventShim* GetInputEventShim() const override;
-  void NotifyVisibleViewportSizeChanged(
-      const gfx::Size& visible_viewport_size) override;
   RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
 
 #if !defined(OS_ANDROID)

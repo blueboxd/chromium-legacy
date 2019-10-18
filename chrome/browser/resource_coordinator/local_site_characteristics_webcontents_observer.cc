@@ -259,16 +259,20 @@ bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
   if (feature_type == FeatureType::kTitleChange ||
       feature_type == FeatureType::kFaviconChange) {
     DCHECK(!loaded_time_.is_null());
-    if (NowTicks() - loaded_time_ < GetStaticSiteCharacteristicsDatabaseParams()
-                                        .title_or_favicon_change_grace_period) {
+    if (NowTicks() - loaded_time_ <
+        GetStaticSiteCharacteristicsDatabaseParams()
+            .title_or_favicon_change_post_load_grace_period) {
       return true;
     }
-  } else if (feature_type == FeatureType::kAudioUsage) {
-    DCHECK(!backgrounded_time_.is_null());
-    if (NowTicks() - backgrounded_time_ <
-        GetStaticSiteCharacteristicsDatabaseParams().audio_usage_grace_period) {
-      return true;
-    }
+  }
+
+  // Ignore events happening shortly after the tab being backgrounded, they're
+  // usually false positives.
+  DCHECK(!backgrounded_time_.is_null());
+  if (NowTicks() - backgrounded_time_ <
+      GetStaticSiteCharacteristicsDatabaseParams()
+          .feature_usage_post_background_grace_period) {
+    return true;
   }
 
   return false;

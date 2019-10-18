@@ -29,7 +29,7 @@ class ExternalProtocolDialogTestApi {
       : dialog_(dialog) {}
 
   void SetCheckBoxSelected(bool checked) {
-    dialog_->remember_decision_checkbox_->SetChecked(checked);
+    dialog_->SetRememberSelectionCheckboxCheckedForTesting(checked);
   }
 
  private:

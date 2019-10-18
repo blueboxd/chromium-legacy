@@ -22,6 +22,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_features.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
 #include "chrome/common/chrome_features.h"
@@ -313,6 +314,9 @@ class ErrorPageWaiter : public content::WebContentsObserver {
     run_loop.Run();
   }
 
+  // Returns if the last observed navigation was an error page.
+  bool LastPageWasErrorPage() { return is_error_page_; }
+
  private:
   base::OnceClosure quit_closure_;
   bool is_error_page_ = false;
@@ -340,6 +344,8 @@ class FrameRemoteTester : public blink::mojom::Frame {
       std::move(on_empty_report_callback_).Run();
       return;
     }
+
+    last_message_ = message;
     had_message_ = true;
   }
 
@@ -359,8 +365,18 @@ class FrameRemoteTester : public blink::mojom::Frame {
     return had_message;
   }
 
+  // Returns the last observed report message and then clears it.
+  std::string PopLastInterventionReportMessage() {
+    std::string last_message = last_message_;
+    last_message_ = "";
+    return last_message;
+  }
+
  private:
   bool had_message_ = false;
+
+  // The message string for the last received non-empty intervention report.
+  std::string last_message_;
   base::OnceClosure on_empty_report_callback_;
   mojo::AssociatedReceiverSet<blink::mojom::Frame> receivers_;
 };
@@ -525,6 +541,10 @@ class AdsPageLoadMetricsObserverTest
   // message.
   bool HasInterventionReportsAfterFlush(RenderFrameHost* render_frame_host) {
     return frame_remote_tester_.FlushForTesting(render_frame_host);
+  }
+
+  std::string PopLastInterventionReportMessage() {
+    return frame_remote_tester_.PopLastInterventionReportMessage();
   }
 
   void OverrideVisibilityTrackerWithMockClock() {
@@ -1346,6 +1366,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
                      /*pre_time=*/2000, /*post_tasks=*/1000,
                      /*post_time=*/2000);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/500 + 1000, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1404,6 +1427,9 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
                      /*pre_time=*/2000, /*post_tasks=*/1000,
                      /*post_time=*/1500);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/500 + 1000, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1465,6 +1491,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsOnActivation) {
                      /*pre_tasks=*/500 + 500, /*pre_time=*/2500,
                      /*post_tasks=*/500,
                      /*post_time=*/1500);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/1000 + 500, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1520,6 +1549,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
   histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"), 0);
+  histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 0);
@@ -1567,6 +1598,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
   CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
                      /*pre_time=*/2000, /*post_tasks=*/0, /*post_time=*/0);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
+      /*total_task_time=*/500, 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1614,6 +1648,8 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"), 0);
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
@@ -1761,7 +1797,12 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
   // Load enough bytes to trigger the intervention.
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 2);
 
+  const char kInterventionMessage[] =
+      "Ad was removed because its network usage exceeded the limit. "
+      "See https://www.chromestatus.com/feature/4800491902992384";
   EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+  EXPECT_EQ(kInterventionMessage, PopLastInterventionReportMessage());
+
   waiter.WaitForError();
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
@@ -2155,4 +2196,60 @@ TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdBlocklist_InterventionReported) {
   EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
   histogram_tester().ExpectBucketCount(
       SuffixedHistogram("HeavyAds.DisallowedByBlocklist"), true, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest,
+       HeavyAdReportingOnly_ReportSentNoUnload) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{features::kHeavyAdIntervention,
+        {{kHeavyAdReportingOnlyParamName, "true"}}}},
+      {});
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  ErrorPageWaiter waiter(web_contents());
+
+  // Load enough bytes to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  const char kReportOnlyMessage[] =
+      "A future version of Chrome will remove this ad because its network "
+      "usage exceeded the limit. "
+      "See https://www.chromestatus.com/feature/4800491902992384";
+
+  EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
+  EXPECT_EQ(kReportOnlyMessage, PopLastInterventionReportMessage());
+
+  // It is not ideal to check the last loaded page here as it requires relying
+  // on mojo timings after flushing the interface above. But the ordering is
+  // deterministic as intervention reports and navigation use the same mojo
+  // pipe.
+  EXPECT_FALSE(waiter.LastPageWasErrorPage());
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.InterventionType2"),
+      FrameData::HeavyAdStatus::kNetwork, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdReportingDisabled_NoReportSent) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{features::kHeavyAdIntervention,
+        {{kHeavyAdReportingEnabledParamName, "false"}}}},
+      {});
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  ErrorPageWaiter waiter(web_contents());
+
+  // Load enough bytes to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  EXPECT_FALSE(HasInterventionReportsAfterFlush(ad_frame));
+
+  waiter.WaitForError();
 }

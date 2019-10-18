@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -236,58 +235,12 @@ public class CastWebContentsActivity extends Activity {
     }
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        if (DEBUG) Log.d(TAG, "dispatchKeyEvent");
-        int keyCode = event.getKeyCode();
-        int action = event.getAction();
-
-        // Similar condition for all single-click events.
-        if (action == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_REWIND
-                    || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_PLAY
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_STOP
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_NEXT
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
-                if (mSurfaceHelper != null) {
-                    CastWebContentsComponent.onKeyDown(mSurfaceHelper.getSessionId(), keyCode);
-                }
-                return true;
-            }
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            return super.dispatchKeyEvent(event);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean dispatchGenericMotionEvent(MotionEvent ev) {
-        return false;
-    }
-
-    @Override
-    public boolean dispatchKeyShortcutEvent(KeyEvent event) {
-        return false;
-    }
-
-    @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (mSurfaceHelper != null && mSurfaceHelper.isTouchInputEnabled()) {
             return super.dispatchTouchEvent(ev);
         } else {
             return false;
         }
-    }
-
-    @Override
-    public boolean dispatchTrackballEvent(MotionEvent ev) {
-        return false;
     }
 
     private void turnScreenOn() {

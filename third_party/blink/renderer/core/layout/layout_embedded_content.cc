@@ -41,7 +41,7 @@
 
 namespace blink {
 
-LayoutEmbeddedContent::LayoutEmbeddedContent(Element* element)
+LayoutEmbeddedContent::LayoutEmbeddedContent(HTMLFrameOwnerElement* element)
     : LayoutReplaced(element),
       // Reference counting is used to prevent the part from being destroyed
       // while inside the EmbeddedContentView code, which might not be able to
@@ -62,7 +62,7 @@ void LayoutEmbeddedContent::WillBeDestroyed() {
     cache->Remove(this);
   }
 
-  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+  if (auto* frame_owner = GetFrameOwnerElement())
     frame_owner->SetEmbeddedContentView(nullptr);
 
   LayoutReplaced::WillBeDestroyed();
@@ -77,7 +77,7 @@ void LayoutEmbeddedContent::Destroy() {
   // Release()).
   //
   // But, we've told the system we've destroyed the layoutObject, which happens
-  // when the DOM node is destroyed. So there is a good change the DOM node this
+  // when the DOM node is destroyed. So there is a good chance the DOM node this
   // object points too is invalid, so we have to clear the node so we make sure
   // we don't access it in the future.
   ClearNode();
@@ -100,8 +100,8 @@ WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
 }
 
 EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
-  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
-    return frame_owner_element->OwnedEmbeddedContentView();
+  if (auto* frame_owner = GetFrameOwnerElement())
+    return frame_owner->OwnedEmbeddedContentView();
   return nullptr;
 }
 
@@ -124,7 +124,7 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   if (plugin_view && plugin_view->CcLayer())
     return true;
 
-  auto* element = DynamicTo<HTMLFrameOwnerElement>(GetNode());
+  auto* element = GetFrameOwnerElement();
   if (!element)
     return false;
 
@@ -268,7 +268,7 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
     return;
   }
 
-  auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode());
+  auto* frame_owner = GetFrameOwnerElement();
   if (!frame_owner)
     return;
 

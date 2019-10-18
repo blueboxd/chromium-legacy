@@ -171,13 +171,11 @@
           category="{{ContentSettingsTypes.USB_DEVICES}}" icon="settings:usb"
           id="usbDevices" label="$i18n{siteSettingsUsbDevices}">
       </site-details-permission>
-      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
-        <site-details-permission
-            category="{{ContentSettingsTypes.SERIAL_PORTS}}"
-            icon="settings:serial-port" id="serialPorts"
-            label="$i18n{siteSettingsSerialPorts}">
-        </site-details-permission>
-      </template>
+      <site-details-permission
+          category="{{ContentSettingsTypes.SERIAL_PORTS}}"
+          icon="settings:serial-port" id="serialPorts"
+          label="$i18n{siteSettingsSerialPorts}">
+      </site-details-permission>
       <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
         <site-details-permission
             category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"

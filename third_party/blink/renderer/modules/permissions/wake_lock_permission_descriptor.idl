@@ -4,5 +4,5 @@
 
 // https://w3c.github.io/wake-lock/#the-wakelockpermissiondescriptor-dictionary
 dictionary WakeLockPermissionDescriptor : PermissionDescriptor {
-  WakeLockType type;
+  required WakeLockType type;
 };

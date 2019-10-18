@@ -1154,24 +1154,24 @@ TEST_F(PageInfoTest, SafetyTipMetrics) {
   scoped_feature_list.InitAndEnableFeature(
       security_state::features::kSafetyTipUI);
   struct TestCase {
-    const security_state::SafetyTipStatus safety_tip_status;
+    const security_state::SafetyTipInfo safety_tip_info;
     const std::string histogram_name;
   };
   const char kGenericHistogram[] = "WebsiteSettings.Action";
 
   const TestCase kTestCases[] = {
-      {security_state::SafetyTipStatus::kNone,
+      {{security_state::SafetyTipStatus::kNone, GURL()},
        "Security.SafetyTips.PageInfo.Action.SafetyTip_None"},
-      {security_state::SafetyTipStatus::kBadReputation,
+      {{security_state::SafetyTipStatus::kBadReputation, GURL()},
        "Security.SafetyTips.PageInfo.Action.SafetyTip_BadReputation"},
-      {security_state::SafetyTipStatus::kLookalike,
+      {{security_state::SafetyTipStatus::kLookalike, GURL()},
        "Security.SafetyTips.PageInfo.Action.SafetyTip_Lookalike"},
   };
 
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
     SetURL("https://example.test");
-    visible_security_state_.safety_tip_status = test.safety_tip_status;
+    visible_security_state_.safety_tip_info = test.safety_tip_info;
     ResetMockUI();
     ClearPageInfo();
     SetDefaultUIExpectations(mock_ui());
@@ -1225,7 +1225,7 @@ TEST_F(PageInfoTest, SafetyTipTimeOpenMetrics) {
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
     SetURL("https://example.test");
-    visible_security_state_.safety_tip_status = test.safety_tip_status;
+    visible_security_state_.safety_tip_info.status = test.safety_tip_status;
     ResetMockUI();
     ClearPageInfo();
     SetDefaultUIExpectations(mock_ui());

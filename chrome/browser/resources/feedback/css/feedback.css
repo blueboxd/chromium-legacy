@@ -43,7 +43,7 @@ body {
 }
 
 .content {
-  color: #646464;
+  color: #444;
   flex-grow: 1;
   font-size: 12px;
   margin: 20px;
@@ -149,7 +149,6 @@ body {
 }
 
 .content #privacy-note {
-  color: #969696;
   font-size: 12px;
   line-height: 20px;
   margin-bottom: 0;

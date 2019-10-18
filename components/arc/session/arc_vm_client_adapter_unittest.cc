@@ -16,9 +16,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
-#include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_session.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -143,21 +143,19 @@ class ArcVmClientAdapterTest : public testing::Test,
   void SetValidUserIdHash() { adapter()->SetUserIdHashForProfile(kUserIdHash); }
 
   void StartMiniArc() {
-    StartArcMiniContainerRequest req;
     adapter()->StartMiniArc(
-        req, base::BindOnce(&ArcVmClientAdapterTest::ExpectTrueThenQuit,
-                            base::Unretained(this)));
+        {}, base::BindOnce(&ArcVmClientAdapterTest::ExpectTrueThenQuit,
+                           base::Unretained(this)));
     run_loop()->Run();
     RecreateRunLoop();
   }
 
   void UpgradeArc(bool expect_success) {
-    UpgradeArcContainerRequest req;
     adapter()->UpgradeArc(
-        req, base::BindOnce(expect_success
-                                ? &ArcVmClientAdapterTest::ExpectTrueThenQuit
-                                : &ArcVmClientAdapterTest::ExpectFalseThenQuit,
-                            base::Unretained(this)));
+        {}, base::BindOnce(expect_success
+                               ? &ArcVmClientAdapterTest::ExpectTrueThenQuit
+                               : &ArcVmClientAdapterTest::ExpectFalseThenQuit,
+                           base::Unretained(this)));
     run_loop()->Run();
     RecreateRunLoop();
   }

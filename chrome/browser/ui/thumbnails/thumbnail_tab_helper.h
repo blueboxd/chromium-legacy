@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class ThumbnailTabHelper
     : public content::WebContentsUserData<ThumbnailTabHelper>,
@@ -60,7 +61,8 @@ class ThumbnailTabHelper
       base::ReadOnlySharedMemoryRegion data,
       ::media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& content_rect,
-      ::viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) override;
+      mojo::PendingRemote<::viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
+          callbacks) override;
   void OnStopped() override;
 
   // The last known visibility WebContents visibility.

@@ -1273,6 +1273,12 @@ const char kMimeHandlerViewInCrossProcessFrameDescription[] =
     "Loads the MimeHandlerView (the extension viewer for certain MIME types "
     "such as PDF) in a cross-process frame as opposed to a BrowserPlugin.";
 
+const char kMixedContentSiteSettingName[] =
+    "Blockable mixed content switch as site setting";
+const char kMixedContentSiteSettingDescription[] =
+    "Removes the blockable mixed content shield, and adds an 'Insecure "
+    "Content' site setting to allow blockable mixed content.";
+
 const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =
     "Enables stronger identity consistency on mobile";
@@ -2354,11 +2360,6 @@ const char kAppNotificationStatusMessagingDescription[] =
 const char kAsyncDnsName[] = "Async DNS resolver";
 const char kAsyncDnsDescription[] = "Enables the built-in DNS resolver.";
 
-const char kAutoFetchOnNetErrorPageName[] = "AutoFetchOnNetErrorPage";
-const char kAutoFetchOnNetErrorPageDescription[] =
-    "When enabled, and navigation fails with an offline error, schedule a "
-    "fetch of the page when online again.";
-
 const char kAutofillAccessoryViewName[] =
     "Autofill suggestions as keyboard accessory view";
 const char kAutofillAccessoryViewDescription[] =
@@ -2804,6 +2805,12 @@ const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
 const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
     "Inline Update Error: Install Failed";
 
+const char kUpdateNotificationSchedulingIntegrationName[] =
+    "Enable update notification using notification scheduling system";
+const char kUpdateNotificationSchedulingIntegrationDescription[] =
+    "if enable update notification will hook up to notification scheduling "
+    "system in native side";
+
 const char kUsageStatsDescription[] =
     "When set, enables sharing of per-domain usage stats with the Digital "
     "Wellbeing app on Android, and allows Digital Wellbeing to suspend access "
@@ -2869,6 +2876,12 @@ const char kDialMediaRouteProviderName[] = "DIAL Media Route Provider";
 const char kDialMediaRouteProviderDescription[] =
     "Enables the native DIAL Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
+
+const char kNtpConfirmSuggestionRemovalsName[] =
+    "Confirm removing \"realbox\" suggestions on New Tab page";
+const char kNtpConfirmSuggestionRemovalsDescription[] =
+    "Show a confirmation dialog when removing suggestions from the \"realbox\" "
+    "on the New Tab page. Requires #ntp-realbox to be enabled.";
 
 const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =

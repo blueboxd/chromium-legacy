@@ -58,9 +58,6 @@ enum {
   kRelationNoOpener = 0x00040000,
 };
 
-class ExceptionState;
-class USVStringOrTrustedURL;
-
 class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -69,12 +66,8 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   HTMLAnchorElement(const QualifiedName&, Document&);
   ~HTMLAnchorElement() override;
 
-  // Returns attributes that should be checked against Trusted Types
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
-
   KURL Href() const;
   void SetHref(const AtomicString&);
-  void setHref(const USVStringOrTrustedURL&, ExceptionState&);
 
   const AtomicString& GetName() const;
 

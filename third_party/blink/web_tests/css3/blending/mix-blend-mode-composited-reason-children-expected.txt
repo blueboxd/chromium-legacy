@@ -18,6 +18,11 @@
       "transform": 1
     },
     {
+      "name": "ContentsLayer for LayoutImage IMG class='accelerated'",
+      "bounds": [160, 90],
+      "transform": 1
+    },
+    {
       "name": "LayoutNGBlockFlow HTML (foreground) Layer",
       "bounds": [800, 600]
     }

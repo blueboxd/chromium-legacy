@@ -26,6 +26,12 @@
       "transform": 3
     },
     {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [385, 0],
+      "bounds": [15, 120],
+      "transform": 2
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='overlay'",
       "bounds": [50, 50],
       "backgroundColor": "#00000033",

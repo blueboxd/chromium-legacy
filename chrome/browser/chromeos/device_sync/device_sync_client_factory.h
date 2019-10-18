@@ -24,9 +24,6 @@ class DeviceSyncClientFactory : public BrowserContextKeyedServiceFactory {
 
   static DeviceSyncClientFactory* GetInstance();
 
-  // Notifies the DeviceSync subsystem that the profile is ready.
-  static void OnProfileInitialized(Profile* profile);
-
  private:
   friend struct base::DefaultSingletonTraits<DeviceSyncClientFactory>;
 

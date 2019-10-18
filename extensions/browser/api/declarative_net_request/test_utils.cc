@@ -21,6 +21,54 @@
 namespace extensions {
 namespace declarative_net_request {
 
+RequestAction CreateRequestActionForTesting(RequestAction::Type type,
+                                            const ExtensionId& extension_id) {
+  return RequestAction(type, extension_id);
+}
+
+// Note: This is not declared in the anonymous namespace so that we can use it
+// with gtest. This reuses the logic used to test action equality in
+// TestRequestACtion in test_utils.h.
+bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
+  static_assert(flat::ActionIndex_count == 7,
+                "Modify this method to ensure it stays updated as new actions "
+                "are added.");
+
+  auto are_vectors_equal = [](std::vector<const char*> a,
+                              std::vector<const char*> b) {
+    return std::set<base::StringPiece>(a.begin(), a.end()) ==
+           std::set<base::StringPiece>(b.begin(), b.end());
+  };
+
+  return lhs.type == rhs.type && lhs.redirect_url == rhs.redirect_url &&
+         lhs.extension_id == rhs.extension_id &&
+         are_vectors_equal(lhs.request_headers_to_remove,
+                           rhs.request_headers_to_remove) &&
+         are_vectors_equal(lhs.response_headers_to_remove,
+                           rhs.response_headers_to_remove);
+}
+
+bool AreRequestActionsEqual(const std::vector<RequestAction>& lhs,
+                            const std::vector<RequestAction>& rhs) {
+  std::set<const RequestAction*> unmatched_rhs_actions;
+  for (const auto& action : rhs)
+    unmatched_rhs_actions.insert(&action);
+
+  for (const auto& lhs_action : lhs) {
+    auto iter =
+        std::find_if(unmatched_rhs_actions.begin(), unmatched_rhs_actions.end(),
+                     [&lhs_action](const RequestAction* rhs_action) {
+                       return lhs_action == *rhs_action;
+                     });
+
+    if (iter == unmatched_rhs_actions.end())
+      return false;
+    unmatched_rhs_actions.erase(iter);
+  }
+
+  return true;
+}
+
 bool HasValidIndexedRuleset(const Extension& extension,
                             content::BrowserContext* browser_context) {
   int expected_checksum;

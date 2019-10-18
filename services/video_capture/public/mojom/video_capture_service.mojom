@@ -31,7 +31,7 @@ interface AcceleratorFactory {
 // decoding will be performed without gpu acceleration.
 interface VideoCaptureService  {
   [EnableIf=is_chromeos]
-  InjectGpuDependencies(AcceleratorFactory accelerator_factory);
+  InjectGpuDependencies(pending_remote<AcceleratorFactory> accelerator_factory);
 
   // Binds a bridge for Chrome OS camera app and device.
   [EnableIf=is_chromeos]
@@ -39,10 +39,10 @@ interface VideoCaptureService  {
       pending_receiver<cros.mojom.CameraAppDeviceBridge> receiver);
 
   // Legacy API. Supports one client per device.
-  ConnectToDeviceFactory(DeviceFactory& request);
+  ConnectToDeviceFactory(pending_receiver<DeviceFactory> receiver);
 
   // Current API. Supports multiple clients per source.
-  ConnectToVideoSourceProvider(VideoSourceProvider& request);
+  ConnectToVideoSourceProvider(pending_receiver<VideoSourceProvider> receiver);
 
   // Sets a retry count that is used by the service for logging UMA events in
   // the context of investigation for https://crbug.com/643068.

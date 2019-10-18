@@ -1659,29 +1659,6 @@ void WebContentsImpl::NotifyNavigationStateChanged(
     GetOuterWebContents()->NotifyNavigationStateChanged(changed_flags);
 }
 
-void WebContentsImpl::NotifyVisibleViewportSizeChanged(
-    const gfx::Size& visible_viewport_size) {
-  // This viewport size is in screen coordinates, but will be handed to blink
-  // which expects coordinates including the device scale factor when
-  // UseZoomForDSF is enabled.
-  // TODO(danakj): This scaling should be done in the renderer where emulation
-  // may override the device scale factor.
-  gfx::Size visible_viewport_size_for_blink = visible_viewport_size;
-  if (IsUseZoomForDSFEnabled()) {
-    ScreenInfo info;
-    GetMainFrame()->GetRenderWidgetHost()->GetScreenInfo(&info);
-
-    visible_viewport_size_for_blink =
-        gfx::ScaleToCeiledSize(visible_viewport_size, info.device_scale_factor);
-  }
-
-  // TODO(danakj): This should be part of VisualProperties and walk down the
-  // RenderWidget tree like other VisualProperties do, in order to set the
-  // value in each WebView holds a part of the local frame tree.
-  SendPageMessage(new PageMsg_UpdatePageVisualProperties(
-      MSG_ROUTING_NONE, visible_viewport_size_for_blink));
-}
-
 RenderFrameHostImpl* WebContentsImpl::GetFocusedFrameFromFocusedDelegate() {
   FrameTreeNode* focused_node =
       GetFocusedWebContents()->frame_tree_.GetFocusedFrame();
@@ -7235,6 +7212,13 @@ RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
   if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
     return web_contents->GetMainFrame();
   return nullptr;
+}
+
+bool WebContentsImpl::IsFrameLowPriority(
+    const RenderFrameHost* render_frame_host) {
+  if (!delegate_)
+    return false;
+  return delegate_->IsFrameLowPriority(this, render_frame_host);
 }
 
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {

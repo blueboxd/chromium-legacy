@@ -20,6 +20,7 @@
 #include "components/arc/session/arc_instance_mode.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/arc_stop_reason.h"
+#include "components/arc/session/arc_upgrade_params.h"
 
 namespace arc {
 
@@ -82,7 +83,7 @@ class ArcSessionRunner : public ArcSession::Observer {
 
   // Starts the full ARC instance, then it will connect the Mojo channel. When
   // the bridge becomes ready, registered Observer's OnSessionReady() is called.
-  void RequestUpgrade(ArcSession::UpgradeParams params);
+  void RequestUpgrade(UpgradeParams params);
 
   // Stops the ARC service.
   void RequestStop();
@@ -141,7 +142,7 @@ class ArcSessionRunner : public ArcSession::Observer {
   std::unique_ptr<ArcSession> arc_session_;
 
   // Parameters to upgrade request.
-  ArcSession::UpgradeParams upgrade_params_;
+  UpgradeParams upgrade_params_;
 
   // A hash string of the profile user ID.
   std::string user_id_hash_;

@@ -17,6 +17,7 @@ suite('Tab', function() {
   let tabElement;
 
   const tab = {
+    alertStates: [],
     id: 1001,
     networkState: TabNetworkState.NONE,
     title: 'My title',

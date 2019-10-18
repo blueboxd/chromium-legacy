@@ -84,7 +84,7 @@ class OmniboxViewIOS : public OmniboxView,
   void GetSelectionBounds(base::string16::size_type* start,
                           base::string16::size_type* end) const override;
   void SelectAll(bool reversed) override {}
-  void SetFocus() override {}
+  void SetFocus(bool is_user_initiated) override {}
   void ApplyCaretVisibility() override {}
   void OnInlineAutocompleteTextCleared() override {}
   void OnRevertTemporaryText(const base::string16& display_text,

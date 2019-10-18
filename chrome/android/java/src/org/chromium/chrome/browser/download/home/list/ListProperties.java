@@ -73,7 +73,12 @@ public interface ListProperties {
     /** Whether or not selection mode is currently active. */
     WritableBooleanPropertyKey SELECTION_MODE_ACTIVE = new WritableBooleanPropertyKey();
 
+    /** The callback to trigger when a pagination header is clicked. */
+    WritableObjectPropertyKey<Runnable> CALLBACK_PAGINATION_CLICK =
+            new WritableObjectPropertyKey<>();
+
     PropertyKey[] ALL_KEYS = new PropertyKey[] {ENABLE_ITEM_ANIMATIONS, CALLBACK_OPEN,
             CALLBACK_PAUSE, CALLBACK_RESUME, CALLBACK_CANCEL, CALLBACK_SHARE, CALLBACK_REMOVE,
-            CALLBACK_RENAME, PROVIDER_VISUALS, CALLBACK_SELECTION, SELECTION_MODE_ACTIVE};
+            CALLBACK_RENAME, PROVIDER_VISUALS, CALLBACK_SELECTION, SELECTION_MODE_ACTIVE,
+            CALLBACK_PAGINATION_CLICK};
 }

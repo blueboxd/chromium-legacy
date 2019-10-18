@@ -88,6 +88,9 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
       web_app_info_(std::move(web_app_info)),
       callback_(std::move(callback)) {
   DCHECK(web_app_info_);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_INSTALL_PWA_BUTTON_LABEL));
   base::TrimWhitespace(web_app_info_->title, base::TRIM_ALL,
                        &web_app_info_->title);
   // PWAs should always be configured to open in a window.
@@ -132,13 +135,6 @@ bool PWAConfirmationBubbleView::ShouldShowCloseButton() const {
 base::string16 PWAConfirmationBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
-}
-
-base::string16 PWAConfirmationBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_INSTALL_PWA_BUTTON_LABEL
-                                       : IDS_CANCEL);
 }
 
 views::View* PWAConfirmationBubbleView::GetInitiallyFocusedView() {

@@ -118,7 +118,8 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
       base::ReadOnlySharedMemoryRegion data,
       media::mojom::VideoFrameInfoPtr info,
       const gfx::Rect& content_rect,
-      mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) final;
+      mojo::PendingRemote<mojom::FrameSinkVideoConsumerFrameCallbacks>
+          callbacks) final;
   void OnStopped() final;
 
   // Establishes connection to FrameSinkVideoCapturer and sends the existing

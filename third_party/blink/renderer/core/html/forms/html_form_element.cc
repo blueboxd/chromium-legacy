@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -96,12 +95,6 @@ void HTMLFormElement::Trace(Visitor* visitor) {
   visitor->Trace(planned_navigation_);
   visitor->Trace(activated_submit_button_);
   HTMLElement::Trace(visitor);
-}
-
-const AttrNameToTrustedType& HTMLFormElement::GetCheckedAttributeTypes() const {
-  DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,
-                      ({{"action", SpecificTrustedType::kTrustedURL}}));
-  return attribute_map;
 }
 
 bool HTMLFormElement::MatchesValidityPseudoClasses() const {
@@ -723,13 +716,8 @@ String HTMLFormElement::action() const {
   return action_url.GetString();
 }
 
-void HTMLFormElement::action(USVStringOrTrustedURL& result) const {
-  result.SetUSVString(action());
-}
-
-void HTMLFormElement::setAction(const USVStringOrTrustedURL& value,
-                                ExceptionState& exception_state) {
-  setAttribute(kActionAttr, value, exception_state);
+void HTMLFormElement::setAction(const AtomicString& value) {
+  setAttribute(kActionAttr, value);
 }
 
 void HTMLFormElement::setEnctype(const AtomicString& value) {

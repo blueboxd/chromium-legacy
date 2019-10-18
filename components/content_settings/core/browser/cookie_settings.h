@@ -115,7 +115,7 @@ class CookieSettings : public CookieSettingsBase,
   bool ShouldBlockThirdPartyCookies() const;
 
   // content_settings::CookieSettingsBase:
-  void GetSettingForLegacyCookieAccess(const GURL& cookie_domain,
+  void GetSettingForLegacyCookieAccess(const std::string& cookie_domain,
                                        ContentSetting* setting) const override;
 
   // Detaches the |CookieSettings| from |PrefService|. This methods needs to be

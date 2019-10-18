@@ -159,6 +159,10 @@ void MockRenderProcessHost::ShutdownForBadMessage(
 
 void MockRenderProcessHost::UpdateClientPriority(PriorityClient* client) {}
 
+void MockRenderProcessHost::UpdateFrameWithPriority(
+    base::Optional<FramePriority> previous_priority,
+    base::Optional<FramePriority> new_priority) {}
+
 int MockRenderProcessHost::VisibleClientCount() {
   int count = 0;
   for (auto* client : priority_clients_) {

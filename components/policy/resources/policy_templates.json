@@ -18494,6 +18494,28 @@
       The ids must correspond to the "id" field in the file specified in <ph name="EXTERNAL_PRINT_SERVERS_POLICY">ExternalPrintServers</ph>.
 
       If this policy is not set, filtering is omitted and all print servers are taken into account.'''
+    },
+    {
+      'name': 'ExternalProtocolDialogShowAlwaysOpenCheckbox',
+      'owners': ['ydago@chromium.org', 'mkwst@chromium.org'],
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'example_value': True,
+      'id': 632,
+      'supported_on': ['chrome.*:79-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'caption': '''Show an "Always open" checkbox in external protocol dialog.''',
+      'tags': [],
+      'desc': ''' This policy controls whether or not the "Always open" checkbox is shown on external protocol launch confirmation prompts.
+
+      If this policy is set to True, when an external protocol confirmation is shown, the user may choose to "Always open" the protocol without future confirmation prompts.
+
+      If this policy is set to False or not set, the "Always open" checkbox is not displayed and the user will be prompted each time an external protocol is invoked.'''
     }
   ],
 
@@ -19316,6 +19338,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 631,
+  'highest_id_currently_used': 632,
   'highest_atomic_group_id_currently_used': 38
 }

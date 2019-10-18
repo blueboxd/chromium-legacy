@@ -749,24 +749,24 @@ if (is_win) {
     }
   }
 
-  # Headless library with child specific dependencies (e.g., renderer). This
-  # is used when no browser depencendies are needed (e.g. chrome:child_dll).
-  static_library("headless_shell_child_lib") {
-    sources = [
-      "app/headless_shell.cc",
-      "app/headless_shell.h",
-      "app/headless_shell_win.cc",
-      "public/headless_shell.h",
-    ]
-    deps = [
-      ":headless_renderer",
-      "//build:branding_buildflags",
-      "//content/public/child:child",
-      "//net",
-      "//ui/base",
-    ]
+  if (is_multi_dll_chrome) {
+    # Headless library with child specific dependencies (e.g., renderer). This
+    # is used when no browser depencendies are needed (e.g. chrome:child_dll).
+    static_library("headless_shell_child_lib") {
+      sources = [
+        "app/headless_shell.cc",
+        "app/headless_shell.h",
+        "app/headless_shell_win.cc",
+        "public/headless_shell.h",
+      ]
+      deps = [
+        ":headless_renderer",
+        "//build:branding_buildflags",
+        "//content/public/child:child",
+        "//net",
+        "//ui/base",
+      ]
 
-    if (is_multi_dll_chrome) {
       defines = [ "CHROME_MULTIPLE_DLL_CHILD" ]
       sources += [
         "lib/browser/headless_web_contents_impl.cc",

@@ -124,8 +124,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   virtual bool IsSVGDiscardElement() const { return false; }
 
-  const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
-
   void Trace(blink::Visitor*) override;
 
  protected:

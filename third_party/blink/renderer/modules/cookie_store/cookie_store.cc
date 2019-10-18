@@ -424,10 +424,9 @@ void CookieStore::RemoveAllEventListeners() {
 }
 
 void CookieStore::OnCookieChange(
-    const WebCanonicalCookie& backend_cookie,
-    network::mojom::blink::CookieChangeCause change_cause) {
+    network::mojom::blink::CookieChangeInfoPtr change) {
   HeapVector<Member<CookieListItem>> changed, deleted;
-  CookieChangeEvent::ToEventInfo(backend_cookie, change_cause, changed,
+  CookieChangeEvent::ToEventInfo(change->cookie, change->cause, changed,
                                  deleted);
   if (changed.IsEmpty() && deleted.IsEmpty()) {
     // The backend only reported OVERWRITE events, which are dropped.

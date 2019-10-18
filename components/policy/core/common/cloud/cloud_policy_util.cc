@@ -164,7 +164,7 @@ std::string GetOSUsername() {
   auto* user = user_manager::UserManager::Get()->GetPrimaryUser();
   if (!user)
     return std::string();
-  return user->GetAccountName(/*use_display_email=*/false);
+  return user->GetAccountId().GetUserEmail();
 #else
   NOTREACHED();
   return std::string();

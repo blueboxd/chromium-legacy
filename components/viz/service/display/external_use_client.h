@@ -38,6 +38,7 @@ class VIZ_SERVICE_EXPORT ExternalUseClient {
                  const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
                  sk_sp<SkColorSpace> color_space);
     virtual ~ImageContext();
+    virtual void OnContextLost();
 
     //
     // Thread safety is guaranteed by these invariants: (a) only the compositor

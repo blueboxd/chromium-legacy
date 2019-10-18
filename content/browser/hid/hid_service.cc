@@ -82,6 +82,9 @@ void HidService::Connect(
       ->GetHidManager(web_contents())
       ->Connect(
           device_guid, std::move(client),
+          // TODO(mattreynolds): Bind |this| as a HidConnectionWatcher and
+          // track the number of active watchers.
+          /*watcher=*/mojo::NullRemote(),
           base::BindOnce(&HidService::FinishConnect, weak_factory_.GetWeakPtr(),
                          std::move(callback)));
 }

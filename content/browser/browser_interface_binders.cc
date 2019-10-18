@@ -141,13 +141,6 @@ void BindTextDetection(
   GetShapeDetectionService()->BindTextDetection(std::move(receiver));
 }
 
-#if !defined(OS_ANDROID)
-bool AreExperimentalWebPlatformFeaturesEnabled() {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(
-      switches::kEnableExperimentalWebPlatformFeatures);
-}
-#endif
 }  // namespace
 
 // Documents/frames
@@ -284,10 +277,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::InstalledAppProvider>(
       base::BindRepeating(&InstalledAppProviderImplDefault::Create));
 
-  if (AreExperimentalWebPlatformFeaturesEnabled()) {
-    map->Add<blink::mojom::SerialService>(base::BindRepeating(
-        &RenderFrameHostImpl::BindSerialService, base::Unretained(host)));
-  }
+  map->Add<blink::mojom::SerialService>(base::BindRepeating(
+      &RenderFrameHostImpl::BindSerialService, base::Unretained(host)));
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -360,10 +351,8 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       &DedicatedWorkerHost::CreateIDBFactory, base::Unretained(host)));
 
 #if !defined(OS_ANDROID)
-  if (AreExperimentalWebPlatformFeaturesEnabled()) {
-    map->Add<blink::mojom::SerialService>(base::BindRepeating(
-        &DedicatedWorkerHost::BindSerialService, base::Unretained(host)));
-  }
+  map->Add<blink::mojom::SerialService>(base::BindRepeating(
+      &DedicatedWorkerHost::BindSerialService, base::Unretained(host)));
 #endif  // !defined(OS_ANDROID)
 }
 

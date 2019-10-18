@@ -72,17 +72,19 @@ void HidManagerImpl::CreateDeviceList(
 void HidManagerImpl::Connect(
     const std::string& device_guid,
     mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+    mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
     ConnectCallback callback) {
-  hid_service_->Connect(
-      device_guid,
-      base::AdaptCallbackForRepeating(base::BindOnce(
-          &HidManagerImpl::CreateConnection, weak_factory_.GetWeakPtr(),
-          std::move(callback), std::move(connection_client))));
+  hid_service_->Connect(device_guid,
+                        base::AdaptCallbackForRepeating(base::BindOnce(
+                            &HidManagerImpl::CreateConnection,
+                            weak_factory_.GetWeakPtr(), std::move(callback),
+                            std::move(connection_client), std::move(watcher))));
 }
 
 void HidManagerImpl::CreateConnection(
     ConnectCallback callback,
     mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+    mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
     scoped_refptr<HidConnection> connection) {
   if (!connection) {
     std::move(callback).Run(mojo::NullRemote());
@@ -90,10 +92,8 @@ void HidManagerImpl::CreateConnection(
   }
 
   mojo::PendingRemote<mojom::HidConnection> client;
-  auto connection_impl = std::make_unique<HidConnectionImpl>(
-      connection, std::move(connection_client));
-  mojo::MakeSelfOwnedReceiver(std::move(connection_impl),
-                              client.InitWithNewPipeAndPassReceiver());
+  HidConnectionImpl::Create(connection, client.InitWithNewPipeAndPassReceiver(),
+                            std::move(connection_client), std::move(watcher));
   std::move(callback).Run(std::move(client));
 }
 

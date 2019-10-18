@@ -66,8 +66,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -188,7 +188,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void performPostInflationStartup() {
         super.performPostInflationStartup();
-        getStatusBarColorController().updateStatusBarColor(ColorUtils.isUsingDefaultToolbarColor(
+        getStatusBarColorController().updateStatusBarColor(ToolbarColors.isUsingDefaultToolbarColor(
                 getResources(), false, getBaseStatusBarColor()));
 
         // Properly attach tab's InfoBarContainer to the view hierarchy if the tab is already

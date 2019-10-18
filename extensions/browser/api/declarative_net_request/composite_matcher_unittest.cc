@@ -10,6 +10,7 @@
 
 #include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
@@ -17,6 +18,7 @@
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "net/http/http_request_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -208,7 +210,12 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   example_params.is_third_party = false;
 
   // Expect no headers to be removed.
-  EXPECT_EQ(0u, composite_matcher->GetRemoveHeadersMask(example_params, 0u));
+  std::vector<RequestAction> remove_header_actions;
+  EXPECT_EQ(0u, composite_matcher->GetRemoveHeadersMask(
+                    example_params, 0u, &remove_header_actions));
+  EXPECT_TRUE(remove_header_actions.empty());
+
+  remove_header_actions.clear();
 
   // Now switch the priority of the two rulesets. This requires re-constructing
   // the two ruleset matchers.
@@ -240,8 +247,135 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   example_params.allow_rule_cache.clear();
   uint8_t expected_mask =
       kRemoveHeadersMask_Referer | kRemoveHeadersMask_SetCookie;
-  EXPECT_EQ(expected_mask,
-            composite_matcher->GetRemoveHeadersMask(example_params, 0u));
+  EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(
+                               example_params, 0u, &remove_header_actions));
+  ASSERT_EQ(1u, remove_header_actions.size());
+
+  RequestAction expected_action =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  expected_action.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kReferer);
+  expected_action.response_headers_to_remove.push_back("set-cookie");
+  EXPECT_EQ(expected_action, remove_header_actions[0]);
+}
+
+// Tests that header masks are correctly attributed to rules for multiple
+// matchers in a CompositeMatcher.
+TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
+  auto create_remove_headers_rule =
+      [](int id, const std::string& url_filter,
+         const std::vector<std::string>& remove_headers_list) {
+        TestRule rule = CreateGenericRule();
+        rule.id = id;
+        rule.condition->url_filter = url_filter;
+        rule.action->type = std::string("removeHeaders");
+        rule.action->remove_headers_list = remove_headers_list;
+
+        return rule;
+      };
+
+  TestRule static_rule_1 = create_remove_headers_rule(
+      kMinValidID, "g*", std::vector<std::string>({"referer", "cookie"}));
+
+  TestRule static_rule_2 = create_remove_headers_rule(
+      kMinValidID + 1, "g*", std::vector<std::string>({"setCookie"}));
+
+  TestRule dynamic_rule_1 = create_remove_headers_rule(
+      kMinValidID, "google.com", std::vector<std::string>({"referer"}));
+
+  TestRule dynamic_rule_2 = create_remove_headers_rule(
+      kMinValidID + 2, "google.com", std::vector<std::string>({"setCookie"}));
+
+  // Create the first ruleset matcher, which matches all requests with "g" in
+  // their URL.
+  const size_t kSource1ID = 1;
+  const size_t kSource1Priority = 1;
+  std::unique_ptr<RulesetMatcher> matcher_1;
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {static_rule_1, static_rule_2},
+      CreateTemporarySource(kSource1ID, kSource1Priority), &matcher_1));
+
+  // Create a second ruleset matcher, which matches all requests from
+  // |google.com|.
+  const size_t kSource2ID = 2;
+  const size_t kSource2Priority = 2;
+  std::unique_ptr<RulesetMatcher> matcher_2;
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {dynamic_rule_1, dynamic_rule_2},
+      CreateTemporarySource(kSource2ID, kSource2Priority), &matcher_2));
+
+  // Create a composite matcher with the two rulesets.
+  std::vector<std::unique_ptr<RulesetMatcher>> matchers;
+  matchers.push_back(std::move(matcher_1));
+  matchers.push_back(std::move(matcher_2));
+  auto composite_matcher =
+      std::make_unique<CompositeMatcher>(std::move(matchers));
+
+  GURL google_url = GURL("http://google.com");
+  RequestParams google_params;
+  google_params.url = &google_url;
+  google_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  google_params.is_third_party = false;
+
+  const uint8_t expected_mask = kRemoveHeadersMask_Referer |
+                                kRemoveHeadersMask_Cookie |
+                                kRemoveHeadersMask_SetCookie;
+
+  std::vector<RequestAction> actions;
+  EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(
+                               google_params, 0u, &actions));
+
+  // Construct expected request actions to be taken for a request to google.com.
+  // Static actions are attributed to |matcher_1| and dynamic actions are
+  // attributed to |matcher_2|.
+  RequestAction static_action_1 =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  static_action_1.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kCookie);
+
+  RequestAction dynamic_action_1 =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  dynamic_action_1.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kReferer);
+
+  RequestAction dynamic_action_2 =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  dynamic_action_2.response_headers_to_remove.push_back("set-cookie");
+
+  std::vector<RequestAction> expected_actions;
+  expected_actions.push_back(std::move(static_action_1));
+  expected_actions.push_back(std::move(dynamic_action_1));
+  expected_actions.push_back(std::move(dynamic_action_2));
+  EXPECT_TRUE(AreRequestActionsEqual(expected_actions, actions));
+
+  GURL gmail_url = GURL("http://gmail.com");
+  RequestParams gmail_params;
+  gmail_params.url = &gmail_url;
+  gmail_params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  gmail_params.is_third_party = false;
+
+  actions.clear();
+  EXPECT_EQ(expected_mask, composite_matcher->GetRemoveHeadersMask(
+                               gmail_params, 0u, &actions));
+
+  // Reinitialize |static_action_1| as the original |static_action_1| is owned
+  // by |expected_actions| and will be deleted when |expected_actions| is
+  // cleared.
+  static_action_1 =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  static_action_1.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kCookie);
+  static_action_1.request_headers_to_remove.push_back(
+      net::HttpRequestHeaders::kReferer);
+
+  RequestAction static_action_2 =
+      CreateRequestActionForTesting(RequestAction::Type::REMOVE_HEADERS);
+  static_action_2.response_headers_to_remove.push_back("set-cookie");
+
+  expected_actions.clear();
+  expected_actions.push_back(std::move(static_action_1));
+  expected_actions.push_back(std::move(static_action_2));
+  EXPECT_TRUE(AreRequestActionsEqual(expected_actions, actions));
 }
 
 // Ensure CompositeMatcher detects requests to be notified based on the rule

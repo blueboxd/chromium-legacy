@@ -22,7 +22,8 @@ class IsPossibleUsernameValidTest : public testing::Test {
             "https://example.com/" /* submitted_signon_realm */,
             1u /* renderer_id */,
             ASCIIToUTF16("username") /* value */,
-            base::Time::Now() /* last_change */) {}
+            base::Time::Now() /* last_change */,
+            10 /* driver_id */) {}
 
  protected:
   PossibleUsernameData possible_username_data_;

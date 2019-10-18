@@ -10,12 +10,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/user_demographics.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
+#include "third_party/metrics_proto/ukm/report.pb.h"
 
 namespace metrics {
 namespace {
@@ -70,7 +72,8 @@ std::unique_ptr<TestProfileClient> MakeTestProfileClient(
                                              number_of_profiles);
 }
 
-TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_FeatureEnabled) {
+TEST(DemographicMetricsProviderTest,
+     ProvideSyncedUserNoisedBirthYearAndGender_FeatureEnabled) {
   // Enable demographics reporting feature.
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndEnableFeature(
@@ -81,9 +84,10 @@ TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_FeatureEnabled) {
   // Run demographics provider.
   DemographicMetricsProvider provider(
       MakeTestProfileClient(GetDemographics(), /*number_of_profiles=*/1,
-                            /*has_sync_service=*/true));
+                            /*has_sync_service=*/true),
+      MetricsLogUploader::MetricServiceType::UMA);
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideCurrentSessionData(&uma_proto);
+  provider.ProvideSyncedUserNoisedBirthYearAndGender(&uma_proto);
 
   // Verify provided demographics.
   EXPECT_EQ(GetDemographics().value().birth_year,
@@ -96,7 +100,8 @@ TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_FeatureEnabled) {
                                syncer::UserDemographicsStatus::kSuccess, 1);
 }
 
-TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_NoSyncService) {
+TEST(DemographicMetricsProviderTest,
+     ProvideSyncedUserNoisedBirthYearAndGender_NoSyncService) {
   // Enable demographics reporting feature.
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndEnableFeature(
@@ -108,9 +113,10 @@ TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_NoSyncService) {
   DemographicMetricsProvider provider(
       MakeTestProfileClient(GetDemographics(),
                             /*number_of_profiles=*/1,
-                            /*has_sync_service=*/false));
+                            /*has_sync_service=*/false),
+      MetricsLogUploader::MetricServiceType::UMA);
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideCurrentSessionData(&uma_proto);
+  provider.ProvideSyncedUserNoisedBirthYearAndGender(&uma_proto);
 
   // Expect the proto fields to be not set and left to default.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
@@ -123,7 +129,7 @@ TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_NoSyncService) {
 }
 
 TEST(DemographicMetricsProviderTest,
-     ProvideCurrentSessionData_FeatureDisabled) {
+     ProvideSyncedUserNoisedBirthYearAndGender_FeatureDisabled) {
   // Disable demographics reporting feature.
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndDisableFeature(
@@ -134,9 +140,10 @@ TEST(DemographicMetricsProviderTest,
   // Run demographics provider.
   DemographicMetricsProvider provider(
       MakeTestProfileClient(GetDemographics(), /*number_of_profiles=*/1,
-                            /*has_sync_service=*/true));
+                            /*has_sync_service=*/true),
+      MetricsLogUploader::MetricServiceType::UMA);
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideCurrentSessionData(&uma_proto);
+  provider.ProvideSyncedUserNoisedBirthYearAndGender(&uma_proto);
 
   // Expect that the UMA proto is untouched.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
@@ -147,7 +154,7 @@ TEST(DemographicMetricsProviderTest,
 }
 
 TEST(DemographicMetricsProviderTest,
-     ProvideCurrentSessionData_NotExactlyOneProfile) {
+     ProvideSyncedUserNoisedBirthYearAndGender_NotExactlyOneProfile) {
   // Enable demographics reporting feature.
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndEnableFeature(
@@ -158,9 +165,10 @@ TEST(DemographicMetricsProviderTest,
   // Run demographics provider with not exactly one Profile on disk.
   DemographicMetricsProvider provider(
       MakeTestProfileClient(GetDemographics(), /*number_of_profiles=*/2,
-                            /*has_sync_service=*/true));
+                            /*has_sync_service=*/true),
+      MetricsLogUploader::MetricServiceType::UMA);
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideCurrentSessionData(&uma_proto);
+  provider.ProvideSyncedUserNoisedBirthYearAndGender(&uma_proto);
 
   // Expect that the UMA proto is untouched.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
@@ -173,7 +181,7 @@ TEST(DemographicMetricsProviderTest,
 }
 
 TEST(DemographicMetricsProviderTest,
-     ProvideCurrentSessionData_NoUserDemographics) {
+     ProvideSyncedUserNoisedBirthYearAndGender_NoUserDemographics) {
   // Enable demographics reporting feature.
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndEnableFeature(
@@ -183,13 +191,15 @@ TEST(DemographicMetricsProviderTest,
 
   // Run demographics provider with a ProfileClient that does not provide
   // demographics because of some error.
-  DemographicMetricsProvider provider(MakeTestProfileClient(
-      syncer::UserDemographicsResult::ForStatus(
-          syncer::UserDemographicsStatus::kIneligibleDemographicsData),
-      /*number_of_profiles=*/1,
-      /*has_sync_service=*/true));
+  DemographicMetricsProvider provider(
+      MakeTestProfileClient(
+          syncer::UserDemographicsResult::ForStatus(
+              syncer::UserDemographicsStatus::kIneligibleDemographicsData),
+          /*number_of_profiles=*/1,
+          /*has_sync_service=*/true),
+      MetricsLogUploader::MetricServiceType::UMA);
   ChromeUserMetricsExtension uma_proto;
-  provider.ProvideCurrentSessionData(&uma_proto);
+  provider.ProvideSyncedUserNoisedBirthYearAndGender(&uma_proto);
 
   // Expect that the UMA proto is untouched.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
@@ -200,6 +210,34 @@ TEST(DemographicMetricsProviderTest,
   histogram.ExpectUniqueSample(
       "UMA.UserDemographics.Status",
       syncer::UserDemographicsStatus::kIneligibleDemographicsData, 1);
+}
+
+TEST(DemographicMetricsProviderTest,
+     ProvideSyncedUserNoisedBirthYearAndGenderToReport) {
+  // Enable demographics reporting feature.
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeature(
+      DemographicMetricsProvider::kDemographicMetricsReporting);
+
+  base::HistogramTester histogram;
+
+  // Run demographics provider.
+  DemographicMetricsProvider provider(
+      MakeTestProfileClient(GetDemographics(), /*number_of_profiles=*/1,
+                            /*has_sync_service=*/true),
+      MetricsLogUploader::MetricServiceType::UKM);
+  ukm::Report report;
+  provider.ProvideSyncedUserNoisedBirthYearAndGenderToReport(&report);
+
+  // Verify provided demographics.
+  EXPECT_EQ(GetDemographics().value().birth_year,
+            report.user_demographics().birth_year());
+  EXPECT_EQ(GetDemographics().value().gender,
+            report.user_demographics().gender());
+
+  // Verify histograms.
+  histogram.ExpectUniqueSample("UKM.UserDemographics.Status",
+                               syncer::UserDemographicsStatus::kSuccess, 1);
 }
 
 }  // namespace

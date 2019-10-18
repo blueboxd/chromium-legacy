@@ -314,6 +314,39 @@ namespace autotestPrivate {
     boolean hasNotification;
   };
 
+  // A mapping of ash::AppType.
+  enum AppWindowType {
+    Browser,
+    ChromeApp,
+    ArcApp,
+    CrostiniApp,
+    SystemApp,
+    ExtensionApp
+  };
+
+  dictionary AppWindowInfo {
+    long id;
+    DOMString name;
+    AppWindowType windowType;
+    WindowStateType stateType;
+    Bounds bounds_in_root;
+    Bounds target_bounds;
+    DOMString displayId;
+
+    DOMString title;
+    boolean isAnimating;
+    boolean isVisible;
+    boolean targetVisibility;
+    boolean canFocus;
+
+    // WM Releated stats
+    boolean isActive;
+    boolean hasFocus;
+    boolean onActiveDesk;
+    boolean hasCapture;
+    DOMString? arcPackageName;
+  };
+
   callback GetShelfItemsCallback = void (ShelfItem[] items);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
@@ -325,6 +358,8 @@ namespace autotestPrivate {
   callback VoidCallback = void ();
 
   callback DOMStringCallback = void (DOMString data);
+
+  callback GetAppWindowListCallback = void (AppWindowInfo[] window_list);
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -606,22 +641,25 @@ namespace autotestPrivate {
 
     // Send WM event to change the ARC app window's window state.
     // |packageName|: the package name of the ARC app window.
-    // |eventType|: WM event type to send to the ARC app window.
+    // |change|: WM event type to send to the ARC app window.
     // |callback|: called when the window state is changed.
-    static void setArcAppWindowState(DOMString packageName,
-                                     WindowStateChangeDict change,
-                                     WindowStateCallback callback);
+    [deprecated="Use setAppWindowState"] static void setArcAppWindowState(
+        DOMString packageName,
+        WindowStateChangeDict change,
+        WindowStateCallback callback);
 
     // Get ARC app window's window state.
     // |packageName|: the package name of the ARC app window.
     // |callback| is invoked with the window state.
-    static void getArcAppWindowState(DOMString packageName, WindowStateCallback callback);
+    static void getArcAppWindowState(DOMString packageName,
+                                     WindowStateCallback callback);
 
     // Get various information on an ARC window.
     // |packageName|: the package name of the ARC app window.
     // |callback|: called when the operation has completed.
-    static void getArcAppWindowInfo(DOMString packageName,
-                                    GetArcAppWindowInfoCallback callback);
+    [deprecated="Use getAppWindowList"] static void getArcAppWindowInfo(
+        DOMString packageName,
+        GetArcAppWindowInfoCallback callback);
 
     // Start ARC performance tracing for the active ARC app window.
     // |callback|: Called when the operation has completed.
@@ -640,6 +678,7 @@ namespace autotestPrivate {
     // |callback|: called when the operation has completed.
     static void setArcAppWindowFocus(DOMString packageName,
                                      VoidCallback callback);
+
     // Invokes the callback when the display rotation animation is finished, or
     // invokes it immediately if it is not animating. The callback argument
     // is true if the display's rotation is same as |rotation|, or false otherwise.
@@ -649,6 +688,24 @@ namespace autotestPrivate {
     static void waitForDisplayRotation(DOMString displayId,
                                        RotationType rotation,
                                        WaitForDisplayRotationCallback callback);
+
+    // Get information on nall application windows. Callback will be called
+    // with the list of |AppWindowInfo| dictionary.
+    // |callback|: called with window list.
+    static void getAppWindowList(GetAppWindowListCallback callback);
+
+    // Send WM event to change the app window's window state.
+    // |id|: the id of the window
+    // |change|: WM event type to send to the app window.
+    // |callback|: called when the window state is changed.
+    static void setAppWindowState(long id,
+                                  WindowStateChangeDict change,
+                                  WindowStateCallback callback);
+
+    // Closes an app window given by "id".
+    // |id|: the id of the window
+    // |callback|: called when the window state is requested to close.
+    static void closeAppWindow(long id, VoidCallback callback);
   };
 
   interface Events {

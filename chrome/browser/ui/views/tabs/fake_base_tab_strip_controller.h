@@ -61,7 +61,9 @@ class FakeBaseTabStripController : public TabStripController {
       TabGroupId group_id) const override;
   void SetVisualDataForGroup(TabGroupId group,
                              TabGroupVisualData visual_data) override;
-  std::vector<int> ListTabsInGroup(TabGroupId group_id) const override;
+  std::vector<int> ListTabsInGroup(TabGroupId group) const override;
+  void UngroupAllTabsInGroup(TabGroupId group) override;
+  void AddNewTabInGroup(TabGroupId group) override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;

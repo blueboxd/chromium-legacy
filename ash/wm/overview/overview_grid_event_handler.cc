@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/overview_grid_event_handler.h"
 
+#include "ash/home_screen/home_screen_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -12,8 +14,10 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ui/compositor/compositor.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/fling_curve.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -128,8 +132,21 @@ void OverviewGridEventHandler::HandleClickOrTap(ui::Event* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
   // Events that happen while app list is sliding out during overview should
   // be ignored to prevent overview from disappearing out from under the user.
-  if (!IsSlidingOutOverviewFromShelf())
-    Shell::Get()->overview_controller()->EndOverview();
+  if (!IsSlidingOutOverviewFromShelf()) {
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+        features::IsDragFromShelfToHomeOrOverviewEnabled()) {
+      // In tablet mode, clicking on tapping on the wallpaper background will
+      // always head back to home launcher screen.
+      aura::Window* window = static_cast<views::View*>(event->target())
+                                 ->GetWidget()
+                                 ->GetNativeWindow();
+      int64_t display_id =
+          display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+      Shell::Get()->home_screen_controller()->GoHome(display_id);
+    } else {
+      Shell::Get()->overview_controller()->EndOverview();
+    }
+  }
   event->StopPropagation();
 }
 

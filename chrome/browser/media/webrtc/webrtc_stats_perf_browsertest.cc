@@ -14,7 +14,7 @@
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
-#include "testing/perf/perf_result_reporter.h"
+#include "testing/perf/perf_test.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace content {
@@ -25,35 +25,6 @@ const char kMainWebrtcTestHtmlPage[] = "/webrtc/webrtc_jsep01_test.html";
 
 const char kInboundRtp[] = "inbound-rtp";
 const char kOutboundRtp[] = "outbound-rtp";
-
-constexpr int kBitsPerByte = 8;
-
-constexpr char kMetricPrefixAudioStats[] = "WebRtcAudioStats.";
-constexpr char kMetricPrefixVideoStats[] = "WebRtcVideoStats.";
-constexpr char kMetricPrefixGetStats[] = "WebRtcGetStats.";
-constexpr char kMetricSendRateBitsPerS[] = "send_rate";
-constexpr char kMetricReceiveRateBitsPerS[] = "receive_rate";
-constexpr char kMetricInvocationTimeMs[] = "invocation_time";
-
-perf_test::PerfResultReporter SetUpAudioReporter(const std::string& story) {
-  perf_test::PerfResultReporter reporter(kMetricPrefixAudioStats, story);
-  reporter.RegisterFyiMetric(kMetricSendRateBitsPerS, "bits/s");
-  reporter.RegisterFyiMetric(kMetricReceiveRateBitsPerS, "bits/s");
-  return reporter;
-}
-
-perf_test::PerfResultReporter SetUpVideoReporter(const std::string& story) {
-  perf_test::PerfResultReporter reporter(kMetricPrefixVideoStats, story);
-  reporter.RegisterFyiMetric(kMetricSendRateBitsPerS, "bits/s");
-  reporter.RegisterFyiMetric(kMetricReceiveRateBitsPerS, "bits/s");
-  return reporter;
-}
-
-perf_test::PerfResultReporter SetUpGetStatsReporter(const std::string& story) {
-  perf_test::PerfResultReporter reporter(kMetricPrefixGetStats, story);
-  reporter.RegisterFyiMetric(kMetricInvocationTimeMs, "ms");
-  return reporter;
-}
 
 enum class GetStatsVariation {
   PROMISE_BASED,
@@ -229,11 +200,13 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
           (audio_bytes_received_after - audio_bytes_received_before) /
           measure_duration_seconds;
 
-      auto reporter = SetUpAudioReporter(audio_codec);
-      reporter.AddResult(kMetricSendRateBitsPerS,
-                         audio_send_rate * kBitsPerByte);
-      reporter.AddResult(kMetricReceiveRateBitsPerS,
-                         audio_receive_rate * kBitsPerByte);
+      std::string audio_codec_modifier = "_" + audio_codec;
+      perf_test::PrintResult(
+          "audio", audio_codec_modifier, "send_rate", audio_send_rate,
+          "bytes/second", false);
+      perf_test::PrintResult(
+          "audio", audio_codec_modifier, "receive_rate", audio_receive_rate,
+          "bytes/second", false);
     }
     if (video_codec != kUseDefaultVideoCodec) {
       double video_bytes_sent_after = GetVideoBytesSent(report.get());
@@ -246,14 +219,15 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
           (video_bytes_received_after - video_bytes_received_before) /
           measure_duration_seconds;
 
-      std::string story =
-          (video_codec_print_modifier.empty() ? video_codec
-                                              : video_codec_print_modifier);
-      auto reporter = SetUpVideoReporter(story);
-      reporter.AddResult(kMetricSendRateBitsPerS,
-                         video_send_rate * kBitsPerByte);
-      reporter.AddResult(kMetricReceiveRateBitsPerS,
-                         video_receive_rate * kBitsPerByte);
+      std::string video_codec_modifier =
+          "_" + (video_codec_print_modifier.empty()
+                     ? video_codec
+                     : video_codec_print_modifier);
+      perf_test::PrintResult("video", video_codec_modifier, "send_rate",
+                             video_send_rate, "bytes/second", false);
+      perf_test::PrintResult(
+          "video", video_codec_modifier, "receive_rate", video_receive_rate,
+          "bytes/second", false);
     }
 
     EndCall();
@@ -278,9 +252,14 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
              MeasureGetStatsCallbackPerformance(right_tab_)) / 2.0;
         break;
     }
-    auto reporter = SetUpGetStatsReporter(
-        variation == GetStatsVariation::PROMISE_BASED ? "promise" : "callback");
-    reporter.AddResult(kMetricInvocationTimeMs, invocation_time);
+    perf_test::PrintResult(
+        "getStats",
+        (variation == GetStatsVariation::PROMISE_BASED) ?
+            "_promise" : "_callback",
+        "invocation_time",
+        invocation_time,
+        "milliseconds",
+        false);
 
     EndCall();
   }

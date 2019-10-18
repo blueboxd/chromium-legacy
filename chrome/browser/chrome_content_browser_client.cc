@@ -299,8 +299,6 @@
 #include "media/mojo/buildflags.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
@@ -1579,7 +1577,7 @@ bool ChromeContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
 #endif
 }
 
-network::mojom::URLLoaderFactoryPtrInfo
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
 ChromeContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     content::RenderProcessHost* process,
     network::mojom::NetworkContext* network_context,
@@ -1593,7 +1591,7 @@ ChromeContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
                                                header_client, request_initiator,
                                                network_isolation_key);
 #else
-  return network::mojom::URLLoaderFactoryPtrInfo();
+  return mojo::NullRemote();
 #endif
 }
 
@@ -2085,11 +2083,10 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
       }
 
-      if (profile->ShouldEnableOutOfBlinkCors())
-        command_line->AppendSwitch(network::switches::kEnableOutOfBlinkCors);
-    } else if (base::FeatureList::IsEnabled(
-                   network::features::kOutOfBlinkCors)) {
-      command_line->AppendSwitch(network::switches::kEnableOutOfBlinkCors);
+      if (!profile->ShouldEnableOutOfBlinkCors()) {
+        command_line->AppendSwitch(
+            network::switches::kForceToDisableOutOfBlinkCors);
+      }
     }
 
     if (IsAutoReloadEnabled())
@@ -2245,6 +2242,9 @@ gfx::ImageSkia ChromeContentBrowserClient::GetDefaultFavicon() {
 
 bool ChromeContentBrowserClient::IsDataSaverEnabled(
     content::BrowserContext* browser_context) {
+  if (!browser_context || browser_context->IsOffTheRecord())
+    return false;
+
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile && data_reduction_proxy::DataReductionProxySettings::
                         IsDataSaverEnabledByUser(profile->GetPrefs());
@@ -4762,7 +4762,7 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const base::Optional<url::Origin>& initiating_origin,
-    network::mojom::URLLoaderFactoryPtr* out_factory) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
   // "mailto" protocol, so that pages that utilize it work properly in a

@@ -10,6 +10,7 @@ import("//build/config/locales.gni")
 import("//build/util/version.gni")
 import("//chrome/android/trichrome.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//weblayer/variables.gni")
 
 declare_args() {
   # Android package name to use when compiling the system_webview_apk and
@@ -34,7 +35,10 @@ template("system_webview_apk_tmpl") {
     ]
 
     target_sdk_version = android_sdk_version
-    locale_config_java_packages = [ webview_locale_config_java_package ]
+    locale_config_java_packages = [
+      webview_locale_config_java_package,
+      weblayer_locale_config_java_package,
+    ]
 
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep

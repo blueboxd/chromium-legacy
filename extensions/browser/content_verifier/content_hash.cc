@@ -65,13 +65,14 @@ ContentHash::FetchKey::FetchKey(
     const ExtensionId& extension_id,
     const base::FilePath& extension_root,
     const base::Version& extension_version,
-    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        url_loader_factory_remote,
     const GURL& fetch_url,
     ContentVerifierKey verifier_key)
     : extension_id(extension_id),
       extension_root(extension_root),
       extension_version(extension_version),
-      url_loader_factory_ptr_info(std::move(url_loader_factory_ptr_info)),
+      url_loader_factory_remote(std::move(url_loader_factory_remote)),
       fetch_url(std::move(fetch_url)),
       verifier_key(verifier_key) {}
 

@@ -20,16 +20,26 @@ class AXFragmentRootPlatformNodeWin;
 // deserialize the document for an iframe before the host document. Because of
 // this, and because COM rules require that the list of interfaces returned by
 // QueryInterface remain static over the lifetime of an object instance, we
-// implement IRawElementProviderFragmentRoot on its own node, with the root of
-// our internal accessibility tree as its sole child.
+// implement IRawElementProviderFragmentRoot on its own node for each HWND, with
+// the root of our internal accessibility tree for that HWND as its sole child.
 //
 // Since UIA derives some information from the underlying HWND hierarchy, we
 // expose one fragment root per HWND. The class that owns the HWND is expected
 // to own the corresponding AXFragmentRootWin.
+//
+// The usual way for UI Automation to obtain a fragment root is through
+// WM_GETOBJECT. However, if there's a relation such as "Controller For"
+// between element A in one window and element B in another window, UIA might
+// call element A to discover the relation, receive a pointer to element B,
+// then ask element B for its fragment root, without having sent WM_GETOBJECT
+// to element B's window.
+// The is_controller_for_root_ boolean member variable is used to determine
+// whether this is a fragment root witha  "Controller For" relation.
 class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
  public:
   AXFragmentRootWin(gfx::AcceleratedWidget widget,
-                    AXFragmentRootDelegateWin* delegate);
+                    AXFragmentRootDelegateWin* delegate,
+                    bool is_controller_for_root = false);
   ~AXFragmentRootWin() override;
 
   // Fragment roots register themselves in a map upon creation and unregister
@@ -37,6 +47,11 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   // accessibility root to navigate back to the corresponding fragment root.
   static AXFragmentRootWin* GetForAcceleratedWidget(
       gfx::AcceleratedWidget widget);
+
+  // If the given NativeViewAccessible is the direct descendant of a fragment
+  // root, return the corresponding fragment root.
+  static AXFragmentRootWin* GetFragmentRootParentOf(
+      gfx::NativeViewAccessible accessible);
 
   // Returns the NativeViewAccessible for this fragment root.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
@@ -47,11 +62,18 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   // content views or false if it should be excluded.
   bool IsControlElement();
 
+  // If a child node is available, return its delegate.
+  AXPlatformNodeDelegate* GetChildNodeDelegate() const;
+
+  bool IsControllerFor() const { return is_controller_for_root_; }
+
  private:
   // AXPlatformNodeDelegate overrides.
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  gfx::NativeViewAccessible GetNextSibling() override;
+  gfx::NativeViewAccessible GetPreviousSibling() override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   const ui::AXUniqueId& GetUniqueId() const override;
@@ -59,13 +81,20 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
                                          int32_t id) override;
 
-  // If a child node is available, return its delegate.
-  AXPlatformNodeDelegate* GetChildNodeDelegate();
+  // A fragment root does not correspond to any node in the platform neutral
+  // accessibility tree. Rather, the fragment root's child is a child of the
+  // fragment root's parent. This helper computes the child's index in the
+  // parent's array of children.
+  int GetIndexInParentOfChild() const;
+
+  // If a parent node is available, return its delegate.
+  AXPlatformNodeDelegate* GetParentNodeDelegate() const;
 
   gfx::AcceleratedWidget widget_;
   AXFragmentRootDelegateWin* const delegate_;
   Microsoft::WRL::ComPtr<ui::AXFragmentRootPlatformNodeWin> platform_node_;
   ui::AXUniqueId unique_id_;
+  bool is_controller_for_root_;
 };
 
 }  // namespace ui

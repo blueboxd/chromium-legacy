@@ -455,7 +455,10 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   InitializeCorsExtraSafelistedRequestHeaderNamesForProfile(
       profile_,
       &network_context_params->cors_extra_safelisted_request_header_names);
-  network_context_params->enable_cors = profile_->ShouldEnableOutOfBlinkCors();
+  network_context_params->cors_mode =
+      profile_->ShouldEnableOutOfBlinkCors()
+          ? network::mojom::NetworkContextParams::CorsMode::kEnable
+          : network::mojom::NetworkContextParams::CorsMode::kDisable;
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;

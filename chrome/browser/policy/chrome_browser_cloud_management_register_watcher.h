@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
 
 class ChromeBrowserCloudManagementRegisterWatcherTest;
@@ -24,19 +24,19 @@ namespace policy {
 // Watches the status of chrome browser cloud management enrollment.
 // Shows the blocking dialog for ongoing enrollment and failed enrollment.
 class ChromeBrowserCloudManagementRegisterWatcher
-    : public MachineLevelUserCloudPolicyController::Observer {
+    : public ChromeBrowserCloudManagementController::Observer {
  public:
   using DialogCreationCallback =
       base::OnceCallback<std::unique_ptr<EnterpriseStartupDialog>(
           EnterpriseStartupDialog::DialogResultCallback)>;
 
   explicit ChromeBrowserCloudManagementRegisterWatcher(
-      MachineLevelUserCloudPolicyController* controller);
+      ChromeBrowserCloudManagementController* controller);
   ~ChromeBrowserCloudManagementRegisterWatcher() override;
 
   // Blocks until the  chrome browser cloud management enrollment process
   // finishes. Returns the result of enrollment.
-  MachineLevelUserCloudPolicyController::RegisterResult
+  ChromeBrowserCloudManagementController::RegisterResult
   WaitUntilCloudPolicyEnrollmentFinished();
 
   // Returns whether the dialog is being displayed.
@@ -99,7 +99,7 @@ class ChromeBrowserCloudManagementRegisterWatcher
   static void RecordEnrollmentStartDialog(
       EnrollmentStartupDialog dialog_startup);
 
-  // MachineLevelUserCloudPolicyController::Observer
+  // ChromeBrowserCloudManagementController::Observer
   void OnPolicyRegisterFinished(bool succeeded) override;
 
   // EnterpriseStartupDialog callback.
@@ -107,7 +107,7 @@ class ChromeBrowserCloudManagementRegisterWatcher
 
   void DisplayErrorMessage();
 
-  MachineLevelUserCloudPolicyController* controller_;
+  ChromeBrowserCloudManagementController* controller_;
 
   base::RunLoop run_loop_;
   std::unique_ptr<EnterpriseStartupDialog> dialog_;

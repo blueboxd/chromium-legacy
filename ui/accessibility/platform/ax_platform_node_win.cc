@@ -3611,39 +3611,94 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
 
   *element_provider = nullptr;
 
-  AXPlatformNodeBase* neighbor = nullptr;
+  //
+  // Navigation to a fragment root node:
+  //
+  // In order for the platform-neutral accessibility tree to support IA2 and UIA
+  // simultaneously, we handle navigation to and from fragment roots in UIA
+  // specific code. Consider the following platform-neutral tree:
+  //
+  //         N1
+  //   _____/ \_____
+  //  /             \
+  // N2---N3---N4---N5
+  //     / \       / \
+  //   N6---N7   N8---N9
+  //
+  // N3 and N5 are nodes for which we need a fragment root. This will correspond
+  // to the following tree in UIA:
+  //
+  //         U1
+  //   _____/ \_____
+  //  /             \
+  // U2---R3---U4---R5
+  //      |         |
+  //      U3        U5
+  //     / \       / \
+  //   U6---U7   U8---U9
+  //
+  // Ux is the platform node for Nx.
+  // R3 and R5 are the fragment root nodes for U3 and U5 respectively.
+  //
+  // Navigation has the following behaviors:
+  //
+  // 1. Parent navigation: If source node Ux is the child of a fragment root,
+  //    return Rx. Otherwise, consult the platform-neutral tree.
+  // 2. First/last child navigation: If target node Ux is the child of a
+  //    fragment root and the source node isn't Rx, return Rx. Otherwise, return
+  //    Ux.
+  // 3. Next/previous sibling navigation:
+  //    a. If source node Ux is the child of a fragment root, return nullptr.
+  //    b. If target node Ux is the child of a fragment root, return Rx.
+  //       Otherwise, return Ux.
+  //
+  // Note that the condition in 3b is a special case of the condition in 2. In
+  // 3b, the source node is never Rx. So in the code, we collapse them to a
+  // common implementation.
+  //
+  // Navigation from an Rx node is set up by delegate APIs on AXFragmentRootWin.
+  //
+  gfx::NativeViewAccessible neighbor = nullptr;
   switch (direction) {
-    case NavigateDirection_Parent:
-      neighbor = FromNativeViewAccessible(GetParent());
-      break;
+    case NavigateDirection_Parent: {
+      // 1. If source node Ux is the child of a fragment root, return Rx.
+      // Otherwise, consult the platform-neutral tree.
+      AXFragmentRootWin* fragment_root =
+          AXFragmentRootWin::GetFragmentRootParentOf(GetNativeViewAccessible());
+      if (UNLIKELY(fragment_root) && !fragment_root->IsControllerFor()) {
+        neighbor = fragment_root->GetNativeViewAccessible();
+      } else {
+        neighbor = GetParent();
+      }
+    } break;
 
     case NavigateDirection_FirstChild:
-      if (GetChildCount() > 0) {
-        neighbor = GetFirstChild();
-        DCHECK(neighbor);
-        DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
-      }
+      if (GetChildCount() > 0)
+        neighbor = GetFirstChild()->GetNativeViewAccessible();
       break;
 
     case NavigateDirection_LastChild:
-      if (GetChildCount() > 0) {
-        neighbor = GetLastChild();
-        DCHECK(neighbor);
-        DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
-      }
+      if (GetChildCount() > 0)
+        neighbor = GetLastChild()->GetNativeViewAccessible();
       break;
 
     case NavigateDirection_NextSibling:
-      neighbor = GetNextSibling();
-      if (neighbor != nullptr) {
-        DCHECK(neighbor->GetParent() == GetParent());
+      // 3a. If source node Ux is the child of a fragment root, return nullptr.
+      if (AXFragmentRootWin::GetFragmentRootParentOf(
+              GetNativeViewAccessible()) == nullptr) {
+        AXPlatformNodeBase* neighbor_node = GetNextSibling();
+        if (neighbor_node)
+          neighbor = neighbor_node->GetNativeViewAccessible();
       }
       break;
 
     case NavigateDirection_PreviousSibling:
-      neighbor = GetPreviousSibling();
-      if (neighbor != nullptr) {
-        DCHECK(neighbor->GetParent() == GetParent());
+      // 3a. If source node Ux is the child of a fragment root, return nullptr.
+      if (AXFragmentRootWin::GetFragmentRootParentOf(
+              GetNativeViewAccessible()) == nullptr) {
+        AXPlatformNodeBase* neighbor_node = GetPreviousSibling();
+        if (neighbor_node)
+          neighbor = neighbor_node->GetNativeViewAccessible();
       }
       break;
 
@@ -3652,9 +3707,17 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
       break;
   }
 
-  if (neighbor != nullptr) {
-    static_cast<AXPlatformNodeWin*>(neighbor)->QueryInterface(
-        IID_PPV_ARGS(element_provider));
+  if (neighbor) {
+    if (direction != NavigateDirection_Parent) {
+      // 2 / 3b. If target node Ux is the child of a fragment root and the
+      // source node isn't Rx, return Rx.
+      AXFragmentRootWin* fragment_root =
+          AXFragmentRootWin::GetFragmentRootParentOf(neighbor);
+      if (UNLIKELY(fragment_root && fragment_root != GetDelegate() &&
+                   !fragment_root->IsControllerFor()))
+        neighbor = fragment_root->GetNativeViewAccessible();
+    }
+    neighbor->QueryInterface(IID_PPV_ARGS(element_provider));
   }
 
   return S_OK;

@@ -52,7 +52,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.SPenSupport;
@@ -655,10 +655,11 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
                 isNtp && ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP();
 
         boolean needsUpdate = layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab),
-                shouldStall(tab), canUseLiveTexture, ColorUtils.getToolbarSceneLayerBackground(tab),
-                ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                shouldStall(tab), canUseLiveTexture,
+                ToolbarColors.getToolbarSceneLayerBackground(tab),
+                ToolbarColors.getTextBoxColorForToolbarBackground(mContext.getResources(),
                         isLocationBarShownInNtp, themeColor, tab.isIncognito()),
-                ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
+                ToolbarColors.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 
         mHost.requestRender();

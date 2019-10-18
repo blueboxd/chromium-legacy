@@ -204,7 +204,7 @@ message VideoDecoderConfig {
     PIXEL_FORMAT_I444 = 5;
     PIXEL_FORMAT_NV12 = 6;
     PIXEL_FORMAT_NV21 = 7;
-    PIXEL_FORMAT_UYVY = 8;
+    PIXEL_FORMAT_UYVY = 8 [deprecated = true];
     PIXEL_FORMAT_YUY2 = 9;
     PIXEL_FORMAT_ARGB = 10;
     PIXEL_FORMAT_XRGB = 11;

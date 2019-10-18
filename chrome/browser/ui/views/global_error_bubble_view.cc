@@ -78,8 +78,14 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
     : BubbleDialogDelegateView(anchor_view, arrow),
       browser_(browser),
       error_(error) {
-  if (error_)
-    DialogDelegate::set_default_button(error_->GetDefaultDialogButton());
+  // error_ is a WeakPtr, but it's always non-null during construction.
+  DCHECK(error_);
+
+  DialogDelegate::set_default_button(error_->GetDefaultDialogButton());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
+                                   error_->GetBubbleViewAcceptButtonLabel());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
+                                   error_->GetBubbleViewCancelButtonLabel());
 
   if (!anchor_view) {
     SetAnchorRect(anchor_rect);
@@ -153,15 +159,6 @@ void GlobalErrorBubbleView::Init() {
 
 bool GlobalErrorBubbleView::ShouldShowCloseButton() const {
   return error_ && error_->ShouldShowCloseButton();
-}
-
-base::string16 GlobalErrorBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (!error_)
-    return base::string16();
-  return button == ui::DIALOG_BUTTON_OK
-             ? error_->GetBubbleViewAcceptButtonLabel()
-             : error_->GetBubbleViewCancelButtonLabel();
 }
 
 int GlobalErrorBubbleView::GetDialogButtons() const {

@@ -84,6 +84,11 @@ bool VerifyDownloadUrlParams(SiteInstance* site_instance,
   if (!VerifyInitiatorOrigin(process_id, params.initiator_origin))
     return false;
 
+  // For large data URLs, they are passed through |params.data_url_blob| and
+  // |params.url| should be empty.
+  if (!params.url.is_valid())
+    return params.data_url_blob.is_valid();
+
   // Verification succeeded.
   return true;
 }

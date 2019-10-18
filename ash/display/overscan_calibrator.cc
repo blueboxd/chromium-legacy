@@ -124,12 +124,12 @@ void OverscanCalibrator::UpdateInsets(const gfx::Insets& insets) {
 
 void OverscanCalibrator::OnPaintLayer(const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, calibration_layer_->size());
-  static const SkColor kTransparent = SkColorSetARGB(0, 0, 0, 0);
   gfx::Rect full_bounds = calibration_layer_->bounds();
   gfx::Rect inner_bounds = full_bounds;
   inner_bounds.Inset(insets_);
   recorder.canvas()->FillRect(full_bounds, SK_ColorBLACK);
-  recorder.canvas()->FillRect(inner_bounds, kTransparent, SkBlendMode::kClear);
+  recorder.canvas()->FillRect(inner_bounds, SK_ColorTRANSPARENT,
+                              SkBlendMode::kClear);
 
   gfx::Point center = inner_bounds.CenterPoint();
   int vertical_offset = inner_bounds.height() / 2 - kArrowGapWidth;

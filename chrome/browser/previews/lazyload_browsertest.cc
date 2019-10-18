@@ -6,6 +6,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -39,14 +41,17 @@ class LazyLoadBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
-          {{"automatic-lazy-load-images-enabled", "true"},
-           {"restrict-lazy-load-images-to-data-saver-only", "false"},
-           {"lazy_image_first_k_fully_load", "4G:0"}}},
-         {features::kLazyFrameLoading,
-          {{"automatic-lazy-load-frames-enabled", "true"},
-           {"restrict-lazy-load-frames-to-data-saver-only", "false"}}}},
+          {{"lazy_image_first_k_fully_load", "4G:0"}}}},
         {});
     InProcessBrowserTest::SetUp();
+  }
+
+  void EnableDataSaver(bool enabled) {
+    Profile* profile = Profile::FromBrowserContext(browser()->profile());
+
+    data_reduction_proxy::DataReductionProxySettings::
+        SetDataSaverEnabledForTesting(profile->GetPrefs(), enabled);
+    base::RunLoop().RunUntilIdle();
   }
 
   void ScrollToAndWaitForScroll(unsigned int scroll_offset) {
@@ -134,11 +139,14 @@ class LazyLoadBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSBackgroundImageDeferred) {
+  EnableDataSaver(true);
   ASSERT_TRUE(embedded_test_server()->Start());
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(
+  ui_test_utils::NavigateToURLWithDisposition(
       browser(),
-      embedded_test_server()->GetURL("/lazyload/css-background-image.html"));
+      embedded_test_server()->GetURL("/lazyload/css-background-image.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   base::RunLoop().RunUntilIdle();
   // Navigate away to finish the histogram recording.
@@ -151,6 +159,7 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSBackgroundImageDeferred) {
 }
 
 IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSPseudoBackgroundImageLoaded) {
+  EnableDataSaver(true);
   ASSERT_TRUE(embedded_test_server()->Start());
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(
@@ -169,14 +178,16 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest, CSSPseudoBackgroundImageLoaded) {
 
 IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
                        LazyLoadImage_DeferredAndLoadedOnScroll) {
+  EnableDataSaver(true);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url(embedded_test_server()->GetURL("/lazyload/img.html"));
 
-  auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  auto* contents = browser()->OpenURL(content::OpenURLParams(
+      test_url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_TYPED, false));
   content::ConsoleObserverDelegate console_observer(
       contents, "LAZY_LOAD CONSOLE * ON_LOAD FOR TEST");
   contents->SetDelegate(&console_observer);
-  ui_test_utils::NavigateToURL(browser(), test_url);
 
   // Wait for the four images (3 in-viewport, 1 eager below-viewport) and the
   // document to load.
@@ -210,6 +221,7 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
                        LazyLoadFrame_DeferredAndLoadedOnScroll) {
+  EnableDataSaver(true);
   SetUpLazyLoadFrameTestPage();
   GURL test_url(embedded_test_server()->GetURL("/mainpage.html"));
 
@@ -250,67 +262,141 @@ IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
                                 "loading=lazy iframe ON_LOAD FOR TEST"));
 }
 
-IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
+// Tests that need to verify lazyload should be disabled in certain cases.
+class LazyLoadDisabledBrowserTest : public LazyLoadBrowserTest {
+ public:
+  enum class ExpectedLazyLoadAction {
+    kOff,           // All iframes and images should load.
+    kExplicitOnly,  // Only the above viewport elements and below viewport
+                    // explicit lazyload elements will load.
+  };
+
+  content::WebContents* CreateBackgroundWebContents(Browser* browser,
+                                                    const GURL& url) {
+    return browser->OpenURL(content::OpenURLParams(
+        url, content::Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+        ui::PAGE_TRANSITION_TYPED, false));
+  }
+
+  void VerifyLazyLoadFrameBehavior(
+      content::WebContents* web_contents,
+      ExpectedLazyLoadAction expected_lazy_load_action) {
+    content::ConsoleObserverDelegate console_observer(
+        web_contents, "LAZY_LOAD CONSOLE * ON_LOAD FOR TEST");
+    web_contents->SetDelegate(&console_observer);
+
+    std::vector<std::string> expected_console_messages{
+        "LAZY_LOAD CONSOLE document ON_LOAD FOR TEST",
+        "LAZY_LOAD CONSOLE in-viewport iframe ON_LOAD FOR TEST",
+        "LAZY_LOAD CONSOLE in-viewport loading=lazy iframe ON_LOAD FOR "
+        "TEST",
+        "LAZY_LOAD CONSOLE in-viewport loading=eager iframe ON_LOAD FOR "
+        "TEST",
+        "LAZY_LOAD CONSOLE below-viewport loading=eager iframe ON_LOAD FOR "
+        "TEST"};
+    switch (expected_lazy_load_action) {
+      case ExpectedLazyLoadAction::kOff:
+        expected_console_messages.push_back(
+            "LAZY_LOAD CONSOLE below-viewport loading=lazy iframe ON_LOAD FOR "
+            "TEST");
+        ABSL_FALLTHROUGH_INTENDED;
+      case ExpectedLazyLoadAction::kExplicitOnly:
+        expected_console_messages.push_back(
+            "LAZY_LOAD CONSOLE below-viewport iframe ON_LOAD FOR TEST");
+        break;
+    }
+
+    // Wait for the expected elements and the document to load.
+    while (console_observer.messages().size() <
+           expected_console_messages.size()) {
+      base::RunLoop().RunUntilIdle();
+    }
+    console_observer.Wait();
+
+    EXPECT_THAT(console_observer.messages(),
+                testing::UnorderedElementsAreArray(expected_console_messages));
+  }
+
+  void VerifyLazyLoadImageBehavior(
+      content::WebContents* web_contents,
+      ExpectedLazyLoadAction expected_lazy_load_action) {
+    content::ConsoleObserverDelegate console_observer(
+        web_contents, "LAZY_LOAD CONSOLE * ON_LOAD FOR TEST");
+    web_contents->SetDelegate(&console_observer);
+
+    std::vector<std::string> expected_console_messages{
+        "LAZY_LOAD CONSOLE document ON_LOAD FOR TEST",
+        "LAZY_LOAD CONSOLE in-viewport img ON_LOAD FOR TEST",
+        "LAZY_LOAD CONSOLE in-viewport loading=lazy img ON_LOAD FOR TEST",
+        "LAZY_LOAD CONSOLE in-viewport loading=eager img ON_LOAD FOR TEST",
+        "LAZY_LOAD CONSOLE below-viewport loading=eager img ON_LOAD FOR "
+        "TEST"};
+
+    switch (expected_lazy_load_action) {
+      case ExpectedLazyLoadAction::kOff:
+        expected_console_messages.push_back(
+            "LAZY_LOAD CONSOLE below-viewport loading=lazy img ON_LOAD FOR "
+            "TEST");
+        ABSL_FALLTHROUGH_INTENDED;
+      case ExpectedLazyLoadAction::kExplicitOnly:
+        expected_console_messages.push_back(
+            "LAZY_LOAD CONSOLE below-viewport img ON_LOAD FOR TEST");
+        break;
+    }
+
+    EXPECT_THAT(console_observer.messages(), testing::UnorderedElementsAre());
+
+    // Wait for the expected elements and the document to load.
+    while (console_observer.messages().size() <
+           expected_console_messages.size()) {
+      base::RunLoop().RunUntilIdle();
+    }
+    console_observer.Wait();
+    EXPECT_THAT(console_observer.messages(),
+                testing::UnorderedElementsAreArray(expected_console_messages));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LazyLoadDisabledBrowserTest,
                        LazyLoadImage_DisabledInBackgroundTab) {
+  EnableDataSaver(true);
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url(embedded_test_server()->GetURL("/lazyload/img.html"));
-
-  auto* background_contents = browser()->OpenURL(content::OpenURLParams(
-      test_url, content::Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui::PAGE_TRANSITION_TYPED, false));
-  content::ConsoleObserverDelegate console_observer(
-      background_contents, "LAZY_LOAD CONSOLE * ON_LOAD FOR TEST");
-  background_contents->SetDelegate(&console_observer);
-
-  // Wait for the four images and the document to load.
-  while (console_observer.messages().size() < 7) {
-    base::RunLoop().RunUntilIdle();
-  }
-  console_observer.Wait();
-
-  EXPECT_THAT(
-      console_observer.messages(),
-      testing::UnorderedElementsAre(
-          "LAZY_LOAD CONSOLE document ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE in-viewport img ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE in-viewport loading=lazy img ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE in-viewport loading=eager img ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE below-viewport img ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE below-viewport loading=lazy img ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE below-viewport loading=eager img ON_LOAD FOR "
-          "TEST"));
+  auto* web_contents = CreateBackgroundWebContents(browser(), test_url);
+  VerifyLazyLoadImageBehavior(web_contents, ExpectedLazyLoadAction::kOff);
 }
 
-IN_PROC_BROWSER_TEST_F(LazyLoadBrowserTest,
+IN_PROC_BROWSER_TEST_F(LazyLoadDisabledBrowserTest,
+                       LazyLoadImage_DisabledInIncognito) {
+  EnableDataSaver(true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url(embedded_test_server()->GetURL("/lazyload/img.html"));
+  auto* incognito_web_contents = browser()->OpenURL(content::OpenURLParams(
+      test_url, content::Referrer(), WindowOpenDisposition::OFF_THE_RECORD,
+      ui::PAGE_TRANSITION_TYPED, false));
+  VerifyLazyLoadImageBehavior(incognito_web_contents,
+                              ExpectedLazyLoadAction::kExplicitOnly);
+}
+
+IN_PROC_BROWSER_TEST_F(LazyLoadDisabledBrowserTest,
                        LazyLoadFrame_DisabledInBackgroundTab) {
+  EnableDataSaver(true);
   SetUpLazyLoadFrameTestPage();
   GURL test_url(embedded_test_server()->GetURL("/mainpage.html"));
+  auto* web_contents = CreateBackgroundWebContents(browser(), test_url);
+  VerifyLazyLoadFrameBehavior(web_contents, ExpectedLazyLoadAction::kOff);
+}
 
-  auto* background_contents = browser()->OpenURL(content::OpenURLParams(
-      test_url, content::Referrer(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+IN_PROC_BROWSER_TEST_F(LazyLoadDisabledBrowserTest,
+                       LazyLoadFrame_DisabledInIncognito) {
+  EnableDataSaver(true);
+  SetUpLazyLoadFrameTestPage();
+  GURL test_url(embedded_test_server()->GetURL("/mainpage.html"));
+  auto* incognito_web_contents = browser()->OpenURL(content::OpenURLParams(
+      test_url, content::Referrer(), WindowOpenDisposition::OFF_THE_RECORD,
       ui::PAGE_TRANSITION_TYPED, false));
-  content::ConsoleObserverDelegate console_observer(
-      background_contents, "LAZY_LOAD CONSOLE * ON_LOAD FOR TEST");
-  background_contents->SetDelegate(&console_observer);
-
-  // Wait for the four iframes and the document to load.
-  while (console_observer.messages().size() < 7) {
-    base::RunLoop().RunUntilIdle();
-  }
-  console_observer.Wait();
-
-  EXPECT_THAT(
-      console_observer.messages(),
-      testing::UnorderedElementsAre(
-          "LAZY_LOAD CONSOLE document ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE in-viewport iframe ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE in-viewport loading=lazy iframe ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE in-viewport loading=eager iframe ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE below-viewport iframe ON_LOAD FOR TEST",
-          "LAZY_LOAD CONSOLE below-viewport loading=lazy iframe ON_LOAD FOR "
-          "TEST",
-          "LAZY_LOAD CONSOLE below-viewport loading=eager iframe ON_LOAD FOR "
-          "TEST"));
+  VerifyLazyLoadFrameBehavior(incognito_web_contents,
+                              ExpectedLazyLoadAction::kExplicitOnly);
 }
 
 class LazyLoadPrerenderBrowserTest : public LazyLoadBrowserTest {
@@ -324,6 +410,7 @@ class LazyLoadPrerenderBrowserTest : public LazyLoadBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LazyLoadPrerenderBrowserTest, ImagesIgnored) {
+  EnableDataSaver(true);
   SetUpURLMonitor();
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url(embedded_test_server()->GetURL("/lazyload/img.html"));

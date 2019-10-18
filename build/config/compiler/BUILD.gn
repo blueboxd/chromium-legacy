@@ -142,7 +142,7 @@ declare_args() {
   # floating-point types (and 32-bit pointers) with 0xFF and the rest with 0xAA.
   # This allows to make behavior of uninitialized memory bugs consistent, easier to
   # recognize when debugging and often just to crash immediately.
-  init_stack_vars = false
+  init_stack_vars = is_linux && !is_official_build
 }
 
 declare_args() {

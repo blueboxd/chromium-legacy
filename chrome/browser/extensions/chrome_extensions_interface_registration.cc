@@ -173,7 +173,7 @@ void RegisterChromeInterfacesForExtension(
       // as the BrowserProcessImpl.
       registry->AddInterface(
           base::BindRepeating(&extensions::MediaPerceptionAPIDelegate::
-                                  ForwardMediaPerceptionRequest,
+                                  ForwardMediaPerceptionReceiver,
                               base::Unretained(delegate)));
     }
   }

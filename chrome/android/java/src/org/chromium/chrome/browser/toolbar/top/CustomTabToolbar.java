@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
@@ -168,8 +169,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     public CustomTabToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        mDarkModeTint = ColorUtils.getThemedToolbarIconTint(context, false);
-        mLightModeTint = ColorUtils.getThemedToolbarIconTint(context, true);
+        mDarkModeTint = ToolbarColors.getThemedToolbarIconTint(context, false);
+        mLightModeTint = ToolbarColors.getThemedToolbarIconTint(context, true);
     }
 
     @Override
@@ -736,7 +737,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                                    : R.color.default_text_color_light));
 
             if (getProgressBar() != null) {
-                if (!ColorUtils.isUsingDefaultToolbarColor(
+                if (!ToolbarColors.isUsingDefaultToolbarColor(
                             getResources(), false, getBackground().getColor())) {
                     getProgressBar().setThemeColor(getBackground().getColor(), false);
                 } else {

@@ -46,6 +46,11 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
             params::OfflinePreviewFreshnessDuration());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
+  EXPECT_EQ(
+      net::EFFECTIVE_CONNECTION_TYPE_2G,
+      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
   EXPECT_EQ(0, params::OfflinePreviewsVersion());
 
   base::FieldTrialList field_trial_list(nullptr);
@@ -80,11 +85,60 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_EQ(base::TimeDelta::FromSeconds(28), params::SingleOptOutDuration());
   EXPECT_EQ(base::TimeDelta::FromDays(12),
             params::OfflinePreviewFreshnessDuration());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G,
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
             params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
+  EXPECT_EQ(
+      net::EFFECTIVE_CONNECTION_TYPE_4G,
+      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
   EXPECT_EQ(10, params::OfflinePreviewsVersion());
 
   variations::testing::ClearAllVariationParams();
+}
+
+// Verifies that the default params are correct, and that custom params can be
+// set, for both the previews blacklist and offline previews.
+TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline_LPR) {
+  // Verify that the default params are correct.
+  EXPECT_EQ(4u, params::MaxStoredHistoryLengthForPerHostBlackList());
+  EXPECT_EQ(10u, params::MaxStoredHistoryLengthForHostIndifferentBlackList());
+  EXPECT_EQ(100u, params::MaxInMemoryHostsInBlackList());
+  EXPECT_EQ(2, params::PerHostBlackListOptOutThreshold());
+  EXPECT_EQ(6, params::HostIndifferentBlackListOptOutThreshold());
+  EXPECT_EQ(base::TimeDelta::FromDays(30), params::PerHostBlackListDuration());
+  EXPECT_EQ(base::TimeDelta::FromDays(30),
+            params::HostIndifferentBlackListPerHostDuration());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(60 * 5),
+            params::SingleOptOutDuration());
+  EXPECT_EQ(base::TimeDelta::FromDays(7),
+            params::OfflinePreviewFreshnessDuration());
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
+  EXPECT_EQ(
+      net::EFFECTIVE_CONNECTION_TYPE_2G,
+      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
+  EXPECT_EQ(0, params::OfflinePreviewsVersion());
+
+  // Set some custom params. Somewhat random yet valid values.
+  std::map<std::string, std::string> custom_params = {
+      {"max_allowed_effective_connection_type", "3G"},
+      {"version", "10"},
+  };
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kLitePageServerPreviews, custom_params);
+
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params::GetECTThresholdForPreview(PreviewsType::OFFLINE));
+  EXPECT_EQ(
+      net::EFFECTIVE_CONNECTION_TYPE_3G,
+      params::GetECTThresholdForPreview(PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
+            params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
 }
 
 TEST(PreviewsExperimentsTest, TestDefaultShouldExcludeMediaSuffix) {

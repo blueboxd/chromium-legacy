@@ -30,7 +30,8 @@
 
 namespace blink {
 
-LayoutIFrame::LayoutIFrame(Element* element) : LayoutEmbeddedContent(element) {}
+LayoutIFrame::LayoutIFrame(HTMLFrameOwnerElement* element)
+    : LayoutEmbeddedContent(element) {}
 
 bool LayoutIFrame::ShouldComputeSizeAsReplaced() const {
   return true;

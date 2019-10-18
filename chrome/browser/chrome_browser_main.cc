@@ -208,7 +208,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1427,8 +1427,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  // Initialize the machine level user cloud policy controller after the
-  // browser process singleton is acquired to remove race conditions where
+  // Initialize the chrome browser cloud management controller controller after
+  // the browser process singleton is acquired to remove race conditions where
   // multiple browser processes start simultaneously.  The main
   // initialization of browser_policy_connector is performed inside
   // PreMainMessageLoopRun() so that policies can be applied as soon as
@@ -1437,16 +1437,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Note that this protects against multiple browser process starts in
   // the same user data dir and not multiple starts across user data dirs.
   browser_process_->browser_policy_connector()
-      ->machine_level_user_cloud_policy_controller()
+      ->chrome_browser_cloud_management_controller()
       ->Init(browser_process_->local_state(),
              browser_process_->system_network_context_manager()
                  ->GetSharedURLLoaderFactory());
 
-  // Wait for the machine level user cloud policy enrollment to finish.
+  // Wait for the chrome browser cloud management enrollment to finish.
   // If no enrollment is needed, this function returns immediately.
   // Abort the launch process if the enrollment fails.
   if (!browser_process_->browser_policy_connector()
-           ->machine_level_user_cloud_policy_controller()
+           ->chrome_browser_cloud_management_controller()
            ->WaitUntilPolicyEnrollmentFinished()) {
     return chrome::RESULT_CODE_CLOUD_POLICY_ENROLLMENT_FAILED;
   }

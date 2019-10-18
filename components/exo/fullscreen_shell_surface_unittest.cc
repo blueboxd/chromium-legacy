@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface_util.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base_views.h"
 #include "components/exo/wm_helper.h"
@@ -189,6 +190,40 @@ TEST_F(FullscreenShellSurfaceTest, Bounds) {
       fullscreen_surface->GetWidget()->GetWindowBoundsInScreen();
   gfx::Rect expected_bounds(new_root_bounds.size());
   EXPECT_EQ(fullscreen_bounds, expected_bounds);
+}
+
+TEST_F(FullscreenShellSurfaceTest, BoundsWithPartiallyOffscreenSubSurface) {
+  aura::Window* root_window =
+      WMHelper::GetInstance()->GetRootWindowForNewWindows();
+  gfx::Rect new_root_bounds(10, 10, 100, 100);
+  gfx::Rect expected_bounds(new_root_bounds.size());
+  root_window->SetBounds(new_root_bounds);
+
+  gfx::Size buffer_size(100, 100);
+  auto buffer = std::make_unique<Buffer>(
+      CreateGpuMemoryBuffer(buffer_size, gfx::BufferFormat::RGBA_8888));
+  auto parent = std::make_unique<Surface>();
+  auto fullscreen_surface = std::make_unique<FullscreenShellSurface>();
+  fullscreen_surface->SetSurface(parent.get());
+
+  parent->Attach(buffer.get());
+  parent->Commit();
+  EXPECT_EQ(fullscreen_surface->GetWidget()->GetWindowBoundsInScreen(),
+            expected_bounds);
+  EXPECT_EQ(parent->window()->bounds(), expected_bounds);
+
+  auto surface = std::make_unique<Surface>();
+  auto sub_surface = std::make_unique<SubSurface>(surface.get(), parent.get());
+  surface->Attach(buffer.get());
+  sub_surface->SetPosition(gfx::Point(-50, -50));
+
+  parent->Commit();
+  // Make sure the sub-surface doesn't affect the Fullscreen Shell's Window
+  // size/position.
+  EXPECT_EQ(fullscreen_surface->GetWidget()->GetWindowBoundsInScreen(),
+            expected_bounds);
+  // The root surface should also have the same position/size as before.
+  EXPECT_EQ(parent->window()->bounds(), expected_bounds);
 }
 
 TEST_F(FullscreenShellSurfaceTest, SetAXChildTree) {

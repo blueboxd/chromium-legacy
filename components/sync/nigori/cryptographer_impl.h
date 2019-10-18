@@ -65,6 +65,9 @@ class CryptographerImpl : public Cryptographer {
   // false.
   void ClearDefaultEncryptionKey();
 
+  // Determines whether |key| is already known.
+  bool HasKey(const sync_pb::NigoriKey& key) const;
+
   // Returns a proto representation of the default encryption key. |*this| must
   // have a default encryption key set, as reflected by CanEncrypt().
   sync_pb::NigoriKey ExportDefaultKey() const;

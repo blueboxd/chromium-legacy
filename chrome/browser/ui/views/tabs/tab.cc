@@ -550,9 +550,17 @@ void Tab::OnMouseCaptureLost() {
 void Tab::OnMouseMoved(const ui::MouseEvent& event) {
   tab_style_->SetHoverLocation(event.location());
   controller_->OnMouseEventInTab(this, event);
-#if defined(OS_LINUX)
+
+  // Linux enter/leave events are sometimes flaky, so we don't want to "miss"
+  // an enter event and fail to hover the tab.
+  //
+  // In Windows, we won't miss the enter event but mouse input is disabled after
+  // a touch gesture and we could end up ignoring the enter event. If the user
+  // subsequently moves the mouse, we need to then hover the tab.
+  //
+  // Either way, this is effectively a no-op if the tab is already in a hovered
+  // state.
   MaybeUpdateHoverStatus(event);
-#endif
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
@@ -560,6 +568,9 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
 void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
+  if (mouse_hovered_ || !GetWidget()->IsMouseEventsEnabled())
+    return;
+
 #if defined(OS_LINUX)
   // Move the hit test area for hovering up so that it is not overlapped by tab
   // hover cards when they are shown.
@@ -578,6 +589,8 @@ void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
+  if (!mouse_hovered_)
+    return;
   mouse_hovered_ = false;
   tab_style_->HideHover(TabStyle::HideHoverStyle::kGradual);
   UpdateForegroundColors();

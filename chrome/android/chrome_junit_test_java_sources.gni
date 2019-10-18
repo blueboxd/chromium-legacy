@@ -156,6 +156,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omnibox/status/StatusMediatorUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionProcessorUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewTest.java",
+  "junit/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinderUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleHorizontalLayoutViewTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/basic/BasicSuggestionProcessorTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/suggestions/editurl/EditUrlSuggestionTest.java",

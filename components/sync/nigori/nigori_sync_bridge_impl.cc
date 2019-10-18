@@ -417,6 +417,9 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
   metadata_batch.model_type_state = deserialized_data->model_type_state();
   metadata_batch.entity_metadata = deserialized_data->entity_metadata();
   processor_->ModelReadyToSync(this, std::move(metadata_batch));
+
+  // Keystore key rotation might be not performed, but required.
+  MaybeTriggerKeystoreKeyRotation();
 }
 
 NigoriSyncBridgeImpl::~NigoriSyncBridgeImpl() {
@@ -632,10 +635,10 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     broadcasting_observer_->OnCryptographerStateChanged(
         state_.cryptographer.get(), state_.pending_keys.has_value());
   }
+  MaybeTriggerKeystoreKeyRotation();
   // Note: we don't need to persist keystore keys here, because we will receive
   // Nigori node right after this method and persist all the data during
   // UpdateLocalState().
-  // TODO(crbug.com/922900): support key rotation.
   // TODO(crbug.com/922900): verify that this method is always called before
   // update or init of Nigori node. If this is the case we don't need to touch
   // cryptographer here. If this is not the case, old code is actually broken:
@@ -794,14 +797,9 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
 
   MaybeNotifyOfPendingKeys();
 
-  // TODO(crbug.com/): Instead of issuing errors for local commits, call
-  // PutNextApplicablePendingLocalCommit() to verify pending local changes
-  // (relevant for the conflict case). Issue failures if they are no longer
-  // applicable, or call Put() otherwise.
-  for (const auto& pending_local_commit : pending_local_commit_queue_) {
-    pending_local_commit->OnFailure(broadcasting_observer_.get());
-  }
-  pending_local_commit_queue_.clear();
+  // There might be pending local commits, so make attempt to apply them on top
+  // of new |state_|.
+  PutNextApplicablePendingLocalCommit();
 
   storage_->StoreData(SerializeAsNigoriLocalData());
 
@@ -935,14 +933,6 @@ std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
   entity_data->name = kNigoriNonUniqueName;
   entity_data->is_folder = true;
   return entity_data;
-}
-
-ConflictResolution NigoriSyncBridgeImpl::ResolveConflict(
-    const EntityData& local_data,
-    const EntityData& remote_data) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
-  return ConflictResolution::kUseLocal;
 }
 
 void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
@@ -1094,6 +1084,12 @@ sync_pb::NigoriLocalData NigoriSyncBridgeImpl::SerializeAsNigoriLocalData()
   *output.mutable_nigori_model() = state_.ToLocalProto();
 
   return output;
+}
+
+void NigoriSyncBridgeImpl::MaybeTriggerKeystoreKeyRotation() {
+  if (state_.NeedsKeystoreKeyRotation()) {
+    QueuePendingLocalCommit(PendingLocalNigoriCommit::ForKeystoreKeyRotation());
+  }
 }
 
 void NigoriSyncBridgeImpl::QueuePendingLocalCommit(

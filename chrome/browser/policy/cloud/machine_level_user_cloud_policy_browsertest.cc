@@ -24,19 +24,19 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/policy/core/common/cloud/chrome_browser_cloud_management_metrics.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
-#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_metrics.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
@@ -83,8 +83,8 @@ const char kTestPolicyConfig[] = R"(
 }
 )";
 
-class MachineLevelUserCloudPolicyControllerObserver
-    : public MachineLevelUserCloudPolicyController::Observer {
+class ChromeBrowserCloudManagementControllerObserver
+    : public ChromeBrowserCloudManagementController::Observer {
  public:
   void OnPolicyRegisterFinished(bool succeeded) override {
     if (!succeeded && should_display_error_message_) {
@@ -99,7 +99,7 @@ class MachineLevelUserCloudPolicyControllerObserver
     EXPECT_EQ(should_succeed_, succeeded);
     is_finished_ = true;
     g_browser_process->browser_policy_connector()
-        ->machine_level_user_cloud_policy_controller()
+        ->chrome_browser_cloud_management_controller()
         ->RemoveObserver(this);
     // If enrollment fails, the manager should be marked as initialized
     // immediately. Otherwise, this will be done after the policy data is
@@ -129,16 +129,16 @@ class MachineLevelUserCloudPolicyControllerObserver
 class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
  public:
   explicit ChromeBrowserExtraSetUp(
-      MachineLevelUserCloudPolicyControllerObserver* observer)
+      ChromeBrowserCloudManagementControllerObserver* observer)
       : observer_(observer) {}
   void PreMainMessageLoopStart() override {
     g_browser_process->browser_policy_connector()
-        ->machine_level_user_cloud_policy_controller()
+        ->chrome_browser_cloud_management_controller()
         ->AddObserver(observer_);
   }
 
  private:
-  MachineLevelUserCloudPolicyControllerObserver* observer_;
+  ChromeBrowserCloudManagementControllerObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserExtraSetUp);
 };
@@ -394,8 +394,8 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
                                              base::TaskPriority::BEST_EFFORT}));
     policy_store->AddObserver(&observer);
 
-    base::FilePath policy_dir =
-        user_data_dir.Append(MachineLevelUserCloudPolicyController::kPolicyDir);
+    base::FilePath policy_dir = user_data_dir.Append(
+        ChromeBrowserCloudManagementController::kPolicyDir);
 
     std::unique_ptr<MachineLevelUserCloudPolicyManager> manager =
         std::make_unique<MachineLevelUserCloudPolicyManager>(
@@ -476,15 +476,15 @@ class MachineLevelUserCloudPolicyEnrollmentTest
               BrowserDMTokenStorage::Get()->RetrieveDMToken());
 
     // Verify the enrollment result.
-    MachineLevelUserCloudPolicyEnrollmentResult expected_result;
+    ChromeBrowserCloudManagementEnrollmentResult expected_result;
     if (is_enrollment_token_valid() && storage_enabled()) {
-      expected_result = MachineLevelUserCloudPolicyEnrollmentResult::kSuccess;
+      expected_result = ChromeBrowserCloudManagementEnrollmentResult::kSuccess;
     } else if (is_enrollment_token_valid() && !storage_enabled()) {
       expected_result =
-          MachineLevelUserCloudPolicyEnrollmentResult::kFailedToStore;
+          ChromeBrowserCloudManagementEnrollmentResult::kFailedToStore;
     } else {
       expected_result =
-          MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch;
+          ChromeBrowserCloudManagementEnrollmentResult::kFailedToFetch;
     }
 
     // Verify the metrics.
@@ -503,7 +503,7 @@ class MachineLevelUserCloudPolicyEnrollmentTest
  private:
   LocalPolicyTestServer test_server_;
   FakeBrowserDMTokenStorage storage_;
-  MachineLevelUserCloudPolicyControllerObserver observer_;
+  ChromeBrowserCloudManagementControllerObserver observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyEnrollmentTest);
 };

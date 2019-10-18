@@ -42,6 +42,7 @@
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
@@ -115,6 +116,64 @@ GraphicsLayer::~GraphicsLayer() {
 IntRect GraphicsLayer::VisualRect() const {
   DCHECK(layer_state_);
   return IntRect(layer_state_->offset, IntSize(Size()));
+}
+
+void GraphicsLayer::AppendAdditionalInfoAsJSON(LayerTreeFlags flags,
+                                               const cc::Layer& layer,
+                                               JSONObject& json) const {
+  // Only the primary layer associated with GraphicsLayer adds additional
+  // information.  Other layer state, such as raster invalidations, don't
+  // disambiguate between specific layers.
+  if (&layer != layer_.get())
+    return;
+
+  if ((flags & kLayerTreeIncludesPaintInvalidations) &&
+      Client().IsTrackingRasterInvalidations() &&
+      GetRasterInvalidationTracking()) {
+    GetRasterInvalidationTracking()->AsJSON(&json);
+  }
+
+  GraphicsLayerPaintingPhase painting_phase = PaintingPhase();
+  if ((flags & kLayerTreeIncludesPaintingPhases) && painting_phase) {
+    auto painting_phases_json = std::make_unique<JSONArray>();
+    if (painting_phase & kGraphicsLayerPaintBackground)
+      painting_phases_json->PushString("GraphicsLayerPaintBackground");
+    if (painting_phase & kGraphicsLayerPaintForeground)
+      painting_phases_json->PushString("GraphicsLayerPaintForeground");
+    if (painting_phase & kGraphicsLayerPaintMask)
+      painting_phases_json->PushString("GraphicsLayerPaintMask");
+    if (painting_phase & kGraphicsLayerPaintOverflowContents)
+      painting_phases_json->PushString("GraphicsLayerPaintOverflowContents");
+    if (painting_phase & kGraphicsLayerPaintCompositedScroll)
+      painting_phases_json->PushString("GraphicsLayerPaintCompositedScroll");
+    if (painting_phase & kGraphicsLayerPaintDecoration)
+      painting_phases_json->PushString("GraphicsLayerPaintDecoration");
+    json.SetArray("paintingPhases", std::move(painting_phases_json));
+  }
+
+  if (flags &
+      (kLayerTreeIncludesDebugInfo | kLayerTreeIncludesCompositingReasons)) {
+    bool debug = flags & kLayerTreeIncludesDebugInfo;
+    {
+      auto squashing_disallowed_reasons_json = std::make_unique<JSONArray>();
+      SquashingDisallowedReasons squashing_disallowed_reasons =
+          GetSquashingDisallowedReasons();
+      auto names = debug ? SquashingDisallowedReason::Descriptions(
+                               squashing_disallowed_reasons)
+                         : SquashingDisallowedReason::ShortNames(
+                               squashing_disallowed_reasons);
+      for (const char* name : names)
+        squashing_disallowed_reasons_json->PushString(name);
+      json.SetArray("squashingDisallowedReasons",
+                    std::move(squashing_disallowed_reasons_json));
+    }
+  }
+
+#if DCHECK_IS_ON()
+  if (HasLayerState() && DrawsContent() &&
+      (flags & kLayerTreeIncludesPaintRecords))
+    json.SetValue("paintRecord", RecordAsJSON(*CapturePaintRecord()));
+#endif
 }
 
 void GraphicsLayer::SetHasWillChangeTransformHint(

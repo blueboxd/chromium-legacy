@@ -655,7 +655,7 @@ TEST(SecurityStateContentUtilsTest, SafeBrowsingExplanation) {
 
 // Tests that a bad reputation warning in VisibleSecurityState causes an
 // insecure explanation to be set.
-TEST(SecurityStateContentUtilsTest, SafetyTipExplanation) {
+TEST(SecurityStateContentUtilsTest, SafetyTipExplanation_BadReputation) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       security_state::features::kSafetyTipUI);
@@ -665,16 +665,46 @@ TEST(SecurityStateContentUtilsTest, SafetyTipExplanation) {
   visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   visible_security_state.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_NONE;
-  visible_security_state.safety_tip_status =
-      security_state::SafetyTipStatus::kBadReputation;
+  visible_security_state.safety_tip_info = {
+      security_state::SafetyTipStatus::kBadReputation, GURL()};
   content::SecurityStyleExplanations explanations;
   GetSecurityStyle(security_state::WARNING, visible_security_state,
                    &explanations);
 
-  EXPECT_EQ(
-      l10n_util::GetStringUTF8(IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE),
-      explanations.summary);
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SECURITY_TAB_SAFETY_TIP_TITLE),
+            explanations.summary);
   EXPECT_EQ(1u, explanations.insecure_explanations.size());
+  EXPECT_EQ(l10n_util::GetStringUTF8(
+                IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION),
+            explanations.insecure_explanations[0].description);
+}
+
+// Same as SafetyTipExplanation_BadReputation, but for lookalikes. Also checks
+// that the explanation text contains the safe URL.
+TEST(SecurityStateContentUtilsTest, SafetyTipExplanation_Lookalike) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      security_state::features::kSafetyTipUI);
+
+  security_state::VisibleSecurityState visible_security_state;
+  visible_security_state.cert_status = 0;
+  visible_security_state.url = GURL("https://lookalike.test");
+  visible_security_state.malicious_content_status =
+      security_state::MALICIOUS_CONTENT_STATUS_NONE;
+  visible_security_state.safety_tip_info = {
+      security_state::SafetyTipStatus::kLookalike,
+      GURL("http://good-site.test")};
+  content::SecurityStyleExplanations explanations;
+  GetSecurityStyle(security_state::WARNING, visible_security_state,
+                   &explanations);
+
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SECURITY_TAB_SAFETY_TIP_TITLE),
+            explanations.summary);
+  EXPECT_EQ(1u, explanations.insecure_explanations.size());
+  EXPECT_EQ(l10n_util::GetStringFUTF8(
+                IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_DESCRIPTION,
+                base::ASCIIToUTF16("good-site.test")),
+            explanations.insecure_explanations[0].description);
 }
 
 // Tests that a Safebrowsing warning and a bad reputation warning in
@@ -691,8 +721,8 @@ TEST(SecurityStateContentUtilsTest,
   visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   visible_security_state.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
-  visible_security_state.safety_tip_status =
-      security_state::SafetyTipStatus::kBadReputation;
+  visible_security_state.safety_tip_info = {
+      security_state::SafetyTipStatus::kBadReputation, GURL()};
   content::SecurityStyleExplanations explanations;
   GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
                    &explanations);
@@ -704,9 +734,9 @@ TEST(SecurityStateContentUtilsTest,
   EXPECT_EQ(2u, explanations.insecure_explanations.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING_SUMMARY),
             explanations.insecure_explanations[0].summary);
-  EXPECT_EQ(
-      l10n_util::GetStringUTF8(IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE),
-      explanations.insecure_explanations[1].summary);
+  EXPECT_EQ(l10n_util::GetStringUTF8(
+                IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_SUMMARY),
+            explanations.insecure_explanations[1].summary);
 }
 
 // Tests that a Safebrowsing warning and safety tip status of None in
@@ -722,8 +752,8 @@ TEST(SecurityStateContentUtilsTest,
   visible_security_state.url = GURL("https://scheme-is-cryptographic.test");
   visible_security_state.malicious_content_status =
       security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
-  visible_security_state.safety_tip_status =
-      security_state::SafetyTipStatus::kNone;
+  visible_security_state.safety_tip_info = {
+      security_state::SafetyTipStatus::kNone, GURL()};
   content::SecurityStyleExplanations explanations;
   GetSecurityStyle(security_state::DANGEROUS, visible_security_state,
                    &explanations);

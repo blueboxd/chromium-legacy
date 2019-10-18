@@ -42,7 +42,6 @@ namespace {
 using leveldb::StdStringToUint8Vector;
 using leveldb::String16ToUint8Vector;
 using leveldb::Uint8VectorToStdString;
-using leveldb::mojom::KeyValuePtr;
 
 static const char kSessionStorageDirectory[] = "Session Storage";
 static const int kTestProcessId = 0;

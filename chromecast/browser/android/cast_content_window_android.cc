@@ -97,16 +97,6 @@ void CastContentWindowAndroid::OnActivityStopped(
   delegate_->OnWindowDestroyed();
 }
 
-void CastContentWindowAndroid::OnKeyDown(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    int keycode) {
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                         ui::KeyboardCodeFromAndroidKeyCode(keycode),
-                         ui::EF_NONE);
-  delegate_->OnKeyEvent(key_event);
-}
-
 void CastContentWindowAndroid::RequestVisibility(
     VisibilityPriority visibility_priority) {
   JNIEnv* env = base::android::AttachCurrentThread();

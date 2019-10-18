@@ -102,10 +102,16 @@ struct DatabaseSizeResult {
 //       after a tab being loaded.
 //     - Ignore the audio events happening during the first fews seconds after a
 //       tab being backgrounded.
+// - 2:
+//     - Ignore events that happen shortly after a tab is backgrounded. This is
+//       because such events are likely a response to a recent user action
+//       rather than an attempt from the tab to communicate in background.
+//       See https://crbug.com/1865601.
 //
 // Transform logic:
-//     - From {no version} to v1: The database is erased entirely.
-const size_t LevelDBSiteCharacteristicsDatabase::kDbVersion = 1U;
+//     - From any version to v1: The database is erased entirely.
+//     - From any version to v2: The database is erased entirely.
+const size_t LevelDBSiteCharacteristicsDatabase::kDbVersion = 2U;
 
 const char LevelDBSiteCharacteristicsDatabase::kDbMetadataKey[] =
     "database_metadata";

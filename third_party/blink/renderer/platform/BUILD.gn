@@ -843,6 +843,8 @@ jumbo_component("platform") {
     "graphics/compositing/chunk_to_layer_mapper.h",
     "graphics/compositing/content_layer_client_impl.cc",
     "graphics/compositing/content_layer_client_impl.h",
+    "graphics/compositing/layers_as_json.cc",
+    "graphics/compositing/layers_as_json.h",
     "graphics/compositing/paint_artifact_compositor.cc",
     "graphics/compositing/paint_artifact_compositor.h",
     "graphics/compositing/paint_chunks_to_cc_layer.cc",

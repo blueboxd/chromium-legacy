@@ -125,8 +125,7 @@ class CookieStoreIOS : public net::CookieStore,
 
  private:
   using CookieChangeCallbackList =
-      base::CallbackList<void(const CanonicalCookie& cookie,
-                              CookieChangeCause cause)>;
+      base::CallbackList<void(const CookieChangeInfo&)>;
 
   class Subscription : public base::LinkNode<Subscription>,
                        public CookieChangeSubscription {

@@ -111,7 +111,7 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   PagePopupClient::AddProperty("selectedColor",
                                client_->CurrentColor().Serialized(), data);
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
-  AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
   PagePopupClient::AddString("};\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
@@ -151,7 +151,7 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
                                  client_->CurrentColor().Serialized(), data);
   }
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
-  AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", true, data);
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
@@ -199,6 +199,10 @@ void ColorChooserPopupUIController::DidClosePopup() {
 
 Element& ColorChooserPopupUIController::OwnerElement() {
   return client_->OwnerElement();
+}
+
+ChromeClient& ColorChooserPopupUIController::GetChromeClient() {
+  return *chrome_client_;
 }
 
 void ColorChooserPopupUIController::OpenPopup() {

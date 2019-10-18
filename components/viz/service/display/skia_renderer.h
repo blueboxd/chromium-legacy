@@ -104,6 +104,11 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void PrepareCanvas(const base::Optional<gfx::Rect>& scissor_rect,
                      const base::Optional<gfx::RRectF>& rounded_corner_bounds,
                      const gfx::Transform* cdt);
+  // Further modify the canvas or draw parameters as needed to apply the effects
+  // represented by |rpdq_params|.  |content_paint| must be a non-null pointer.
+  void PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
+                            DrawQuadParams* params,
+                            SkPaint* content_paint);
 
   // The returned DrawQuadParams can be modified by the DrawX calls that accept
   // params so that they can apply explicit data transforms before sending to

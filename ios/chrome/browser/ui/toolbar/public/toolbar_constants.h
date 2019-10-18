@@ -8,7 +8,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/ui/util/rtl_geometry.h"
+extern const NSUInteger kControlStateSpotlighted;
 
 // All kxxxColor constants are RGB values stored in a Hex integer. These will be
 // converted into UIColors using the UIColorFromRGB() function, from

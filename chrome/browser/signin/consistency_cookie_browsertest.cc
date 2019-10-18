@@ -67,9 +67,8 @@ class TestConsistencyCookieManager
   }
 
   // CookieChangeListener:
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      network::mojom::CookieChangeCause cause) override {
-    if (cookie.Name() != kConsistencyCookieName)
+  void OnCookieChange(const net::CookieChangeInfo& change) override {
+    if (change.cookie.Name() != kConsistencyCookieName)
       return;
     if (!run_loop_quit_closure_.is_null())
       std::move(run_loop_quit_closure_).Run();

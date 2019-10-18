@@ -32,7 +32,7 @@ var TabStripBrowserTest = class extends testing.Test {
 
 var TabStripTabListTest = class extends TabStripBrowserTest {
   get browsePreload() {
-    return 'chrome://test?module=tab_strip/tab_list_test.js';
+    return 'chrome://tab-strip/test_loader.html?module=tab_strip/tab_list_test.js';
   }
 };
 
@@ -42,10 +42,30 @@ TEST_F('TabStripTabListTest', 'All', function() {
 
 var TabStripTabTest = class extends TabStripBrowserTest {
   get browsePreload() {
-    return 'chrome://test?module=tab_strip/tab_test.js';
+    return 'chrome://tab-strip/test_loader.html?module=tab_strip/tab_test.js';
   }
 };
 
 TEST_F('TabStripTabTest', 'All', function() {
+  mocha.run();
+});
+
+var TabStripAlertIndicatorsTest = class extends TabStripBrowserTest {
+  get browsePreload() {
+    return 'chrome://tab-strip/test_loader.html?module=tab_strip/alert_indicators_test.js';
+  }
+};
+
+TEST_F('TabStripAlertIndicatorsTest', 'All', function() {
+  mocha.run();
+});
+
+var TabStripAlertIndicatorTest = class extends TabStripBrowserTest {
+  get browsePreload() {
+    return 'chrome://tab-strip/test_loader.html?module=tab_strip/alert_indicator_test.js';
+  }
+};
+
+TEST_F('TabStripAlertIndicatorTest', 'All', function() {
   mocha.run();
 });

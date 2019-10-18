@@ -101,7 +101,7 @@ class CastAudioOutputStream::MixerServiceWrapper
 
   void SetRunning(bool running);
   void Start(AudioSourceCallback* source_callback);
-  void Stop();
+  void Stop(base::WaitableEvent* finished);
   void Close(base::OnceClosure closure);
   void SetVolume(double volume);
   void Flush();
@@ -188,11 +188,14 @@ void CastAudioOutputStream::MixerServiceWrapper::Start(
   mixer_connection_->SetVolumeMultiplier(volume_);
 }
 
-void CastAudioOutputStream::MixerServiceWrapper::Stop() {
+void CastAudioOutputStream::MixerServiceWrapper::Stop(
+    base::WaitableEvent* finished) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   mixer_connection_.reset();
-
   source_callback_ = nullptr;
+  if (finished) {
+    finished->Signal();
+  }
 }
 
 void CastAudioOutputStream::MixerServiceWrapper::Flush() {
@@ -204,7 +207,7 @@ void CastAudioOutputStream::MixerServiceWrapper::Flush() {
 void CastAudioOutputStream::MixerServiceWrapper::Close(
     base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  Stop();
+  Stop(nullptr);
   std::move(closure).Run();
 }
 
@@ -409,13 +412,15 @@ void CastAudioOutputStream::Stop() {
   // |cma_wrapper_| and |mixer_service_wrapper_| cannot be both active.
   DCHECK(!(cma_wrapper_ && mixer_service_wrapper_));
 
+  base::WaitableEvent finished;
   if (cma_wrapper_) {
-    base::WaitableEvent stopFinished;
-    POST_TO_CMA_WRAPPER(Stop, base::Unretained(&stopFinished));
-    stopFinished.Wait();
+    POST_TO_CMA_WRAPPER(Stop, &finished);
   } else if (mixer_service_wrapper_) {
-    POST_TO_MIXER_SERVICE_WRAPPER(Stop);
+    POST_TO_MIXER_SERVICE_WRAPPER(Stop, &finished);
+  } else {
+    finished.Signal();
   }
+  finished.Wait();
 }
 
 void CastAudioOutputStream::Flush() {

@@ -17,6 +17,7 @@ class WebView;
 
 namespace weblayer {
 class BrowserObserver;
+class DownloadDelegate;
 class FullscreenDelegate;
 class Profile;
 class NavigationController;
@@ -31,6 +32,9 @@ class BrowserController {
 #endif
 
   virtual ~BrowserController() {}
+
+  // Sets the DownloadDelegate. If none is set, downloads will be dropped.
+  virtual void SetDownloadDelegate(DownloadDelegate* delegate) = 0;
 
   // Sets the FullscreenDelegate. Setting a non-null value implicitly enables
   // fullscreen.

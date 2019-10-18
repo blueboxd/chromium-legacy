@@ -142,7 +142,7 @@ void ArcSessionRunner::RequestStartMiniInstance() {
   RequestStart(ArcInstanceMode::MINI_INSTANCE);
 }
 
-void ArcSessionRunner::RequestUpgrade(ArcSession::UpgradeParams params) {
+void ArcSessionRunner::RequestUpgrade(UpgradeParams params) {
   upgrade_params_ = std::move(params);
   RequestStart(ArcInstanceMode::FULL_INSTANCE);
 }

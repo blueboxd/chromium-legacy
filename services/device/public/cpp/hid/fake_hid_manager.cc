@@ -119,6 +119,7 @@ void FakeHidManager::GetDevices(GetDevicesCallback callback) {
 void FakeHidManager::Connect(
     const std::string& device_guid,
     mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
+    mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
     ConnectCallback callback) {
   if (!base::Contains(devices_, device_guid)) {
     std::move(callback).Run(mojo::NullRemote());

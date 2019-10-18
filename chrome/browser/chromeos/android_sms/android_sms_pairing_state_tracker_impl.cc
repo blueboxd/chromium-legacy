@@ -75,10 +75,9 @@ void AndroidSmsPairingStateTrackerImpl::OnCookiesRetrieved(
 }
 
 void AndroidSmsPairingStateTrackerImpl::OnCookieChange(
-    const net::CanonicalCookie& cookie,
-    network::mojom::CookieChangeCause cause) {
-  DCHECK_EQ(kMessagesPairStateCookieName, cookie.Name());
-  DCHECK(cookie.IsDomainMatch(GetPairingUrl().host()));
+    const net::CookieChangeInfo& change) {
+  DCHECK_EQ(kMessagesPairStateCookieName, change.cookie.Name());
+  DCHECK(change.cookie.IsDomainMatch(GetPairingUrl().host()));
 
   // NOTE: cookie.Value() cannot be trusted in this callback. The cookie may
   // have expired or been removed and the Value() does not get updated. It's

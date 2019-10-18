@@ -163,9 +163,8 @@ class VotesUploader {
   void clear_single_username_vote_data() { single_username_vote_data_.reset(); }
 
   void set_single_username_vote_data(int renderer_id,
-                                     const FormPredictions* form_predictions) {
-    if (form_predictions)
-      single_username_vote_data_.emplace(renderer_id, *form_predictions);
+                                     const FormPredictions& form_predictions) {
+    single_username_vote_data_.emplace(renderer_id, form_predictions);
   }
 
  private:

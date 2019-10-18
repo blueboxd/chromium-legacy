@@ -127,6 +127,12 @@ class FakeTabController : public TabController {
   void SetVisualDataForGroup(TabGroupId group,
                              TabGroupVisualData visual_data) override {}
 
+  void CloseAllTabsInGroup(TabGroupId group) override {}
+
+  void UngroupAllTabsInGroup(TabGroupId group) override {}
+
+  void AddNewTabInGroup(TabGroupId group) override {}
+
   void SetTabColors(SkColor bg_color_active,
                     SkColor fg_color_active,
                     SkColor bg_color_inactive,

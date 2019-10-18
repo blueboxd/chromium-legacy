@@ -335,11 +335,37 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {
     case PreviewsType::OFFLINE:
+      return GetParamValueAsECTByFeature(features::kOfflinePreviews,
+                                         kEffectiveConnectionTypeThreshold,
+                                         net::EFFECTIVE_CONNECTION_TYPE_2G);
     case PreviewsType::NOSCRIPT:
-    case PreviewsType::LITE_PAGE_REDIRECT:
-      return GetParamValueAsECT(kClientSidePreviewsFieldTrial,
-                                kEffectiveConnectionTypeThreshold,
-                                net::EFFECTIVE_CONNECTION_TYPE_2G);
+      return GetParamValueAsECTByFeature(features::kNoScriptPreviews,
+                                         kEffectiveConnectionTypeThreshold,
+                                         net::EFFECTIVE_CONNECTION_TYPE_2G);
+    case PreviewsType::LITE_PAGE_REDIRECT: {
+      // First check ECT threshold in kLitePageServerPreviews and return that
+      // (if it's available).
+      net::EffectiveConnectionType lite_page_ect = GetParamValueAsECTByFeature(
+          features::kLitePageServerPreviews, kEffectiveConnectionTypeThreshold,
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+      if (lite_page_ect != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
+        return lite_page_ect;
+
+      // Next check ECT threshold in kClientSidePreviewsFieldTrial and return
+      // that (if it's available). In M-78, the ECT threshold for
+      // LITE_PAGE_REDIRECT is determined from kClientSidePreviewsFieldTrial.
+      // So, checking kClientSidePreviewsFieldTrial makes the code backwards
+      // compatible.
+      net::EffectiveConnectionType client_side_ect = GetParamValueAsECT(
+          kClientSidePreviewsFieldTrial, kEffectiveConnectionTypeThreshold,
+          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+      if (client_side_ect != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
+        return client_side_ect;
+
+      // Return the default value.
+      return net::EFFECTIVE_CONNECTION_TYPE_2G;
+    }
+
     case PreviewsType::LITE_PAGE:
       NOTREACHED();
       break;

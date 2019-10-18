@@ -22,6 +22,12 @@ Case: Displaying poster
       "bounds": [785, 605],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ]
 }
@@ -32,9 +38,14 @@ Case: Displaying movie
   "layers": [
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [785, 813],
+      "bounds": [785, 909],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "ContentsLayer for LayoutVideo VIDEO",
+      "bounds": [352, 288],
+      "transform": 1
     },
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small phase-ready state-scrubbing'",
@@ -45,6 +56,12 @@ Case: Displaying movie
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
       "bounds": [352, 288],
       "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [

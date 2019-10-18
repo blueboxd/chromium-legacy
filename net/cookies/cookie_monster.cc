@@ -1155,7 +1155,10 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   type_sample |= cc_ptr->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
   histogram_cookie_type_->Add(type_sample);
 
-  change_dispatcher_.DispatchChange(*cc_ptr, CookieChangeCause::INSERTED, true);
+  change_dispatcher_.DispatchChange(
+      CookieChangeInfo(*cc_ptr, GetAccessSemanticsForCookie(*cc_ptr),
+                       CookieChangeCause::INSERTED),
+      true);
 
   return inserted;
 }
@@ -1355,7 +1358,9 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
       sync_to_store) {
     store_->DeleteCookie(*cc);
   }
-  change_dispatcher_.DispatchChange(*cc, mapping.cause, mapping.notify);
+  change_dispatcher_.DispatchChange(
+      CookieChangeInfo(*cc, GetAccessSemanticsForCookie(*cc), mapping.cause),
+      mapping.notify);
   cookies_.erase(it);
 }
 

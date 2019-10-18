@@ -961,6 +961,133 @@ void SkiaRenderer::PrepareCanvas(
   }
 }
 
+void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
+                                        DrawQuadParams* params,
+                                        SkPaint* content_paint) {
+  // Some |image_filter|'s are really just color filters, which do not have the
+  // same layering requirements as regular filters.
+  SkColorFilter* color_filter_ptr = nullptr;
+  if (rpdq_params.image_filter) {
+    if (!rpdq_params.image_filter->asAColorFilter(&color_filter_ptr)) {
+      // If color_filter is not null, it will be used in place of image_filter
+      // so force it back to null when false is returned.
+      color_filter_ptr = nullptr;
+    }
+  }
+  // asAColorFilter adds a ref to SkColorFilter if it returns true, so we need
+  // an sk_sp here to unref properly.
+  sk_sp<SkColorFilter> color_filter(color_filter_ptr);
+
+  bool needs_save_layer = false;
+  // If there's a backdrop filter, we need a layer since that's the only way to
+  // compute backdrop filters with Skia
+  if (rpdq_params.backdrop_filter)
+    needs_save_layer = true;
+  // If there's a regular filter, we need a layer if there's a mask
+  // (Skia applies paint masks before paint image filters, so we need a layer to
+  // change the order of operations).
+  if (!needs_save_layer && rpdq_params.image_filter && !color_filter)
+    needs_save_layer = !!rpdq_params.mask_image;
+
+  bool aa = params->aa_flags != SkCanvas::kNone_QuadAAFlags;
+  if (needs_save_layer) {
+    // Clip to the filter bounds prior to saving the layer, which has been
+    // constructed to contain the actual filtered contents (visually no
+    // clipping effect, but lets Skia minimize internal layer size).
+    current_canvas_->clipRect(gfx::RectToSkRect(rpdq_params.filter_bounds), aa);
+
+    SkPaint layer_paint = params->paint();
+    // The layer always consumes the opacity, but its blend mode depends on if
+    // it was initialized with backdrop content or not.
+    params->opacity = 1.f;
+    if (rpdq_params.backdrop_filter) {
+      layer_paint.setBlendMode(SkBlendMode::kSrcOver);
+    } else {
+      params->blend_mode = SkBlendMode::kSrcOver;
+    }
+    // Sync the content paint with the updated |params|
+    if (content_paint) {
+      content_paint->setAlphaf(params->opacity);
+      content_paint->setBlendMode(params->blend_mode);
+    }
+
+    if (color_filter) {
+      layer_paint.setColorFilter(std::move(color_filter));
+    } else if (rpdq_params.image_filter) {
+      layer_paint.setImageFilter(rpdq_params.image_filter);
+    }
+
+    SkRect bounds = gfx::RectFToSkRect(params->visible_rect);
+    current_canvas_->saveLayer(SkCanvas::SaveLayerRec(
+        &bounds, &layer_paint, rpdq_params.backdrop_filter.get(),
+        rpdq_params.mask_image.get(), &rpdq_params.mask_to_quad_matrix, 0));
+  } else {
+    // If we don't need an explicit layer, moving the effects on to the
+    // paint allows Skia to draw the geometry with shaders and skip offscreen
+    // allocations when possible.
+    if (rpdq_params.image_filter) {
+      if (color_filter) {
+        // Use the color filter directly, instead of the image filter; since
+        // color filters are applied before masks, this can be combined with
+        // the mask image later.
+        if (content_paint->getColorFilter()) {
+          content_paint->setColorFilter(
+              color_filter->makeComposed(content_paint->refColorFilter()));
+        } else {
+          content_paint->setColorFilter(std::move(color_filter));
+        }
+        DCHECK(content_paint->getColorFilter());
+      } else {
+        // Store the image filter on the paint, but since this effect is
+        // applied last it's not compatible with masks as a shader
+        DCHECK(!rpdq_params.mask_image);
+        if (params->opacity != 1.f) {
+          // Apply opacity as the last step of image filter so it is uniform
+          // across any overlapping content produced by the image filters.
+          sk_sp<SkColorFilter> cf = MakeOpacityFilter(params->opacity, nullptr);
+          content_paint->setImageFilter(SkColorFilterImageFilter::Make(
+              std::move(cf), rpdq_params.image_filter));
+          content_paint->setAlphaf(1.f);
+          params->opacity = 1.f;
+        } else {
+          content_paint->setImageFilter(rpdq_params.image_filter);
+        }
+      }
+    }
+
+    if (rpdq_params.mask_image) {
+      auto mask_filter = SkShaderMaskFilter::Make(
+          rpdq_params.mask_image->makeShader(&rpdq_params.mask_to_quad_matrix));
+      // This step assumes there's no existing mask filter to merge with, and
+      // that afterwards the paint handles the mask image as a mask filter.
+      DCHECK(!content_paint->getMaskFilter());
+      content_paint->setMaskFilter(mask_filter);
+      DCHECK(content_paint->getMaskFilter());
+    }
+  }
+
+  // If we have backdrop filtered content (and not transparent black like with
+  // regular render passes), we have to clear out the parts of the layer that
+  // shouldn't show the backdrop
+  if (rpdq_params.backdrop_filter &&
+      (rpdq_params.backdrop_filter_bounds.has_value() ||
+       params->draw_region.has_value())) {
+    DCHECK(needs_save_layer);
+    current_canvas_->save();
+    if (rpdq_params.backdrop_filter_bounds.has_value()) {
+      current_canvas_->clipRRect(SkRRect(*rpdq_params.backdrop_filter_bounds),
+                                 SkClipOp::kDifference, aa);
+    }
+    if (params->draw_region.has_value()) {
+      SkPath clipPath;
+      clipPath.addPoly(params->draw_region->points, 4, true /* close */);
+      current_canvas_->clipPath(clipPath, SkClipOp::kDifference, aa);
+    }
+    current_canvas_->clear(SK_ColorTRANSPARENT);
+    current_canvas_->restore();
+  }
+}
+
 SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     const DrawQuad* quad,
     const gfx::QuadF* draw_region) {
@@ -1650,14 +1777,6 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
     auto sk_filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
 
     if (sk_filter) {
-      if (params->opacity != 1.f) {
-        // Apply opacity as the last step of image filter so it is uniform
-        // across any overlapping content produced by the image filters.
-        sk_sp<SkColorFilter> cf = MakeOpacityFilter(params->opacity, nullptr);
-        sk_filter = SkColorFilterImageFilter::Make(std::move(cf), sk_filter);
-        params->opacity = 1.f;
-      }
-
       // Update the filter bounds based to account for how the image filters
       // grow or expand the area touched by drawing.
       rpdq_params.filter_bounds =
@@ -1855,109 +1974,22 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
     FlushBatchedQuads();
 
   SkPaint paint = params->paint();
-  paint.setImageFilter(rpdq_params.image_filter);
-
-  // When there's no backdrop filter, there's no need to use an explicit layer.
-  // SkCanvas will do so implicitly (if needed) when processing the regular
-  // filter.
-  if (!rpdq_params.backdrop_filter) {
-    // Since there is no layer, use the mask on the paint itself
-    if (rpdq_params.mask_image) {
-      paint.setMaskFilter(
-          SkShaderMaskFilter::Make(rpdq_params.mask_image->makeShader(
-              &rpdq_params.mask_to_quad_matrix)));
-      DCHECK(paint.getMaskFilter());
-    }
-    DrawSingleImage(content_image, valid_texel_bounds, paint, params);
-    return;
-  }
-
-  // Use Skia's SaveLayerRec feature to automatically handle backdrop and
-  // regular image filters, mask clipping, and final layer blending. This will:
-  //  1. Automatically copy the backbuffer contents (InitWithPrevious flag)
-  //  2. Automatically apply provided backdrop filter to the image from #1
-  //  3. Draw an inverted clip round-rect to zero the filtered backdrop outside
-  //     of the allowed border.
-  //  4. Draw the main render pass content, but using SrcOver and no opacity
-  //     modification, since we apply the layer's blending at the very end.
-  //  5. Automatically restore the saved layer, applying the restore paint's
-  //     image filters and opacity to the results of #3.
-  //     - This will also use the given mask's alpha to clip the final blending.
 
   // Make sure everything is provided in the quad space coordinate system.
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   PrepareCanvas(params->scissor_rect, params->rounded_corner_bounds,
                 &params->content_device_transform);
 
-  // saveLayer automatically respects the clip when it is restored, and
-  // automatically reads beyond the clip for any pixel-moving filtered content.
-  // However, since Chromium does not want image-filtered content (ex. blurs) to
-  // be clipped to the visible_rect of the RPDQ, configure the clip to be the
-  // expanded bounds that encloses the entire filtered content.
-  //
-  // We could have instead passed the unadjusted visible_rect as the bounds
-  // pointer to the SaveLayerRec below, but that would not properly account for
-  // the backdrop_filter_bounds that needs to also be filtered.
-  current_canvas_->clipRect(gfx::RectToSkRect(rpdq_params.filter_bounds),
-                            paint.isAntiAlias());
-
-  // Save the layer with the restoration paint (which holds the final image
-  // filters, the backdrop filters, and mask image. If we have a backdrop filter
-  // the layer will blended with src-over, and the rpdq's blend mode will apply
-  // when drawing the content into the layer itself. When there's no backdrop
-  // (so the layer starts empty), use the rp's blend mode when flattening layer.
-  SkCanvas::SaveLayerFlags layer_flags = 0;
-  SkBlendMode content_blend = SkBlendMode::kSrcOver;
-  if (rpdq_params.backdrop_filter) {
-    layer_flags |= SkCanvas::kInitWithPrevious_SaveLayerFlag;
-    content_blend = paint.getBlendMode();
-    paint.setBlendMode(SkBlendMode::kSrcOver);
-  }
-  SkRect bounds = gfx::RectFToSkRect(params->visible_rect);
-  current_canvas_->saveLayer(
-      SkCanvas::SaveLayerRec(&bounds, &paint, rpdq_params.backdrop_filter.get(),
-                             rpdq_params.mask_image.get(),
-                             &rpdq_params.mask_to_quad_matrix, layer_flags));
-
-  if (rpdq_params.backdrop_filter_bounds.has_value() ||
-      params->draw_region.has_value()) {
-    // The initial contents of saved layer is all of the background within
-    // |bounds| filtered by the backdrop filters. Must set all pixels outside
-    // of the border rrect to transparent black. This cannot simply be a clip
-    // when the layer is restored since this rrect should not clip the rest
-    // of the render pass content. The same logic applies when this draw is
-    // rendering a split quadrilateral from the RPDQ. We don't want to keep the
-    // backdrop filtered contents that are outside of the quad being rendered.
-    current_canvas_->save();
-    if (rpdq_params.backdrop_filter_bounds.has_value()) {
-      current_canvas_->clipRRect(SkRRect(*rpdq_params.backdrop_filter_bounds),
-                                 SkClipOp::kDifference, paint.isAntiAlias());
-    }
-    if (params->draw_region.has_value()) {
-      SkPath clipPath;
-      clipPath.addPoly(params->draw_region->points, 4, true /* close */);
-      current_canvas_->clipPath(clipPath, SkClipOp::kDifference,
-                                paint.isAntiAlias());
-    }
-    current_canvas_->clear(SK_ColorTRANSPARENT);
-    current_canvas_->restore();
-  }
-
-  // Now draw the main content using the same per-edge AA API to be consistent
-  // with DrawSingleImage. Use a new paint that uses either srcOver or the rpdq
-  // blend mode, depending how filters were applied, and just preserve the
-  // filter quality from the original paint.
-  SkPaint content_paint;
-  content_paint.setBlendMode(content_blend);
-  content_paint.setFilterQuality(paint.getFilterQuality());
+  // Additional modifications for the renderpass effects
+  PrepareCanvasForRPDQ(rpdq_params, params, &paint);
 
   SkCanvas::SrcRectConstraint constraint =
       ResolveTextureConstraints(content_image, valid_texel_bounds, params);
   SkCanvas::ImageSetEntry entry = MakeEntry(content_image, -1, *params);
   const SkPoint* draw_region =
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
-  current_canvas_->experimental_DrawEdgeAAImageSet(
-      &entry, 1, draw_region, nullptr, &content_paint, constraint);
+  current_canvas_->experimental_DrawEdgeAAImageSet(&entry, 1, draw_region,
+                                                   nullptr, &paint, constraint);
   // And the saved layer will be auto-restored when |acr| is destructed
 }
 

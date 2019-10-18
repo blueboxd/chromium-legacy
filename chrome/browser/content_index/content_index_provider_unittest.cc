@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "content/public/browser/content_index_provider.h"
@@ -30,6 +31,7 @@ using offline_items_collection::UpdateDelta;
 using testing::_;
 
 constexpr int64_t kServiceWorkerRegistrationId = 42;
+constexpr double kEngagementScore = 42.0;
 const GURL kLaunchURL = GURL("https://example.com/foo");
 const url::Origin kOrigin = url::Origin::Create(kLaunchURL.GetOrigin());
 
@@ -39,6 +41,9 @@ class ContentIndexProviderImplTest : public testing::Test,
   void SetUp() override {
     ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
                                               /* no_db= */ false));
+
+    auto* service = SiteEngagementService::Get(&profile_);
+    service->ResetBaseScoreForURL(kOrigin.GetURL(), kEngagementScore);
     provider_ = std::make_unique<ContentIndexProviderImpl>(&profile_);
     provider_->AddObserver(this);
   }
@@ -86,6 +91,7 @@ TEST_F(ContentIndexProviderImplTest, OfflineItemCreation) {
   EXPECT_TRUE(item.is_suggested);
   EXPECT_TRUE(item.is_openable);
   EXPECT_EQ(item.page_url, kLaunchURL);
+  EXPECT_EQ(item.content_quality_score, kEngagementScore / 100.0);
 }
 
 TEST_F(ContentIndexProviderImplTest, ObserverUpdates) {

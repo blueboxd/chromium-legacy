@@ -162,7 +162,7 @@ Computing artifact: FirstCPUIdle
 Auditing: Time to Interactive
 Auditing: User Timing marks and measures
 Computing artifact: UserTimings
-Auditing: Minimize Critical Requests Depth
+Auditing: Avoid chaining critical requests
 Computing artifact: CriticalRequestChains
 Auditing: Avoid multiple page redirects
 Auditing: Web app manifest meets the installability requirements
@@ -193,7 +193,7 @@ Auditing: `start_url` responds with a 200 when offline
 Auditing: Performance budget
 Computing artifact: ResourceSummary
 Auditing: Keep request counts low and transfer sizes small
-Auditing: Third-Party usage
+Auditing: Minimize third-party usage
 Auditing: Site works cross-browser
 Auditing: Page transitions don't feel like they block on the network
 Auditing: Each page has a URL
@@ -282,7 +282,7 @@ Generating results...
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
-Version: 5.4.0
+Version: 5.5.0
 TestedAsMobileDevice: true
 ViewportDimensions: {
   "innerWidth": 981,

@@ -58,18 +58,21 @@ suite('TabList', () => {
   const tabs = [
     {
       active: true,
+      alertStates: [],
       id: 0,
       index: 0,
       title: 'Tab 1',
     },
     {
       active: false,
+      alertStates: [],
       id: 1,
       index: 1,
       title: 'Tab 2',
     },
     {
       active: false,
+      alertStates: [],
       id: 2,
       index: 2,
       title: 'Tab 3',
@@ -144,6 +147,7 @@ suite('TabList', () => {
 
   test('adds a new tab element when a tab is added in same window', () => {
     const appendedTab = {
+      alertStates: [],
       id: 3,
       index: 3,
       title: 'New tab',
@@ -154,6 +158,7 @@ suite('TabList', () => {
     assertEquals(tabElements[tabs.length].tab, appendedTab);
 
     const prependedTab = {
+      alertStates: [],
       id: 4,
       index: 0,
       title: 'New tab',
@@ -166,6 +171,7 @@ suite('TabList', () => {
 
   test('adds a new tab element to the start when it is active', async () => {
     const newActiveTab = {
+      alertStates: [],
       active: true,
       id: 3,
       index: 3,
@@ -205,6 +211,7 @@ suite('TabList', () => {
 
   test('adds a pinned tab to its designated container', () => {
     webUIListenerCallback('tab-created', {
+      alertStates: [],
       index: 0,
       title: 'New pinned tab',
       pinned: true,

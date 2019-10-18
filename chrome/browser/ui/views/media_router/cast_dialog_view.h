@@ -85,7 +85,6 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // views::DialogDelegate:
   int GetDialogButtons() const override;
-  std::unique_ptr<views::View> CreateExtraView() override;
   bool Close() override;
 
   // CastDialogController::Observer:

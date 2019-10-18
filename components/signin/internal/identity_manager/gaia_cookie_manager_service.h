@@ -26,6 +26,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/backoff_entry.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class GaiaAuthFetcher;
@@ -312,8 +313,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // Overridden from network::mojom::CookieChangeListner. If the cookie relates
   // to a GAIA APISID cookie, then we call ListAccounts and fire
   // OnGaiaAccountsInCookieUpdated.
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      network::mojom::CookieChangeCause cause) override;
+  void OnCookieChange(const net::CookieChangeInfo& change) override;
   void OnCookieListenerConnectionError();
 
   // Overridden from GaiaAuthConsumer.

@@ -225,14 +225,35 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
       y * expanded_amount_ + collapsed_y * (1.0 - expanded_amount_));
 }
 
-void FeaturePodsContainerView::SetMaxHeight(int max_height) {
-  int feature_pod_rows =
-      (max_height - kUnifiedFeaturePodBottomPadding -
-       kUnifiedFeaturePodTopPadding) /
-      (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding);
+int FeaturePodsContainerView::CalculateRowsFromHeight(int height) {
+  int available_height =
+      height - kUnifiedFeaturePodBottomPadding - kUnifiedFeaturePodTopPadding;
+  int row_height =
+      kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding;
 
-  feature_pod_rows = std::min(feature_pod_rows, kUnifiedFeaturePodMaxRows);
-  feature_pod_rows = std::max(feature_pod_rows, kUnifiedFeaturePodMinRows);
+  // Only use the max number of rows when there is enough space
+  // to show the fully expanded message center and quick settings.
+  if (available_height > (kUnifiedFeaturePodMaxRows * row_height) &&
+      available_height % (kUnifiedFeaturePodMaxRows * row_height) >
+          kMessageCenterCollapseThreshold) {
+    return kUnifiedFeaturePodMaxRows;
+  }
+
+  // Use 1 less than the max number of rows when there is enough
+  // space to show the message center in the collapsed state along
+  // with the expanded quick settings.
+  int feature_pod_rows = kUnifiedFeaturePodMaxRows - 1;
+  if (available_height > (feature_pod_rows * row_height) &&
+      available_height % (feature_pod_rows * row_height) >
+          kStackedNotificationBarHeight) {
+    return feature_pod_rows;
+  }
+
+  return kUnifiedFeaturePodMinRows;
+}
+
+void FeaturePodsContainerView::SetMaxHeight(int max_height) {
+  int feature_pod_rows = CalculateRowsFromHeight(max_height);
 
   if (feature_pod_rows_ != feature_pod_rows) {
     feature_pod_rows_ = feature_pod_rows;

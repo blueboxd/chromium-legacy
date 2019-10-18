@@ -864,6 +864,24 @@ void DateTimeEditElement::SetOnlyYearMonthDay(const DateComponents& date) {
   edit_control_owner_->EditControlValueChanged();
 }
 
+void DateTimeEditElement::SetOnlyTime(const DateComponents& date) {
+  DCHECK_EQ(date.GetType(), DateComponents::kTime);
+
+  if (!edit_control_owner_)
+    return;
+
+  DateTimeFieldsState date_time_fields_state = ValueAsDateTimeFieldsState();
+  date_time_fields_state.SetHour(date.Hour() % 12 ? date.Hour() % 12 : 12);
+  date_time_fields_state.SetMinute(date.Minute());
+  date_time_fields_state.SetSecond(date.Second());
+  date_time_fields_state.SetMillisecond(date.Millisecond());
+  date_time_fields_state.SetAMPM(date.Hour() >= 12
+                                     ? DateTimeFieldsState::kAMPMValuePM
+                                     : DateTimeFieldsState::kAMPMValueAM);
+  SetValueAsDateTimeFieldsState(date_time_fields_state);
+  edit_control_owner_->EditControlValueChanged();
+}
+
 void DateTimeEditElement::StepDown() {
   if (DateTimeFieldElement* const field = FocusedField())
     field->StepDown();

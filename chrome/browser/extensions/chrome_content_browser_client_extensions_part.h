@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "ui/base/page_transition_types.h"
@@ -86,7 +87,7 @@ class ChromeContentBrowserClientExtensionsPart
   static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context);
 
-  static network::mojom::URLLoaderFactoryPtrInfo
+  static mojo::PendingRemote<network::mojom::URLLoaderFactory>
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,

@@ -139,9 +139,6 @@ class LoginDisplayHost {
   // Hide any visible oobe dialog.
   virtual void HideOobeDialog() = 0;
 
-  // Update the size of the oobe dialog.
-  virtual void UpdateOobeDialogSize(int width, int height) = 0;
-
   // Update the state of the oobe dialog.
   virtual void UpdateOobeDialogState(ash::OobeDialogState state) = 0;
 

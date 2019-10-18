@@ -200,7 +200,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
       host->ReleaseCapture();
       std::unique_ptr<base::OnceClosure> callback =
           std::make_unique<base::OnceClosure>(
-              views::DesktopWindowTreeHostLinux::GetHostForWidget(
+              views::DesktopWindowTreeHostX11::GetHostForXID(
                   host->GetAcceleratedWidget())
                   ->DisableEventListening());
       // OnFilePickerDestroy() is called when |dialog| destroyed, which allows

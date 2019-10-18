@@ -371,6 +371,15 @@
       'chromedriver_replay_unittests': {},
     },
 
+    'chromeos_browser_integration_tests': {
+      'chrome_all_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+      },
+      'cros_browser_sanity_test': {},
+    },
+
     'chromeos_device_all_chrome_tast_tests_informational': {
       'chrome_all_tast_tests_informational': {
         'swarming': {
@@ -387,127 +396,15 @@
       },
     },
 
-    # Tests that run in Chrome OS VMs.
-    # NOTE: We only want a small subset of test suites here, because most
-    # suites assume that they stub out the underlying device hardware.
-    # https://crbug.com/865693
-    'chromeos_device_friendly_gtests': {
-      'aura_unittests': {
-        'args': [
-          '--ozone-platform=headless',
-        ],
-      },
-      'base_unittests': {},
-      'cacheinvalidation_unittests': {},
-      'capture_unittests': {
-        'args': [
-          '--test-launcher-jobs=1',
-          # Don't run CaptureMJpeg tests on ChromeOS VM because vivid,
-          # which is the virtual video capture device, doesn't support MJPEG.
-          '--gtest_filter=-*UsingRealWebcam_CaptureMjpeg*',
-        ],
-      },
-      'cc_unittests': {},
-      'chrome_all_tast_tests': {
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-        },
-      },
-      'color_unittests': {},
-      'cros_browser_sanity_test': {},
-      'crypto_unittests': {},
-      'display_unittests': {},
-      'google_apis_unittests': {},
-      'interactive_ui_tests': {
-        'args': [
-          '--stop-ui',
-          '--dbus-stub',
-          '--gtest_filter=SplitViewTest.SplitViewResize',
-        ],
-      },
-      'ipc_tests': {},
-      'jingle_unittests': {},
-      'latency_unittests': {},
-      'media_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.media_unittests.filter',
-        ],
-      },
-      'midi_unittests': {},
-      'mojo_unittests': {},
-      # net_unittests has a test-time dependency on vpython. So add a CIPD'ed
-      # vpython of the right arch to the task, and tell the test runner to copy
-      # it over to the VM before the test runs.
-      'net_unittests': {
-        'args': [
-          '--vpython-dir=../../vpython_dir_linux_amd64',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              "cipd_package": 'infra/tools/luci/vpython/linux-amd64',
-              'location': 'vpython_dir_linux_amd64',
-              'revision': 'git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89',
-            }
-          ],
-          'shards': 3,
-        },
-      },
-      'ozone_gl_unittests': {
-        'args': [
-          '--stop-ui',
-        ],
-      },
-      'ozone_unittests': {},
-      'pdf_unittests': {},
-      'printing_unittests': {},
-      'profile_provider_unittest': {},
-      'sandbox_linux_unittests': {},
-      'sql_unittests': {},
-      'url_unittests': {},
-    },
-
-    'chromeos_device_friendly_gtests_experimental': {
-      'chrome_all_tast_tests_informational': {
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-        }
-      },
-      'chrome_login_tast_tests': {
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-        }
-      },
-      'services_unittests': {
-        'args': [
-          '--vpython-dir=../../vpython_dir_linux_amd64',
-          '--ozone-platform=headless',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.services_unittests.filter',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              "cipd_package": 'infra/tools/luci/vpython/linux-amd64',
-              'location': 'vpython_dir_linux_amd64',
-              'revision': 'git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89',
-            }
-          ],
-        },
-      },
-    },
-
-    'chromeos_device_tests': {
+    # GTests to run on Chrome OS devices, but not Chrome OS VMs. Any differences
+    # between this and chromeos_system_friendly_gtests below should only be due
+    # to resource constraints (ie: not enough devices).
+    'chromeos_device_only_gtests': {
       'base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter',
         ],
       },
-      'chrome_all_tast_tests': {
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/923426#c27
-        },
-      },
-      'cros_browser_sanity_test': {},
     },
 
     'chromeos_isolated_scripts': {
@@ -561,6 +458,110 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 10,
+        },
+      },
+    },
+
+    # Tests that run on Chrome OS systems (ie: VMs, Chromebooks), *not*
+    # linux-chromeos.
+    # NOTE: We only want a small subset of test suites here, because most
+    # suites assume that they stub out the underlying device hardware.
+    # https://crbug.com/865693
+    'chromeos_system_friendly_gtests': {
+      'aura_unittests': {
+        'args': [
+          '--ozone-platform=headless',
+        ],
+      },
+      'base_unittests': {},
+      'cacheinvalidation_unittests': {},
+      'capture_unittests': {
+        'args': [
+          '--test-launcher-jobs=1',
+          # Don't run CaptureMJpeg tests on ChromeOS VM because vivid,
+          # which is the virtual video capture device, doesn't support MJPEG.
+          '--gtest_filter=-*UsingRealWebcam_CaptureMjpeg*',
+        ],
+      },
+      'cc_unittests': {},
+      'color_unittests': {},
+      'crypto_unittests': {},
+      'display_unittests': {},
+      'google_apis_unittests': {},
+      'interactive_ui_tests': {
+        'args': [
+          '--stop-ui',
+          '--dbus-stub',
+          '--gtest_filter=SplitViewTest.SplitViewResize',
+        ],
+      },
+      'ipc_tests': {},
+      'jingle_unittests': {},
+      'latency_unittests': {},
+      'media_unittests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.media_unittests.filter',
+        ],
+      },
+      'midi_unittests': {},
+      'mojo_unittests': {},
+      # net_unittests has a test-time dependency on vpython. So add a CIPD'ed
+      # vpython of the right arch to the task, and tell the test runner to copy
+      # it over to the VM before the test runs.
+      'net_unittests': {
+        'args': [
+          '--vpython-dir=../../vpython_dir_linux_amd64',
+        ],
+        'swarming': {
+          'cipd_packages': [
+            {
+              "cipd_package": 'infra/tools/luci/vpython/linux-amd64',
+              'location': 'vpython_dir_linux_amd64',
+              'revision': 'git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89',
+            }
+          ],
+          'shards': 3,
+        },
+      },
+      'ozone_gl_unittests': {
+        'args': [
+          '--stop-ui',
+        ],
+      },
+      'ozone_unittests': {},
+      'pdf_unittests': {},
+      'printing_unittests': {},
+      'profile_provider_unittest': {},
+      'sandbox_linux_unittests': {},
+      'sql_unittests': {},
+      'url_unittests': {},
+    },
+
+    'chromeos_system_friendly_gtests_experimental': {
+      'chrome_all_tast_tests_informational': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        }
+      },
+      'chrome_login_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        }
+      },
+      'services_unittests': {
+        'args': [
+          '--vpython-dir=../../vpython_dir_linux_amd64',
+          '--ozone-platform=headless',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.services_unittests.filter',
+        ],
+        'swarming': {
+          'cipd_packages': [
+            {
+              "cipd_package": 'infra/tools/luci/vpython/linux-amd64',
+              'location': 'vpython_dir_linux_amd64',
+              'revision': 'git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89',
+            }
+          ],
         },
       },
     },
@@ -4401,9 +4402,6 @@
         },
         'test': 'browser_tests',
       },
-      'weblayer_browsertests': {
-        'test': 'weblayer_browsertests',
-      },
     },
 
     'network_service_gtests': {
@@ -4926,6 +4924,11 @@
       },
     },
 
+    'weblayer_gtests': {
+      'weblayer_browsertests': {
+      },
+    },
+
     # TODO(crbug.com/888429): Port remaining WebRTC tests to swarming.
     'webrtc_chromium_baremetal_gtests': {
       # Run capture unittests as well since our bots have real webcams.
@@ -5239,6 +5242,8 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'network_service_android_gtests',
+      'weblayer_android_gtests',
+      'weblayer_gtests',
     ],
 
     'android_nougat_gtests': [
@@ -5282,6 +5287,8 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'network_service_android_gtests',
+      'weblayer_android_gtests',
+      'weblayer_gtests',
     ],
 
     'android_wpt_scripts': [
@@ -5297,6 +5304,16 @@
     'bfcache_linux_gtests': [
       'bfcache_generic_gtests',
       'bfcache_linux_specific_gtests',
+    ],
+
+    'chromeos_device_gtests': [
+      'chromeos_browser_integration_tests',
+      'chromeos_device_only_gtests',
+    ],
+
+    'chromeos_vm_gtests': [
+      'chromeos_browser_integration_tests',
+      'chromeos_system_friendly_gtests',
     ],
 
     'chromium_android_gtests': [
@@ -5394,6 +5411,7 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'skia_renderer_gtests',
       'vr_platform_specific_chromium_gtests',
+      'weblayer_gtests',
     ],
 
     'chromium_linux_rel_isolated_scripts': [
@@ -5437,6 +5455,7 @@
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
+      'weblayer_gtests',
       'win_specific_chromium_gtests',
     ],
 
@@ -5941,6 +5960,7 @@
     'mojo_android_gtests': [
       'network_service_android_gtests',
       'weblayer_android_gtests',
+      'weblayer_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [
@@ -5954,12 +5974,14 @@
     'mojo_linux_gtests': [
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
+      'weblayer_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
+      'weblayer_gtests',
     ],
 
     'sandboxed_chromium_memory_linux_gtests': [

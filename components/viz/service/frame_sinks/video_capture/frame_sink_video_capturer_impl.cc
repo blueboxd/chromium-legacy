@@ -25,7 +25,8 @@
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -787,12 +788,12 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   DCHECK(frame->ColorSpace().IsValid());  // Ensure it was set by this point.
   info->color_space = frame->ColorSpace();
 
-  // Create an InFlightFrameDelivery for this frame, owned by its mojo binding.
+  // Create an InFlightFrameDelivery for this frame, owned by its mojo receiver.
   // It responds to the consumer's Done() notification by returning the video
   // frame to the |frame_pool_|. It responds to the optional ProvideFeedback()
   // by forwarding the measurement to the |oracle_|.
-  mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<mojom::FrameSinkVideoConsumerFrameCallbacks> callbacks;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<InFlightFrameDelivery>(
           base::BindOnce(
               [](scoped_refptr<VideoFrame> frame) {
@@ -802,7 +803,7 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
           base::BindOnce(&VideoCaptureOracle::RecordConsumerFeedback,
                          feedback_weak_factory_.GetWeakPtr(),
                          oracle_frame_number)),
-      mojo::MakeRequest(&callbacks));
+      callbacks.InitWithNewPipeAndPassReceiver());
 
   // Send the frame to the consumer.
   consumer_->OnFrameCaptured(std::move(handle), std::move(info), content_rect,

@@ -42,6 +42,16 @@ Not scaled:
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
       "transform": 1
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 600],
+      "bounds": [800, 0]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [800, 0],
+      "bounds": [0, 600]
     }
   ],
   "transforms": [
@@ -143,6 +153,16 @@ Scale=0.5:
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
       "transform": 1
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 600],
+      "bounds": [800, 0]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [800, 0],
+      "bounds": [0, 600]
     }
   ],
   "transforms": [
@@ -244,6 +264,16 @@ Scale=1.5:
       "contentsOpaque": true,
       "backgroundColor": "#C0C0C0",
       "transform": 1
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [0, 600],
+      "bounds": [800, 0]
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [800, 0],
+      "bounds": [0, 600]
     }
   ],
   "transforms": [

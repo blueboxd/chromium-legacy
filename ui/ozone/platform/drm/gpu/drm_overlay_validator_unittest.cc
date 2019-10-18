@@ -324,7 +324,7 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_YUV) {
 }
 
 TEST_F(DrmOverlayValidatorTest, RejectYUVBuffersIfNotSupported) {
-  // Check case where buffer storage format is already UYVY but planes dont
+  // Check case where buffer storage format is already YUV 420 but planes don't
   // support it.
   overlay_params_.back().buffer_size = overlay_rect_.size();
   overlay_params_.back().display_rect = gfx::RectF(overlay_rect_);
@@ -391,7 +391,7 @@ TEST_F(DrmOverlayValidatorTest,
   EXPECT_EQ(returns.back(), ui::OVERLAY_STATUS_ABLE);
 
   // This configuration should not be promoted to Overlay when either of the
-  // controllers dont support UYVY format.
+  // controllers don't support YUV 420 format.
 
   // Check case where we dont have support for packed formats in Mirrored CRTC.
   crtc_states[1].planes[1].formats = {DRM_FORMAT_XRGB8888};

@@ -67,10 +67,10 @@ class SharedWorkerHostTest : public testing::Test {
     blink::mojom::SharedWorkerCreationContextType creation_context_type =
         blink::mojom::SharedWorkerCreationContextType::kSecure;
 
-    SharedWorkerInstance instance(url, name, origin, content_security_policy,
-                                  content_security_policy_type,
-                                  creation_address_space,
-                                  creation_context_type);
+    SharedWorkerInstance instance(
+        service_.next_shared_worker_instance_id_++, url, name, origin,
+        content_security_policy, content_security_policy_type,
+        creation_address_space, creation_context_type);
     auto host = std::make_unique<SharedWorkerHost>(
         &service_, instance, mock_render_process_host_.GetID());
     auto weak_host = host->AsWeakPtr();

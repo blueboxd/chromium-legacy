@@ -169,8 +169,7 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
 
   // Helper for recursively checking each child.
   CanStoreDocumentResult CanStoreRenderFrameHost(
-      RenderFrameHostImpl* render_frame_host,
-      uint64_t disallowed_features);
+      RenderFrameHostImpl* render_frame_host);
 
   // Checks if the url's host and path matches with the |allowed_urls_| host and
   // path. This is controlled by "allowed_websites" param on BackForwardCache

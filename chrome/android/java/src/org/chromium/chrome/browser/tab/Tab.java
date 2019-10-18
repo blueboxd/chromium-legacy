@@ -7,11 +7,7 @@ package org.chromium.chrome.browser.tab;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Rect;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
@@ -33,14 +29,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
@@ -55,9 +48,7 @@ import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -900,125 +891,30 @@ public class Tab {
     }
 
     /**
-     * Begins the tab reparenting process. Detaches the tab from its current activity and fires
-     * an Intent to reparent the tab into its new host activity.
-     *
-     * @param intent An optional intent with the desired component, flags, or extras to use when
-     *               launching the new host activity. This intent's URI and action will be
-     *               overriden. This may be null if no intent customization is needed.
-     * @param startActivityOptions Options to pass to {@link Activity#startActivity(Intent, Bundle)}
-     * @param finalizeCallback A callback that will be called after the tab is attached to the new
-     *                         host activity in {@link #attachAndFinishReparenting}.
-     * @return Whether reparenting succeeded. If false, the tab was not removed and the intent was
-     *         not fired.
+     * Set {@link TabDelegateFactory} instance and updates the references.
+     * @param factory TabDelegateFactory instance.
      */
-    public boolean detachAndStartReparenting(Intent intent, Bundle startActivityOptions,
-            Runnable finalizeCallback) {
-        ChromeActivity activity = getActivity();
-        if (activity == null) return false;
-
-        if (intent == null) intent = new Intent();
-        if (intent.getComponent() == null) {
-            intent.setClass(mThemedApplicationContext, ChromeLauncherActivity.class);
-        }
-        intent.setAction(Intent.ACTION_VIEW);
-        if (TextUtils.isEmpty(intent.getDataString())) intent.setData(Uri.parse(getUrl()));
-        if (isIncognito()) {
-            intent.putExtra(Browser.EXTRA_APPLICATION_ID,
-                    ContextUtils.getApplicationContext().getPackageName());
-            intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
-        }
-        IntentHandler.addTrustedIntentExtras(intent);
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_REPARENTING)) {
-            // Add the tab to AsyncTabParamsManager before removing it from the current model to
-            // ensure the global count of tabs is correct. See https://crbug.com/611806.
-            intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
-            AsyncTabParamsManager.add(
-                    mId, new TabReparentingParams(this, intent, finalizeCallback));
-
-            detach();
-        }
-
-        activity.startActivity(intent, startActivityOptions);
-        return true;
-    }
-
-    /**
-     * Detaches a tab from its current activity if any.
-     *
-     * In details, this function:
-     * - Removes the tab from its current {@link TabModelSelector}, effectively severing
-     *   the {@link Activity} to {@link Tab} link.
-     */
-    public void detach() {
-        // TODO(yusufo): We can't call updateWindowAndroid here and set mWindowAndroid to null
-        // because many code paths (including navigation) expect the tab to always be associated
-        // with an activity, and will crash. crbug.com/657007
-        WebContents webContents = getWebContents();
-        if (webContents != null) webContents.setTopLevelNativeWindow(null);
-
-        // TabModelSelector of this Tab, if present, gets notified to remove the tab from
-        // the TabModel it belonged to.
-        for (TabObserver observer : mObservers) {
-            observer.onActivityAttachmentChanged(this, false);
-        }
-    }
-
-    /**
-     * Finishes the tab reparenting process. Attaches the tab to the new activity, and updates the
-     * tab and related objects to reference the new activity. This updates many delegates inside the
-     * tab and {@link WebContents} both on java and native sides.
-     *
-     * @param activity The new activity this tab should be associated with.
-     * @param tabDelegateFactory The new delegate factory this tab should be using.
-     * @param finalizeCallback A Callback to be called after the Tab has been reparented.
-     */
-    public void attachAndFinishReparenting(ChromeActivity activity,
-            TabDelegateFactory tabDelegateFactory,
-            @Nullable Runnable finalizeCallback) {
-        // TODO(yusufo): Share these calls with the construction related calls.
-        // crbug.com/590281
-        activity.getCompositorViewHolder().prepareForTabReparenting();
-
-        attach(activity, tabDelegateFactory);
-
-        mIsTabStateDirty = true;
-
-        if (finalizeCallback != null) finalizeCallback.run();
-    }
-
-    /**
-     * Attaches the tab to the new activity and updates the tab and related objects to reference the
-     * new activity. This updates many delegates inside the tab and {@link WebContents} both on
-     * java and native sides.
-     * TODO(ltian:) explore calling this for all types of tabs.
-     *
-     * @param activity  The new activity this tab should be associated with.
-     * @param tabDelegateFactory  The new delegate factory this tab should be using.
-     */
-    public void attach(ChromeActivity activity, TabDelegateFactory tabDelegateFactory) {
-        assert isDetached();
-        updateWindowAndroid(activity.getWindowAndroid());
-
+    public void setDelegateFactory(TabDelegateFactory factory) {
         // Update the delegate factory, then recreate and propagate all delegates.
-        mDelegateFactory = tabDelegateFactory;
+        mDelegateFactory = factory;
+
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
-
-        // Reload the NativePage (if any), since the old NativePage has a reference to the old
-        // activity.
-        maybeShowNativePage(getUrl(), true);
-
-        assert mNativeTabAndroid != 0;
-        TabJni.get().attachDetachedTab(mNativeTabAndroid, Tab.this);
 
         if (getWebContents() != null) {
             TabJni.get().updateDelegates(mNativeTabAndroid, Tab.this, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
         }
+    }
 
-        for (TabObserver observer : mObservers) observer.onActivityAttachmentChanged(this, true);
+    /**
+     * Notify observers of the new attachment state to activity.
+     * @param attached {@code true} if the tab gets attached.
+     */
+    public void notifyActivityAttachmentChanged(boolean attached) {
+        for (TabObserver observer : mObservers) {
+            observer.onActivityAttachmentChanged(this, attached);
+        }
     }
 
     /**
@@ -1037,15 +933,16 @@ public class Tab {
     }
 
     /**
+     * @param tab {@link Tab} instance being checked.
      * @return Whether the tab is detached from any Activity and its {@link WindowAndroid}.
      * Certain functionalities will not work until it is attached to an activity
-     * with {@link Tab#attachAndFinishReparenting}.
+     * with {@link ReparentingTask#finish}.
      */
-    public boolean isDetached() {
-        if (getWebContents() == null) return true;
+    public static boolean isDetached(Tab tab) {
+        if (tab.getWebContents() == null) return true;
         // Should get WindowAndroid from WebContents since the one from |getWindowAndroid()|
         // is always non-null even when the tab is in detached state. See the comment in |detach()|.
-        WindowAndroid window = getWebContents().getTopLevelNativeWindow();
+        WindowAndroid window = tab.getWebContents().getTopLevelNativeWindow();
         if (window == null) return true;
         Activity activity = ContextUtils.activityFromContext(window.getContext().get());
         return !(activity instanceof ChromeActivity);
@@ -1170,7 +1067,7 @@ public class Tab {
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
 
             assert mNativeTabAndroid != 0;
-            TabJni.get().initWebContents(mNativeTabAndroid, Tab.this, mIncognito, isDetached(),
+            TabJni.get().initWebContents(mNativeTabAndroid, Tab.this, mIncognito, isDetached(this),
                     webContents, mSourceTabId, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
@@ -1194,11 +1091,11 @@ public class Tab {
      *                    matches the URL.
      * @return True, if a native page was displayed for url.
      */
-    boolean maybeShowNativePage(String url, boolean forceReload) {
+    public boolean maybeShowNativePage(String url, boolean forceReload) {
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
-        if (isDetached()) return false;
+        if (isDetached(this)) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
         NativePage nativePage = NativePageFactory.createNativePageForURL(
                 url, candidateForReuse, this, getActivity());
@@ -1883,6 +1780,5 @@ public class Tab {
         void setActiveNavigationEntryTitleForUrl(
                 long nativeTabAndroid, Tab caller, String url, String title);
         void loadOriginalImage(long nativeTabAndroid, Tab caller);
-        void attachDetachedTab(long nativeTabAndroid, Tab caller);
     }
 }

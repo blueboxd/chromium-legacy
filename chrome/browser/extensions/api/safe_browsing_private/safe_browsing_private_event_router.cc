@@ -10,8 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
-#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -417,11 +417,11 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
     return;
 
   // This method is not compiled on Chrome OS because
-  // MachineLevelUserCloudPolicyController does not exist. Also,
+  // ChromeBrowserCloudManagementController does not exist. Also,
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() doesn't return a
   // valid token either. Once these are fixed the #if !defined can be removed.
 
-  if (!policy::MachineLevelUserCloudPolicyController::
+  if (!policy::ChromeBrowserCloudManagementController::
           IsMachineLevelUserCloudPolicyEnabled()) {
     return;
   }

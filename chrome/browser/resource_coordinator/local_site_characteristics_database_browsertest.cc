@@ -68,8 +68,8 @@ base::TimeDelta GetLongestObservationWindow() {
 base::TimeDelta GetLongestGracePeriod() {
   const SiteCharacteristicsDatabaseParams& params =
       GetStaticSiteCharacteristicsDatabaseParams();
-  return std::max({params.title_or_favicon_change_grace_period,
-                   params.audio_usage_grace_period});
+  return std::max({params.title_or_favicon_change_post_load_grace_period,
+                   params.feature_usage_post_background_grace_period});
 }
 
 // Returns the LocalSiteCharacteristicsDataImpl that backs |reader|.
@@ -226,8 +226,8 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     // Background the tab and reload it so the audio will stop playing if it's
     // still playing.
     GetActiveWebContents()->WasHidden();
-    test_clock_.Advance(
-        GetStaticSiteCharacteristicsDatabaseParams().audio_usage_grace_period);
+    test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
+                            .feature_usage_post_background_grace_period);
   }
 
   // Ensure that the current tab is allowed to display non-persistent
@@ -243,7 +243,7 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
 
   void ExpireTitleOrFaviconGracePeriod() {
     test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
-                            .title_or_favicon_change_grace_period);
+                            .title_or_favicon_change_post_load_grace_period);
   }
 
   base::SimpleTestTickClock& test_clock() { return test_clock_; }

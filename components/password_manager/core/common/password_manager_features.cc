@@ -70,6 +70,11 @@ const base::Feature kPasswordImport = {"PasswordImport",
 const base::Feature kPasswordManagerOnboardingAndroid = {
     "PasswordManagerOnboardingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controlls whether the password bubble on desktop contains an illustration and
+// which illustration.
+const base::Feature kPasswordSaveIllustration = {
+    "SavePasswordIllustration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Deletes entries from local database on Mac which cannot be decrypted when
 // merging data with Sync.
 const base::Feature kRecoverPasswordsForSyncUsers = {

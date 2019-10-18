@@ -109,8 +109,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
     ~ListenerRegistration();
 
     // Translates a CookieStore change callback to a CookieChangeListener call.
-    void DispatchCookieStoreChange(const net::CanonicalCookie& cookie,
-                                   net::CookieChangeCause cause);
+    void DispatchCookieStoreChange(const net::CookieChangeInfo& change);
 
     // Owns the callback registration in the store.
     std::unique_ptr<net::CookieChangeSubscription> subscription;

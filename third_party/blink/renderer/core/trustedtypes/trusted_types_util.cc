@@ -7,10 +7,9 @@
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
-#include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -21,7 +20,6 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
-#include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -37,11 +35,9 @@ enum TrustedTypeViolationKind {
   kAnyTrustedTypeAssignment,
   kTrustedHTMLAssignment,
   kTrustedScriptAssignment,
-  kTrustedURLAssignment,
   kTrustedScriptURLAssignment,
   kTrustedHTMLAssignmentAndDefaultPolicyFailed,
   kTrustedScriptAssignmentAndDefaultPolicyFailed,
-  kTrustedURLAssignmentAndDefaultPolicyFailed,
   kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
   kTextNodeScriptAssignment,
   kTextNodeScriptAssignmentAndDefaultPolicyFailed,
@@ -55,8 +51,6 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
       return "This document requires 'TrustedHTML' assignment.";
     case kTrustedScriptAssignment:
       return "This document requires 'TrustedScript' assignment.";
-    case kTrustedURLAssignment:
-      return "This document requires 'TrustedURL' assignment.";
     case kTrustedScriptURLAssignment:
       return "This document requires 'TrustedScriptURL' assignment.";
     case kTrustedHTMLAssignmentAndDefaultPolicyFailed:
@@ -65,9 +59,6 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
     case kTrustedScriptAssignmentAndDefaultPolicyFailed:
       return "This document requires 'TrustedScript' assignment and the "
              "'default' policy failed to execute.";
-    case kTrustedURLAssignmentAndDefaultPolicyFailed:
-      return "This document requires 'TrustedURL' assignment and the 'default' "
-             "policy failed to execute.";
     case kTrustedScriptURLAssignmentAndDefaultPolicyFailed:
       return "This document requires 'TrustedScriptURL' assignment and the "
              "'default' policy failed to execute.";
@@ -154,7 +145,7 @@ bool RequireTrustedTypesCheck(const ExecutionContext* execution_context) {
 }
 
 String GetStringFromTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
         string_or_trusted_type,
     const ExecutionContext* execution_context,
     ExceptionState& exception_state) {
@@ -174,14 +165,12 @@ String GetStringFromTrustedType(
     return string_or_trusted_type.GetAsTrustedScript()->toString();
   if (string_or_trusted_type.IsTrustedScriptURL())
     return string_or_trusted_type.GetAsTrustedScriptURL()->toString();
-  if (string_or_trusted_type.IsTrustedURL())
-    return string_or_trusted_type.GetAsTrustedURL()->toString();
 
   return string_or_trusted_type.GetAsString();
 }
 
 String GetStringFromTrustedTypeWithoutCheck(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
         string_or_trusted_type) {
   if (string_or_trusted_type.IsTrustedHTML())
     return string_or_trusted_type.GetAsTrustedHTML()->toString();
@@ -189,8 +178,6 @@ String GetStringFromTrustedTypeWithoutCheck(
     return string_or_trusted_type.GetAsTrustedScript()->toString();
   if (string_or_trusted_type.IsTrustedScriptURL())
     return string_or_trusted_type.GetAsTrustedScriptURL()->toString();
-  if (string_or_trusted_type.IsTrustedURL())
-    return string_or_trusted_type.GetAsTrustedURL()->toString();
   if (string_or_trusted_type.IsString())
     return string_or_trusted_type.GetAsString();
 
@@ -198,7 +185,7 @@ String GetStringFromTrustedTypeWithoutCheck(
 }
 
 String GetStringFromSpecificTrustedType(
-    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURLOrTrustedURL&
+    const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
         string_or_trusted_type,
     SpecificTrustedType specific_trusted_type,
     const ExecutionContext* execution_context,
@@ -238,17 +225,6 @@ String GetStringFromSpecificTrustedType(
                         string_or_trusted_type));
       return GetStringFromTrustedScriptURL(string_or_trusted_script_url,
                                            execution_context, exception_state);
-    }
-    case SpecificTrustedType::kTrustedURL: {
-      USVStringOrTrustedURL string_or_trusted_url =
-          string_or_trusted_type.IsTrustedURL()
-              ? USVStringOrTrustedURL::FromTrustedURL(
-                    string_or_trusted_type.GetAsTrustedURL())
-              : USVStringOrTrustedURL::FromUSVString(
-                    GetStringFromTrustedTypeWithoutCheck(
-                        string_or_trusted_type));
-      return GetStringFromTrustedURL(string_or_trusted_url, execution_context,
-                                     exception_state);
     }
   }
 }
@@ -397,49 +373,6 @@ String GetStringFromTrustedScriptURL(
 
   if (result->toString().IsNull()) {
     if (TrustedTypeFail(kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
-                        execution_context, exception_state, string)) {
-      return g_empty_string;
-    } else {
-      return string;
-    }
-  }
-
-  return result->toString();
-}
-
-String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
-                               const ExecutionContext* execution_context,
-                               ExceptionState& exception_state) {
-  DCHECK(!string_or_trusted_url.IsNull());
-  if (string_or_trusted_url.IsTrustedURL()) {
-    return string_or_trusted_url.GetAsTrustedURL()->toString();
-  }
-
-  DCHECK(string_or_trusted_url.IsUSVString());
-  String string = string_or_trusted_url.GetAsUSVString();
-
-  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
-  if (!require_trusted_type) {
-    return string;
-  }
-
-  TrustedTypePolicy* default_policy = GetDefaultPolicy(execution_context);
-  if (!default_policy) {
-    if (TrustedTypeFail(kTrustedURLAssignment, execution_context,
-                        exception_state, string)) {
-      return g_empty_string;
-    }
-    return string;
-  }
-
-  TrustedURL* result = default_policy->CreateURL(
-      execution_context->GetIsolate(), string, exception_state);
-  if (exception_state.HadException()) {
-    return g_empty_string;
-  }
-
-  if (result->toString().IsNull()) {
-    if (TrustedTypeFail(kTrustedURLAssignmentAndDefaultPolicyFailed,
                         execution_context, exception_state, string)) {
       return g_empty_string;
     } else {

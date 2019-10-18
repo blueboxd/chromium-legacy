@@ -1,20 +1,3 @@
-Layer tree:
-{
-  "layers": [
-    {
-      "name": "Scrolling background of LayoutView #document",
-      "bounds": [1200, 900],
-      "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "LayoutCustomScrollbarPart (anonymous)",
-      "bounds": [800, 600],
-      "backgroundColor": "#0000FF"
-    }
-  ]
-}
-
 Layer list
 {
   "layers": [

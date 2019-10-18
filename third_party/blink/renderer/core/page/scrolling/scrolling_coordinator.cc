@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
-#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -616,18 +615,6 @@ void ScrollingCoordinator::FrameViewFixedObjectsDidChange(
     return;
 
   frame_view->GetScrollingContext()->SetShouldScrollOnMainThreadIsDirty(true);
-}
-
-bool ScrollingCoordinator::IsForRootLayer(
-    ScrollableArea* scrollable_area) const {
-  if (!IsA<LocalFrame>(page_->MainFrame()))
-    return false;
-
-  // FIXME(305811): Refactor for OOPI.
-  if (auto* layout_view =
-          page_->DeprecatedLocalMainFrame()->View()->GetLayoutView())
-    return scrollable_area == layout_view->Layer()->GetScrollableArea();
-  return false;
 }
 
 bool ScrollingCoordinator::IsForMainFrame(

@@ -28,6 +28,7 @@ constexpr char kAppPath[] = "app_path";
 constexpr char kName[] = "name";
 constexpr char kOem[] = "oem";
 constexpr char kPackageName[] = "package_name";
+constexpr char kSystem[] = "system";
 
 constexpr char kDefaultApps[] = "arc.apps.default";
 constexpr char kHidden[] = "hidden";
@@ -86,12 +87,14 @@ std::unique_ptr<ArcDefaultAppList::AppInfoMap> ReadAppsFromFileThread(
     std::string activity;
     std::string app_path;
     bool oem = false;
+    bool system = false;
 
     app_info_dictionary->GetString(kName, &name);
     app_info_dictionary->GetString(kPackageName, &package_name);
     app_info_dictionary->GetString(kActivity, &activity);
     app_info_dictionary->GetString(kAppPath, &app_path);
     app_info_dictionary->GetBoolean(kOem, &oem);
+    app_info_dictionary->GetBoolean(kSystem, &system);
 
     if (name.empty() || package_name.empty() || activity.empty() ||
         app_path.empty()) {
@@ -103,8 +106,9 @@ std::unique_ptr<ArcDefaultAppList::AppInfoMap> ReadAppsFromFileThread(
     const std::string app_id =
         ArcAppListPrefs::GetAppId(package_name, activity);
     std::unique_ptr<ArcDefaultAppList::AppInfo> app =
-        std::make_unique<ArcDefaultAppList::AppInfo>(
-            name, package_name, activity, oem, root_dir.Append(app_path));
+        std::make_unique<ArcDefaultAppList::AppInfo>(name, package_name,
+                                                     activity, oem, system,
+                                                     root_dir.Append(app_path));
     apps.get()->insert(
         std::pair<std::string, std::unique_ptr<ArcDefaultAppList::AppInfo>>(
             app_id, std::move(app)));
@@ -206,11 +210,10 @@ void ArcDefaultAppList::OnAppsReady() {
       registry->GetInstalledExtension(arc::kPlayStoreAppId);
   if (arc_host && arc::IsPlayStoreAvailable()) {
     std::unique_ptr<ArcDefaultAppList::AppInfo> play_store_app =
-        std::make_unique<ArcDefaultAppList::AppInfo>(arc_host->name(),
-                                       arc::kPlayStorePackage,
-                                       arc::kPlayStoreActivity,
-                                       false /* oem */,
-                                       base::FilePath() /* app_path */);
+        std::make_unique<ArcDefaultAppList::AppInfo>(
+            arc_host->name(), arc::kPlayStorePackage, arc::kPlayStoreActivity,
+            false /* oem */, true /* system */,
+            base::FilePath() /* app_path */);
     AppInfoMap& app_map =
         IsAppHidden(prefs, arc::kPlayStoreAppId) ? hidden_apps_ : visible_apps_;
     app_map.insert(
@@ -223,14 +226,16 @@ void ArcDefaultAppList::OnAppsReady() {
 
 const ArcDefaultAppList::AppInfo* ArcDefaultAppList::GetApp(
     const std::string& app_id) const {
-  if ((filter_level_ == FilterLevel::ALL) ||
-      (filter_level_ == FilterLevel::OPTIONAL_APPS &&
-       app_id != arc::kPlayStoreAppId)) {
+  if (filter_level_ == FilterLevel::ALL)
     return nullptr;
-  }
+
   const auto it = visible_apps_.find(app_id);
   if (it == visible_apps_.end())
     return nullptr;
+
+  if (filter_level_ == FilterLevel::OPTIONAL_APPS && !it->second->system)
+    return nullptr;
+
   return it->second.get();
 }
 
@@ -294,11 +299,13 @@ ArcDefaultAppList::AppInfo::AppInfo(const std::string& name,
                                     const std::string& package_name,
                                     const std::string& activity,
                                     bool oem,
+                                    bool system,
                                     const base::FilePath app_path)
     : name(name),
       package_name(package_name),
       activity(activity),
       oem(oem),
+      system(system),
       app_path(app_path) {}
 
 ArcDefaultAppList::AppInfo::~AppInfo() {}

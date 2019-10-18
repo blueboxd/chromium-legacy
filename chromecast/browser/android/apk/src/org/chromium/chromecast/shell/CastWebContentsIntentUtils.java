@@ -178,14 +178,6 @@ public class CastWebContentsIntentUtils {
         return intent;
     }
 
-    // CastWebContentsActivity -> CastWebContentsComponent.Receiver
-    // -> CastContentWindowAndroid
-    public static Intent onKeyDown(String instanceId, int keyCode) {
-        Intent intent = new Intent(ACTION_KEY_EVENT, getInstanceUri(instanceId));
-        intent.putExtra(INTENT_EXTRA_KEY_CODE, keyCode);
-        return intent;
-    }
-
     // Host activity of CastWebContentsFragment -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
     public static Intent onVisibilityChange(String instanceId, @VisibilityType int visibilityType) {

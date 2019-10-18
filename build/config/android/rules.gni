@@ -128,53 +128,6 @@ template("create_native_executable_dist") {
   }
 }
 
-# Writes a script to root_out_dir/bin that passes --output-directory to the
-# wrapped script, in addition to forwarding arguments. Most / all of these
-# wrappers should be made deps of //tools/android:android_tools.
-#
-# Variables
-#   target: Script to wrap.
-#   flag_name: Default is "--output-directory"
-#
-# Example
-#   wrapper_script("foo_wrapper") {
-#     target = "//pkg/foo.py"
-#   }
-template("wrapper_script") {
-  action_with_pydeps(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "data",
-                             "data_deps",
-                             "deps",
-                           ])
-    _name = get_path_info(invoker.target, "name")
-    _output = "$root_out_dir/bin/$_name"
-
-    script = "//build/android/gyp/create_tool_wrapper.py"
-    outputs = [
-      _output,
-    ]
-
-    # The target isn't actually used by the script, but it's nice to have GN
-    # check that it exists.
-    inputs = [
-      invoker.target,
-    ]
-    args = [
-      "--output",
-      rebase_path(_output, root_build_dir),
-      "--target",
-      rebase_path(invoker.target, root_build_dir),
-      "--output-directory",
-      rebase_path(root_out_dir, root_build_dir),
-    ]
-    if (defined(invoker.flag_name)) {
-      args += [ "--flag-name=${invoker.flag_name}" ]
-    }
-  }
-}
-
 if (enable_java_templates) {
   import("//build/config/sanitizers/sanitizers.gni")
   import("//tools/grit/grit_rule.gni")
@@ -2140,6 +2093,10 @@ if (enable_java_templates) {
   #     LocaleConfig.java file will be generated for each package, and will
   #     contain the list of compressed and uncompressed locale pak files.
   #   disable_r8_outlining: Turn off outlining during the proguard step.
+  #   annotation_processor_deps: List of java_annotation_processor targets to
+  #     use when compiling the java_files given to this target (optional).
+  #   processor_args_javac: List of args to pass to annotation processors when
+  #     compiling java_files given to this target (optional).
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
@@ -2773,10 +2730,10 @@ if (enable_java_templates) {
                                "alternative_android_sdk_dep",
                                "android_manifest",
                                "android_manifest_dep",
+                               "annotation_processor_deps",
                                "apk_under_test",
                                "base_module_target",
                                "chromium_code",
-                               "classpath_deps",
                                "jacoco_never_instrument",
                                "java_files",
                                "javac_args",
@@ -2784,6 +2741,7 @@ if (enable_java_templates) {
                                "manifest_package",
                                "native_lib_placeholders",
                                "no_build_hooks",
+                               "processor_args_javac",
                                "secondary_abi_loadable_modules",
                                "secondary_native_lib_placeholders",
                                "static_library_dependent_targets",
@@ -3365,6 +3323,7 @@ if (enable_java_templates) {
                                "alternative_android_sdk_dep",
                                "android_manifest",
                                "android_manifest_dep",
+                               "annotation_processor_deps",
                                "apk_under_test",
                                "app_as_shared_lib",
                                "build_hooks_android_impl_deps",
@@ -3407,6 +3366,7 @@ if (enable_java_templates) {
                                "no_xml_namespaces",
                                "png_to_webp",
                                "post_process_package_resources_script",
+                               "processor_args_javac",
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",
@@ -3497,6 +3457,7 @@ if (enable_java_templates) {
                                "alternative_android_sdk_dep",
                                "android_manifest",
                                "android_manifest_dep",
+                               "annotation_processor_deps",
                                "app_as_shared_lib",
                                "base_module_target",
                                "bundle_target",
@@ -3529,6 +3490,7 @@ if (enable_java_templates) {
                                "package_id",
                                "package_name",
                                "png_to_webp",
+                               "processor_args_javac",
                                "product_version_resources_dep",
                                "proguard_configs",
                                "proguard_enabled",

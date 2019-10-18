@@ -32,6 +32,15 @@
       "transform": 3
     },
     {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [15, 385],
+      "bounds": [385, 15]
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "bounds": [15, 385]
+    },
+    {
       "name": "Scroll Corner Layer",
       "position": [0, 385],
       "bounds": [15, 15]

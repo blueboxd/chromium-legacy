@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.ui.widget.ClipDrawableProgressBar.DrawingInfo;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -118,8 +118,9 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             isIncognito = currentTab.isIncognito();
         }
 
-        int textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
-                isLocationBarShownInNtp, browserControlsBackgroundColor, isIncognito);
+        int textBoxColor =
+                ToolbarColors.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                        isLocationBarShownInNtp, browserControlsBackgroundColor, isIncognito);
         int textBoxResourceId = R.drawable.modern_location_bar;
 
         ToolbarSceneLayerJni.get().updateToolbarLayer(mNativePtr, ToolbarSceneLayer.this,

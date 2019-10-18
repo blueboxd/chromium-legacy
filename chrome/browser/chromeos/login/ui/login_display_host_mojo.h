@@ -87,7 +87,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ShowGaiaDialog(bool can_close,
                       const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
-  void UpdateOobeDialogSize(int width, int height) override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
   const user_manager::UserList GetUsers() override;
   void OnCancelPasswordChangedFlow() override;
@@ -176,7 +175,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
-  OobeUIDialogDelegate* dialog_ = nullptr;
+  OobeUIDialogDelegate* dialog_ = nullptr;  // Not owned.
   bool can_close_dialog_ = true;
   std::unique_ptr<WizardController> wizard_controller_;
 

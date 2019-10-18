@@ -4,10 +4,15 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//weblayer/variables.gni")
 
 android_resources("weblayer_resources") {
   resource_dirs = []
   custom_package = "org.chromium.weblayer_private"
+}
+
+generate_locale_config_srcjar("weblayer_locale_config") {
+  java_package = weblayer_locale_config_java_package
 }
 
 android_library("java") {
@@ -18,6 +23,7 @@ android_library("java") {
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
+    "org/chromium/weblayer_private/DownloadDelegateProxy.java",
     "org/chromium/weblayer_private/FullscreenDelegateProxy.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
@@ -37,6 +43,8 @@ android_library("java") {
     "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]
+  srcjar_deps = [ ":weblayer_locale_config" ]
+  jar_excluded_patterns = [ "*/LocaleConfig.class" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
@@ -45,6 +53,7 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
+    "org/chromium/weblayer_private/DownloadDelegateProxy.java",
     "org/chromium/weblayer_private/FullscreenDelegateProxy.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
@@ -73,6 +82,7 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/aidl/IBrowserFragmentController.aidl",
     "org/chromium/weblayer_private/aidl/IChildProcessService.aidl",
     "org/chromium/weblayer_private/aidl/IClientNavigation.aidl",
+    "org/chromium/weblayer_private/aidl/IDownloadDelegateClient.aidl",
     "org/chromium/weblayer_private/aidl/IFullscreenDelegateClient.aidl",
     "org/chromium/weblayer_private/aidl/INavigation.aidl",
     "org/chromium/weblayer_private/aidl/INavigationController.aidl",

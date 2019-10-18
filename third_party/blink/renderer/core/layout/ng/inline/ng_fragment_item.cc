@@ -14,8 +14,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       text_({text.TextShapeResult(), text.StartOffset(), text.EndOffset()}),
       rect_({PhysicalOffset(), text.Size()}),
       type_(kText),
+      sub_type_(static_cast<unsigned>(text.TextType())),
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
-      is_flow_control_(text.IsFlowControl()),
       is_hidden_for_paint_(false),
       text_direction_(static_cast<unsigned>(text.ResolvedDirection())) {
   DCHECK_LE(text_.start_offset, text_.end_offset);

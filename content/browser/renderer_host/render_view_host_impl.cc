@@ -995,7 +995,13 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
   updating_web_preferences_ = true;
   UpdateWebkitPreferences(ComputeWebPreferences());
 #if defined(OS_ANDROID)
-  GetWidget()->SetForceEnableZoom(web_preferences_->force_enable_zoom);
+  for (FrameTreeNode* node : GetDelegate()->GetFrameTree()->Nodes()) {
+    RenderFrameHostImpl* rfh = node->current_frame_host();
+    if (rfh->is_local_root()) {
+      if (auto* rwh = rfh->GetRenderWidgetHost())
+        rwh->SetForceEnableZoom(web_preferences_->force_enable_zoom);
+    }
+  }
 #endif
   updating_web_preferences_ = false;
 }

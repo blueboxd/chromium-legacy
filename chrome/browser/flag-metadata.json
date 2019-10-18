@@ -2101,7 +2101,7 @@
   {
     "name": "file-handling-api",
     "owners": ["harrisjay@chromium.org", "raymes@chromium.org"],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "file-manager-feedback-panel",
@@ -2446,6 +2446,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "mixed-content-setting",
+    "owners": [ "carlosil", "estark" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "mobile-identity-consistency",
     "owners": [ "bsazonov", "droger", "msarda" ],
     "expiry_milestone": 80
@@ -2499,6 +2504,11 @@
     "name": "notification-scheduler-debug-options",
     "owners": [ "//chrome/browser/notifications/scheduler/OWNERS" ],
     "expiry_milestone": 81
+  },
+  {
+    "name": "ntp-confirm-suggestion-removals",
+    "owners": ["dbeam"],
+    "expiry_milestone": 82
   },
   {
     "name": "ntp-customization-menu-v2",
@@ -3282,7 +3292,7 @@
   {
     "name": "treat-unsafe-downloads-as-active-content",
     "owners": [ "jdeblasio", "cthomp" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "trim-on-all-frames-frozen",
@@ -3344,6 +3354,11 @@
      // This is required by test teams to verify functionality on devices which
     // have no access to commandline flags.
     "expiry_milestone": -1
+  },
+  {
+    "name": "update-notification-scheduling-integration",
+    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/updates/OWNERS" ],
+    "expiry_milestone": 86
   },
   {
     "name": "updated_cellular_activation_ui",

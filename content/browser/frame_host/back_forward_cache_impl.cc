@@ -75,13 +75,14 @@ void SetPageFrozenImpl(
   }
 }
 
-bool IsServiceWorkerSupported() {
-  static constexpr base::FeatureParam<bool> service_worker_supported(
-      &features::kBackForwardCache, "service_worker_supported", false);
-  return service_worker_supported.Get();
+bool IsExtendedSupportEnabled() {
+  static constexpr base::FeatureParam<bool> extended_support_enabled(
+      &features::kBackForwardCache,
+      "experimental extended supported feature set", false);
+  return extended_support_enabled.Get();
 }
 
-uint64_t GetDisallowedFeatures() {
+uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
   // TODO(lowell): Finalize disallowed feature list, and test for each
   // disallowed feature.
   constexpr uint64_t kAlwaysDisallowedFeatures =
@@ -114,10 +115,20 @@ uint64_t GetDisallowedFeatures() {
 
   uint64_t result = kAlwaysDisallowedFeatures;
 
-  if (!IsServiceWorkerSupported()) {
+  if (!IsExtendedSupportEnabled()) {
     result |=
         ToFeatureBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage);
+    result |= ToFeatureBit(
+        WebSchedulerTrackedFeature::kRequestedGeolocationPermission);
   }
+
+  // We do not cache documents which have cache-control: no-store header on
+  // their main resource.
+  if (!rfh->GetParent()) {
+    result |= ToFeatureBit(
+        WebSchedulerTrackedFeature::kMainResourceHasCacheControlNoStore);
+  }
+
   return result;
 }
 
@@ -193,6 +204,8 @@ std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
       return "No: This domain is not allowed to be stored in BackForwardCache";
     case Reason::kHTTPMethodNotGET:
       return "No: HTTP method is not GET";
+    case Reason::kSubframeIsNavigating:
+      return "No: subframe navigation is in progress";
   }
 }
 
@@ -316,14 +329,13 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
         BackForwardCacheMetrics::CanNotStoreDocumentReason::kDomainNotAllowed);
   }
 
-  return CanStoreRenderFrameHost(rfh, GetDisallowedFeatures());
+  return CanStoreRenderFrameHost(rfh);
 }
 
 // Recursively checks whether this RenderFrameHost and all child frames
 // can be cached.
 BackForwardCacheImpl::CanStoreDocumentResult
-BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
-                                              uint64_t disallowed_features) {
+BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh) {
   if (!rfh->dom_content_loaded())
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::CanNotStoreDocumentReason::kLoading);
@@ -348,13 +360,22 @@ BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
   // For reporting purposes it's a good idea to also collect this information
   // from children.
   if (uint64_t banned_features =
-          disallowed_features & rfh->scheduler_tracked_features()) {
+          GetDisallowedFeatures(rfh) & rfh->scheduler_tracked_features()) {
     return CanStoreDocumentResult::NoDueToFeatures(banned_features);
   }
 
+  bool has_navigation_request = rfh->frame_tree_node()->navigation_request() ||
+                                rfh->HasPendingCommitNavigation();
+  // Do not cache if we have navigations in any of the subframes.
+  if (rfh->GetParent() && has_navigation_request) {
+    return CanStoreDocumentResult::No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kSubframeIsNavigating);
+  }
+
   for (size_t i = 0; i < rfh->child_count(); i++) {
-    CanStoreDocumentResult can_store_child = CanStoreRenderFrameHost(
-        rfh->child_at(i)->current_frame_host(), disallowed_features);
+    CanStoreDocumentResult can_store_child =
+        CanStoreRenderFrameHost(rfh->child_at(i)->current_frame_host());
     if (!can_store_child.can_store)
       return can_store_child;
   }

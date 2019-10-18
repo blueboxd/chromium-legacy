@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -187,9 +186,6 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   GpuServiceWebView::GetInstance();
   ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW,
                                         save_restore);
-  UMA_HISTOGRAM_BOOLEAN(
-      "Android.WebView.Gfx.FunctorStencilEnabled",
-      static_cast<bool>(state_restore.stencil_state().stencil_test_enabled));
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && !IsInsideHardwareRelease() &&
       HasFrameForHardwareRendererOnRT()) {

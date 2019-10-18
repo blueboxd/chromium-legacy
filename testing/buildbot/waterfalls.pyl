@@ -22,7 +22,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_friendly_gtests',
+          'gtest_tests': 'chromeos_vm_gtests',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
         'swarming': {
@@ -40,8 +40,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_friendly_gtests',
-          'isolated_scripts': 'chromeos_isolated_scripts',
+          'gtest_tests': 'chromeos_browser_integration_tests',
         },
         'swarming': {
           'dimension_sets': [
@@ -58,7 +57,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_tests',
+          'gtest_tests': 'chromeos_device_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -76,7 +75,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_tests',
+          'gtest_tests': 'chromeos_device_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -762,7 +761,7 @@
         'os_type': 'chromeos',
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
-          'gtest_tests': 'chromeos_device_friendly_gtests',
+          'gtest_tests': 'chromeos_vm_gtests',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
         'swarming': {
@@ -801,7 +800,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromeos_device_tests',
+          'gtest_tests': 'chromeos_device_gtests',
           'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
@@ -1676,7 +1675,7 @@
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_friendly_gtests_experimental',
+          'gtest_tests': 'chromeos_system_friendly_gtests_experimental',
         },
         'swarming': {
           'dimension_sets': [
@@ -1717,7 +1716,7 @@
             'code-coverage',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_friendly_gtests',
+          'gtest_tests': 'chromeos_vm_gtests',
         },
         'swarming': {
           'dimension_sets': [

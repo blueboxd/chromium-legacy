@@ -16,9 +16,7 @@ CookieAccessDelegateImpl::~CookieAccessDelegateImpl() = default;
 
 net::CookieAccessSemantics CookieAccessDelegateImpl::GetAccessSemantics(
     const net::CanonicalCookie& cookie) const {
-  GURL cookie_domain =
-      net::cookie_util::CookieOriginToURL(cookie.Domain(), cookie.IsSecure());
-  return cookie_settings_->GetCookieAccessSemanticsForDomain(cookie_domain);
+  return cookie_settings_->GetCookieAccessSemanticsForDomain(cookie.Domain());
 }
 
 }  // namespace network

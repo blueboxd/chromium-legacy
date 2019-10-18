@@ -41,17 +41,15 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
     static Factory* Get();
     static void SetInstanceForTesting(Factory* test_factory);
     virtual ~Factory();
-    virtual std::unique_ptr<DeviceSyncClient> BuildInstance();
+    virtual std::unique_ptr<DeviceSyncClient> BuildInstance(
+        mojom::DeviceSyncService* service);
 
    private:
     static Factory* test_factory_;
   };
 
-  DeviceSyncClientImpl();
+  explicit DeviceSyncClientImpl(mojom::DeviceSyncService* service);
   ~DeviceSyncClientImpl() override;
-
-  void Initialize(scoped_refptr<base::TaskRunner> task_runner) override;
-  mojom::DeviceSyncPtr* GetDeviceSyncPtr() override;
 
   // DeviceSyncClient:
   void ForceEnrollmentNow(
@@ -79,6 +77,9 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
  private:
   friend class DeviceSyncClientImplTest;
 
+  DeviceSyncClientImpl(mojom::DeviceSyncService* service,
+                       scoped_refptr<base::TaskRunner> task_runner);
+
   void AttemptToBecomeReady();
 
   void LoadSyncedDevices();
@@ -99,7 +100,7 @@ class DeviceSyncClientImpl : public DeviceSyncClient,
   void FlushForTesting();
 
   mojom::DeviceSyncPtr device_sync_ptr_;
-  mojo::Binding<mojom::DeviceSyncObserver> observer_binding_;
+  mojo::Binding<mojom::DeviceSyncObserver> binding_;
   std::unique_ptr<multidevice::ExpiringRemoteDeviceCache>
       expiring_device_cache_;
 

@@ -11,6 +11,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -96,8 +97,7 @@ const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
 
 base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()
     const {
-  // There is no left click dialog and no dialog title for shared clipboard.
-  return base::string16();
+  return l10n_util::GetStringUTF16(IDS_OMNIBOX_TOOLTIP_SHARED_CLIPBOARD);
 }
 
 SharingFeatureName SharedClipboardUiController::GetFeatureMetricsPrefix()

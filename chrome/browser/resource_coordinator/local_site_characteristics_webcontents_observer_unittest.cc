@@ -211,18 +211,13 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  // Notification usage events always get forwarded.
-  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated();
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
   auto params = GetStaticSiteCharacteristicsDatabaseParams();
   // Title and Favicon should be ignored during the post-loading grace period.
   observer()->DidUpdateFaviconURL({});
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  test_clock().Advance(params.title_or_favicon_change_grace_period);
+  test_clock().Advance(params.title_or_favicon_change_post_load_grace_period);
 
   EXPECT_CALL(*mock_writer, NotifyUpdatesFaviconInBackground());
   observer()->DidUpdateFaviconURL({});
@@ -242,14 +237,22 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  // Audio usage events should be ignored during the post-background grace
-  // period.
+  // Events should be ignored during the post-background grace period.
   observer()->OnAudioStateChanged(true);
+  observer()->DidUpdateFaviconURL({});
+  observer()->TitleWasSet(nullptr);
+  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  test_clock().Advance(params.audio_usage_grace_period);
+  test_clock().Advance(params.feature_usage_post_background_grace_period);
   EXPECT_CALL(*mock_writer, NotifyUsesAudioInBackground());
+  EXPECT_CALL(*mock_writer, NotifyUpdatesFaviconInBackground());
+  EXPECT_CALL(*mock_writer, NotifyUpdatesTitleInBackground());
+  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
   observer()->OnAudioStateChanged(true);
+  observer()->DidUpdateFaviconURL({});
+  observer()->TitleWasSet(nullptr);
+  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
@@ -295,6 +298,12 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
                   performance_manager::TabVisibility::kBackground));
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
+
+  // Events should be ignored during the post-background grace period.
+  observer()->OnNonPersistentNotificationCreated();
+  ::testing::Mock::VerifyAndClear(mock_writer);
+  test_clock().Advance(GetStaticSiteCharacteristicsDatabaseParams()
+                           .feature_usage_post_background_grace_period);
 
   EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
   observer()->OnNonPersistentNotificationCreated();

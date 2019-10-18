@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -80,6 +81,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (void)startReloading {
   [BrowserCommandDispatcherForMainBVC() reload];
+}
+
++ (NamedGuide*)guideWithName:(GuideName*)name view:(UIView*)view {
+  return [NamedGuide guideWithName:name view:view];
 }
 
 #pragma mark - Tab Utilities (EG2)

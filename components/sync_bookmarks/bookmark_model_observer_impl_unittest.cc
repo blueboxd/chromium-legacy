@@ -133,8 +133,12 @@ TEST_F(BookmarkModelObserverImplTest,
       bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries);
   ASSERT_THAT(local_changes.size(), 1U);
   EXPECT_THAT(local_changes[0]->bookmark_node(), Eq(bookmark_node));
-  EXPECT_THAT(local_changes[0]->metadata()->server_id(),
-              Eq(bookmark_node->guid()));
+  // TODO(crbug.com/978430): Consider using |node->guid()| instead of generating
+  // new random GUIDs as the temporary server ID, and then reinstate the
+  // following expectation. However, currently that can lead to crashes due to
+  // duplicate server IDs, see crbug.com/1004205.
+  // EXPECT_THAT(local_changes[0]->metadata()->server_id(),
+  //             Eq(bookmark_node->guid()));
 }
 
 TEST_F(BookmarkModelObserverImplTest,

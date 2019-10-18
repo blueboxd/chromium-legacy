@@ -117,8 +117,6 @@ void FakeLoginDisplayHost::ShowGaiaDialog(bool can_close,
 
 void FakeLoginDisplayHost::HideOobeDialog() {}
 
-void FakeLoginDisplayHost::UpdateOobeDialogSize(int width, int height) {}
-
 void FakeLoginDisplayHost::UpdateOobeDialogState(ash::OobeDialogState state) {}
 
 const user_manager::UserList FakeLoginDisplayHost::GetUsers() {

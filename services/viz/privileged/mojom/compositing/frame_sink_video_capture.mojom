@@ -46,7 +46,8 @@ interface FrameSinkVideoConsumer {
   OnFrameCaptured(mojo_base.mojom.ReadOnlySharedMemoryRegion data,
                   media.mojom.VideoFrameInfo info,
                   gfx.mojom.Rect content_rect,
-                  FrameSinkVideoConsumerFrameCallbacks callbacks);
+                  pending_remote<FrameSinkVideoConsumerFrameCallbacks>
+                      callbacks);
 
   // Indicates that OnFrameCaptured() will not be called again, an end-of-stream
   // signal.

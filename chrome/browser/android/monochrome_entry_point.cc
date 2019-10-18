@@ -23,7 +23,7 @@ bool NativeInit(base::android::LibraryProcessType library_process_type) {
       break;
     case base::android::PROCESS_WEBLAYER:
     case base::android::PROCESS_WEBLAYER_CHILD:
-      return weblayer::OnJNIOnLoadInit("resources.pak");
+      return weblayer::OnJNIOnLoadInit();
       break;
     default:
       NOTREACHED();

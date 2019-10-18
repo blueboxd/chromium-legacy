@@ -179,7 +179,6 @@ mojom::NetworkContextParamsPtr CreateContextParams() {
   // Use a fixed proxy config, to avoid dependencies on local network
   // configuration.
   params->initial_proxy_config = net::ProxyConfigWithAnnotation::CreateDirect();
-  params->enable_cors = features::ShouldEnableOutOfBlinkCorsForTesting();
   return params;
 }
 

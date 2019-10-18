@@ -1579,6 +1579,22 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is blocked for being encrypted">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is encrypted and has been blocked from opening.
       </message>
+      <message name="IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_SAFE"
+        desc="Message shown in the download shelf when a download is finished being scanned, and no issues were found">
+        Scan complete, no issues identified.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_WARNING"
+        desc="Message shown in the download shelf when a download contains sensitive content, and the admin has chosen to warn the user">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> contains sensitive content.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_BLOCKED"
+        desc="Message shown in the download shelf when a download contains sensitive content, and the admin has chosen to block the file">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> contains sensitive content, and has been blocked.
+      </message>
+      <message name="IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_OPENED_DANGEROUS"
+        desc="Message shown in the download shelf when a download is finished being scanned, and issues were found">
+        Download contains malware.
+      </message>
       <message name="IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is uncommon.">
         This file is not commonly downloaded and may be dangerous.
@@ -6216,6 +6232,30 @@ the Bookmarks menu.">
         </message>
       </if>
 
+      <!-- Tab Group Header Context Menu -->
+      <if expr="not use_titlecase">
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="The label of the tab group header context menu item for adding a new tab into the current group.">
+          New tab in group
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP" desc="The label of the tab group header context menu item for ungrouping the current group.">
+          Ungroup
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP" desc="The label of the tab group header context menu item for closing all tabs in the current group.">
+          Close group
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP" desc="In Title Case: The label of the tab group header context menu item for adding a new tab into the current group.">
+          New Tab in Group
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP" desc="In Title Case: The label of the tab group header context menu item for ungrouping the current group.">
+          Ungroup
+        </message>
+        <message name="IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP" desc="In Title Case: The label of the tab group header context menu item for closing all tabs in the current group.">
+          Close Group
+        </message>
+      </if>
+
       <!-- Application window menu -->
       <if expr="not use_titlecase">
         <message name="IDS_APP_MENU_RELOAD" desc="The reload menu in application windows">
@@ -6690,6 +6730,9 @@ the Bookmarks menu.">
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_DESCRIPTION" desc="The description of the notification shown when a clipboard was shared.">
           Copied to your clipboard
         </message>
+        <message name="IDS_OMNIBOX_TOOLTIP_SHARED_CLIPBOARD" desc="The tooltip for the shared clipboard omnibox icon.">
+          Copy to your device
+        </message>
       </if>
 
       <if expr="use_titlecase">
@@ -6713,6 +6756,9 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_DESCRIPTION" desc="In Title Case: The description of the notification shown when a clipboard was shared.">
           Copied to Your Clipboard
+        </message>
+        <message name="IDS_OMNIBOX_TOOLTIP_SHARED_CLIPBOARD" desc="The tooltip for the shared clipboard omnibox icon.">
+          Copy to Your Device
         </message>
       </if>
 
@@ -8908,9 +8954,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In title case: Button for adding a new gallery by choosing a folder.">
             Add Location...
           </message>
-          <message name="IDS_MEDIA_GALLERIES_DIALOG_CANCEL" desc="In title case: The text for the cancel button on the media galleries configuration dialog.">
-            Cancel
-          </message>
           <message name="IDS_MEDIA_GALLERIES_DIALOG_CONFIRM" desc="In title case: The text for the accept button on the media galleries configuration dialog.">
             Apply
           </message>
@@ -8919,9 +8962,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
           <message name="IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY" desc="In sentence case: Button for adding a new gallery by choosing a folder."
                    meaning="In sentence case: Button for adding a new gallery by choosing a folder.">
             Add location...
-          </message>
-          <message name="IDS_MEDIA_GALLERIES_DIALOG_CANCEL" desc="In sentence case: The text for the cancel button on the media galleries configuration dialog.">
-            Cancel
           </message>
           <message name="IDS_MEDIA_GALLERIES_DIALOG_CONFIRM" desc="In sentence case: The text for the accept button on the media galleries configuration dialog."
                    meaning="In sentence case: The text for the accept button on the media galleries configuration dialog.">

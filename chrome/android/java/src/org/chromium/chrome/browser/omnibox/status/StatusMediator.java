@@ -21,8 +21,8 @@ import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
-import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -336,7 +336,7 @@ class StatusMediator {
         }
 
         @ColorRes
-        int tintColor = ColorUtils.getThemedToolbarIconTintRes(!mDarkTheme);
+        int tintColor = ToolbarColors.getThemedToolbarIconTintRes(!mDarkTheme);
 
         mModel.set(StatusProperties.SEPARATOR_COLOR_RES, separatorColor);
         mNavigationIconTintRes = tintColor;
@@ -500,7 +500,7 @@ class StatusMediator {
             tint = 0;
         } else {
             tint = mDarkTheme ? R.color.default_icon_color_secondary_list
-                              : ColorUtils.getThemedToolbarIconTintRes(!mDarkTheme);
+                              : ToolbarColors.getThemedToolbarIconTintRes(!mDarkTheme);
         }
 
         return tint;
@@ -523,15 +523,23 @@ class StatusMediator {
     }
 
     /** @see android.text.TextWatcher#onTextChanged */
-    void onTextChanged(CharSequence charSequence) {
-        // TODO (crbug.com/1012870): This is a workaround for the linked bug. Once the bug is fixed,
-        //                           it should be removed.
-        String urlTextWithAutocomplete = TextUtils.isEmpty(charSequence)
-                ? ""
-                : mUrlBarEditingTextStateProvider.getTextWithAutocomplete();
-        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) {
-            return;
+    void onTextChanged(CharSequence urlBarText) {
+        String currentAutocompleteText = mUrlBarEditingTextStateProvider.getTextWithAutocomplete();
+        String urlTextWithAutocomplete;
+        if (TextUtils.isEmpty(urlBarText)) {
+            // TODO (crbug.com/1012870): This is to workaround the UrlBar text being empty but the
+            // autocomplete text still pointing at the previous url's autocomplete text.
+            urlTextWithAutocomplete = "";
+        } else if (TextUtils.indexOf(currentAutocompleteText, urlBarText) > -1) {
+            // TODO(crbug.com/1015147): This is to workaround the UrlBar text pointing to the
+            // "current" url and the the autocomplete text pointing to the "previous" url.
+            urlTextWithAutocomplete = currentAutocompleteText;
+        } else {
+            // If the above cases don't apply, then we should use the UrlBar text itself.
+            urlTextWithAutocomplete = urlBarText.toString();
         }
+
+        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) return;
 
         mUrlBarTextWithAutocomplete = urlTextWithAutocomplete;
         boolean isValid = mDelegate.isUrlValid(mUrlBarTextWithAutocomplete);

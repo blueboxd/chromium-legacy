@@ -27,7 +27,6 @@
 #include "base/task/task_traits.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
@@ -81,27 +80,6 @@ bool WaitForSocketReadable(int raw_socket_fd, int raw_cancel_fd) {
 
   DCHECK(fds[0].revents);
   return true;
-}
-
-// Converts ArcSupervisionTransition into
-// login_manager::UpgradeArcContainerRequest_SupervisionTransition.
-login_manager::UpgradeArcContainerRequest_SupervisionTransition
-ToLoginManagerSupervisionTransition(ArcSupervisionTransition transition) {
-  switch (transition) {
-    case ArcSupervisionTransition::NO_TRANSITION:
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_NONE;
-    case ArcSupervisionTransition::CHILD_TO_REGULAR:
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_CHILD_TO_REGULAR;
-    case ArcSupervisionTransition::REGULAR_TO_CHILD:
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_REGULAR_TO_CHILD;
-    default:
-      NOTREACHED() << "Invalid transition " << transition;
-      return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_NONE;
-  }
 }
 
 // Real Delegate implementation to connect Mojo.
@@ -325,9 +303,6 @@ void ArcSessionDelegateImpl::OnMojoConnected(
 
 }  // namespace
 
-const char ArcSessionImpl::kPackagesCacheModeCopy[] = "copy";
-const char ArcSessionImpl::kPackagesCacheModeSkipCopy[] = "skip-copy";
-
 // static
 std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
     ArcBridgeService* arc_bridge_service,
@@ -384,24 +359,24 @@ void ArcSessionImpl::OnLcdDensity(int32_t lcd_density) {
 
 void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
   DCHECK_GT(lcd_density_, 0);
-  StartArcMiniContainerRequest request;
-  request.set_native_bridge_experiment(
-      base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature));
-  request.set_arc_file_picker_experiment(
-      base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature));
+  StartParams params;
+  params.native_bridge_experiment =
+      base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature);
+  params.arc_file_picker_experiment =
+      base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature);
   // Enable Custom Tabs only on Dev and Cannary, and only when Mash is enabled.
   const bool is_custom_tab_enabled =
       base::FeatureList::IsEnabled(arc::kCustomTabsExperimentFeature) &&
       delegate_->GetChannel() != version_info::Channel::STABLE &&
       delegate_->GetChannel() != version_info::Channel::BETA;
-  request.set_arc_custom_tabs_experiment(is_custom_tab_enabled);
+  params.arc_custom_tabs_experiment = is_custom_tab_enabled;
   const bool is_arc_print_spooler_enabled =
       base::FeatureList::IsEnabled(arc::kPrintSpoolerExperimentFeature) &&
       delegate_->GetChannel() != version_info::Channel::STABLE &&
       delegate_->GetChannel() != version_info::Channel::BETA;
-  request.set_arc_print_spooler_experiment(is_arc_print_spooler_enabled);
-  request.set_lcd_density(lcd_density_);
-  request.set_num_cores_disabled(num_cores_disabled);
+  params.arc_print_spooler_experiment = is_arc_print_spooler_enabled;
+  params.lcd_density = lcd_density_;
+  params.num_cores_disabled = num_cores_disabled;
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kArcPlayStoreAutoUpdate)) {
@@ -409,14 +384,12 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             chromeos::switches::kArcPlayStoreAutoUpdate);
     if (value == kOn) {
-      request.set_play_store_auto_update(
-          login_manager::
-              StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_ON);
+      params.play_store_auto_update =
+          StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_ON;
       VLOG(1) << "Play Store auto-update is forced on";
     } else if (value == kOff) {
-      request.set_play_store_auto_update(
-          login_manager::
-              StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_OFF);
+      params.play_store_auto_update =
+          StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF;
       VLOG(1) << "Play Store auto-update is forced off";
     } else {
       LOG(ERROR) << "Invalid parameter " << value << " for "
@@ -425,10 +398,10 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
   }
 
   VLOG(1) << "Starting ARC mini instance with lcd_density="
-          << request.lcd_density()
-          << ", num_cores_disabled=" << request.num_cores_disabled();
+          << params.lcd_density
+          << ", num_cores_disabled=" << params.num_cores_disabled;
 
-  client_->StartMiniArc(request,
+  client_->StartMiniArc(std::move(params),
                         base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,
                                        weak_factory_.GetWeakPtr()));
 }
@@ -534,54 +507,10 @@ void ArcSessionImpl::OnSocketCreated(base::ScopedFD socket_fd) {
   }
 
   VLOG(2) << "Socket is created. Starting ARC container";
-  UpgradeArcContainerRequest request;
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  DCHECK(user_manager->GetPrimaryUser());
-
-  request.set_account_id(
-      cryptohome::Identification(user_manager->GetPrimaryUser()->GetAccountId())
-          .id());
-  request.set_skip_boot_completed_broadcast(
-      !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature));
-
-  // Set packages cache mode coming from autotests.
-  const std::string packages_cache_mode_string =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kArcPackagesCacheMode);
-  if (packages_cache_mode_string == kPackagesCacheModeSkipCopy) {
-    request.set_packages_cache_mode(
-        login_manager::
-            UpgradeArcContainerRequest_PackageCacheMode_SKIP_SETUP_COPY_ON_INIT);
-  } else if (packages_cache_mode_string == kPackagesCacheModeCopy) {
-    request.set_packages_cache_mode(
-        login_manager::
-            UpgradeArcContainerRequest_PackageCacheMode_COPY_ON_INIT);
-  } else if (!packages_cache_mode_string.empty()) {
-    VLOG(2) << "Invalid packages cache mode switch "
-            << packages_cache_mode_string << ".";
-  }
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kArcDisableGmsCoreCache)) {
-    request.set_skip_gms_core_cache(true);
-  }
-
-  request.set_supervision_transition(ToLoginManagerSupervisionTransition(
-      upgrade_params_.supervision_transition));
-  request.set_locale(upgrade_params_.locale);
-  for (const std::string& language : upgrade_params_.preferred_languages)
-    request.add_preferred_languages(language);
-
-  request.set_is_demo_session(upgrade_params_.is_demo_session);
-  if (!upgrade_params_.demo_session_apps_path.empty()) {
-    DCHECK(upgrade_params_.is_demo_session);
-    request.set_demo_session_apps_path(
-        upgrade_params_.demo_session_apps_path.value());
-  }
-
-  client_->UpgradeArc(request, base::BindOnce(&ArcSessionImpl::OnUpgraded,
-                                              weak_factory_.GetWeakPtr(),
-                                              std::move(socket_fd)));
+  client_->UpgradeArc(
+      std::move(upgrade_params_),
+      base::BindOnce(&ArcSessionImpl::OnUpgraded, weak_factory_.GetWeakPtr(),
+                     std::move(socket_fd)));
 }
 
 void ArcSessionImpl::OnUpgraded(base::ScopedFD socket_fd, bool result) {

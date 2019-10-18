@@ -8,7 +8,8 @@ A resource compiler for .rc files.
 
 options:
 -h, --help     Print this message.
--I<dir>        Add include path.
+-I<dir>        Add include path, used for both headers and resources.
+-imsvc<dir>    Add system include path, used for preprocessing only.
 -D<sym>        Define a macro for the preprocessor.
 /fo<out>       Set path of output .res file.
 /nologo        Ignored (rc.py doesn't print a logo by default).
@@ -33,6 +34,7 @@ def ParseFlags():
   """Parses flags off sys.argv and returns the parsed flags."""
   # Can't use optparse / argparse because of /fo flag :-/
   includes = []
+  imsvcs = []
   defines = []
   output = None
   input = None
@@ -44,6 +46,8 @@ def ParseFlags():
       sys.exit(0)
     if flag.startswith('-I'):
       includes.append(flag)
+    elif flag.startswith('-imsvc'):
+      imsvcs.append(flag)
     elif flag.startswith('-D'):
       defines.append(flag)
     elif flag.startswith('/fo'):
@@ -72,10 +76,10 @@ def ParseFlags():
     sys.exit(1)
   if not output:
     output = os.path.splitext(input)[0] + '.res'
-  Flags = namedtuple('Flags', ['includes', 'defines', 'output', 'input',
-                               'show_includes'])
-  return Flags(includes=includes, defines=defines, output=output, input=input,
-               show_includes=show_includes)
+  Flags = namedtuple('Flags', ['includes', 'defines', 'output', 'imsvcs',
+                               'input', 'show_includes'])
+  return Flags(includes=includes, defines=defines, output=output, imsvcs=imsvcs,
+               input=input, show_includes=show_includes)
 
 
 def ReadInput(input):
@@ -119,13 +123,13 @@ def Preprocess(rc_file_data, flags):
   # Closing temp_handle immediately defeats the purpose of mkstemp(), but I
   # can't figure out how to let write to the temp file on Windows otherwise.
   os.close(temp_handle)
-  clang_cmd = [clang, '/P', '/DRC_INVOKED', '/TC', '-', '/Fi' + temp_file]
+  clang_cmd = [clang, '/P', '/X', '/DRC_INVOKED', '/TC', '-', '/Fi' + temp_file]
   if os.path.dirname(flags.input):
     # This must precede flags.includes.
     clang_cmd.append('-I' + os.path.dirname(flags.input))
   if flags.show_includes:
     clang_cmd.append('/showIncludes')
-  clang_cmd += flags.includes + flags.defines
+  clang_cmd += flags.imsvcs + flags.includes + flags.defines
   p = subprocess.Popen(clang_cmd, stdin=subprocess.PIPE)
   p.communicate(input=rc_file_data)
   if p.returncode != 0:
@@ -198,7 +202,7 @@ def CompareToMsRcOutput(preprocessed_output, is_utf8, flags):
     f.write(preprocessed_output)
 
   msrc_out = flags.output + '_ms_rc'
-  msrc_cmd = ['rc', '/nologo', '/fo' + msrc_out]
+  msrc_cmd = ['rc', '/nologo', '/x', '/fo' + msrc_out]
 
   # Make sure rc-relative resources can be found. rc.exe looks for external
   # resource files next to the file, but the preprocessed file isn't where the

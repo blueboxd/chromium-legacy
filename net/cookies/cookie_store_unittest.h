@@ -106,6 +106,7 @@ const char kValidCookieLine[] = "A=B; path=/";
 //   // The cookie store supports setting a CookieAccessDelegate and using it to
 //   // get the access semantics for each cookie via
 //   // CookieStore::GetAllCookiesWithAccessSemanticsAsync().
+//   // If this is not supported, all access semantics will show up as UNKNOWN.
 //   static const bool supports_cookie_access_semantics;
 // };
 
@@ -612,12 +613,12 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
 
     // A HttpOnly cookie can be created, but is rejected
     // upon setting if the options do not specify include_httponly.
-    CanonicalCookie::CookieInclusionStatus status;
-    auto c = CanonicalCookie::Create(this->http_www_foo_.url(),
-                                     "bar=1; HttpOnly", base::Time::Now(),
-                                     base::nullopt /* server_time */, &status);
+    CanonicalCookie::CookieInclusionStatus create_status;
+    auto c = CanonicalCookie::Create(
+        this->http_www_foo_.url(), "bar=1; HttpOnly", base::Time::Now(),
+        base::nullopt /* server_time */, &create_status);
     EXPECT_TRUE(c->IsHttpOnly());
-    EXPECT_TRUE(status.IsInclude());
+    EXPECT_TRUE(create_status.IsInclude());
     EXPECT_TRUE(
         this->SetCanonicalCookieReturnStatus(cs, std::move(c), "http",
                                              false /* can_modify_httponly */)
@@ -1671,8 +1672,8 @@ TYPED_TEST_P(CookieStoreTest, GetAllCookiesWithAccessSemanticsAsync) {
   CookieStore* cs = this->GetCookieStore();
   auto access_delegate = std::make_unique<TestCookieAccessDelegate>();
   TestCookieAccessDelegate* test_delegate = access_delegate.get();
-  // if !supports_cookie_access_semantics, setting a delegate here will do
-  // nothing.
+  // if !supports_cookie_access_semantics, the delegate will be stored but will
+  // not be used.
   cs->SetCookieAccessDelegate(std::move(access_delegate));
 
   test_delegate->SetExpectationForCookieDomain("domain1.test",

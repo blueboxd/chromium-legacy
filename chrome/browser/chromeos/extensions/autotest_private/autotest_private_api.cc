@@ -8,7 +8,10 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/autotest_private_api_utils.h"
+#include "ash/public/cpp/desks_helper.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -100,6 +103,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/filename_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -112,6 +116,8 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace extensions {
 namespace {
@@ -258,6 +264,26 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
   }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;
+}
+
+api::autotest_private::AppWindowType GetAppWindowType(ash::AppType type) {
+  switch (type) {
+    case ash::AppType::ARC_APP:
+      return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_ARCAPP;
+    case ash::AppType::SYSTEM_APP:
+      return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_SYSTEMAPP;
+    case ash::AppType::CROSTINI_APP:
+      return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_CROSTINIAPP;
+    case ash::AppType::CHROME_APP:
+      return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_EXTENSIONAPP;
+    case ash::AppType::BROWSER:
+      return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_BROWSER;
+    case ash::AppType::NON_APP:
+      return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_NONE;
+      // TODO(oshima): Investigate if we want to have "extension" type.
+  }
+  NOTREACHED();
+  return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_NONE;
 }
 
 api::autotest_private::AppReadiness GetAppReadiness(
@@ -435,7 +461,63 @@ display::Display::Rotation ToRotation(
   return display::Display::ROTATE_0;
 }
 
+api::autotest_private::Bounds ToBoundsDictionary(const gfx::Rect& bounds) {
+  api::autotest_private::Bounds result;
+  result.left = bounds.x();
+  result.top = bounds.y();
+  result.width = bounds.width();
+  result.height = bounds.height();
+  return result;
+}
+
+aura::Window* FindAppWindowById(const int64_t id) {
+  auto list = ash::GetAppWindowList();
+  auto iter =
+      std::find_if(list.begin(), list.end(),
+                   [id](aura::Window* window) { return window->id() == id; });
+  if (iter == list.end())
+    return nullptr;
+  return *iter;
+}
+
 }  // namespace
+
+class WindowStateChangeObserver : public aura::WindowObserver {
+ public:
+  WindowStateChangeObserver(aura::Window* window,
+                            ash::WindowStateType expected_type,
+                            base::OnceCallback<void(bool)> callback)
+      : expected_type_(expected_type), callback_(std::move(callback)) {
+    DCHECK_NE(window->GetProperty(ash::kWindowStateTypeKey), expected_type_);
+    scoped_observer_.Add(window);
+  }
+  ~WindowStateChangeObserver() override {}
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK(scoped_observer_.IsObserving(window));
+    if (key == ash::kWindowStateTypeKey &&
+        window->GetProperty(ash::kWindowStateTypeKey) == expected_type_) {
+      scoped_observer_.RemoveAll();
+      std::move(callback_).Run(/*success=*/true);
+    }
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK(scoped_observer_.IsObserving(window));
+    scoped_observer_.RemoveAll();
+    std::move(callback_).Run(/*success=*/false);
+  }
+
+ private:
+  ash::WindowStateType expected_type_;
+  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
+  base::OnceCallback<void(bool)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowStateChangeObserver);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateInitializeEventsFunction
@@ -1193,7 +1275,7 @@ ExtensionFunction::ResponseAction AutotestPrivateLaunchAppFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AutotestPrivateLaunchAppFunction
+// AutotestPrivateCloseAppFunction
 ///////////////////////////////////////////////////////////////////////////////
 
 AutotestPrivateCloseAppFunction::~AutotestPrivateCloseAppFunction() = default;
@@ -2466,7 +2548,7 @@ AutotestPrivateGetArcAppWindowInfoFunction::Run() {
   aura::Window* arc_window = GetArcAppWindow(params->package_name);
   if (!arc_window) {
     return RespondNow(Error(base::StrCat(
-        {"No ARC app window is found for ", params->package_name})));
+        {"No ARC app window was found for ", params->package_name})));
   }
 
   const gfx::Rect bounds = arc_window->GetBoundsInRootWindow();
@@ -2475,19 +2557,14 @@ AutotestPrivateGetArcAppWindowInfoFunction::Run() {
   const int64_t display_id =
       !screen ? -1 : screen->GetDisplayNearestWindow(arc_window).id();
 
-  auto bounds_dict = std::make_unique<base::DictionaryValue>();
-  bounds_dict->SetInteger("left", bounds.x());
-  bounds_dict->SetInteger("top", bounds.y());
-  bounds_dict->SetInteger("width", bounds.width());
-  bounds_dict->SetInteger("height", bounds.height());
+  api::autotest_private::ArcAppWindowInfo result;
+  result.bounds = ToBoundsDictionary(bounds);
+  result.display_id = display_id;
+  result.is_animating = is_animating;
+  result.is_visible = arc_window->IsVisible();
 
-  auto result = std::make_unique<base::DictionaryValue>();
-  result->SetDictionary("bounds", std::move(bounds_dict));
-  result->SetString("display_id", base::NumberToString(display_id));
-  result->SetBoolean("is_animating", is_animating);
-  result->SetBoolean("is_visible", arc_window->IsVisible());
-
-  return RespondNow(OneArgument(std::move(result)));
+  return RespondNow(OneArgument(
+      api::autotest_private::GetArcAppWindowInfo::Results::Create(result)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2560,44 +2637,6 @@ AutotestPrivateSetArcAppWindowStateFunction::
 AutotestPrivateSetArcAppWindowStateFunction::
     ~AutotestPrivateSetArcAppWindowStateFunction() = default;
 
-class AutotestPrivateSetArcAppWindowStateFunction::WindowStateChangeObserver
-    : public aura::WindowObserver {
- public:
-  WindowStateChangeObserver(aura::Window* window,
-                            ash::WindowStateType expected_type,
-                            base::OnceCallback<void(bool)> callback)
-      : expected_type_(expected_type), callback_(std::move(callback)) {
-    DCHECK_NE(window->GetProperty(ash::kWindowStateTypeKey), expected_type_);
-    scoped_observer_.Add(window);
-  }
-  ~WindowStateChangeObserver() override {}
-
-  // aura::WindowObserver:
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override {
-    DCHECK(scoped_observer_.IsObserving(window));
-    if (key == ash::kWindowStateTypeKey &&
-        window->GetProperty(ash::kWindowStateTypeKey) == expected_type_) {
-      scoped_observer_.RemoveAll();
-      std::move(callback_).Run(/*success=*/true);
-    }
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    DCHECK(scoped_observer_.IsObserving(window));
-    scoped_observer_.RemoveAll();
-    std::move(callback_).Run(/*success=*/false);
-  }
-
- private:
-  ash::WindowStateType expected_type_;
-  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
-  base::OnceCallback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowStateChangeObserver);
-};
-
 ExtensionFunction::ResponseAction
 AutotestPrivateSetArcAppWindowStateFunction::Run() {
   std::unique_ptr<api::autotest_private::SetArcAppWindowState::Params> params(
@@ -2609,7 +2648,7 @@ AutotestPrivateSetArcAppWindowStateFunction::Run() {
   aura::Window* arc_window = GetArcAppWindow(params->package_name);
   if (!arc_window) {
     return RespondNow(Error(base::StrCat(
-        {"No ARC app window is found for ", params->package_name})));
+        {"No ARC app window was found for ", params->package_name})));
   }
 
   ash::WindowStateType expected_state =
@@ -2654,7 +2693,7 @@ void AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged(
     bool success) {
   if (!success) {
     Respond(Error(
-        "ARC app window is destroyed while waiting for its state change! "));
+        "ARC app window was destroyed while waiting for its state change! "));
   } else {
     Respond(OneArgument(std::make_unique<base::Value>(
         api::autotest_private::ToString(ToWindowStateType(expected_type)))));
@@ -2681,7 +2720,7 @@ AutotestPrivateGetArcAppWindowStateFunction::Run() {
   aura::Window* arc_window = GetArcAppWindow(params->package_name);
   if (!arc_window) {
     return RespondNow(Error(base::StrCat(
-        {"No ARC app window is found for ", params->package_name})));
+        {"No ARC app window was found for ", params->package_name})));
   }
 
   return RespondNow(OneArgument(std::make_unique<base::Value>(
@@ -2708,7 +2747,7 @@ AutotestPrivateSetArcAppWindowFocusFunction::Run() {
   aura::Window* arc_window = GetArcAppWindow(params->package_name);
   if (!arc_window) {
     return RespondNow(Error(base::StrCat(
-        {"No ARC app window is found for ", params->package_name})));
+        {"No ARC app window was found for ", params->package_name})));
   }
   if (!arc_window->CanFocus()) {
     return RespondNow(Error(base::StrCat(
@@ -2796,6 +2835,154 @@ void AutotestPrivateWaitForDisplayRotationFunction::
   Respond(OneArgument(std::make_unique<base::Value>(
       display.is_valid() && display.rotation() == target_rotation_)));
   self_.reset();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetAppWindowListFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetAppWindowListFunction::
+    AutotestPrivateGetAppWindowListFunction() = default;
+AutotestPrivateGetAppWindowListFunction::
+    ~AutotestPrivateGetAppWindowListFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetAppWindowListFunction::Run() {
+  // Use nagative number to avoid potential collision with normal use if any.
+  static int id_count = -10000;
+
+  auto window_list = ash::GetAppWindowList();
+  std::vector<api::autotest_private::AppWindowInfo> result_list;
+
+  for (auto* window : window_list) {
+    if (window->id() == aura::Window::kInitialId)
+      window->set_id(id_count--);
+    api::autotest_private::AppWindowInfo window_info;
+    window_info.id = window->id();
+    window_info.name = window->GetName();
+    window_info.window_type = GetAppWindowType(
+        static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType)));
+    window_info.state_type =
+        ToWindowStateType(window->GetProperty(ash::kWindowStateTypeKey));
+    window_info.bounds_in_root =
+        ToBoundsDictionary(window->GetBoundsInRootWindow());
+    window_info.target_bounds = ToBoundsDictionary(window->GetTargetBounds());
+    window_info.display_id =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+    window_info.title = base::UTF16ToUTF8(window->GetTitle());
+    window_info.is_animating = window->layer()->GetAnimator()->is_animating();
+    window_info.is_visible = window->IsVisible();
+    window_info.target_visibility = window->TargetVisibility();
+    window_info.can_focus = window->CanFocus();
+    window_info.has_focus = window->HasFocus();
+    window_info.on_active_desk =
+        ash::DesksHelper::Get()->BelongsToActiveDesk(window);
+    window_info.is_active = wm::IsActiveWindow(window);
+    window_info.has_capture = window->HasCapture();
+
+    if (window->GetProperty(aura::client::kAppType) ==
+        static_cast<int>(ash::AppType::ARC_APP)) {
+      window_info.arc_package_name = std::make_unique<std::string>(
+          *window->GetProperty(ash::kArcPackageNameKey));
+    }
+    result_list.emplace_back(std::move(window_info));
+  }
+  return RespondNow(ArgumentList(
+      api::autotest_private::GetAppWindowList::Results::Create(result_list)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetAppWindowStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetAppWindowStateFunction::
+    AutotestPrivateSetAppWindowStateFunction() = default;
+AutotestPrivateSetAppWindowStateFunction::
+    ~AutotestPrivateSetAppWindowStateFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetAppWindowStateFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetAppWindowState::Params> params(
+      api::autotest_private::SetAppWindowState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetAppWindowStateFunction " << params->id;
+
+  aura::Window* window = FindAppWindowById(params->id);
+  if (!window) {
+    return RespondNow(Error(
+        base::StringPrintf("No app window was found : id=%d", params->id)));
+  }
+
+  ash::WindowStateType expected_state =
+      GetExpectedWindowState(params->change.event_type);
+  if (window->GetProperty(ash::kWindowStateTypeKey) == expected_state) {
+    if (params->change.fail_if_no_change &&
+        *(params->change.fail_if_no_change)) {
+      return RespondNow(
+          Error("The app window was already in the expected window state! "));
+    } else {
+      return RespondNow(OneArgument(std::make_unique<base::Value>(
+          api::autotest_private::ToString(ToWindowStateType(expected_state)))));
+    }
+  }
+
+  window_state_observer_ = std::make_unique<WindowStateChangeObserver>(
+      window, expected_state,
+      base::BindOnce(
+          &AutotestPrivateSetAppWindowStateFunction::WindowStateChanged, this,
+          expected_state));
+
+  // TODO(crbug.com/990713): Make WMEvent trigger split view in tablet mode.
+  if (ash::TabletMode::Get()->InTabletMode()) {
+    if (expected_state == ash::WindowStateType::kLeftSnapped) {
+      ash::SplitViewTestApi().SnapWindow(
+          window, ash::SplitViewTestApi::SnapPosition::LEFT);
+    } else if (expected_state == ash::WindowStateType::kRightSnapped) {
+      ash::SplitViewTestApi().SnapWindow(
+          window, ash::SplitViewTestApi::SnapPosition::RIGHT);
+    }
+    return RespondLater();
+  }
+
+  const ash::WMEvent event(ToWMEventType(params->change.event_type));
+  ash::WindowState::Get(window)->OnWMEvent(&event);
+
+  return RespondLater();
+}
+
+void AutotestPrivateSetAppWindowStateFunction::WindowStateChanged(
+    ash::WindowStateType expected_type,
+    bool success) {
+  if (!success) {
+    Respond(Error(
+        "The app window was destroyed while waiting for its state change! "));
+  } else {
+    Respond(OneArgument(std::make_unique<base::Value>(
+        api::autotest_private::ToString(ToWindowStateType(expected_type)))));
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateCloseAppWindowFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateCloseAppWindowFunction::
+    ~AutotestPrivateCloseAppWindowFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateCloseAppWindowFunction::Run() {
+  std::unique_ptr<api::autotest_private::CloseAppWindow::Params> params(
+      api::autotest_private::CloseAppWindow::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateCloseAppWindowFunction " << params->id;
+
+  auto* window = FindAppWindowById(params->id);
+  if (!window) {
+    return RespondNow(Error(
+        base::StringPrintf("No app window was found : id=%d", params->id)));
+  }
+  auto* widget = views::Widget::GetWidgetForNativeWindow(window);
+  widget->Close();
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -36,8 +36,7 @@ class AndroidSmsPairingStateTrackerImpl
 
  private:
   // network::mojom::CookieChangeListener:
-  void OnCookieChange(const net::CanonicalCookie& cookie,
-                      network::mojom::CookieChangeCause cause) override;
+  void OnCookieChange(const net::CookieChangeInfo& change) override;
 
   // AndroidSmsAppManager::Observer:
   void OnInstalledAppUrlChanged() override;

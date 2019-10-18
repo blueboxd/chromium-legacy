@@ -440,19 +440,6 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
   renderer->RequestReloadImageForContextNode();
 }
 
-void TabAndroid::AttachDetachedTab(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  BackgroundTabManager* background_tab_manager =
-      BackgroundTabManager::GetInstance();
-  if (background_tab_manager->IsBackgroundTab(web_contents())) {
-    Profile* profile = background_tab_manager->GetProfile();
-    background_tab_manager->CommitHistory(HistoryServiceFactory::GetForProfile(
-        profile, ServiceAccessType::IMPLICIT_ACCESS));
-    background_tab_manager->UnregisterBackgroundTab();
-  }
-}
-
 scoped_refptr<content::DevToolsAgentHost> TabAndroid::GetDevToolsAgentHost() {
   return devtools_host_;
 }

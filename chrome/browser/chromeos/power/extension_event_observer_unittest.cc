@@ -50,11 +50,12 @@ class ExtensionEventObserverTest : public ChromeRenderViewHostTestHarness {
     PowerManagerClient::InitializeFake();
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
-    extension_event_observer_ = std::make_unique<ExtensionEventObserver>();
-    test_api_ = extension_event_observer_->CreateTestApi();
 
     // Must be called from ::testing::Test::SetUp.
     ASSERT_TRUE(profile_manager_->SetUp());
+
+    extension_event_observer_ = std::make_unique<ExtensionEventObserver>();
+    test_api_ = extension_event_observer_->CreateTestApi();
 
     const char kUserProfile[] = "profile1@example.com";
     const AccountId account_id(AccountId::FromUserEmail(kUserProfile));

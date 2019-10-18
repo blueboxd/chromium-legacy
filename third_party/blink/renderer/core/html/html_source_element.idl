@@ -28,7 +28,7 @@
     Exposed=Window,
     HTMLConstructor
 ] interface HTMLSourceElement : HTMLElement {
-    [CEReactions, Reflect, URL, RaisesException=Setter] attribute URLString src;
+    [CEReactions, Reflect, URL] attribute USVString src;
     [CEReactions] attribute DOMString type;
 
     // https://html.spec.whatwg.org/C/#the-source-element-when-used-with-the-picture-element

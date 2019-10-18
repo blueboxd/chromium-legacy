@@ -889,8 +889,10 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kEditProfileButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_WithUnconsentedPrimaryAccount,
-                        ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
+// TODO(crbug.com/1015429): Failing on Mac 10.12.
+PROFILE_MENU_CLICK_TEST(
+    kActionableItems_WithUnconsentedPrimaryAccount,
+    DISABLED_ProfileMenuClickTest_WithUnconsentedPrimaryAccount) {
   signin::MakeAccountAvailableWithCookies(identity_manager(),
                                           &test_url_loader_factory_,
                                           "user@example.com", "gaia_id");

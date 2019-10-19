@@ -12,6 +12,7 @@
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -57,10 +58,12 @@ class MockCameraModule : public cros::mojom::CameraModule {
                     bool enabled,
                     SetTorchModeCallback& callback));
 
-  void GetVendorTagOps(cros::mojom::VendorTagOpsRequest vendor_tag_ops_request,
-                       GetVendorTagOpsCallback callback) override;
+  void GetVendorTagOps(
+      mojo::PendingReceiver<cros::mojom::VendorTagOps> vendor_tag_ops_receiver,
+      GetVendorTagOpsCallback callback) override;
   MOCK_METHOD2(DoGetVendorTagOps,
-               void(cros::mojom::VendorTagOpsRequest& vendor_tag_ops_request,
+               void(mojo::PendingReceiver<cros::mojom::VendorTagOps>
+                        vendor_tag_ops_receiver,
                     GetVendorTagOpsCallback& callback));
 
   void NotifyCameraDeviceChange(int camera_id,

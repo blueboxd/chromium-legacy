@@ -425,7 +425,7 @@ void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
       base::BindOnce(&CameraHalDelegate::OnSetCallbacksOnIpcThread, this));
 
   camera_module_->GetVendorTagOps(
-      vendor_tag_ops_delegate_.MakeRequest(),
+      vendor_tag_ops_delegate_.MakeReceiver(),
       base::BindOnce(&CameraHalDelegate::OnGotVendorTagOpsOnIpcThread, this));
 }
 

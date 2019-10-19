@@ -54,16 +54,16 @@ interface DeviceFactory {
   // |virtual_device| or the given |producer| is closed.
   AddSharedMemoryVirtualDevice(
       media.mojom.VideoCaptureDeviceInfo device_info,
-      Producer producer,
+      pending_remote<Producer> producer,
       bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-      SharedMemoryVirtualDevice& virtual_device);
+      pending_receiver<SharedMemoryVirtualDevice> virtual_device_receiver);
 
   // Similar to AddSharedMemoryVirtualDevice() but for virtual devices that
   // are fed with textures (via MailboxHolders) allocated by the caller instead
   // of shared memory buffers provided by the service on demand.
   AddTextureVirtualDevice(
       media.mojom.VideoCaptureDeviceInfo device_info,
-      TextureVirtualDevice& virtual_device);
+      pending_receiver<TextureVirtualDevice> virtual_device_receiver);
 
   // Registered observers will get notified whenever a virtual device is added
   // or removed. Note: Changes to non-virtual devices are currently being

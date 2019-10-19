@@ -118,5 +118,6 @@ interface CameraModule {
   // should fill in all the vendor tag operation methods, or leave ops unchanged
   // if no vendor tags are defined.
   [MinVersion=2]
-  GetVendorTagOps@6(VendorTagOps& vendor_tag_ops_request) => ();
+  GetVendorTagOps@6(pending_receiver<VendorTagOps> vendor_tag_ops_request)
+      => ();
 };

@@ -53,20 +53,22 @@ void VideoSourceProviderImpl::GetVideoSource(
 
 void VideoSourceProviderImpl::AddSharedMemoryVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::ProducerPtr producer,
+    mojo::PendingRemote<mojom::Producer> producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-    mojom::SharedMemoryVirtualDeviceRequest virtual_device) {
+    mojo::PendingReceiver<mojom::SharedMemoryVirtualDevice>
+        virtual_device_receiver) {
   device_factory_->AddSharedMemoryVirtualDevice(
       device_info, std::move(producer),
       send_buffer_handles_to_producer_as_raw_file_descriptors,
-      std::move(virtual_device));
+      std::move(virtual_device_receiver));
 }
 
 void VideoSourceProviderImpl::AddTextureVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::TextureVirtualDeviceRequest virtual_device) {
+    mojo::PendingReceiver<mojom::TextureVirtualDevice>
+        virtual_device_receiver) {
   device_factory_->AddTextureVirtualDevice(device_info,
-                                           std::move(virtual_device));
+                                           std::move(virtual_device_receiver));
 }
 
 void VideoSourceProviderImpl::RegisterVirtualDevicesChangedObserver(

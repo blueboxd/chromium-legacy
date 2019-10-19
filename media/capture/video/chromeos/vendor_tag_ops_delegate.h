@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -28,7 +30,7 @@ class VendorTagOpsDelegate {
 
   // Setups/Teardowns the VendorTagOpsDelegate instance. All methods here should
   // be called on |ipc_task_runner_|.
-  cros::mojom::VendorTagOpsRequest MakeRequest();
+  mojo::PendingReceiver<cros::mojom::VendorTagOps> MakeReceiver();
   void Initialize();
   void Reset();
 
@@ -49,7 +51,7 @@ class VendorTagOpsDelegate {
   void OnGotTagType(uint32_t tag, int32_t type);
 
   scoped_refptr<base::SequencedTaskRunner> ipc_task_runner_;
-  cros::mojom::VendorTagOpsPtr vendor_tag_ops_;
+  mojo::Remote<cros::mojom::VendorTagOps> vendor_tag_ops_;
 
   // The paritally initialized tags. A tag with its info would be moved to
   // |name_map_| and |tag_map_| once it's fully initialized. The |inited_| event

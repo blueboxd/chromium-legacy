@@ -4,7 +4,7 @@
 
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
 namespace network {
@@ -46,11 +46,11 @@ void WeakWrapperSharedURLLoaderFactory::Clone(
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 WeakWrapperSharedURLLoaderFactory::Clone() {
-  mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
+  mojo::PendingRemote<mojom::URLLoaderFactory> factory_remote;
   if (factory())
-    factory()->Clone(mojo::MakeRequest(&factory_ptr_info));
+    factory()->Clone(factory_remote.InitWithNewPipeAndPassReceiver());
   return std::make_unique<WrapperSharedURLLoaderFactoryInfo>(
-      std::move(factory_ptr_info));
+      std::move(factory_remote));
 }
 
 WeakWrapperSharedURLLoaderFactory::~WeakWrapperSharedURLLoaderFactory() =

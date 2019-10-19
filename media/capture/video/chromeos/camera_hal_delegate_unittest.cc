@@ -17,6 +17,7 @@
 #include "media/capture/video/chromeos/mock_vendor_tag_ops.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -146,9 +147,10 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
   };
 
   auto get_vendor_tag_ops_cb =
-      [&](cros::mojom::VendorTagOpsRequest& vendor_tag_ops_request,
+      [&](mojo::PendingReceiver<cros::mojom::VendorTagOps>
+              vendor_tag_ops_receiver,
           cros::mojom::CameraModule::GetVendorTagOpsCallback&) {
-        mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_request));
+        mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_receiver));
       };
 
   auto set_callbacks_cb =
@@ -169,7 +171,7 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       .WillOnce(Invoke(set_callbacks_cb));
   EXPECT_CALL(mock_camera_module_,
               DoGetVendorTagOps(
-                  A<cros::mojom::VendorTagOpsRequest&>(),
+                  A<mojo::PendingReceiver<cros::mojom::VendorTagOps>>(),
                   A<cros::mojom::CameraModule::GetVendorTagOpsCallback&>()))
       .Times(1)
       .WillOnce(Invoke(get_vendor_tag_ops_cb));

@@ -8,6 +8,8 @@
 #include <map>
 
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
@@ -30,12 +32,14 @@ class VideoSourceProviderImpl : public mojom::VideoSourceProvider {
                       mojom::VideoSourceRequest source_request) override;
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
-      mojom::ProducerPtr producer,
+      mojo::PendingRemote<mojom::Producer> producer,
       bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-      mojom::SharedMemoryVirtualDeviceRequest virtual_device) override;
+      mojo::PendingReceiver<mojom::SharedMemoryVirtualDevice>
+          virtual_device_receiver) override;
   void AddTextureVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
-      mojom::TextureVirtualDeviceRequest virtual_device) override;
+      mojo::PendingReceiver<mojom::TextureVirtualDevice>
+          virtual_device_receiver) override;
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;

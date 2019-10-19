@@ -167,11 +167,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'c65eb34d2f37f38e44a71f4c6257c97d2cb4e453',
+  'skia_revision': '9889d509ed9f47db4664bbf61a310f8eddc4e826',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'be181e241c6da9baa49a424b7d91613c8ebf76f8',
+  'v8_revision': '11e5ee3a8e919a0f6a3c518bf124952fe6995e18',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -862,7 +862,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '6fdbea6392217ce7378f29ec070837435b5e31d9',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '96788c7fa80b9b059b292265c44299cb07a99a9d',
       'condition': 'checkout_linux',
   },
 
@@ -1470,7 +1470,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '2701c130839edbeb226735b0775966b6423d9e83',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'd441e50d5f4806b1881b50ece5fc14a6033a98ab',
+    Var('webrtc_git') + '/src.git' + '@' + '3663ed3ad67893746efd86267a936a7295031ab1',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1532,7 +1532,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d784cc527e57e66d82324ffdd1cb529f98eb9daf',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@df50a2eb8badce39b01c9a9778635390d91ce9d1',
     'condition': 'checkout_src_internal',
   },
 

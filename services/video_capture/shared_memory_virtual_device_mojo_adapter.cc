@@ -29,7 +29,7 @@ void OnNewBufferAcknowleged(
 namespace video_capture {
 
 SharedMemoryVirtualDeviceMojoAdapter::SharedMemoryVirtualDeviceMojoAdapter(
-    mojom::ProducerPtr producer,
+    mojo::Remote<mojom::Producer> producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors)
     : producer_(std::move(producer)),
       send_buffer_handles_to_producer_as_raw_file_descriptors_(
@@ -71,7 +71,8 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
                                 known_buffer_ids_.end(), buffer_id_to_drop);
     if (entry_iter != known_buffer_ids_.end()) {
       known_buffer_ids_.erase(entry_iter);
-      producer_->OnBufferRetired(buffer_id_to_drop);
+      if (producer_.is_bound())
+        producer_->OnBufferRetired(buffer_id_to_drop);
       if (receiver_.is_bound()) {
         receiver_->OnBufferRetired(buffer_id_to_drop);
       }
@@ -110,9 +111,11 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
     // because the |producer_| and the |callback| are bound to different
     // message pipes, so the order for calls to |producer_| and |callback|
     // is not guaranteed.
-    producer_->OnNewBuffer(buffer_id, std::move(buffer_handle),
-                           base::BindOnce(&OnNewBufferAcknowleged,
-                                          base::Passed(&callback), buffer_id));
+    if (producer_.is_bound())
+      producer_->OnNewBuffer(
+          buffer_id, std::move(buffer_handle),
+          base::BindOnce(&OnNewBufferAcknowleged, base::Passed(&callback),
+                         buffer_id));
     return;
   }
   std::move(callback).Run(buffer_id);

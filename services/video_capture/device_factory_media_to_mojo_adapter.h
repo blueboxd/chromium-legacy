@@ -10,6 +10,8 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_system.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 
@@ -45,12 +47,14 @@ class DeviceFactoryMediaToMojoAdapter : public DeviceFactory {
                     CreateDeviceCallback callback) override;
   void AddSharedMemoryVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
-      mojom::ProducerPtr producer,
+      mojo::PendingRemote<mojom::Producer> producer,
       bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-      mojom::SharedMemoryVirtualDeviceRequest virtual_device) override;
+      mojo::PendingReceiver<mojom::SharedMemoryVirtualDevice>
+          virtual_device_receiver) override;
   void AddTextureVirtualDevice(
       const media::VideoCaptureDeviceInfo& device_info,
-      mojom::TextureVirtualDeviceRequest virtual_device) override;
+      mojo::PendingReceiver<mojom::TextureVirtualDevice>
+          virtual_device_receiver) override;
   void RegisterVirtualDevicesChangedObserver(
       mojom::DevicesChangedObserverPtr observer,
       bool raise_event_if_virtual_devices_already_present) override;

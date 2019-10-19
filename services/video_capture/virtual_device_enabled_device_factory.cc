@@ -127,9 +127,10 @@ void VirtualDeviceEnabledDeviceFactory::CreateDevice(
 
 void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::ProducerPtr producer,
+    mojo::PendingRemote<mojom::Producer> producer_pending_remote,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-    mojom::SharedMemoryVirtualDeviceRequest virtual_device_request) {
+    mojo::PendingReceiver<mojom::SharedMemoryVirtualDevice>
+        virtual_device_receiver) {
   auto device_id = device_info.descriptor.device_id;
   auto virtual_device_iter = virtual_devices_by_id_.find(device_id);
   if (virtual_device_iter != virtual_devices_by_id_.end()) {
@@ -138,7 +139,8 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
     virtual_devices_by_id_.erase(virtual_device_iter);
   }
 
-  producer.set_connection_error_handler(
+  mojo::Remote<mojom::Producer> producer(std::move(producer_pending_remote));
+  producer.set_disconnect_handler(
       base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
                          OnVirtualDeviceProducerConnectionErrorOrClose,
                      base::Unretained(this), device_id));
@@ -147,7 +149,7 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
       send_buffer_handles_to_producer_as_raw_file_descriptors);
   auto producer_binding =
       std::make_unique<mojo::Binding<mojom::SharedMemoryVirtualDevice>>(
-          device.get(), std::move(virtual_device_request));
+          device.get(), std::move(virtual_device_receiver));
   producer_binding->set_connection_error_handler(
       base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
                          OnVirtualDeviceProducerConnectionErrorOrClose,
@@ -161,7 +163,8 @@ void VirtualDeviceEnabledDeviceFactory::AddSharedMemoryVirtualDevice(
 
 void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    mojom::TextureVirtualDeviceRequest virtual_device_request) {
+    mojo::PendingReceiver<mojom::TextureVirtualDevice>
+        virtual_device_receiver) {
   auto device_id = device_info.descriptor.device_id;
   auto virtual_device_iter = virtual_devices_by_id_.find(device_id);
   if (virtual_device_iter != virtual_devices_by_id_.end()) {
@@ -173,7 +176,7 @@ void VirtualDeviceEnabledDeviceFactory::AddTextureVirtualDevice(
   auto device = std::make_unique<TextureVirtualDeviceMojoAdapter>();
   auto producer_binding =
       std::make_unique<mojo::Binding<mojom::TextureVirtualDevice>>(
-          device.get(), std::move(virtual_device_request));
+          device.get(), std::move(virtual_device_receiver));
   producer_binding->set_connection_error_handler(
       base::BindOnce(&VirtualDeviceEnabledDeviceFactory::
                          OnVirtualDeviceProducerConnectionErrorOrClose,

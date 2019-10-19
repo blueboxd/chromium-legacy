@@ -148,14 +148,6 @@ const char* const kWebRequestEvents[] = {
     keys::kOnHeadersReceivedEvent,
 };
 
-// List of all webRequest events that support extraHeaders in the extraInfoSpec.
-const char* const kWebRequestExtraHeadersEventNames[] = {
-    keys::kOnBeforeSendHeadersEvent, keys::kOnSendHeadersEvent,
-    keys::kOnHeadersReceivedEvent,   keys::kOnAuthRequiredEvent,
-    keys::kOnResponseStartedEvent,   keys::kOnBeforeRedirectEvent,
-    keys::kOnCompletedEvent,
-};
-
 const char* GetRequestStageAsString(
     ExtensionWebRequestEventRouter::EventTypes type) {
   switch (type) {
@@ -1834,7 +1826,7 @@ bool ExtensionWebRequestEventRouter::HasExtraHeadersListenerForRequest(
     return false;
 
   int extra_info_spec = 0;
-  for (const char* name : kWebRequestExtraHeadersEventNames) {
+  for (const char* name : kWebRequestEvents) {
     GetMatchingListeners(browser_context, name, request, &extra_info_spec);
     if (extra_info_spec & ExtraInfoSpec::EXTRA_HEADERS)
       return true;

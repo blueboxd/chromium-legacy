@@ -61,9 +61,9 @@ void MockCameraModule::SetTorchMode(int32_t camera_id,
 }
 
 void MockCameraModule::GetVendorTagOps(
-    cros::mojom::VendorTagOpsRequest vendor_tag_ops_request,
+    mojo::PendingReceiver<cros::mojom::VendorTagOps> vendor_tag_ops_receiver,
     GetVendorTagOpsCallback callback) {
-  DoGetVendorTagOps(vendor_tag_ops_request, callback);
+  DoGetVendorTagOps(std::move(vendor_tag_ops_receiver), callback);
   std::move(callback).Run();
 }
 

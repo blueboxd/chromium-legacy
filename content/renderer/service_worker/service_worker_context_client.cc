@@ -37,6 +37,7 @@
 #include "content/renderer/service_worker/navigation_preload_request.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -377,7 +378,7 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
   // URLLoaderFactoryInfo.
   auto script_loader_factory_info =
       std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(std::move(
-          service_worker_provider_info_->script_loader_factory_ptr_info));
+          service_worker_provider_info_->script_loader_factory_remote));
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
       *renderer_preferences_, script_url_, loader_factories_->PassInterface(),

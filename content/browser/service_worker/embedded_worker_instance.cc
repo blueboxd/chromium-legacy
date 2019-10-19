@@ -36,7 +36,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -662,8 +662,8 @@ class EmbeddedWorkerInstance::StartTask {
     // this is a non-installed service worker.
     DCHECK(factory_bundle_for_new_scripts || is_installed_);
     if (factory_bundle_for_new_scripts) {
-      params->provider_info->script_loader_factory_ptr_info =
-          instance_->MakeScriptLoaderFactoryPtrInfo(
+      params->provider_info->script_loader_factory_remote =
+          instance_->MakeScriptLoaderFactoryRemote(
               std::move(factory_bundle_for_new_scripts));
     }
 
@@ -1296,21 +1296,22 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
   }
 }
 
-network::mojom::URLLoaderFactoryPtrInfo
-EmbeddedWorkerInstance::MakeScriptLoaderFactoryPtrInfo(
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+EmbeddedWorkerInstance::MakeScriptLoaderFactoryRemote(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle) {
-  network::mojom::URLLoaderFactoryPtrInfo script_loader_factory_ptr_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      script_loader_factory_remote;
 
   auto script_bundle_factory =
       base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
           std::move(script_bundle));
-  script_loader_factory_ = mojo::MakeStrongBinding(
+  script_loader_factory_ = mojo::MakeSelfOwnedReceiver(
       std::make_unique<ServiceWorkerScriptLoaderFactory>(
           context_, owner_version_->provider_host()->AsWeakPtr(),
           std::move(script_bundle_factory)),
-      mojo::MakeRequest(&script_loader_factory_ptr_info));
+      script_loader_factory_remote.InitWithNewPipeAndPassReceiver());
 
-  return script_loader_factory_ptr_info;
+  return script_loader_factory_remote;
 }
 
 }  // namespace content

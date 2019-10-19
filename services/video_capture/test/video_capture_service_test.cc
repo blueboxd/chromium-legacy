@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 
@@ -46,9 +47,9 @@ VideoCaptureServiceTest::AddSharedMemoryVirtualDevice(
     const std::string& device_id) {
   media::VideoCaptureDeviceInfo device_info;
   device_info.descriptor.device_id = device_id;
-  mojom::ProducerPtr producer;
+  mojo::PendingRemote<mojom::Producer> producer;
   auto result = std::make_unique<SharedMemoryVirtualDeviceContext>(
-      mojo::MakeRequest(&producer));
+      producer.InitWithNewPipeAndPassReceiver());
   factory_->AddSharedMemoryVirtualDevice(
       device_info, std::move(producer),
       false /* send_buffer_handles_to_producer_as_raw_file_descriptors */,

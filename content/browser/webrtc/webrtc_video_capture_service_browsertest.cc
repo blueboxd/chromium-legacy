@@ -238,16 +238,16 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
  public:
   explicit SharedMemoryDeviceExerciser(
       media::mojom::PlaneStridesPtr strides = nullptr)
-      : strides_(std::move(strides)), producer_binding_(this) {}
+      : strides_(std::move(strides)) {}
 
   // VirtualDeviceExerciser implementation.
   void Initialize() override {}
   void RegisterVirtualDeviceAtFactory(
       video_capture::mojom::DeviceFactoryPtr* factory,
       const media::VideoCaptureDeviceInfo& info) override {
-    video_capture::mojom::ProducerPtr producer;
+    mojo::PendingRemote<video_capture::mojom::Producer> producer;
     static const bool kSendBufferHandlesToProducerAsRawFileDescriptors = false;
-    producer_binding_.Bind(mojo::MakeRequest(&producer));
+    producer_receiver_.Bind(producer.InitWithNewPipeAndPassReceiver());
     (*factory)->AddSharedMemoryVirtualDevice(
         info, std::move(producer),
         kSendBufferHandlesToProducerAsRawFileDescriptors,
@@ -266,7 +266,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
   }
   void ShutDown() override {
     virtual_device_ = nullptr;
-    producer_binding_.Close();
+    producer_receiver_.reset();
     weak_factory_.InvalidateWeakPtrs();
   }
 
@@ -387,7 +387,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
   }
 
   media::mojom::PlaneStridesPtr strides_;
-  mojo::Binding<video_capture::mojom::Producer> producer_binding_;
+  mojo::Receiver<video_capture::mojom::Producer> producer_receiver_{this};
   video_capture::mojom::SharedMemoryVirtualDevicePtr virtual_device_;
   std::map<int32_t /*buffer_id*/, base::WritableSharedMemoryMapping>
       outgoing_buffer_id_to_buffer_map_;

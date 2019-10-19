@@ -80,7 +80,7 @@ void FakeEmbeddedWorkerInstanceClient::StartWorker(
   // storage. We do that manually here.
   //
   // TODO(falken): For new workers, this should use
-  // |script_loader_factory_ptr_info| from |start_params_->provider_info|
+  // |script_loader_factory_remote| from |start_params_->provider_info|
   // to request the script and the browser process should be able to mock it.
   // For installed workers, the map should already be populated.
   ServiceWorkerVersion* version = helper_->context()->GetLiveVersion(

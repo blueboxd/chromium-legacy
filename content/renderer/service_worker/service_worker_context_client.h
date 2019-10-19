@@ -239,7 +239,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // This holds blink.mojom.ServiceWorkerContainer(Host) connections to the
   // browser-side ServiceWorkerProviderHost to keep it alive there.
-  // Note: |service_worker_provider_info_->script_loader_factory_ptr_info| is
+  // Note: |service_worker_provider_info_->script_loader_factory_remote| is
   // moved to WebServiceWorkerNetworkProviderImpl when
   // CreateServiceWorkerNetworkProvider is called.
   blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr

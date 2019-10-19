@@ -8,6 +8,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "media/capture/video/video_capture_device_info.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
@@ -37,11 +38,11 @@ class VirtualDeviceTest : public ::testing::Test {
   void SetUp() override {
     device_info_.descriptor.device_id = kTestDeviceId;
     device_info_.descriptor.set_display_name(kTestDeviceName);
-    mojom::ProducerPtr producer_proxy;
+    mojo::Remote<mojom::Producer> producer;
     producer_ =
-        std::make_unique<MockProducer>(mojo::MakeRequest(&producer_proxy));
+        std::make_unique<MockProducer>(producer.BindNewPipeAndPassReceiver());
     device_adapter_ = std::make_unique<SharedMemoryVirtualDeviceMojoAdapter>(
-        std::move(producer_proxy));
+        std::move(producer));
   }
 
   void OnFrameBufferReceived(bool valid_buffer_expected, int32_t buffer_id) {

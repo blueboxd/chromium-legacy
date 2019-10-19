@@ -1365,12 +1365,13 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       partition->GetURLLoaderFactoryForBrowserProcess()->Clone();
   if (header_client) {
     needs_loader_factory_interceptor = true;
-    network::mojom::URLLoaderFactoryPtrInfo factory_info;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateURLLoaderFactoryWithHeaderClient(
-        std::move(header_client), mojo::MakeRequest(&factory_info), partition);
+        std::move(header_client),
+        factory_remote.InitWithNewPipeAndPassReceiver(), partition);
     network_factory_info =
         std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
-            std::move(factory_info));
+            std::move(factory_remote));
   }
 
   DCHECK(!request_controller_);

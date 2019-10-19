@@ -102,20 +102,21 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     closure_to_be_called_on_devices_changed_ = wait_loop.QuitClosure();
     switch (GetParam().device_type) {
       case VirtualDeviceType::kSharedMemory: {
-        video_capture::mojom::SharedMemoryVirtualDevicePtr virtual_device;
-        video_capture::mojom::ProducerPtr producer;
+        mojo::PendingRemote<video_capture::mojom::SharedMemoryVirtualDevice>
+            virtual_device;
+        mojo::PendingRemote<video_capture::mojom::Producer> producer;
         auto mock_producer = std::make_unique<video_capture::MockProducer>(
-            mojo::MakeRequest(&producer));
+            producer.InitWithNewPipeAndPassReceiver());
         switch (GetParam().api_to_use) {
           case ServiceApi::kSingleClient:
             factory_->AddSharedMemoryVirtualDevice(
                 info, std::move(producer), false,
-                mojo::MakeRequest(&virtual_device));
+                virtual_device.InitWithNewPipeAndPassReceiver());
             break;
           case ServiceApi::kMultiClient:
             video_source_provider_->AddSharedMemoryVirtualDevice(
                 info, std::move(producer), false,
-                mojo::MakeRequest(&virtual_device));
+                virtual_device.InitWithNewPipeAndPassReceiver());
             break;
         }
         shared_memory_devices_by_id_.insert(std::make_pair(

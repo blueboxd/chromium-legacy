@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -15,13 +16,13 @@
 namespace network {
 
 // A SharedURLLoaderFactoryInfo implementation that wraps a
-// network::mojom::URLLoaderFactoryPtrInfo.
+// mojo::PendingRemote<network::mojom::URLLoaderFactory>.
 class COMPONENT_EXPORT(NETWORK_CPP) WrapperSharedURLLoaderFactoryInfo
     : public network::SharedURLLoaderFactoryInfo {
  public:
   WrapperSharedURLLoaderFactoryInfo();
   explicit WrapperSharedURLLoaderFactoryInfo(
-      network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote);
 
   ~WrapperSharedURLLoaderFactoryInfo() override;
 
@@ -29,7 +30,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) WrapperSharedURLLoaderFactoryInfo
   // SharedURLLoaderFactoryInfo implementation.
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
-  network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote_;
 };
 
 // A SharedURLLoaderFactory implementation that wraps a

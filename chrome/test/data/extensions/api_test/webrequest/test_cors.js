@@ -517,11 +517,6 @@ function registerPreflightBlockingListener() {
 function registerPreflightRedirectingListener() {
   const url = getServerURL(BASE + 'accept', 'cors.example.com');
 
-  // This is needed to observe preflight requests when OOR-CORS is enabled.
-  chrome.webRequest.onHeadersReceived.addListener(
-      () => {},
-      {urls: [url]}, ['extraHeaders']);
-
   const onBeforeRequestCalledForPreflight = callbackPass(() => {});
   chrome.webRequest.onBeforeRequest.addListener(
       function onBeforeRequest(details) {
@@ -533,7 +528,7 @@ function registerPreflightRedirectingListener() {
           }, 0);
           return {redirectUrl: url + '?redirected'};
         }
-      }, {urls: [url]}, ['blocking']);
+      }, {urls: [url]}, ['blocking', 'extraHeaders']);
 
   if (getCorsMode() == 'network_service') {
     // When CORS is implemented in the network service, we see failures on both
@@ -559,6 +554,23 @@ function registerPreflightRedirectingListener() {
     // See https://crbug.com/1014816.
   }
 }
+
+function registerOnBeforeRequestAndOnErrorOcurredListeners() {
+  const url = getServerURL(BASE + 'accept', 'cors.example.com');
+
+  const onBeforeRequestCalledForPreflight = callbackPass(() => {});
+  // onBeforeRequest doesn't have "extraHeaders", but it sees a preflight
+  // even when OOR-CORS is enabled, because onErrorOccurred has "extraHeaders".
+  chrome.webRequest.onBeforeRequest.addListener((details) => {
+    if (details.method === 'OPTIONS') {
+      onBeforeRequestCalledForPreflight();
+    }
+  }, {urls: [url]});
+
+  chrome.webRequest.onErrorOccurred.addListener(() => {
+  }, {urls: [url]}, ['extraHeaders']);
+}
+
 
 runTests([
   function testOriginHeader() {
@@ -636,4 +648,9 @@ runTests([
     navigateAndWait(getServerURL(
         BASE + 'fetch.html?path=accept&with-preflight'));
   },
+  function testCorsPreflightIsObservableWhenAnyListenerHasExtraHeaders() {
+    registerOnBeforeRequestAndOnErrorOcurredListeners();
+    navigateAndWait(getServerURL(
+        BASE + 'fetch.html?path=accept&with-preflight'));
+  }
 ]);

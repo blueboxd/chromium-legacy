@@ -315,7 +315,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void NotifyForegroundServiceWorkerAdded();
   void NotifyForegroundServiceWorkerRemoved();
 
-  network::mojom::URLLoaderFactoryPtrInfo MakeScriptLoaderFactoryPtrInfo(
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+  MakeScriptLoaderFactoryRemote(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;

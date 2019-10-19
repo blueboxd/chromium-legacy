@@ -374,11 +374,23 @@ public class StartSurfaceLayoutTest {
         testGridToTab(false, false);
     }
 
+    // From https://stackoverflow.com/a/21505193
+    private static boolean isEmulator() {
+        return Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("unknown")
+                || Build.MODEL.contains("google_sdk") || Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("Android SDK built for x86")
+                || Build.MANUFACTURER.contains("Genymotion")
+                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
+                || "google_sdk".equals(Build.PRODUCT);
+    }
+
     @Test
     @MediumTest
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @DisabledTest(message = "crbug.com/986047. This works on emulators but not on real devices.")
     public void testGridToTabToCurrentLiveDetached() throws Exception {
+        // This works on emulators but not on real devices. See crbug.com/986047.
+        if (!isEmulator()) return;
+
         for (int i = 0; i < 10; i++) {
             mActivityTestRule.loadUrl(mUrl);
             // Quickly create some tabs, navigate to web pages, and don't wait for thumbnail

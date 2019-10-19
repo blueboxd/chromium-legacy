@@ -23,16 +23,19 @@ void MockDeviceFactory::CreateDevice(
 
 void MockDeviceFactory::AddSharedMemoryVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    video_capture::mojom::ProducerPtr producer,
+    mojo::PendingRemote<video_capture::mojom::Producer> producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors,
-    video_capture::mojom::SharedMemoryVirtualDeviceRequest virtual_device) {
-  DoAddVirtualDevice(device_info, producer.get(), &virtual_device);
+    mojo::PendingReceiver<video_capture::mojom::SharedMemoryVirtualDevice>
+        virtual_device_receiver) {
+  DoAddVirtualDevice(device_info, std::move(producer),
+                     std::move(virtual_device_receiver));
 }
 
 void MockDeviceFactory::AddTextureVirtualDevice(
     const media::VideoCaptureDeviceInfo& device_info,
-    video_capture::mojom::TextureVirtualDeviceRequest virtual_device) {
-  DoAddTextureVirtualDevice(device_info, &virtual_device);
+    mojo::PendingReceiver<video_capture::mojom::TextureVirtualDevice>
+        virtual_device_receiver) {
+  DoAddTextureVirtualDevice(device_info, std::move(virtual_device_receiver));
 }
 
 }  // namespace video_capture

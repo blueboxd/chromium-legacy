@@ -17,12 +17,13 @@ VendorTagOpsDelegate::VendorTagOpsDelegate(
 
 VendorTagOpsDelegate::~VendorTagOpsDelegate() = default;
 
-cros::mojom::VendorTagOpsRequest VendorTagOpsDelegate::MakeRequest() {
+mojo::PendingReceiver<cros::mojom::VendorTagOps>
+VendorTagOpsDelegate::MakeReceiver() {
   DCHECK(ipc_task_runner_->RunsTasksInCurrentSequence());
-  auto request = mojo::MakeRequest(&vendor_tag_ops_);
-  vendor_tag_ops_.set_connection_error_handler(
+  auto receiver = vendor_tag_ops_.BindNewPipeAndPassReceiver();
+  vendor_tag_ops_.set_disconnect_handler(
       base::BindOnce(&VendorTagOpsDelegate::Reset, base::Unretained(this)));
-  return request;
+  return receiver;
 }
 
 void VendorTagOpsDelegate::Initialize() {

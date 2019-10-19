@@ -23,6 +23,7 @@
 #include "media/capture/video/chromeos/mock_video_capture_client.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -155,9 +156,9 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   }
 
   void GetFakeVendorTagOps(
-      cros::mojom::VendorTagOpsRequest& vendor_tag_ops_request,
+      mojo::PendingReceiver<cros::mojom::VendorTagOps> vendor_tag_ops_receiver,
       cros::mojom::CameraModule::GetVendorTagOpsCallback& cb) {
-    mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_request));
+    mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_receiver));
   }
 
   void GetFakeCameraInfo(uint32_t camera_id,

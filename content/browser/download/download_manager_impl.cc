@@ -67,7 +67,8 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -268,13 +269,12 @@ CreateSharedURLLoaderFactoryInfo(StoragePartitionImpl* storage_partition,
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 CreateSharedURLLoaderFactoryInfoFromURLLoaderFactory(
     std::unique_ptr<network::mojom::URLLoaderFactory> factory) {
-  network::mojom::URLLoaderFactoryPtr factory_ptr;
-  mojo::MakeStrongBinding(std::move(factory), mojo::MakeRequest(&factory_ptr));
-  network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info =
-      factory_ptr.PassInterface();
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
+  mojo::MakeSelfOwnedReceiver(std::move(factory),
+                              factory_remote.InitWithNewPipeAndPassReceiver());
 
   return std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
-      std::move(factory_ptr_info));
+      std::move(factory_remote));
 }
 
 }  // namespace

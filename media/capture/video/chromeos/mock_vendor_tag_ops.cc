@@ -12,7 +12,7 @@ namespace media {
 namespace unittest_internal {
 
 MockVendorTagOps::MockVendorTagOps()
-    : mock_vendor_tag_ops_thread_("MockVendorTagOpsThread"), binding_(this) {
+    : mock_vendor_tag_ops_thread_("MockVendorTagOpsThread") {
   CHECK(mock_vendor_tag_ops_thread_.Start());
 }
 
@@ -23,14 +23,15 @@ MockVendorTagOps::~MockVendorTagOps() {
   mock_vendor_tag_ops_thread_.Stop();
 }
 
-void MockVendorTagOps::Bind(cros::mojom::VendorTagOpsRequest request) {
+void MockVendorTagOps::Bind(
+    mojo::PendingReceiver<cros::mojom::VendorTagOps> receiver) {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   cros::mojom::CameraModulePtrInfo ptr_info;
   mock_vendor_tag_ops_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&MockVendorTagOps::BindOnThread, base::Unretained(this),
-                     base::Unretained(&done), std::move(request)));
+                     base::Unretained(&done), std::move(receiver)));
   done.Wait();
 }
 
@@ -52,14 +53,13 @@ void MockVendorTagOps::GetTagName(uint32_t tag, GetTagNameCallback callback) {
 }
 
 void MockVendorTagOps::CloseBindingOnThread() {
-  if (binding_.is_bound()) {
-    binding_.Close();
-  }
+  receiver_.reset();
 }
 
-void MockVendorTagOps::BindOnThread(base::WaitableEvent* done,
-                                    cros::mojom::VendorTagOpsRequest request) {
-  binding_.Bind(std::move(request));
+void MockVendorTagOps::BindOnThread(
+    base::WaitableEvent* done,
+    mojo::PendingReceiver<cros::mojom::VendorTagOps> receiver) {
+  receiver_.Bind(std::move(receiver));
   done->Signal();
 }
 

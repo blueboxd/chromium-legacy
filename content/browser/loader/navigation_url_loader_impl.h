@@ -15,6 +15,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 

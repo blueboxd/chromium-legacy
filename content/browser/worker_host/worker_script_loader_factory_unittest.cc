@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/fake_network_url_loader_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -46,8 +47,9 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     // Set up the network factory.
     network_loader_factory_instance_ =
         std::make_unique<FakeNetworkURLLoaderFactory>();
-    network::mojom::URLLoaderFactoryPtrInfo factory;
-    network_loader_factory_instance_->Clone(mojo::MakeRequest(&factory));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory;
+    network_loader_factory_instance_->Clone(
+        factory.InitWithNewPipeAndPassReceiver());
     auto info = std::make_unique<network::WrapperSharedURLLoaderFactoryInfo>(
         std::move(factory));
     network_loader_factory_ =

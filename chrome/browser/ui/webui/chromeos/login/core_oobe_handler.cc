@@ -556,6 +556,25 @@ void CoreOobeHandler::UpdateClientAreaSize() {
   SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
 }
 
+void CoreOobeHandler::SetDialogPaddingMode(
+    CoreOobeView::DialogPaddingMode mode) {
+  std::string padding;
+  switch (mode) {
+    case CoreOobeView::DialogPaddingMode::MODE_AUTO:
+      padding = "auto";
+      break;
+    case CoreOobeView::DialogPaddingMode::MODE_NARROW:
+      padding = "narrow";
+      break;
+    case CoreOobeView::DialogPaddingMode::MODE_WIDE:
+      padding = "wide";
+      break;
+    default:
+      NOTREACHED();
+  }
+  CallJS("cr.ui.Oobe.setDialogPaddingMode", padding);
+}
+
 void CoreOobeHandler::OnOobeConfigurationChanged() {
   base::Value configuration(base::Value::Type::DICTIONARY);
   chromeos::configuration::FilterConfiguration(

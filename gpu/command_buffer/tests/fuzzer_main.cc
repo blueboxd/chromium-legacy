@@ -376,7 +376,8 @@ class CommandBufferSetup {
     shared_context->MakeCurrent(surface_.get());
     context_state_ = base::MakeRefCounted<SharedContextState>(
         share_group_, surface_, std::move(shared_context),
-        config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
+        config_.workarounds.use_virtualized_gl_contexts, base::DoNothing(),
+        gpu_preferences_.gr_context_type);
     context_state_->InitializeGrContext(config_.workarounds, nullptr);
     context_state_->InitializeGL(gpu_preferences_, feature_info);
 

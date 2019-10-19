@@ -200,7 +200,7 @@ cr.define('destination_settings_test', function() {
       let options =
           destinationSettings.$.destinationSelect.shadowRoot.querySelectorAll(
               'option:not([hidden])');
-      // assertEquals(expectedDestinations.length + 1, options.length);
+      assertEquals(expectedDestinations.length + 1, options.length);
       expectedDestinations.forEach((expectedValue, index) => {
         assertEquals(expectedValue, options[index].value);
       });

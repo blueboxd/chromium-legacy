@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
@@ -154,6 +155,13 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
+  // Serve paths prefixed with _test_resources/ from chrome/test/data/pdf.
+  base::FilePath GetTestResourcesParentDir() override {
+    base::FilePath test_root_path;
+    base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
+    return test_root_path.AppendASCII("pdf");
+  }
+
   bool PdfIsExpectedToLoad(const std::string& pdf_file) {
     const char* const kFailingPdfs[] = {
         "pdf_private/accessibility_crash_1.pdf",
@@ -170,9 +178,10 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   }
 
   // Runs the extensions test at chrome/test/data/pdf/<filename> on the PDF file
-  // at chrome/test/data/pdf/<pdf_filename>.
-  void RunTestsInFile(const std::string& filename,
-                      const std::string& pdf_filename) {
+  // at chrome/test/data/pdf/<pdf_filename>, where |filename| is loaded as a JS
+  // module.
+  void RunTestsInJsModule(const std::string& filename,
+                          const std::string& pdf_filename) {
     extensions::ResultCatcher catcher;
 
     GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));
@@ -184,34 +193,16 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
     // loaded before continuing.
     WebContents* guest_contents = LoadPdfGetGuestContents(url);
     ASSERT_TRUE(guest_contents);
-    std::string test_util_js;
-    std::string mock_interactions_js;
 
-    {
-      base::ScopedAllowBlockingForTesting allow_blocking;
-      base::FilePath test_data_dir;
-      base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-      test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
-      base::FilePath test_util_path = test_data_dir.AppendASCII("test_util.js");
-      ASSERT_TRUE(base::ReadFileToString(test_util_path, &test_util_js));
+    constexpr char kModuleLoaderTemplate[] =
+        R"(var s = document.createElement('script');
+           s.type = 'module';
+           s.src = '_test_resources/%s';
+           document.body.appendChild(s);)";
 
-      base::FilePath source_root_dir;
-      base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
-      base::FilePath mock_interactions_path = source_root_dir.Append(
-          FILE_PATH_LITERAL("third_party/polymer/v1_0/components-chromium/"
-                            "iron-test-helpers/mock-interactions.js"));
-      ASSERT_TRUE(base::ReadFileToString(mock_interactions_path,
-                                         &mock_interactions_js));
-      test_util_js.append(mock_interactions_js);
-
-      base::FilePath test_file_path = test_data_dir.AppendASCII(filename);
-      std::string test_js;
-      ASSERT_TRUE(base::ReadFileToString(test_file_path, &test_js));
-
-      test_util_js.append(test_js);
-    }
-
-    ASSERT_TRUE(content::ExecuteScript(guest_contents, test_util_js));
+    ASSERT_TRUE(content::ExecuteScript(
+        guest_contents,
+        base::StringPrintf(kModuleLoaderTemplate, filename.c_str())));
 
     if (!catcher.GetNextResult())
       FAIL() << catcher.message();
@@ -396,7 +387,7 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
                      "register('" + worker_path + "', '/pdf');"));
 
     // Navigate to a PDF in the service worker's scope. It should load.
-    RunTestsInFile("basic_test.js", "test.pdf");
+    RunTestsInJsModule("basic_test.js", "test.pdf");
     // Ensure it loaded in a PPAPI process.
     EXPECT_EQ(1, CountPDFProcesses());
   }
@@ -612,72 +603,72 @@ INSTANTIATE_TEST_SUITE_P(PDFTestFiles,
                          testing::Range(0, kNumberLoadTestParts));
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
-  RunTestsInFile("basic_test.js", "test.pdf");
+  RunTestsInJsModule("basic_test.js", "test.pdf");
 
   // Ensure it loaded in a PPAPI process.
   EXPECT_EQ(1, CountPDFProcesses());
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BasicPlugin) {
-  RunTestsInFile("basic_plugin_test.js", "test.pdf");
+  RunTestsInJsModule("basic_plugin_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Viewport) {
-  RunTestsInFile("viewport_test.js", "test.pdf");
+  RunTestsInJsModule("viewport_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Layout3) {
-  RunTestsInFile("layout_test.js", "test-layout3.pdf");
+  RunTestsInJsModule("layout_test.js", "test-layout3.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Layout4) {
-  RunTestsInFile("layout_test.js", "test-layout4.pdf");
+  RunTestsInJsModule("layout_test.js", "test-layout4.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
-  RunTestsInFile("bookmarks_test.js", "test-bookmarks-with-zoom.pdf");
+  RunTestsInJsModule("bookmarks_test.js", "test-bookmarks-with-zoom.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Navigator) {
-  RunTestsInFile("navigator_test.js", "test.pdf");
+  RunTestsInJsModule("navigator_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ParamsParser) {
-  RunTestsInFile("params_parser_test.js", "test.pdf");
+  RunTestsInJsModule("params_parser_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ZoomManager) {
-  RunTestsInFile("zoom_manager_test.js", "test.pdf");
+  RunTestsInJsModule("zoom_manager_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, GestureDetector) {
-  RunTestsInFile("gesture_detector_test.js", "test.pdf");
+  RunTestsInJsModule("gesture_detector_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchHandling) {
-  RunTestsInFile("touch_handling_test.js", "test.pdf");
+  RunTestsInJsModule("touch_handling_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Elements) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.
-  RunTestsInFile("material_elements_test.js", "test.pdf");
+  RunTestsInJsModule("material_elements_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ToolbarManager) {
-  RunTestsInFile("toolbar_manager_test.js", "test.pdf");
+  RunTestsInJsModule("toolbar_manager_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Title) {
-  RunTestsInFile("title_test.js", "test-title.pdf");
+  RunTestsInJsModule("title_test.js", "test-title.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, WhitespaceTitle) {
-  RunTestsInFile("whitespace_title_test.js", "test-whitespace-title.pdf");
+  RunTestsInJsModule("whitespace_title_test.js", "test-whitespace-title.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
-  RunTestsInFile("beep_test.js", "test-beep.pdf");
+  RunTestsInJsModule("beep_test.js", "test-beep.pdf");
 }
 
 #if defined(OS_CHROMEOS)
@@ -689,15 +680,15 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
 #define MAYBE_AnnotationsFeatureEnabled AnnotationsFeatureEnabled
 #endif
 IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, MAYBE_AnnotationsFeatureEnabled) {
-  RunTestsInFile("annotations_feature_enabled_test.js", "test.pdf");
+  RunTestsInJsModule("annotations_feature_enabled_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, AnnotationsFeatureDisabled) {
-  RunTestsInFile("annotations_feature_disabled_test.js", "test.pdf");
+  RunTestsInJsModule("annotations_feature_disabled_test.js", "test.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Printing) {
-  RunTestsInFile("printing_icon_test.js", "test.pdf");
+  RunTestsInJsModule("printing_icon_test.js", "test.pdf");
 }
 #endif
 
@@ -714,15 +705,15 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_NoBeep) {
           "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"),
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(), CONTENT_SETTING_BLOCK);
 
-  RunTestsInFile("nobeep_test.js", "test-beep.pdf");
+  RunTestsInJsModule("nobeep_test.js", "test-beep.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PageChange) {
-  RunTestsInFile("page_change_test.js", "test-bookmarks.pdf");
+  RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Metrics) {
-  RunTestsInFile("metrics_test.js", "test.pdf");
+  RunTestsInJsModule("metrics_test.js", "test.pdf");
 }
 
 // Ensure that the internal PDF plugin application/x-google-chrome-pdf won't be
@@ -1179,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
 // to load. This is to avoid the source origin of the document changing during
 // the redirect, which can have security implications. https://crbug.com/653749.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, RedirectsFailInPlugin) {
-  RunTestsInFile("redirects_fail_test.js", "test.pdf");
+  RunTestsInJsModule("redirects_fail_test.js", "test.pdf");
 }
 
 // Test that even if a different tab is selected when a navigation occurs,

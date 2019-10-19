@@ -104,7 +104,7 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
     base::WeakPtr<ContextualSearchContext> contextual_search_context,
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  blink::mojom::Frame::GetTextSurroundingSelectionCallback callback =
+  blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback =
       base::BindOnce(
           &ContextualSearchDelegate::OnTextSurroundingSelectionAvailable,
           AsWeakPtr());

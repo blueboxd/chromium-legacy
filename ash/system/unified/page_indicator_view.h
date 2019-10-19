@@ -40,7 +40,7 @@ class ASH_EXPORT PageIndicatorView : public views::View,
   class PageIndicatorButton;
 
   // PaginationModelObserver:
-  void TotalPagesChanged() override;
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
 
   bool IsPageSelectedForTesting(int index);

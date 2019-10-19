@@ -30,15 +30,6 @@
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
-      "device type": "iPhone 7",
-      "os": "13.0",
-      "xcode build version": "11a420a",
-      "pool":"Chrome",
-      "host os": "Mac-10.14.6"
-    },
-    {
-      "xcode parallelization": true,
-      "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
       "os": "13.0",
       "xcode build version": "11a420a",

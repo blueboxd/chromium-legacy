@@ -40,7 +40,7 @@ class WiFiDisplayMediaPipeline {
       wds::SessionType type,
       const WiFiDisplayVideoEncoder::InitParameters& video_parameters,
       const wds::AudioCodec& audio_codec,
-      const std::string& sink_ip_address,
+      const net::IPAddress& sink_ip_address,
       const std::pair<int, int>& sink_rtp_ports,
       const RegisterMediaServiceCallback& service_callback,
       const ErrorCallback& error_callback);
@@ -63,7 +63,7 @@ class WiFiDisplayMediaPipeline {
       wds::SessionType type,
       const WiFiDisplayVideoEncoder::InitParameters& video_parameters,
       const wds::AudioCodec& audio_codec,
-      const std::string& sink_ip_address,
+      const net::IPAddress& sink_ip_address,
       const std::pair<int, int>& sink_rtp_ports,
       const RegisterMediaServiceCallback& service_callback,
       const ErrorCallback& error_callback);
@@ -93,7 +93,7 @@ class WiFiDisplayMediaPipeline {
   wds::SessionType type_;
   WiFiDisplayVideoEncoder::InitParameters video_parameters_;
   wds::AudioCodec audio_codec_;
-  std::string sink_ip_address_;
+  net::IPAddress sink_ip_address_;
   std::pair<int, int> sink_rtp_ports_;
 
   RegisterMediaServiceCallback service_callback_;

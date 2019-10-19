@@ -680,13 +680,13 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   // Create the network factory.
   scoped_refptr<network::SharedURLLoaderFactory> factory;
-  network::mojom::URLLoaderFactoryPtr network_factory;
-  auto factory_request = mojo::MakeRequest(&network_factory);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> network_factory;
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
-                                frame_tree_node_id, std::move(context_wrapper),
-                                mojo::MakeRequest(&network_factory)));
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
+                     frame_tree_node_id, std::move(context_wrapper),
+                     network_factory.InitWithNewPipeAndPassReceiver()));
   factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
       std::move(network_factory));
 

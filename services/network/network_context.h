@@ -68,6 +68,7 @@ class CertNetFetcherImpl;
 class CertVerifier;
 class CertVerifyProc;
 class HostPortPair;
+class NetworkIsolationKey;
 class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
@@ -358,6 +359,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
                          LoadHttpAuthCacheCallback callback) override;
   void AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
+                         const net::NetworkIsolationKey& network_isolation_key,
                          const net::AuthCredentials& credentials,
                          AddAuthCacheEntryCallback callback) override;
   // TODO(mmenke): Rename this method and update Mojo docs to make it clear this

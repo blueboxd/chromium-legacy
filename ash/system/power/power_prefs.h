@@ -45,12 +45,10 @@ class ASH_EXPORT PowerPrefs : public chromeos::PowerManagerClient::Observer,
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Registers power prefs with default values applicable to the signin prefs.
-  static void RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
-                                         bool for_test = false);
+  static void RegisterSigninProfilePrefs(PrefRegistrySimple* registry);
 
   // Registers power prefs with default values applicable to the user prefs.
-  static void RegisterUserProfilePrefs(PrefRegistrySimple* registry,
-                                       bool for_test = false);
+  static void RegisterUserProfilePrefs(PrefRegistrySimple* registry);
 
   void set_tick_clock_for_test(base::TickClock* clock) { tick_clock_ = clock; }
 

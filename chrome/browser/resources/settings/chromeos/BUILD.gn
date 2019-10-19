@@ -29,11 +29,14 @@ if (optimize_webui) {
       "lazy_load.crisper.js",
     ]
     excludes = [
+      "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html",
       "chrome://os-settings/app-management/app_management.mojom-lite.js",
       "chrome://os-settings/app-management/bitmap.mojom-lite.js",
       "chrome://os-settings/app-management/image_info.mojom-lite.js",
       "chrome://os-settings/app-management/image.mojom-lite.js",
       "chrome://os-settings/app-management/types.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom.html",
+      "chrome://resources/mojo/mojo/public/mojom/base/time.mojom.html",
     ]
 
     deps = [

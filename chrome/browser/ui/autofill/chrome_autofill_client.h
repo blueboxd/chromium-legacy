@@ -24,16 +24,13 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 #if defined(OS_ANDROID)
+#include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
 #else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
 #endif
-
-#if defined(OS_ANDROID)
-#include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
-#endif  // defined(OS_ANDROID)
 
 namespace content {
 class WebContents;
@@ -173,6 +170,8 @@ class ChromeAutofillClient
   CardUnmaskPromptControllerImpl unmask_controller_;
   std::unique_ptr<LogManager> log_manager_;
 #if defined(OS_ANDROID)
+  CardExpirationDateFixFlowControllerImpl
+      card_expiration_date_fix_flow_controller_;
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
 #endif
 

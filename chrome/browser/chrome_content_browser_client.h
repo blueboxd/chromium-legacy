@@ -649,7 +649,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,
                                  content::BrowserContext* browser_context);
-  virtual const ui::NativeTheme* GetWebTheme() const;  // For testing.
+  virtual ui::NativeTheme* GetWebTheme() const;  // For testing.
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;

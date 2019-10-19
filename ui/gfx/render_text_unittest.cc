@@ -4290,6 +4290,20 @@ TEST_F(RenderTextTest, NewlineWithoutMultilineFlag) {
   }
 }
 
+TEST_F(RenderTextTest, ControlCharacterReplacement) {
+  static const char kTextWithControlCharacters[] = "\b\r\a\t\n\v\f";
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16(kTextWithControlCharacters));
+
+  // The control characters should have been replaced by their symbols.
+  EXPECT_EQ(WideToUTF16(L"␈␍␇␉␊␋␌"), render_text->GetDisplayText());
+
+  // Setting multiline, the newline character will be back to the original text.
+  render_text->SetMultiline(true);
+  EXPECT_EQ(WideToUTF16(L"␈␍␇␉\n␋␌"), render_text->GetDisplayText());
+}
+
 // Make sure the horizontal positions of runs in a line (left-to-right for
 // LTR languages and right-to-left for RTL languages).
 TEST_F(RenderTextTest, HarfBuzz_HorizontalPositions) {

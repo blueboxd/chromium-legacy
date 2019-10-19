@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--
-  This update manifest points to the enterprise_device_attributes.crx file.
+  This update manifest points to the printing_metrics.crx file.
   "mock.http" is a placeholder that gets substituted with the test server
   address in runtime.
 -->

@@ -3319,13 +3319,13 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Undo Bar -->
-      <message name="IDS_UNDO_BAR_CLOSE_MESSAGE" desc="Message shown when you can undo a tab close action.">
+      <message name="IDS_UNDO_BAR_CLOSE_MESSAGE" desc="Message shown when you can undo a tab close action. This message is short for a sentence &quot;TAB_TITLE has been closed&quot;, not a noun &quot;TAB_TITLE, which is a closed tab&quot;.">
         Closed <ph name="TAB_TITLE">%1$s<ex>YouTube</ex></ph>
       </message>
       <message name="IDS_UNDO_BAR_CLOSE_ALL_MESSAGE" desc="Message shown when you can undo a close all tabs action.">
         <ph name="TAB_COUNT">%1$s<ex>3</ex></ph> tabs closed
       </message>
-      <message name="IDS_DELETE_MESSAGE" desc="Message shown or announced when an item has been deleted.">
+      <message name="IDS_DELETE_MESSAGE" desc="Message shown or announced when an item has been deleted. This message is short for a sentence &quot;ITEM_TITLE has been deleted&quot;, not a noun &quot;ITEM_TITLE, which is a deleted item&quot;.">
         Deleted <ph name="ITEM_TITLE">%1$s<ex>YouTube</ex></ph>
       </message>
       <message name="IDS_UNDO_BAR_MULTIPLE_DELETE_MESSAGE" desc="Message shown when you can undo several bookmark delete actions.">
@@ -3986,6 +3986,11 @@ The site does NOT gain access to the camera. The camera images are only visible 
               failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
               'Installing Extra ICU for Chrome…').">
         Extra ICU
+      </message>
+
+      <!-- QR Code -->
+      <message name="IDS_QR_CODE_SHARE_ICON_LABEL" desc="Icon label for sharing qith QR Code activity.">
+        QR Code
       </message>
 
     </messages>

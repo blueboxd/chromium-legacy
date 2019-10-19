@@ -1076,6 +1076,8 @@ function onAddCustomLinkDone(success) {
 
 /** @param {!DeleteAutocompleteMatchResult} result */
 function onDeleteAutocompleteMatch(result) {
+  assert(matchElBeingDeleted);
+
   if (!result.success) {
     matchElBeingDeleted = null;
     return;
@@ -1305,6 +1307,7 @@ function onRealboxWrapperKeydown(e) {
   if (key === 'Delete') {
     if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey &&
         autocompleteMatches[selected].supportsDeletion) {
+      matchElBeingDeleted = matchEls[selected];
       window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
       e.preventDefault();
     }

@@ -328,19 +328,15 @@ NightLightControllerImpl::~NightLightControllerImpl() {
 // static
 void NightLightControllerImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kNightLightEnabled, false,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kNightLightEnabled, false);
   registry->RegisterDoublePref(prefs::kNightLightTemperature,
-                               kDefaultColorTemperature, PrefRegistry::PUBLIC);
+                               kDefaultColorTemperature);
   registry->RegisterIntegerPref(prefs::kNightLightScheduleType,
-                                static_cast<int>(ScheduleType::kNone),
-                                PrefRegistry::PUBLIC);
+                                static_cast<int>(ScheduleType::kNone));
   registry->RegisterIntegerPref(prefs::kNightLightCustomStartTime,
-                                kDefaultStartTimeOffsetMinutes,
-                                PrefRegistry::PUBLIC);
+                                kDefaultStartTimeOffsetMinutes);
   registry->RegisterIntegerPref(prefs::kNightLightCustomEndTime,
-                                kDefaultEndTimeOffsetMinutes,
-                                PrefRegistry::PUBLIC);
+                                kDefaultEndTimeOffsetMinutes);
 
   // Non-public prefs, only meant to be used by ash.
   registry->RegisterDoublePref(prefs::kNightLightCachedLatitude, 0.0);

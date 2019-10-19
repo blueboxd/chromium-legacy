@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,6 +54,26 @@ TEST(SingleThreadTaskExecutorTest, CurrentThread) {
   EXPECT_EQ(single_thread_task_executor.task_runner(),
             base::CreateSingleThreadTaskRunner(
                 {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
+}
+
+TEST(SingleThreadTaskExecutorTest, GetContinuationTaskRunner) {
+  SingleThreadTaskExecutor single_thread_task_executor;
+  RunLoop run_loop;
+
+  auto task_runner = CreateSingleThreadTaskRunner({CurrentThread()});
+
+  task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                          EXPECT_EQ(task_runner, GetContinuationTaskRunner());
+                          run_loop.Quit();
+                        }));
+
+  run_loop.Run();
+}
+
+TEST(SingleThreadTaskExecutorTest, GetCurrentTaskWithNoTaskRunning) {
+  SingleThreadTaskExecutor single_thread_task_executor;
+
+  EXPECT_DCHECK_DEATH(GetContinuationTaskRunner());
 }
 
 }  // namespace base

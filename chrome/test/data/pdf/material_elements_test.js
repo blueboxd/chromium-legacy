@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {createBookmarksForTest} from './test_util.js';
+
 /**
  * Captures 'fit-to-changed' events and verifies the last one has the expected
  * paylod.
@@ -127,7 +130,7 @@ var tests = [
     document.body.appendChild(bookmarkContent);
 
     // Force templates to render.
-    Polymer.dom.flush();
+    flush();
 
     var rootBookmarks =
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
@@ -135,7 +138,7 @@ var tests = [
     var rootBookmark = rootBookmarks[0];
     rootBookmark.$.expand.click();
 
-    Polymer.dom.flush();
+    flush();
 
     var subBookmarks =
         rootBookmark.shadowRoot.querySelectorAll('viewer-bookmark');

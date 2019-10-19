@@ -115,6 +115,9 @@ NSString* const kSCDisplayedBadgeToggleButton =
 - (void)passwordsBadgeButtonTapped:(id)sender {
 }
 
+- (void)saveCardBadgeButtonTapped:(id)sender {
+}
+
 - (void)overflowBadgeButtonTapped:(id)sender {
   self.badgePopupMenuCoordinator = [[BadgePopupMenuCoordinator alloc]
       initWithBaseViewController:self.containerViewController];

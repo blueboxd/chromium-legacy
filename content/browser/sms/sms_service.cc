@@ -6,6 +6,7 @@
 
 #include <iterator>
 #include <queue>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -59,11 +60,9 @@ void SmsService::Create(
 void SmsService::Receive(ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (callback_) {
-    std::move(callback).Run(blink::mojom::SmsStatus::kCancelled, base::nullopt);
-    return;
+    std::move(callback_).Run(SmsStatus::kCancelled, base::nullopt);
+    sms_provider_->RemoveObserver(this);
   }
-
-  DCHECK(!sms_);
 
   start_time_ = base::TimeTicks::Now();
 

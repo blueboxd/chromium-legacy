@@ -21,7 +21,7 @@ include_rules = [
 ]
 
 specific_include_rules = {
-    ".*test\.cc" : [
+    ".*test.*": [
         "+base/run_loop.h",
         "+base/test/bind_test_util.h",
         "+base/test/test_timeouts.h",

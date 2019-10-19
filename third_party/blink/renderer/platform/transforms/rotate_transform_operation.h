@@ -86,6 +86,10 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
  protected:
   bool operator==(const TransformOperation&) const override;
 
+  bool HasNonTrivial3DComponent() const override {
+    return Angle() && (X() || Y());
+  }
+
   scoped_refptr<TransformOperation> Blend(
       const TransformOperation* from,
       double progress,

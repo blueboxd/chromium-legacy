@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "url/gurl.h"
@@ -312,12 +311,6 @@ struct CONTENT_EXPORT WebPreferences {
 
   // Defines the current autoplay policy.
   AutoplayPolicy autoplay_policy;
-
-  // The preferred color scheme for the web content. The scheme is used to
-  // evaluate the prefers-color-scheme media query and resolve UA color scheme
-  // to be used based on the supported-color-schemes META tag and CSS property.
-  blink::PreferredColorScheme preferred_color_scheme =
-      blink::PreferredColorScheme::kNoPreference;
 
   // Network quality threshold below which resources from iframes are assigned
   // either kVeryLow or kVeryLow Blink priority.

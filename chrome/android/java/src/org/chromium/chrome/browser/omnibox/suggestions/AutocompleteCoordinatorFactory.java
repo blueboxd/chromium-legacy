@@ -32,7 +32,7 @@ public class AutocompleteCoordinatorFactory {
 
     /**
      * Temporary shortcut for {@link org.chromium.chrome.browser.IntentHandler} to access
-     * {@link AutocompleteController#nativeQualifyPartialURLQuery(String)} without having an
+     * {@link AutocompleteControllerJni.get().qualifyPartialURLQuery(String)} without having an
      * instance of {@link AutocompleteCoordinator}.
      *
      * TODO(crbug.com/966424): Fix the dependency issue and remove this method.
@@ -42,6 +42,6 @@ public class AutocompleteCoordinatorFactory {
      */
     @Deprecated
     public static String qualifyPartialURLQuery(String query) {
-        return AutocompleteController.nativeQualifyPartialURLQuery(query);
+        return AutocompleteControllerJni.get().qualifyPartialURLQuery(query);
     }
 }

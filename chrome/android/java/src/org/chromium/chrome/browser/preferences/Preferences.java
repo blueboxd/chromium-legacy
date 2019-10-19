@@ -292,9 +292,8 @@ public class Preferences extends ChromeBaseAppCompatActivity
      * Set device status bar to match the activity background color, if supported.
      */
     private void setStatusBarColor() {
-        // On O+, the status bar color is already set via the XML theme. We avoid setting status bar
-        // color via XML pre-O due to: https://crbug.com/884144.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return;
+        // On P+, the status bar color is set via the XML theme.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) return;
 
         // Kill switch included due to past crashes when programmatically setting status bar color:
         // https://crbug.com/880694.

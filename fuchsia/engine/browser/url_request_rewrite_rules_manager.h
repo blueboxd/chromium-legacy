@@ -45,6 +45,19 @@ class WEB_ENGINE_EXPORT UrlRequestRewriteRulesManager
   GetCachedRules() override;
 
  private:
+  // Helper struct containing a RenderFrameHost and its corresponding
+  // AssociatedRemote.
+  struct ActiveFrame {
+    ActiveFrame(content::RenderFrameHost* render_frame_host,
+                mojo::AssociatedRemote<mojom::UrlRequestRulesReceiver>
+                    associated_remote);
+    ActiveFrame(ActiveFrame&& other);
+    ~ActiveFrame();
+
+    content::RenderFrameHost* render_frame_host;
+    mojo::AssociatedRemote<mojom::UrlRequestRulesReceiver> associated_remote;
+  };
+
   // Test-only constructor.
   explicit UrlRequestRewriteRulesManager();
 
@@ -56,9 +69,8 @@ class WEB_ENGINE_EXPORT UrlRequestRewriteRulesManager
   scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
       cached_rules_ GUARDED_BY(lock_);
 
-  // Map of frames rules receivers per FrameTreeNode ID.
-  std::map<int, mojo::AssociatedRemote<mojom::UrlRequestRulesReceiver>>
-      rules_receivers_per_frame_id_;
+  // Map of FrameTreeNode Ids to their current ActiveFrame.
+  std::map<int, ActiveFrame> active_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlRequestRewriteRulesManager);
 };

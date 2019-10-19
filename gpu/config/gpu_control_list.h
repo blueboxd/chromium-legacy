@@ -158,6 +158,8 @@ class GPU_EXPORT GpuControlList {
 
     uint32_t test_group;
 
+    SupportedOrNot subpixel_font_rendering;
+
     // Return true if GL_VERSION string does not fit the entry info
     // on GL type and GL version.
     bool GLVersionInfoMismatch(const std::string& gl_version_string) const;

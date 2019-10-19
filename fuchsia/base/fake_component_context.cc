@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/run_loop.h"
 
 namespace cr_fuchsia {
 
@@ -45,6 +46,9 @@ void FakeComponentContext::NotImplemented_(const std::string& name) {
   NOTIMPLEMENTED() << " API: " << name;
 }
 
-FakeComponentContext::~FakeComponentContext() = default;
+FakeComponentContext::~FakeComponentContext() {
+  agent_services_.Unbind();
+  base::RunLoop().RunUntilIdle();
+}
 
 }  // namespace cr_fuchsia

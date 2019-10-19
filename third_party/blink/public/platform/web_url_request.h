@@ -114,7 +114,10 @@ class WebURLRequest {
                                        // placeholder by lazyload.
     kDeferAllScriptOn = 1 << 12,  // Request that script execution be deferred
                                   // until parsing completes.
-    kPreviewsStateLast = kDeferAllScriptOn
+    kSubresourceRedirectOn =
+        1 << 13,  // Allow the subresources in the page to be redirected
+                  // to serve better optimized resources.
+    kPreviewsStateLast = kSubresourceRedirectOn
   };
 
   class ExtraData {

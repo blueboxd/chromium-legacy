@@ -12,8 +12,8 @@
 #include "base/strings/string16.h"
 #include "gin/arguments.h"
 #include "gin/wrappable.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace v8 {
 template <typename T>
@@ -77,7 +77,7 @@ class JsBinding : public gin::Wrappable<JsBinding>,
   // JsBinding's life cycle, it is safe to access it.
   JsJavaConfigurator* js_java_configurator_;
 
-  mojo::Receiver<mojom::JavaToJsMessaging> receiver_{this};
+  mojo::AssociatedReceiver<mojom::JavaToJsMessaging> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsBinding);
 };

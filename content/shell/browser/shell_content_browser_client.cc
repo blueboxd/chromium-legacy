@@ -417,17 +417,6 @@ SpeechRecognitionManagerDelegate*
   return new ShellSpeechRecognitionManagerDelegate();
 }
 
-void ShellContentBrowserClient::OverrideWebkitPrefs(
-    RenderViewHost* render_view_host,
-    WebPreferences* prefs) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceDarkMode)) {
-    prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
-  } else {
-    prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
-  }
-}
-
 base::FilePath ShellContentBrowserClient::GetFontLookupTableCacheDir() {
   return browser_context()->GetPath().Append(
       FILE_PATH_LITERAL("FontLookupTableCache"));

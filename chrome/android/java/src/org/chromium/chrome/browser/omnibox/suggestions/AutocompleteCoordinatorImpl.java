@@ -265,12 +265,12 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
     @Override
     public String qualifyPartialURLQuery(String query) {
-        return AutocompleteController.nativeQualifyPartialURLQuery(query);
+        return AutocompleteControllerJni.get().qualifyPartialURLQuery(query);
     }
 
     @Override
     public void prefetchZeroSuggestResults() {
-        AutocompleteController.nativePrefetchZeroSuggestResults();
+        AutocompleteControllerJni.get().prefetchZeroSuggestResults();
     }
 
     @VisibleForTesting

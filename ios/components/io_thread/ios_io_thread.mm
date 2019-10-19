@@ -60,7 +60,6 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -360,11 +359,6 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
 
   net::URLRequestJobFactoryImpl* system_job_factory =
       new net::URLRequestJobFactoryImpl();
-  // Data URLs are always loaded through the system request context on iOS
-  // (due to UIWebView limitations).
-  bool set_protocol = system_job_factory->SetProtocolHandler(
-      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
-  DCHECK(set_protocol);
   globals->system_url_request_job_factory.reset(system_job_factory);
   context->set_job_factory(globals->system_url_request_job_factory.get());
 

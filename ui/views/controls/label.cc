@@ -239,7 +239,6 @@ void Label::SetMultiLine(bool multi_line) {
     return;
   multi_line_ = multi_line;
   full_text_->SetMultiline(multi_line);
-  full_text_->SetReplaceNewlineCharsWithSymbols(!multi_line);
   OnPropertyChanged(&multi_line_, kPropertyEffectsLayout);
 }
 

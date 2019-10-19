@@ -146,4 +146,17 @@ scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
 }
 #endif  // defined(OS_WIN)
 
+const scoped_refptr<SequencedTaskRunner>& GetContinuationTaskRunner() {
+  TaskExecutor* executor = GetTaskExecutorForCurrentThread();
+  DCHECK(executor) << "Couldn't find a TaskExecutor for this thread. Note "
+                      "you can't use base::GetContinuationTaskRunner in "
+                      "a one-off base::ThreadPool task.";
+  const auto& task_runner = executor->GetContinuationTaskRunner();
+  DCHECK(task_runner)
+      << "The current execution context lacks a continuation task runner. "
+         "Note: you can't use base::GetContinuationTaskRunner() from a native "
+         "system event or any other context outside of a Chrome task.";
+  return task_runner;
+}
+
 }  // namespace base

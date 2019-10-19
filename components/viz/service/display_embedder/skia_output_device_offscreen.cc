@@ -36,7 +36,7 @@ SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() {
   DiscardBackbuffer();
 }
 
-void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
+bool SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
                                         float device_scale_factor,
                                         const gfx::ColorSpace& color_space,
                                         bool has_alpha,
@@ -47,6 +47,7 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
   size_ = size;
   sk_color_space_ = color_space.ToSkColorSpace();
   EnsureBackbuffer();
+  return true;
 }
 
 void SkiaOutputDeviceOffscreen::SwapBuffers(

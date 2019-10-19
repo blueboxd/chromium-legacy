@@ -2,9 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import './icons.js';
+import './viewer-page-selector.js';
+import './viewer-toolbar-dropdown.js';
+
+// <if expr="chromeos">
+import './viewer-pen-options.js';
+// </if>
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Bookmark} from './viewer-bookmark.js';
+
 Polymer({
   is: 'viewer-pdf-toolbar',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -201,7 +217,7 @@ Polymer({
     this.annotationMode = !this.annotationMode;
     if (this.annotationMode) {
       // Select pen tool when entering annotation mode.
-      this.updateAnnotationTool_(this.$.pen);
+      this.updateAnnotationTool_(/** @type {!HTMLElement} */ (this.$.pen));
     }
     this.dispatchEvent(new CustomEvent('annotation-mode-toggled', {
       detail: {
@@ -262,4 +278,3 @@ Polymer({
     return !!this.annotationTool && this.annotationTool.tool === toolName;
   },
 });
-})();

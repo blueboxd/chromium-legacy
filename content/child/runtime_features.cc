@@ -310,6 +310,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {wf::EnableDocumentPolicy, features::kDocumentPolicy,
            kUseFeatureState},
+          {wf::EnableNeverSlowMode, features::kNeverSlowMode,
+           kUseFeatureState},
       };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     const bool featureEnabled =

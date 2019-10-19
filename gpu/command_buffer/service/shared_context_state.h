@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/command_buffer/service/gl_context_virtual_delegate.h"
+#include "gpu/config/gpu_preferences.h"
 #include "gpu/gpu_gles2_export.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/progress_reporter.h"
@@ -35,7 +36,6 @@ namespace gpu {
 class GpuDriverBugWorkarounds;
 class GpuProcessActivityFlags;
 class ServiceTransferCache;
-struct GpuPreferences;
 
 namespace gles2 {
 class FeatureInfo;
@@ -56,6 +56,7 @@ class GPU_GLES2_EXPORT SharedContextState
       scoped_refptr<gl::GLContext> context,
       bool use_virtualized_gl_contexts,
       base::OnceClosure context_lost_callback,
+      GrContextType gr_context_type = GrContextType::kGL,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr,
       viz::MetalContextProvider* metal_context_provider = nullptr);
 
@@ -64,10 +65,15 @@ class GPU_GLES2_EXPORT SharedContextState
                            GpuProcessActivityFlags* activity_flags = nullptr,
                            gl::ProgressReporter* progress_reporter = nullptr);
   bool GrContextIsGL() const {
-    return !vk_context_provider_ && !metal_context_provider_;
+    return gr_context_type_ == GrContextType::kGL;
   }
-  bool GrContextIsVulkan() const { return vk_context_provider_; }
-  bool GrContextIsMetal() const { return metal_context_provider_; }
+  bool GrContextIsVulkan() const {
+    return vk_context_provider_ && gr_context_type_ == GrContextType::kVulkan;
+  }
+  bool GrContextIsMetal() const {
+    return metal_context_provider_ &&
+        gr_context_type_ == GrContextType::kMetal;
+  }
 
   bool InitializeGL(const GpuPreferences& gpu_preferences,
                     scoped_refptr<gles2::FeatureInfo> feature_info);
@@ -161,6 +167,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool use_virtualized_gl_contexts_ = false;
   bool support_vulkan_external_object_ = false;
   base::OnceClosure context_lost_callback_;
+  GrContextType gr_context_type_ = GrContextType::kGL;
   viz::VulkanContextProvider* const vk_context_provider_;
   viz::MetalContextProvider* const metal_context_provider_;
   GrContext* gr_context_ = nullptr;

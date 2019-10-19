@@ -413,16 +413,19 @@ void AutofillMetricsTest::RecreateProfile(bool is_server) {
 }
 
 void AutofillMetricsTest::SetFidoEligibility(bool is_verifiable) {
+  CreditCardAccessManager* access_manager =
+      autofill_manager_->credit_card_access_manager();
 #if !defined(OS_IOS)
   static_cast<TestCreditCardFIDOAuthenticator*>(
-      autofill_manager_->credit_card_access_manager()
-          ->GetOrCreateFIDOAuthenticator())
+      access_manager->GetOrCreateFIDOAuthenticator())
       ->SetUserVerifiable(is_verifiable);
 #endif
-  autofill_manager_->credit_card_access_manager()
-      ->can_fetch_unmask_details_.Signal();
-  autofill_manager_->credit_card_access_manager()->is_user_verifiable_ =
-      base::nullopt;
+  static_cast<payments::TestPaymentsClient*>(
+      autofill_client_.GetPaymentsClient())
+      ->AllowFidoRegistration(true);
+  access_manager->is_authentication_in_progress_ = false;
+  access_manager->can_fetch_unmask_details_.Signal();
+  access_manager->is_user_verifiable_ = base::nullopt;
 }
 
 void AutofillMetricsTest::OnDidGetRealPan(
@@ -4360,6 +4363,11 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     SetFidoEligibility(true);
     autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
                                           form.fields[0]);
+    std::string guid(
+        "10000000-0000-0000-0000-000000000002");  // masked server card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendID(guid, std::string()));
     // Preflight call is made only if a masked server card is available and the
     // user is eligible for FIDO authentication (except iOS).
 #if defined(OS_IOS)
@@ -4381,6 +4389,11 @@ TEST_F(AutofillMetricsTest, CreditCardUnmaskingPreflightCall) {
     SetFidoEligibility(true);
     autofill_manager_->DidShowSuggestions(true /* is_new_popup */, form,
                                           form.fields[0]);
+    std::string guid(
+        "10000000-0000-0000-0000-000000000002");  // masked server card
+    autofill_manager_->FillOrPreviewForm(
+        AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.back(),
+        autofill_manager_->MakeFrontendID(guid, std::string()));
     // Preflight call is made only if a masked server card is available and the
     // user is eligible for FIDO authentication (except iOS).
 #if defined(OS_IOS)

@@ -574,11 +574,14 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   int oldCount = _webStateList->count();
   DCHECK_GE(oldCount, 0);
 
-  web::WebState::CreateParams createParams(_browserState);
-  DeserializeWebStateList(
-      _webStateList, window,
-      base::BindRepeating(&web::WebState::CreateWithStorageSession,
-                          createParams));
+  _webStateList->PerformBatchOperation(
+      base::BindOnce(^(WebStateList* web_state_list) {
+        web::WebState::CreateParams createParams(_browserState);
+        DeserializeWebStateList(
+            web_state_list, window,
+            base::BindRepeating(&web::WebState::CreateWithStorageSession,
+                                createParams));
+      }));
 
   DCHECK_GT(_webStateList->count(), oldCount);
   int restoredCount = _webStateList->count() - oldCount;

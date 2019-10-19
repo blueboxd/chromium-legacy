@@ -38,7 +38,8 @@
     </style>
     <select class="md-select" aria-label$="[[i18n(destinationLabel)]]"
         style="background-image:
-            [[getBackgroundImages_(destination.icon, destinationState, dark)]];"
+            [[getBackgroundImages_(selectedValue, destination,
+                                   destinationState, dark)]];"
         disabled$="[[disabled]]"
         value="{{selectedValue::change}}">
       <template is="dom-repeat" items="[[recentDestinationList]]">

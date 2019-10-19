@@ -9,6 +9,7 @@
 
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/security_state/core/security_state.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_icon_type.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_suggestion_icon_util.h"
 
 #pragma mark - Suggestion icons.
@@ -26,18 +27,6 @@ UIImage* GetOmniboxSuggestionIconForAutocompleteMatchType(
     bool is_starred);
 
 #pragma mark - Security icons.
-
-// All available icons for security states.
-enum LocationBarSecurityIconType {
-  INSECURE = 0,
-  SECURE,
-  DANGEROUS,
-  LOCATION_BAR_SECURITY_ICON_TYPE_COUNT,
-};
-
-// Returns the asset name (to be used in -[UIImage imageNamed:]).
-NSString* GetLocationBarSecurityIconTypeAssetName(
-    LocationBarSecurityIconType icon);
 
 // Returns the asset with "always template" rendering mode.
 UIImage* GetLocationBarSecurityIcon(LocationBarSecurityIconType icon);

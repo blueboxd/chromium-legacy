@@ -62,12 +62,13 @@ void GetValueAndQuit(T* result, const base::Closure& quit, T actual) {
   quit.Run();
 }
 
-template<typename T>
+template <typename T>
 T GetCallbackResult(
-    const base::Callback<void(const base::Callback<void(T)>&)>& callback) {
+    const base::Callback<void(base::OnceCallback<void(T)>)>& callback) {
   T result = false;
   base::RunLoop loop;
-  callback.Run(base::Bind(&GetValueAndQuit<T>, &result, loop.QuitClosure()));
+  callback.Run(
+      base::BindOnce(&GetValueAndQuit<T>, &result, loop.QuitClosure()));
   loop.Run();
   return result;
 }

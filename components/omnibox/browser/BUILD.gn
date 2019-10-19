@@ -210,6 +210,7 @@ jumbo_static_library("browser") {
 
   public_deps = [
     "//base",
+    "//base:i18n",
     "//components/history/core/browser",
     "//components/omnibox/common",
     "//components/omnibox/resources:omnibox_resources",
@@ -220,7 +221,6 @@ jumbo_static_library("browser") {
   deps = [
     ":buildflags",
     ":in_memory_url_index_cache_proto",
-    "//base:i18n",
     "//components/bookmarks/browser",
     "//components/component_updater",
     "//components/favicon/core",
@@ -465,5 +465,15 @@ fuzzer_test("autocomplete_input_fuzzer") {
     "//base",
     "//base:i18n",
     "//third_party/metrics_proto:metrics_proto",
+  ]
+}
+
+fuzzer_test("omnibox_view_fuzzer") {
+  sources = [
+    "omnibox_view_fuzzer.cc",
+  ]
+  deps = [
+    ":browser",
+    "//base",
   ]
 }

@@ -85,8 +85,13 @@ public class WebappSplashScreenTest {
         mActivityTestRule.startWebappActivityAndWaitForSplashScreen();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
+        // Status bar color should be white on M+ to match CCTs and WebAPK shell.
+        int expectedColor = Color.WHITE;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            expectedColor = Color.BLACK;
+        }
         Assert.assertEquals(
-                Color.BLACK, mActivityTestRule.getActivity().getWindow().getStatusBarColor());
+                expectedColor, mActivityTestRule.getActivity().getWindow().getStatusBarColor());
     }
 
     @Test

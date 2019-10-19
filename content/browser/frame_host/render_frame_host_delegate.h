@@ -460,6 +460,19 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Determine if the frame is of a low priority.
   virtual bool IsFrameLowPriority(const RenderFrameHost* render_frame_host);
 
+  // Registers a new URL handler for the given protocol.
+  virtual void RegisterProtocolHandler(RenderFrameHostImpl* host,
+                                       const std::string& scheme,
+                                       const GURL& url,
+                                       const base::string16& title,
+                                       bool user_gesture) {}
+
+  // Unregisters a given URL handler for the given protocol.
+  virtual void UnregisterProtocolHandler(RenderFrameHostImpl* host,
+                                         const std::string& scheme,
+                                         const GURL& url,
+                                         bool user_gesture) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

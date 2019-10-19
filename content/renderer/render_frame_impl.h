@@ -836,11 +836,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SuddenTerminationDisablerChanged(
       bool present,
       blink::SuddenTerminationDisablerType disabler_type) override;
-  void RegisterProtocolHandler(const blink::WebString& scheme,
-                               const blink::WebURL& url,
-                               const blink::WebString& title) override;
-  void UnregisterProtocolHandler(const blink::WebString& scheme,
-                                 const blink::WebURL& url) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback callback) override;

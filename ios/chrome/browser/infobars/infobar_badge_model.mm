@@ -44,6 +44,8 @@
       return BadgeType::kBadgeTypePasswordSave;
     case InfobarType::kInfobarTypePasswordUpdate:
       return BadgeType::kBadgeTypePasswordUpdate;
+    case InfobarType::kInfobarTypeSaveCard:
+      return BadgeType::kBadgeTypeSaveCard;
     default:
       NOTREACHED() << "This infobar should not have a badge";
       return BadgeType::kBadgeTypeNone;

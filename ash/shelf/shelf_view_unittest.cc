@@ -1905,7 +1905,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
 // Checks various drag and drop operations from OverflowBubble to Shelf, and
 // vice versa.
-TEST_F(ShelfViewTest, DISABLED_CheckDragAndDropFromShelfToOtherShelf) {
+TEST_F(ShelfViewTest, CheckDragAndDropFromShelfToOtherShelf) {
   // No overflow bubble when scrollable shelf enabled.
   // TODO(https://crbug.com/1002576): revisit when scrollable shelf is launched.
   if (chromeos::switches::ShouldShowScrollableShelf())

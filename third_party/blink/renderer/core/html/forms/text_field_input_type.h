@@ -56,7 +56,7 @@ class TextFieldInputType : public InputType,
 
   void CreateShadowSubtree() override;
   void DestroyShadowSubtree() override;
-  void AttributeChanged() override;
+  void ValueAttributeChanged() override;
   void DisabledAttributeChanged() override;
   void ReadonlyAttributeChanged() override;
   bool SupportsReadOnly() const override;

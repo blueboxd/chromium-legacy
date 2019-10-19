@@ -84,16 +84,17 @@ class SessionStorageMetadataTest : public testing::Test {
         }));
     loop.Run();
 
-    std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations;
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+        migration_tasks;
     EXPECT_TRUE(
-        metadata->ParseDatabaseVersion(version_value, &migration_operations));
-    EXPECT_TRUE(migration_operations.empty());
+        metadata->ParseDatabaseVersion(version_value, &migration_tasks));
+    EXPECT_TRUE(migration_tasks.empty());
 
     metadata->ParseNextMapId(next_map_id_value);
 
     EXPECT_TRUE(metadata->ParseNamespaces(std::move(namespace_entries),
-                                          &migration_operations));
-    EXPECT_TRUE(migration_operations.empty());
+                                          &migration_tasks));
+    EXPECT_TRUE(migration_tasks.empty());
   }
 
   void SetupTestData() {
@@ -162,14 +163,16 @@ class SessionStorageMetadataTest : public testing::Test {
     return contents;
   }
 
-  void WriteBatch(std::vector<leveldb::mojom::BatchedOperationPtr> operations,
-                  base::OnceCallback<void(leveldb::Status)> callback) {
+  void RunBatch(
+      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks,
+      base::OnceCallback<void(leveldb::Status)> callback) {
     base::RunLoop loop;
-    database_->Write(std::move(operations),
-                     base::BindLambdaForTesting([&](leveldb::Status status) {
-                       std::move(callback).Run(status);
-                       loop.Quit();
-                     }));
+    database_->RunBatchDatabaseTasks(
+        std::move(tasks),
+        base::BindLambdaForTesting([&](leveldb::Status status) {
+          std::move(callback).Run(status);
+          loop.Quit();
+        }));
     loop.Run();
   }
 
@@ -189,11 +192,11 @@ class SessionStorageMetadataTest : public testing::Test {
 
 TEST_F(SessionStorageMetadataTest, SaveNewMetadata) {
   SessionStorageMetadata metadata;
-  std::vector<leveldb::mojom::BatchedOperationPtr> operations =
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks =
       metadata.SetupNewDatabase();
 
   leveldb::Status status;
-  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &status));
+  RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
   EXPECT_TRUE(status.ok());
 
   auto contents = GetDatabaseContents();
@@ -238,10 +241,9 @@ TEST_F(SessionStorageMetadataTest, SaveNewMap) {
   SessionStorageMetadata metadata;
   ReadMetadataFromDatabase(&metadata);
 
-  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
   auto ns1_entry = metadata.GetOrCreateNamespaceEntry(test_namespace1_id_);
-  auto map_data =
-      metadata.RegisterNewMap(ns1_entry, test_origin1_, &operations);
+  auto map_data = metadata.RegisterNewMap(ns1_entry, test_origin1_, &tasks);
   ASSERT_TRUE(map_data);
 
   // Verify in-memory metadata is correct.
@@ -253,7 +255,7 @@ TEST_F(SessionStorageMetadataTest, SaveNewMap) {
                    ->ReferenceCount());
 
   leveldb::Status status;
-  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &status));
+  RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
   EXPECT_TRUE(status.ok());
 
   // Verify metadata was written to disk.
@@ -273,12 +275,11 @@ TEST_F(SessionStorageMetadataTest, ShallowCopies) {
   auto ns1_entry = metadata.GetOrCreateNamespaceEntry(test_namespace1_id_);
   auto ns3_entry = metadata.GetOrCreateNamespaceEntry(test_namespace3_id_);
 
-  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
-  metadata.RegisterShallowClonedNamespace(ns1_entry, ns3_entry, &operations);
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  metadata.RegisterShallowClonedNamespace(ns1_entry, ns3_entry, &tasks);
 
   leveldb::Status status;
-  ;
-  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &status));
+  RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
   EXPECT_TRUE(status.ok());
 
   // Verify in-memory metadata is correct.
@@ -310,10 +311,10 @@ TEST_F(SessionStorageMetadataTest, DeleteNamespace) {
   SessionStorageMetadata metadata;
   ReadMetadataFromDatabase(&metadata);
 
-  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
-  metadata.DeleteNamespace(test_namespace1_id_, &operations);
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  metadata.DeleteNamespace(test_namespace1_id_, &tasks);
   leveldb::Status status;
-  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &status));
+  RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
   EXPECT_TRUE(status.ok());
 
   EXPECT_FALSE(
@@ -344,10 +345,10 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   ReadMetadataFromDatabase(&metadata);
 
   // First delete an area with a shared map.
-  std::vector<leveldb::mojom::BatchedOperationPtr> operations;
-  metadata.DeleteArea(test_namespace1_id_, test_origin1_, &operations);
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  metadata.DeleteArea(test_namespace1_id_, test_origin1_, &tasks);
   leveldb::Status status;
-  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &status));
+  RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
   EXPECT_TRUE(status.ok());
 
   // Verify in-memory metadata is correct.
@@ -372,9 +373,9 @@ TEST_F(SessionStorageMetadataTest, DeleteArea) {
   EXPECT_TRUE(base::Contains(contents, StdStringToUint8Vector("map-4-key1")));
 
   // Now delete an area with a unique map.
-  operations.clear();
-  metadata.DeleteArea(test_namespace2_id_, test_origin2_, &operations);
-  WriteBatch(std::move(operations), base::BindOnce(&ErrorCallback, &status));
+  tasks.clear();
+  metadata.DeleteArea(test_namespace2_id_, test_origin2_, &tasks);
+  RunBatch(std::move(tasks), base::BindOnce(&ErrorCallback, &status));
   EXPECT_TRUE(status.ok());
 
   // Verify in-memory metadata is correct.
@@ -448,6 +449,23 @@ class SessionStorageMetadataMigrationTest : public testing::Test {
   std::vector<uint8_t> namespaces_prefix_key_;
 };
 
+struct BatchCollector : public leveldb::WriteBatch::Handler {
+ public:
+  BatchCollector() = default;
+  ~BatchCollector() override = default;
+
+  void Put(const leveldb::Slice& key, const leveldb::Slice& value) override {
+    new_entries.emplace(key.ToString(), value.ToString());
+  }
+
+  void Delete(const leveldb::Slice& key) override {
+    deleted_keys.push_back(key.ToString());
+  }
+
+  std::map<std::string, std::string> new_entries;
+  std::vector<std::string> deleted_keys;
+};
+
 TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   base::string16 key = base::ASCIIToUTF16("key");
   base::string16 value = base::ASCIIToUTF16("value");
@@ -468,11 +486,10 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
   std::string db_value;
   leveldb::Status s = db()->Get(options, leveldb::Slice("version"), &db_value);
   EXPECT_TRUE(s.IsNotFound());
-  std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations;
-  EXPECT_TRUE(
-      metadata.ParseDatabaseVersion(base::nullopt, &migration_operations));
-  EXPECT_FALSE(migration_operations.empty());
-  EXPECT_EQ(1ul, migration_operations.size());
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> migration_tasks;
+  EXPECT_TRUE(metadata.ParseDatabaseVersion(base::nullopt, &migration_tasks));
+  EXPECT_FALSE(migration_tasks.empty());
+  EXPECT_EQ(1ul, migration_tasks.size());
 
   // Grab the next map id, verify it doesn't crash.
   s = db()->Get(options, leveldb::Slice("next-map-id"), &db_value);
@@ -493,26 +510,24 @@ TEST_F(SessionStorageMetadataMigrationTest, MigrateV0ToV1) {
     EXPECT_TRUE(it->status().ok());
   }
 
-  EXPECT_TRUE(
-      metadata.ParseNamespaces(std::move(values), &migration_operations));
-  EXPECT_FALSE(migration_operations.empty());
-  EXPECT_EQ(3ul, migration_operations.size());
+  EXPECT_TRUE(metadata.ParseNamespaces(std::move(values), &migration_tasks));
+  EXPECT_EQ(2ul, migration_tasks.size());
 
-  EXPECT_TRUE(base::Contains(
-      migration_operations,
-      leveldb::mojom::BatchedOperation::New(
-          leveldb::mojom::BatchOperationType::PUT_KEY,
-          StdStringToUint8Vector("version"), StdStringToUint8Vector("1"))));
-  EXPECT_TRUE(
-      base::Contains(migration_operations,
-                     leveldb::mojom::BatchedOperation::New(
-                         leveldb::mojom::BatchOperationType::DELETE_KEY,
-                         StdStringToUint8Vector("map-0-"), base::nullopt)));
-  EXPECT_TRUE(
-      base::Contains(migration_operations,
-                     leveldb::mojom::BatchedOperation::New(
-                         leveldb::mojom::BatchOperationType::DELETE_KEY,
-                         StdStringToUint8Vector("namespace-"), base::nullopt)));
+  leveldb::WriteBatch batch;
+  storage::DomStorageDatabase* null_db = nullptr;
+
+  // Run the tasks on our local batch object. Note that these migration tasks
+  // only manipulate |batch|, so it's safe enough to pass them a reference to a
+  // null database.
+  for (auto& task : migration_tasks)
+    std::move(task).Run(&batch, *null_db);
+
+  BatchCollector collector;
+  batch.Iterate(&collector);
+  EXPECT_EQ(1u, collector.new_entries.size());
+  EXPECT_EQ("1", collector.new_entries["version"]);
+  EXPECT_THAT(collector.deleted_keys,
+              testing::ElementsAre("namespace-", "map-0-"));
 }
 
 }  // namespace

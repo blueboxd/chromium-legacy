@@ -64,7 +64,8 @@ void JsToJavaMessaging::PostMessage(
 }
 
 void JsToJavaMessaging::SetJavaToJsMessaging(
-    mojo::PendingRemote<mojom::JavaToJsMessaging> java_to_js_messaging) {
+    mojo::PendingAssociatedRemote<mojom::JavaToJsMessaging>
+        java_to_js_messaging) {
   // A RenderFrame may inject JsToJavaMessaging in the JavaScript context more
   // than once because of reusing of RenderFrame.
   reply_proxy_ =

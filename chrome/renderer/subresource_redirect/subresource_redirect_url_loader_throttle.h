@@ -5,7 +5,13 @@
 #ifndef CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_URL_LOADER_THROTTLE_H_
 #define CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_URL_LOADER_THROTTLE_H_
 
+#include "base/macros.h"
+#include "content/public/common/resource_type.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+
+namespace blink {
+class WebURLRequest;
+}  // namespace blink
 
 namespace subresource_redirect {
 
@@ -13,7 +19,10 @@ namespace subresource_redirect {
 // compressed versions of subresources.
 class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
-  SubresourceRedirectURLLoaderThrottle();
+  static std::unique_ptr<SubresourceRedirectURLLoaderThrottle>
+  MaybeCreateThrottle(const blink::WebURLRequest& request,
+                      content::ResourceType resource_type);
+
   ~SubresourceRedirectURLLoaderThrottle() override;
 
   // blink::URLLoaderThrottle:
@@ -36,6 +45,10 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
                                bool* defer) override;
   // Overridden to do nothing as the default implementation is NOT_REACHED()
   void DetachFromCurrentSequence() override;
+
+ private:
+  SubresourceRedirectURLLoaderThrottle();
+  DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectURLLoaderThrottle);
 };
 
 }  // namespace subresource_redirect

@@ -96,6 +96,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     AlphaOption alpha_option,
     HighBitDepthDecodingOption high_bit_depth_decoding_option,
     const ColorBehavior& color_behavior,
+    const OverrideAllowDecodeToYuv allow_decode_to_yuv,
     const SkISize& desired_size) {
   // At least kLongestSignatureLength bytes are needed to sniff the signature.
   if (data->size() < kLongestSignatureLength)
@@ -129,8 +130,8 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
 
   std::unique_ptr<ImageDecoder> decoder;
   if (MatchesJPEGSignature(contents)) {
-    decoder.reset(
-        new JPEGImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder.reset(new JPEGImageDecoder(alpha_option, color_behavior,
+                                       max_decoded_bytes, allow_decode_to_yuv));
   } else if (MatchesPNGSignature(contents)) {
     decoder.reset(new PNGImageDecoder(alpha_option,
                                       high_bit_depth_decoding_option,

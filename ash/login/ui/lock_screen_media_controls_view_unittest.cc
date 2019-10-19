@@ -36,7 +36,7 @@ using media_session::test::TestMediaController;
 namespace {
 
 const int kAppIconSize = 20;
-constexpr int kArtworkViewHeight = 80;
+constexpr int kArtworkViewHeight = 48;
 constexpr int kArtworkCornerRadius = 4;
 
 const base::string16 kTestAppName = base::ASCIIToUTF16("Test app");
@@ -746,7 +746,7 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
 
   {
     // Verify that the provided artwork is correctly scaled down.
-    gfx::Rect expected_artwork_bounds(0, 20, 80, 40);
+    gfx::Rect expected_artwork_bounds(0, 12, 48, 24);
     gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
     EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
@@ -758,14 +758,14 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   }
 
   // Create artwork that must be scaled up to fit the view.
-  artwork.allocN32Pixels(40, 70);
+  artwork.allocN32Pixels(20, 40);
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
 
   {
     // Verify that the provided artwork is correctly scaled up.
-    gfx::Rect expected_artwork_bounds(17, 0, 45, 80);
+    gfx::Rect expected_artwork_bounds(12, 0, 24, 48);
     gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
     EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
@@ -777,14 +777,14 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
   }
 
   // Create artwork that already fits the view size.
-  artwork.allocN32Pixels(70, kArtworkViewHeight);
+  artwork.allocN32Pixels(30, kArtworkViewHeight);
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kArtwork, artwork);
 
   {
     // Verify that the provided artwork size doesn't change.
-    gfx::Rect expected_artwork_bounds(5, 0, 70, 80);
+    gfx::Rect expected_artwork_bounds(9, 0, 30, 48);
     gfx::Rect artwork_bounds = artwork_view()->GetImageBounds();
     EXPECT_EQ(expected_artwork_bounds, artwork_bounds);
 
@@ -794,6 +794,27 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {
                       kArtworkCornerRadius, kArtworkCornerRadius);
     EXPECT_EQ(path, GetArtworkClipPath());
   }
+}
+
+TEST_F(LockScreenMediaControlsViewTest, ArtworkVisibility) {
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  EXPECT_FALSE(artwork_view()->GetVisible());
+
+  SkBitmap image;
+  image.allocN32Pixels(10, 10);
+  image.eraseColor(SK_ColorMAGENTA);
+
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+  EXPECT_TRUE(artwork_view()->GetVisible());
+
+  // Don't hide artwork immediately after getting null image.
+  image.reset();
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+  EXPECT_TRUE(artwork_view()->GetVisible());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, AccessibleNodeData) {

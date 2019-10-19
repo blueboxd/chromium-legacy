@@ -32,7 +32,6 @@ static_library("browser") {
     "//components/dom_distiller/content/common/mojom",
     "//components/resources",
     "//components/strings",
-    "//components/sync",
     "//content/public/browser",
     "//content/public/common",
     "//mojo/public/cpp/bindings",

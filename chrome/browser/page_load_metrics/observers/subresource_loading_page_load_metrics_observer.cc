@@ -13,7 +13,9 @@
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "net/cookies/cookie_options.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 namespace {
@@ -38,6 +40,17 @@ SubresourceLoadingPageLoadMetricsObserver::OnStart(
     const GURL& currently_committed_url,
     bool started_in_foreground) {
   navigation_start_ = base::Time::Now();
+
+  CheckForCookiesOnURL(navigation_handle->GetWebContents()->GetBrowserContext(),
+                       currently_committed_url);
+  return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+SubresourceLoadingPageLoadMetricsObserver::OnRedirect(
+    content::NavigationHandle* navigation_handle) {
+  CheckForCookiesOnURL(navigation_handle->GetWebContents()->GetBrowserContext(),
+                       navigation_handle->GetURL());
   return CONTINUE_OBSERVING;
 }
 
@@ -107,6 +120,25 @@ void SubresourceLoadingPageLoadMetricsObserver::OnOriginLastVisitResult(
   }
 }
 
+void SubresourceLoadingPageLoadMetricsObserver::CheckForCookiesOnURL(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartitionForSite(browser_context, url);
+
+  partition->GetCookieManagerForBrowserProcess()->GetCookieList(
+      url, net::CookieOptions::MakeAllInclusive(),
+      base::BindOnce(&SubresourceLoadingPageLoadMetricsObserver::OnCookieResult,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SubresourceLoadingPageLoadMetricsObserver::OnCookieResult(
+    const net::CookieStatusList& cookies,
+    const net::CookieStatusList& excluded_cookies) {
+  mainframe_had_cookies_ =
+      mainframe_had_cookies_.value_or(false) || !cookies.empty();
+}
+
 void SubresourceLoadingPageLoadMetricsObserver::OnResourceDataUseObserved(
     content::RenderFrameHost* rfh,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
@@ -140,6 +172,12 @@ void SubresourceLoadingPageLoadMetricsObserver::RecordMetrics() {
 
   // TODO(crbug.com/995437): Add UKM for data saver users once all metrics
   // are in place.
+
+  if (mainframe_had_cookies_.has_value()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies",
+        mainframe_had_cookies_.value());
+  }
 
   if (min_days_since_last_visit_to_origin_.has_value()) {
     int days_since_last_visit = min_days_since_last_visit_to_origin_.value();

@@ -9,6 +9,7 @@
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -206,6 +207,17 @@ void EvictOtherTabModelTabs() {
           otherBrowserState);
   enabler->SetWebUsageEnabled(false);
   enabler->SetWebUsageEnabled(true);
+}
+
+BOOL CloseAllNormalTabs() {
+  MainController* main_controller = GetMainController();
+  DCHECK(main_controller);
+
+  Browser* browser = main_controller.interfaceProvider.mainInterface.browser;
+  DCHECK(browser);
+  browser->GetWebStateList()->CloseAllWebStates(
+      WebStateList::CLOSE_USER_ACTION);
+  return YES;
 }
 
 BOOL CloseAllIncognitoTabs() {

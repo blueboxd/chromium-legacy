@@ -51,6 +51,7 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   // Badge overflow popup menu
   PopupMenuActionShowSavePasswordOptions,
   PopupMenuActionShowUpdatePasswordOptions,
+  PopupMenuActionShowSaveCardOptions,
 };
 
 // Protocol defining a popup item.

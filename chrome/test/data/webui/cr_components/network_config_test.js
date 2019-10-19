@@ -32,7 +32,7 @@ suite('network-config', function() {
     networkConfig = document.createElement('network-config');
     networkConfig.type = OncMojo.getNetworkTypeString(type);
     if (security !== undefined) {
-      networkConfig.securityType = security;
+      networkConfig.securityType_ = security;
     }
   }
 
@@ -209,7 +209,7 @@ suite('network-config', function() {
         assertEquals('ethernetguid', networkConfig.guid);
         assertEquals(
             chromeos.networkConfig.mojom.SecurityType.kNone,
-            networkConfig.securityType);
+            networkConfig.securityType_);
         let outer = networkConfig.$$('#outer');
         assertFalse(!!outer);
       });
@@ -229,7 +229,7 @@ suite('network-config', function() {
         assertEquals('eapguid', networkConfig.guid);
         assertEquals(
             chromeos.networkConfig.mojom.SecurityType.kWpaEap,
-            networkConfig.securityType);
+            networkConfig.securityType_);
         assertEquals(
             'PEAP',
             networkConfig.managedProperties.typeProperties.ethernet.eap.outer

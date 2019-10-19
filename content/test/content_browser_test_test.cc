@@ -190,15 +190,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunMockTests) {
   base::Value* val = root->FindDictKey("test_locations");
   ASSERT_TRUE(val);
   EXPECT_EQ(3u, val->DictSize());
-  // If path or test location changes, the following expectation
-  // will need to change accordingly.
-  std::string file_name = "../../content/test/content_browser_test_test.cc";
-  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_PassTest", file_name, 153));
-  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_FailTest", file_name, 157));
-  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocation(
-      val, "MockContentBrowserTest.DISABLED_CrashTest", file_name, 161));
+  EXPECT_TRUE(base::test_launcher_utils::ValidateTestLocations(
+      val, "MockContentBrowserTest"));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);

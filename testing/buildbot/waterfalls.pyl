@@ -1218,7 +1218,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_win_x64_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Win10 x64 DEPS Release (NVIDIA)': {
@@ -1229,7 +1229,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_dawn_integration_gtests',
-          'isolated_scripts': 'gpu_dawn_deps_win_x64_isolated_scripts',
+          'isolated_scripts': 'gpu_dawn_deps_isolated_scripts',
         },
       },
       'Dawn Win10 x64 Release (Intel HD 630)': {
@@ -4419,6 +4419,22 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'os_type': 'android',
+      },
+    },
+  },
+  {
+    'name': 'tryserver.chromium.linux',
+    'machines': {
+      'linux-layout-tests-fragment-item': {
+        'additional_compile_targets': [
+          'blink_tests',
+        ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
       },
     },
   },

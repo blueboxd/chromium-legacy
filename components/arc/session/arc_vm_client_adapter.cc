@@ -24,6 +24,7 @@
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
@@ -40,6 +41,7 @@
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session.h"
+#include "components/version_info/version_info.h"
 
 namespace arc {
 namespace {
@@ -179,34 +181,6 @@ vm_tools::concierge::CreateDiskImageRequest CreateArcDiskRequest(
   return request;
 }
 
-// TODO(yusukes): ArcSessionImpl already has this info through the delegate.
-// Use it and remove this function.
-std::string GetReleaseChannel() {
-  constexpr const char kUnknown[] = "unknown";
-  const std::set<std::string> channels = {"beta",    "canary", "dev",
-                                          "dogfood", "stable", "testimage"};
-
-  std::string value;
-  if (!base::SysInfo::GetLsbReleaseValue("CHROMEOS_RELEASE_TRACK", &value)) {
-    LOG(ERROR) << "Could not load lsb-release";
-    return kUnknown;
-  }
-
-  auto pieces = base::SplitString(value, "-", base::KEEP_WHITESPACE,
-                                  base::SPLIT_WANT_ALL);
-
-  if (pieces.size() != 2 || pieces[1] != "channel") {
-    LOG(ERROR) << "Misformatted CHROMEOS_RELEASE_TRACK value in lsb-release";
-    return kUnknown;
-  }
-  if (channels.find(pieces[0]) == channels.end()) {
-    LOG(WARNING) << "Unknown ChromeOS channel: \"" << pieces[0] << "\"";
-    return kUnknown;
-  }
-
-  return pieces[0];
-}
-
 std::string MonotonicTimestamp() {
   struct timespec ts;
   const int ret = clock_gettime(CLOCK_BOOTTIME, &ts);
@@ -218,9 +192,11 @@ std::string MonotonicTimestamp() {
 
 std::vector<std::string> GenerateKernelCmdline(
     const StartParams& start_params,
+    const UpgradeParams& upgrade_params,
     const FileSystemStatus& file_system_status,
     bool is_dev_mode,
-    bool is_host_on_vm) {
+    bool is_host_on_vm,
+    const std::string& channel) {
   std::vector<std::string> result = {
       "androidboot.hardware=bertha",
       "androidboot.container=1",
@@ -240,12 +216,29 @@ std::vector<std::string> GenerateKernelCmdline(
                          start_params.arc_custom_tabs_experiment),
       base::StringPrintf("androidboot.arc_print_spooler=%d",
                          start_params.arc_print_spooler_experiment),
-      "androidboot.chromeos_channel=" + GetReleaseChannel(),
+      "androidboot.chromeos_channel=" + channel,
       "androidboot.boottime_offset=" + MonotonicTimestamp(),
       // TODO(yusukes): remove this once arcvm supports SELinux.
       "androidboot.selinux=permissive",
-  };
 
+      // Since we don't do mini VM yet, set not only |start_params| but also
+      // |upgrade_params| here for now.
+      base::StringPrintf("androidboot.disable_boot_completed=%d",
+                         upgrade_params.skip_boot_completed_broadcast),
+      base::StringPrintf("androidboot.copy_packages_cache=%d",
+                         static_cast<int>(upgrade_params.packages_cache_mode)),
+      base::StringPrintf("androidboot.skip_gms_core_cache=%d",
+                         upgrade_params.skip_gms_core_cache),
+      base::StringPrintf("androidboot.arc_demo_mode=%d",
+                         upgrade_params.is_demo_session),
+      base::StringPrintf(
+          "androidboot.supervision.transition=%d",
+          static_cast<int>(upgrade_params.supervision_transition)),
+  };
+  // TODO(yusukes): Check if we need to set ro.serialno, ro.boot.serialno,
+  // ro.boot.container_boot_type, and ro.boot.enable_adb_sideloading for ARCVM.
+
+  // Conditionally sets some properties based on |start_params|.
   switch (start_params.play_store_auto_update) {
     case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_DEFAULT:
       break;
@@ -257,6 +250,17 @@ std::vector<std::string> GenerateKernelCmdline(
       break;
   }
 
+  // Conditionally sets more properties based on |upgrade_params|.
+  if (!upgrade_params.locale.empty()) {
+    result.push_back("androidboot.locale=" + upgrade_params.locale);
+    if (!upgrade_params.preferred_languages.empty()) {
+      result.push_back(
+          "androidboot.preferred_languages=" +
+          base::JoinString(upgrade_params.preferred_languages, ","));
+    }
+  }
+
+  // TODO(yusukes): Handle |demo_session_apps_path| in |upgrade_params|.
   return result;
 }
 
@@ -327,8 +331,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // Initializing |is_host_on_vm_| and |is_dev_mode_| is not always very fast.
   // Try to initialize them in the constructor and in StartMiniArc respectively.
   // They usually run when the system is not busy.
-  ArcVmClientAdapter()
-      : is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
+  explicit ArcVmClientAdapter(version_info::Channel channel)
+      : channel_(channel),
+        is_host_on_vm_(chromeos::system::StatisticsProvider::GetInstance()
                            ->IsRunningOnVm()) {
     auto* client = GetConciergeClient();
     client->AddVmObserver(this);
@@ -504,10 +509,10 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         base::SysInfo::NumberOfProcessors() - start_params_.num_cores_disabled;
     DCHECK_LT(0, cpus);
 
-    // TODO(yusukes): Use |params| for generating kernel command line too.
     DCHECK(is_dev_mode_);
     std::vector<std::string> kernel_cmdline = GenerateKernelCmdline(
-        start_params_, file_system_status, *is_dev_mode_, is_host_on_vm_);
+        start_params_, params, file_system_status, *is_dev_mode_,
+        is_host_on_vm_, version_info::GetChannelString(channel_));
     auto start_request =
         CreateStartArcVmRequest(user_id_hash_, cpus, data_disk_path,
                                 file_system_status, std::move(kernel_cmdline));
@@ -592,6 +597,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     VLOG(1) << "OnArcVmServerProxyJobStopped result=" << result;
   }
 
+  const version_info::Channel channel_;
+
   base::Optional<bool> is_dev_mode_;
   // True when the *host* is running on a VM.
   const bool is_host_on_vm_;
@@ -608,8 +615,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapter);
 };
 
-std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter() {
-  return std::make_unique<ArcVmClientAdapter>();
+std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
+    version_info::Channel channel) {
+  return std::make_unique<ArcVmClientAdapter>(channel);
 }
 
 bool IsAndroidDebuggableForTesting(const base::FilePath& json_path) {

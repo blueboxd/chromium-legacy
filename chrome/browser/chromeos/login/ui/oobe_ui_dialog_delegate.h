@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "ui/views/view_observer.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 namespace content {
@@ -27,6 +28,7 @@ class Accelerator;
 }
 
 namespace views {
+class View;
 class WebDialogView;
 class Widget;
 }  // namespace views
@@ -48,7 +50,8 @@ class OobeWebDialogView;
 //   clientView---->Widget's view hierarchy
 class OobeUIDialogDelegate : public ui::WebDialogDelegate,
                              public ChromeKeyboardControllerClient::Observer,
-                             public CaptivePortalWindowProxy::Observer {
+                             public CaptivePortalWindowProxy::Observer,
+                             public views::ViewObserver {
  public:
   explicit OobeUIDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
   ~OobeUIDialogDelegate() override;
@@ -99,6 +102,9 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate,
                          const content::ContextMenuParams& params) override;
   std::vector<ui::Accelerator> GetAccelerators() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* observed_view) override;
 
   // ChromeKeyboardControllerClient::Observer:
   void OnKeyboardVisibilityChanged(bool visible) override;

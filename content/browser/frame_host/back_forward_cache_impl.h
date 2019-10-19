@@ -129,12 +129,16 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // knowing its |navigation_entry_id|. Returns nullptr when none is found.
   std::unique_ptr<Entry> RestoreEntry(int navigation_entry_id);
 
-  // Remove all entries from the BackForwardCache.
+  // Evict all entries from the BackForwardCache.
   void Flush();
 
   // Evict all cached pages in the same BrowsingInstance as
   // |site_instance|.
   void EvictFramesInRelatedSiteInstances(SiteInstance* site_instance);
+
+  // Immediately deletes all frames in the cache. This should only be called
+  // when WebContents is being destroyed.
+  void Shutdown();
 
   // Posts a task to destroy all frames in the BackForwardCache that have been
   // marked as evicted.
@@ -145,6 +149,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // the frame from the cache after the time to live, which can be controlled
   // via experiment.
   static base::TimeDelta GetTimeToLiveInBackForwardCache();
+
+  // Checks if the url's host and path matches with the |allowed_urls_| host and
+  // path. This is controlled by "allowed_websites" param on BackForwardCache
+  // feature and if the param is not set, it will allow all websites by default.
+  bool IsAllowed(const GURL& current_url);
 
   // Returns the task runner that should be used by the eviction timer.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
@@ -175,11 +184,6 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   // Helper for recursively checking each child.
   CanStoreDocumentResult CanStoreRenderFrameHost(
       RenderFrameHostImpl* render_frame_host);
-
-  // Checks if the url's host and path matches with the |allowed_urls_| host and
-  // path. This is controlled by "allowed_websites" param on BackForwardCache
-  // feature and if the param is not set, it will allow all websites by default.
-  bool IsAllowed(const GURL& current_url);
 
   // Contains the set of stored Entries.
   // Invariant:

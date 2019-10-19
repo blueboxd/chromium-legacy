@@ -12,6 +12,10 @@
 #include "base/values.h"
 #include "net/base/escape.h"
 
+#if DCHECK_IS_ON()
+#include "third_party/re2/src/re2/re2.h"  // nogncheck
+#endif
+
 namespace {
 const char kLeader[] = "$i18n";
 const size_t kLeaderSize = base::size(kLeader) - 1;
@@ -141,6 +145,19 @@ bool EscapeForJS(const std::string& in_string,
   return true;
 }
 
+#if DCHECK_IS_ON()
+// Checks whether the replacement has an unsubstituted placeholder, e.g. "$1".
+bool HasUnexpectedPlaceholder(const std::string& key,
+                              const std::string& replacement) {
+  // TODO(crbug.com/988031): Fix display aria labels.
+#if defined(OS_CHROMEOS)
+  if (key == "displayResolutionText")
+    return false;
+#endif
+  return re2::RE2::PartialMatch(replacement, re2::RE2(R"(\$\d)"));
+}
+#endif  // DCHECK_IS_ON()
+
 bool ReplaceTemplateExpressionsInternal(
     base::StringPiece source,
     const ui::TemplateReplacements& replacements,
@@ -204,6 +221,15 @@ bool ReplaceTemplateExpressionsInternal(
     } else {
       CHECK(false) << "Unknown context " << context;
     }
+
+#if DCHECK_IS_ON()
+    // Replacements in Polymer WebUI may invoke JavaScript to replace string
+    // placeholders. In other contexts, placeholders should already be replaced.
+    if (context != "Polymer") {
+      DCHECK(!HasUnexpectedPlaceholder(key, replacement))
+          << "Dangling placeholder found in " << key;
+    }
+#endif
 
     formatted->append(replacement);
 

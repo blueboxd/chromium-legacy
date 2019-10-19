@@ -70,7 +70,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     abpath = self._AbsPath(path)
     self.files[abpath] = contents
 
-  def Call(self, cmd, env=None, buffer_output=True):
+  def Call(self, cmd, env=None, buffer_output=True, stdin=None):
     self.calls.append(cmd)
     if self.cmds:
       return self.cmds.pop(0)
@@ -273,7 +273,7 @@ class UnitTest(unittest.TestCase):
              }'''}
 
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True, stdin=None: (0, '', '')
 
     self.check(['analyze', '-c', 'debug_goma', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
@@ -297,7 +297,7 @@ class UnitTest(unittest.TestCase):
              }'''}
 
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True, stdin=None: (0, '', '')
 
     self.check(['analyze', '-c', 'debug_goma', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
@@ -320,7 +320,7 @@ class UnitTest(unittest.TestCase):
              }'''}
 
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True, stdin=None: (0, '', '')
 
     self.check(['analyze', '-c', 'debug_goma', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
@@ -347,7 +347,7 @@ class UnitTest(unittest.TestCase):
              }'''}
 
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True, stdin=None: (0, '', '')
 
     self.check(['analyze', '-c', 'debug_goma', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
@@ -407,7 +407,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gen_fails(self):
     mbw = self.fake_mbw()
-    mbw.Call = lambda cmd, env=None, buffer_output=True: (1, '', '')
+    mbw.Call = lambda cmd, env=None, buffer_output=True, stdin=None: (1, '', '')
     self.check(['gen', '-c', 'debug_goma', '//out/Default'], mbw=mbw, ret=1)
 
   def test_gen_swarming(self):
@@ -424,10 +424,11 @@ class UnitTest(unittest.TestCase):
 
     mbw = self.fake_mbw(files)
 
-    def fake_call(cmd, env=None, buffer_output=True):
+    def fake_call(cmd, env=None, buffer_output=True, stdin=None):
       del cmd
       del env
       del buffer_output
+      del stdin
       mbw.files['/fake_src/out/Default/base_unittests.runtime_deps'] = (
           'base_unittests\n')
       return 0, '', ''
@@ -457,10 +458,11 @@ class UnitTest(unittest.TestCase):
     }
     mbw = self.fake_mbw(files=files)
 
-    def fake_call(cmd, env=None, buffer_output=True):
+    def fake_call(cmd, env=None, buffer_output=True, stdin=None):
       del cmd
       del env
       del buffer_output
+      del stdin
       mbw.files['/fake_src/out/Default/cc_perftests.runtime_deps'] = (
           'cc_perftests\n')
       return 0, '', ''
@@ -491,10 +493,11 @@ class UnitTest(unittest.TestCase):
 
     mbw = self.fake_mbw(files=files)
 
-    def fake_call(cmd, env=None, buffer_output=True):
+    def fake_call(cmd, env=None, buffer_output=True, stdin=None):
       del cmd
       del env
       del buffer_output
+      del stdin
       mbw.files['/fake_src/out/Default/cc_perftests_fuzzer.runtime_deps'] = (
           'cc_perftests_fuzzer\n')
       return 0, '', ''
@@ -533,10 +536,11 @@ class UnitTest(unittest.TestCase):
     }
     mbw = self.fake_mbw(files=files)
 
-    def fake_call(cmd, env=None, buffer_output=True):
+    def fake_call(cmd, env=None, buffer_output=True, stdin=None):
       del cmd
       del env
       del buffer_output
+      del stdin
       mbw.files['/fake_src/out/Default/cc_perftests.runtime_deps'] = (
           'cc_perftests_fuzzer\n')
       return 0, '', ''

@@ -51,6 +51,13 @@ namespace base {
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //     task_runner->PostTask(FROM_HERE, BindOnce(...));
 //
+// To post a task on the current thread or sequence but with an explicit
+// priority:
+//     PostTask(FROM_HERE,
+//              {CurrentThread(), TaskPriority::BEST_EFFORT},
+//              BindOnce(...));
+//
+//
 // The default traits apply to tasks that:
 //     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
 //     (2) prefer inheriting the current priority to specifying their own, and
@@ -231,6 +238,12 @@ BASE_EXPORT scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
     SingleThreadTaskRunnerThreadMode thread_mode =
         SingleThreadTaskRunnerThreadMode::SHARED);
 #endif  // defined(OS_WIN)
+
+// Returns: The SequencedTaskRunner for the currently executing task, if any.
+// Otherwise it returns a null scoped_refptr. On threads where there's no
+// TaskExecutor registered this will DCHECK e.g. in a one-off ThreadPool task.
+BASE_EXPORT const scoped_refptr<SequencedTaskRunner>&
+GetContinuationTaskRunner();
 
 }  // namespace base
 

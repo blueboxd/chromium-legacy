@@ -186,11 +186,6 @@ public class OmniboxTestUtils {
         }
 
         @Override
-        protected long nativeInit(Profile profile) {
-            return 1;
-        }
-
-        @Override
         public void setProfile(Profile profile) {}
     }
 
@@ -218,11 +213,6 @@ public class OmniboxTestUtils {
 
         @Override
         public void stop(boolean clear) {}
-
-        @Override
-        protected long nativeInit(Profile profile) {
-            return 1;
-        }
 
         @Override
         public void setProfile(Profile profile) {}

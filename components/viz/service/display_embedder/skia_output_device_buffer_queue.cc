@@ -327,7 +327,7 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   FinishSwapBuffers(result, size, latency_info);
 }
 
-void SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
+bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
                                           float device_scale_factor,
                                           const gfx::ColorSpace& color_space,
                                           bool has_alpha,
@@ -336,13 +336,14 @@ void SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
       gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
   if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
                            has_alpha)) {
-    LOG(FATAL) << "Failed to resize.";
-    // TODO(vasilyt): Handle the failure.
+    DLOG(ERROR) << "Failed to resize.";
+    return false;
   }
 
   color_space_ = color_space;
   image_size_ = size;
   FreeAllSurfaces();
+  return true;
 }
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint() {

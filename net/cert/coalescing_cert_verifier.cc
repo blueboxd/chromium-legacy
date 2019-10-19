@@ -354,6 +354,8 @@ CoalescingCertVerifier::Request::~Request() {
 }
 
 void CoalescingCertVerifier::Request::Complete(int result) {
+  DCHECK(job_);  // There must be a pending/non-aborted job to complete.
+
   *verify_result_ = job_->verify_result();
 
   // On successful completion, the Job removes the Request from its set;
@@ -368,12 +370,16 @@ void CoalescingCertVerifier::Request::Complete(int result) {
 }
 
 void CoalescingCertVerifier::Request::OnJobAbort() {
+  DCHECK(job_);  // There must be a pending job to abort.
+
   // If the Job is deleted before the Request, just clean up. The Request will
   // eventually be deleted by the caller.
   net_log_.AddEvent(NetLogEventType::CANCELLED);
   net_log_.EndEvent(NetLogEventType::CERT_VERIFIER_REQUEST);
 
   job_ = nullptr;
+  // Note: May delete |this|, if the caller made |callback_| own the Request.
+  callback_.Reset();
 }
 
 CoalescingCertVerifier::CoalescingCertVerifier(

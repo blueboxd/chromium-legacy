@@ -98,13 +98,6 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       address_cache_(std::make_unique<AddressCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
       process_heap_reporter_(std::make_unique<ProcessHeapReporter>()),
-      marking_worklist_(nullptr),
-      not_fully_constructed_worklist_(nullptr),
-      weak_callback_worklist_(nullptr),
-      movable_reference_worklist_(nullptr),
-      weak_table_worklist_(nullptr),
-      backing_store_callback_worklist_(nullptr),
-      v8_references_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
@@ -158,6 +151,7 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
 
 void ThreadHeap::SetupWorklists() {
   marking_worklist_.reset(new MarkingWorklist());
+  write_barrier_worklist_.reset(new WriteBarrierWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
   previously_not_fully_constructed_worklist_.reset(
       new NotFullyConstructedWorklist());
@@ -171,6 +165,7 @@ void ThreadHeap::SetupWorklists() {
 
 void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   marking_worklist_.reset(nullptr);
+  write_barrier_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
   weak_table_worklist_.reset();
@@ -326,6 +321,18 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
       if (!finished)
         break;
 
+      finished = DrainWorklistWithDeadline(
+          deadline, write_barrier_worklist_.get(),
+          [visitor](HeapObjectHeader* header) {
+            DCHECK(!header->IsInConstruction());
+            GCInfoTable::Get()
+                .GCInfoFromIndex(header->GcInfoIndex())
+                ->trace(visitor, header->Payload());
+          },
+          WorklistTaskId::MutatorThread);
+      if (!finished)
+        break;
+
       // Iteratively mark all objects that were previously discovered while
       // being in construction. The objects can be processed incrementally once
       // a safepoint was reached.
@@ -351,17 +358,29 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
 
 bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
                                           base::TimeTicks deadline) {
+  bool finished = false;
   // Iteratively mark all objects that are reachable from the objects
   // currently pushed onto the marking worklist.
-  return DrainWorklistWithDeadline(
+  finished = DrainWorklistWithDeadline(
       deadline, marking_worklist_.get(),
       [visitor](const MarkingItem& item) {
-        DCHECK(
-            !HeapObjectHeader::FromPayload(item.object)
-                 ->IsInConstruction<HeapObjectHeader::AccessMode::kAtomic>());
+        DCHECK(!HeapObjectHeader::FromPayload(item.object)->IsInConstruction());
         item.callback(visitor, item.object);
       },
       visitor->task_id());
+  if (!finished)
+    return false;
+
+  finished = DrainWorklistWithDeadline(
+      deadline, write_barrier_worklist_.get(),
+      [visitor](HeapObjectHeader* header) {
+        DCHECK(!header->IsInConstruction());
+        GCInfoTable::Get()
+            .GCInfoFromIndex(header->GcInfoIndex())
+            ->trace(visitor, header->Payload());
+      },
+      visitor->task_id());
+  return finished;
 }
 
 void ThreadHeap::WeakProcessing(MarkingVisitor* visitor) {

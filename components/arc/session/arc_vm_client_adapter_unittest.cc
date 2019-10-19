@@ -5,6 +5,7 @@
 #include "components/arc/session/arc_vm_client_adapter.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -97,7 +98,7 @@ class ArcVmClientAdapterTest : public testing::Test,
 
   void SetUp() override {
     run_loop_ = std::make_unique<base::RunLoop>();
-    adapter_ = CreateArcVmClientAdapter();
+    adapter_ = CreateArcVmClientAdapter(version_info::Channel::STABLE);
     arc_instance_stopped_called_ = false;
     adapter_->AddObserver(this);
     ASSERT_TRUE(dir_.CreateUniqueTempDir());

@@ -29,6 +29,8 @@
 
 #include "third_party/blink/renderer/core/css/style_engine.h"
 
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -101,8 +103,11 @@ StyleEngine::StyleEngine(Document& document)
     viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
   if (IsMaster())
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
-  if (auto* settings = GetDocument().GetSettings())
-    preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  if (Platform::Current() && Platform::Current()->ThemeEngine()) {
+    preferred_color_scheme_ =
+        Platform::Current()->ThemeEngine()->PreferredColorScheme();
+    forced_colors_ = Platform::Current()->ThemeEngine()->ForcedColors();
+  }
 }
 
 StyleEngine::~StyleEngine() = default;
@@ -1928,11 +1933,16 @@ bool StyleEngine::SupportsDarkColorScheme() {
 
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
-  if (!settings)
+  auto* web_theme_engine =
+      Platform::Current() ? Platform::Current()->ThemeEngine() : nullptr;
+  if (!settings || !web_theme_engine)
     return;
 
+  ForcedColors old_forced_colors = forced_colors_;
+  forced_colors_ = web_theme_engine->ForcedColors();
+
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
-  preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  preferred_color_scheme_ = web_theme_engine->PreferredColorScheme();
   if (const auto* overrides =
           GetDocument().GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-color-scheme");
@@ -1948,7 +1958,8 @@ void StyleEngine::UpdateColorScheme() {
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
 
-  if (preferred_color_scheme_ != old_preferred_color_scheme)
+  if (forced_colors_ != old_forced_colors ||
+      preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();
   UpdateColorSchemeBackground();
 }
@@ -1974,7 +1985,7 @@ void StyleEngine::UpdateColorSchemeBackground() {
   bool use_dark_background = false;
 
   if (preferred_color_scheme_ == PreferredColorScheme::kDark &&
-      !GetDocument().InForcedColorsMode()) {
+      forced_colors_ != ForcedColors::kActive) {
     const ComputedStyle* style = nullptr;
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();

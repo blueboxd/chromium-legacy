@@ -70,69 +70,45 @@ PrefService* GetPrefService() {
 
 // Registers power prefs whose default values are the same in user prefs and
 // signin prefs.
-void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
-  registry->RegisterIntegerPref(prefs::kPowerAcScreenBrightnessPercent, -1,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs, 420000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs, 450000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs, 0,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs, 0,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 510000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenBrightnessPercent, -1,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs, 300000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenOffDelayMs, 330000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenLockDelayMs, 0,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleWarningDelayMs, 0,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleDelayMs, 390000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerLockScreenDimDelayMs, 30000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerLockScreenOffDelayMs, 40000,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerAcIdleAction,
-                                chromeos::PowerPolicyController::ACTION_SUSPEND,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kPowerUseAudioActivity, true,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kPowerUseVideoActivity, true,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kPowerAllowWakeLocks, true,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kPowerAllowScreenWakeLocks, true,
-                                PrefRegistry::PUBLIC);
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenBrightnessPercent, -1);
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs, 420000);
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenOffDelayMs, 450000);
+  registry->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerAcIdleDelayMs, 510000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenBrightnessPercent,
+                                -1);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenDimDelayMs, 300000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenOffDelayMs, 330000);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryScreenLockDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleWarningDelayMs, 0);
+  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleDelayMs, 390000);
+  registry->RegisterIntegerPref(prefs::kPowerLockScreenDimDelayMs, 30000);
+  registry->RegisterIntegerPref(prefs::kPowerLockScreenOffDelayMs, 40000);
+  registry->RegisterIntegerPref(
+      prefs::kPowerAcIdleAction,
+      chromeos::PowerPolicyController::ACTION_SUSPEND);
+  registry->RegisterBooleanPref(prefs::kPowerUseAudioActivity, true);
+  registry->RegisterBooleanPref(prefs::kPowerUseVideoActivity, true);
+  registry->RegisterBooleanPref(prefs::kPowerAllowWakeLocks, true);
+  registry->RegisterBooleanPref(prefs::kPowerAllowScreenWakeLocks, true);
   registry->RegisterDoublePref(prefs::kPowerPresentationScreenDimDelayFactor,
-                               2.0, PrefRegistry::PUBLIC);
+                               2.0);
   registry->RegisterDoublePref(prefs::kPowerUserActivityScreenDimDelayFactor,
-                               2.0, PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kPowerWaitForInitialUserActivity, false,
-                                PrefRegistry::PUBLIC);
+                               2.0);
+  registry->RegisterBooleanPref(prefs::kPowerWaitForInitialUserActivity, false);
   registry->RegisterBooleanPref(
-      prefs::kPowerForceNonzeroBrightnessForUserActivity, true,
-      PrefRegistry::PUBLIC);
+      prefs::kPowerForceNonzeroBrightnessForUserActivity, true);
   registry->RegisterBooleanPref(prefs::kPowerFastSuspendWhenBacklightsForcedOff,
-                                true, PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kPowerSmartDimEnabled, true,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kPowerAlsLoggingEnabled, false,
-                                PrefRegistry::PUBLIC);
+                                true);
+  registry->RegisterBooleanPref(prefs::kPowerSmartDimEnabled, true);
+  registry->RegisterBooleanPref(prefs::kPowerAlsLoggingEnabled, false);
 
-  if (for_test) {
-    registry->RegisterBooleanPref(prefs::kAllowScreenLock, true,
-                                  PrefRegistry::PUBLIC);
-    registry->RegisterBooleanPref(
-        prefs::kEnableAutoScreenLock, false,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  }
+  registry->RegisterBooleanPref(prefs::kAllowScreenLock, true);
+  registry->RegisterBooleanPref(
+      prefs::kEnableAutoScreenLock, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 }  // namespace
@@ -162,56 +138,45 @@ PowerPrefs::~PowerPrefs() {
 
 // static
 void PowerPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kPowerPeakShiftEnabled, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerPeakShiftBatteryThreshold, -1,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kPowerPeakShiftDayConfig,
-                                   PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kPowerPeakShiftEnabled, false);
+  registry->RegisterIntegerPref(prefs::kPowerPeakShiftBatteryThreshold, -1);
+  registry->RegisterDictionaryPref(prefs::kPowerPeakShiftDayConfig);
 
-  registry->RegisterBooleanPref(prefs::kBootOnAcEnabled, false,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kBootOnAcEnabled, false);
 
-  registry->RegisterBooleanPref(prefs::kAdvancedBatteryChargeModeEnabled, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kAdvancedBatteryChargeModeDayConfig,
-                                   PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kAdvancedBatteryChargeModeEnabled,
+                                false);
+  registry->RegisterDictionaryPref(prefs::kAdvancedBatteryChargeModeDayConfig);
 
-  registry->RegisterIntegerPref(prefs::kBatteryChargeMode, -1,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kBatteryChargeCustomStartCharging, -1,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kBatteryChargeCustomStopCharging, -1,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(prefs::kBatteryChargeMode, -1);
+  registry->RegisterIntegerPref(prefs::kBatteryChargeCustomStartCharging, -1);
+  registry->RegisterIntegerPref(prefs::kBatteryChargeCustomStopCharging, -1);
 
-  registry->RegisterBooleanPref(prefs::kUsbPowerShareEnabled, true,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kUsbPowerShareEnabled, true);
 }
 
 // static
-void PowerPrefs::RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
-                                            bool for_test) {
-  RegisterProfilePrefs(registry, for_test);
+void PowerPrefs::RegisterSigninProfilePrefs(PrefRegistrySimple* registry) {
+  RegisterProfilePrefs(registry);
 
   registry->RegisterIntegerPref(
       prefs::kPowerBatteryIdleAction,
-      chromeos::PowerPolicyController::ACTION_SHUT_DOWN, PrefRegistry::PUBLIC);
+      chromeos::PowerPolicyController::ACTION_SHUT_DOWN);
   registry->RegisterIntegerPref(
       prefs::kPowerLidClosedAction,
-      chromeos::PowerPolicyController::ACTION_SHUT_DOWN, PrefRegistry::PUBLIC);
+      chromeos::PowerPolicyController::ACTION_SHUT_DOWN);
 }
 
 // static
-void PowerPrefs::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
-                                          bool for_test) {
-  RegisterProfilePrefs(registry, for_test);
+void PowerPrefs::RegisterUserProfilePrefs(PrefRegistrySimple* registry) {
+  RegisterProfilePrefs(registry);
 
-  registry->RegisterIntegerPref(prefs::kPowerBatteryIdleAction,
-                                chromeos::PowerPolicyController::ACTION_SUSPEND,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kPowerLidClosedAction,
-                                chromeos::PowerPolicyController::ACTION_SUSPEND,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      prefs::kPowerBatteryIdleAction,
+      chromeos::PowerPolicyController::ACTION_SUSPEND);
+  registry->RegisterIntegerPref(
+      prefs::kPowerLidClosedAction,
+      chromeos::PowerPolicyController::ACTION_SUSPEND);
 }
 
 void PowerPrefs::ScreenIdleStateChanged(

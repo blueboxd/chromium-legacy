@@ -1791,17 +1791,17 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
   return message.compare("\"SUCCESS\"") == 0;
 }
 
-std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
+std::string GetCookies(BrowserContext* browser_context,
+                       const GURL& url,
+                       net::CookieOptions::SameSiteCookieContext context) {
   std::string cookies;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
       ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
-  // Allow access to SameSite cookies in tests.
   net::CookieOptions options;
-  options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  options.set_same_site_cookie_context(context);
   cookie_manager->GetCookieList(
       url, options,
       base::BindOnce(
@@ -1846,7 +1846,8 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
 
 bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
-               const std::string& value) {
+               const std::string& value,
+               net::CookieOptions::SameSiteCookieContext context) {
   bool result = false;
   base::RunLoop run_loop;
   mojo::Remote<network::mojom::CookieManager> cookie_manager;
@@ -1859,8 +1860,7 @@ bool SetCookie(BrowserContext* browser_context,
 
   net::CookieOptions options;
   options.set_include_httponly();
-  options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+  options.set_same_site_cookie_context(context);
   cookie_manager->SetCanonicalCookie(
       *cc.get(), url.scheme(), options,
       base::BindOnce(

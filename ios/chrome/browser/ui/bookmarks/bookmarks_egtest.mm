@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #include <vector>
@@ -41,6 +40,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -104,8 +104,8 @@ id<GREYMatcher> NavigateBackButtonTo(NSString* previousViewControllerLabel) {
       grey_anyOf(grey_accessibilityLabel(previousViewControllerLabel),
                  grey_accessibilityLabel(@"Back"), nil);
 
-  return grey_allOf(grey_kindOfClass([UIButton class]),
-                    grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+  return grey_allOf(grey_kindOfClassName(@"UIButton"),
+                    grey_ancestor(grey_kindOfClassName(@"UINavigationBar")),
                     buttonLabelMatcher, nil);
 }
 
@@ -397,7 +397,7 @@ id<GREYMatcher> SearchIconButton() {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(@"Mobile Bookmarks"),
-                                   grey_kindOfClass([UITableViewCell class]),
+                                   grey_kindOfClassName(@"UITableViewCell"),
                                    nil)] assertWithMatcher:grey_nil()];
 
   // Open the first folder, to be able to go back twice on the bookmarks.
@@ -977,8 +977,7 @@ id<GREYMatcher> SearchIconButton() {
 + (void)openBookmarkFolder:(NSString*)bookmarkFolder {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_kindOfClass(
-                                       NSClassFromString(@"UITableViewCell")),
+                                   grey_kindOfClassName(@"UITableViewCell"),
                                    grey_descendant(grey_text(bookmarkFolder)),
                                    nil)] performAction:grey_tap()];
 }
@@ -1515,8 +1514,7 @@ id<GREYMatcher> SearchIconButton() {
 + (void)verifyBookmarkFolderIsSeen:(NSString*)bookmarkFolder {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_kindOfClass(
-                                       NSClassFromString(@"UITableViewCell")),
+                                   grey_kindOfClassName(@"UITableViewCell"),
                                    grey_descendant(grey_text(bookmarkFolder)),
                                    nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -1850,7 +1848,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify the delete confirmation button shows up.
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_notNil()];
 
   // Change to edit mode
@@ -1861,7 +1859,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify the delete confirmation button is gone after entering edit mode.
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_nil()];
 
   // Swipe action on "Second URL".  This should not bring out delete
@@ -1872,7 +1870,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Verify the delete confirmation button doesn't appear.
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_nil()];
 
   // Cancel edit mode
@@ -1886,7 +1884,7 @@ id<GREYMatcher> SearchIconButton() {
   // Verify the delete confirmation button shows up. (swipe-to-delete is
   // re-enabled).
   [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      inRoot:grey_kindOfClassName(@"UITableView")]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -4634,8 +4632,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase openMobileBookmarks];
 
   // Verify search bar is enabled.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
-                                          NSClassFromString(@"UISearchBar"))]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
       assertWithMatcher:grey_userInteractionEnabled()];
 
   // Change to edit mode
@@ -4645,16 +4642,14 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Verify search bar is disabled.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
-                                          NSClassFromString(@"UISearchBar"))]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
       assertWithMatcher:grey_not(grey_userInteractionEnabled())];
 
   // Cancel edito mode.
   [BookmarksTestCase closeContextBarEditMode];
 
   // Verify search bar is enabled.
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass(
-                                          NSClassFromString(@"UISearchBar"))]
+  [[EarlGrey selectElementWithMatcher:grey_kindOfClassName(@"UISearchBar")]
       assertWithMatcher:grey_userInteractionEnabled()];
 }
 

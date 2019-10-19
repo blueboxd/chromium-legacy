@@ -6,6 +6,7 @@ package org.chromium.chrome.features.start_surface;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.junit.Assert.assertEquals;
@@ -51,9 +52,11 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -95,9 +98,11 @@ public class StartSurfaceLayoutTest {
     private List<WeakReference<Bitmap>> mAllBitmaps = new LinkedList<>();
     private Callback<Bitmap> mBitmapListener =
             (bitmap) -> mAllBitmaps.add(new WeakReference<>(bitmap));
+    private TabSwitcher.TabListDelegate mTabListDelegate;
 
     @Before
     public void setUp() {
+        // After setUp, Chrome is launched and has one NTP.
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
 
         EmbeddedTestServer testServer =
@@ -110,10 +115,9 @@ public class StartSurfaceLayoutTest {
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 3;
 
-        TabSwitcher.TabListDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
-        delegate.setBitmapCallbackForTesting(mBitmapListener);
-        Assert.assertEquals(0, delegate.getBitmapFetchCountForTesting());
+        mTabListDelegate = mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
+        mTabListDelegate.setBitmapCallbackForTesting(mBitmapListener);
+        Assert.assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting());
 
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
@@ -132,12 +136,10 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
         // clang-format on
-        TabSwitcher.TabListDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
-        assertEquals(0, delegate.getSoftCleanupDelayForTesting());
-        assertEquals(0, delegate.getCleanupDelayForTesting());
+        assertEquals(0, mTabListDelegate.getSoftCleanupDelayForTesting());
+        assertEquals(0, mTabListDelegate.getCleanupDelayForTesting());
 
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
         assertThumbnailsAreReleased();
     }
@@ -153,7 +155,7 @@ public class StartSurfaceLayoutTest {
         // clang-format on
         assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
 
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
         assertThumbnailsAreReleased();
     }
@@ -165,12 +167,10 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
         // clang-format on
-        TabSwitcher.TabListDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
-        assertEquals(10000, delegate.getSoftCleanupDelayForTesting());
-        assertEquals(10000, delegate.getCleanupDelayForTesting());
+        assertEquals(10000, mTabListDelegate.getSoftCleanupDelayForTesting());
+        assertEquals(10000, mTabListDelegate.getCleanupDelayForTesting());
 
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
 
@@ -182,7 +182,7 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
 
@@ -193,7 +193,7 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
         // clang-format on
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
 
@@ -205,7 +205,7 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         // clang-format on
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testTabToGrid(mUrl);
     }
 
@@ -213,41 +213,77 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromNtp() throws InterruptedException {
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testTabToGrid(NTP_URL);
         assertThumbnailsAreReleased();
     }
 
     /**
-     * Make Chrome have {@code numTabs} or Tabs with {@code url} loaded.
-     * @see #prepareTabs(int, String, boolean)
+     * Make Chrome have {@code numTabs} of regular Tabs and {@code numIncognitoTabs} of incognito
+     * tabs with {@code url} loaded.
+     *
+     * @param numTabs The number of regular tabs.
+     * @param numIncognitoTabs The number of incognito tabs.
+     * @param url The URL to load.
      */
-    private void prepareTabs(int numTabs, @Nullable String url) {
-        prepareTabs(numTabs, url, true);
+    private void prepareTabs(int numTabs, int numIncognitoTabs, @Nullable String url) {
+        assertTrue(numTabs >= 1);
+        assertTrue(numIncognitoTabs >= 0);
+
+        assertEquals(1,
+                mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
+        assertEquals(
+                0, mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount());
+
+        if (numTabs == 1) {
+            if (url != null) mActivityTestRule.loadUrl(url);
+        } else {
+            // When Chrome started, there is already one Tab created by default.
+            createTabs(numTabs - 1, url, true, false);
+        }
+        if (numIncognitoTabs > 0) createTabs(numIncognitoTabs, url, true, true);
+
+        assertEquals(numTabs,
+                mActivityTestRule.getActivity().getTabModelSelector().getModel(false).getCount());
+        assertEquals(numIncognitoTabs,
+                mActivityTestRule.getActivity().getTabModelSelector().getModel(true).getCount());
     }
 
     /**
-     * Make Chrome have {@code numTabs} or Tabs with {@code url} loaded.
-     * @param numTabs The number of tabs we expect after finishing
+     * When Chrome started, there is already one Tab created by default. This method is used to add
+     * additional {@code numTabs} of {@link Tab}s with {@code url} loaded to Chrome.
+     * @param numTabs The number of tabs to create.
      * @param url The URL to load. Skip loading when null, but the thumbnail for the NTP might not
      *            be saved.
      * @param waitForLoading Whether wait for URL loading.
+     * @param isIncognito Whether the tab is incognito tab.
      */
-    private void prepareTabs(int numTabs, @Nullable String url, boolean waitForLoading) {
+    private void createTabs(
+            int numTabs, @Nullable String url, boolean waitForLoading, boolean isIncognito) {
         assertTrue(numTabs >= 1);
-        assertEquals(1, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
 
         if (url != null) mActivityTestRule.loadUrl(url);
-        for (int i = 0; i < numTabs - 1; i++) {
-            MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                    mActivityTestRule.getActivity(), org.chromium.chrome.R.id.new_tab_menu_id);
+
+        int previousTabCount = mActivityTestRule.getActivity()
+                                       .getTabModelSelector()
+                                       .getModel(isIncognito)
+                                       .getCount();
+
+        for (int i = 0; i < numTabs; i++) {
+            TabModel previousTabModel =
+                    mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+            int previousTabIndex = previousTabModel.index();
+            Tab previousTab = previousTabModel.getTabAt(previousTabIndex);
+
+            ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
+                    mActivityTestRule.getActivity(), isIncognito, waitForLoading);
+
             if (url != null) mActivityTestRule.loadUrl(url);
             if (!waitForLoading) continue;
 
-            Tab previousTab = mActivityTestRule.getActivity()
-                                      .getTabModelSelector()
-                                      .getCurrentModel()
-                                      .getTabAt(i);
+            TabModel currentTabModel =
+                    mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+            int currentTabIndex = currentTabModel.index();
 
             boolean fixPendingReadbacks = mActivityTestRule.getActivity()
                                                   .getTabContentManager()
@@ -256,30 +292,33 @@ public class StartSurfaceLayoutTest {
 
             // When there are pending readbacks due to detached Tabs, try to fix it by switching
             // back to that tab.
-            if (fixPendingReadbacks) {
-                int lastIndex = i;
+            if (fixPendingReadbacks && previousTabIndex != TabModel.INVALID_TAB_INDEX) {
                 // clang-format off
                 TestThreadUtils.runOnUiThreadBlocking(() ->
-                    mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
-                            lastIndex, TabSelectionType.FROM_USER)
+                        previousTabModel.setIndex(previousTabIndex, TabSelectionType.FROM_USER)
                 );
                 // clang-format on
             }
+
             checkThumbnailsExist(previousTab);
+
             if (fixPendingReadbacks) {
-                int currentIndex = i + 1;
                 // clang-format off
-                TestThreadUtils.runOnUiThreadBlocking(() ->
-                    mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
-                            currentIndex, TabSelectionType.FROM_USER)
+                TestThreadUtils.runOnUiThreadBlocking(() -> currentTabModel.setIndex(
+                        currentTabIndex, TabSelectionType.FROM_USER)
                 );
                 // clang-format on
             }
         }
+
         ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,
                 null, WAIT_TIMEOUT_SECONDS * 10);
-        assertEquals(
-                numTabs, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+
+        assertEquals(numTabs + previousTabCount,
+                mActivityTestRule.getActivity()
+                        .getTabModelSelector()
+                        .getModel(isIncognito)
+                        .getCount());
 
         if (waitForLoading) {
             // clang-format off
@@ -316,14 +355,14 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     public void testGridToTabToCurrentNTP() throws InterruptedException {
-        prepareTabs(1, NTP_URL);
+        prepareTabs(1, 0, NTP_URL);
         testGridToTab(false, false);
     }
 
     @Test
     @MediumTest
     public void testGridToTabToOtherNTP() throws InterruptedException {
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         testGridToTab(true, false);
     }
 
@@ -331,7 +370,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToCurrentLive() throws InterruptedException {
-        prepareTabs(1, mUrl);
+        prepareTabs(1, 0, mUrl);
         testGridToTab(false, false);
     }
 
@@ -341,9 +380,10 @@ public class StartSurfaceLayoutTest {
     @DisabledTest(message = "crbug.com/986047. This works on emulators but not on real devices.")
     public void testGridToTabToCurrentLiveDetached() throws Exception {
         for (int i = 0; i < 10; i++) {
+            mActivityTestRule.loadUrl(mUrl);
             // Quickly create some tabs, navigate to web pages, and don't wait for thumbnail
             // capturing.
-            prepareTabs(2, mUrl, false);
+            createTabs(1, mUrl, false, false);
             // Hopefully we are in a state where some pending readbacks are stuck because their tab
             // is not attached to the view.
             if (mActivityTestRule.getActivity()
@@ -362,10 +402,12 @@ public class StartSurfaceLayoutTest {
             mActivityTestRule.startMainActivityOnBlankPage();
             Assert.assertEquals(1, mActivityTestRule.tabsCount(false));
         }
+
         assertNotEquals(0,
                 mActivityTestRule.getActivity()
                         .getTabContentManager()
                         .getPendingReadbacksForTesting());
+
         // The last tab should still get thumbnail even though readbacks for other tabs are stuck.
         testGridToTab(false, false);
     }
@@ -376,7 +418,7 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
-        prepareTabs(1, mUrl);
+        prepareTabs(1, 0, mUrl);
         testGridToTab(false, false);
     }
 
@@ -384,7 +426,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToOtherLive() throws InterruptedException {
-        prepareTabs(2, mUrl);
+        prepareTabs(2, 0, mUrl);
         testGridToTab(true, false);
     }
 
@@ -394,7 +436,7 @@ public class StartSurfaceLayoutTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
-        prepareTabs(2, mUrl);
+        prepareTabs(2, 0, mUrl);
         testGridToTab(true, false);
     }
 
@@ -402,7 +444,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToOtherFrozen() throws InterruptedException {
-        prepareTabs(2, mUrl);
+        prepareTabs(2, 0, mUrl);
         testGridToTab(true, true);
     }
 
@@ -458,10 +500,8 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRestoredTabsDontFetch() throws Exception {
-        prepareTabs(2, mUrl);
-        TabSwitcher.TabListDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
-        int oldCount = delegate.getBitmapFetchCountForTesting();
+        prepareTabs(2, 0, mUrl);
+        int oldCount = mTabListDelegate.getBitmapFetchCountForTesting();
 
         // Restart Chrome.
         // Although we're destroying the activity, the Application will still live on since its in
@@ -473,7 +513,7 @@ public class StartSurfaceLayoutTest {
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
         mStartSurfaceLayout = (StartSurfaceLayout) layout;
-        Assert.assertEquals(0, delegate.getBitmapFetchCountForTesting() - oldCount);
+        Assert.assertEquals(0, mTabListDelegate.getBitmapFetchCountForTesting() - oldCount);
     }
 
     @Test
@@ -498,7 +538,7 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testInvisibleTabsDontFetchWarm() throws InterruptedException {
         // Get the GTS in the warm state.
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         mRepeat = 2;
         testTabToGrid(NTP_URL);
 
@@ -522,7 +562,7 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testInvisibleTabsDontFetchSoft() throws InterruptedException {
         // Get the GTS in the soft cleaned up state.
-        prepareTabs(2, NTP_URL);
+        prepareTabs(2, 0, NTP_URL);
         mRepeat = 2;
         testTabToGrid(NTP_URL);
 
@@ -547,14 +587,9 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @DisabledTest(message = "http://crbug/1005865 - Test was previously flaky but only on bots."
             + "Was not locally reproducible. Disabling until verified that it's deflaked on bots.")
-    public void testIncognitoEnterGts() {
-        // clang-format on
-        mActivityTestRule.newIncognitoTabFromMenu();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
-        CriteriaHelper.pollInstrumentationThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
-
+    public void testIncognitoEnterGts() throws InterruptedException {
+        prepareTabs(1, 1, null);
+        enterGTS();
         onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
 
@@ -563,13 +598,62 @@ public class StartSurfaceLayoutTest {
         CriteriaHelper.pollInstrumentationThread(
                 () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
-        CriteriaHelper.pollInstrumentationThread(
-                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
-
+        enterGTS();
         onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(1));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testIncognitoToggle_tabCount() throws InterruptedException {
+        mActivityTestRule.loadUrl(mUrl);
+
+        // Prepare two incognito tabs and enter tab switcher.
+        prepareTabs(1, 2, mUrl);
+        enterGTS();
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                .check(TabCountAssertion.havingTabCount(2));
+
+        for (int i = 0; i < mRepeat; i++) {
+            switchTabModel(false);
+            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .check(TabCountAssertion.havingTabCount(1));
+
+            switchTabModel(true);
+            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .check(TabCountAssertion.havingTabCount(2));
+        }
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "crbug.com/1014792, should not fetch all tabs in TabModel when we" +
+            "switch model")
+    public void testIncognitoToggle_thumbnailFetchCount() throws InterruptedException {
+        mActivityTestRule.loadUrl(mUrl);
+        int oldFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
+
+        // Prepare two incognito tabs and enter tab switcher.
+        prepareTabs(1, 2, mUrl);
+        enterGTS();
+
+        int currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
+        Assert.assertEquals(2, currentFetchCount - oldFetchCount);
+        oldFetchCount = currentFetchCount;
+
+        for (int i = 0; i < mRepeat; i++) {
+            switchTabModel(false);
+            currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
+            Assert.assertEquals(1, currentFetchCount - oldFetchCount);
+            oldFetchCount = currentFetchCount;
+
+            switchTabModel(true);
+            currentFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();
+            Assert.assertEquals(2, currentFetchCount - oldFetchCount);
+            oldFetchCount = currentFetchCount;
+        }
     }
 
     private static class TabCountAssertion implements ViewAssertion {
@@ -590,6 +674,20 @@ public class StartSurfaceLayoutTest {
             RecyclerView.Adapter adapter = ((RecyclerView) view).getAdapter();
             assertEquals(mExpectedCount, adapter.getItemCount());
         }
+    }
+
+    private void switchTabModel(boolean isIncognito) {
+        assertTrue(isIncognito !=
+                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
+
+        onView(withContentDescription(
+                isIncognito ? R.string.accessibility_tab_switcher_incognito_stack
+                            : R.string.accessibility_tab_switcher_standard_stack)
+        ).perform(click());
+
+        CriteriaHelper.pollInstrumentationThread(() ->
+                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected()
+                        == isIncognito);
     }
 
     private void enterGTS() throws InterruptedException {

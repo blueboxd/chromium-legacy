@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -16,7 +17,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -48,6 +49,13 @@ Resource* PreloadRequest::Start(Document* document) {
       ResourceFetcher::DetermineRequestContext(resource_type_, is_image_set_));
 
   resource_request.SetFetchImportanceMode(importance_);
+
+  if (resource_type_ == ResourceType::kImage && url.ProtocolIsInHTTPFamily() &&
+      base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
+      blink::GetNetworkStateNotifier().SaveDataEnabled()) {
+    resource_request.SetPreviewsState(resource_request.GetPreviewsState() |
+                                      WebURLRequest::kSubresourceRedirectOn);
+  }
 
   ResourceLoaderOptions options;
   options.initiator_info = initiator_info;

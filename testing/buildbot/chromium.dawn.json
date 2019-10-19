@@ -143,15 +143,13 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
-          "--no-xvfb"
+          "--no-xvfb",
+          "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -314,15 +312,13 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
-          "--no-xvfb"
+          "--no-xvfb",
+          "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -688,14 +684,12 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
-          "--isolated-script-test-filter=wpt_internal/webgpu/*"
+          "--isolated-script-test-filter=wpt_internal/webgpu/*",
+          "--platform=mac-mac10.13"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -852,14 +846,12 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
-          "--isolated-script-test-filter=wpt_internal/webgpu/*"
+          "--isolated-script-test-filter=wpt_internal/webgpu/*",
+          "--platform=mac-mac10.13"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1218,16 +1210,13 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
-          "-t",
-          "Release_x64",
-          "--isolated-script-test-filter=wpt_internal/webgpu/*"
+          "--isolated-script-test-filter=wpt_internal/webgpu/*",
+          "--additional-driver-flag=--disable-gpu-sandbox",
+          "--target=Release_x64"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1389,16 +1378,13 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
-          "-t",
-          "Release_x64",
-          "--isolated-script-test-filter=wpt_internal/webgpu/*"
+          "--isolated-script-test-filter=wpt_internal/webgpu/*",
+          "--additional-driver-flag=--disable-gpu-sandbox",
+          "--target=Release_x64"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1758,14 +1744,12 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
-          "--isolated-script-test-filter=wpt_internal/webgpu/*"
+          "--isolated-script-test-filter=wpt_internal/webgpu/*",
+          "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1927,14 +1911,12 @@
       },
       {
         "args": [
-          "--additional-driver-flag",
-          "--enable-unsafe-webgpu",
-          "--additional-driver-flag",
-          "--disable-gpu-sandbox",
+          "--additional-driver-flag=--enable-unsafe-webgpu",
           "--driver-logging",
           "--ignore-default-expectations",
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
-          "--isolated-script-test-filter=wpt_internal/webgpu/*"
+          "--isolated-script-test-filter=wpt_internal/webgpu/*",
+          "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {

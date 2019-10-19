@@ -30,12 +30,19 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
  private:
   bool DoesItemCrossSizeComputeToAuto(const NGBlockNode& child) const;
   bool IsItemMainSizeDefinite(const NGBlockNode& child) const;
+  bool IsItemCrossAxisLengthDefinite(const NGBlockNode& child,
+                                     const Length& length) const;
   bool ShouldItemShrinkToFit(const NGBlockNode& child) const;
   bool DoesItemStretch(const NGBlockNode& child) const;
   // This implements the first of the additional scenarios where a flex item
   // has definite sizes when it would not if it weren't a flex item.
   // https://drafts.csswg.org/css-flexbox/#definite-sizes
   bool WillChildCrossSizeBeContainerCrossSize(const NGBlockNode& child) const;
+  LayoutUnit AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
+      const NGBlockNode& child,
+      LayoutUnit content_suggestion,
+      LayoutUnit cross_min,
+      LayoutUnit cross_max);
 
   bool IsColumnContainerMainSizeDefinite() const;
   bool IsContainerCrossSizeDefinite() const;

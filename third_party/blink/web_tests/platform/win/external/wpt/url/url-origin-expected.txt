@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 304 tests; 295 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 304 tests; 289 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Origin parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -69,7 +69,7 @@ PASS Origin parsing: <ftp:/example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <https:/example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <madeupscheme:/example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <ftps:/example.com/> against <http://example.org/foo/bar>
-PASS Origin parsing: <gopher:/example.com/> against <http://example.org/foo/bar>
+FAIL Origin parsing: <gopher:/example.com/> against <http://example.org/foo/bar> assert_equals: origin expected "null" but got "gopher://example.com"
 PASS Origin parsing: <ws:/example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <wss:/example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <data:/example.com/> against <http://example.org/foo/bar>
@@ -80,7 +80,7 @@ PASS Origin parsing: <ftp:example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <https:example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <madeupscheme:example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <ftps:example.com/> against <http://example.org/foo/bar>
-PASS Origin parsing: <gopher:example.com/> against <http://example.org/foo/bar>
+FAIL Origin parsing: <gopher:example.com/> against <http://example.org/foo/bar> assert_equals: origin expected "null" but got "gopher://example.com"
 PASS Origin parsing: <ws:example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <wss:example.com/> against <http://example.org/foo/bar>
 PASS Origin parsing: <data:example.com/> against <http://example.org/foo/bar>
@@ -146,8 +146,8 @@ PASS Origin parsing: <https://foo:443/> against <about:blank>
 PASS Origin parsing: <https://foo:80/> against <about:blank>
 PASS Origin parsing: <ftp://foo:21/> against <about:blank>
 PASS Origin parsing: <ftp://foo:80/> against <about:blank>
-PASS Origin parsing: <gopher://foo:70/> against <about:blank>
-PASS Origin parsing: <gopher://foo:443/> against <about:blank>
+FAIL Origin parsing: <gopher://foo:70/> against <about:blank> assert_equals: origin expected "null" but got "gopher://foo"
+FAIL Origin parsing: <gopher://foo:443/> against <about:blank> assert_equals: origin expected "null" but got "gopher://foo:443"
 PASS Origin parsing: <ws://foo:80/> against <about:blank>
 PASS Origin parsing: <ws://foo:81/> against <about:blank>
 PASS Origin parsing: <ws://foo:443/> against <about:blank>
@@ -161,7 +161,7 @@ PASS Origin parsing: <ftp:/example.com/> against <about:blank>
 PASS Origin parsing: <https:/example.com/> against <about:blank>
 PASS Origin parsing: <madeupscheme:/example.com/> against <about:blank>
 PASS Origin parsing: <ftps:/example.com/> against <about:blank>
-PASS Origin parsing: <gopher:/example.com/> against <about:blank>
+FAIL Origin parsing: <gopher:/example.com/> against <about:blank> assert_equals: origin expected "null" but got "gopher://example.com"
 PASS Origin parsing: <ws:/example.com/> against <about:blank>
 PASS Origin parsing: <wss:/example.com/> against <about:blank>
 PASS Origin parsing: <data:/example.com/> against <about:blank>
@@ -172,7 +172,7 @@ PASS Origin parsing: <ftp:example.com/> against <about:blank>
 PASS Origin parsing: <https:example.com/> against <about:blank>
 PASS Origin parsing: <madeupscheme:example.com/> against <about:blank>
 PASS Origin parsing: <ftps:example.com/> against <about:blank>
-PASS Origin parsing: <gopher:example.com/> against <about:blank>
+FAIL Origin parsing: <gopher:example.com/> against <about:blank> assert_equals: origin expected "null" but got "gopher://example.com"
 PASS Origin parsing: <ws:example.com/> against <about:blank>
 PASS Origin parsing: <wss:example.com/> against <about:blank>
 PASS Origin parsing: <data:example.com/> against <about:blank>

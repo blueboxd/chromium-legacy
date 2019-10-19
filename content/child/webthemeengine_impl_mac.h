@@ -15,9 +15,9 @@ class WebThemeEngineMac : public blink::WebThemeEngine {
 
   blink::ForcedColors ForcedColors() const override;
   void SetForcedColors(const blink::ForcedColors forced_colors) override;
-
- private:
-  blink::ForcedColors forced_colors_ = blink::ForcedColors::kNone;
+  blink::PreferredColorScheme PreferredColorScheme() const override;
+  void SetPreferredColorScheme(
+      const blink::PreferredColorScheme preferred_color_scheme) override;
 };
 
 }  // namespace content

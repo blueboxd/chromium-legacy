@@ -11,10 +11,12 @@
 #include "base/values.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/public/base/avatar_icon_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 namespace supervised_user_error_page {
 
@@ -28,15 +30,13 @@ bool ReasonIsAutomatic(FilteringBehaviorReason reason) {
 }
 
 std::string BuildAvatarImageUrl(const std::string& url, int size) {
-  std::string result = url;
-  size_t slash = result.rfind('/');
-  if (slash != std::string::npos) {
-    // Check if the URL already contains the monogram (-mo) option.
-    // In that case, we must use the '-' separator, instead of '/'.
-    std::string separator = result.substr(slash - 3, 3) == "/mo" ? "-" : "/";
-    result.insert(slash, separator + "s" + base::NumberToString(size) + "-c");
-  }
-  return result;
+  GURL gurl(url);
+  if (!gurl.is_valid())
+    return url;
+
+  GURL to_return = signin::GetAvatarImageURLWithOptions(
+      gurl, size, false /* no_silhouette */);
+  return to_return.spec();
 }
 
 }  //  namespace

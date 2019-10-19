@@ -12392,7 +12392,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   // scrollbar_2_animation_controller, then mouse up should not cause crash.
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
   host_impl_->MouseDown(gfx::PointF(40, 150), /*shift_modifier*/ false);
-  host_impl_->UnregisterScrollbarAnimationController(root_scroll->element_id());
+  host_impl_->DidUnregisterScrollbarLayer(root_scroll->element_id());
   host_impl_->MouseUp(gfx::PointF(40, 150));
 }
 

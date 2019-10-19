@@ -239,6 +239,16 @@ class BBJSONGenerator(object):
   def is_linux(self, tester_config):
     return tester_config.get('os_type') == 'linux'
 
+  def is_mac(self, tester_config):
+    return tester_config.get('os_type') == 'mac'
+
+  def is_win(self, tester_config):
+    return tester_config.get('os_type') == 'win'
+
+  def is_win64(self, tester_config):
+    return (tester_config.get('os_type') == 'win' and
+        tester_config.get('browser_config') == 'release_x64')
+
   def get_exception_for_test(self, test_name, test_config):
     # gtests may have both "test" and "name" fields, and usually, if the "name"
     # field is specified, it means that the same test is being repurposed
@@ -387,6 +397,9 @@ class BBJSONGenerator(object):
     add_conditional_args('linux_args', self.is_linux)
     add_conditional_args('android_args', self.is_android)
     add_conditional_args('chromeos_args', self.is_chromeos)
+    add_conditional_args('mac_args', self.is_mac)
+    add_conditional_args('win_args', self.is_win)
+    add_conditional_args('win64_args', self.is_win64)
 
     for key in additional_arg_keys or []:
       args.extend(generated_test.pop(key, []))

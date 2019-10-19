@@ -4,21 +4,31 @@
 
 This directory contains an implementation of the [Wake Lock specification], a Web API that allows script authors to prevent both the screen from turning off ("screen wake locks") as well as the CPU from entering a deep power state ("system wake locks"). There are platform implementations for ChromeOS, Linux (X11), Mac, Android, and Windows.
 
-At the time of writing (August 2019), system wake lock requests are always denied, as allowing them depends on a proper permission model for the requests being figured out first.
+At the time of writing (October 2019), system wake lock requests are always denied, as allowing them depends on a proper permission model for the requests being figured out first.
 
 The code required to implement the Wake Lock API is spread across multiple Chromium subsystems: Blink, `//content`, `//services` and `//chrome`. This document focuses on the Blink part, and the other subsystems are mentioned when necessary but without much detail.
 
 ## High level overview
 
-Wake Lock's API surface is fairly small; the `WakeLock` IDL interface only has static methods, and there is no state that can be easily inspected. Additionally, all the parts that actually communicate with platform APIs are implemented elsewhere, so the Blink side only exposes the JavaScript API to script authors, validates API calls and manages [state records].
+Wake Lock's API surface is fairly small: `Navigator` and `WorkerNavigator` provide a `wakeLock` attribute that exposes the `WakeLock`, an interface with a single method to request a wake lock, and a `WakeLockSentinel` can be used to both release the requested lock and receive an event when it is released. All the parts that actually communicate with platform APIs are implemented elsewhere, so the Blink side only exposes the JavaScript API to script authors, validates API calls and manages [state records].
+
+Wake Lock usage in scripts looks like this:
+
+```javascript
+let lock = await navigator.wakeLock.request("screen");
+lock.addEventListener("release", (ev) => {
+  console.log(`${ev.target.type} wake lock released`);
+});
+lock.release();
+```
 
 The three main Blink classes implementing the spec are:
 
-* [`WakeLock`](wake_lock.h): implements the API bindings following the spec. Like its IDL counterpart, it only has static methods. Permission request and lock acquisition calls are all forwarded to `WakeLockController`.
-* [`WakeLockController`](wake_lock_controller.h): per-`ExecutionContext` class. It implements all permission management required by the spec, as well as the [Wake Lock management] tasks that apply to documents and/or workers (e.g. page visibility handling). Its `state_records_` array contains per-wake lock type `WakeLockStateRecord` instances, so all wake lock types are managed independently.
-* [`WakeLockStateRecord`](wake_lock_state_record.h): Owned by `WakeLockController`. This is an implementation of the [state records] Wake Lock concept in a per-type fashion. Like in the spec, it keeps track of all active locks of a certain type, and it is also responsible for communicating with the `//content` and `//services` layers to request and cancel wake locks.
+* [`WakeLock`](wake_lock.h): per-`Navigator`/`WorkerNavigator` class that implements the bindings for the `WakeLock` IDL interface. Its responsibilities also include performing permission requests and [Wake Lock management] tasks that apply to documents and/or workers (e.g. page visibility handling). Lock acquisition calls are all forwarded to `WakeLockManager`. Its `managers_` array contains per-wake lock type `WakeLockManager` instances, so all wake lock types are managed independently.
+* [`WakeLockManager`](wake_lock_manager.h): Owned by `WakeLock`. This is an implementation of the [state records] Wake Lock concept in a per-type fashion. Like in the spec, it keeps track of all active locks of a certain type, and it is also responsible for communicating with the `//content` and `//services` layers to request and cancel wake locks.
+* [`WakeLockSentinel`](wake_lock_sentinel.h): Owned by `WakeLockManager`. This is an implementation of the `WakeLockSentinel` IDL interface that is used to both release a lock requested by `WakeLock.request()` and receive a `release` event when it is released (either by `WakeLockSentinel.release()` or due to a platform event, such as a loss of context, or a page visibility change in the case of screen wake locks). This class is an event target, so it inherits from [`ActiveScriptWrappable`](../../bindings/core/v8/active_script_wrappable.h) to avoid being garbage-collected while there is pending activity.
 
-Furthermore, [`wake_lock.mojom`](../../../public/mojom/wake_lock/wake_lock.mojom) defines the Mojo interface implemented by `//content`'s [`WakeLockServiceImpl`](/content/browser/wake_lock/wake_lock_service_impl.h) that `WakeLockStateRecord` uses to obtain a [`device::mojom::blink::WakeLock`](/services/device/public/mojom/wake_lock.mojom) and request/cancel a wake lock.
+Furthermore, [`wake_lock.mojom`](../../../public/mojom/wake_lock/wake_lock.mojom) defines the Mojo interface implemented by `//content`'s [`WakeLockServiceImpl`](/content/browser/wake_lock/wake_lock_service_impl.h) that `WakeLockManager` uses to obtain a [`device::mojom::blink::WakeLock`](/services/device/public/mojom/wake_lock.mojom) and request/cancel a wake lock.
 
 The rest of the implementation is found in the following directories:
 
@@ -52,22 +62,18 @@ Larger parts of the Blink implementation are tested as browser and unit tests:
 This section describes how the classes described above interact when the following excerpt is run in the browser:
 
 ``` javascript
-const abortController = new AbortController();
-const lockPromise = WakeLock.request("screen", { signal: abortController.signal });
+const lock = await navigator.wakeLock.request("screen");
 ```
 
-1. `WakeLock::request()` performs all the validation steps described in [the spec](https://w3c.github.io/wake-lock/#request-static-method).
-1. Since an [AbortSignal] was passed in the JavaScript call, `WakeLock::request()` will call [`AbortSignal::AddAlgorithm()`](../../core/dom/abort_signal.h) and add `WakeLockController::ReleaseWakeLock()` to its list of algorithms [n.b. see below the section below for what happens if `abortController.abort()` is called].
-1. If all checks have passed, it calls `WakeLockController::From()` to either create or obtain a `WakeLockController` attached to the given execution context (i.e. a `Document` or `DedicatedWorkerGlobalScope`).
-1. `WakeLockController::RequestWakeLock()` is called, and `WakeLock::request()` then returns a promise. `RequestWakeLock()` is a small method that just verifies some invariants and calls `WakeLockController::ObtainPermission()`.
-1. `WakeLockController::ObtainPermission()` connects to the [permission service](../../../public/mojom/permissions/permission.mojom) and asynchronously requests permission for a screen wake lock.
+1. `WakeLock::request()` performs all the validation steps described in [the spec](https://w3c.github.io/wake-lock/#the-request-method). If all checks have passed, it creates a `ScriptPromiseResolver` and calls `WakeLock::DoRequest()`.
+1. `WakeLock::DoRequest()` simply forwards its arguments to `WakeLock::ObtainPermission()`. It exists as a separate method just to make writing unit tests easier, as we'd otherwise be unable to use our own `ScriptPromiseResolver`s in tests.
+1. `WakeLock::ObtainPermission()` connects to the [permission service](../../../public/mojom/permissions/permission.mojom) and asynchronously requests permission for a screen wake lock.
 1. In the browser process, the permission request bubbles up through `//content` and reaches `//chrome`'s [`WakeLockPermissionContext`](/chrome/browser/wake_lock/wake_lock_permission_context.cc), where `WakeLockPermissionContext::GetPermissionStatusInternal()` always grants `CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN` permission requests.
-1. Back in Blink, the permission request callback in this case is `WakeLockController::DidReceivePermissionResponse()`. It performs some sanity checks such as verifying the wake lock's corresponding [AbortSignal] has not been triggered. If any of the checks fail, the `ScriptPromiseResolver` instance created earlier by `WakeLock::request()` is rejected and we stop here. If everything went well, calls `WakeLockController::AcquireWakeLock()`.
-1. `WakeLockController::AcquireWakeLock()` is a wrapper that invokes `WakeLockStateRecord::AcquireWakeLock()`.
-1. If there are no existing screen wake locks, `WakeLockStateRecord::AcquireWakeLock()` will connect to the `WakeLockService` Mojo interface, invoke its `GetWakeLock()` method to obtain a `device::mojom::blink::WakeLock` and call its `RequestWakeLock()` method.
-1. Otherwise, if there is at least one existing screen lock, `WakeLockStateRecord::AcquireWakeLock()` will simply add the `ScriptPromiseResolver` to its set of [active locks].
+1. Back in Blink, the permission request callback in this case is `WakeLock::DidReceivePermissionResponse()`. It performs some sanity checks such as verifying if the page visibility changed while waiting for the permission request to be processed. If any of the checks fail, or if the permission request was denied, the `ScriptPromiseResolver` instance created earlier by `WakeLock::request()` is rejected and we stop here. If everything went well, `WakeLockManager::AcquireWakeLock()` is called.
+1. If there are no existing screen wake locks, `WakeLockManager::AcquireWakeLock()` will connect to the `WakeLockService` Mojo interface, invoke its `GetWakeLock()` method to obtain a `device::mojom::blink::WakeLock` and call its `RequestWakeLock()` method.
+1. `WakeLockManager::AcquireWakeLock()` creates a new `WakeLockSentinel` instance, passing `this` as the `WakeLockSentinel`'s `WakeLockManager`. This new `WakeLockSentinel` is added to its set of [active locks].
+1. The `ScriptPromiseResolver` created by `WakeLock::request()` is resolved with the new `WakeLockSentinel` object.
 
-[AbortSignal]: https://dom.spec.whatwg.org/#interface-AbortSignal
 [active locks]: https://w3c.github.io/wake-lock/#dfn-activelocks
 
 ### Wake Lock cancellation
@@ -75,17 +81,18 @@ const lockPromise = WakeLock.request("screen", { signal: abortController.signal 
 Given the excerpt below:
 
 ``` javascript
-const abortController = new AbortController();
-const lockPromise = WakeLock.request("screen", { signal: abortController.signal });
-abortController.abort();
+const lock = await navigator.wakeLock.request("screen");
+await lock.release();
 ```
 
-This section describes what happens when `abortController.abort()` is called.
+This section describes what happens when `lock.release()` is called.
 
-1. `abortController.abort()` causes `AbortSignal` to go through its list of algorithms, and `WakeLockController::ReleaseWakeLock()` is eventually called.
-1. `WakeLockController::ReleaseWakeLock()` itself is a small function that simply calls `WakeLockStateRecord::ReleaseWakeLock()`.
-1. `WakeLockStateRecord::ReleaseWakeLock()` implements the spec's [release wake lock algorithm]. One interesting aspect is that it rejects any `ScriptPromiseResolver` passed to it, even if it is not in its active locks list. This is caused by the fact that `WakeLock.request()` contains parallel steps, and script authors have access to the promise it returns before a lock has actually been requested and added to `WakeLockStateRecord`'s active locks list.
-1. If the given wake lock is in `WakeLockStateRecord`'s `active_locks_`, it will be removed and, if the list is empty, `WakeLockStateRecord` will communicate with its `device::mojom::blink::WakeLock` instance and call its `CancelWakeLock()` method.
+1. `lock.release()` results in a call to `WakeLockSentinel::release()`.
+1. `WakeLockSentinel::release()` calls `WakeLockSentinel::DoRelease()` and returns a resolved promise. `WakeLockSentinel::DoRelease()` exists as a separate method because it is also called directly by `WakeLockManager::ClearWakeLocks()` when an event such as a page visibility change causes all screen wake locks to be released.
+1. `WakeLockSentinel::DoRelease()` aborts early if its `manager_` member is not set. This can happen if `WakeLock::release()` has already been called before, or if `WakeLockManager::ClearWakeLocks()` has already released this `WakeLockSentinel`.
+1. `WakeLockSentinel::DoRelease()` calls `WakeLockManager::UnregisterSentinel()`.
+1. `WakeLockManager::UnregisterSentinel()` implements the spec's [release wake lock algorithm]. If the given `WakeLockSentinel` is in `WakeLockManager`'s `wake_lock_sentinels_`, it will be removed and, if the list is empty, `WakeLockManager` will communicate with its `device::mojom::blink::WakeLock` instance and call its `CancelWakeLock()` method.
+1. Back in `WakeLockSentinel::DoRelease()`, it then clears its `manager_` member, and dispatches a `release` event with itself as a target.
 
 [release wake lock algorithm]: https://w3c.github.io/wake-lock/#release-wake-lock-algorithm
 
@@ -95,7 +102,7 @@ This section describes what happens when `abortController.abort()` is called.
 
 Video playback via the `<video>` tag currently uses a screen wake lock behind the scenes to prevent the screen from turning off while a video is being played. The implementation can be found in the [`VideoWakeLock`](../../core/html/media/video_wake_lock.h) class.
 
-This is an implementation detail, but the code handling wake locks in `VideoWakeLock` is similar to `WakeLockStateRecord`'s, where Blink needs to talk to `//content` to connect to a `WakeLockServiceImpl` and use that to get to a `device::mojom::blink::WakeLock`.
+This is an implementation detail, but the code handling wake locks in `VideoWakeLock` is similar to `WakeLockManager`'s, where Blink needs to talk to `//content` to connect to a `WakeLockServiceImpl` and use that to get to a `device::mojom::blink::WakeLock`.
 
 **Note:** when writing new code that uses Wake Locks in Blink, it is recommended to follow the same pattern outlined above. That is, connect to `WakeLockService` via the `//content` layer and request a `device::mojom::blink::WakeLock` via `WakeLockService::GetWakeLock()`. Do not go through the classes in this module, and [**do not connect to the Wake Lock services directly**](/docs/servicification.md#Frame-Scoped-Connections). See the example below:
 
@@ -124,7 +131,7 @@ Example usage outside Blink includes:
 
 ## Permission Model
 
-The Wake Lock API spec checks for user activation in the context of [wake lock permission requests](https://w3c.github.io/wake-lock/#dfn-obtain-permission), either as a result of a call to either `WakeLock.requestPermission()` or `WakeLock.request()`. If a user agent is configured to prompt a user when a wake lock is requested, user activation is required, otherwise the request will be denied.
+The Wake Lock API spec checks for user activation in the context of [wake lock permission requests](https://w3c.github.io/wake-lock/#dfn-obtain-permission), as a result of a call to `WakeLock.request()`. If a user agent is configured to prompt a user when a wake lock is requested, user activation is required, otherwise the request will be denied.
 
 In the Chromium implementation, there currently is no "prompt" state, and no permission UI or settings: wake lock requests are either always granted or always denied:
 

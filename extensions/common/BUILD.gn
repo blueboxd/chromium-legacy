@@ -7,6 +7,7 @@ import("//build/config/jumbo.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 # TODO(crbug.com/731689): Assert that extensions are enabled.
 
@@ -482,6 +483,16 @@ if (enable_extensions) {
     data = [
       "//extensions/common/permissions/api_permission.h",
       "//tools/metrics/histograms/enums.xml",
+    ]
+  }
+
+  fuzzer_test("extension_fuzzer") {
+    sources = [
+      "extension_fuzzer.cc",
+    ]
+    deps = [
+      ":common",
+      "//base",
     ]
   }
 }  # enable_extensions

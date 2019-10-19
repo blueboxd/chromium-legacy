@@ -92,6 +92,9 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // interrupting the interaction).
   bool user_did_accept_ = false;
 
+  // True if one of the windows in the list has already been selected.
+  bool window_selected_ = false;
+
   // The top level View for the window cycle UI. May be null if the UI is not
   // showing.
   WindowCycleView* cycle_view_ = nullptr;

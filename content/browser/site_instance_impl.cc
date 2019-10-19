@@ -524,7 +524,7 @@ bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
 bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
   if (IsDefaultSiteInstance()) {
     // about:blank URLs should always be considered same site just like they are
-    // in IsSameWebSite().
+    // in IsSameSite().
     if (url.IsAboutBlank())
       return true;
 
@@ -541,9 +541,8 @@ bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
            !browsing_instance_->HasSiteInstance(url);
   }
 
-  return SiteInstanceImpl::IsSameWebSite(
-      GetIsolationContext(), site_, url,
-      true /* should_compare_effective_urls */);
+  return SiteInstanceImpl::IsSameSite(GetIsolationContext(), site_, url,
+                                      true /* should_compare_effective_urls */);
 }
 
 bool SiteInstanceImpl::IsOriginalUrlSameSite(
@@ -552,15 +551,15 @@ bool SiteInstanceImpl::IsOriginalUrlSameSite(
   if (IsDefaultSiteInstance())
     return IsSameSiteWithURL(dest_url);
 
-  return IsSameWebSite(GetIsolationContext(), original_url_, dest_url,
-                       should_compare_effective_urls);
+  return IsSameSite(GetIsolationContext(), original_url_, dest_url,
+                    should_compare_effective_urls);
 }
 
 // static
-bool SiteInstanceImpl::IsSameWebSite(const IsolationContext& isolation_context,
-                                     const GURL& real_src_url,
-                                     const GURL& real_dest_url,
-                                     bool should_compare_effective_urls) {
+bool SiteInstanceImpl::IsSameSite(const IsolationContext& isolation_context,
+                                  const GURL& real_src_url,
+                                  const GURL& real_dest_url,
+                                  bool should_compare_effective_urls) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* browser_context =
       isolation_context.browser_or_resource_context().ToBrowserContext();

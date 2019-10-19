@@ -385,6 +385,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   machine_model_name = None
   machine_model_version = None
   exception_count = 0
+  subpixel_font_rendering = None
   # process the entry
   for key in entry:
     if key == 'id':
@@ -464,6 +465,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       machine_model_name = entry[key]
     elif key == 'machine_model_version':
       machine_model_version = entry[key]
+    elif key == 'subpixel_font_rendering':
+      subpixel_font_rendering = entry[key]
     elif key == 'exceptions':
       assert not is_exception
       assert exception_count == 0
@@ -503,12 +506,14 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   # group a bunch of less used conditions
   if (gl_version != None or pixel_shader_version != None or in_process_gpu or
       gl_reset_notification_strategy != None or direct_rendering_version != None
-      or gpu_count != None or hardware_overlay != None or test_group != 0):
+      or gpu_count != None or hardware_overlay != None or test_group != 0 or
+      subpixel_font_rendering != None):
     write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
                           gl_reset_notification_strategy,
                           direct_rendering_version, gpu_count, hardware_overlay,
-                          test_group, data_file, data_helper_file)
+                          test_group, subpixel_font_rendering,
+                          data_file, data_helper_file)
   else:
     data_file.write('nullptr,  // more conditions\n')
 
@@ -555,7 +560,8 @@ def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
                           gl_version, pixel_shader_version, in_process_gpu,
                           gl_reset_notification_strategy,
                           direct_rendering_version, gpu_count, hardware_overlay,
-                          test_group, data_file, data_helper_file):
+                          test_group, subpixel_font_rendering, data_file,
+                          data_helper_file):
   # write more data
 
   # Generate a unique name for jumbo build which concatenates multiple
@@ -581,6 +587,8 @@ def write_entry_more_data(entry_id, is_exception, exception_id, gl_type,
   write_version(gpu_count, 'gpu_count', data_helper_file)
   write_supported_or_not(hardware_overlay, 'hardware_overlay', data_helper_file)
   write_integer_value(test_group, 'test_group', data_helper_file)
+  write_supported_or_not(subpixel_font_rendering, 'subpixel_font_rendering',
+                         data_helper_file)
   data_helper_file.write('};\n\n')
   # reference more data in entry
   data_file.write('&%s,  // more data\n' % var_name)

@@ -68,10 +68,11 @@ class SessionStorageNamespaceImplMojoTest
         test_origin3_(url::Origin::Create(GURL("https://host3.com/"))) {}
   ~SessionStorageNamespaceImplMojoTest() override = default;
 
-  void WriteBatch(std::vector<leveldb::mojom::BatchedOperationPtr> operations) {
+  void RunBatch(
+      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks) {
     base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
-    database_->Write(
-        std::move(operations),
+    database_->RunBatchDatabaseTasks(
+        std::move(tasks),
         base::BindLambdaForTesting([&](leveldb::Status) { loop.Quit(); }));
     loop.Run();
   }
@@ -86,12 +87,11 @@ class SessionStorageNamespaceImplMojoTest
     loop.Run();
 
     metadata_.SetupNewDatabase();
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
     auto entry = metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_);
-    auto map_id =
-        metadata_.RegisterNewMap(entry, test_origin1_, &save_operations);
+    auto map_id = metadata_.RegisterNewMap(entry, test_origin1_, &save_tasks);
     DCHECK(map_id->KeyPrefix() == StdStringToUint8Vector("map-0-"));
-    WriteBatch(std::move(save_operations));
+    RunBatch(std::move(save_tasks));
 
     // Put some data in one of the maps.
     base::RunLoop put_loop;
@@ -156,10 +156,10 @@ class SessionStorageNamespaceImplMojoTest
   scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
       NamespaceEntry namespace_entry,
       const url::Origin& origin) {
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
     auto map_data =
-        metadata_.RegisterNewMap(namespace_entry, origin, &save_operations);
-    WriteBatch(std::move(save_operations));
+        metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
+    RunBatch(std::move(save_tasks));
     return map_data;
   }
 
@@ -168,12 +168,12 @@ class SessionStorageNamespaceImplMojoTest
       const std::string& destination_namespace,
       const SessionStorageNamespaceImplMojo::OriginAreas& areas_to_clone)
       override {
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
     auto namespace_entry =
         metadata_.GetOrCreateNamespaceEntry(destination_namespace);
     metadata_.RegisterShallowClonedNamespace(source_namespace, namespace_entry,
-                                             &save_operations);
-    WriteBatch(std::move(save_operations));
+                                             &save_tasks);
+    RunBatch(std::move(save_tasks));
 
     auto it = namespaces_.find(destination_namespace);
     if (it == namespaces_.end()) {

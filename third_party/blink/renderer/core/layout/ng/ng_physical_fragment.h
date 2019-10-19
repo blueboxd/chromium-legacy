@@ -295,7 +295,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).
-  unsigned has_floating_descendants_ : 1;
+  unsigned has_floating_descendants_for_paint_ : 1;
   unsigned has_adjoining_object_descendants_ : 1;
   unsigned has_orthogonal_flow_roots_ : 1;
   unsigned may_have_descendant_above_block_start_ : 1;

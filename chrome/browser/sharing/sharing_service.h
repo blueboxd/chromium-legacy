@@ -29,10 +29,8 @@
 #include "net/base/backoff_entry.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
 #include "chrome/browser/sharing/sharing_service_proxy_android.h"
-#else
-#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
 #endif  // defined(OS_ANDROID)
 
 namespace gcm {
@@ -45,9 +43,9 @@ class SyncService;
 }  // namespace syncer
 
 class NotificationDisplayService;
+class SharedClipboardMessageHandler;
 class SharingFCMHandler;
 class SharingFCMSender;
-class SharingMessageHandler;
 class SharingSyncPreference;
 class VapidKeyManager;
 enum class SharingDeviceRegistrationResult;
@@ -109,23 +107,19 @@ class SharingService : public KeyedService,
       chrome_browser_sharing::SharingMessage message,
       SendMessageCallback callback);
 
-  // Registers a handler of a given SharingMessage payload type.
-  void RegisterHandler(
-      chrome_browser_sharing::SharingMessage::PayloadCase payload_type,
-      SharingMessageHandler* handler);
-
-  // Returns the current state of SharingService.
-  virtual State GetState() const;
-
   // Used to register devices with required capabilities in tests.
   void RegisterDeviceInTesting(
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_features,
       SharingDeviceRegistration::RegistrationCallback callback);
 
-  SharingSyncPreference* GetSyncPreferences() const;
-
   // Used to fake client names in integration tests.
   void SetDeviceInfoTrackerForTesting(syncer::DeviceInfoTracker* tracker);
+
+  // Returns the current state of SharingService for testing.
+  State GetStateForTesting() const;
+
+  // Returns SharingSyncPreference for integration tests.
+  SharingSyncPreference* GetSyncPreferencesForTesting() const;
 
  private:
   // Overrides for syncer::SyncServiceObserver.
@@ -141,7 +135,6 @@ class SharingService : public KeyedService,
   void OnDeviceInfoChange() override;
 
   void RefreshVapidKey();
-
   void RegisterDevice();
   void UnregisterDevice();
 
@@ -188,24 +181,23 @@ class SharingService : public KeyedService,
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
   std::unique_ptr<SharingFCMSender> fcm_sender_;
   std::unique_ptr<SharingFCMHandler> fcm_handler_;
+
   syncer::DeviceInfoTracker* device_info_tracker_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   syncer::SyncService* sync_service_;
-  AckMessageHandler ack_message_handler_;
-  PingMessageHandler ping_message_handler_;
+
   net::BackoffEntry backoff_entry_;
   State state_;
-  std::vector<base::OnceClosure> device_candidates_initialized_callbacks_;
   bool is_observing_device_info_tracker_;
   std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
       local_device_info_ready_subscription_;
 
+  // List of callbacks for AddDeviceCandidatesInitializedObserver.
+  std::vector<base::OnceClosure> device_candidates_initialized_callbacks_;
   // Map of random GUID to SendMessageCallback.
   std::map<std::string, SendMessageCallback> send_message_callbacks_;
-
   // Map of FCM message_id to time at start of send message request to FCM.
   std::map<std::string, base::TimeTicks> send_message_times_;
-
   // Map of FCM message_id to random GUID.
   std::map<std::string, std::string> message_guids_;
 
@@ -213,6 +205,11 @@ class SharingService : public KeyedService,
   SharingServiceProxyAndroid sharing_service_proxy_android_{this};
 #endif  // defined(OS_ANDROID)
 
+  PingMessageHandler ping_message_handler_;
+  AckMessageHandler ack_message_handler_;
+#if defined(OS_ANDROID)
+  ClickToCallMessageHandler click_to_call_message_handler_;
+#endif  // defined(OS_ANDROID)
   std::unique_ptr<SharedClipboardMessageHandler>
       shared_clipboard_message_handler_;
 

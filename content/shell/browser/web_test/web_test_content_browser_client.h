@@ -73,6 +73,9 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
                        bool* no_javascript_access) override;
   bool CanAcceptUntrustedExchangesIfNeeded() override;
 
+  content::TtsControllerDelegate* GetTtsControllerDelegate() override;
+  content::TtsPlatform* GetTtsPlatform() override;
+
   // ShellContentBrowserClient overrides.
   void ExposeInterfacesToFrame(
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*

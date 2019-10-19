@@ -38,7 +38,6 @@
 #include "net/nqe/network_quality_estimator.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -610,16 +609,12 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl;
   // Adds caller-provided protocol handlers first so that these handlers are
-  // used over data/file/ftp handlers below.
+  // used over the ftp handler below.
   for (auto& scheme_handler : protocol_handlers_) {
     job_factory->SetProtocolHandler(scheme_handler.first,
                                     std::move(scheme_handler.second));
   }
   protocol_handlers_.clear();
-
-  if (data_enabled_)
-    job_factory->SetProtocolHandler(url::kDataScheme,
-                                    std::make_unique<DataProtocolHandler>());
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {

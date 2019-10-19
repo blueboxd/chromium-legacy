@@ -72,8 +72,8 @@ void WiFiDisplaySession::Terminate(const CompletionCallback& callback) {
   teminate_completion_callback_ = callback;
 }
 
-void WiFiDisplaySession::OnConnected(const std::string& local_ip_address,
-                                     const std::string& sink_ip_address) {
+void WiFiDisplaySession::OnConnected(const net::IPAddress& local_ip_address,
+                                     const net::IPAddress& sink_ip_address) {
   DCHECK_EQ(DisplaySourceSession::Established, state_);
   local_ip_address_ = local_ip_address;
   media_manager_.reset(
@@ -124,7 +124,7 @@ void WiFiDisplaySession::OnMessage(const std::string& data) {
 }
 
 std::string WiFiDisplaySession::GetLocalIPAddress() const {
-  return local_ip_address_;
+  return local_ip_address_.ToString();
 }
 
 int WiFiDisplaySession::GetNextCSeq(int* initial_peer_cseq) const {

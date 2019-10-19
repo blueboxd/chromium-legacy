@@ -29,7 +29,7 @@ public class HostBrowserUtils {
     private static final int MINIMUM_REQUIRED_INTENT_HELPER_VERSION = 2;
 
     // Lowest version of Chromium which supports ShellAPK showing the splash screen.
-    public static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = 77;
+    public static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = 78;
 
     private static final String VERSION_NAME_DEVELOPER_BUILD = "Developer Build";
 

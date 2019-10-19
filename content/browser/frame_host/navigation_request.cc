@@ -1355,9 +1355,11 @@ mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response_head) {
+  // Sanity check - this can only be set at commit time.
+  DCHECK(!auth_challenge_info_);
+
   response_head_ = response_head;
   ssl_info_ = response_head->head.ssl_info;
-  auth_challenge_info_ = response_head->head.auth_challenge_info;
 
   // Reset the page state as it can no longer be used at commit time since the
   // navigation was redirected.
@@ -3201,24 +3203,6 @@ GURL NavigationRequest::GetSiteForCommonParamsURL() const {
       starting_site_instance_->GetIsolationContext(), common_params_->url);
 }
 
-net::NetworkIsolationKey NavigationRequest::GetNetworkIsolationKey() const {
-  if (network_isolation_key_)
-    return network_isolation_key_.value();
-
-  // If this is a top-frame navigation, then use the origin of the url (and
-  // update it as redirects happen). If this is a subframe navigation, get the
-  // URL from the top frame.
-  // TODO(crbug.com/979296): Consider changing this code to copy an origin
-  // instead of creating one from a URL which lacks opacity information.
-  url::Origin frame_origin = url::Origin::Create(common_params_->url);
-  url::Origin top_frame_origin =
-      frame_tree_node_->IsMainFrame()
-          ? frame_origin
-          : frame_tree_node_->frame_tree()->root()->current_origin();
-
-  return net::NetworkIsolationKey(top_frame_origin, frame_origin);
-}
-
 // TODO(zetamoo): Try to merge this function inside its callers.
 void NavigationRequest::UpdateStateFollowingRedirect(
     const GURL& new_referrer_url,
@@ -3686,6 +3670,24 @@ const base::Optional<net::SSLInfo>& NavigationRequest::GetSSLInfo() {
 const base::Optional<net::AuthChallengeInfo>&
 NavigationRequest::GetAuthChallengeInfo() {
   return auth_challenge_info_;
+}
+
+net::NetworkIsolationKey NavigationRequest::GetNetworkIsolationKey() {
+  if (network_isolation_key_)
+    return network_isolation_key_.value();
+
+  // If this is a top-frame navigation, then use the origin of the url (and
+  // update it as redirects happen). If this is a subframe navigation, get the
+  // URL from the top frame.
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information.
+  url::Origin frame_origin = url::Origin::Create(common_params_->url);
+  url::Origin top_frame_origin =
+      frame_tree_node_->IsMainFrame()
+          ? frame_origin
+          : frame_tree_node_->frame_tree()->root()->current_origin();
+
+  return net::NetworkIsolationKey(top_frame_origin, frame_origin);
 }
 
 bool NavigationRequest::HasSubframeNavigationEntryCommitted() {

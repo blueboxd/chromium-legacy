@@ -173,6 +173,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public BaseBrowserTaskExecutor {
                               BrowserTaskQueues::Validator* validator);
 #endif  // DCHECK_IS_ON()
 
+  // base::TaskExecutor implementation.
+  const scoped_refptr<base::SequencedTaskRunner>& GetContinuationTaskRunner()
+      override;
+
  private:
   friend class BrowserIOThreadDelegate;
   friend class BrowserTaskExecutorTest;
@@ -185,6 +189,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public BaseBrowserTaskExecutor {
         std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler);
 
     ~UIThreadExecutor() override;
+
+    // base::TaskExecutor implementation.
+    const scoped_refptr<base::SequencedTaskRunner>& GetContinuationTaskRunner()
+        override;
 
     scoped_refptr<BrowserUIThreadScheduler::Handle> GetUIThreadHandle();
 
@@ -208,6 +216,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public BaseBrowserTaskExecutor {
         std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
 
     ~IOThreadExecutor() override;
+
+    // base::TaskExecutor implementation.
+    const scoped_refptr<base::SequencedTaskRunner>& GetContinuationTaskRunner()
+        override;
 
     scoped_refptr<BrowserUIThreadScheduler::Handle> GetIOThreadHandle();
 

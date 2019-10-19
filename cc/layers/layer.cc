@@ -1213,18 +1213,14 @@ void Layer::SetPropertyTreesNeedRebuild() {
     layer_tree_host_->property_trees()->needs_rebuild = true;
 }
 
-#if DCHECK_IS_ON()
 std::string Layer::DebugName() const {
   return inputs_.client ? inputs_.client->LayerDebugName(this) : "";
 }
-#endif
 
 std::string Layer::ToString() const {
   return base::StringPrintf(
       "layer_id: %d\n"
-#if DCHECK_IS_ON()
       "  name: %s\n"
-#endif
       "  Bounds: %s\n"
       "  ElementId: %s\n"
       "  OffsetToTransformParent: %s\n"
@@ -1235,9 +1231,7 @@ std::string Layer::ToString() const {
       "  scroll_tree_index: %d\n"
       "  transform_tree_index: %d\n",
       id(),
-#if DCHECK_IS_ON()
       DebugName().c_str(),
-#endif
       bounds().ToString().c_str(), element_id().ToString().c_str(),
       offset_to_transform_parent().ToString().c_str(),
       position().ToString().c_str(), scrollable(), clip_tree_index(),

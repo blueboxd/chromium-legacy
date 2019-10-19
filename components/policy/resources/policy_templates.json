@@ -492,6 +492,7 @@
       'policies': [
         'DefaultCookiesSetting',
         'DefaultImagesSetting',
+        'DefaultInsecureContentSetting',
         'DefaultJavaScriptSetting',
         'DefaultPluginsSetting',
         'DefaultPopupsSetting',
@@ -507,6 +508,8 @@
         'CookiesSessionOnlyForUrls',
         'ImagesAllowedForUrls',
         'ImagesBlockedForUrls',
+        'InsecureContentAllowedForUrls',
+        'InsecureContentBlockedForUrls',
         'JavaScriptAllowedForUrls',
         'JavaScriptBlockedForUrls',
         'KeygenAllowedForUrls',
@@ -9053,7 +9056,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9063,7 +9066,9 @@
       'id': 172,
       'caption': '''Screen dim delay when running on AC power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on AC power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which the screen is dimmed when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> dims the screen.
 
@@ -9081,7 +9086,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9091,7 +9096,9 @@
       'id': 173,
       'caption': '''Screen off delay when running on AC power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the screen is turned off when running on AC power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which the screen is turned off when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> turns off the screen.
 
@@ -9109,7 +9116,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9119,7 +9126,9 @@
       'id': 174,
       'caption': '''Screen lock delay when running on AC power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the screen is locked when running on AC power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME">ScreenLockDelays</ph> instead.
+
+          Specifies the length of time without user input after which the screen is locked when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
 
@@ -9139,7 +9148,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:27-'],
+      'supported_on': ['chrome_os:27-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9149,7 +9158,9 @@
       'id': 197,
       'caption': '''Idle warning delay when running on AC power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which a warning dialog is shown when running on AC power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which a warning dialog is shown when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows a warning dialog telling the user that the idle action is about to be taken.
 
@@ -9167,7 +9178,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9177,7 +9188,9 @@
       'id': 175,
       'caption': '''Idle delay when running on AC power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the idle action is taken when running on AC power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes the idle action, which can be configured separately.
 
@@ -9193,7 +9206,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9203,7 +9216,9 @@
       'id': 176,
       'caption': '''Screen dim delay when running on battery power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the screen is dimmed when running on battery power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which the screen is dimmed when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> dims the screen.
 
@@ -9221,7 +9236,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9231,7 +9246,9 @@
       'id': 177,
       'caption': '''Screen off delay when running on battery power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the screen is turned off when running on battery power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which the screen is turned off when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> turns off the screen.
 
@@ -9249,7 +9266,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9259,7 +9276,9 @@
       'id': 178,
       'caption': '''Screen lock delay when running on battery power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the screen is locked when running on battery power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME">ScreenLockDelays</ph> instead.
+
+          Specifies the length of time without user input after which the screen is locked when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
 
@@ -9279,7 +9298,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:27-'],
+      'supported_on': ['chrome_os:27-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9289,7 +9308,9 @@
       'id': 198,
       'caption': '''Idle warning delay when running on battery power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which a warning dialog is shown when running on battery power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which a warning dialog is shown when running on battery power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows a warning dialog telling the user that the idle action is about to be taken.
 
@@ -9307,7 +9328,7 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9317,7 +9338,9 @@
       'id': 179,
       'caption': '''Idle delay when running on battery power''',
       'tags': [],
-      'desc': '''Specifies the length of time without user input after which the idle action is taken when running on battery power.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          Specifies the length of time without user input after which the idle action is taken when running on battery power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes the idle action, which can be configured separately.
 
@@ -9355,7 +9378,7 @@
           'caption': '''Do nothing''',
         },
       ],
-      'supported_on': ['chrome_os:26-'],
+      'supported_on': ['chrome_os:26-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9365,7 +9388,7 @@
       'id': 180,
       'caption': '''Action to take when the idle delay is reached''',
       'tags': [],
-      'desc': '''Note that this policy is deprecated and will be removed in the future.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
 
           This policy provides a fallback value for the more-specific <ph name="IDLE_ACTION_AC_POLICY_NAME">IdleActionAC</ph> and <ph name="IDLE_ACTION_BATTERY_POLICY_NAME">IdleActionBattery</ph> policies. If this policy is set, its value gets used if the respective more-specific policy is not set.
 
@@ -9401,7 +9424,7 @@
           'caption': '''Do nothing''',
         },
       ],
-      'supported_on': ['chrome_os:30-'],
+      'supported_on': ['chrome_os:30-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9411,7 +9434,9 @@
       'id': 226,
       'caption': '''Action to take when the idle delay is reached while running on AC power''',
       'tags': [],
-      'desc': '''When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
 
           When this policy is unset, the default action is taken, which is suspend.
 
@@ -9447,7 +9472,7 @@
           'caption': '''Do nothing''',
         },
       ],
-      'supported_on': ['chrome_os:30-'],
+      'supported_on': ['chrome_os:30-81'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9457,7 +9482,9 @@
       'id': 222,
       'caption': '''Action to take when the idle delay is reached while running on battery power''',
       'tags': [],
-      'desc': '''When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
+      'desc': '''Note that this policy is deprecated and will be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 82. Please use <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME">PowerManagementIdleSettings</ph> instead.
+
+          When this policy is set, it specifies the action that <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> takes when the user remains idle for the length of time given by the idle delay, which can be configured separately.
 
           When this policy is unset, the default action is taken, which is suspend.
 
@@ -18516,6 +18543,83 @@
       If this policy is set to True, when an external protocol confirmation is shown, the user may choose to "Always open" the protocol without future confirmation prompts.
 
       If this policy is set to False or not set, the "Always open" checkbox is not displayed and the user will be prompted each time an external protocol is invoked.'''
+    },
+    {
+      'name': 'DefaultInsecureContentSetting',
+      'owners': ['carlosil@chromium.org', 'estark@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockInsecureContent',
+          'value': 2,
+          'caption': '''Do not allow any site to load blockable mixed content''',
+        },
+        {
+          'name': 'AllowExceptionsInsecureContent',
+          'value': 3,
+          'caption': '''Allow users to add exceptions to allow blockable mixed content''',
+        },
+      ],
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 633,
+      'caption': '''Control use of insecure content exceptions''',
+      'tags': [],
+      'desc': '''Allows you to set whether users can add exceptions to allow mixed content for specific sites.
+
+          This policy can be overridden for specific URL patterns using the 'InsecureContentAllowedForUrls' and 'InsecureContentBlockedForUrls' policies.
+
+          If this policy is left not set, users will be allowed to add exceptions to allow blockable mixed content"''',
+    },
+    {
+      'name': 'InsecureContentAllowedForUrls',
+      'owners': ['carlosil@chromium.org', 'estark@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 634,
+      'caption': '''Allow insecure content on these sites''',
+      'tags': [],
+      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites).
+
+          If this policy is left not set blockable mixed content will be blocked, but users will be allowed to set exceptions to allow it for specific sites.''',
+    },
+    {
+      'name': 'InsecureContentBlockedForUrls',
+      'owners': ['carlosil@chromium.org', 'estark@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 635,
+      'caption': '''Block insecure content on these sites''',
+      'tags': [],
+      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites).
+
+          If this policy is left not set blockable mixed content will be blocked, but users will be allowed to set exceptions to allow it for specific sites.''',
     }
   ],
 
@@ -19338,6 +19442,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 632,
+  'highest_id_currently_used': 635,
   'highest_atomic_group_id_currently_used': 38
 }

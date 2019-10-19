@@ -261,13 +261,28 @@ void CreditCardAccessManager::FetchCreditCard(
     const CreditCard* card,
     base::WeakPtr<Accessor> accessor,
     const base::TimeTicks& form_parsed_timestamp) {
+  // Return error if authentication is already in progress or card is nullptr.
   if (is_authentication_in_progress_ || !card) {
     accessor->OnCreditCardFetched(/*did_succeed=*/false, nullptr);
     return;
   }
 
+  // Latency metrics should only be logged if the user is verifiable and the
+  // flag is turned on. If flag is turned off, then |is_user_verifiable_| is not
+  // set.
+#if !defined(OS_IOS)
+  bool should_log_latency_metrics = is_user_verifiable_.value_or(false);
+#endif
+  // Return immediately if local card and log that unmask details were ignored.
   if (card->record_type() != CreditCard::MASKED_SERVER_CARD) {
     accessor->OnCreditCardFetched(/*did_succeed=*/true, card);
+#if !defined(OS_IOS)
+    if (should_log_latency_metrics) {
+      AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
+          AutofillMetrics::PreflightCallEvent::kDidNotChooseMaskedCard,
+          GetOrCreateFIDOAuthenticator()->IsUserOptedIn());
+    }
+#endif
     return;
   }
 
@@ -276,7 +291,21 @@ void CreditCardAccessManager::FetchCreditCard(
   form_parsed_timestamp_ = form_parsed_timestamp;
   is_authentication_in_progress_ = true;
 
-  if (AuthenticationRequiresUnmaskDetails()) {
+  bool get_unmask_details_returned =
+      ready_to_start_authentication_.IsSignaled();
+  // Logging metrics.
+#if !defined(OS_IOS)
+  if (should_log_latency_metrics) {
+    AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
+        get_unmask_details_returned
+            ? AutofillMetrics::PreflightCallEvent::
+                  kPreflightCallReturnedBeforeCardChosen
+            : AutofillMetrics::PreflightCallEvent::
+                  kCardChosenBeforePreflightCallReturned,
+        GetOrCreateFIDOAuthenticator()->IsUserOptedIn());
+  }
+#endif
+  if (AuthenticationRequiresUnmaskDetails() && !get_unmask_details_returned) {
     // Wait for |ready_to_start_authentication_| to be signaled by
     // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
     base::PostTaskAndReplyWithResult(
@@ -285,7 +314,7 @@ void CreditCardAccessManager::FetchCreditCard(
         base::BindOnce(&CreditCardAccessManager::Authenticate,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
-    Authenticate();
+    Authenticate(get_unmask_details_returned);
   }
 }
 
@@ -315,7 +344,7 @@ void CreditCardAccessManager::OnSettingsPageFIDOAuthToggled(bool opt_in) {
 #endif
 }
 
-void CreditCardAccessManager::Authenticate(bool did_get_unmask_details) {
+void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
   // Reset now that we have started authentication.
   ready_to_start_authentication_.Reset();
   unmask_details_request_in_progress_ = false;
@@ -323,7 +352,7 @@ void CreditCardAccessManager::Authenticate(bool did_get_unmask_details) {
   // Do not use FIDO if card is not listed in unmask details, as each Card must
   // be CVC authed at least once per device.
   bool card_is_eligible_for_fido =
-      did_get_unmask_details &&
+      get_unmask_details_returned &&
       unmask_details_.unmask_auth_method ==
           AutofillClient::UnmaskAuthMethod::FIDO &&
       unmask_details_.fido_eligible_card_ids.find(card_->server_id()) !=

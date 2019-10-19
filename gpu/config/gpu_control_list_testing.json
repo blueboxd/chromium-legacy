@@ -268,7 +268,7 @@
       "features": [
         "all",
         {
-	  "exceptions" : [
+          "exceptions" : [
             "test_feature_0"
           ]
         }
@@ -868,6 +868,34 @@
         "value": "9"
       },
       "multi_gpu_category": "secondary",
+      "features": [
+        "test_feature_0"
+      ]
+    },
+    {
+      "id": 73,
+      "description": "GpuControlListEntryTest.SubpixelFontRendering",
+      "os": {
+        "type": "chromeos"
+      },
+      "features": [
+        "test_feature_0"
+      ],
+      "exceptions": [
+        { "gl_renderer": "Mali.*",
+          "subpixel_font_rendering": "unsupported"},
+        { "gl_renderer": "DontCare" },
+        { "gl_renderer": "Supported",
+          "subpixel_font_rendering": "supported"}
+      ]
+    },
+    {
+      "id": 74,
+      "description": "GpuControlListEntryTest.SubpixelFontRenderingDontCare",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_renderer": "Mali.*",
       "features": [
         "test_feature_0"
       ]

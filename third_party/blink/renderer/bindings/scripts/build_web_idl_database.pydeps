@@ -12,6 +12,7 @@ web_idl/callback_interface.py
 web_idl/code_generator_info.py
 web_idl/composition_parts.py
 web_idl/constant.py
+web_idl/constructor.py
 web_idl/database.py
 web_idl/database_builder.py
 web_idl/dictionary.py

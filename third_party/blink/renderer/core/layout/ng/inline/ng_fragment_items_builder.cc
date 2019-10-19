@@ -80,10 +80,10 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       const NGPhysicalBoxFragment& box =
           To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
       if (child.children_count <= 1) {
-        // Compute |has_floating_descendants_| to optimize tree traversal in
-        // paint.
-        if (!has_floating_descendants_ && box.IsFloating())
-          has_floating_descendants_ = true;
+        // Compute |has_floating_descendants_for_paint_| to optimize tree
+        // traversal in paint.
+        if (!has_floating_descendants_for_paint_ && box.IsFloating())
+          has_floating_descendants_for_paint_ = true;
 
         items_.push_back(std::make_unique<NGFragmentItem>(box, 1));
         offsets_.push_back(child.offset);

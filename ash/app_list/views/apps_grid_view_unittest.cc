@@ -149,7 +149,8 @@ class DragAfterPageFlipTask : public ash::PaginationModelObserver {
 
  private:
   // PaginationModelObserver overrides:
-  void TotalPagesChanged() override {}
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override {
+  }
   void SelectedPageChanged(int old_selected, int new_selected) override {
     view_->UpdateDragFromItem(AppsGridView::MOUSE, drag_event_);
   }
@@ -2175,6 +2176,63 @@ TEST_P(AppsGridGapTest, MoveItemToPreviousFullPage) {
       model_content.append(",PageBreakItem");
   }
   EXPECT_EQ(model_content, model_->GetModelContent());
+}
+
+TEST_F(AppsGridViewTest, CreateANewPageWithKeyboardLogsMetrics) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(2);
+
+  // Select first app and move it with the keyboard down to create a new page.
+  AppListItemView* moving_item = GetItemViewAt(0);
+  apps_grid_view_->GetFocusManager()->SetFocusedView(moving_item);
+  SimulateKeyPress(ui::VKEY_DOWN, ui::EF_CONTROL_DOWN);
+  SimulateKeyReleased(ui::VKEY_DOWN, ui::EF_NONE);
+
+  ASSERT_EQ(apps_grid_view_->pagination_model()->total_pages(), 2);
+  histogram_tester.ExpectBucketCount(
+      "Apps.AppList.AppsGridAddPage",
+      AppListPageCreationType::kMovingAppWithKeyboard, 1);
+}
+
+TEST_F(AppsGridViewTest, CreateANewPageByDraggingLogsMetrics) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(2);
+
+  PageFlipWaiter page_flip_waiter(GetPaginationModel());
+  // Drag down the first item until a new page is created.
+  gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
+  const gfx::Rect apps_grid_bounds = apps_grid_view_->GetLocalBounds();
+  gfx::Point to =
+      gfx::Point(apps_grid_bounds.width() / 2, apps_grid_bounds.bottom() + 1);
+
+  // For fullscreen, drag to the bottom/right of bounds.
+  page_flip_waiter.Reset();
+  SimulateDrag(AppsGridView::MOUSE, from, to);
+
+  EXPECT_EQ(to, GetDragViewCenter());
+
+  while (test_api_->HasPendingPageFlip())
+    page_flip_waiter.Wait();
+
+  apps_grid_view_->EndDrag(false /*cancel*/);
+
+  ASSERT_EQ(apps_grid_view_->pagination_model()->total_pages(), 2);
+  histogram_tester.ExpectBucketCount("Apps.AppList.AppsGridAddPage",
+                                     AppListPageCreationType::kDraggingApp, 1);
+}
+
+TEST_F(AppsGridViewTest, CreateANewPageByAddingAppLogsMetrics) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(GetTilesPerPage(0));
+
+  // Add an item to simulate installing or syncing, the metric should be
+  // recorded.
+  model_->CreateAndAddItem("Extra App");
+
+  ASSERT_EQ(apps_grid_view_->pagination_model()->total_pages(), 2);
+  histogram_tester.ExpectBucketCount("Apps.AppList.AppsGridAddPage",
+                                     AppListPageCreationType::kSyncOrInstall,
+                                     1);
 }
 
 }  // namespace test

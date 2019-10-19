@@ -23,26 +23,36 @@ import node
 import node_modules
 
 
-_RESOURCES_PATH = os.path.join(_SRC_PATH, 'ui', 'webui', 'resources')
+_RESOURCES_PATH = os.path.join(
+    _SRC_PATH, 'ui', 'webui', 'resources', '').replace('\\', '/')
 
 
-_CR_ELEMENTS_PATH = os.path.join(_RESOURCES_PATH, 'cr_elements')
+_CR_ELEMENTS_PATH = os.path.join(
+    _RESOURCES_PATH, 'cr_elements', '').replace('\\', '/')
 
 
-_CR_COMPONENTS_PATH = os.path.join(_RESOURCES_PATH, 'cr_components')
+_CR_COMPONENTS_PATH = os.path.join(
+    _RESOURCES_PATH, 'cr_components', '').replace('\\', '/')
 
 
-_CSS_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'css')
+_CSS_RESOURCES_PATH = os.path.join(
+    _RESOURCES_PATH, 'css', '').replace('\\', '/')
 
 
-_HTML_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'html')
+_HTML_RESOURCES_PATH = os.path.join(
+    _RESOURCES_PATH, 'html', '').replace('\\', '/')
 
 
-_JS_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'js')
+_JS_RESOURCES_PATH = os.path.join(_RESOURCES_PATH, 'js', '').replace('\\', '/')
+
+
+_IMAGES_RESOURCES_PATH = os.path.join(
+    _RESOURCES_PATH, 'images', '').replace('\\', '/')
 
 
 _POLYMER_PATH = os.path.join(
-    _SRC_PATH, 'third_party', 'polymer', 'v1_0', 'components-chromium')
+    _SRC_PATH, 'third_party', 'polymer', 'v1_0', 'components-chromium',
+    '').replace('\\', '/')
 
 
 _VULCANIZE_BASE_ARGS = [
@@ -60,6 +70,7 @@ _VULCANIZE_BASE_ARGS = [
   '--exclude', 'chrome://resources/css/text_defaults.css',
   '--exclude', 'chrome://resources/css/text_defaults_md.css',
   '--exclude', 'chrome://resources/js/load_time_data.js',
+  '--exclude', 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html',
 
   '--inline-css',
   '--inline-scripts',
@@ -74,7 +85,8 @@ _URL_MAPPINGS = [
     ('chrome://resources/css/', _CSS_RESOURCES_PATH),
     ('chrome://resources/html/', _HTML_RESOURCES_PATH),
     ('chrome://resources/js/', _JS_RESOURCES_PATH),
-    ('chrome://resources/polymer/v1_0/', _POLYMER_PATH)
+    ('chrome://resources/polymer/v1_0/', _POLYMER_PATH),
+    ('chrome://resources/images/', _IMAGES_RESOURCES_PATH)
 ]
 
 
@@ -130,8 +142,8 @@ def _update_dep_file(in_folder, args, manifest):
 
 
 def _optimize(in_folder, args):
-  in_path = os.path.normpath(os.path.join(_CWD, in_folder))
-  out_path = os.path.join(_CWD, args.out_folder)
+  in_path = os.path.normpath(os.path.join(_CWD, in_folder)).replace('\\', '/')
+  out_path = os.path.join(_CWD, args.out_folder).replace('\\', '/')
   manifest_out_path = _request_list_path(out_path, args.host)
 
   exclude_args = []
@@ -141,10 +153,9 @@ def _optimize(in_folder, args):
 
   in_html_args = []
   for f in args.html_in_files:
-    in_html_args.append('--in-html')
     in_html_args.append(f)
 
-  tmp_out_dir = os.path.join(out_path, 'bundled')
+  tmp_out_dir = os.path.join(out_path, 'bundled').replace('\\', '/')
   node.RunNode(
       [node_modules.PathToBundler()] +
       _VULCANIZE_BASE_ARGS + _VULCANIZE_REDIRECT_ARGS + exclude_args +
@@ -155,8 +166,8 @@ def _optimize(in_folder, args):
 
        '--manifest-out', manifest_out_path,
        '--root', in_path,
-       '--redirect', '"chrome://%s/|%s"' % (args.host, in_path),
-       '--out-dir', os.path.relpath(tmp_out_dir, _CWD),
+       '--redirect', '"chrome://%s/|%s"' % (args.host, in_path + '/'),
+       '--out-dir', os.path.relpath(tmp_out_dir, _CWD).replace('\\', '/'),
        '--shell', args.html_in_files[0],
       ] + in_html_args)
 

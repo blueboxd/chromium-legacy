@@ -15,6 +15,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -132,6 +133,14 @@ class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
       NOTREACHED();
       return BrowserThread::UI;
     }
+
+    const scoped_refptr<base::SequencedTaskRunner>& GetContinuationTaskRunner()
+        override {
+      return dummy_;
+    }
+
+   private:
+    scoped_refptr<base::SequencedTaskRunner> dummy_;
   };
 
   template <BrowserThread::ID ID>
@@ -308,6 +317,37 @@ TEST_F(BrowserTaskExecutorTest, CurrentThreadAndOtherTraits) {
   EXPECT_EQ(ui_best_navigation_runner,
             base::CreateSingleThreadTaskRunner(
                 {base::CurrentThread(), BrowserTaskType::kNavigation}));
+}
+
+TEST_F(BrowserTaskExecutorTest, GetContinuationTaskRunner) {
+  // Ensure task queue priorities are set.
+  BrowserTaskExecutor::PostFeatureListSetup();
+  std::vector<int> order;
+  base::RunLoop run_loop;
+
+  auto task1 = base::BindLambdaForTesting([&]() {
+    order.push_back(1);
+    run_loop.Quit();
+  });
+  auto task2 = base::BindLambdaForTesting([&]() { order.push_back(2); });
+  auto task3 = base::BindLambdaForTesting([&]() { order.push_back(3); });
+
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, task1);
+
+  // Post a bootstrap task whose continuation tasks should run before |task1|.
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI, BrowserTaskType::kBootstrap},
+      base::BindLambdaForTesting([&]() {
+        base::GetContinuationTaskRunner()->PostTask(FROM_HERE, task2);
+        base::GetContinuationTaskRunner()->PostTask(FROM_HERE, task3);
+      }));
+
+  run_loop.Run();
+  EXPECT_THAT(order, ElementsAre(2, 3, 1));
+}
+
+TEST_F(BrowserTaskExecutorTest, GetContinuationTaskRunnerWithNoTaskExecuting) {
+  EXPECT_DCHECK_DEATH(base::GetContinuationTaskRunner());
 }
 
 }  // namespace content

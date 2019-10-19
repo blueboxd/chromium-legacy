@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 #include "base/auto_reset.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -367,6 +368,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   PreferredColorScheme GetPreferredColorScheme() const {
     return preferred_color_scheme_;
   }
+  ForcedColors GetForcedColors() const { return forced_colors_; }
   void UpdateColorSchemeBackground();
 
   void Trace(blink::Visitor*) override;
@@ -571,11 +573,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // scheme is used to opt-out of forced darkening.
   Member<const CSSValue> meta_color_scheme_;
 
-  // The preferred color scheme is set in settings, but may be overridden by the
-  // ForceDarkMode setting where the preferred_color_scheme_ will be set to
-  // kNoPreference to avoid dark styling to be applied before auto darkening.
+  // The preferred color scheme is set in WebThemeEngine, but may be overridden
+  // by the ForceDarkMode setting where the preferred_color_scheme_ will be set
+  // to kNoPreference to avoid dark styling to be applied before auto darkening.
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
+
+  // Forced colors is set in WebThemeEngine.
+  ForcedColors forced_colors_ = ForcedColors::kNone;
 
   friend class NodeTest;
   friend class StyleEngineTest;

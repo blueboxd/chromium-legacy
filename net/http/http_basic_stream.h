@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_basic_state.h"
@@ -93,7 +94,10 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
  private:
   HttpStreamParser* parser() const { return state_.parser(); }
 
+  void OnHandshakeConfirmed(CompletionOnceCallback callback, int rv);
+
   HttpBasicState state_;
+  base::TimeTicks confirm_handshake_end_;
   RequestHeadersCallback request_headers_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpBasicStream);

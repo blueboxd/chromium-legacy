@@ -18,8 +18,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 enum InterpolableColorIndex : unsigned {
   kRed,
   kGreen,
@@ -88,7 +86,7 @@ CSSColorInterpolationType::CreateInterpolableColor(const StyleColor& color) {
 
 std::unique_ptr<InterpolableValue>
 CSSColorInterpolationType::MaybeCreateInterpolableColor(const CSSValue& value) {
-  if (auto* color_value = DynamicTo<CSSColorValue>(value))
+  if (auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value))
     return CreateInterpolableColor(color_value->Value());
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (!identifier_value)
@@ -296,7 +294,7 @@ const CSSValue* CSSColorInterpolationType::CreateCSSValue(
     const StyleResolverState& state) const {
   const InterpolableList& color_pair = ToInterpolableList(interpolable_value);
   Color color = ResolveInterpolableColor(*color_pair.Get(kUnvisited), state);
-  return CSSColorValue::Create(color.Rgb());
+  return cssvalue::CSSColorValue::Create(color.Rgb());
 }
 
 void CSSColorInterpolationType::Composite(

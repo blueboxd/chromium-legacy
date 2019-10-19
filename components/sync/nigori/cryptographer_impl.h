@@ -75,6 +75,8 @@ class CryptographerImpl : public Cryptographer {
   // Similar to Clone() but returns CryptographerImpl.
   std::unique_ptr<CryptographerImpl> CloneImpl() const;
 
+  size_t KeyBagSizeForTesting() const;
+
   // Cryptographer overrides.
   std::unique_ptr<Cryptographer> Clone() const override;
   bool CanEncrypt() const override;

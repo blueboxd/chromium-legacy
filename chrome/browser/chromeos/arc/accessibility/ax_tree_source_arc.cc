@@ -29,9 +29,6 @@ using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
 
 AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
-      root_id_(ui::AXNode::kInvalidAXID),
-      window_id_(ui::AXNode::kInvalidAXID),
-      focused_id_(ui::AXNode::kInvalidAXID),
       is_notification_(false),
       is_input_method_window_(false),
       delegate_(delegate) {}
@@ -44,7 +41,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   tree_map_.clear();
   parent_map_.clear();
   cached_computed_bounds_.clear();
-  root_id_ = ui::AXNode::kInvalidAXID;
+  root_id_.reset();
 
   window_id_ = event_data->window_id;
   is_notification_ = event_data->notification_key.has_value();
@@ -104,7 +101,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   root_id_ = source_root;
   // Walk back down through children map to populate parent_map_.
   std::stack<int32_t> stack;
-  stack.push(root_id_);
+  stack.push(*root_id_);
   while (!stack.empty()) {
     int32_t parent = stack.top();
     stack.pop();
@@ -160,16 +157,16 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   }
 
   // Calculate the focused ID.
-  if (focused_id_ == ui::AXNode::kInvalidAXID) {
-    if (root_id_ != ui::AXNode::kInvalidAXID) {
-      ArcAccessibilityInfoData* root = GetRoot();
+  if (!focused_id_.has_value()) {
+    if (root_id_.has_value()) {
+      AccessibilityInfoDataWrapper* root = GetRoot();
       // TODO (sarakato): Add proper fix once cause of invalid node is known.
       if (!IsValid(root)) {
         return;
       } else if (root->IsNode()) {
         focused_id_ = root_id_;
       } else {
-        std::vector<ArcAccessibilityInfoData*> children;
+        std::vector<AccessibilityInfoDataWrapper*> children;
         root->GetChildren(&children);
         if (!children.empty()) {
           for (size_t i = 0; i < children.size(); ++i) {
@@ -191,8 +188,9 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   // When the focused node exists, give it as a hint to decide a Chrome
   // automation event type.
   AXNodeInfoData* opt_focused_node = nullptr;
-  if (tree_map_.find(focused_id_) != tree_map_.end())
-    opt_focused_node = tree_map_[focused_id_]->GetNode();
+  if (focused_id_.has_value() &&
+      tree_map_.find(*focused_id_) != tree_map_.end())
+    opt_focused_node = tree_map_[*focused_id_]->GetNode();
   event.event_type = ToAXEvent(event_data->event_type, opt_focused_node);
   event.id = event_data->source_id;
 
@@ -220,129 +218,10 @@ void AXTreeSourceArc::NotifyGetTextLocationDataResult(
   GetAutomationEventRouter()->DispatchGetTextLocationDataResult(data, rect);
 }
 
-bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
-  data->tree_id = ax_tree_id();
-  if (focused_id_ != ui::AXNode::kInvalidAXID) {
-    data->focus_id = focused_id_;
-  }
-  return true;
-}
-
-ArcAccessibilityInfoData* AXTreeSourceArc::GetRoot() const {
-  ArcAccessibilityInfoData* root = GetFromId(root_id_);
-  return root;
-}
-
-ArcAccessibilityInfoData* AXTreeSourceArc::GetFromId(int32_t id) const {
-  auto it = tree_map_.find(id);
-  if (it == tree_map_.end())
-    return nullptr;
-  return it->second.get();
-}
-
-int32_t AXTreeSourceArc::GetId(ArcAccessibilityInfoData* info_data) const {
-  if (!info_data)
-    return ui::AXNode::kInvalidAXID;
-  return info_data->GetId();
-}
-
-void AXTreeSourceArc::GetChildren(
-    ArcAccessibilityInfoData* info_data,
-    std::vector<ArcAccessibilityInfoData*>* out_children) const {
-  if (!info_data)
-    return;
-
-  info_data->GetChildren(out_children);
-  if (out_children->empty())
-    return;
-
-  std::map<int32_t, size_t> id_to_index;
-  for (size_t i = 0; i < out_children->size(); i++)
-    id_to_index[out_children->at(i)->GetId()] = i;
-
-  // Sort children based on their enclosing bounding rectangles, based on their
-  // descendants.
-  std::sort(
-      out_children->begin(), out_children->end(),
-      [this, &id_to_index](auto left, auto right) {
-        auto left_bounds = ComputeEnclosingBounds(left);
-        auto right_bounds = ComputeEnclosingBounds(right);
-
-        if (left_bounds.IsEmpty() || right_bounds.IsEmpty()) {
-          return id_to_index.at(left->GetId()) < id_to_index.at(right->GetId());
-        }
-
-        // Top to bottom sort (non-overlapping).
-        if (!left_bounds.Intersects(right_bounds))
-          return left_bounds.y() < right_bounds.y();
-
-        // Overlapping
-        // Left to right.
-        int left_difference = left_bounds.x() - right_bounds.x();
-        if (left_difference != 0)
-          return left_difference < 0;
-
-        // Top to bottom.
-        int top_difference = left_bounds.y() - right_bounds.y();
-        if (top_difference != 0)
-          return top_difference < 0;
-
-        // Larger to smaller.
-        int height_difference = left_bounds.height() - right_bounds.height();
-        if (height_difference != 0)
-          return height_difference > 0;
-
-        int width_difference = left_bounds.width() - right_bounds.width();
-        if (width_difference != 0)
-          return width_difference > 0;
-
-        // The rects are equal.
-        return id_to_index.at(left->GetId()) < id_to_index.at(right->GetId());
-      });
-}
-
-ArcAccessibilityInfoData* AXTreeSourceArc::GetParent(
-    ArcAccessibilityInfoData* info_data) const {
-  if (!info_data)
-    return nullptr;
-  auto it = parent_map_.find(info_data->GetId());
-  if (it != parent_map_.end())
-    return GetFromId(it->second);
-  return nullptr;
-}
-
-bool AXTreeSourceArc::IsIgnored(ArcAccessibilityInfoData* info_data) const {
-  return false;
-}
-
-bool AXTreeSourceArc::IsValid(ArcAccessibilityInfoData* info_data) const {
-  return info_data;
-}
-
-bool AXTreeSourceArc::IsEqual(ArcAccessibilityInfoData* info_data1,
-                              ArcAccessibilityInfoData* info_data2) const {
-  if (!info_data1 || !info_data2)
-    return false;
-  return info_data1->GetId() == info_data2->GetId();
-}
-
-ArcAccessibilityInfoData* AXTreeSourceArc::GetNull() const {
-  return nullptr;
-}
-
-void AXTreeSourceArc::SerializeNode(ArcAccessibilityInfoData* info_data,
-                                    ui::AXNodeData* out_data) const {
-  if (!info_data)
-    return;
-
-  int32_t id = info_data->GetId();
-  out_data->id = id;
-  info_data->Serialize(out_data);
-}
-
-const gfx::Rect AXTreeSourceArc::GetBounds(ArcAccessibilityInfoData* info_data,
-                                           aura::Window* active_window) const {
-  DCHECK_NE(root_id_, ui::AXNode::kInvalidAXID);
+const gfx::Rect AXTreeSourceArc::GetBounds(
+    AccessibilityInfoDataWrapper* info_data,
+    aura::Window* active_window) const {
+  DCHECK(root_id_.has_value());
 
   gfx::Rect info_data_bounds = info_data->GetBounds();
 
@@ -405,8 +284,54 @@ bool AXTreeSourceArc::IsRootOfNodeTree(int32_t id) const {
   return !parent_tree_it->second->IsNode();
 }
 
+int32_t AXTreeSourceArc::GetWindowId() const {
+  CHECK(window_id_.has_value());
+  return *window_id_;
+}
+
+bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
+  data->tree_id = ax_tree_id();
+  if (focused_id_.has_value())
+    data->focus_id = *focused_id_;
+  return true;
+}
+
+AccessibilityInfoDataWrapper* AXTreeSourceArc::GetRoot() const {
+  return root_id_.has_value() ? GetFromId(*root_id_) : nullptr;
+}
+
+AccessibilityInfoDataWrapper* AXTreeSourceArc::GetFromId(int32_t id) const {
+  auto it = tree_map_.find(id);
+  if (it == tree_map_.end())
+    return nullptr;
+  return it->second.get();
+}
+
+AccessibilityInfoDataWrapper* AXTreeSourceArc::GetParent(
+    AccessibilityInfoDataWrapper* info_data) const {
+  if (!info_data)
+    return nullptr;
+  auto it = parent_map_.find(info_data->GetId());
+  if (it != parent_map_.end())
+    return GetFromId(it->second);
+  return nullptr;
+}
+
+void AXTreeSourceArc::SerializeNode(AccessibilityInfoDataWrapper* info_data,
+                                    ui::AXNodeData* out_data) const {
+  if (!info_data)
+    return;
+
+  info_data->Serialize(out_data);
+}
+
+extensions::AutomationEventRouterInterface*
+AXTreeSourceArc::GetAutomationEventRouter() const {
+  return extensions::AutomationEventRouter::GetInstance();
+}
+
 gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
-    ArcAccessibilityInfoData* info_data) const {
+    AccessibilityInfoDataWrapper* info_data) const {
   gfx::Rect computed_bounds;
   // Exit early if the node or window is invisible.
   if (!info_data->IsVisibleToUser())
@@ -417,7 +342,7 @@ gfx::Rect AXTreeSourceArc::ComputeEnclosingBounds(
 }
 
 void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
-    ArcAccessibilityInfoData* info_data,
+    AccessibilityInfoDataWrapper* info_data,
     gfx::Rect& computed_bounds) const {
   auto cached_bounds = cached_computed_bounds_.find(info_data->GetId());
   if (cached_bounds != cached_computed_bounds_.end()) {
@@ -432,17 +357,13 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
     computed_bounds.Union(info_data->GetBounds());
     return;
   }
-  std::vector<ArcAccessibilityInfoData*> children;
+  std::vector<AccessibilityInfoDataWrapper*> children;
   info_data->GetChildren(&children);
   if (children.empty())
     return;
-  for (ArcAccessibilityInfoData* child : children)
+  for (AccessibilityInfoDataWrapper* child : children)
     ComputeEnclosingBoundsInternal(child, computed_bounds);
   return;
-}
-
-void AXTreeSourceArc::PerformAction(const ui::AXActionData& data) {
-  delegate_->OnAction(data);
 }
 
 void AXTreeSourceArc::Reset() {
@@ -450,8 +371,8 @@ void AXTreeSourceArc::Reset() {
   parent_map_.clear();
   cached_computed_bounds_.clear();
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
-  root_id_ = -1;
-  focused_id_ = -1;
+  root_id_.reset();
+  focused_id_.reset();
   extensions::AutomationEventRouterInterface* router =
       GetAutomationEventRouter();
   if (!router)
@@ -460,9 +381,88 @@ void AXTreeSourceArc::Reset() {
   router->DispatchTreeDestroyedEvent(ax_tree_id(), nullptr);
 }
 
-extensions::AutomationEventRouterInterface*
-AXTreeSourceArc::GetAutomationEventRouter() const {
-  return extensions::AutomationEventRouter::GetInstance();
+int32_t AXTreeSourceArc::GetId(AccessibilityInfoDataWrapper* info_data) const {
+  if (!info_data)
+    return ui::AXNode::kInvalidAXID;
+  return info_data->GetId();
+}
+
+void AXTreeSourceArc::GetChildren(
+    AccessibilityInfoDataWrapper* info_data,
+    std::vector<AccessibilityInfoDataWrapper*>* out_children) const {
+  if (!info_data)
+    return;
+
+  info_data->GetChildren(out_children);
+  if (out_children->empty())
+    return;
+
+  std::map<int32_t, size_t> id_to_index;
+  for (size_t i = 0; i < out_children->size(); i++)
+    id_to_index[out_children->at(i)->GetId()] = i;
+
+  // Sort children based on their enclosing bounding rectangles, based on their
+  // descendants.
+  std::sort(
+      out_children->begin(), out_children->end(),
+      [this, &id_to_index](auto left, auto right) {
+        auto left_bounds = ComputeEnclosingBounds(left);
+        auto right_bounds = ComputeEnclosingBounds(right);
+
+        if (left_bounds.IsEmpty() || right_bounds.IsEmpty()) {
+          return id_to_index.at(left->GetId()) < id_to_index.at(right->GetId());
+        }
+
+        // Top to bottom sort (non-overlapping).
+        if (!left_bounds.Intersects(right_bounds))
+          return left_bounds.y() < right_bounds.y();
+
+        // Overlapping
+        // Left to right.
+        int left_difference = left_bounds.x() - right_bounds.x();
+        if (left_difference != 0)
+          return left_difference < 0;
+
+        // Top to bottom.
+        int top_difference = left_bounds.y() - right_bounds.y();
+        if (top_difference != 0)
+          return top_difference < 0;
+
+        // Larger to smaller.
+        int height_difference = left_bounds.height() - right_bounds.height();
+        if (height_difference != 0)
+          return height_difference > 0;
+
+        int width_difference = left_bounds.width() - right_bounds.width();
+        if (width_difference != 0)
+          return width_difference > 0;
+
+        // The rects are equal.
+        return id_to_index.at(left->GetId()) < id_to_index.at(right->GetId());
+      });
+}
+
+bool AXTreeSourceArc::IsIgnored(AccessibilityInfoDataWrapper* info_data) const {
+  return false;
+}
+
+bool AXTreeSourceArc::IsValid(AccessibilityInfoDataWrapper* info_data) const {
+  return info_data;
+}
+
+bool AXTreeSourceArc::IsEqual(AccessibilityInfoDataWrapper* info_data1,
+                              AccessibilityInfoDataWrapper* info_data2) const {
+  if (!info_data1 || !info_data2)
+    return false;
+  return info_data1->GetId() == info_data2->GetId();
+}
+
+AccessibilityInfoDataWrapper* AXTreeSourceArc::GetNull() const {
+  return nullptr;
+}
+
+void AXTreeSourceArc::PerformAction(const ui::AXActionData& data) {
+  delegate_->OnAction(data);
 }
 
 }  // namespace arc

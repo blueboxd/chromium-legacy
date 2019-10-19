@@ -934,6 +934,16 @@ void AutofillMetrics::LogCardUnmaskPreflightDuration(
 }
 
 // static
+void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
+    PreflightCallEvent event,
+    bool fido_auth_enabled) {
+  std::string histogram_name =
+      "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.";
+  histogram_name += fido_auth_enabled ? "OptedIn" : "OptedOut";
+  base::UmaHistogramEnumeration(histogram_name, event);
+}
+
+// static
 void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
                             NUM_UNMASK_PROMPT_EVENTS);

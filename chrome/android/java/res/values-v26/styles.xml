@@ -8,10 +8,5 @@
         <item name="android:statusBarColor">@color/modern_primary_color</item>
         <item name="android:windowLightStatusBar">@bool/window_light_status_bar</item>
     </style>
-
-    <style name="Theme.Chromium.Preferences" parent="Base.V21.Theme.Chromium.Preferences">
-        <item name="android:statusBarColor">@color/modern_primary_color</item>
-        <item name="android:windowLightStatusBar">@bool/window_light_status_bar</item>
-    </style>
 </resources>
 

@@ -399,3 +399,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_mtu_discovery_v2, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_close_all_encryptions_levels,
           false)
+
+// If the bandwidth during ack aggregation is smaller than (estimated
+// bandwidth * this flag), consider the current aggregation completed
+// and starts a new one.
+QUIC_FLAG(double, FLAGS_quic_ack_aggregation_bandwidth_threshold, 1.0)

@@ -44,12 +44,8 @@ AvatarMenu::ImageLoadStatus AvatarMenu::GetImageForMenuButton(
       status = ImageLoadStatus::LOADING;
   }
 
-  // Otherwise, use the default resource, not the downloaded high-res one.
-  const size_t icon_index = entry->GetAvatarIconIndex();
-  const int resource_id =
-      profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
-  *image =
-      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  // Otherwise, use the high resolution icon from local storage.
+  *image = entry->GetAvatarIcon();
 
   return status;
 }

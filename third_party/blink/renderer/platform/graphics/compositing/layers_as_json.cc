@@ -37,9 +37,7 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(const cc::Layer* layer,
     json->SetInteger("ccLayerId", layer->id());
   }
 
-  json->SetString(
-      "name",
-      String(layer->GetLayerClientForTesting()->LayerDebugName(layer).c_str()));
+  json->SetString("name", String(layer->DebugName().c_str()));
 
   if (position != FloatPoint())
     json->SetArray("position", PointAsJSONArray(position));

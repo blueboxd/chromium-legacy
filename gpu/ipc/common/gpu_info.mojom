@@ -172,4 +172,5 @@ struct GpuInfo {
   uint64 system_visual;
   uint64 rgba_visual;
   bool oop_rasterization_supported;
+  bool subpixel_font_rendering;
 };

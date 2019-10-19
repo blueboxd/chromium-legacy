@@ -292,6 +292,10 @@ const char kPasswordLeakDetectionName[] = "Password Leak Detection";
 const char kPasswordLeakDetectionDescription[] =
     "Enables the detection of leaked passwords.";
 
+const char kSaveCardInfobarMessagesUIName[] = "Save Card Infobar Messages UI";
+const char kSaveCardInfobarMessagesUIDescription[] =
+    "When enabled, Save Card Infobar uses the new Messages UI.";
+
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";
@@ -360,6 +364,11 @@ const char kToolbarNewTabButtonName[] =
     "Enable New Tab button in the bottom toolbar";
 const char kToolbarNewTabButtonDescription[] =
     "When enabled, the bottom toolbar middle button opens a new tab";
+
+const char kTranslateInfobarMessagesUIName[] =
+    "Enable Translate Infobar Messages UI";
+const char kTranslateInfobarMessagesUIDescription[] =
+    "When enabled, the Translate Infobar uses the new Messages UI.";
 
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =

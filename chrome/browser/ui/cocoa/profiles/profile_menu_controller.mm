@@ -163,14 +163,12 @@ class Observer : public BrowserListObserver, public AvatarMenuObserver {
       // Always use the low-res, small default avatars in the menu.
       AvatarMenu::GetImageForMenuButton(itemData.profile_path, &itemIcon);
 
-      // The image might be too large and need to be resized, e.g. if this is
-      // a signed-in user using the GAIA profile photo.
-      if (itemIcon.Width() > kMenuAvatarIconSize ||
-          itemIcon.Height() > kMenuAvatarIconSize) {
-        itemIcon = profiles::GetSizedAvatarIcon(itemIcon, /*is_rectangle=*/true,
-                                                kMenuAvatarIconSize,
-                                                kMenuAvatarIconSize);
-      }
+      // Shapes the avatar icon into a circle for consistency with other avatar
+      // UI elements.
+      itemIcon = profiles::GetSizedAvatarIcon(
+          itemIcon, /*is_rectangle=*/true, kMenuAvatarIconSize,
+          kMenuAvatarIconSize, profiles::SHAPE_CIRCLE);
+
       [item setImage:itemIcon.ToNSImage()];
       [item setState:itemData.active ? NSOnState : NSOffState];
     }

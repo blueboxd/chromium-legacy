@@ -263,6 +263,8 @@ jumbo_source_set("testing") {
     "html/forms/mock_file_chooser.h",
     "testing/callback_function_test.cc",
     "testing/callback_function_test.h",
+    "testing/color_scheme_helper.cc",
+    "testing/color_scheme_helper.h",
     "testing/death_aware_script_wrappable.cc",
     "testing/death_aware_script_wrappable.h",
     "testing/dictionary_test.cc",

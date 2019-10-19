@@ -518,17 +518,10 @@ test.realbox.testUnsupportedDeletion = function() {
   });
   test.realbox.realboxEl.dispatchEvent(keyEvent);
   assertFalse(keyEvent.defaultPrevented);
+  assertEquals(0, test.realbox.deletedLines.length);
 
   const matchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
   assertFalse(matchesEl.classList.contains(test.realbox.CLASSES.REMOVABLE));
-
-  // The below 2 statements shouldn't really happen in updated code but isn't
-  // terrible idea to keep testing for now. This is because SupportsDeletion()
-  // is now propagated to the client, so we shouldn't allow users (via the UI)
-  // to attempt to delete non-deletable things.
-  chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
-      {success: false, matches: []});
-  assertEquals(1, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
 };
 
 test.realbox.testSupportedDeletion = function() {
@@ -565,6 +558,14 @@ test.realbox.testSupportedDeletion = function() {
   });
   test.realbox.realboxEl.dispatchEvent(shiftDelete);
   assertTrue(shiftDelete.defaultPrevented);
+
+  // Pretend like the focused match gets removed from DOM when deleted.
+  matchesEl.children[1].dispatchEvent(new Event('focusout', {bubbles: true}));
+
+  // stopAutocomplete() should not be called if the focused match gets removed
+  // from the DOM (and focus gets dropped). There's explicit code in the
+  // focusout handler to deal with this case.
+  assertEquals(0, test.realbox.stops.length);
 
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(1, test.realbox.deletedLines[0]);

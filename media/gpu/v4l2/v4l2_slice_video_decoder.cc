@@ -502,6 +502,12 @@ bool V4L2SliceVideoDecoder::ChangeResolution(gfx::Size pic_size,
   if (!StopStreamV4L2Queue())
     return false;
 
+  if (!output_queue_->DeallocateBuffers()) {
+    SetState(State::kError);
+    return false;
+  }
+  DCHECK_GT(num_output_frames, 0u);
+
   if (!SetCodedSizeOnInputQueue(pic_size)) {
     VLOGF(1) << "Failed to set coded size on input queue";
     return false;
@@ -523,12 +529,6 @@ bool V4L2SliceVideoDecoder::ChangeResolution(gfx::Size pic_size,
     return false;
   }
 
-  // Allocate new output buffers.
-  if (!output_queue_->DeallocateBuffers()) {
-    SetState(State::kError);
-    return false;
-  }
-  DCHECK_GT(num_output_frames, 0u);
   if (output_queue_->AllocateBuffers(num_output_frames, V4L2_MEMORY_DMABUF) ==
       0) {
     VLOGF(1) << "Failed to request output buffers.";

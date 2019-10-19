@@ -170,9 +170,18 @@ bool HashPasswordManager::SavePasswordHash(const std::string username,
       }
     }
   }
+  // A password hash does not exist when it is first sign-in.
+  bool is_first_sign_in = !HasPasswordHash(username, is_gaia_password);
   bool is_saved = SavePasswordHash(
       PasswordHashData(username, password, true, is_gaia_password));
-  state_callback_list_.Notify(username);
+  // Currently, the only callback in this list is
+  // CheckGaiaPasswordChangeForAllSignedInUsers which is in
+  // ChromePasswordProtectionService. We only want to notify ChromePPS only when
+  // a user has changed their password. This means that an existing password
+  // hash has to already exist in the password store and the SavePasswordHash
+  // has to succeed.
+  if (!is_first_sign_in && is_saved)
+    state_callback_list_.Notify(username);
   return is_saved;
 }
 

@@ -68,12 +68,14 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
+#include "third_party/blink/renderer/core/editing/surrounding_text.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/frame_overlay.h"
+#include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -150,6 +152,8 @@ void LocalFrame::Init() {
 
   GetRemoteNavigationAssociatedInterfaces()->GetInterface(
       local_frame_host_remote_.BindNewEndpointAndPassReceiver());
+  GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
+      &LocalFrame::BindToReceiver, WrapWeakPersistent(this)));
 
   loader_.Init();
 }
@@ -1800,6 +1804,40 @@ void LocalFrame::DidChangeVisibleToHitTesting() {
 
 mojom::blink::LocalFrameHost& LocalFrame::GetLocalFrameHostRemote() {
   return *local_frame_host_remote_.get();
+}
+
+void LocalFrame::GetTextSurroundingSelection(
+    uint32_t max_length,
+    GetTextSurroundingSelectionCallback callback) {
+  blink::SurroundingText surrounding_text(this, max_length);
+
+  // |surrounding_text| might not be correctly initialized, for example if
+  // |frame_->SelectionRange().IsNull()|, in other words, if there was no
+  // selection.
+  if (surrounding_text.IsEmpty()) {
+    // Don't use WTF::String's default constructor so that we make sure that we
+    // always send a valid empty string over the wire instead of a null pointer.
+    std::move(callback).Run(g_empty_string, 0, 0);
+    return;
+  }
+
+  std::move(callback).Run(surrounding_text.TextContent(),
+                          surrounding_text.StartOffsetInTextContent(),
+                          surrounding_text.EndOffsetInTextContent());
+}
+
+void LocalFrame::SendInterventionReport(const String& id,
+                                        const String& message) {
+  Intervention::GenerateReport(this, id, message);
+}
+
+void LocalFrame::BindToReceiver(
+    blink::LocalFrame* frame,
+    mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {
+  DCHECK(frame);
+  frame->receiver_.Bind(
+      std::move(receiver),
+      frame->GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 }  // namespace blink

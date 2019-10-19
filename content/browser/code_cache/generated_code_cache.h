@@ -119,7 +119,14 @@ class CONTENT_EXPORT GeneratedCodeCache {
   enum BackendState { kInitializing, kInitialized, kFailed };
 
   // The operation requested.
-  enum Operation { kFetch, kWrite, kDelete, kGetBackend };
+  enum Operation {
+    kFetch,
+    kFetchWithSHAKey,
+    kWrite,
+    kWriteWithSHAKey,
+    kDelete,
+    kGetBackend
+  };
 
   // Data streams corresponding to each entry.
   enum { kSmallDataStream = 0, kLargeDataStream = 1 };
@@ -129,6 +136,9 @@ class CONTENT_EXPORT GeneratedCodeCache {
   void DidCreateBackend(
       scoped_refptr<base::RefCountedData<ScopedBackendPtr>> backend_ptr,
       int rv);
+
+  // Adds operation to the appropriate queue.
+  void EnqueueOperation(std::unique_ptr<PendingOperation> op);
 
   // Issues ops that were received while the backend was being initialized.
   void IssuePendingOperations();

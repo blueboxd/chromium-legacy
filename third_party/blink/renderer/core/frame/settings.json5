@@ -1055,15 +1055,6 @@
       type: "int",
     },
 
-    // Preferred color scheme from the OS/application passed to the renderer for
-    // evaluating the prefers-color-scheme media query.
-    {
-      name: "preferredColorScheme",
-      initial: "PreferredColorScheme::kNoPreference",
-      invalidate: "ColorScheme",
-      type: "PreferredColorScheme",
-    },
-
     // Preferred motion-reduction setting from the OS/application passed to the
     // renderer for evaluating the prefers-reduced-motion media query.
     {

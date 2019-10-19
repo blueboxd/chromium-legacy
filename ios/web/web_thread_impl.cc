@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -145,6 +146,13 @@ bool PostTaskHelper(WebThread::ID identifier,
   return accepting_tasks;
 }
 
+const scoped_refptr<base::SequencedTaskRunner>& GetNullTaskRunner() {
+  static const base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>>
+      null_task_runner;
+  return *null_task_runner;
+}
+
+// Task executor for UI and IO threads.
 class WebThreadTaskExecutor : public base::TaskExecutor {
  public:
   WebThreadTaskExecutor() {}
@@ -178,12 +186,22 @@ class WebThreadTaskExecutor : public base::TaskExecutor {
     return GetTaskRunnerForThread(GetWebThreadIdentifier(traits));
   }
 
+  const scoped_refptr<base::SequencedTaskRunner>& GetContinuationTaskRunner()
+      override {
+    NOTREACHED() << "WebThreadTaskExecutor isn't registered via "
+                    "base::SetTaskExecutorForCurrentThread";
+    return GetNullTaskRunner();
+  }
+
  private:
   WebThread::ID GetWebThreadIdentifier(const base::TaskTraits& traits) {
     DCHECK_EQ(traits.extension_id(), WebTaskTraitsExtension::kExtensionId);
     WebThread::ID id =
         traits.GetExtension<WebTaskTraitsExtension>().web_thread();
     DCHECK_LT(id, WebThread::ID_COUNT);
+    DCHECK(!traits.use_current_thread())
+        << "WebThreadTaskExecutor isn't registered via "
+           "base::SetTaskExecutorForCurrentThread";
 
     // TODO(crbug.com/872372): Support shutdown behavior on UI/IO threads.
     if (traits.shutdown_behavior_set_explicitly()) {
@@ -217,6 +235,13 @@ WebThreadImpl::WebThreadImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : identifier_(identifier) {
   DCHECK(task_runner);
+
+  if (identifier == WebThread::UI) {
+    DCHECK(task_runner->BelongsToCurrentThread());
+    // TODO(scheduler-dev): Pass the backing SequenceManager in here to ensure
+    // GetContinuationTaskRunner DCHECKS when there's no task running.
+    ui_thread_tls_executor_.emplace(nullptr, task_runner);
+  }
 
   WebThreadGlobals& globals = g_globals.Get();
 

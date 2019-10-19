@@ -80,6 +80,10 @@
 //     specify that.
 // 30. "intel_gpu_generation" is a VERSION structure. Each Intel GPU has a
 //     specific integer (meaning generation) associated.
+// 31. "subpixel_font_rendering" is either "supported" or "unsupported". Currently it
+//     only applies on ChromeOS where subpixel font rendering causes a glitch
+//     on Mali GPUs. By default it's "dont_care" and there is no need to
+//     specify that.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"

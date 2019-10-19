@@ -234,10 +234,12 @@ class CONTENT_EXPORT SessionStorageContextMojo
   };
   MetadataParseResult ParseDatabaseVersion(
       ValueAndStatus version,
-      std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations);
+      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+          migration_tasks);
   MetadataParseResult ParseNamespaces(
       KeyValuePairsAndStatus namespaces,
-      std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations);
+      std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+          migration_tasks);
   MetadataParseResult ParseNextMapId(ValueAndStatus next_map_id);
 
   void OnConnectionFinished();

@@ -36,7 +36,7 @@ const char kText[] = "Some text to copy to phone device.";
 
 class MockSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
-  explicit MockSharingDeviceRegistration()
+  MockSharingDeviceRegistration()
       : SharingDeviceRegistration(/* pref_service_= */ nullptr,
                                   /* sharing_sync_preference_= */ nullptr,
                                   /* instance_id_driver_= */ nullptr,
@@ -48,28 +48,6 @@ class MockSharingDeviceRegistration : public SharingDeviceRegistration {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSharingDeviceRegistration);
-};
-
-class MockSharingService : public SharingService {
- public:
-  explicit MockSharingService(std::unique_ptr<SharingFCMHandler> fcm_handler)
-      : SharingService(/* sync_prefs= */ nullptr,
-                       /* vapid_key_manager= */ nullptr,
-                       std::make_unique<MockSharingDeviceRegistration>(),
-                       /* fcm_sender= */ nullptr,
-                       std::move(fcm_handler),
-                       /* gcm_driver= */ nullptr,
-                       /* device_info_tracker= */ nullptr,
-                       /* local_device_info_provider= */ nullptr,
-                       /* sync_service */ nullptr,
-                       /* notification_display_service= */ nullptr) {}
-
-  ~MockSharingService() override = default;
-
-  MOCK_CONST_METHOD0(GetState, State());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharingService);
 };
 
 class SharedClipboardUtilsTest : public testing::Test {
@@ -90,8 +68,17 @@ class SharedClipboardUtilsTest : public testing::Test {
     if (!create_service_)
       return nullptr;
 
-    return std::make_unique<NiceMock<MockSharingService>>(
-        std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr));
+    return std::make_unique<SharingService>(
+        /* sync_prefs= */ nullptr,
+        /* vapid_key_manager= */ nullptr,
+        std::make_unique<MockSharingDeviceRegistration>(),
+        /* fcm_sender= */ nullptr,
+        std::make_unique<SharingFCMHandler>(nullptr, nullptr, nullptr),
+        /* gcm_driver= */ nullptr,
+        /* device_info_tracker= */ nullptr,
+        /* local_device_info_provider= */ nullptr,
+        /* sync_service */ nullptr,
+        /* notification_display_service= */ nullptr);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

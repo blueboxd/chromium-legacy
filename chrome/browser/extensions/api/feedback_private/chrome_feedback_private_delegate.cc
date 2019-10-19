@@ -77,6 +77,7 @@ ChromeFeedbackPrivateDelegate::GetStrings(
   SET_STRING("close-btn-label", IDS_FEEDBACK_CLOSE_BUTTON_LABEL);
   SET_STRING("page-url", IDS_FEEDBACK_REPORT_URL_LABEL);
   SET_STRING("screenshot", IDS_FEEDBACK_SCREENSHOT_LABEL);
+  SET_STRING("screenshotA11y", IDS_FEEDBACK_SCREENSHOT_A11Y_TEXT);
   SET_STRING("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
   SET_STRING("anonymous-user", IDS_FEEDBACK_ANONYMOUS_EMAIL_OPTION);
   SET_STRING("sys-info", GetSysInfoCheckboxStringId(browser_context));

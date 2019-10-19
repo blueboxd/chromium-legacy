@@ -60,6 +60,12 @@ bool HasDisableBestEffortTasksSwitch() {
              switches::kDisableBestEffortTasks);
 }
 
+const scoped_refptr<SequencedTaskRunner>& GetNullTaskRunner() {
+  static const NoDestructor<scoped_refptr<SequencedTaskRunner>>
+      null_task_runner;
+  return *null_task_runner;
+}
+
 }  // namespace
 
 ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label)
@@ -265,6 +271,14 @@ scoped_refptr<UpdateableSequencedTaskRunner>
 ThreadPoolImpl::CreateUpdateableSequencedTaskRunner(const TaskTraits& traits) {
   const TaskTraits new_traits = SetUserBlockingPriorityIfNeeded(traits);
   return MakeRefCounted<PooledSequencedTaskRunner>(new_traits, this);
+}
+
+const scoped_refptr<SequencedTaskRunner>&
+ThreadPoolImpl::GetContinuationTaskRunner() {
+  // Default to null for parallel tasks; see task_tracker.cc's
+  // EphemeralTaskExecutor for how sequenced contexts handle this.
+  NOTREACHED();
+  return GetNullTaskRunner();
 }
 
 Optional<TimeTicks> ThreadPoolImpl::NextScheduledRunTimeForTesting() const {

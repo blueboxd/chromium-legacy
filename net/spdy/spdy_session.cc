@@ -651,33 +651,44 @@ int SpdyStreamRequest::StartRequest(
   type_ = type;
   session_ = session;
   url_ = SimplifyUrlForRequest(url);
-  can_send_early_ = can_send_early;
   priority_ = priority;
   socket_tag_ = socket_tag;
   net_log_ = net_log;
   callback_ = std::move(callback);
   traffic_annotation_ = MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
-  next_state_ = STATE_WAIT_FOR_CONFIRMATION;
-  int rv = DoLoop(OK);
-  if (rv != OK)
+  // If early data is not allowed, confirm the handshake first.
+  int rv = OK;
+  if (!can_send_early) {
+    rv = session_->ConfirmHandshake(
+        base::BindOnce(&SpdyStreamRequest::OnConfirmHandshakeComplete,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+  if (rv != OK) {
+    // If rv is ERR_IO_PENDING, OnConfirmHandshakeComplete() will call
+    // TryCreateStream() later.
     return rv;
+  }
 
   base::WeakPtr<SpdyStream> stream;
   rv = session->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
-  if (rv != OK)
+  if (rv != OK) {
+    // If rv is ERR_IO_PENDING, the SpdySession will call
+    // OnRequestCompleteSuccess() or OnRequestCompleteFailure() later.
     return rv;
+  }
 
   Reset();
   stream_ = stream;
-  return rv;
+  return OK;
 }
 
 void SpdyStreamRequest::CancelRequest() {
   if (session_)
     session_->CancelStreamRequest(weak_ptr_factory_.GetWeakPtr());
   Reset();
-  // Do this to cancel any pending CompleteStreamRequest() tasks.
+  // Do this to cancel any pending CompleteStreamRequest() and
+  // OnConfirmHandshakeComplete() tasks.
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
@@ -732,74 +743,33 @@ void SpdyStreamRequest::Reset() {
   session_.reset();
   stream_.reset();
   url_ = GURL();
-  can_send_early_ = false;
   priority_ = MINIMUM_PRIORITY;
   socket_tag_ = SocketTag();
   net_log_ = NetLogWithSource();
   callback_.Reset();
   traffic_annotation_.reset();
-  next_state_ = STATE_NONE;
 }
 
-void SpdyStreamRequest::OnIOComplete(int rv) {
+void SpdyStreamRequest::OnConfirmHandshakeComplete(int rv) {
+  DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv != OK) {
     OnRequestCompleteFailure(rv);
-  } else {
-    DoLoop(rv);
-  }
-}
-
-int SpdyStreamRequest::DoLoop(int rv) {
-  do {
-    State state = next_state_;
-    next_state_ = STATE_NONE;
-    switch (state) {
-      case STATE_WAIT_FOR_CONFIRMATION:
-        CHECK_EQ(OK, rv);
-        return DoWaitForConfirmation();
-        break;
-      case STATE_REQUEST_STREAM:
-        CHECK_EQ(OK, rv);
-        return DoRequestStream(rv);
-        break;
-      default:
-        NOTREACHED() << "next_state_: " << next_state_;
-        break;
-    }
-  } while (next_state_ != STATE_NONE && next_state_ && rv != ERR_IO_PENDING);
-  return rv;
-}
-
-int SpdyStreamRequest::DoWaitForConfirmation() {
-  if (can_send_early_) {
-    next_state_ = STATE_NONE;
-    return OK;
+    return;
   }
 
-  int rv = session_->ConfirmHandshake(base::BindOnce(
-      &SpdyStreamRequest::OnIOComplete, weak_ptr_factory_.GetWeakPtr()));
-  // If ConfirmHandshake returned synchronously, exit the state machine early
-  // so StartRequest can call TryCreateStream synchronously. Otherwise,
-  // TryCreateStream will be called asynchronously as part of the confirmation
-  // state machine.
-  next_state_ = rv == ERR_IO_PENDING ? STATE_REQUEST_STREAM : STATE_NONE;
-  return rv;
-}
-
-int SpdyStreamRequest::DoRequestStream(int rv) {
-  DCHECK_NE(ERR_IO_PENDING, rv);
-  next_state_ = STATE_NONE;
-  if (rv < 0)
-    return rv;
+  // ConfirmHandshake() completed asynchronously. Record the time so the caller
+  // can adjust LoadTimingInfo.
+  confirm_handshake_end_ = base::TimeTicks::Now();
 
   base::WeakPtr<SpdyStream> stream;
   rv = session_->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
   if (rv == OK) {
     OnRequestCompleteSuccess(stream);
   } else if (rv != ERR_IO_PENDING) {
+    // If rv is ERR_IO_PENDING, the SpdySession will call
+    // OnRequestCompleteSuccess() or OnRequestCompleteFailure() later.
     OnRequestCompleteFailure(rv);
   }
-  return rv;
 }
 
 // static

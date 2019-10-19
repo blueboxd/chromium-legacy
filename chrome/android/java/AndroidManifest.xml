@@ -870,6 +870,23 @@ by a child template that "extends" this file.
             </intent-filter>
           </activity>
 
+          <activity
+            android:name="org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity"
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/qr_code_share_icon_label"
+            android:enabled="false"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+          </activity>
+
         <!-- Activity for dispatching intents to Instant Apps. -->
         <activity
             android:name="org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity"

@@ -126,6 +126,22 @@ bool NGFlexLayoutAlgorithm::IsItemMainSizeDefinite(
                                   LengthResolvePhase::kLayout);
 }
 
+bool NGFlexLayoutAlgorithm::IsItemCrossAxisLengthDefinite(
+    const NGBlockNode& child,
+    const Length& length) const {
+  // Inline min/max value of 'auto' for the cross-axis isn't definite here.
+  // Block value of 'auto' is always indefinite.
+  if (length.IsAuto())
+    return false;
+  // But anything else in the inline direction is definite.
+  if (!MainAxisIsInlineAxis(child))
+    return true;
+  // If we get here, cross axis is block axis.
+  return !BlockLengthUnresolvable(
+      BuildConstraintSpaceForDeterminingFlexBasis(child), length,
+      LengthResolvePhase::kLayout);
+}
+
 bool NGFlexLayoutAlgorithm::DoesItemCrossSizeComputeToAuto(
     const NGBlockNode& child) const {
   const ComputedStyle& child_style = child.Style();
@@ -364,6 +380,14 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                      min_max_sizes_in_main_axis_direction.max_size);
         content_size_suggestion -= main_axis_border_scrollbar_padding;
 
+        if (child.MayHaveAspectRatio()) {
+          content_size_suggestion =
+              AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
+                  child, content_size_suggestion,
+                  min_max_sizes_in_cross_axis_direction.min_size,
+                  min_max_sizes_in_cross_axis_direction.max_size);
+        }
+
         LayoutUnit specified_size_suggestion(LayoutUnit::Max());
         // If the item’s computed main size property is definite, then the
         // specified size suggestion is that size.
@@ -421,6 +445,54 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                        main_axis_border_padding, main_axis_margin)
         .ng_input_node = child;
   }
+}
+
+LayoutUnit
+NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
+    const NGBlockNode& child,
+    LayoutUnit content_suggestion,
+    LayoutUnit cross_min,
+    LayoutUnit cross_max) {
+  DCHECK(child.MayHaveAspectRatio());
+  // Clamp content_suggestion by any definite min and max cross size properties
+  // converted through the aspect ratio.
+
+  base::Optional<LayoutUnit> computed_inline_size;
+  base::Optional<LayoutUnit> computed_block_size;
+  LogicalSize aspect_ratio;
+
+  child.IntrinsicSize(&computed_inline_size, &computed_block_size,
+                      &aspect_ratio);
+
+  // TODO(dgrogan): Should we quit here if only the denominator is 0?
+  if (aspect_ratio.inline_size == 0 || aspect_ratio.block_size == 0)
+    return content_suggestion;
+
+  double ratio = aspect_ratio.inline_size / aspect_ratio.block_size;
+
+  // Multiplying by ratio will take something in the item's block axis and
+  // convert it to the inline axis. We want to convert from cross size to main
+  // size. If block axis and cross axis are the same, then we already have what
+  // we need. Otherwise we need to use the reciprocal.
+  if (!MainAxisIsInlineAxis(child))
+    ratio = 1 / ratio;
+
+  const Length& cross_max_length = is_horizontal_flow_
+                                       ? child.Style().MaxHeight()
+                                       : child.Style().MaxWidth();
+  if (IsItemCrossAxisLengthDefinite(child, cross_max_length)) {
+    LayoutUnit max_main_length = LayoutUnit(cross_max * ratio);
+    content_suggestion = std::min(max_main_length, content_suggestion);
+  }
+
+  const Length& cross_min_length = is_horizontal_flow_
+                                       ? child.Style().MinHeight()
+                                       : child.Style().MinWidth();
+  if (IsItemCrossAxisLengthDefinite(child, cross_min_length)) {
+    LayoutUnit min_main_length = LayoutUnit(cross_min * ratio);
+    content_suggestion = std::max(min_main_length, content_suggestion);
+  }
+  return content_suggestion;
 }
 
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {

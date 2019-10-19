@@ -9,6 +9,9 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "net/base/auth.h"
+#include "net/base/network_isolation_key.h"
+#include "url/gurl.h"
 
 namespace content {
 class LoginDelegate;
@@ -71,6 +74,7 @@ class LoginTabHelper : public content::WebContentsObserver,
   GURL url_for_delegate_;
 
   net::AuthChallengeInfo challenge_;
+  net::NetworkIsolationKey network_isolation_key_;
 
   // Stores the navigation entry ID for a pending refresh due to a user
   // cancelling a login prompt. This is set to the visible navigation entry ID

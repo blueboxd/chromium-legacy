@@ -47,17 +47,45 @@
 ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
     Browser* browser,
     const std::string& username,
-    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate)
+    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate,
+    bool prompt_for_new_profile)
     : browser_(browser),
       username_(username),
       delegate_(std::move(delegate)),
-      prompt_for_new_profile_(true) {
+      prompt_for_new_profile_(prompt_for_new_profile) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(prompt_for_new_profile_
+                                    ? IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE
+                                    : IDS_ENTERPRISE_SIGNIN_CONTINUE));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL));
+
+  if (prompt_for_new_profile) {
+    DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE)));
+  }
+
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::PROFILE_SIGNIN_CONFIRMATION);
 }
 
 ProfileSigninConfirmationDialogViews::~ProfileSigninConfirmationDialogViews() {}
+
+// static
+void ProfileSigninConfirmationDialogViews::Show(
+    Browser* browser,
+    const std::string& username,
+    std::unique_ptr<ui::ProfileSigninConfirmationDelegate> delegate,
+    bool prompt) {
+  auto dialog = std::make_unique<ProfileSigninConfirmationDialogViews>(
+      browser, username, std::move(delegate), prompt);
+  constrained_window::CreateBrowserModalDialogViews(
+      dialog.release(), browser->window()->GetNativeWindow())
+      ->Show();
+}
 
 // static
 void ProfileSigninConfirmationDialogViews::ShowDialog(
@@ -74,43 +102,17 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
   // is fixed.
   ProfileMenuView::Hide();
 
-  ProfileSigninConfirmationDialogViews* dialog =
-      new ProfileSigninConfirmationDialogViews(browser, username,
-                                               std::move(delegate));
+  // Checking whether to show the prompt is sometimes asynchronous. Defer
+  // constructing the dialog (in ::Show) until that check completes.
   ui::CheckShouldPromptForNewProfile(
       profile,
-      // This callback is guaranteed to be invoked, and once it is, the dialog
-      // owns itself.
-      base::Bind(&ProfileSigninConfirmationDialogViews::Show,
-                 base::Unretained(dialog)));
-}
-
-void ProfileSigninConfirmationDialogViews::Show(bool prompt_for_new_profile) {
-  prompt_for_new_profile_ = prompt_for_new_profile;
-  if (prompt_for_new_profile) {
-    DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE)));
-  }
-  constrained_window::CreateBrowserModalDialogViews(
-      this, browser_->window()->GetNativeWindow())->Show();
+      base::BindOnce(&ProfileSigninConfirmationDialogViews::Show,
+                     base::Unretained(browser), username, std::move(delegate)));
 }
 
 base::string16 ProfileSigninConfirmationDialogViews::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_ENTERPRISE_SIGNIN_TITLE);
-}
-
-base::string16 ProfileSigninConfirmationDialogViews::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK) {
-    // If we're giving the option to create a new profile, then OK is
-    // "Create new profile".  Otherwise it is "Continue signin".
-    return l10n_util::GetStringUTF16(
-        prompt_for_new_profile_ ?
-            IDS_ENTERPRISE_SIGNIN_CREATE_NEW_PROFILE :
-            IDS_ENTERPRISE_SIGNIN_CONTINUE);
-  }
-  return l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL);
 }
 
 bool ProfileSigninConfirmationDialogViews::Accept() {

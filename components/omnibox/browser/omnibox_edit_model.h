@@ -291,7 +291,10 @@ class OmniboxEditModel {
 
   // Called when the view is gaining focus.  |control_down| is whether the
   // control key is down (at the time we're gaining focus).
-  void OnSetFocus(bool control_down);
+  // |suppress_on_focus_suggestions| is set to true when on-focus suggestions
+  // should not appear for this focus event. For instance, for
+  // renderer-initiated focus events, it should be set to true.
+  void OnSetFocus(bool control_down, bool suppress_on_focus_suggestions);
 
   // Shows On-Focus Suggestions (ZeroSuggest) if no query is currently running
   // and the popup is closed. This can be called multiple times without harm,

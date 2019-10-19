@@ -33,7 +33,9 @@
 
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
@@ -112,7 +114,8 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
 class CORE_EXPORT LocalFrame final : public Frame,
                                      public FrameScheduler::Delegate,
-                                     public Supplementable<LocalFrame> {
+                                     public Supplementable<LocalFrame>,
+                                     public mojom::blink::LocalFrame {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
@@ -307,7 +310,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   //
   // Navigation-associated interfaces are currently implemented as
   // channel-associated interfaces. See
-  // https://chromium.googlesource.com/chromium/src/+/master/ipc#Using-Channel_associated-Interfaces.
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/mojo_ipc_conversion.md#Channel_Associated-Interfaces
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces();
 
   LocalFrameClient* Client() const;
@@ -453,6 +456,12 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void DidChangeVisibleToHitTesting() override;
 
+  // blink::mojom::LocalFrame overrides:
+  void GetTextSurroundingSelection(
+      uint32_t max_length,
+      GetTextSurroundingSelectionCallback callback) final;
+  void SendInterventionReport(const String& id, const String& message) final;
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -504,6 +513,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void UnpauseContext();
 
   void EvictFromBackForwardCache();
+
+  static void BindToReceiver(
+      blink::LocalFrame* frame,
+      mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver);
 
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
@@ -589,6 +602,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 
   mojo::AssociatedRemote<mojom::blink::LocalFrameHost> local_frame_host_remote_;
+  mojo::AssociatedReceiver<mojom::blink::LocalFrame> receiver_{this};
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

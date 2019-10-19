@@ -35,7 +35,8 @@ TestPaymentsClient::~TestPaymentsClient() {}
 
 void TestPaymentsClient::GetUnmaskDetails(GetUnmaskDetailsCallback callback,
                                           const std::string& app_locale) {
-  std::move(callback).Run(AutofillClient::SUCCESS, unmask_details_);
+  if (should_return_unmask_details_)
+    std::move(callback).Run(AutofillClient::SUCCESS, unmask_details_);
 }
 
 void TestPaymentsClient::GetUploadDetails(
@@ -78,13 +79,20 @@ void TestPaymentsClient::MigrateCards(
                           "this is display text");
 }
 
+void TestPaymentsClient::ShouldReturnUnmaskDetailsImmediately(
+    bool should_return_unmask_details) {
+  should_return_unmask_details_ = should_return_unmask_details;
+}
+
 void TestPaymentsClient::AllowFidoRegistration(bool offer_fido_opt_in) {
+  should_return_unmask_details_ = true;
   unmask_details_.offer_fido_opt_in = offer_fido_opt_in;
 }
 
 void TestPaymentsClient::AddFidoEligibleCard(std::string server_id,
                                              std::string credential_id,
                                              std::string relying_party_id) {
+  should_return_unmask_details_ = true;
   unmask_details_.offer_fido_opt_in = false;
   unmask_details_.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
   unmask_details_.fido_eligible_card_ids.insert(server_id);

@@ -191,10 +191,14 @@ class CreditCardAccessManagerTest : public testing::Test {
     return credit_card_access_manager_->is_authentication_in_progress();
   }
 
-  void ResetPreflightCallLimiter() {
+  void ResetFetchCreditCard() {
+    // Resets all variables related to credit card fetching.
+    credit_card_access_manager_->is_authentication_in_progress_ = false;
     credit_card_access_manager_->can_fetch_unmask_details_.Signal();
     credit_card_access_manager_->is_user_verifiable_ = base::nullopt;
   }
+
+  void ClearCards() { personal_data_manager_.ClearCreditCards(); }
 
   void CreateLocalCard(std::string guid, std::string number = std::string()) {
     CreditCard local_card = CreditCard();
@@ -203,7 +207,6 @@ class CreditCardAccessManagerTest : public testing::Test {
     local_card.set_guid(guid);
     local_card.set_record_type(CreditCard::LOCAL_CARD);
 
-    personal_data_manager_.ClearCreditCards();
     personal_data_manager_.AddCreditCard(local_card);
   }
 
@@ -215,7 +218,6 @@ class CreditCardAccessManagerTest : public testing::Test {
     masked_server_card.set_guid(guid);
     masked_server_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
 
-    personal_data_manager_.ClearCreditCards();
     personal_data_manager_.AddServerCreditCard(masked_server_card);
   }
 
@@ -286,6 +288,7 @@ class CreditCardAccessManagerTest : public testing::Test {
   }
 
   void SetUserOptedIn(bool user_is_opted_in) {
+    scoped_feature_list_.Reset();
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillCreditCardAuthentication);
     ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
@@ -522,11 +525,12 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
   {
     // Create local card and set user as eligible for FIDO auth.
     base::HistogramTester histogram_tester;
+    ClearCards();
     CreateLocalCard(kTestGUID, kTestNumber);
 #if !defined(OS_IOS)
     GetFIDOAuthenticator()->SetUserVerifiable(true);
 #endif
-    ResetPreflightCallLimiter();
+    ResetFetchCreditCard();
 
     credit_card_access_manager_->PrepareToFetchCreditCard();
     InvokeUnmaskDetailsTimeout();
@@ -540,11 +544,12 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
   {
     // Create server card and set user as ineligible for FIDO auth.
     base::HistogramTester histogram_tester;
+    ClearCards();
     CreateServerCard(kTestGUID, kTestNumber);
 #if !defined(OS_IOS)
     GetFIDOAuthenticator()->SetUserVerifiable(false);
 #endif
-    ResetPreflightCallLimiter();
+    ResetFetchCreditCard();
 
     credit_card_access_manager_->PrepareToFetchCreditCard();
     InvokeUnmaskDetailsTimeout();
@@ -558,11 +563,12 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
   {
     // Create server card and set user as eligible for FIDO auth.
     base::HistogramTester histogram_tester;
+    ClearCards();
     CreateServerCard(kTestGUID, kTestNumber);
 #if !defined(OS_IOS)
     GetFIDOAuthenticator()->SetUserVerifiable(true);
 #endif
-    ResetPreflightCallLimiter();
+    ResetFetchCreditCard();
 
     credit_card_access_manager_->PrepareToFetchCreditCard();
     InvokeUnmaskDetailsTimeout();
@@ -684,6 +690,86 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+}
+
+// Ensures that FetchCreditCard() returns the full PAN upon a successful
+// WebAuthn verification and response from payments.
+TEST_F(CreditCardAccessManagerTest,
+       Metrics_LoggingExistenceOfUserPerceivedLatency) {
+  // Setting up a FIDO-enabled user with a local card and a server card.
+  std::string server_guid = "00000000-0000-0000-0000-000000000001";
+  std::string local_guid = "00000000-0000-0000-0000-000000000003";
+  CreateServerCard(server_guid, "4594299181086168");
+  CreateLocalCard(local_guid, "4409763681177079");
+  CreditCard* server_card =
+      credit_card_access_manager_->GetCreditCard(server_guid);
+  CreditCard* local_card =
+      credit_card_access_manager_->GetCreditCard(local_guid);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+
+  for (bool user_is_opted_in : {true, false}) {
+    std::string histogram_name =
+        "Autofill.BetterAuth.UserPerceivedLatencyOnCardSelection.";
+    histogram_name += user_is_opted_in ? "OptedIn" : "OptedOut";
+    SetUserOptedIn(user_is_opted_in);
+
+    {
+      // Preflight call ignored because local card was chosen.
+      base::HistogramTester histogram_tester;
+
+      ResetFetchCreditCard();
+      credit_card_access_manager_->PrepareToFetchCreditCard();
+      WaitForCallbacks();
+
+      credit_card_access_manager_->FetchCreditCard(local_card,
+                                                   accessor_->GetWeakPtr());
+      WaitForCallbacks();
+
+      histogram_tester.ExpectUniqueSample(
+          histogram_name,
+          AutofillMetrics::PreflightCallEvent::kDidNotChooseMaskedCard, 1);
+    }
+
+    {
+      // Preflight call returned after card was chosen.
+      base::HistogramTester histogram_tester;
+      payments_client_->ShouldReturnUnmaskDetailsImmediately(false);
+
+      ResetFetchCreditCard();
+      credit_card_access_manager_->PrepareToFetchCreditCard();
+      credit_card_access_manager_->FetchCreditCard(server_card,
+                                                   accessor_->GetWeakPtr());
+      WaitForCallbacks();
+
+      histogram_tester.ExpectUniqueSample(
+          histogram_name,
+          AutofillMetrics::PreflightCallEvent::
+              kCardChosenBeforePreflightCallReturned,
+          1);
+    }
+
+    {
+      // Preflight call returned before card was chosen.
+      base::HistogramTester histogram_tester;
+      // This is important because CreditCardFIDOAuthenticator will update the
+      // opted-in pref according to GetDetailsForGetRealPan response.
+      payments_client_->AllowFidoRegistration(!user_is_opted_in);
+
+      ResetFetchCreditCard();
+      credit_card_access_manager_->PrepareToFetchCreditCard();
+      WaitForCallbacks();
+
+      credit_card_access_manager_->FetchCreditCard(server_card,
+                                                   accessor_->GetWeakPtr());
+      WaitForCallbacks();
+
+      histogram_tester.ExpectUniqueSample(
+          histogram_name,
+          AutofillMetrics::PreflightCallEvent::
+              kPreflightCallReturnedBeforeCardChosen,
+          1);
+    }
+  }
 }
 
 #if defined(OS_ANDROID)

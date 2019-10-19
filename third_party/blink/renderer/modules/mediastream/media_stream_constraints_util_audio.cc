@@ -795,6 +795,8 @@ class ProcessingBasedContainer {
            sample_rate_container_.IsEmpty() || latency_container_.IsEmpty();
   }
 
+  ProcessingType processing_type() const { return processing_type_; }
+
  private:
   enum BooleanContainerId {
     kGoogAudioMirroring,
@@ -996,41 +998,27 @@ class DeviceContainer {
     // Three variations of the processing-based container. Each variant is
     // associated to a different type of audio processing configuration, namely
     // unprocessed, processed by WebRTC, or processed by other means.
-    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone ||
-        source_info.type() == SourceType::kUnprocessed) {
+    processing_based_containers_.push_back(
+        ProcessingBasedContainer::CreateUnprocessedContainer(
+            source_info, is_device_capture, device_parameters_,
+            is_reconfiguration_allowed));
+    processing_based_containers_.push_back(
+        ProcessingBasedContainer::CreateNoApmProcessedContainer(
+            source_info, is_device_capture, device_parameters_,
+            is_reconfiguration_allowed));
+    if (media::IsWebRtcApmInAudioServiceEnabled()) {
       processing_based_containers_.push_back(
-          ProcessingBasedContainer::CreateUnprocessedContainer(
+          ProcessingBasedContainer::CreateRemoteApmProcessedContainer(
               source_info, is_device_capture, device_parameters_,
               is_reconfiguration_allowed));
-    }
-    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone ||
-        source_info.type() == SourceType::kNoApmProcessed) {
+    } else {
       processing_based_containers_.push_back(
-          ProcessingBasedContainer::CreateNoApmProcessedContainer(
+          ProcessingBasedContainer::CreateApmProcessedContainer(
               source_info, is_device_capture, device_parameters_,
               is_reconfiguration_allowed));
-    }
-    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone ||
-        source_info.type() == SourceType::kApmProcessed) {
-      if (media::IsWebRtcApmInAudioServiceEnabled()) {
-        processing_based_containers_.push_back(
-            ProcessingBasedContainer::CreateRemoteApmProcessedContainer(
-                source_info, is_device_capture, device_parameters_,
-                is_reconfiguration_allowed));
-      } else {
-        processing_based_containers_.push_back(
-            ProcessingBasedContainer::CreateApmProcessedContainer(
-                source_info, is_device_capture, device_parameters_,
-                is_reconfiguration_allowed));
-      }
     }
 
-#if DCHECK_IS_ON()
-    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone)
-      DCHECK_EQ(processing_based_containers_.size(), 3u);
-    else
-      DCHECK_EQ(processing_based_containers_.size(), 1u);
-#endif
+    DCHECK_EQ(processing_based_containers_.size(), 3u);
 
     if (source_info.type() == SourceType::kNone)
       return;
@@ -1164,7 +1152,8 @@ class DeviceContainer {
     return std::make_tuple(
         score, AudioCaptureSettings(
                    device_id, best_requested_buffer_size, disable_local_echo,
-                   render_to_associated_sink, best_properties));
+                   render_to_associated_sink, best_container->processing_type(),
+                   best_properties));
   }
 
   // The DeviceContainer is considered empty if at least one of the

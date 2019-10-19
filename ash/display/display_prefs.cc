@@ -761,22 +761,14 @@ void StoreCurrentDisplayMixedMirrorModeParams(PrefService* pref_service) {
 
 // static
 void DisplayPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kSecondaryDisplays,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayProperties,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterStringPref(prefs::kDisplayPowerState, kDisplayPowerAllOn,
-                               PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayRotationLock,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayTouchAssociations,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayTouchPortAssociations,
-                                   PrefRegistry::PUBLIC);
-  registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo,
-                             PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kDisplayMixedMirrorModeParams,
-                                   PrefRegistry::PUBLIC);
+  registry->RegisterDictionaryPref(prefs::kSecondaryDisplays);
+  registry->RegisterDictionaryPref(prefs::kDisplayProperties);
+  registry->RegisterStringPref(prefs::kDisplayPowerState, kDisplayPowerAllOn);
+  registry->RegisterDictionaryPref(prefs::kDisplayRotationLock);
+  registry->RegisterDictionaryPref(prefs::kDisplayTouchAssociations);
+  registry->RegisterDictionaryPref(prefs::kDisplayTouchPortAssociations);
+  registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);
+  registry->RegisterDictionaryPref(prefs::kDisplayMixedMirrorModeParams);
 }
 
 DisplayPrefs::DisplayPrefs(PrefService* local_state)

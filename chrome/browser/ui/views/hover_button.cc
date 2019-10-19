@@ -71,6 +71,27 @@ void SetTooltipAndAccessibleName(views::Button* parent,
 
 }  // namespace
 
+SingleLineStyledLabelWrapper::SingleLineStyledLabelWrapper(
+    const base::string16& title) {
+  auto title_label = std::make_unique<views::StyledLabel>(title, nullptr);
+  // Size without a maximum width to get a single line label.
+  title_label->SizeToFit(0);
+  label_ = AddChildView(std::move(title_label));
+}
+
+views::StyledLabel* SingleLineStyledLabelWrapper::label() {
+  return label_;
+}
+
+void SingleLineStyledLabelWrapper::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  // Vertically center its child manually since it doesn't have a LayoutManager.
+  DCHECK(label_);
+
+  int y_center = (height() - label_->size().height()) / 2;
+  label_->SetPosition(gfx::Point(GetLocalBounds().x(), y_center));
+}
+
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          const base::string16& text)
     : views::LabelButton(/*button_listener*/ nullptr,
@@ -174,17 +195,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
                         row_height);
   icon_view_ = grid_layout->AddView(std::move(icon_view), 1, num_labels);
 
-  auto title_label = std::make_unique<views::StyledLabel>(title, nullptr);
-  // Size without a maximum width to get a single line label.
-  title_label->SizeToFit(0);
-  // |views::StyledLabel|s are all multi-line. With a layout manager,
-  // |StyledLabel| will try use the available space to size itself, and long
-  // titles will wrap to the next line (for smaller |HoverButton|s, this will
-  // also cover up |subtitle_|). Wrap it in a parent view with no layout manager
-  // to ensure it keeps its original size set by SizeToFit() above. Long titles
-  // will then be truncated.
-  auto title_wrapper = std::make_unique<views::View>();
-  title_ = title_wrapper->AddChildView(std::move(title_label));
+  auto title_wrapper = std::make_unique<SingleLineStyledLabelWrapper>(title);
+  title_ = title_wrapper->label();
   // Hover the whole button when hovering |title_|. This is OK because |title_|
   // will never have a link in it.
   title_wrapper->set_can_process_events_within_subtree(false);
@@ -313,17 +325,6 @@ std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
   ink_drop->SetShowHighlightOnFocus(true);
   ink_drop->SetShowHighlightOnHover(false);
   return ink_drop;
-}
-
-void HoverButton::Layout() {
-  LabelButton::Layout();
-
-  // Vertically center |title_| manually since it doesn't have a LayoutManager.
-  if (title_) {
-    DCHECK(title_->parent());
-    int y_center = title_->parent()->height() / 2 - title_->size().height() / 2;
-    title_->SetPosition(gfx::Point(title_->x(), y_center));
-  }
 }
 
 views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {

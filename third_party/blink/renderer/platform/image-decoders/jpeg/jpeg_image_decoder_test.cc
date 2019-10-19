@@ -52,7 +52,7 @@ namespace {
 std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(size_t max_decoded_bytes) {
   return std::make_unique<JPEGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      max_decoded_bytes);
+      max_decoded_bytes, ImageDecoder::OverrideAllowDecodeToYuv::kDefault);
 }
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder() {
@@ -89,8 +89,8 @@ void ReadYUV(size_t max_decoded_bytes,
 
   std::unique_ptr<JPEGImageDecoder> decoder =
       CreateJPEGDecoder(max_decoded_bytes);
-  decoder->SetData(data.get(), true);
   decoder->SetDecodeToYuvForTesting(true);
+  decoder->SetData(data.get(), true);
 
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
@@ -275,8 +275,8 @@ TEST(JPEGImageDecoderTest, yuv) {
   ASSERT_TRUE(data);
 
   std::unique_ptr<JPEGImageDecoder> decoder = CreateJPEGDecoder(230 * 230 * 4);
-  decoder->SetData(data.get(), true);
   decoder->SetDecodeToYuvForTesting(true);
+  decoder->SetData(data.get(), true);
 
   std::unique_ptr<ImagePlanes> image_planes = std::make_unique<ImagePlanes>();
   decoder->SetImagePlanes(std::move(image_planes));

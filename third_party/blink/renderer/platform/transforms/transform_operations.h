@@ -73,7 +73,7 @@ class PLATFORM_EXPORT TransformOperations {
   }
 
   // Return true if any of the operation types are non-perspective 3D operation
-  // types (even if the values describe affine transforms)
+  // types (even if the values describe affine transforms).
   bool HasNonPerspective3DOperation() const {
     for (auto& operation : operations_) {
       if (operation->Is3DOperation() &&
@@ -91,8 +91,7 @@ class PLATFORM_EXPORT TransformOperations {
     return true;
   }
 
-  // Returns true if any operation has a non-trivial component in the Z
-  // axis.
+  // Returns true if any operation has a non-trivial component in the Z axis.
   bool HasNonTrivial3DComponent() const {
     for (auto& operation : operations_) {
       if (operation->HasNonTrivial3DComponent())

@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_socket.h"
@@ -65,9 +66,9 @@ class MockDisplaySourceConnectionDelegate
 
   void StopWatchingAvailableSinks() override;
 
-  std::string GetLocalAddress() const override;
+  net::IPAddress GetLocalAddress() const override;
 
-  std::string GetSinkAddress() const override;
+  net::IPAddress GetSinkAddress() const override;
 
   void SendMessage(const std::string& message) override;
 
@@ -366,12 +367,12 @@ MockDisplaySourceConnectionDelegate::GetConnectedSink() const {
 
 void MockDisplaySourceConnectionDelegate::StopWatchingAvailableSinks() {}
 
-std::string MockDisplaySourceConnectionDelegate::GetLocalAddress() const {
-  return "127.0.0.1";
+net::IPAddress MockDisplaySourceConnectionDelegate::GetLocalAddress() const {
+  return net::IPAddress::IPv4Localhost();
 }
 
-std::string MockDisplaySourceConnectionDelegate::GetSinkAddress() const {
-  return "127.0.0.1";
+net::IPAddress MockDisplaySourceConnectionDelegate::GetSinkAddress() const {
+  return net::IPAddress::IPv4Localhost();
 }
 
 void MockDisplaySourceConnectionDelegate::SendMessage(

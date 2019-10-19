@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"

@@ -1333,6 +1333,32 @@ TEST_F('PrintPreviewKeyEventTest', 'CtrlShiftPOpensSystemDialog', function() {
 });
 
 // eslint-disable-next-line no-var
+var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/ui/destination_select.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '../test_util.js',
+      'print_preview_test_utils.js',
+      'destination_select_test.js',
+    ]);
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_select_test.suiteName;
+  }
+};
+
+TEST_F('PrintPreviewDestinationSelectTest', 'ChangeIcon', function() {
+  this.runMochaTest(destination_select_test.TestNames.ChangeIcon);
+});
+
+// eslint-disable-next-line no-var
 var PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {

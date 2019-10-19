@@ -778,11 +778,6 @@ void WebSettingsImpl::SetForceDarkModeEnabled(bool enabled) {
   settings_->SetForceDarkModeEnabled(enabled);
 }
 
-void WebSettingsImpl::SetPreferredColorScheme(
-    PreferredColorScheme color_scheme) {
-  settings_->SetPreferredColorScheme(color_scheme);
-}
-
 void WebSettingsImpl::SetNavigationControls(
     NavigationControls navigation_controls) {
   settings_->SetNavigationControls(navigation_controls);

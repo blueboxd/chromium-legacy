@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 
@@ -37,8 +38,9 @@ class JsToJavaMessaging : public mojom::JsToJavaMessaging {
   // mojom::JsToJavaMessaging implementation.
   void PostMessage(const base::string16& message,
                    std::vector<mojo::ScopedMessagePipeHandle> ports) override;
-  void SetJavaToJsMessaging(mojo::PendingRemote<mojom::JavaToJsMessaging>
-                                java_to_js_messaging) override;
+  void SetJavaToJsMessaging(
+      mojo::PendingAssociatedRemote<mojom::JavaToJsMessaging>
+          java_to_js_messaging) override;
 
  private:
   content::RenderFrameHost* render_frame_host_;

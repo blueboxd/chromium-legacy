@@ -268,7 +268,9 @@ cr.define('print_preview', function() {
    *            capabilities: ?print_preview.Cdd,
    *            displayName: string,
    *            extensionId: string,
-   *            extensionName: string}}
+   *            extensionName: string,
+   *            icon: (string | undefined)
+   *          }}
    */
   let RecentDestination;
 
@@ -287,6 +289,7 @@ cr.define('print_preview', function() {
       displayName: destination.displayName || '',
       extensionId: destination.extensionId || '',
       extensionName: destination.extensionName || '',
+      icon: destination.icon || '',
     };
   }
 

@@ -32,13 +32,11 @@ class CC_EXPORT ScrollbarController {
   // needed to determine whether we should set up the autoscrolling in the
   // forwards or the backwards direction.
   void StartAutoScrollAnimation(float velocity,
-                                ElementId element_id,
+                                const ScrollbarLayerImplBase* scrollbar,
                                 ScrollbarPart pressed_scrollbar_part);
   bool ScrollbarScrollIsActive() { return scrollbar_scroll_is_active_; }
-  ScrollbarOrientation orientation() {
-    return currently_captured_scrollbar_->orientation();
-  }
-
+  void DidUnregisterScrollbar(ElementId element_id);
+  ScrollbarLayerImplBase* ScrollbarLayer();
   void WillBeginImplFrame();
 
  private:
@@ -74,44 +72,61 @@ class CC_EXPORT ScrollbarController {
     float scroll_position_at_start_;
   };
 
+  struct CC_EXPORT CapturedScrollbarMetadata {
+    // Needed to retrieve the ScrollbarSet for a particular ElementId.
+    ElementId scroll_element_id;
+
+    // Needed to identify the correct scrollbar from the ScrollbarSet.
+    ScrollbarOrientation orientation;
+  };
+
   // Returns the DSF based on whether use-zoom-for-dsf is enabled.
   float ScreenSpaceScaleFactor() const;
 
   // Helper to convert scroll offset to autoscroll velocity.
-  float InitialDeltaToAutoscrollVelocity(gfx::ScrollOffset scroll_offset) const;
+  float InitialDeltaToAutoscrollVelocity(
+      const ScrollbarLayerImplBase* scrollbar,
+      gfx::ScrollOffset scroll_offset) const;
 
   // Returns the hit tested ScrollbarPart based on the position_in_widget.
   ScrollbarPart GetScrollbarPartFromPointerDown(
+      const ScrollbarLayerImplBase* scrollbar,
       const gfx::PointF position_in_widget);
 
   // Returns scroll offsets based on which ScrollbarPart was hit tested.
   gfx::ScrollOffset GetScrollOffsetForScrollbarPart(
+      const ScrollbarLayerImplBase* scrollbar,
       const ScrollbarPart scrollbar_part,
-      const ScrollbarOrientation orientation,
       const bool shift_modifier);
 
   // Returns the rect for the ScrollbarPart.
-  gfx::Rect GetRectForScrollbarPart(const ScrollbarPart scrollbar_part);
+  gfx::Rect GetRectForScrollbarPart(const ScrollbarLayerImplBase* scrollbar,
+                                    const ScrollbarPart scrollbar_part);
 
   LayerImpl* GetLayerHitByPoint(const gfx::PointF position_in_widget);
-  int GetScrollDeltaForScrollbarPart(const ScrollbarPart scrollbar_part,
+  int GetScrollDeltaForScrollbarPart(const ScrollbarLayerImplBase* scrollbar,
+                                     const ScrollbarPart scrollbar_part,
                                      const bool shift_modifier);
 
   // Makes position_in_widget relative to the scrollbar.
-  gfx::PointF GetScrollbarRelativePosition(const gfx::PointF position_in_widget,
-                                           bool* clipped);
+  gfx::PointF GetScrollbarRelativePosition(
+      const ScrollbarLayerImplBase* scrollbar,
+      const gfx::PointF position_in_widget,
+      bool* clipped);
 
   // Decides if the scroller should snap to the offset that it was originally at
   // (i.e the offset before the thumb drag).
-  bool SnapToDragOrigin(const gfx::PointF pointer_position_in_widget);
+  bool SnapToDragOrigin(const ScrollbarLayerImplBase* scrollbar,
+                        const gfx::PointF pointer_position_in_widget);
 
   // Decides whether a track autoscroll should be aborted (or restarted) due to
   // the thumb reaching the pointer or the pointer leaving (or re-entering) the
   // bounds.
   void RecomputeAutoscrollStateIfNeeded();
+  void ResetState();
 
   // Shift + click is expected to do a non-animated jump to a certain offset.
-  float GetScrollDeltaForShiftClick();
+  float GetScrollDeltaForShiftClick(const ScrollbarLayerImplBase* scrollbar);
 
   // Determines if the delta needs to be animated.
   ui::input_types::ScrollGranularity Granularity(
@@ -121,24 +136,28 @@ class CC_EXPORT ScrollbarController {
   // Calculates the scroll_offset based on position_in_widget and
   // drag_anchor_relative_to_thumb_.
   gfx::ScrollOffset GetScrollOffsetForDragPosition(
+      const ScrollbarLayerImplBase* scrollbar,
       const gfx::PointF pointer_position_in_widget);
 
   // Returns a Vector2dF for position_in_widget relative to the scrollbar thumb.
-  gfx::Vector2dF GetThumbRelativePoint(const gfx::PointF position_in_widget);
+  gfx::Vector2dF GetThumbRelativePoint(const ScrollbarLayerImplBase* scrollbar,
+                                       const gfx::PointF position_in_widget);
 
   // Returns the ratio of the scroller length to the scrollbar length. This is
   // needed to scale the scroll delta for thumb drag.
-  float GetScrollerToScrollbarRatio();
+  float GetScrollerToScrollbarRatio(const ScrollbarLayerImplBase* scrollbar);
   LayerTreeHostImpl* layer_tree_host_impl_;
 
   // Used to safeguard against firing GSE without firing GSB and GSU. For
   // example, if mouse is pressed outside the scrollbar but released after
   // moving inside the scrollbar, a GSE will get queued up without this flag.
   bool scrollbar_scroll_is_active_;
-  const ScrollbarLayerImplBase* currently_captured_scrollbar_;
 
   // This is relative to the RenderWidget's origin.
   gfx::PointF last_known_pointer_position_;
+
+  // Set only while interacting with the scrollbar (eg: drag, click etc).
+  base::Optional<CapturedScrollbarMetadata> captured_scrollbar_metadata_;
 
   // Holds information pertaining to autoscrolling. This member is empty if and
   // only if an autoscroll is *not* in progress.

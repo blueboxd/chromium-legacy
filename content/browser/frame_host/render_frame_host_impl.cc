@@ -1848,8 +1848,9 @@ void RenderFrameHostImpl::RenderProcessExited(
   // process's channel.
   remote_associated_interfaces_.reset();
 
-  // Ensure that the AssociatedRemote<blink::mojom::Frame> works after a crash.
-  frame_remote_.reset();
+  // Ensure that the AssociatedRemote<blink::mojom::LocalFrame> works after a
+  // crash.
+  local_frame_remote_.reset();
 
   // Any termination disablers in content loaded by the new process will
   // be sent again.
@@ -3190,16 +3191,16 @@ void RenderFrameHostImpl::OnRunBeforeUnloadConfirm(bool is_reload,
 }
 
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
-    blink::mojom::Frame::GetTextSurroundingSelectionCallback callback,
+    blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
-  GetAssociatedFrameRemote()->GetTextSurroundingSelection(max_length,
-                                                          std::move(callback));
+  GetAssociatedLocalFrameRemote()->GetTextSurroundingSelection(
+      max_length, std::move(callback));
 }
 
 void RenderFrameHostImpl::SendInterventionReport(const std::string& id,
                                                  const std::string& message) {
-  GetAssociatedFrameRemote()->SendInterventionReport(id, message);
+  GetAssociatedLocalFrameRemote()->SendInterventionReport(id, message);
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
@@ -3495,6 +3496,19 @@ void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
   if (!is_active())
     return;
   delegate_->FullscreenStateChanged(this, is_fullscreen);
+}
+
+void RenderFrameHostImpl::RegisterProtocolHandler(const std::string& scheme,
+                                                  const GURL& url,
+                                                  const base::string16& title,
+                                                  bool user_gesture) {
+  delegate_->RegisterProtocolHandler(this, scheme, url, title, user_gesture);
+}
+
+void RenderFrameHostImpl::UnregisterProtocolHandler(const std::string& scheme,
+                                                    const GURL& url,
+                                                    bool user_gesture) {
+  delegate_->UnregisterProtocolHandler(this, scheme, url, user_gesture);
 }
 
 void RenderFrameHostImpl::LifecycleStateChanged(
@@ -5956,11 +5970,11 @@ RenderFrameHostImpl::GetFindInPage() {
   return find_in_page_;
 }
 
-const mojo::AssociatedRemote<blink::mojom::Frame>&
-RenderFrameHostImpl::GetAssociatedFrameRemote() {
-  if (!frame_remote_)
-    GetRemoteAssociatedInterfaces()->GetInterface(&frame_remote_);
-  return frame_remote_;
+const mojo::AssociatedRemote<blink::mojom::LocalFrame>&
+RenderFrameHostImpl::GetAssociatedLocalFrameRemote() {
+  if (!local_frame_remote_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&local_frame_remote_);
+  return local_frame_remote_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {

@@ -709,7 +709,7 @@ TEST_P(GLCopyTextureCHROMIUMTest, Basic) {
 }
 
 TEST_P(GLCopyTextureCHROMIUMES3Test, BigTexture) {
-  if (ShouldSkipBGRA())
+  if (ShouldSkipTest() || ShouldSkipBGRA())
     return;
   width_ = 1080;
   height_ = 1080;

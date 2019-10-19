@@ -190,6 +190,7 @@ class BLINK_MODULES_EXPORT AudioCaptureSettings {
       const base::Optional<int>& requested_buffer_size,
       bool disable_local_echo,
       bool enable_automatic_output_device_selection,
+      ProcessingType processing_type,
       const AudioProcessingProperties& audio_processing_properties);
   AudioCaptureSettings(const AudioCaptureSettings& other);
   AudioCaptureSettings& operator=(const AudioCaptureSettings& other);
@@ -216,6 +217,10 @@ class BLINK_MODULES_EXPORT AudioCaptureSettings {
     DCHECK(HasValue());
     return render_to_associated_sink_;
   }
+  ProcessingType processing_type() const {
+    DCHECK(HasValue());
+    return processing_type_;
+  }
   AudioProcessingProperties audio_processing_properties() const {
     DCHECK(HasValue());
     return audio_processing_properties_;
@@ -227,6 +232,7 @@ class BLINK_MODULES_EXPORT AudioCaptureSettings {
   base::Optional<int> requested_buffer_size_;
   bool disable_local_echo_;
   bool render_to_associated_sink_;
+  ProcessingType processing_type_;
   AudioProcessingProperties audio_processing_properties_;
 };
 

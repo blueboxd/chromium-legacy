@@ -34,7 +34,9 @@ STATIC_ASSERT_PREVIEWS_ENUM(LAZY_IMAGE_LOAD_DEFERRED,
                             blink::WebURLRequest::kLazyImageLoadDeferred);
 STATIC_ASSERT_PREVIEWS_ENUM(LAZY_IMAGE_AUTO_RELOAD,
                             blink::WebURLRequest::kLazyImageAutoReload);
+STATIC_ASSERT_PREVIEWS_ENUM(SUBRESOURCE_REDIRECT_ON,
+                            blink::WebURLRequest::kSubresourceRedirectOn);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_STATE_LAST,
-                            blink::WebURLRequest::kPreviewsStateLast);
+                            blink::WebURLRequest::kSubresourceRedirectOn);
 
 }  // namespace content

@@ -46,6 +46,7 @@ import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.ItemType;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -104,6 +105,7 @@ public class TouchToFillControllerTest {
 
     @Before
     public void setUp() {
+        ShadowRecordHistogram.reset();
         mMediator.initialize(mMockDelegate, mModel, DESIRED_FAVICON_SIZE);
     }
 
@@ -212,6 +214,10 @@ public class TouchToFillControllerTest {
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
                            TouchToFillMediator.UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX),
                 is(0));
+        assertThat(RecordHistogram.getHistogramValueCountForTesting(
+                           TouchToFillMediator.UMA_TOUCH_TO_FILL_USER_ACTION,
+                           UserAction.SELECT_CREDENTIAL),
+                is(1));
     }
 
     @Test
@@ -226,6 +232,10 @@ public class TouchToFillControllerTest {
         assertThat(RecordHistogram.getHistogramValueCountForTesting(
                            TouchToFillMediator.UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX, 1),
                 is(1));
+        assertThat(RecordHistogram.getHistogramValueCountForTesting(
+                           TouchToFillMediator.UMA_TOUCH_TO_FILL_USER_ACTION,
+                           UserAction.SELECT_CREDENTIAL),
+                is(1));
     }
 
     @Test
@@ -238,6 +248,9 @@ public class TouchToFillControllerTest {
                            TouchToFillMediator.UMA_TOUCH_TO_FILL_DISMISSAL_REASON,
                            BottomSheet.StateChangeReason.BACK_PRESS),
                 is(1));
+        assertThat(RecordHistogram.getHistogramValueCountForTesting(
+                           TouchToFillMediator.UMA_TOUCH_TO_FILL_USER_ACTION, UserAction.DISMISS),
+                is(1));
     }
 
     @Test
@@ -247,6 +260,10 @@ public class TouchToFillControllerTest {
         mModel.get(ON_CLICK_MANAGE).run();
         verify(mMockDelegate).onManagePasswordsSelected();
         assertThat(mModel.get(VISIBLE), is(false));
+        assertThat(RecordHistogram.getHistogramValueCountForTesting(
+                           TouchToFillMediator.UMA_TOUCH_TO_FILL_USER_ACTION,
+                           UserAction.SELECT_MANAGE_PASSWORDS),
+                is(1));
     }
 
     /**

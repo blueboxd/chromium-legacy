@@ -94,6 +94,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   bool ChildrenInline() const;
   bool IsInlineLevel() const;
   bool IsAtomicInlineLevel() const;
+  bool MayHaveAspectRatio() const;
 
   // Returns true if this node should fill the viewport.
   // This occurs when we are in quirks-mode and we are *not* OOF-positioned,

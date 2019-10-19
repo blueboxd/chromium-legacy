@@ -502,6 +502,20 @@ class AutotestPrivateGetAllEnterprisePoliciesFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateRefreshEnterprisePoliciesFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.refreshEnterprisePolicies",
+                             AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES)
+
+ private:
+  ~AutotestPrivateRefreshEnterprisePoliciesFunction() override;
+  ResponseAction Run() override;
+
+  // Called once all the policies have been refreshed.
+  void RefreshDone();
+};
+
 class AutotestPrivateBootstrapMachineLearningServiceFunction
     : public ExtensionFunction {
  public:

@@ -57,6 +57,24 @@ class Fakes {
             return Tasks.forResult(null);
         }
 
+        @CalledByNative("FakeSmsRetrieverClient")
+        private Task<Void> triggerTimeout() {
+            Wrappers.SmsReceiverContext context = super.getContext();
+            if (context == null) {
+                Log.v(TAG, "FakeSmsRetrieverClient.triggerTimeout failed: no context was set");
+                return Tasks.forResult(null);
+            }
+
+            Intent intent = new Intent(SmsRetriever.SMS_RETRIEVED_ACTION);
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(SmsRetriever.EXTRA_STATUS, new Status(CommonStatusCodes.TIMEOUT));
+            intent.putExtras(bundle);
+
+            BroadcastReceiver receiver = context.getRegisteredReceiver();
+            receiver.onReceive(context, intent);
+            return Tasks.forResult(null);
+        }
+
         // ---------------------------------------------------------------------
         // SmsRetrieverClient overrides:
 

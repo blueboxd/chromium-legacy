@@ -59,7 +59,8 @@ class BackForwardCacheMetrics
     kGrantedMediaStreamAccess = 18,
     kSchedulerTrackedFeatureUsed = 19,
     kConflictingBrowsingInstance = 20,
-    kMaxValue = kConflictingBrowsingInstance,
+    kCacheFlushed = 21,
+    kMaxValue = kCacheFlushed,
   };
 
   // Please keep in sync with BackForwardCacheHistoryNavigationOutcome in
@@ -110,7 +111,10 @@ class BackForwardCacheMetrics
   void MainFrameDidStartNavigationToDocument();
 
   // Notifies that an associated entry has committed a navigation.
-  void DidCommitNavigation(NavigationRequest* navigation_request);
+  // |back_forward_cache_allowed| indicates whether back-forward cache is
+  // allowed for the URL of |navigation_request|.
+  void DidCommitNavigation(NavigationRequest* navigation_request,
+                           bool back_forward_cache_allowed);
 
   // Records when another navigation commits away from the most recent entry
   // associated with |this|.  This is the point in time that the previous

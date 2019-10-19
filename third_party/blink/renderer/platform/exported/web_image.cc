@@ -46,7 +46,8 @@ SkBitmap WebImage::FromData(const WebData& data, const WebSize& desired_size) {
   const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
       data, data_complete, ImageDecoder::kAlphaPremultiplied,
-      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore(),
+      ImageDecoder::OverrideAllowDecodeToYuv::kDeny));
   if (!decoder || !decoder->IsSizeAvailable())
     return {};
 

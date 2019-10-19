@@ -382,6 +382,8 @@ cast_source_set("browser") {
       "exo/cast_wm_helper.h",
       "exo/wayland_server_controller.cc",
       "exo/wayland_server_controller.h",
+      "webview/web_content_controller.cc",
+      "webview/web_content_controller.h",
       "webview/webview_controller.cc",
       "webview/webview_controller.h",
       "webview/webview_grpc_service.cc",

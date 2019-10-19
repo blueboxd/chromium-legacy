@@ -423,7 +423,7 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSoundContentSetting;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSubresourceRedirectIncludedMediaSuffixes;
+extern const base::Feature kSplitAuthCacheByNetworkIsolationKey;
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)

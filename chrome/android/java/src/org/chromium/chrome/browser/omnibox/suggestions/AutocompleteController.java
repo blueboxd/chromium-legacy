@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler.VoiceResult;
@@ -54,7 +55,8 @@ public class AutocompleteController {
 
     public AutocompleteController(Profile profile, OnSuggestionsReceivedListener listener) {
         if (profile != null) {
-            mNativeAutocompleteControllerAndroid = nativeInit(profile);
+            mNativeAutocompleteControllerAndroid =
+                    AutocompleteControllerJni.get().init(AutocompleteController.this, profile);
         }
         mListener = listener;
     }
@@ -76,7 +78,8 @@ public class AutocompleteController {
             return;
         }
 
-        mNativeAutocompleteControllerAndroid = nativeInit(profile);
+        mNativeAutocompleteControllerAndroid =
+                AutocompleteControllerJni.get().init(AutocompleteController.this, profile);
     }
 
     /**
@@ -108,10 +111,12 @@ public class AutocompleteController {
                 TextUtils.isEmpty(url));
         if (profile == null || TextUtils.isEmpty(url)) return;
 
-        mNativeAutocompleteControllerAndroid = nativeInit(profile);
+        mNativeAutocompleteControllerAndroid =
+                AutocompleteControllerJni.get().init(AutocompleteController.this, profile);
         // Initializing the native counterpart might still fail.
         if (mNativeAutocompleteControllerAndroid != 0) {
-            nativeStart(mNativeAutocompleteControllerAndroid, text, cursorPosition, null, url,
+            AutocompleteControllerJni.get().start(mNativeAutocompleteControllerAndroid,
+                    AutocompleteController.this, text, cursorPosition, null, url,
                     pageClassification, preventInlineAutocomplete, false, false, true);
             mWaitingForSuggestionsToCache = false;
         }
@@ -134,7 +139,8 @@ public class AutocompleteController {
      */
     public OmniboxSuggestion classify(String text, boolean focusedFromFakebox) {
         if (mNativeAutocompleteControllerAndroid != 0) {
-            return nativeClassify(mNativeAutocompleteControllerAndroid, text, focusedFromFakebox);
+            return AutocompleteControllerJni.get().classify(mNativeAutocompleteControllerAndroid,
+                    AutocompleteController.this, text, focusedFromFakebox);
         }
         return null;
     }
@@ -157,11 +163,12 @@ public class AutocompleteController {
             // especially if a Service Worker is used.
             WarmupManager.getInstance().createSpareRenderProcessHost(profile);
         }
-        mNativeAutocompleteControllerAndroid = nativeInit(profile);
+        mNativeAutocompleteControllerAndroid =
+                AutocompleteControllerJni.get().init(AutocompleteController.this, profile);
         if (mNativeAutocompleteControllerAndroid != 0) {
             if (mUseCachedZeroSuggestResults) mWaitingForSuggestionsToCache = true;
-            nativeOnOmniboxFocused(mNativeAutocompleteControllerAndroid, omniboxText, url,
-                    pageClassification, title);
+            AutocompleteControllerJni.get().onOmniboxFocused(mNativeAutocompleteControllerAndroid,
+                    AutocompleteController.this, omniboxText, url, pageClassification, title);
         }
     }
 
@@ -183,7 +190,8 @@ public class AutocompleteController {
         if (mNativeAutocompleteControllerAndroid != 0) {
             // crbug.com/764749
             Log.w(TAG, "stopping autocomplete.");
-            nativeStop(mNativeAutocompleteControllerAndroid, clear);
+            AutocompleteControllerJni.get().stop(
+                    mNativeAutocompleteControllerAndroid, AutocompleteController.this, clear);
         }
     }
 
@@ -193,7 +201,8 @@ public class AutocompleteController {
      */
     void resetSession() {
         if (mNativeAutocompleteControllerAndroid != 0) {
-            nativeResetSession(mNativeAutocompleteControllerAndroid);
+            AutocompleteControllerJni.get().resetSession(
+                    mNativeAutocompleteControllerAndroid, AutocompleteController.this);
         }
     }
 
@@ -203,7 +212,8 @@ public class AutocompleteController {
      */
     void deleteSuggestion(int position, int hashCode) {
         if (mNativeAutocompleteControllerAndroid != 0) {
-            nativeDeleteSuggestion(mNativeAutocompleteControllerAndroid, position, hashCode);
+            AutocompleteControllerJni.get().deleteSuggestion(mNativeAutocompleteControllerAndroid,
+                    AutocompleteController.this, position, hashCode);
         }
     }
 
@@ -256,9 +266,9 @@ public class AutocompleteController {
         assert mNativeAutocompleteControllerAndroid != 0;
         // Don't natively log voice suggestion results as we add them in Java.
         if (type == OmniboxSuggestionType.VOICE_SUGGEST) return;
-        nativeOnSuggestionSelected(mNativeAutocompleteControllerAndroid, selectedIndex, hashCode,
-                currentPageUrl, pageClassification, elapsedTimeSinceModified, completedLength,
-                webContents);
+        AutocompleteControllerJni.get().onSuggestionSelected(mNativeAutocompleteControllerAndroid,
+                AutocompleteController.this, selectedIndex, hashCode, currentPageUrl,
+                pageClassification, elapsedTimeSinceModified, completedLength, webContents);
     }
 
     /**
@@ -332,45 +342,49 @@ public class AutocompleteController {
      */
     String updateMatchDestinationUrlWithQueryFormulationTime(
             int selectedIndex, int hashCode, long elapsedTimeSinceInputChange) {
-        return nativeUpdateMatchDestinationURLWithQueryFormulationTime(
-                mNativeAutocompleteControllerAndroid, selectedIndex, hashCode,
-                elapsedTimeSinceInputChange);
+        return AutocompleteControllerJni.get().updateMatchDestinationURLWithQueryFormulationTime(
+                mNativeAutocompleteControllerAndroid, AutocompleteController.this, selectedIndex,
+                hashCode, elapsedTimeSinceInputChange);
     }
 
-    @VisibleForTesting
-    protected native long nativeInit(Profile profile);
-    private native void nativeStart(long nativeAutocompleteControllerAndroid, String text,
-            int cursorPosition, String desiredTld, String currentUrl, int pageClassification,
-            boolean preventInlineAutocomplete, boolean preferKeyword,
-            boolean allowExactKeywordMatch, boolean wantAsynchronousMatches);
-    private native OmniboxSuggestion nativeClassify(
-            long nativeAutocompleteControllerAndroid, String text, boolean focusedFromFakebox);
-    private native void nativeStop(long nativeAutocompleteControllerAndroid, boolean clearResults);
-    private native void nativeResetSession(long nativeAutocompleteControllerAndroid);
-    private native void nativeOnSuggestionSelected(long nativeAutocompleteControllerAndroid,
-            int selectedIndex, int hashCode, String currentPageUrl, int pageClassification,
-            long elapsedTimeSinceModified, int completedLength, WebContents webContents);
-    private native void nativeOnOmniboxFocused(long nativeAutocompleteControllerAndroid,
-            String omniboxText, String currentUrl, int pageClassification, String currentTitle);
-    private native void nativeDeleteSuggestion(
-            long nativeAutocompleteControllerAndroid, int selectedIndex, int hashCode);
-    private native String nativeUpdateMatchDestinationURLWithQueryFormulationTime(
-            long nativeAutocompleteControllerAndroid, int selectedIndex, int hashCode,
-            long elapsedTimeSinceInputChange);
+    @NativeMethods
+    interface Natives {
+        long init(AutocompleteController caller, Profile profile);
+        void start(long nativeAutocompleteControllerAndroid, AutocompleteController caller,
+                String text, int cursorPosition, String desiredTld, String currentUrl,
+                int pageClassification, boolean preventInlineAutocomplete, boolean preferKeyword,
+                boolean allowExactKeywordMatch, boolean wantAsynchronousMatches);
+        OmniboxSuggestion classify(long nativeAutocompleteControllerAndroid,
+                AutocompleteController caller, String text, boolean focusedFromFakebox);
+        void stop(long nativeAutocompleteControllerAndroid, AutocompleteController caller,
+                boolean clearResults);
+        void resetSession(long nativeAutocompleteControllerAndroid, AutocompleteController caller);
+        void onSuggestionSelected(long nativeAutocompleteControllerAndroid,
+                AutocompleteController caller, int selectedIndex, int hashCode,
+                String currentPageUrl, int pageClassification, long elapsedTimeSinceModified,
+                int completedLength, WebContents webContents);
+        void onOmniboxFocused(long nativeAutocompleteControllerAndroid,
+                AutocompleteController caller, String omniboxText, String currentUrl,
+                int pageClassification, String currentTitle);
+        void deleteSuggestion(long nativeAutocompleteControllerAndroid,
+                AutocompleteController caller, int selectedIndex, int hashCode);
+        String updateMatchDestinationURLWithQueryFormulationTime(
+                long nativeAutocompleteControllerAndroid, AutocompleteController caller,
+                int selectedIndex, int hashCode, long elapsedTimeSinceInputChange);
+        /**
+         * Given a search query, this will attempt to see if the query appears to be portion of a
+         * properly formed URL.  If it appears to be a URL, this will return the fully qualified
+         * version (i.e. including the scheme, etc...).  If the query does not appear to be a URL,
+         * this will return null.
+         *
+         * @param query The query to be expanded into a fully qualified URL if appropriate.
+         * @return The fully qualified URL or null.
+         */
+        String qualifyPartialURLQuery(String query);
 
-    /**
-     * Given a search query, this will attempt to see if the query appears to be portion of a
-     * properly formed URL.  If it appears to be a URL, this will return the fully qualified
-     * version (i.e. including the scheme, etc...).  If the query does not appear to be a URL,
-     * this will return null.
-     *
-     * @param query The query to be expanded into a fully qualified URL if appropriate.
-     * @return The fully qualified URL or null.
-     */
-    static native String nativeQualifyPartialURLQuery(String query);
-
-    /**
-     * Sends a zero suggest request to the server in order to pre-populate the result cache.
-     */
-    static native void nativePrefetchZeroSuggestResults();
+        /**
+         * Sends a zero suggest request to the server in order to pre-populate the result cache.
+         */
+        void prefetchZeroSuggestResults();
+    }
 }

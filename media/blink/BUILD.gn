@@ -131,6 +131,8 @@ test("media_blink_unittests") {
   ]
 
   sources = [
+    "blink_platform_with_task_environment.cc",
+    "blink_platform_with_task_environment.h",
     "buffered_data_source_host_impl_unittest.cc",
     "cache_util_unittest.cc",
     "interval_map_unittest.cc",

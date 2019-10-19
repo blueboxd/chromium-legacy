@@ -2,21 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/icons.m.js';
+import './icons.js';
+import './viewer-zoom-button.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isRTL} from 'chrome://resources/js/util.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 /**
  * @typedef {{
  *   fittingType: !FittingType,
  *   userInitiated: boolean,
  * }}
  */
-let FitToChangedEvent;
-
-(function() {
+export let FitToChangedEvent;
 
 const FIT_TO_PAGE_BUTTON_STATE = 0;
 const FIT_TO_WIDTH_BUTTON_STATE = 1;
 
 Polymer({
   is: 'viewer-zoom-toolbar',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     newPrintPreview: {
@@ -195,4 +203,3 @@ Polymer({
     }
   },
 });
-})();

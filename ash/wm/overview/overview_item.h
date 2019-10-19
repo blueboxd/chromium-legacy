@@ -259,6 +259,10 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   void set_disable_mask(bool disable) { disable_mask_ = disable; }
 
+  void set_unclipped_size(base::Optional<gfx::Size> unclipped_size) {
+    unclipped_size_ = unclipped_size;
+  }
+
   views::ImageButton* GetCloseButtonForTesting();
   float GetCloseButtonVisibilityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
@@ -347,7 +351,9 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // The contained Window's wrapper.
   ScopedOverviewTransformWindow transform_window_;
 
-  // The target bounds this overview item is fit within.
+  // The target bounds this overview item is fit within. When in splitview,
+  // |item_widget_| is fit within these bounds, but the window itself is
+  // transformed to |unclipped_size_|, and then clipped.
   gfx::RectF target_bounds_;
 
   // True if running SetItemBounds. This prevents recursive calls resulting from
@@ -411,9 +417,18 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   bool prepared_for_overview_ = false;
 
-  // Stores the last translations of the windows affected by SetBounds. Used for
-  // ease of calculations when swiping away overview mode using home launcher
-  // gesture.
+  // This has a value when there is a snapped window, or a window about to be
+  // snapped (triggering a splitview preview area). This will be set when items
+  // are positioned in OverviewGrid. The bounds delivered in |SetBounds| are the
+  // true bounds of this item, but we want to maintain the aspect ratio of the
+  // window, who's bounds are not set to split view size. So in |SetItemBounds|,
+  // we transform the window not to |target_bounds_| but to this value, and then
+  // apply clipping on the window to |target_bounds_|.
+  base::Optional<gfx::Size> unclipped_size_ = base::nullopt;
+
+  // Stores the last translations of the windows affected by |SetBounds|. Used
+  // for ease of calculations when swiping away overview mode using home
+  // launcher gesture.
   base::flat_map<aura::Window*, int> translation_y_map_;
 
   // The shadow around the overview window. Shadows the original window, not

@@ -215,8 +215,8 @@ void InfoBarView::OnPaint(gfx::Canvas* canvas) {
     const SkColor color =
         GetColor(ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR);
     const gfx::Rect local_bounds = GetLocalBounds();
-    canvas->DrawLine(gfx::Point(local_bounds.x(), local_bounds.y()),
-                     gfx::Point(local_bounds.right(), local_bounds.y()), color);
+    canvas->DrawSharpLine({local_bounds.x(), local_bounds.y()},
+                          {local_bounds.right(), local_bounds.y()}, color);
   }
 }
 

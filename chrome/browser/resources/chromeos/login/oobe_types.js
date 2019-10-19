@@ -134,3 +134,13 @@ OobeTypes.SecurityTokenPinDialogErrorType = {
  * }}
  */
 OobeTypes.SecurityTokenPinDialogParameters;
+
+/**
+ * Specifies the mechanism for calculating oobe-dialog inner padding.
+ * @enum {string}
+ */
+OobeTypes.DialogPaddingMode = {
+  AUTO: 'auto',
+  NARROW: 'narrow',
+  WIDE: 'wide',
+};

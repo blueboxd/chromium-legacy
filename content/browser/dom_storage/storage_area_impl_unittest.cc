@@ -18,7 +18,6 @@
 #include "base/threading/thread.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/browser_task_environment.h"

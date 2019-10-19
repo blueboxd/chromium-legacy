@@ -85,6 +85,8 @@ enum GpuControlListTestingEntryEnum {
   kGpuControlListEntryTest_GpuGenerationAny = 69,
   kGpuControlListEntryTest_GpuGenerationPrimary = 70,
   kGpuControlListEntryTest_GpuGenerationSecondary = 71,
+  kGpuControlListEntryTest_SubpixelFontRendering = 72,
+  kGpuControlListEntryTest_SubpixelFontRenderingDontCare = 73,
 };
 }  // namespace gpu
 

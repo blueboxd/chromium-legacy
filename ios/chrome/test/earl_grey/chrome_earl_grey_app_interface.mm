@@ -18,8 +18,8 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
+#import "ios/chrome/test/app/browsing_data_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #include "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/signin_test_util.h"
@@ -165,6 +165,15 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::CloseAllTabsInCurrentMode();
 }
 
++ (NSError*)closeAllNormalTabs {
+  bool success = chrome_test_util::CloseAllNormalTabs();
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Could not close all normal tabs");
+  }
+  return nil;
+}
+
 + (NSError*)closeAllIncognitoTabs {
   bool success = chrome_test_util::CloseAllIncognitoTabs();
   if (!success) {
@@ -210,10 +219,19 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
-+ (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error {
-  return web::test::TapWebViewElementWithId(
++ (NSError*)tapWebStateElementWithID:(NSString*)elementID {
+  NSError* error = nil;
+  bool success = web::test::TapWebViewElementWithId(
       chrome_test_util::GetCurrentWebState(),
       base::SysNSStringToUTF8(elementID), &error);
+  if (!success || error) {
+    NSString* errorDescription =
+        [NSString stringWithFormat:
+                      @"Failed to tap web state element with ID=%@! Error: %@",
+                      elementID, error];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
 }
 
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {

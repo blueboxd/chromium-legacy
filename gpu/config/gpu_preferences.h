@@ -37,6 +37,13 @@ enum class VulkanImplementationName : uint32_t {
   kLast = kSwiftshader,
 };
 
+enum class GrContextType : uint32_t {
+  kGL = 0,
+  kVulkan = 1,
+  kMetal = 2,
+  kLast = kMetal,
+};
+
 // NOTE: if you modify this structure then you must also modify the
 // following two files to keep them in sync:
 //   src/gpu/ipc/common/gpu_preferences.mojom
@@ -197,6 +204,9 @@ struct GPU_EXPORT GpuPreferences {
 
   // ===================================
   // Settings from //gpu/command_buffer/service/gpu_switches.h
+  // The type of the GrContext.
+  GrContextType gr_context_type = GrContextType::kGL;
+
   // Use Vulkan for rasterization and display compositing.
   VulkanImplementationName use_vulkan = VulkanImplementationName::kNone;
 

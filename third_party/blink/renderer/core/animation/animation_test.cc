@@ -52,6 +52,8 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -189,7 +191,9 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
     SimulateFrame(last_frame_time);
   }
 
-  void SimulateMicrotask() { animation->CommitAllUpdatesForTesting(); }
+  void SimulateMicrotask() {
+    Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
+  }
 
   Persistent<DocumentTimeline> timeline;
   Persistent<Animation> animation;

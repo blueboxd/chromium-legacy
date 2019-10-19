@@ -372,8 +372,7 @@ void VPNListView::OnVpnProvidersChanged() {
 }
 
 void VPNListView::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kVpnConfigAllowed, true);
 }
 
 const char* VPNListView::GetClassName() const {

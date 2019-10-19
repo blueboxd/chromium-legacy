@@ -183,7 +183,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   shared_context_state_ = base::MakeRefCounted<SharedContextState>(
       new gl::GLShareGroup(), surface_, context_,
       feature_info()->workarounds().use_virtualized_gl_contexts,
-      base::DoNothing());
+      base::DoNothing(), GpuPreferences().gr_context_type);
 
   shared_context_state_->InitializeGL(GpuPreferences(), feature_info_);
 

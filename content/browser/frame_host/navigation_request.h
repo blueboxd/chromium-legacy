@@ -227,6 +227,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
   const base::Optional<net::SSLInfo>& GetSSLInfo() override;
   const base::Optional<net::AuthChallengeInfo>& GetAuthChallengeInfo() override;
+  net::NetworkIsolationKey GetNetworkIsolationKey() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
@@ -746,11 +747,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationHandle,
   // Helper function that computes the site URL for |common_params_.url|.
   // Note: |site_url_| should only be updated with the result of this function.
   GURL GetSiteForCommonParamsURL() const;
-
-  // Returns the network isolation key for this NavigationRequest. If
-  // |network_isolation_key_| is empty, the key will be based off request url
-  // origin and top frame origin.
-  net::NetworkIsolationKey GetNetworkIsolationKey() const;
 
   // Updates the state of the navigation handle after encountering a server
   // redirect.

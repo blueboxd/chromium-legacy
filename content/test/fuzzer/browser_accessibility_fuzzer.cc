@@ -5,10 +5,16 @@
 #include <fuzzer/FuzzedDataProvider.h>
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/browser/accessibility/test_browser_accessibility_delegate.h"
+
+struct Env {
+  Env() { base::CommandLine::Init(0, nullptr); }
+  base::AtExitManager at_exit;
+};
 
 namespace content {
 
@@ -62,8 +68,7 @@ void AddStates(FuzzedDataProvider& fdp, ui::AXNodeData* node) {
 // the fuzz input. Once the tree is constructed, fuzz by calling some
 // functions that walk the tree in various ways to ensure they don't crash.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  base::AtExitManager at_exit;
-
+  static Env env;
   FuzzedDataProvider fdp(data, size);
 
   // The tree structure is always the same, only the data changes.

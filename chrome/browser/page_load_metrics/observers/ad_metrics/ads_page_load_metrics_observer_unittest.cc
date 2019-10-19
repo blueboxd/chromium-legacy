@@ -324,17 +324,18 @@ class ErrorPageWaiter : public content::WebContentsObserver {
 
 // Mock frame remote. Processes calls to SendInterventionReport and waits
 // for all pending messages to be sent.
-class FrameRemoteTester : public blink::mojom::Frame {
+class FrameRemoteTester : public blink::mojom::LocalFrame {
  public:
   FrameRemoteTester() = default;
   ~FrameRemoteTester() override = default;
 
   void BindPendingReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
-    receivers_.Add(this, mojo::PendingAssociatedReceiver<blink::mojom::Frame>(
-                             std::move(handle)));
+    receivers_.Add(this,
+                   mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(
+                       std::move(handle)));
   }
 
-  // blink::mojom::Frame
+  // blink::mojom::LocalFrame
   void SendInterventionReport(const std::string& id,
                               const std::string& message) override {
     if (!on_empty_report_callback_)
@@ -378,7 +379,7 @@ class FrameRemoteTester : public blink::mojom::Frame {
   // The message string for the last received non-empty intervention report.
   std::string last_message_;
   base::OnceClosure on_empty_report_callback_;
-  mojo::AssociatedReceiverSet<blink::mojom::Frame> receivers_;
+  mojo::AssociatedReceiverSet<blink::mojom::LocalFrame> receivers_;
 };
 
 }  // namespace
@@ -479,7 +480,7 @@ class AdsPageLoadMetricsObserverTest
         navigation_simulator->GetFinalRenderFrameHost()
             ->GetRemoteAssociatedInterfaces();
     remote_interfaces->OverrideBinderForTesting(
-        blink::mojom::Frame::Name_,
+        blink::mojom::LocalFrame::Name_,
         base::BindRepeating(&FrameRemoteTester::BindPendingReceiver,
                             base::Unretained(&frame_remote_tester_)));
 

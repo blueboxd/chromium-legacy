@@ -7,8 +7,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
-#include "chrome/browser/sharing/sharing_message_handler.h"
 
 class SharingService;
 
@@ -17,10 +15,6 @@ class SharingServiceProxyAndroid {
  public:
   explicit SharingServiceProxyAndroid(SharingService* sharing_service);
   ~SharingServiceProxyAndroid();
-
-  ClickToCallMessageHandler* click_to_call_message_handler() {
-    return &click_to_call_message_handler_;
-  }
 
   void SendSharedClipboardMessage(
       JNIEnv* env,
@@ -39,7 +33,6 @@ class SharingServiceProxyAndroid {
 
  private:
   SharingService* sharing_service_ = nullptr;
-  ClickToCallMessageHandler click_to_call_message_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SharingServiceProxyAndroid);
 };

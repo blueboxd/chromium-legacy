@@ -407,8 +407,8 @@ void AssistantInteractionController::OnInteractionStarted(
     // set the pending query from outside of the interaction lifecycle, the
     // pending query type will always be |kNull| here.
     if (model_.pending_query().type() == AssistantQueryType::kNull) {
-      model_.SetPendingQuery(
-          std::make_unique<AssistantTextQuery>(metadata->query));
+      model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+          metadata->query, AssistantQuerySource::kLibAssistantInitiated));
     }
     model_.CommitPendingQuery();
     model_.SetMicState(MicState::kClosed);
@@ -874,7 +874,8 @@ void AssistantInteractionController::StartProactiveSuggestionsInteraction(
   const std::string& description = proactive_suggestions->description();
   const std::string& search_query = proactive_suggestions->search_query();
 
-  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(description));
+  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
+      description, AssistantQuerySource::kProactiveSuggestions));
 
   OnInteractionStarted(AssistantInteractionMetadata::New(
       AssistantInteractionType::kText, /*query=*/description));

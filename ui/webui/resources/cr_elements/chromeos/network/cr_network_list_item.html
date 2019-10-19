@@ -73,7 +73,7 @@
             hidden$="[[!isStateTextVisible_(networkState)]]"
             active$="[[isStateTextActive_(networkState,
                          activationUnavailable)]]">
-          [[getNetworkStateText_(networkState, cellActivationAvailable)]]
+          [[getNetworkStateText_(networkState, activationUnavailable)]]
         </div>
       </div>
       <template is="dom-if" if="[[isPolicySource(networkState.source)]]">

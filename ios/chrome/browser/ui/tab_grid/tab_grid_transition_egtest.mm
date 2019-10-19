@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#import "base/test/ios/wait_util.h"
-#import "ios/chrome/app/main_controller.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -26,26 +21,24 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::TabGridDoneButton;
 using chrome_test_util::TabGridIncognitoTabsPanelButton;
 using chrome_test_util::TabGridNewIncognitoTabButton;
 using chrome_test_util::TabGridNewTabButton;
 using chrome_test_util::TabGridOpenButton;
 using chrome_test_util::TabGridOpenTabsPanelButton;
-// using chrome_test_util::TabletTabSwitcherCloseButton;
-// using chrome_test_util::TabletTabSwitcherIncognitoTabsPanelButton;
-// using chrome_test_util::TabletTabSwitcherNewIncognitoTabButton;
-// using chrome_test_util::TabletTabSwitcherNewTabButton;
-// using chrome_test_util::TabletTabSwitcherOpenButton;
-// using chrome_test_util::TabletTabSwitcherOpenTabsPanelButton;
 
 namespace {
 
-// Returns the tab model for non-incognito tabs.
-TabModel* GetNormalTabModel() {
-  return chrome_test_util::GetMainController()
-      .interfaceProvider.mainInterface.tabModel;
+// Rotates the device to the given orientation.
+void RotateDevice(UIDeviceOrientation orientation) {
+#if defined(CHROME_EARL_GREY_1)
+  [EarlGrey rotateDeviceToOrientation:orientation errorOrNil:nil];
+#elif defined(CHROME_EARL_GREY_2)
+  [EarlGrey rotateDeviceToOrientation:orientation error:nil];
+#else
+#error
+#endif
 }
 
 // Shows the tab switcher by tapping the switcher button.  Works on both phone
@@ -115,8 +108,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // Rotate the device back to portrait if needed, since some tests attempt to run
 // in landscape.
 - (void)tearDown {
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                           errorOrNil:nil];
+  RotateDevice(UIDeviceOrientationPortrait);
   [super tearDown];
 }
 
@@ -150,7 +142,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // Tests entering the tab switcher when one incognito tab is open.
 - (void)testEnterSwitcherWithOneIncognitoTab {
   [ChromeEarlGreyUI openNewIncognitoTab];
-  [GetNormalTabModel() closeAllTabs];
+  [ChromeEarlGrey closeAllNormalTabs];
 
   ShowTabSwitcher();
 }
@@ -158,7 +150,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // Tests entering the tab switcher when more than one incognito tab is open.
 - (void)testEnterSwitcherWithMultipleIncognitoTabs {
   [ChromeEarlGreyUI openNewIncognitoTab];
-  [GetNormalTabModel() closeAllTabs];
+  [ChromeEarlGrey closeAllNormalTabs];
   [ChromeEarlGreyUI openNewIncognitoTab];
   [ChromeEarlGreyUI openNewIncognitoTab];
 
@@ -182,7 +174,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 // Tests entering the tab switcher by closing the last incognito tab.
 - (void)testEnterSwitcherByClosingLastIncognitoTab {
   [ChromeEarlGreyUI openNewIncognitoTab];
-  [GetNormalTabModel() closeAllTabs];
+  [ChromeEarlGrey closeAllNormalTabs];
   [ChromeEarlGrey closeAllTabsInCurrentMode];
 }
 
@@ -228,7 +220,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
   // Set up by creating a new incognito tab and closing all normal tabs.
   [ChromeEarlGreyUI openNewIncognitoTab];
-  [GetNormalTabModel() closeAllTabs];
+  [ChromeEarlGrey closeAllNormalTabs];
 
   // Enter the switcher and open a new incognito tab using the new tab button.
   ShowTabSwitcher();
@@ -311,7 +303,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [ChromeEarlGrey loadURL:[self makeURLForTitle:tab2_title]];
   [ChromeEarlGreyUI openNewIncognitoTab];
   [ChromeEarlGrey loadURL:[self makeURLForTitle:tab3_title]];
-  [GetNormalTabModel() closeAllTabs];
+  [ChromeEarlGrey closeAllNormalTabs];
 
   ShowTabSwitcher();
   SelectTab(tab1_title);
@@ -378,24 +370,21 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   [ChromeEarlGrey loadURL:[self makeURLForTitle:tab_title]];
 
   // Show the tab switcher and return to the BVC, in portrait.
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                           errorOrNil:nil];
+  RotateDevice(UIDeviceOrientationPortrait);
   ShowTabSwitcher();
   SelectTab(tab_title);
   [ChromeEarlGrey
       waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)];
 
   // Show the tab switcher and return to the BVC, in landscape.
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationLandscapeLeft
-                           errorOrNil:nil];
+  RotateDevice(UIDeviceOrientationLandscapeLeft);
   ShowTabSwitcher();
   SelectTab(tab_title);
   [ChromeEarlGrey
       waitForWebStateContainingText:base::SysNSStringToUTF8(tab_title)];
 
   // Show the tab switcher and return to the BVC, in portrait.
-  [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
-                           errorOrNil:nil];
+  RotateDevice(UIDeviceOrientationPortrait);
   ShowTabSwitcher();
   SelectTab(tab_title);
   [ChromeEarlGrey

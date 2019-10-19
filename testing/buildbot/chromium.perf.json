@@ -278,9 +278,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -315,9 +316,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -352,9 +354,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -391,9 +394,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -430,9 +434,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -471,9 +476,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf"
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
           "expiration": 7200,
@@ -1906,9 +1912,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
             }
           ],
           "expiration": 7200,
@@ -1943,9 +1950,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
             }
           ],
           "expiration": 7200,
@@ -1980,9 +1988,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
             }
           ],
           "expiration": 7200,
@@ -2017,9 +2026,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
             }
           ],
           "expiration": 7200,
@@ -2054,9 +2064,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
             }
           ],
           "expiration": 7200,
@@ -2091,9 +2102,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
             }
           ],
           "expiration": 7200,
@@ -2132,9 +2144,10 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "1002:6821",
-              "os": "Mac-10.13",
-              "pool": "chrome.tests.perf"
+              "gpu": "1002:6821-4.0.20-3.2.8",
+              "os": "Mac-10.13.3",
+              "pool": "chrome.tests.perf",
+              "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0"
             }
           ],
           "expiration": 7200,

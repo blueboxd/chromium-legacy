@@ -109,8 +109,7 @@ Polymer({
     propertiesSent_: Boolean,
 
     /**
-     * The configuration properties for the network. |configProperties_.type|
-     * will always be defined as the network type being configured.
+     * The configuration properties for the network.
      * @private {!chromeos.networkConfig.mojom.ConfigProperties|undefined}
      */
     configProperties_: Object,
@@ -191,7 +190,7 @@ Polymer({
      * changes.
      * @private {!chromeos.networkConfig.mojom.SecurityType|undefined}
      */
-    securityType: Number,
+    securityType_: Number,
 
     /**
      * 'SaveCredentials' value used for VPN (OpenVPN, IPsec, and L2TP).
@@ -306,19 +305,19 @@ Polymer({
   observers: [
     'setEnableConnect_(isConfigured_, propertiesSent_)',
     'setEnableSave_(isConfigured_, managedProperties_)',
-    'setShareNetwork_(mojoType_, managedProperties_, securityType,' +
+    'setShareNetwork_(mojoType_, managedProperties_, securityType_,' +
         'shareDefault, shareAllowEnable)',
     'updateHiddenNetworkWarning_(autoConnect_)',
     'updateConfigProperties_(mojoType_, managedProperties_)',
-    'updateSecurity_(configProperties_, securityType)',
+    'updateSecurity_(configProperties_, securityType_)',
     'updateEapOuter_(eapProperties_.outer)',
     'updateEapCerts_(eapProperties_.*, serverCaCerts_, userCerts_)',
-    'updateShowEap_(configProperties_.*, eapProperties_.*, securityType)',
+    'updateShowEap_(configProperties_.*, eapProperties_.*, securityType_)',
     'updateVpnType_(configProperties_, vpnType_)',
     'updateVpnIPsecCerts_(vpnType_, configProperties_.typeConfig.vpn.ipSec.*)',
     'updateOpenVPNCerts_(vpnType_, configProperties_.typeConfig.vpn.openVpn.*)',
     // Multiple updateIsConfigured observers for different configurations.
-    'updateIsConfigured_(configProperties_.*, securityType)',
+    'updateIsConfigured_(configProperties_.*, securityType_)',
     'updateIsConfigured_(configProperties_, eapProperties_.*)',
     'updateIsConfigured_(configProperties_.typeConfig.wifi.*)',
     'updateIsConfigured_(configProperties_.typeConfig.vpn.*, vpnType_)',
@@ -361,10 +360,10 @@ Polymer({
       const mojoType = OncMojo.getNetworkTypeFromString(this.type);
       const managedProperties =
           OncMojo.getDefaultManagedProperties(mojoType, this.guid, this.name);
-      // Allow wifi securityType to be set externally (e.g. in tests).
+      // Allow securityType_ to be set externally (e.g. in tests).
       if (mojoType == mojom.NetworkType.kWiFi &&
-          this.securityType !== undefined) {
-        managedProperties.typeProperties.wifi.security = this.securityType;
+          this.securityType_ !== undefined) {
+        managedProperties.typeProperties.wifi.security = this.securityType_;
       }
       this.managedProperties_ = managedProperties;
       this.mojoType_ = mojoType;
@@ -464,7 +463,7 @@ Polymer({
   close_: function() {
     this.guid = '';
     this.type = '';
-    this.securityType = undefined;
+    this.securityType_ = undefined;
     this.fire('close');
   },
 
@@ -479,7 +478,7 @@ Polymer({
   /** CrNetworkListenerBehavior override */
   onNetworkCertificatesChanged: function() {
     this.networkConfig_.getNetworkCertificates().then(response => {
-      const isOpenVpn = this.configProperties_.type == mojom.NetworkType.kVPN &&
+      const isOpenVpn = !!this.configProperties_.typeConfig.vpn &&
           this.configProperties_.typeConfig.vpn.type == mojom.VpnType.kOpenVPN;
 
       const caCerts = response.serverCas.slice();
@@ -620,7 +619,7 @@ Polymer({
   /** @private */
   setShareNetwork_: function() {
     if (this.mojoType_ === undefined || !this.managedProperties_ ||
-        !this.securityType === undefined) {
+        !this.securityType_ === undefined) {
       return;
     }
     const source = this.managedProperties_.source;
@@ -797,7 +796,7 @@ Polymer({
       configProperties.autoConnect = {value: autoConnect};
     }
     this.configProperties_ = configProperties;
-    this.securityType = security;
+    this.securityType_ = security;
     this.set('eapProperties_', this.getEap_(this.configProperties_));
     if (!this.eapProperties_) {
       this.showEap_ = null;
@@ -809,15 +808,15 @@ Polymer({
 
   /**
    * Ensures that the appropriate properties are set or deleted when
-   * |securityType| changes.
+   * |securityType_| changes.
    * @private
    */
   updateSecurity_: function() {
-    if (this.securityType === undefined || !this.configProperties_) {
+    if (this.securityType_ === undefined || !this.configProperties_) {
       return;
     }
     const type = this.mojoType_;
-    const security = this.securityType;
+    const security = this.securityType_;
     if (type == mojom.NetworkType.kWiFi) {
       this.configProperties_.typeConfig.wifi.security = security;
     } else if (type == mojom.NetworkType.kEthernet) {
@@ -867,7 +866,8 @@ Polymer({
 
   /** @private */
   updateShowEap_: function() {
-    if (!this.eapProperties_ || this.securityType == mojom.SecurityType.kNone) {
+    if (!this.eapProperties_ ||
+        this.securityType_ == mojom.SecurityType.kNone) {
       this.showEap_ = null;
       this.updateCertError_();
       return;
@@ -1189,27 +1189,27 @@ Polymer({
    * @private
    */
   getIsConfigured_: function() {
-    if (this.securityType === undefined || !this.configProperties_) {
+    if (this.securityType_ === undefined || !this.configProperties_) {
       return false;
     }
 
-    const type = this.configProperties_.type;
-    if (type == mojom.NetworkType.kVPN) {
+    const typeConfig = this.configProperties_.typeConfig;
+    if (typeConfig.vpn) {
       return this.vpnIsConfigured_();
     }
 
-    if (type == mojom.NetworkType.kWiFi) {
-      if (!this.configProperties_.typeConfig.wifi.ssid) {
+    if (typeConfig.wifi) {
+      if (!typeConfig.wifi.ssid) {
         return false;
       }
-      if (this.configRequiresPassphrase_(type, this.securityType)) {
-        const passphrase = this.configProperties_.typeConfig.wifi.passphrase;
+      if (this.configRequiresPassphrase_()) {
+        const passphrase = typeConfig.wifi.passphrase;
         if (!passphrase || passphrase.length < this.MIN_PASSPHRASE_LENGTH) {
           return false;
         }
       }
     }
-    if (this.securityType == mojom.SecurityType.kWpaEap) {
+    if (this.securityType_ == mojom.SecurityType.kWpaEap) {
       return this.eapIsConfigured_();
     }
     return true;
@@ -1285,7 +1285,7 @@ Polymer({
 
     // Insecure WiFi networks are always shared.
     if (this.mojoType_ == mojom.NetworkType.kWiFi &&
-        this.securityType == mojom.SecurityType.kNone) {
+        this.securityType_ == mojom.SecurityType.kNone) {
       return false;
     }
     return true;
@@ -1602,16 +1602,14 @@ Polymer({
   },
 
   /**
-   * @param {mojom.NetworkType} type
-   * @param {mojom.SecurityType} security
    * @return {boolean}
    * @private
    */
-  configRequiresPassphrase_: function(type, security) {
+  configRequiresPassphrase_: function() {
     // Note: 'Passphrase' is only used by WiFi; Ethernet uses EAP.Password.
-    return type == mojom.NetworkType.kWiFi &&
-        (security == mojom.SecurityType.kWepPsk ||
-         security == mojom.SecurityType.kWpaPsk);
+    return this.mojoType_ == mojom.NetworkType.kWiFi &&
+        (this.securityType_ == mojom.SecurityType.kWepPsk ||
+         this.securityType_ == mojom.SecurityType.kWpaPsk);
   },
 
   /**

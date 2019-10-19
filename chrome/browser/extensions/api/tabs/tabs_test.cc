@@ -2096,7 +2096,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
                                 blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(400, 400));
 
-  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  ASSERT_TRUE(navigation_manager.WaitForRequestStart());
 
   browser()->tab_strip_model()->ActivateTabAt(
       0, {TabStripModel::GestureType::kOther});
@@ -2109,7 +2109,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
 
   EXPECT_EQ(url, second_web_contents->GetVisibleURL());
 
-  // Wait for the TestNavigationManager-initiated navigation to complete to
+  // Wait for the TestNavigationManager-monitored navigation to complete to
   // avoid a race during browser teardown (see crbug.com/882213).
   navigation_manager.WaitForNavigationFinished();
 }

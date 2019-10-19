@@ -135,7 +135,11 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
   testonly = true
   sources = [
     "tab_grid_egtest.mm",
@@ -150,7 +154,31 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/web/public/test/http_server",
   ]
-  libs = [ "XCTest.framework" ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "tab_grid_transition_egtest.mm",
+  ]
+
+  deps = [
+    ":tab_grid_ui_constants",
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//net:test_support",
+  ]
+  libs = [ "UIKit.framework" ]
 }

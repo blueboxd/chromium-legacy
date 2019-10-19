@@ -258,13 +258,10 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
           ->chromeos_listener()));
 #endif  // defined(OS_CHROMEOS)
 
-  if (subresource_redirect::ShouldForceEnableSubresourceRedirect() &&
-      resource_type == content::ResourceType::kImage &&
-      GURL(request.Url()).SchemeIs(url::kHttpsScheme)) {
-    throttles.push_back(
-        std::make_unique<
-            subresource_redirect::SubresourceRedirectURLLoaderThrottle>());
-  }
+  auto throttle = subresource_redirect::SubresourceRedirectURLLoaderThrottle::
+      MaybeCreateThrottle(request, resource_type);
+  if (throttle)
+    throttles.push_back(std::move(throttle));
 
   return throttles;
 }

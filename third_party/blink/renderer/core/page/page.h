@@ -136,6 +136,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   HeapVector<Member<Page>> RelatedPages();
 
   static void PlatformColorsChanged();
+  static void ColorSchemeChanged();
 
   void InitialStyleChanged();
   void UpdateAcceleratedCompositingSettings();

@@ -730,6 +730,7 @@ TEST_F(NigoriSyncBridgeImplTest,
 TEST_F(NigoriSyncBridgeImplTest,
        ShouldNotifyWhenDecryptionWithPassphraseFailed) {
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams("keystore_key");
+
   EntityData entity_data;
   *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
       /*keybag_keys_params=*/{kKeystoreKeyParams},
@@ -749,6 +750,10 @@ TEST_F(NigoriSyncBridgeImplTest,
           /*pending_keys=*/
           EncryptedDataEq(expected_pending_keys)));
   bridge()->SetDecryptionPassphrase("wrong_passphrase");
+
+  const CryptographerImpl& cryptographer =
+      bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer.KeyBagSizeForTesting(), Eq(size_t(0)));
 }
 
 // Tests that attempt to SetEncryptionPassphrase() has no effect (at least
@@ -1322,6 +1327,36 @@ TEST_F(NigoriSyncBridgeImplTest,
                                                    PASSPHRASE_BOOTSTRAP_TOKEN));
   EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
+}
+
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldNotAddDecryptionKeysToTrustedVaultCryptographer) {
+  const std::string kTrustedVaultKey1 = "trusted_vault_key_1";
+  const std::string kTrustedVaultKey2 = "trusted_vault_key_2";
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      BuildTrustedVaultNigoriSpecifics({Pbkdf2KeyParams(kTrustedVaultKey1)});
+
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
+  EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+  EXPECT_TRUE(bridge()->Init());
+  ASSERT_THAT(bridge()->GetPassphraseTypeForTesting(),
+              Eq(sync_pb::NigoriSpecifics::TRUSTED_VAULT_PASSPHRASE));
+  ASSERT_TRUE(bridge()->HasPendingKeysForTesting());
+
+  // Note that |kTrustedVaultKey2| was not part of Nigori specifics.
+  bridge()->AddTrustedVaultDecryptionKeys(
+      {kTrustedVaultKey1, kTrustedVaultKey2});
+  ASSERT_FALSE(bridge()->HasPendingKeysForTesting());
+
+  const CryptographerImpl& cryptographer =
+      bridge()->GetCryptographerForTesting();
+  ASSERT_THAT(cryptographer,
+              CanDecryptWith(Pbkdf2KeyParams(kTrustedVaultKey1)));
+  EXPECT_THAT(cryptographer,
+              Not(CanDecryptWith(Pbkdf2KeyParams(kTrustedVaultKey2))));
+  EXPECT_THAT(cryptographer.KeyBagSizeForTesting(), Eq(size_t(1)));
 }
 
 }  // namespace

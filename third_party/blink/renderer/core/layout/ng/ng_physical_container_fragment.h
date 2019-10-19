@@ -101,8 +101,11 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return PostLayoutChildLinkList(num_children_, buffer_);
   }
 
-  // Returns true if we have any floating descendants.
-  bool HasFloatingDescendants() const { return has_floating_descendants_; }
+  // Returns true if we have any floating descendants which need to be
+  // traversed during the float paint phase.
+  bool HasFloatingDescendantsForPaint() const {
+    return has_floating_descendants_for_paint_;
+  }
 
   // Returns true if we have any adjoining-object descendants (floats, or
   // inline-level OOF-positioned objects).

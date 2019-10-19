@@ -505,7 +505,7 @@ bool Animation::PreCommit(
   // are waiting on a start time will get updated from NotifyStartTime.
   // Finished animations may not trigger an Update call if finished in the same
   // frame that they are started. Calling ApplyUpdates for this specific case
-  // ensures that the finished promise and event are properly triggered.
+  // ensures the proper propagation of events.
   AnimationPlayState play_state = CalculateAnimationPlayState();
   bool finished = play_state == kFinished;
   if (pending_pause_ || (pending_play_ && (start_time_ || finished))) {
@@ -1151,12 +1151,8 @@ void Animation::ApplyUpdates(double ready_time) {
 
   ApplyPendingPlaybackRate();
 
-  if (pending_finish_notification_)
-    CommitFinishNotification();
-
   DCHECK(!pending_play_);
   DCHECK(!pending_pause_);
-  DCHECK(!pending_finish_notification_);
   DCHECK(!active_playback_rate_);
 
   // TODO(crbug.com/960944): Deprecate.

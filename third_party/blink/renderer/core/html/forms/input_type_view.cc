@@ -144,8 +144,6 @@ void InputTypeView::DidDispatchClick(Event&, const ClickHandlingState&) {}
 
 void InputTypeView::UpdateView() {}
 
-void InputTypeView::AttributeChanged() {}
-
 void InputTypeView::MultipleAttributeChanged() {}
 
 void InputTypeView::DisabledAttributeChanged() {}

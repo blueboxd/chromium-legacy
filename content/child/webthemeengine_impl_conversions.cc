@@ -117,4 +117,28 @@ ui::NativeTheme::SystemThemeColor NativeSystemThemeColor(
   }
 }
 
+ui::NativeTheme::PreferredColorScheme NativePreferredColorScheme(
+    blink::PreferredColorScheme preferred_color_scheme) {
+  switch (preferred_color_scheme) {
+    case blink::PreferredColorScheme::kDark:
+      return ui::NativeTheme::PreferredColorScheme::kDark;
+    case blink::PreferredColorScheme::kLight:
+      return ui::NativeTheme::PreferredColorScheme::kLight;
+    case blink::PreferredColorScheme::kNoPreference:
+      return ui::NativeTheme::PreferredColorScheme::kNoPreference;
+  }
+}
+
+blink::PreferredColorScheme WebPreferredColorScheme(
+    ui::NativeTheme::PreferredColorScheme preferred_color_scheme) {
+  switch (preferred_color_scheme) {
+    case ui::NativeTheme::PreferredColorScheme::kDark:
+      return blink::PreferredColorScheme::kDark;
+    case ui::NativeTheme::PreferredColorScheme::kLight:
+      return blink::PreferredColorScheme::kLight;
+    case ui::NativeTheme::PreferredColorScheme::kNoPreference:
+      return blink::PreferredColorScheme::kNoPreference;
+  }
+}
+
 }  // namespace content

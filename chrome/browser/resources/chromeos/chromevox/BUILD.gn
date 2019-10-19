@@ -630,6 +630,7 @@ if (is_chromeos) {
       "cvox2/background/download_handler_test.extjs",
       "cvox2/background/editing_test.extjs",
       "cvox2/background/i_search_test.extjs",
+      "cvox2/background/keyboard_handler_test.extjs",
       "cvox2/background/language_switching_test.extjs",
       "cvox2/background/live_regions_test.extjs",
       "cvox2/background/log_store_test.extjs",

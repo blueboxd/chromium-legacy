@@ -2961,6 +2961,28 @@
             ]
         }
     ],
+    "IdentityDiscIPH": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "IdentityDiscIPH",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:iph_identity_disc_triggered;comparator:<1;window:360;storage:360",
+                        "event_used": "name:identity_disc_used;comparator:<1;window:90;storage:360",
+                        "session_rate": "<1"
+                    },
+                    "enable_features": [
+                        "IPH_IdentityDisc"
+                    ],
+                    "disable_features": []
+                }
+            ]
+        }
+    ],
     "ImprovedRecoveryComponent": [
         {
             "platforms": [
@@ -3257,6 +3279,21 @@
                     },
                     "enable_features": [
                         "LowPriorityIframes"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LowerJavaScriptPriorityWhenForceDeferred": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190905",
+                    "enable_features": [
+                        "LowerJavaScriptPriorityWhenForceDeferred"
                     ]
                 }
             ]
@@ -4308,7 +4345,7 @@
                 {
                     "name": "Enabled_20190712",
                     "params": {
-                        "throttled_traffic_annotation_tags": "6019475,82509217,727528"
+                        "throttled_traffic_annotation_tags": "727528,727478,18300705"
                     },
                     "enable_features": [
                         "PauseBrowserInitiatedHeavyTrafficForP2P"

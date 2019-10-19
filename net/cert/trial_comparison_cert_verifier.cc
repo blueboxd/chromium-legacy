@@ -242,11 +242,12 @@ class TrialComparisonCertVerifier::Job::Request : public CertVerifier::Request {
 
   // Called when the Job has completed, and used to invoke the client
   // callback.
-  // Note: |this| may be deleted after calling this.
+  // Note: |this| may be deleted after calling this method.
   void OnJobComplete(int result, const CertVerifyResult& verify_result);
 
   // Called when the Job is aborted (e.g. the underlying
   // TrialComparisonCertVerifier is being deleted).
+  // Note: |this| may be deleted after calling this method.
   void OnJobAborted();
 
  private:
@@ -275,7 +276,9 @@ TrialComparisonCertVerifier::Job::Job(const CertVerifier::Config& config,
 
 TrialComparisonCertVerifier::Job::~Job() {
   if (request_) {
+    // Note: May delete |request_|.
     request_->OnJobAborted();
+    request_ = nullptr;
   }
 
   if (parent_) {
@@ -628,6 +631,9 @@ void TrialComparisonCertVerifier::Job::Request::OnJobComplete(
 void TrialComparisonCertVerifier::Job::Request::OnJobAborted() {
   DCHECK(parent_);
   parent_ = nullptr;
+
+  // DANGER: |this| may be deleted when this callback is destroyed.
+  client_callback_.Reset();
 }
 
 TrialComparisonCertVerifier::TrialComparisonCertVerifier(

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "components/arc/session/arc_client_adapter.h"
+#include "components/version_info/channel.h"
 
 namespace base {
 class FilePath;
@@ -16,7 +17,8 @@ class FilePath;
 namespace arc {
 
 // Returns an adapter for arcvm.
-std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter();
+std::unique_ptr<ArcClientAdapter> CreateArcVmClientAdapter(
+    version_info::Channel channel);
 
 // Function(s) below are for testing.
 bool IsAndroidDebuggableForTesting(const base::FilePath& json_path);

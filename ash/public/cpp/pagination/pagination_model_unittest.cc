@@ -61,7 +61,8 @@ class TestPaginationModelObserver : public PaginationModelObserver {
   }
 
   // PaginationModelObserver overrides:
-  void TotalPagesChanged() override {}
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override {
+  }
   void SelectedPageChanged(int old_selected, int new_selected) override {
     AppendSelectedPage(new_selected);
     ++selection_count_;

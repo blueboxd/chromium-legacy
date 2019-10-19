@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -14,8 +16,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-
-#include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 
@@ -143,13 +143,14 @@ bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
   // Note that we ask the layoutObject if it has a transform, because the style
   // may have transforms, but the layoutObject may be an inline that doesn't
   // support them.
-  return layout_object.HasTransformRelatedProperty() &&
-         layout_object.StyleRef().Has3DTransformOperation() &&
-         // Don't composite "trivial" 3D transforms such as translateZ(0) on
-         // low-end devices. These devices are much more sensitive to memory
-         // and per-composited-layer commit overhead.
-         (!Platform::Current()->IsLowEndDevice() ||
-          layout_object.StyleRef().Transform().HasNonTrivial3DComponent());
+  if (!layout_object.HasTransformRelatedProperty())
+    return false;
+
+  // Don't composite "trivial" 3D transforms such as translateZ(0).
+  if (base::FeatureList::IsEnabled(blink::features::kDoNotCompositeTrivial3D))
+    return layout_object.StyleRef().HasNonTrivial3DTransformOperation();
+
+  return layout_object.StyleRef().Has3DTransformOperation();
 }
 
 CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(

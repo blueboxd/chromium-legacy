@@ -114,7 +114,6 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual void AltAttributeChanged();
   virtual void SrcAttributeChanged();
   virtual void UpdateView();
-  virtual void AttributeChanged();
   virtual void MultipleAttributeChanged();
   virtual void DisabledAttributeChanged();
   virtual void ReadonlyAttributeChanged();

@@ -186,11 +186,8 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
 
   main_context->set_http_transaction_factory(main_http_factory_.get());
 
-  std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
-      new net::URLRequestJobFactoryImpl());
+  main_job_factory_ = std::make_unique<net::URLRequestJobFactoryImpl>();
 
-  InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
-  main_job_factory_ = SetUpJobFactoryDefaults(std::move(main_job_factory),
-                                              main_context->network_delegate());
+  InstallProtocolHandlers(main_job_factory_.get(), protocol_handlers);
   main_context->set_job_factory(main_job_factory_.get());
 }

@@ -1532,6 +1532,12 @@
       'filepath': 'chrome/(browser|common|renderer)/safe_browsing/|'\
                   'components/safe_browsing/',
     },
+    'safety_tips': {
+      'filepath': 'chrome/browser/component_updater/safety_tips_.*'\
+                  '|chrome/browser/lookalikes/'\
+                  '|chrome/browser/resources/safety_tips'\
+                  '|chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.*',
+    },
     'sampling_profiler': {
       'filepath': 'base/profiler/'\
                   '|chrome/common/profiler/'\
@@ -2496,7 +2502,8 @@
                      'sergeyu@chromium.org',
                      'spang+watch@chromium.org',
                      'wez@chromium.org'],
-    'page_info' : ['permissions-reviews@chromium.org'],
+    'page_info' : ['permissions-reviews@chromium.org',
+                   'jdeblasio+watch@chromium.org'],
     'page_load_metrics' : ['bmcquade+watch@chromium.org',
                            'csharrison+watch@chromium.org',
                            'loading-reviews+metrics@chromium.org',
@@ -2543,6 +2550,7 @@
                       'timvolodine@chromium.org',
                       'vakh+watch@chromium.org',
                       'xinghuilu+watch@chromium.org'],
+    'safety_tips': ['jdeblasio+watch@chromium.org'],
     'sampling_profiler': ['wittman+watch@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'security': ['security-watchlist@chromium.org'],

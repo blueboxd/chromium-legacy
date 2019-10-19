@@ -23,9 +23,8 @@ namespace {
 
 ArticleEntry CreateSkeletonEntryForUrl(const GURL& url) {
   ArticleEntry skeleton;
-  skeleton.set_entry_id(base::GenerateGUID());
-  ArticleEntryPage* page = skeleton.add_pages();
-  page->set_url(url.spec());
+  skeleton.entry_id = base::GenerateGUID();
+  skeleton.pages.push_back(url);
 
   DCHECK(IsEntryValid(skeleton));
   return skeleton;

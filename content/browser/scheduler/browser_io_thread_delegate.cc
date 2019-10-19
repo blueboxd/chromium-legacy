@@ -110,4 +110,10 @@ void BrowserIOThreadDelegate::BindToCurrentThread(
   }
 }
 
+const scoped_refptr<base::SequencedTaskRunner>&
+BrowserIOThreadDelegate::GetTaskRunnerForCurrentTask() const {
+  DCHECK(sequence_manager_);
+  return sequence_manager_->GetTaskRunnerForCurrentTask();
+}
+
 }  // namespace content

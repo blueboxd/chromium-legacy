@@ -69,11 +69,9 @@ class DomDistillerTaskTrackerTest : public testing::Test {
 
   ArticleEntry GetDefaultEntry() {
     ArticleEntry entry;
-    entry.set_entry_id(entry_id_);
-    ArticleEntryPage* page0 = entry.add_pages();
-    ArticleEntryPage* page1 = entry.add_pages();
-    page0->set_url(page_0_url_.spec());
-    page1->set_url(page_1_url_.spec());
+    entry.entry_id = entry_id_;
+    entry.pages.push_back(page_0_url_);
+    entry.pages.push_back(page_1_url_);
     return entry;
   }
 
@@ -219,10 +217,10 @@ TEST_F(DomDistillerTaskTrackerTest,
 DistilledArticleProto CreateDistilledArticleForEntry(
     const ArticleEntry& entry) {
   DistilledArticleProto article;
-  for (int i = 0; i < entry.pages_size(); ++i) {
+  for (const GURL& url : entry.pages) {
     DistilledPageProto* page = article.add_pages();
-    page->set_url(entry.pages(i).url());
-    page->set_html("<div>" + entry.pages(i).url() + "</div>");
+    page->set_url(url.spec());
+    page->set_html("<div>" + url.spec() + "</div>");
   }
   return article;
 }

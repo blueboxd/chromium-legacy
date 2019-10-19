@@ -82,8 +82,5 @@ public interface SafeBrowsingApiHandler {
      *
      * @return true if the uri is found in the corresponding allowlist. Otherwise, false.
      */
-    // TODO(xinghuilu@): remove default once downstream implementation is patched
-    default boolean startAllowlistLookup(String uri, int threatType) {
-        return false;
-    }
+    public boolean startAllowlistLookup(String uri, int threatType);
 }

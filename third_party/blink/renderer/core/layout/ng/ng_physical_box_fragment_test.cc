@@ -40,10 +40,10 @@ TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsInlineChlidren) {
 
   const NGPhysicalBoxFragment& has_floats =
       GetPhysicalBoxFragmentByElementId("hasfloats");
-  EXPECT_TRUE(has_floats.HasFloatingDescendants());
+  EXPECT_TRUE(has_floats.HasFloatingDescendantsForPaint());
   const NGPhysicalBoxFragment& no_floats =
       GetPhysicalBoxFragmentByElementId("nofloats");
-  EXPECT_FALSE(no_floats.HasFloatingDescendants());
+  EXPECT_FALSE(no_floats.HasFloatingDescendantsForPaint());
 }
 
 TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsBlockChlidren) {
@@ -59,14 +59,14 @@ TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsBlockChlidren) {
 
   const NGPhysicalBoxFragment& has_floats =
       GetPhysicalBoxFragmentByElementId("hasfloats");
-  EXPECT_TRUE(has_floats.HasFloatingDescendants());
+  EXPECT_TRUE(has_floats.HasFloatingDescendantsForPaint());
   const NGPhysicalBoxFragment& no_floats =
       GetPhysicalBoxFragmentByElementId("nofloats");
-  EXPECT_FALSE(no_floats.HasFloatingDescendants());
+  EXPECT_FALSE(no_floats.HasFloatingDescendantsForPaint());
 }
 
-// HasFloatingDescendants() should be set for each inline formatting context and
-// should not be propagated across inline formatting context.
+// HasFloatingDescendantsForPaint() should be set for each inline formatting
+// context and should not be propagated across inline formatting context.
 TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsInlineBlock) {
   SetBodyInnerHTML(R"HTML(
     <div id="nofloats">
@@ -79,10 +79,35 @@ TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsInlineBlock) {
 
   const NGPhysicalBoxFragment& has_floats =
       GetPhysicalBoxFragmentByElementId("hasfloats");
-  EXPECT_TRUE(has_floats.HasFloatingDescendants());
+  EXPECT_TRUE(has_floats.HasFloatingDescendantsForPaint());
   const NGPhysicalBoxFragment& no_floats =
       GetPhysicalBoxFragmentByElementId("nofloats");
-  EXPECT_FALSE(no_floats.HasFloatingDescendants());
+  EXPECT_FALSE(no_floats.HasFloatingDescendantsForPaint());
+}
+
+// HasFloatingDescendantsForPaint() should be set even if it crosses a block
+// formatting context.
+TEST_F(NGPhysicalBoxFragmentTest, FloatingDescendantsBlockFormattingContext) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="hasfloats">
+      <div style="display: flow-root">
+        <div style="float: left"></div>
+      </div>
+    </div>
+    <div id="hasfloats2" style="position: relative">
+      <div style="position: absolute">
+        <div style="float: left"></div>
+      </div>
+    </div>
+  )HTML");
+
+  const NGPhysicalBoxFragment& has_floats =
+      GetPhysicalBoxFragmentByElementId("hasfloats");
+  EXPECT_TRUE(has_floats.HasFloatingDescendantsForPaint());
+
+  const NGPhysicalBoxFragment& has_floats_2 =
+      GetPhysicalBoxFragmentByElementId("hasfloats2");
+  EXPECT_TRUE(has_floats_2.HasFloatingDescendantsForPaint());
 }
 
 // TODO(layout-dev): Design more straightforward way to ensure old layout

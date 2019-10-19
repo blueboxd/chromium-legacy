@@ -22,7 +22,6 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/process/process.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -75,7 +74,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/native_theme/native_theme_observer.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/child_process_importance.h"
@@ -153,8 +151,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                        public blink::mojom::ColorChooserFactory,
                                        public NotificationObserver,
                                        public NavigationControllerDelegate,
-                                       public NavigatorDelegate,
-                                       public ui::NativeThemeObserver {
+                                       public NavigatorDelegate {
  public:
   class FriendWrapper;
 
@@ -641,6 +638,15 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnThemeColorChanged(RenderFrameHostImpl* source,
                            const base::Optional<SkColor>& theme_color) override;
   bool IsFrameLowPriority(const RenderFrameHost* render_frame_host) override;
+  void RegisterProtocolHandler(RenderFrameHostImpl* source,
+                               const std::string& protocol,
+                               const GURL& url,
+                               const base::string16& title,
+                               bool user_gesture) override;
+  void UnregisterProtocolHandler(RenderFrameHostImpl* source,
+                                 const std::string& protocol,
+                                 const GURL& url,
+                                 bool user_gesture) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -855,7 +861,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* old_host,
       RenderFrameHost* new_host) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
-  NavigationEntry* GetLastCommittedNavigationEntryForRenderManager() override;
   InterstitialPageImpl* GetInterstitialForRenderManager() override;
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar() override;
@@ -1307,15 +1312,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderViewHostImpl* source,
       const blink::WebTextAutosizerPageInfo& page_info);
 
-  void OnRegisterProtocolHandler(RenderFrameHostImpl* source,
-                                 const std::string& protocol,
-                                 const GURL& url,
-                                 const base::string16& title,
-                                 bool user_gesture);
-  void OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
-                                   const std::string& protocol,
-                                   const GURL& url,
-                                   bool user_gesture);
   void OnDomOperationResponse(RenderFrameHostImpl* source,
                               const std::string& json_string);
   void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,
@@ -1522,9 +1518,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Called each time |fullscreen_frames_| is updated. Find the new
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
-
-  // ui::NativeThemeObserver:
-  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
   // Data for core operation ---------------------------------------------------
 
@@ -1908,15 +1901,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Stores information from the main frame's renderer that needs to be shared
   // with OOPIF renderers.
   blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
-
-  // Observe native theme for changes to dark mode, and preferred color scheme.
-  // Used to notify the renderer of preferred color scheme changes.
-  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
-      native_theme_observer_;
-
-  bool using_dark_colors_ = false;
-  ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
-      ui::NativeTheme::PreferredColorScheme::kNoPreference;
 
   // TODO(crbug.com/934637): Remove this field when pdf/any inner web contents
   // user gesture is properly propagated. This is a temporary fix for history

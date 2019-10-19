@@ -33,6 +33,8 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_browser_main_parts.h"
 #include "content/shell/browser/web_test/web_test_message_filter.h"
+#include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
+#include "content/shell/browser/web_test/web_test_tts_platform.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/test/mock_clipboard_host.h"
@@ -322,6 +324,15 @@ bool WebTestContentBrowserClient::CanCreateWindow(
 bool WebTestContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRunWebTests);
+}
+
+content::TtsControllerDelegate*
+WebTestContentBrowserClient::GetTtsControllerDelegate() {
+  return WebTestTtsControllerDelegate::GetInstance();
+}
+
+content::TtsPlatform* WebTestContentBrowserClient::GetTtsPlatform() {
+  return WebTestTtsPlatform::GetInstance();
 }
 
 void WebTestContentBrowserClient::ExposeInterfacesToFrame(

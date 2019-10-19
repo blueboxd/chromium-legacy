@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
 #include "chrome/android/chrome_jni_headers/ChromeFeatureList_jni.h"
+#include "chrome/browser/share/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -169,6 +170,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kServiceManagerForDownload,
     &kSettingsModernStatusBar,
     &kSharedClipboardUI,
+    &kSharingQrCodeAndroid,
     &kShoppingAssist,
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,

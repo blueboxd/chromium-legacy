@@ -188,7 +188,8 @@ GPUInfo::GPUInfo()
       system_visual(0),
       rgba_visual(0),
 #endif
-      oop_rasterization_supported(false) {
+      oop_rasterization_supported(false),
+      subpixel_font_rendering(true) {
 }
 
 GPUInfo::GPUInfo(const GPUInfo& other) = default;
@@ -264,6 +265,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 #endif
 
     bool oop_rasterization_supported;
+    bool subpixel_font_rendering;
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -333,6 +335,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("rgbaVisual", rgba_visual);
 #endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
+  enumerator->AddBool("subpixelFontRendering", subpixel_font_rendering);
   enumerator->EndAuxAttributes();
 }
 

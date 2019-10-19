@@ -64,7 +64,6 @@ def main(args):
   mbw = MetaBuildWrapper()
   return mbw.Main(args)
 
-
 class MetaBuildWrapper(object):
   def __init__(self):
     self.chromium_src_dir = CHROMIUM_SRC_DIR
@@ -213,6 +212,13 @@ class MetaBuildWrapper(object):
                       help='Lookup arguments from imported files, '
                            'implies --quiet')
     subp.set_defaults(func=self.CmdLookup)
+
+    subp = subps.add_parser('try',
+                            description='Try your change on a remote builder')
+    AddCommonOptions(subp)
+    subp.add_argument('target',
+                      help='ninja target to build and run')
+    subp.set_defaults(func=self.CmdTry)
 
     subp = subps.add_parser(
       'run', formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -376,6 +382,52 @@ class MetaBuildWrapper(object):
 
       self.PrintCmd(cmd, env)
     return 0
+
+  def CmdTry(self):
+    ninja_target = self.args.target
+    if ninja_target.startswith('//'):
+      self.Print("Expected a nijna target like base_unittests, got %s" % target)
+      return 1
+
+    json_path = self.PathJoin(self.chromium_src_dir, 'out.json')
+    try:
+      ret, out, err = self.Run(
+        ['git', 'cl', 'issue', '--json=out.json'], force_verbose=False)
+      if ret != 0:
+        self.Print(
+          "Unable to fetch current issue. Output and error:\n%s\n%s" % (
+            out, err
+        ))
+        return ret
+      with open(json_path) as f:
+        issue_data = json.load(f)
+    finally:
+      if self.Exists(json_path):
+        os.unlink(json_path)
+
+    if not issue_data['issue']:
+      self.Print("Missing issue data. Upload your CL to Gerrit and try again.")
+      return 1
+
+    def run_cmd(previous_res, cmd):
+      res, out, err = self.Run(cmd, force_verbose=False, stdin=previous_res)
+      if res != 0:
+        self.Print("Err while running", cmd)
+        self.Print("Output", out)
+        raise Exception(err)
+      return out
+
+    result = LedResult(None, run_cmd).then(
+      # TODO(martiniss): maybe don't always assume the bucket?
+      'led', 'get-builder', 'luci.chromium.try:%s' % self.args.builder).then(
+      'led', 'edit', '-r', 'chromium_trybot_experimental',
+        '-p', 'tests=["%s"]' % ninja_target).then(
+      'led', 'edit-cr-cl', issue_data['issue_url']).then(
+      'led', 'launch').result
+
+    swarming_data = json.loads(result)['swarming']
+    self.Print("Launched task at https://%s/task?id=%s" % (
+      swarming_data['host_name'], swarming_data['task_id']))
 
   def CmdRun(self):
     vals = self.GetConfig()
@@ -1658,14 +1710,16 @@ class MetaBuildWrapper(object):
     ret, _, _ = self.Run(ninja_cmd, buffer_output=False)
     return ret
 
-  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True):
+  def Run(self, cmd, env=None, force_verbose=True, buffer_output=True,
+          stdin=None):
     # This function largely exists so it can be overridden for testing.
     if self.args.dryrun or self.args.verbose or force_verbose:
       self.PrintCmd(cmd, env)
     if self.args.dryrun:
       return 0, '', ''
 
-    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output)
+    ret, out, err = self.Call(cmd, env=env, buffer_output=buffer_output,
+                              stdin=stdin)
     if self.args.verbose or force_verbose:
       if ret:
         self.Print('  -> returned %d' % ret)
@@ -1676,12 +1730,12 @@ class MetaBuildWrapper(object):
         self.Print(err, end='', file=sys.stderr)
     return ret, out, err
 
-  def Call(self, cmd, env=None, buffer_output=True):
+  def Call(self, cmd, env=None, buffer_output=True, stdin=None):
     if buffer_output:
       p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           env=env)
-      out, err = p.communicate()
+                           env=env, stdin=subprocess.PIPE)
+      out, err = p.communicate(input=stdin)
     else:
       p = subprocess.Popen(cmd, shell=False, cwd=self.chromium_src_dir,
                            env=env)
@@ -1759,6 +1813,28 @@ class MetaBuildWrapper(object):
       self.Print('\nWriting """\\\n%s""" to %s.\n' % (contents, path))
     with open(path, 'w') as fp:
       return fp.write(contents)
+
+
+class LedResult(object):
+  """Holds the result of a led operation. Can be chained using |then|."""
+
+  def __init__(self, result, run_cmd):
+    self._result = result
+    self._run_cmd = run_cmd
+
+  @property
+  def result(self):
+    """The mutable result data of the previous led call as decoded JSON."""
+    return self._result
+
+  def then(self, *cmd):
+    """Invoke led, passing it the current `result` data as input.
+
+    Returns another LedResult object with the output of the command.
+    """
+    return self.__class__(
+        self._run_cmd(self._result, cmd), self._run_cmd)
+
 
 
 class MBErr(Exception):

@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.touch_to_fill;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Px;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -20,6 +23,22 @@ import java.util.List;
  * and acts as a safe surface to fill credentials from.
  */
 public interface TouchToFillComponent {
+    /**
+     * The different reasons that the sheet's state can change.
+     *
+     * These values are persisted to logs. Entries should not be renumbered and numeric values
+     * should never be reused. Needs to stay in sync with TouchToFill.UserAction in enums.xml.
+     */
+    @IntDef({UserAction.SELECT_CREDENTIAL, UserAction.DISMISS, UserAction.SELECT_MANAGE_PASSWORDS,
+            UserAction.MAX_VALUE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface UserAction {
+        int SELECT_CREDENTIAL = 0;
+        int DISMISS = 1;
+        int SELECT_MANAGE_PASSWORDS = 2;
+        int MAX_VALUE = SELECT_MANAGE_PASSWORDS;
+    }
+
     /**
      * This delegate is called when the TouchToFill component is interacted with (e.g. dismissed or
      * a suggestion was selected).

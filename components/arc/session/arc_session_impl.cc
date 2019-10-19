@@ -316,7 +316,7 @@ ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate,
                                chromeos::SchedulerConfigurationManagerBase*
                                    scheduler_configuration_manager)
     : delegate_(std::move(delegate)),
-      client_(ArcClientAdapter::Create()),
+      client_(ArcClientAdapter::Create(delegate_->GetChannel())),
       scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(client_);
   client_->AddObserver(this);

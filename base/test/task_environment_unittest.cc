@@ -1199,5 +1199,23 @@ TEST_F(TaskEnvironmentTest, CurrentThread) {
   run_loop.Run();
 }
 
+TEST_F(TaskEnvironmentTest, GetContinuationTaskRunner) {
+  SingleThreadTaskEnvironment task_environment;
+  RunLoop run_loop;
+  auto task_runner = CreateSingleThreadTaskRunner({CurrentThread()});
+
+  task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                          EXPECT_EQ(task_runner, GetContinuationTaskRunner());
+                          run_loop.Quit();
+                        }));
+
+  run_loop.Run();
+}
+
+TEST_F(TaskEnvironmentTest, GetContinuationTaskRunnerWithNoTaskRunning) {
+  SingleThreadTaskEnvironment task_environment;
+  EXPECT_DCHECK_DEATH(GetContinuationTaskRunner());
+}
+
 }  // namespace test
 }  // namespace base

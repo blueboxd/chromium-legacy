@@ -38,7 +38,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   void PostSubBuffer(const gfx::Rect& rect,
                      BufferPresentedCallback feedback,
                      std::vector<ui::LatencyInfo> latency_info) override;
-  void Reshape(const gfx::Size& size,
+  bool Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha,

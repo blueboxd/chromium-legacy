@@ -140,6 +140,10 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   [metricsRecorder recordBadgeTappedInState:state];
 }
 
+- (void)saveCardBadgeButtonTapped:(id)sender {
+  // TODO(crbug.com/1014652): Implement.
+}
+
 - (void)overflowBadgeButtonTapped:(id)sender {
   NSMutableArray<id<BadgeItem>>* popupMenuBadges =
       [[NSMutableArray alloc] init];

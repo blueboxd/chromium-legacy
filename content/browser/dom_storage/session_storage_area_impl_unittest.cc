@@ -18,7 +18,6 @@
 #include "base/threading/thread.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
@@ -69,23 +68,25 @@ class SessionStorageAreaImplTest : public testing::Test {
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
 
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations =
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks =
         metadata_.SetupNewDatabase();
     auto map_id = metadata_.RegisterNewMap(
         metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
-        &save_operations);
+        &save_tasks);
     DCHECK(map_id->KeyPrefix() == StdStringToUint8Vector("map-0-"));
-    leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+    leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                             base::DoNothing());
   }
   ~SessionStorageAreaImplTest() override = default;
 
   scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
       SessionStorageMetadata::NamespaceEntry namespace_entry,
       const url::Origin& origin) {
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
     auto map_data =
-        metadata_.RegisterNewMap(namespace_entry, origin, &save_operations);
-    leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+        metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
+    leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                             base::DoNothing());
     return map_data;
   }
 
@@ -211,12 +212,12 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
-      &save_operations);
-  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
+  leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                           base::DoNothing());
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
@@ -320,12 +321,12 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
-      &save_operations);
-  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
+  leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                           base::DoNothing());
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 
@@ -411,12 +412,12 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBindingOnShared) {
       GetRegisterNewAreaMapCallback());
 
   // Perform a shallow clone.
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
   metadata_.RegisterShallowClonedNamespace(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
-      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
-      &save_operations);
-  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_), &save_tasks);
+  leveldb_database_->RunBatchDatabaseTasks(std::move(save_tasks),
+                                           base::DoNothing());
   auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
 

@@ -95,11 +95,12 @@ void BackForwardCacheMetrics::MainFrameDidStartNavigationToDocument() {
 }
 
 void BackForwardCacheMetrics::DidCommitNavigation(
-    NavigationRequest* navigation) {
+    NavigationRequest* navigation,
+    bool back_forward_cache_allowed) {
   bool is_history_navigation =
       navigation->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
   if (navigation->IsInMainFrame() && !navigation->IsSameDocument()) {
-    if (is_history_navigation)
+    if (is_history_navigation && back_forward_cache_allowed)
       RecordMetricsForHistoryNavigationCommit(navigation);
     not_restored_reasons_.reset();
   }
@@ -197,10 +198,6 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
         "BackForwardCache.EvictedAfterDocumentRestoredReason",
         BackForwardCacheMetrics::EvictedAfterDocumentRestoredReason::kRestored);
   }
-
-  // TODO(hajimehoshi): By |BackForwardCache::IsAllowed(navigation->GetURL())|,
-  // check whether the page matches the experiment condition, and do not record
-  // anything in this case.
 
   UMA_HISTOGRAM_ENUMERATION("BackForwardCache.HistoryNavigationOutcome",
                             outcome);

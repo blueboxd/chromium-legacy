@@ -6,6 +6,7 @@
 
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,12 +27,10 @@ namespace ash {
 
 namespace {
 
-constexpr gfx::Insets kHeaderViewInsets = gfx::Insets(0, 0, 15, 0);
-constexpr int kIconViewSize = 18;
-constexpr int kIconSize = 12;
+constexpr int kIconViewSize = 20;
+constexpr int kIconSize = 14;
 constexpr int kHeaderTextFontSize = 12;
-constexpr gfx::Insets kIconPadding = gfx::Insets(1, 1, 1, 1);
-constexpr gfx::Insets kAppNamePadding = gfx::Insets(0, 10, 0, 0);
+constexpr gfx::Insets kAppNamePadding = gfx::Insets(0, 8, 0, 0);
 constexpr gfx::Size kAppNamePreferredSize = gfx::Size(200, 10);
 constexpr gfx::Size kCloseButtonSize = gfx::Size(20, 20);
 constexpr int kCloseButtonIconSize = 18;
@@ -54,13 +53,11 @@ MediaControlsHeaderView::MediaControlsHeaderView(
           views::MaximumFlexSizeRule::kUnbounded)
           .WithOrder(2);
 
-  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetInteriorMargin(kHeaderViewInsets);
+  SetLayoutManager(std::make_unique<views::FlexLayout>());
 
   auto app_icon_view = std::make_unique<views::ImageView>();
   app_icon_view->SetPreferredSize(gfx::Size(kIconViewSize, kIconViewSize));
   app_icon_view->SetImageSize(gfx::Size(kIconSize, kIconSize));
-  app_icon_view->SetBorder(views::CreateEmptyBorder(kIconPadding));
   app_icon_view->SetBackground(
       views::CreateRoundedRectBackground(SK_ColorWHITE, kIconViewSize / 2));
 
@@ -76,7 +73,9 @@ MediaControlsHeaderView::MediaControlsHeaderView(
   auto app_name_view = std::make_unique<views::Label>();
   app_name_view->SetFontList(font_list);
   app_name_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  app_name_view->SetEnabledColor(SK_ColorWHITE);
+  app_name_view->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::AshColorMode::kDark));
   app_name_view->SetAutoColorReadabilityEnabled(false);
   app_name_view->SetBorder(views::CreateEmptyBorder(kAppNamePadding));
   app_name_view->SetPreferredSize(kAppNamePreferredSize);

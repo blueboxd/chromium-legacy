@@ -39,6 +39,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   JPEGImageDecoder(AlphaOption,
                    const ColorBehavior&,
                    size_t max_decoded_bytes,
+                   const OverrideAllowDecodeToYuv allow_decode_to_yuv,
                    size_t offset = 0);
   ~JPEGImageDecoder() override;
 
@@ -49,7 +50,6 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   bool SetSize(unsigned width, unsigned height) override;
   IntSize DecodedYUVSize(int component) const override;
   size_t DecodedYUVWidthBytes(int component) const override;
-  bool CanDecodeToYUV() override;
   void DecodeToYUV() override;
   SkYUVColorSpace GetYUVColorSpace() const override;
   Vector<SkISize> GetSupportedDecodeSizes() const override;

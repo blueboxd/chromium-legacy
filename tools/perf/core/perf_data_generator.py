@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 # pylint: disable=too-many-lines
+# pylint: disable=line-too-long
 
 """Generates chromium.perf{,.fyi}.json from a set of condensed configs.
 
@@ -686,9 +687,10 @@ BUILDERS = {
     'platform': 'win',
     'target_bits': 64,
     'dimension': {
-      'pool': 'chrome.tests.perf',
-      'os': 'Windows-2008ServerR2-SP1',
-      'gpu': '10de:1cb3'
+        'gpu': '10de:1cb3-23.21.13.8792',
+        'os': 'Windows-2008ServerR2-SP1',
+        'pool': 'chrome.tests.perf',
+        'synthetic_product_name': 'PowerEdge R220 [01] (Dell Inc.)'
     },
   },
   'mac-10_12_laptop_low_end-perf': {
@@ -815,13 +817,15 @@ BUILDERS = {
     ],
     'platform': 'mac',
     'dimension': {
-      'pool': 'chrome.tests.perf',
-      'os': 'Mac-10.13',
-      'gpu': '1002:6821'
+        'gpu': '1002:6821-4.0.20-3.2.8',
+        'os': 'Mac-10.13.3',
+        'pool': 'chrome.tests.perf',
+        'synthetic_product_name': 'MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_1_475936.0',
     },
   },
 }
 
+# pylint: enable=line-too-long
 
 def update_all_tests(builders_dict, file_path):
   tests = {}

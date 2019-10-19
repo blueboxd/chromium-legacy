@@ -57,7 +57,6 @@
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -372,17 +371,6 @@ void ChromeBrowserStateIOData::Init(
 void ChromeBrowserStateIOData::ApplyProfileParamsToContext(
     net::URLRequestContext* context) const {
   context->set_http_user_agent_settings(chrome_http_user_agent_settings_.get());
-}
-
-std::unique_ptr<net::URLRequestJobFactory>
-ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
-    std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
-    net::NetworkDelegate* network_delegate) const {
-  bool set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
-  DCHECK(set_protocol);
-
-  return job_factory;
 }
 
 void ChromeBrowserStateIOData::ShutdownOnUIThread(

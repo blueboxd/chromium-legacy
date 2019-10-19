@@ -109,10 +109,6 @@ void ViewPainterTest::RunFixedBackgroundTest(
 }
 
 TEST_P(ViewPainterTest, DocumentFixedBackgroundLowDPI) {
-  // This test needs the |FastMobileScrolling| feature to be disabled
-  // although it is stable on Android.
-  ScopedFastMobileScrollingForTest fast_mobile_scrolling(false);
-
   RunFixedBackgroundTest(false);
 }
 

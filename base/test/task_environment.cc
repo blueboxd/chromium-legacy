@@ -396,7 +396,8 @@ TaskEnvironment::TaskEnvironment(
             .SetTimeDomain(mock_time_domain_.get()));
     task_runner_ = task_queue_->task_runner();
     sequence_manager_->SetDefaultTaskRunner(task_runner_);
-    simple_task_executor_ = std::make_unique<SimpleTaskExecutor>(task_runner_);
+    simple_task_executor_ = std::make_unique<SimpleTaskExecutor>(
+        sequence_manager_.get(), task_runner_);
     CHECK(base::ThreadTaskRunnerHandle::IsSet())
         << "ThreadTaskRunnerHandle should've been set now.";
     CompleteInitialization();

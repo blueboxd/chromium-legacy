@@ -44,6 +44,7 @@ void WebGPUTest::SetUp() {
   gpu_preferences.enable_webgpu = true;
 #if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
   gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
+  gpu_preferences.gr_context_type = gpu::GrContextType::kVulkan;
 #endif
   gpu_service_holder_ =
       std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);

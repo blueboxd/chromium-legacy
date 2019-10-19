@@ -36,11 +36,9 @@ void TouchDevicesController::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kTapDraggingEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
-          PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kTouchpadEnabled, PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(prefs::kTouchscreenEnabled,
-                                PrefRegistry::PUBLIC);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterBooleanPref(prefs::kTouchpadEnabled, true);
+  registry->RegisterBooleanPref(prefs::kTouchscreenEnabled, true);
 }
 
 TouchDevicesController::TouchDevicesController() {

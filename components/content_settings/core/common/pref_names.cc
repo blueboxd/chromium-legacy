@@ -33,6 +33,8 @@ const char kManagedDefaultGeolocationSetting[] =
     "profile.managed_default_content_settings.geolocation";
 const char kManagedDefaultImagesSetting[] =
     "profile.managed_default_content_settings.images";
+const char kManagedDefaultInsecureContentSetting[] =
+    "profile.managed_default_content_settings.insecure_content";
 const char kManagedDefaultJavaScriptSetting[] =
     "profile.managed_default_content_settings.javascript";
 const char kManagedDefaultNotificationsSetting[] =
@@ -64,6 +66,10 @@ const char kManagedImagesAllowedForUrls[] =
     "profile.managed_images_allowed_for_urls";
 const char kManagedImagesBlockedForUrls[] =
     "profile.managed_images_blocked_for_urls";
+const char kManagedInsecureContentAllowedForUrls[] =
+    "profile.managed_insecure_content_allowed_for_urls";
+const char kManagedInsecureContentBlockedForUrls[] =
+    "profile.managed_insecure_content_blocked_for_urls";
 const char kManagedJavaScriptAllowedForUrls[] =
     "profile.managed_javascript_allowed_for_urls";
 const char kManagedJavaScriptBlockedForUrls[] =

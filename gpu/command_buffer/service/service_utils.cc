@@ -173,6 +173,34 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   }
   gpu_preferences.disable_vulkan_surface =
       command_line->HasSwitch(switches::kDisableVulkanSurface);
+  if (command_line->HasSwitch(switches::kGrContextType)) {
+    auto value = command_line->GetSwitchValueASCII(switches::kGrContextType);
+    if (value == switches::kGrContextTypeGL) {
+      gpu_preferences.gr_context_type = GrContextType::kGL;
+    } else if (value == switches::kGrContextTypeVulkan) {
+      DCHECK(gpu_preferences.use_vulkan != VulkanImplementationName::kNone)
+          << "GrContextType is Vulkan, but Vulkan is not enabled.";
+      gpu_preferences.gr_context_type = GrContextType::kVulkan;
+    } else if (value == switches::kGrContextTypeMetal) {
+#if defined(OS_MACOSX)
+      DCHECK(base::FeatureList::IsEnabled(features::kMetal))
+          << "GrContextType is Metal, but Metal is not enabled.";
+      gpu_preferences.gr_context_type = GrContextType::kMetal;
+#endif
+    } else {
+      NOTREACHED() << "Invalid GrContextType.";
+      gpu_preferences.gr_context_type = GrContextType::kGL;
+    }
+  } else {
+#if defined(OS_MACOSX)
+    gpu_preferences.gr_context_type =
+        base::FeatureList::IsEnabled(features::kMetal) ?
+            GrContextType::kMetal :
+            GrContextType::kGL;
+#else
+    gpu_preferences.gr_context_type = GrContextType::kGL;
+#endif
+  }
   return gpu_preferences;
 }
 

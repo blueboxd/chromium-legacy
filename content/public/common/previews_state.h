@@ -45,7 +45,10 @@ enum PreviewsTypes {
                                      // getting a lazy load placeholder.
   DEFER_ALL_SCRIPT_ON = 1 << 12,  // Request that script execution be deferred
                                   // until parsing completes.
-  PREVIEWS_STATE_LAST = DEFER_ALL_SCRIPT_ON
+  SUBRESOURCE_REDIRECT_ON =
+      1 << 13,  // Allow the subresources in the page to be redirected to
+                // serve better optimized resources. Set on subresources.
+  PREVIEWS_STATE_LAST = SUBRESOURCE_REDIRECT_ON
 };
 
 // Combination of all previews that are guaranteed not to provide partial

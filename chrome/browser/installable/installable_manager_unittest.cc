@@ -219,7 +219,7 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresMinimalSize) {
 
   blink::Manifest::ImageResource maskable_icon;
   maskable_icon.type = base::ASCIIToUTF16("image/png");
-  maskable_icon.sizes.push_back(gfx::Size(107, 107));
+  maskable_icon.sizes.push_back(gfx::Size(82, 82));
   maskable_icon.purpose.push_back(IconPurpose::MASKABLE);
   manifest.icons.push_back(maskable_icon);
   EXPECT_FALSE(IsManifestValid(manifest, true, true));
@@ -227,14 +227,14 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresMinimalSize) {
 
   // When preferring maskable icons, the maskable icon is smaller than required.
   manifest.icons[0].sizes[0] = gfx::Size(144, 144);
-  manifest.icons[1].sizes[0] = gfx::Size(107, 107);
+  manifest.icons[1].sizes[0] = gfx::Size(82, 82);
   EXPECT_TRUE(IsManifestValid(manifest, true, true));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 
   // When preferring maskable icons, the maskable icon satisfies the size
   // requirement though the non maskable one doesn't
   manifest.icons[0].sizes[0] = gfx::Size(1, 1);
-  manifest.icons[1].sizes[0] = gfx::Size(108, 108);
+  manifest.icons[1].sizes[0] = gfx::Size(83, 83);
   EXPECT_TRUE(IsManifestValid(manifest, true, true));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 }

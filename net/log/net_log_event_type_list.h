@@ -2095,6 +2095,74 @@ EVENT_TYPE(QUIC_SESSION_MAX_STREAMS_FRAME_SENT)
 //  }
 EVENT_TYPE(QUIC_SESSION_MAX_STREAMS_FRAME_RECEIVED)
 
+// Session sent a PADDING frame.
+//  {
+//    "num_padding_bytes": <The number of padding bytes>
+//  }
+EVENT_TYPE(QUIC_SESSION_PADDING_FRAME_SENT)
+
+// Session received a PADDING frame.
+//  {
+//    "num_padding_bytes": <The number of padding bytes>
+//  }
+EVENT_TYPE(QUIC_SESSION_PADDING_FRAME_RECEIVED)
+
+// Session sent a NEW_CONNECITON_ID frame.
+//  {
+//    "connection_id": <The new connection id>
+//    "sequencer_number": <Connection id sequence number that specifies the
+//    order that connection ids must be used in.>
+//    "retire_prior_to": <retire prior to>
+//  }
+EVENT_TYPE(QUIC_SESSION_NEW_CONNECTION_ID_FRAME_SENT)
+
+// Session received a NEW_CONNECITON_ID frame.
+//  {
+//    "connection_id": <The new connection id>
+//    "sequence_number": <Connection id sequence number that specifies the
+//    order that connection ids must be used in.>
+//    "retire_prior_to": <retire prior to>
+//  }
+EVENT_TYPE(QUIC_SESSION_NEW_CONNECTION_ID_FRAME_RECEIVED)
+
+// Session sent a NEW_TOKEN frame.
+//  {
+//    "token": <String representation of the token>
+//  }
+EVENT_TYPE(QUIC_SESSION_NEW_TOKEN_FRAME_SENT)
+
+// Session received a NEW_TOKEN frame.
+//  {
+//    "token": <String representation of the token>
+//  }
+EVENT_TYPE(QUIC_SESSION_NEW_TOKEN_FRAME_RECEIVED)
+
+// Session sent a RETIRE_CONNECTION_ID frame.
+//  {
+//    "sequence_number": <Connection id sequence number that specifies the
+//    order that connection ids must be used in.>
+//  }
+EVENT_TYPE(QUIC_SESSION_RETIRE_CONNECTION_ID_FRAME_SENT)
+
+// Session received a RETIRE_CONNECTION_ID frame.
+//  {
+//    "sequence_number": <Connection id sequence number that specifies the
+//    order that connection ids must be used in.>
+//  }
+EVENT_TYPE(QUIC_SESSION_RETIRE_CONNECTION_ID_FRAME_RECEIVED)
+
+// Session sent a MESSAGE frame.
+//  {
+//    "message_length": <the length of the message>
+//  }
+EVENT_TYPE(QUIC_SESSION_MESSAGE_FRAME_SENT)
+
+// Session received a MESSAGE frame.
+//  {
+//    "message_length": <the length of the message>
+//  }
+EVENT_TYPE(QUIC_SESSION_MESSAGE_FRAME_RECEIVED)
+
 // ------------------------------------------------------------------------
 // QuicHttpStream
 // ------------------------------------------------------------------------

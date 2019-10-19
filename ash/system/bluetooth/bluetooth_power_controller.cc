@@ -70,8 +70,7 @@ void BluetoothPowerController::RegisterLocalStatePrefs(
 // static
 void BluetoothPowerController::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kUserBluetoothAdapterEnabled, false,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kUserBluetoothAdapterEnabled, false);
 }
 
 void BluetoothPowerController::StartWatchingActiveUserPrefsChanges() {

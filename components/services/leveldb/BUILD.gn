@@ -12,7 +12,6 @@ static_library("lib") {
 
   public_deps = [
     "//components/services/leveldb/public/cpp",
-    "//components/services/leveldb/public/mojom",
     "//components/services/storage",
   ]
 

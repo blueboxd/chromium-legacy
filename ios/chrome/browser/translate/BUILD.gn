@@ -2,6 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("public") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "translate_infobar_delegate_observer_bridge.h",
+    "translate_infobar_delegate_observer_bridge.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/translate/core/browser",
+  ]
+}
+
 source_set("translate") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -15,8 +27,6 @@ source_set("translate") {
     "translate_accept_languages_factory.h",
     "translate_infobar_controller.h",
     "translate_infobar_controller.mm",
-    "translate_infobar_delegate_observer_bridge.h",
-    "translate_infobar_delegate_observer_bridge.mm",
     "translate_infobar_tags.h",
     "translate_option_selection_delegate.h",
     "translate_option_selection_handler.h",
@@ -28,6 +38,7 @@ source_set("translate") {
     "translate_service_ios.mm",
   ]
   deps = [
+    ":public",
     "//base",
     "//components/infobars/core",
     "//components/keyed_service/core",
@@ -69,6 +80,7 @@ source_set("unit_tests") {
     "translate_service_ios_unittest.cc",
   ]
   deps = [
+    ":public",
     ":translate",
     "//base",
     "//base/test:test_support",
@@ -108,7 +120,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/translate",
+    "//ios/chrome/browser/ui/translate:legacy_translate",
     "//ios/chrome/browser/ui/translate:translate_ui",
     "//ios/chrome/browser/ui/util:util",
     "//ios/chrome/test/app:test_support",

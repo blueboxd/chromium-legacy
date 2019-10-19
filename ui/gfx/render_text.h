@@ -292,9 +292,6 @@ class GFX_EXPORT RenderText {
   WordWrapBehavior word_wrap_behavior() const { return word_wrap_behavior_; }
   void SetWordWrapBehavior(WordWrapBehavior behavior);
 
-  // Set whether newline characters should be replaced with newline symbols.
-  void SetReplaceNewlineCharsWithSymbols(bool replace);
-
   // Returns true if this instance supports multiline rendering.
   virtual bool MultilineSupported() const = 0;
 
@@ -930,9 +927,6 @@ class GFX_EXPORT RenderText {
   // The wrap behavior when the text is broken into lines. Do nothing unless
   // |multiline_| is set. The default value is IGNORE_LONG_WORDS.
   WordWrapBehavior word_wrap_behavior_;
-
-  // Whether newline characters should be replaced with newline symbols.
-  bool replace_newline_chars_with_symbols_;
 
   // Set to true to suppress subpixel rendering due to non-font reasons (eg.
   // if the background is transparent). The default value is false.

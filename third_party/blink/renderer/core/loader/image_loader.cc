@@ -25,6 +25,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -64,7 +65,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -548,6 +549,23 @@ void ImageLoader::DoUpdateFromElement(
     if (!was_fully_deferred_ &&
         lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
       params.SetLazyImageAutoReload();
+    }
+
+    // Enable subresource redirect for <img> elements created by parser when
+    // data saver is on. Images created from javascript, fetched via XHR/Fetch
+    // API should not be subresource redirected due to the additional CORB/CORS
+    // handling needed for them.
+    // TODO(rajendrant): Disable subresource redirect when CORS,
+    // content-security-policy does not allow cross-origin accesses.
+    if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
+      if (base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
+          html_image->ElementCreatedByParser() &&
+          GetNetworkStateNotifier().SaveDataEnabled()) {
+        auto& resource_request = params.MutableResourceRequest();
+        resource_request.SetPreviewsState(
+            resource_request.GetPreviewsState() |
+            WebURLRequest::kSubresourceRedirectOn);
+      }
     }
 
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred &&

@@ -79,7 +79,6 @@ class InMemoryContentStore : public DistilledContentStore {
 
   typedef base::MRUCache<std::string,
                          std::unique_ptr<DistilledArticleProto, CacheDeletor>>
-
       ContentMap;
   typedef std::unordered_map<std::string, std::string> UrlMap;
 

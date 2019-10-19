@@ -651,10 +651,6 @@
       status: "experimental",
     },
     {
-      name: "FastMobileScrolling",
-      status: {"Android": "stable"},
-    },
-    {
       name: "FeaturePolicyForClientHints",
       status: "experimental",
     },
@@ -1086,6 +1082,9 @@
       name: "NetInfoDownlinkMax",
       // Only Android, ChromeOS support NetInfo downlinkMax, type and ontypechange now
       status: {"Android": "stable", "ChromeOS": "stable"},
+    },
+    {
+      name: "NeverSlowMode",
     },
     // Not a web exposed feature, enabled from the command line.
     {

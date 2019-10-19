@@ -192,6 +192,29 @@ void RestoreBreakList(RenderText* render_text, BreakList<T>* break_list) {
   }
 }
 
+// Replace the unicode control characters ISO 6429 (block C0) by their
+// corresponsing visual symbols. Control chracters can't be displayed but
+// their visual symbols can.
+void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
+  // Control Pictures block (see: https://unicode.org/charts/PDF/U2400.pdf).
+  constexpr base::char16 kSymbolsCodepoint = 0x2400;
+  for (size_t offset = 0; offset < text->size(); ++offset) {
+    base::char16 control_codepoint = (*text)[offset];
+    if (control_codepoint >= 0 && control_codepoint <= 0x1F) {
+      // The newline character should be kept as-is when rendertext is
+      // multiline.
+      if (control_codepoint == '\n' && multiline)
+        continue;
+      // Replace codepoints with their visual symbols, which are at the same
+      // offset from kSymbolsCodepoint.
+      (*text)[offset] = kSymbolsCodepoint + control_codepoint;
+    } else if (control_codepoint == 0x7F) {
+      // Replace the 'del' codepoint by its symbol (u2421).
+      (*text)[offset] = kSymbolsCodepoint + 0x21;
+    }
+  }
+}
+
 }  // namespace
 
 namespace internal {
@@ -505,14 +528,6 @@ void RenderText::SetWordWrapBehavior(WordWrapBehavior behavior) {
     lines_.clear();
     OnTextAttributeChanged();
   }
-}
-
-void RenderText::SetReplaceNewlineCharsWithSymbols(bool replace) {
-  if (replace_newline_chars_with_symbols_ == replace)
-    return;
-  replace_newline_chars_with_symbols_ = replace;
-  cached_bounds_and_offset_valid_ = false;
-  OnTextAttributeChanged();
 }
 
 void RenderText::SetMinLineHeight(int line_height) {
@@ -1137,7 +1152,6 @@ RenderText::RenderText()
       multiline_(false),
       max_lines_(0),
       word_wrap_behavior_(IGNORE_LONG_WORDS),
-      replace_newline_chars_with_symbols_(true),
       subpixel_rendering_suppressed_(false),
       clip_to_display_rect_(true),
       baseline_(kInvalidBaseline),
@@ -1661,10 +1675,10 @@ void RenderText::OnTextAttributeChanged() {
       layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
     }
   }
-  static const base::char16 kNewline[] = { '\n', 0 };
-  static const base::char16 kNewlineSymbol[] = { 0x2424, 0 };
-  if (!multiline_ && replace_newline_chars_with_symbols_)
-    base::ReplaceChars(layout_text_, kNewline, kNewlineSymbol, &layout_text_);
+
+  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
+  // and 0x7F.
+  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
 
   OnLayoutTextAttributeChanged(true);
 }

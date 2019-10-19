@@ -689,10 +689,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return should_check_backface_visibility_;
   }
 
-#if DCHECK_IS_ON()
   // For debugging, containing information about the associated DOM, etc.
   std::string DebugName() const;
-#endif
 
   std::string ToString() const;
 

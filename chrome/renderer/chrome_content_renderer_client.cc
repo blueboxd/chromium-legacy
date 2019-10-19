@@ -39,7 +39,6 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/thread_profiler.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
@@ -170,9 +169,9 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/renderer_extension_registry.h"
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/native_theme/native_theme.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -881,12 +880,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (GURL(frame->GetDocument().Url()).host_piece() ==
             extension_misc::kPdfExtensionId) {
           if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-            auto* render_view = render_frame->GetRenderView();
-            auto* web_view = render_view ? render_view->GetWebView() : nullptr;
-            if (web_view) {
-              web_view->GetSettings()->SetPreferredColorScheme(
-                  blink::PreferredColorScheme::kLight);
-            }
+            ui::NativeTheme::GetInstanceForWeb()->set_preferred_color_scheme(
+                ui::NativeTheme::PreferredColorScheme::kLight);
           }
         } else if (info.name ==
                    ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
@@ -1576,14 +1571,5 @@ void ChromeContentRendererClient::DidSetUserAgent(
 }
 
 bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
-  // Chrome Web UI pages are in the process of being migrated to use the HTML
-  // Imports Polyfill so that they will not require native imports. Return true
-  // for only pages that have not been updated yet. See
-  // https://crbug.com/937747.
-  bool can_use_polyfill = url.host() == chrome::kChromeUIExtensionsHost ||
-                          url.host() == chrome::kChromeUIDownloadsHost;
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  can_use_polyfill |= url.host() == chrome::kChromeUIPrintHost;
-#endif
-  return url.SchemeIs(content::kChromeUIScheme) && !can_use_polyfill;
+  return url.SchemeIs(content::kChromeUIScheme);
 }

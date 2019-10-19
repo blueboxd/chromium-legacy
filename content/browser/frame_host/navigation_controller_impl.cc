@@ -1141,7 +1141,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
         std::move(back_forward_cache_metrics));
   }
   active_entry->back_forward_cache_metrics()->DidCommitNavigation(
-      navigation_request);
+      navigation_request,
+      back_forward_cache_.IsAllowed(navigation_request->GetURL()));
 
   // Grab the corresponding FrameNavigationEntry for a few updates, but only if
   // the SiteInstance matches (to avoid updating the wrong entry by mistake).

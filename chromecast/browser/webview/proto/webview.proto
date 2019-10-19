@@ -67,6 +67,7 @@ message MouseEvent {
 message InputEvent {
   int32 event_type = 1;
   int32 flags = 2;
+  // Event timestamps are in monotonically increasing microseconds.
   int64 timestamp = 3;
   KeyInput key = 4;
   TouchInput touch = 5;

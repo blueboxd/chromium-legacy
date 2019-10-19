@@ -37,7 +37,7 @@ class ScreenRotationTest
     ash::ShellTestApi().SetTabletModeEnabledForTest(true);
     auto* pref = browser()->profile()->GetPrefs();
     pref->SetBoolean(
-        ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, true);
+        ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2, true);
 
     int additional_browsers = std::get<0>(GetParam()) - 1;
     ntp_page_ = std::get<1>(GetParam());

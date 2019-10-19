@@ -172,7 +172,8 @@ void HorizontalPageContainer::OnTabletModeChanged(bool started) {
   pagination_controller_->set_is_tablet_mode(started);
 }
 
-void HorizontalPageContainer::TotalPagesChanged() {}
+void HorizontalPageContainer::TotalPagesChanged(int previous_page_count,
+                                                int new_page_count) {}
 
 void HorizontalPageContainer::SelectedPageChanged(int old_selected,
                                                   int new_selected) {

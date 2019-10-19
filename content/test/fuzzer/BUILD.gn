@@ -230,12 +230,17 @@ if (is_win) {
       "//content/common/content_export.h",
     ]
 
+    # Don't try to link the code that calls GetContentClient(), because
+    # then we'd need to link in most of //content.
+    defines = [ "NO_CONTENT_CLIENT" ]
+
     # TODO(https://crbug.com/927728): Refactor target to not require this.
     check_includes = false
 
     deps = [
       "//base",
       "//base/test:test_support",
+      "//third_party/webrtc/rtc_base:rtc_base_approved",
       "//ui/base",
       "//url:url",
     ]

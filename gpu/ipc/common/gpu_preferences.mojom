@@ -19,6 +19,14 @@ enum VulkanImplementationName {
   kLast = kSwiftshader,
 };
 
+// Corresponds to gpu::GrContextType.
+enum GrContextType {
+  kGL = 0,
+  kVulkan = 1,
+  kMetal = 2,
+  kLast = kMetal,
+};
+
 // gpu::GpuPreferences
 struct GpuPreferences {
   bool disable_accelerated_video_decode;
@@ -65,6 +73,7 @@ struct GpuPreferences {
   bool disable_oop_rasterization;
   bool enable_oop_rasterization_ddl;
   bool watchdog_starts_backgrounded;
+  GrContextType gr_context_type;
   VulkanImplementationName use_vulkan;
   bool enforce_vulkan_protected_memory;
   bool disable_vulkan_surface;

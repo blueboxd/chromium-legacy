@@ -1375,9 +1375,6 @@ void AutofillManager::OnSuggestionsReturned(
     int query_id,
     bool autoselect_first_suggestion,
     const std::vector<Suggestion>& suggestions) {
-  external_delegate_->OnAutofillAvailabilityEvent(
-      !suggestions.empty() ? mojom::AutofillState::kAutocompleteAvailable
-                           : mojom::AutofillState::kNoSuggestions);
   external_delegate_->OnSuggestionsReturned(query_id, suggestions,
                                             autoselect_first_suggestion);
 }

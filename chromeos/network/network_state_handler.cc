@@ -1369,12 +1369,14 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   bool sort_networks = false;
   bool notify_default = network->path() == default_network_path_;
   bool notify_connection_state = false;
+  bool notify_active = false;
 
   if (key == shill::kStateProperty || key == shill::kVisibleProperty) {
     network_list_sorted_ = false;
     if (ConnectionStateChanged(network, prev_connection_state,
                                prev_is_captive_portal)) {
       notify_connection_state = true;
+      notify_active = true;
       if (notify_default)
         notify_default = VerifyDefaultNetworkConnectionStateChange(network);
       // If the default network connection state changed, sort networks now
@@ -1395,7 +1397,6 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (request_update)
     RequestUpdateForNetwork(service_path);
 
-  bool notify_active = false;
   std::string value_str;
   value.GetAsString(&value_str);
   if (key == shill::kSignalStrengthProperty || key == shill::kWifiBSsid ||

@@ -208,6 +208,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // normal after closing all tabs.
 - (void)closeAllTabsInCurrentMode;
 
+// Closes all normal (non-incognito) tabs and waits for the UI to complete
+// within a timeout, or a GREYAssert is induced.
+- (void)closeAllNormalTabs;
+
 // Closes all incognito tabs and waits for the UI to complete within a
 // timeout, or a GREYAssert is induced.
 - (void)closeAllIncognitoTabs;

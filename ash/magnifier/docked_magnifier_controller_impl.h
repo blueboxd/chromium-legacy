@@ -62,7 +62,7 @@ class ASH_EXPORT DockedMagnifierControllerImpl
   // the magnifier viewport.
   static constexpr int kScreenHeightDivisor = 3;
 
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Get the Docked Magnifier settings for the current active user prefs.
   bool GetEnabled() const;

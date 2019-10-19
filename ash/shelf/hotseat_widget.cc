@@ -172,8 +172,8 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   } else {
     // The shelf view observes the shelf model and creates icons as items are
     // added to the model.
-    shelf_view_ = GetContentsView()->AddChildView(
-        std::make_unique<ShelfView>(ShelfModel::Get(), shelf));
+    shelf_view_ = GetContentsView()->AddChildView(std::make_unique<ShelfView>(
+        ShelfModel::Get(), shelf, /*drag_and_drop_host=*/nullptr));
     shelf_view_->Init();
   }
   delegate_view_->Init(scrollable_shelf_view(), GetLayer());

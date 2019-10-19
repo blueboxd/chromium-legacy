@@ -41,7 +41,7 @@ void SchedulerHelper::InitDefaultQueues(
   DCHECK(sequence_manager_);
   sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
 
-  simple_task_executor_.emplace(default_task_runner_);
+  blink_task_executor_.emplace(default_task_runner_, sequence_manager_);
 }
 
 SchedulerHelper::~SchedulerHelper() {
@@ -180,6 +180,19 @@ bool SchedulerHelper::HasCPUTimingForEachTask() const {
         .records_cpu_time_for_all_tasks();
   }
   return false;
+}
+
+SchedulerHelper::BlinkTaskExecutor::BlinkTaskExecutor(
+    scoped_refptr<base::SingleThreadTaskRunner> default_task_queue,
+    base::sequence_manager::SequenceManager* sequence_manager)
+    : base::SimpleTaskExecutor(sequence_manager, std::move(default_task_queue)),
+      sequence_manager_(sequence_manager) {}
+
+SchedulerHelper::BlinkTaskExecutor::~BlinkTaskExecutor() = default;
+
+const scoped_refptr<base::SequencedTaskRunner>&
+SchedulerHelper::BlinkTaskExecutor::GetContinuationTaskRunner() {
+  return sequence_manager_->GetTaskRunnerForCurrentTask();
 }
 
 }  // namespace scheduler

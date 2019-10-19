@@ -1015,12 +1015,16 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
   // Only normalize non-degenerate ranges.
   if (*start_ != *end_) {
     AXPositionInstance normalized_start = start_->AsPositionBeforeCharacter();
-    AXPositionInstance normalized_end = end_->AsPositionAfterCharacter();
-    DCHECK_EQ(*start_, *normalized_start);
-    DCHECK_EQ(*end_, *normalized_end);
+    if (!normalized_start->IsNullPosition()) {
+      DCHECK_EQ(*start_, *normalized_start);
+      start_ = std::move(normalized_start);
+    }
 
-    start_ = std::move(normalized_start);
-    end_ = std::move(normalized_end);
+    AXPositionInstance normalized_end = end_->AsPositionAfterCharacter();
+    if (!normalized_end->IsNullPosition()) {
+      DCHECK_EQ(*end_, *normalized_end);
+      end_ = std::move(normalized_end);
+    }
   }
 }
 

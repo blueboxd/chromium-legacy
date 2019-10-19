@@ -252,6 +252,8 @@ void BrowserTestBase::SetUp() {
     if (command_line->HasSwitch(switches::kUseVulkan)) {
       command_line->AppendSwitchASCII(
           switches::kUseVulkan, switches::kVulkanImplementationNameSwiftshader);
+      command_line->AppendSwitchASCII(
+          switches::kGrContextType, switches::kGrContextTypeVulkan);
     }
 #endif
   }

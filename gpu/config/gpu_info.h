@@ -355,6 +355,8 @@ struct GPU_EXPORT GPUInfo {
 
   bool oop_rasterization_supported;
 
+  bool subpixel_font_rendering;
+
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
 

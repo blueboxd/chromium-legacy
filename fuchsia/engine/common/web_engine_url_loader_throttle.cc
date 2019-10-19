@@ -5,6 +5,7 @@
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 
 #include "base/strings/string_util.h"
+#include "url/url_constants.h"
 
 namespace {
 
@@ -55,6 +56,11 @@ void ApplyReplaceUrl(network::ResourceRequest* request,
     return;
 
   GURL new_url = replace_url->new_url;
+  if (new_url.SchemeIs(url::kDataScheme)) {
+    request->url = new_url;
+    return;
+  }
+
   if (new_url.has_scheme() &&
       new_url.scheme().compare(request->url.scheme()) != 0) {
     // No cross-scheme redirect allowed.

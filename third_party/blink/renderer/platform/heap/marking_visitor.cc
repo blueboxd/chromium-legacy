@@ -95,12 +95,16 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
     return false;
 
   HeapObjectHeader* header;
+  size_t size;
   if (LIKELY(!base_page->IsLargeObjectPage())) {
     header = reinterpret_cast<HeapObjectHeader*>(
         static_cast<NormalPage*>(base_page)->FindHeaderFromAddress(
             reinterpret_cast<Address>(value)));
+    size = header->size();
   } else {
-    header = static_cast<LargeObjectPage*>(base_page)->ObjectHeader();
+    LargeObjectPage* large_page = static_cast<LargeObjectPage*>(base_page);
+    header = large_page->ObjectHeader();
+    size = large_page->size();
   }
   DCHECK(header->IsValid());
 
@@ -117,10 +121,8 @@ bool MarkingVisitor::WriteBarrierSlow(void* value) {
   }
 
   MarkingVisitor* visitor = thread_state->CurrentVisitor();
-  visitor->AccountMarkedBytes(header);
-  visitor->marking_worklist_.Push(
-      {header->Payload(),
-       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace});
+  visitor->AccountMarkedBytes(size);
+  visitor->write_barrier_worklist_.Push(header);
   return true;
 }
 
@@ -144,7 +146,9 @@ void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
 }
 
 MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
-    : MarkingVisitorBase(state, marking_mode, WorklistTaskId::MutatorThread) {
+    : MarkingVisitorBase(state, marking_mode, WorklistTaskId::MutatorThread),
+      write_barrier_worklist_(Heap().GetWriteBarrierWorklist(),
+                              WorklistTaskId::MutatorThread) {
   DCHECK(state->InAtomicMarkingPause());
   DCHECK(state->CheckThread());
 }

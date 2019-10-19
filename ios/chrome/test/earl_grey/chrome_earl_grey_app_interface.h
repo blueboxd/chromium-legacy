@@ -97,6 +97,10 @@
 // normal after closing all tabs.
 + (void)closeAllTabsInCurrentMode;
 
+// Closes all normal (non-incognito) tabs. If not succeed returns an NSError
+// indicating why the operation failed, otherwise nil.
++ (NSError*)closeAllNormalTabs;
+
 // Closes all incognito tabs. If not succeed returns an NSError indicating  why
 // the operation failed, otherwise nil.
 + (NSError*)closeAllIncognitoTabs;
@@ -133,8 +137,9 @@
 + (NSError*)tapWebStateElementInIFrameWithID:(NSString*)elementID;
 
 // Taps html element with |elementID| in the current web state.
-// On failure returns NO and |error| is set to include a message.
-+ (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error;
+// If not succeed returns an NSError indicating why the
+// operation failed, otherwise nil.
++ (NSError*)tapWebStateElementWithID:(NSString*)elementID;
 
 // Waits for the current web state to contain an element matching |selector|.
 // If not succeed returns an NSError indicating  why the operation failed,

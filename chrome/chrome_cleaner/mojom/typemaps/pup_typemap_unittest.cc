@@ -4,16 +4,19 @@
 
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/chrome_cleaner/mojom/pup.mojom.h"
-#include "chrome/chrome_cleaner/mojom/test_pup_typemap.mojom.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/mojom/pup.mojom.h"
+#include "chrome/chrome_cleaner/mojom/test_pup_typemap.mojom.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/test/test_extensions.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -32,15 +35,16 @@ constexpr int32_t kConnectionBrokenResultCode = 127;
 
 class TestPUPTypemapImpl : public mojom::TestPUPTypemap {
  public:
-  explicit TestPUPTypemapImpl(mojom::TestPUPTypemapRequest request)
-      : binding_(this, std::move(request)) {}
+  explicit TestPUPTypemapImpl(
+      mojo::PendingReceiver<mojom::TestPUPTypemap> receiver)
+      : receiver_(this, std::move(receiver)) {}
 
   void EchoPUP(const PUPData::PUP& pup, EchoPUPCallback callback) override {
     std::move(callback).Run(pup);
   }
 
  private:
-  mojo::Binding<mojom::TestPUPTypemap> binding_;
+  mojo::Receiver<mojom::TestPUPTypemap> receiver_;
 };
 
 class EchoingParentProcess : public chrome_cleaner::ParentProcess {
@@ -50,8 +54,8 @@ class EchoingParentProcess : public chrome_cleaner::ParentProcess {
 
  protected:
   void CreateImpl(mojo::ScopedMessagePipeHandle mojo_pipe) override {
-    mojom::TestPUPTypemapRequest request(std::move(mojo_pipe));
-    impl_ = std::make_unique<TestPUPTypemapImpl>(std::move(request));
+    mojo::PendingReceiver<mojom::TestPUPTypemap> receiver(std::move(mojo_pipe));
+    impl_ = std::make_unique<TestPUPTypemapImpl>(std::move(receiver));
   }
 
   void DestroyImpl() override { impl_.reset(); }
@@ -66,16 +70,17 @@ class EchoingChildProcess : public chrome_cleaner::ChildProcess {
  public:
   explicit EchoingChildProcess(scoped_refptr<MojoTaskRunner> mojo_task_runner)
       : ChildProcess(mojo_task_runner),
-        ptr_(std::make_unique<mojom::TestPUPTypemapPtr>()) {}
+        remote_(new mojo::Remote<mojom::TestPUPTypemap>(),
+                base::OnTaskRunnerDeleter(mojo_task_runner)) {}
 
   void BindToPipe(mojo::ScopedMessagePipeHandle mojo_pipe,
                   WaitableEvent* event) {
-    ptr_->Bind(
-        chrome_cleaner::mojom::TestPUPTypemapPtrInfo(std::move(mojo_pipe), 0));
+    remote_->Bind(mojo::PendingRemote<chrome_cleaner::mojom::TestPUPTypemap>(
+        std::move(mojo_pipe), 0));
     // If the connection is lost while this object is processing a request or
     // waiting for a response, then it will terminate with a special result code
     // that will be expected by the parent process.
-    ptr_->set_connection_error_handler(base::BindOnce(
+    remote_->set_disconnect_handler(base::BindOnce(
         [](bool* processing_request) {
           if (*processing_request)
             exit(kConnectionBrokenResultCode);
@@ -90,17 +95,11 @@ class EchoingChildProcess : public chrome_cleaner::ChildProcess {
   }
 
  private:
-  ~EchoingChildProcess() override {
-    mojo_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](std::unique_ptr<mojom::TestPUPTypemapPtr> ptr) { ptr.reset(); },
-            base::Passed(&ptr_)));
-  }
+  ~EchoingChildProcess() override = default;
 
   void RunEchoPUP(const PUPData::PUP& input,
                   mojom::TestPUPTypemap::EchoPUPCallback callback) {
-    (*ptr_)->EchoPUP(input, std::move(callback));
+    (*remote_)->EchoPUP(input, std::move(callback));
   }
 
   template <typename EchoedValue>
@@ -131,7 +130,10 @@ class EchoingChildProcess : public chrome_cleaner::ChildProcess {
     return output;
   }
 
-  std::unique_ptr<mojom::TestPUPTypemapPtr> ptr_;
+  std::unique_ptr<mojo::Remote<mojom::TestPUPTypemap>,
+                  base::OnTaskRunnerDeleter>
+      remote_;
+
   // All requests are synchronous and happen on the same sequence, so no
   // synchronization is needed.
   bool processing_request_ = false;

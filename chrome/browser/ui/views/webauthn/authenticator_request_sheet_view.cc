@@ -28,10 +28,8 @@ namespace {
 // Fixed height of the illustration shown in the top half of the sheet.
 constexpr int kIllustrationHeight = 148;
 
-// Foreground/background color, and the height of the progress bar style
-// activity indicator shown at the top of some sheets.
-constexpr SkColor kActivityIndicateFgColor = SkColorSetRGB(0xf2, 0x99, 0x00);
-constexpr SkColor kActivityIndicateBkColor = SkColorSetRGB(0xf6, 0xe6, 0xc8);
+// Height of the progress bar style activity indicator shown at the top of some
+// sheets.
 constexpr int kActivityIndicatorHeight = 4;
 
 using ImageColorScheme = AuthenticatorRequestSheetModel::ImageColorScheme;
@@ -100,8 +98,7 @@ AuthenticatorRequestSheetView::CreateIllustrationWithOverlays() {
     auto activity_indicator = std::make_unique<views::ProgressBar>(
         kActivityIndicatorHeight, false /* allow_round_corner */);
     activity_indicator->SetValue(-1 /* inifinite animation */);
-    activity_indicator->SetForegroundColor(kActivityIndicateFgColor);
-    activity_indicator->SetBackgroundColor(kActivityIndicateBkColor);
+    activity_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
     activity_indicator->SetPreferredSize(
         gfx::Size(illustration_width, kActivityIndicatorHeight));
     activity_indicator->SizeToPreferredSize();

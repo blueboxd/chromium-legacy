@@ -1319,19 +1319,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(FrameHostMsg_RunBeforeUnloadConfirm,
                            bool /* out - success */,
                            base::string16 /* out - This is ignored.*/)
 
-// Register a new handler for URL requests with the given scheme.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_RegisterProtocolHandler,
-                    std::string /* scheme */,
-                    GURL /* url */,
-                    base::string16 /* title */,
-                    bool /* user_gesture */)
-
-// Unregister the registered handler for URL requests with the given scheme.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_UnregisterProtocolHandler,
-                    std::string /* scheme */,
-                    GURL /* url */,
-                    bool /* user_gesture */)
-
 // Sent when the renderer loads a resource from its memory cache.
 // The security info is non empty if the resource was originally loaded over
 // a secure connection.

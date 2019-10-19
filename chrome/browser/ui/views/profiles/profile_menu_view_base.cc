@@ -250,7 +250,6 @@ ProfileMenuViewBase::~ProfileMenuViewBase() {
 }
 
 void ProfileMenuViewBase::SetHeading(const base::string16& heading,
-                                     const gfx::ImageSkia& clickable_icon,
                                      const base::string16& tooltip_text,
                                      base::RepeatingClosure action) {
   constexpr int kInsidePadding = 4;
@@ -259,46 +258,29 @@ void ProfileMenuViewBase::SetHeading(const base::string16& heading,
           ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
 
   heading_container_->RemoveAllChildViews(/*delete_children=*/true);
-  views::BoxLayout* heading_layout = heading_container_->SetLayoutManager(
-      CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
-                      views::BoxLayout::CrossAxisAlignment::kCenter,
-                      gfx::Insets(kInsidePadding)));
-  if (!heading.empty()) {
-    heading_container_->SetBackground(
-        views::CreateSolidBackground(kBackgroundColor));
-  }
+  heading_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  heading_container_->SetBackground(
+      views::CreateSolidBackground(kBackgroundColor));
+  heading_container_->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kInsidePadding)));
 
-  // Add the label even if |heading| is empty. This needs to be done so the icon
-  // button gets pushed to the right.
-  views::Label* label =
-      heading_container_->AddChildView(std::make_unique<views::Label>(
-          heading, views::style::CONTEXT_LABEL, STYLE_HINT));
-  label->SetHandlesTooltips(false);
-  // Stretch the label.
-  heading_layout->SetFlexForView(label, 1);
-
-  // Add icon button.
-  views::Button* button =
-      heading_container_->AddChildView(CreateCircularImageButton(
-          this, clickable_icon, tooltip_text, /*show_border=*/false));
-  // Don't stretch the button, so it only takes the space it needs.
-  heading_layout->SetFlexForView(button, 0);
-  RegisterClickAction(button, std::move(action));
-
-  // Center the label by adding a left padding.
-  button->SizeToPreferredSize();
-  int left_label_padding = button->GetContentsBounds().width();
-  label->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(0, left_label_padding, 0, 0)));
+  views::Link* link =
+      heading_container_->AddChildView(std::make_unique<views::Link>(heading));
+  link->SetEnabledColor(views::style::GetColor(
+      *this, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
+  link->SetTooltipText(tooltip_text);
+  link->set_listener(this);
+  RegisterClickAction(link, std::move(action));
 }
 
 void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
                                           const gfx::ImageSkia& badge,
                                           const base::string16& title,
                                           const base::string16& subtitle) {
-  constexpr int kTopMargin = 16;
-  constexpr int kBottomMargin = 8;
-  constexpr int kImageToLabelSpacing = 4;
+  constexpr int kTopMargin = kMenuEdgeMargin;
+  constexpr int kBottomMargin = kDefaultVerticalMargin;
+  constexpr int kHorizontalMargin = kMenuEdgeMargin;
+  constexpr int kImageBottomMargin = 8;
   constexpr int kBadgeSize = 16;
   constexpr int kBadgePadding = 1;
 
@@ -306,7 +288,8 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   identity_info_container_->SetLayoutManager(
       CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
                       views::BoxLayout::CrossAxisAlignment::kCenter,
-                      gfx::Insets(kTopMargin, 0, kBottomMargin, 0)));
+                      gfx::Insets(kTopMargin, kHorizontalMargin, kBottomMargin,
+                                  kHorizontalMargin)));
 
   views::ImageView* image_view = identity_info_container_->AddChildView(
       std::make_unique<views::ImageView>());
@@ -323,12 +306,12 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::ImageSkia& image,
   gfx::ImageSkia badged_image =
       gfx::ImageSkiaOperations::CreateIconWithBadge(sized_image, sized_badge);
   image_view->SetImage(badged_image);
+  image_view->SetBorder(views::CreateEmptyBorder(0, 0, kImageBottomMargin, 0));
 
-  views::View* title_label =
-      identity_info_container_->AddChildView(std::make_unique<views::Label>(
-          title, views::style::CONTEXT_DIALOG_TITLE));
-  title_label->SetBorder(
-      views::CreateEmptyBorder(kImageToLabelSpacing, 0, 0, 0));
+  if (!title.empty()) {
+    identity_info_container_->AddChildView(std::make_unique<views::Label>(
+        title, views::style::CONTEXT_DIALOG_TITLE));
+  }
 
   if (!subtitle.empty()) {
     identity_info_container_->AddChildView(std::make_unique<views::Label>(

@@ -150,6 +150,17 @@ cr.define('pages_settings_test', function() {
       await setCustomInput('1,2,3\u30011\u300156');
       validateState(
           [1, 2, 3, 56], [{from: 1, to: 3}, {from: 56, to: 56}], '', false);
+
+      // https://crbug.com/1015145
+      // Tests that the pages gets sorted for an unsorted input.
+      await setCustomInput('89-91, 3, 6, 46, 1, 4, 2-3');
+      validateState(
+          [1, 2, 3, 4, 6, 46, 89, 90, 91],
+          [
+            {from: 1, to: 4}, {from: 6, to: 6}, {from: 46, to: 46},
+            {from: 89, to: 91}
+          ],
+          '', false);
     });
 
     // Tests that the correct error messages are shown for different user

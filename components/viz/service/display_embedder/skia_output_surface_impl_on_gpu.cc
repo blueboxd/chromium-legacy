@@ -676,8 +676,11 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
 
   size_ = size;
   color_space_ = color_space;
-  output_device_->Reshape(size_, device_scale_factor, color_space, has_alpha,
-                          transform);
+  if (!output_device_->Reshape(size_, device_scale_factor, color_space,
+                               has_alpha, transform)) {
+    MarkContextLost();
+    return;
+  }
 
   if (characterization) {
     // Start a paint temporarily for getting sk surface characterization.

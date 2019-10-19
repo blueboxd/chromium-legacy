@@ -19,6 +19,7 @@
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
 #include "base/task/task_executor.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -46,6 +47,7 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace main_thread_scheduler_impl_unittest {
 
+using testing::IsNull;
 using testing::Mock;
 using testing::NotNull;
 using InputEventState = WebThreadScheduler::InputEventState;
@@ -2133,6 +2135,25 @@ TEST_P(MainThreadSchedulerImplTest, CurrentThread) {
   EXPECT_EQ(scheduler_->DeprecatedDefaultTaskRunner(),
             base::CreateSingleThreadTaskRunner(
                 {base::CurrentThread(), base::TaskPriority::BEST_EFFORT}));
+}
+
+TEST_P(MainThreadSchedulerImplTest, GetContinuationTaskRunner) {
+  scoped_refptr<MainThreadTaskQueue> timer_tq = scheduler_->NewTimerTaskQueue(
+      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+  auto task_runner = timer_tq->CreateTaskRunner(TaskType::kJavascriptTimer);
+
+  base::RunLoop run_loop;
+  task_runner->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                          EXPECT_EQ(task_runner,
+                                    base::GetContinuationTaskRunner());
+                          run_loop.Quit();
+                        }));
+  run_loop.Run();
+}
+
+TEST_P(MainThreadSchedulerImplTest,
+       GetContinuationTaskRunnerWithNoTaskRunning) {
+  EXPECT_DCHECK_DEATH(base::GetContinuationTaskRunner());
 }
 
 class MainThreadSchedulerImplWithMessageLoopTest

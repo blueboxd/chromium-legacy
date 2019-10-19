@@ -315,6 +315,25 @@ std::unique_ptr<HttpResponse> HandleSetHeader(const HttpRequest& request) {
   return http_response;
 }
 
+// /iframe?URL
+// Returns a page that iframes the specified URL.
+std::unique_ptr<HttpResponse> HandleIframe(const HttpRequest& request) {
+  GURL request_url = request.GetURL();
+
+  auto http_response = std::make_unique<BasicHttpResponse>();
+  http_response->set_content_type("text/html");
+
+  GURL iframe_url("about:blank");
+  if (request_url.has_query()) {
+    iframe_url = GURL(UnescapeBinaryURLComponent(request_url.query()));
+  }
+
+  http_response->set_content(
+      base::StringPrintf("<html><body><iframe src=\"%s\"></body></html>",
+                         iframe_url.spec().c_str()));
+  return http_response;
+}
+
 // /nocontent
 // Returns a NO_CONTENT response.
 std::unique_ptr<HttpResponse> HandleNoContent(const HttpRequest& request) {
@@ -799,6 +818,7 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
       PREFIXED_HANDLER("/expect-and-set-cookie", &HandleExpectAndSetCookie));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/set-header", &HandleSetHeader));
+  server->RegisterDefaultHandler(PREFIXED_HANDLER("/iframe", &HandleIframe));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/nocontent", &HandleNoContent));
   server->RegisterDefaultHandler(

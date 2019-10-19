@@ -164,6 +164,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Set keys for crash logging based on preliminary gpu info, in case we
   // crash during feature collection.
   gpu::SetKeysForCrashLogging(gpu_info_);
+#if defined(SUBPIXEL_FONT_RENDERING_DISABLED)
+  gpu_info_.subpixel_font_rendering = false;
+#else
+  gpu_info_.subpixel_font_rendering = true;
+#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (gpu_info_.gpu.vendor_id == 0x10de &&  // NVIDIA
@@ -178,7 +183,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
 #endif  // !OS_ANDROID && !IS_CHROMECAST
   gpu_info_.in_process_gpu = false;
-
   bool use_swiftshader = false;
 
   // GL bindings may have already been initialized, specifically on MacOSX.
@@ -377,6 +381,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     }
   }
   if (!vulkan_implementation_) {
+    if (gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan) {
+      gpu_preferences_.gr_context_type = gpu::GrContextType::kGL;
+    }
     gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
     gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
         gpu::kGpuFeatureStatusDisabled;
@@ -551,6 +558,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   if (!PopGPUInfoCache(&gpu_info_)) {
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
   }
+#if defined(SUBPIXEL_FONT_RENDERING_DISABLED)
+  gpu_info_.subpixel_font_rendering = false;
+#else
+  gpu_info_.subpixel_font_rendering = true;
+#endif
   if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
     gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, &needs_more_info);

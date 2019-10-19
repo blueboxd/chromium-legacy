@@ -440,7 +440,8 @@ void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl, PaginationModelObserver implementation:
 
-void AppListPresenterImpl::TotalPagesChanged() {}
+void AppListPresenterImpl::TotalPagesChanged(int previous_page_count,
+                                             int new_page_count) {}
 
 void AppListPresenterImpl::SelectedPageChanged(int old_selected,
                                                int new_selected) {

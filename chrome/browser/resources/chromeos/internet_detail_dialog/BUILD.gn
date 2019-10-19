@@ -12,6 +12,7 @@ optimize_webui("build") {
 
   input = rebase_path(".", root_build_dir)
   js_out_files = [ "crisper.js" ]
+  excludes = [ "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html" ]
 
   deps = []
 }

@@ -14,7 +14,6 @@ import unittest
 
 from chrome_telemetry_build import chromium_config
 
-from core import path_util
 from core import perf_benchmark
 
 from telemetry import decorators
@@ -254,17 +253,8 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
       if (simplified_test_name in _DISABLED_TESTS and
           not options.run_disabled_tests):
         self.skipTest('Test is explicitly disabled')
-
       single_page_benchmark = SinglePageBenchmark()
-      # TODO(crbug.com/985103): Remove this code once
-      # AugmentExpectationsWithFile is deleted and replaced with functionality
-      # in story_filter.py.
-      if hasattr(single_page_benchmark, 'AugmentExpectationsWithFile'):
-        with open(path_util.GetExpectationsPath()) as fp:
-          single_page_benchmark.AugmentExpectationsWithFile(fp.read())
-
       return_code = single_page_benchmark.Run(options)
-
     if return_code == -1:
       self.skipTest('The benchmark was not run.')
     self.assertEqual(0, return_code, msg='Failed: %s' % benchmark_class)

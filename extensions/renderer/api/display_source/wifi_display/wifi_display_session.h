@@ -41,8 +41,8 @@ class WiFiDisplaySession : public DisplaySourceSession,
   void Terminate(const CompletionCallback& callback) override;
 
   // WiFiDisplaySessionServiceClient overrides.
-  void OnConnected(const std::string& local_ip_address,
-                   const std::string& sink_ip_address) override;
+  void OnConnected(const net::IPAddress& local_ip_address,
+                   const net::IPAddress& sink_ip_address) override;
   void OnConnectRequestHandled(bool success, const std::string& error) override;
   void OnTerminated() override;
   void OnDisconnectRequestHandled(bool success,
@@ -77,7 +77,7 @@ class WiFiDisplaySession : public DisplaySourceSession,
   std::unique_ptr<WiFiDisplayMediaManager> media_manager_;
   mojo::Remote<mojom::WiFiDisplaySessionService> service_;
   mojo::Receiver<WiFiDisplaySessionServiceClient> receiver_{this};
-  std::string local_ip_address_;
+  net::IPAddress local_ip_address_;
   std::map<int, std::unique_ptr<base::RepeatingTimer>> timers_;
 
   DisplaySourceSessionParams params_;

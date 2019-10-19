@@ -8001,7 +8001,6 @@ void Document::PlatformColorsChanged() {
     return;
 
   GetStyleEngine().PlatformColorsChanged();
-  MediaQueryAffectingValueChanged();
 }
 
 bool Document::IsSecureContext(String& error_message) const {

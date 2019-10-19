@@ -5,6 +5,7 @@
 #include "fuchsia/runners/cast/cast_runner.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <fuchsia/web/cpp/fidl.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -88,9 +89,9 @@ void CastRunner::StartComponent(
     return;
   }
 
-  // The application configuration asynchronously via the per-component
-  // ApplicationConfigManager, the pointer to that service must be kept live
-  // until the request completes, or CastRunner is deleted.
+  // The application configuration is obtained asynchronously via the
+  // per-component ApplicationConfigManager. The pointer to that service must be
+  // kept live until the request completes or CastRunner is deleted.
   auto pending_component =
       std::make_unique<CastComponent::CastComponentParams>();
   pending_component->startup_context =
@@ -98,16 +99,6 @@ void CastRunner::StartComponent(
   pending_component->agent_manager = std::make_unique<cr_fuchsia::AgentManager>(
       pending_component->startup_context->incoming_services());
   pending_component->controller_request = std::move(controller_request);
-
-  // Request the configuration for the specified application.
-  pending_component->agent_manager->ConnectToAgentService(
-      kAgentComponentUrl, pending_component->app_config_manager.NewRequest());
-  pending_component->app_config_manager.set_error_handler(
-      [this, pending_component = pending_component.get()](zx_status_t status) {
-        ZX_LOG(ERROR, status) << "ApplicationConfigManager disconnected.";
-        GetConfigCallback(pending_component,
-                          chromium::cast::ApplicationConfig());
-      });
 
   // Get binding details from the Agent.
   fidl::InterfaceHandle<chromium::cast::ApiBindings> api_bindings_client;
@@ -141,6 +132,15 @@ void CastRunner::StartComponent(
         MaybeStartComponent(pending_component);
       });
 
+  // Request the configuration for the specified application.
+  pending_component->agent_manager->ConnectToAgentService(
+      kAgentComponentUrl, pending_component->app_config_manager.NewRequest());
+  pending_component->app_config_manager.set_error_handler(
+      [this, pending_component = pending_component.get()](zx_status_t status) {
+        ZX_LOG(ERROR, status) << "ApplicationConfigManager disconnected.";
+        GetConfigCallback(pending_component,
+                          chromium::cast::ApplicationConfig());
+      });
   const std::string cast_app_id(cast_url.GetContent());
   pending_component->app_config_manager->GetConfig(
       cast_app_id, [this, pending_component = pending_component.get()](
@@ -170,10 +170,15 @@ void CastRunner::GetConfigCallback(
   auto it = pending_components_.find(pending_component);
   DCHECK(it != pending_components_.end());
 
-  // If no configuration was returned then ignore the request.
+  if (app_config.IsEmpty()) {
+    pending_components_.erase(it);
+    DLOG(WARNING) << "No application config was found.";
+    return;
+  }
+
   if (!app_config.has_web_url()) {
     pending_components_.erase(it);
-    DLOG(WARNING) << "No ApplicationConfig was found.";
+    DLOG(WARNING) << "Only web-based applications are supported.";
     return;
   }
 

@@ -2058,6 +2058,12 @@
           '--additional-driver-flag=--use-gpu-in-tests',
         ],
       },
+      # tryserver.chromium.linux
+      'linux-layout-tests-fragment-item': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
+        ],
+      },
       # client.v8.fyi
       'V8 Blink Linux Debug': {
         'args': [

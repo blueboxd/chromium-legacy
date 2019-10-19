@@ -1765,6 +1765,16 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="Request success"/>
 </enum>
 
+<enum name="AndroidSearchEngineLogoEvents">
+  <summary>Events related to Search Engine logo feature.</summary>
+  <int value="0" label="Fetch non-Google logo request"/>
+  <int value="1" label="Fetch failed, null logo url"/>
+  <int value="2" label="Fetch failed, favicon helper error"/>
+  <int value="3" label="Fetch failed, returned bitmap null"/>
+  <int value="4" label="Fetch success, cache hit"/>
+  <int value="5" label="Fetch from network success"/>
+</enum>
+
 <enum name="AndroidSeccompSandboxStatus">
   <int value="0" label="Not Supported"/>
   <int value="1" label="Detection Failed"/>
@@ -2165,6 +2175,12 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Sign Out"/>
   <int value="6" label="History Deleted"/>
   <int value="7" label="Cached Data Cleared"/>
+</enum>
+
+<enum name="AppListAddPageType">
+  <int value="0" label="By Dragging App"/>
+  <int value="1" label="By Moving App With Keyboard"/>
+  <int value="2" label="By Syncing or Intalling App"/>
 </enum>
 
 <enum name="AppListAppMovingType">
@@ -2996,6 +3012,8 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="kStylus"/>
   <int value="4" label="kSuggestionChip"/>
   <int value="5" label="kVoiceInput"/>
+  <int value="6" label="kProactiveSuggestions"/>
+  <int value="7" label="kLibAssistantInitiated"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
@@ -3763,6 +3781,12 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="Denied"/>
   <int value="3" label="Ignored"/>
   <int value="4" label="NotShown, invalid legal message"/>
+</enum>
+
+<enum name="AutofillCreditCardPreflightCallEvent">
+  <int value="0" label="Preflight returned first"/>
+  <int value="1" label="Card chosen first"/>
+  <int value="2" label="Preflight call ignored"/>
 </enum>
 
 <enum name="AutofillDeveloperEngagement">
@@ -6020,6 +6044,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanContinueChoice">
   <int value="0" label="Chose CANCEL"/>
   <int value="1" label="Chose CONTINUE"/>
+</enum>
+
+<enum name="BooleanCorrect">
+  <int value="0" label="Incorrect"/>
+  <int value="1" label="Correct"/>
 </enum>
 
 <enum name="BooleanCorrupt">
@@ -18397,12 +18426,15 @@ Called by update_net_error_codes.py.-->
   <int value="624" label="LegacySameSiteCookieBehaviorEnabledForDomainList"/>
   <int value="625" label="PrintJobHistoryExpirationPeriod"/>
   <int value="626" label="TLS13HardeningForLocalAnchorsEnabled"/>
-  <int value="627" label="AudioSandboxEnabled"/>
+  <int value="627" label="ForceDisableAudioSandbox"/>
   <int value="628" label="DeviceLoginScreenScreenMagnifierType"/>
   <int value="629" label="CorsMitigationList"/>
   <int value="630" label="CorsLegacyModeEnabled"/>
   <int value="631" label="ExternalPrintServersWhitelist"/>
   <int value="632" label="ExternalProtocolDialogShowAlwaysOpenCheckbox"/>
+  <int value="633" label="DefaultInsecureContentSetting"/>
+  <int value="634" label="InsecureContentAllowedForUrls"/>
+  <int value="635" label="InsecureContentBlockedForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -20970,6 +21002,7 @@ Called by update_net_error_codes.py.-->
   <int value="1394" label="AUTOTESTPRIVATE_GETAPPWINDOWLIST"/>
   <int value="1395" label="AUTOTESTPRIVATE_SETAPPWINDOWSTATE"/>
   <int value="1396" label="AUTOTESTPRIVATE_CLOSEAPPWINDOW"/>
+  <int value="1397" label="AUTOTESTPRIVATE_REFRESHENTERPRISEPOLICIES"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -26410,6 +26443,27 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Other error"/>
   <int value="1" label="Found"/>
   <int value="2" label="Not found"/>
+</enum>
+
+<enum name="FingerprintRecordFormatVersion">
+  <int value="0" label="None"/>
+  <int value="1" label="Record format version without validation value"/>
+  <int value="2" label="Record format version with validation value"/>
+</enum>
+
+<enum name="FingerprintSensorMode">
+  <int value="0" label="None"/>
+  <int value="1" label="Deepsleep"/>
+  <int value="2" label="FingerDown"/>
+  <int value="3" label="FingerUp"/>
+  <int value="4" label="Capture"/>
+  <int value="5" label="EnrollSession"/>
+  <int value="6" label="EnrollSessionFingerUp"/>
+  <int value="7" label="EnrollSessionEnrollImage"/>
+  <int value="8" label="EnrollImage"/>
+  <int value="9" label="Match"/>
+  <int value="10" label="ResetSensor"/>
+  <int value="11" label="DontChange"/>
 </enum>
 
 <enum name="FingerprintUpdaterReason">
@@ -35454,6 +35508,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
   <int value="-1731149013" label="AndroidMessagesIntegration:enabled"/>
   <int value="-1729926412" label="enable-webusb-notifications"/>
+  <int value="-1729808721" label="SubresourceRedirect:enabled"/>
   <int value="-1727530898" label="LookalikeUrlNavigationSuggestionsUI:enabled"/>
   <int value="-1727173228" label="OmniboxZeroSuggestionsOnNTP:enabled"/>
   <int value="-1725507605" label="enable-web-midi"/>
@@ -35828,6 +35883,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
   <int value="-1262730949" label="EnableDspHotword:enabled"/>
+  <int value="-1262303946" label="SubresourceRedirectPreviews:disabled"/>
   <int value="-1262152606" label="disable-lock-screen-apps"/>
   <int value="-1261972671" label="OmniboxDocumentProvider:disabled"/>
   <int value="-1261263046"
@@ -36427,7 +36483,6 @@ from previous Chrome versions.
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
-  <int value="-506743105" label="enable-subresource-redirect"/>
   <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-506366023" label="VizHitTest:enabled"/>
   <int value="-505679399" label="FontCacheScaling:enabled"/>
@@ -36612,6 +36667,7 @@ from previous Chrome versions.
   <int value="-258081634" label="AutofillAssistantDirectActions:disabled"/>
   <int value="-255264176" label="OmniboxSearchEngineLogo:disabled"/>
   <int value="-254887599" label="google-profile-info"/>
+  <int value="-254158542" label="SubresourceRedirectPreviews:enabled"/>
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-250543540" label="DeferAllScript:enabled"/>
@@ -38101,6 +38157,7 @@ from previous Chrome versions.
   <int value="1745053254" label="ClickToCallOpenDialerDirectly:enabled"/>
   <int value="1747279677" label="disable-delegated-renderer"/>
   <int value="1748481830" label="AppManagement:enabled"/>
+  <int value="1749028785" label="SubresourceRedirect:disabled"/>
   <int value="1750822869" label="CrostiniBackup:disabled"/>
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1755024316" label="HostWindowsInAppShimProcess:disabled"/>
@@ -54966,6 +55023,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Rollback: SBER2 absent so SBER1 must be cleared"/>
 </enum>
 
+<enum name="ScreenRotationAcceleratorAction">
+  <int value="0" label="CancelledDialog"/>
+  <int value="1" label="AcceptedDialog"/>
+  <int value="2" label="AlreadyAcceptedDialog"/>
+</enum>
+
 <enum name="ScriptSchedulingType">
   <int value="0" label="NotSet"/>
   <int value="1" label="Defer"/>
@@ -60980,6 +61043,12 @@ would be helpful to identify which type is being sent.
       label="Bubbling Root-scroller, scrollable document, not handled"/>
   <int value="35"
       label="Bubbling Root-scroller, scrollable document, handled application"/>
+</enum>
+
+<enum name="TouchToFill.UserAction">
+  <int value="0" label="Selected Credential"/>
+  <int value="1" label="Dismissed"/>
+  <int value="2" label="Selected Manage Passwords"/>
 </enum>
 
 <enum name="TPMFirmwareUpdateResult">

@@ -7,14 +7,13 @@
 
 #include <string>
 
+#include "url/origin.h"
+
 namespace subresource_redirect {
 
-// Returns true if Subresource Redirect is forced to be enabled from the
-// command line.
-bool ShouldForceEnableSubresourceRedirect();
-
-// Returns kLitePagesServerSubresourceHost if set, else returns the default.
-std::string LitePageSubresourceHost();
+// Returns the origin to use for subresource redirect from fieldtrial or the
+// default.
+url::Origin GetSubresourceRedirectOrigin();
 
 }  // namespace subresource_redirect
 

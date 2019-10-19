@@ -44,7 +44,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
               : new Vector<NGPhysicalOutOfFlowPositionedNode>()),
       buffer_(buffer),
       num_children_(builder->children_.size()) {
-  has_floating_descendants_ = builder->has_floating_descendants_;
+  has_floating_descendants_for_paint_ =
+      builder->has_floating_descendants_for_paint_;
   has_adjoining_object_descendants_ =
       builder->has_adjoining_object_descendants_;
   has_orthogonal_flow_roots_ = builder->has_orthogonal_flow_roots_;

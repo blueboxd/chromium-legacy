@@ -41,6 +41,10 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
 
   scoped_refptr<Handle> GetHandle() const { return handle_; }
 
+  // Must be called on the UI thread.
+  const scoped_refptr<base::SequencedTaskRunner>& GetTaskRunnerForCurrentTask()
+      const;
+
  private:
   friend class BrowserTaskExecutor;
 
@@ -56,6 +60,7 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
   std::unique_ptr<base::sequence_manager::SequenceManager>
       owned_sequence_manager_;
 
+  base::sequence_manager::SequenceManager* sequence_manager_ = nullptr;
   BrowserTaskQueues task_queues_;
   scoped_refptr<Handle> handle_;
 

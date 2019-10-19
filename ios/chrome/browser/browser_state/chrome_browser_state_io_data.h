@@ -166,10 +166,6 @@ class ChromeBrowserStateIOData {
   void InitializeOnUIThread(ios::ChromeBrowserState* browser_state);
   void ApplyProfileParamsToContext(net::URLRequestContext* context) const;
 
-  std::unique_ptr<net::URLRequestJobFactory> SetUpJobFactoryDefaults(
-      std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory,
-      net::NetworkDelegate* network_delegate) const;
-
   // Called when the ChromeBrowserState is destroyed. |context_getters| must
   // include all URLRequestContextGetters that refer to the
   // ChromeBrowserStateIOData's URLRequestContexts. Triggers destruction of the

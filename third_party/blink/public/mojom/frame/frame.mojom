@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
+import "url/mojom/url.mojom";
 
 // Implemented in Browser, this interface defines frame-specific methods that will
 // be invoked from the render process (e.g. content::RenderFrameHostImpl).
@@ -26,6 +27,21 @@ interface LocalFrameHost {
   // Notifies the browser that the current frame has either become or is no
   // longer fullscreen.
   FullscreenStateChanged(bool is_fullscreen);
+
+  // Register a new handler for URL requests with the given scheme. |scheme|,
+  // |url|, and |title| are provided directly from javascript. See
+  // https://html.spec.whatwg.org/multipage/system-state.html#custom-handlers
+  // |user_gesture| indicates if the javascript API was called in context of
+  // having an active transient user gesture.
+  RegisterProtocolHandler(string scheme, url.mojom.Url url,
+                          mojo_base.mojom.String16 title, bool user_gesture);
+
+  // Unregister the registered handler for URL requests with the given scheme.
+  // |scheme|, and |url| are provided directly from javascript. See
+  // https://html.spec.whatwg.org/multipage/system-state.html#custom-handlers
+  // |user_gesture| indicates if the javascript API was called in context of
+  // having an active transient user gesture.
+  UnregisterProtocolHandler(string scheme, url.mojom.Url url, bool user_gesture);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -36,8 +52,7 @@ interface LocalFrameHost {
 // content. In the future this interface will likely host more methods as the
 // Onion Soup project advances, which can potentially lead to the removal of
 // content/common/frame.mojom if enough code is moved to Blink.
-// TODO(dtapuska): Rename to LocalFrame
-interface Frame {
+interface LocalFrame {
   // Retrieves the text surrounding the current selection for the frame up to
   // the length specified by |max_length|, along with its start and end offsets.
   GetTextSurroundingSelection(uint32 max_length)

@@ -87,7 +87,9 @@ const char kPushedUrl[] = "https://www.example.org/foo.dat";
 class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
  protected:
   SpdyNetworkTransactionTest()
-      : default_url_(kDefaultUrl),
+      : TestWithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME),
+        default_url_(kDefaultUrl),
         host_port_pair_(HostPortPair::FromURL(default_url_)) {}
 
   ~SpdyNetworkTransactionTest() override {
@@ -559,6 +561,11 @@ class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
   static spdy::SpdyStreamId spdy_stream_hi_water_mark(
       base::WeakPtr<SpdySession> session) {
     return session->stream_hi_water_mark_;
+  }
+
+  base::RepeatingClosure FastForwardByCallback(base::TimeDelta delta) {
+    return base::BindRepeating(&SpdyNetworkTransactionTest::FastForwardBy,
+                               base::Unretained(this), delta);
   }
 
   const GURL default_url_;
@@ -9591,6 +9598,7 @@ TEST_F(SpdyNetworkTransactionTest,
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTDoesntConfirm) {
+  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
@@ -9609,14 +9617,26 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTDoesntConfirm) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->connect_callback = FastForwardByCallback(kDelay);
   // Configure |ssl_provider| to fail if ConfirmHandshake is called. The request
   // should still succeed.
   ssl_provider->confirm = MockConfirm(SYNCHRONOUS, ERR_SSL_PROTOCOL_ERROR);
+  ssl_provider->confirm_callback = FastForwardByCallback(kDelay);
+  base::TimeTicks start_time = base::TimeTicks::Now();
   helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
   TransactionHelperResult out = helper.output();
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
+
+  // The handshake time should include the time it took to run Connect(), but
+  // not ConfirmHandshake().
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(helper.trans()->GetLoadTimingInfo(&load_timing_info));
+  EXPECT_EQ(load_timing_info.connect_timing.connect_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_end, start_time + kDelay);
+  EXPECT_EQ(load_timing_info.connect_timing.connect_end, start_time + kDelay);
 }
 
 // Run multiple concurrent streams that don't require handshake confirmation.
@@ -9949,6 +9969,7 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTNoConfirmConfirmStreams) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
+  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -9970,12 +9991,26 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->connect_callback = FastForwardByCallback(kDelay);
   ssl_provider->confirm = MockConfirm(SYNCHRONOUS, OK);
+  ssl_provider->confirm_callback = FastForwardByCallback(kDelay);
+  base::TimeTicks start_time = base::TimeTicks::Now();
   helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
   TransactionHelperResult out = helper.output();
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
+
+  // The handshake time should include the time it took to run Connect(), but
+  // not ConfirmHandshake(). If ConfirmHandshake() returns synchronously, we
+  // assume the connection did not negotiate 0-RTT or the handshake was already
+  // confirmed.
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(helper.trans()->GetLoadTimingInfo(&load_timing_info));
+  EXPECT_EQ(load_timing_info.connect_timing.connect_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_end, start_time + kDelay);
+  EXPECT_EQ(load_timing_info.connect_timing.connect_end, start_time + kDelay);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
@@ -10009,6 +10044,7 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
+  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -10030,12 +10066,25 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
                                      std::move(session_deps));
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_provider->connect_callback = FastForwardByCallback(kDelay);
   ssl_provider->confirm = MockConfirm(ASYNC, OK);
+  ssl_provider->confirm_callback = FastForwardByCallback(kDelay);
+  base::TimeTicks start_time = base::TimeTicks::Now();
   helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
   TransactionHelperResult out = helper.output();
   EXPECT_THAT(out.rv, IsOk());
   EXPECT_EQ("HTTP/1.1 200", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
+
+  // The handshake time should include the time it took to run Connect() and
+  // ConfirmHandshake().
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(helper.trans()->GetLoadTimingInfo(&load_timing_info));
+  EXPECT_EQ(load_timing_info.connect_timing.connect_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_end, start_time + 2 * kDelay);
+  EXPECT_EQ(load_timing_info.connect_timing.connect_end,
+            start_time + 2 * kDelay);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTAsyncConfirmAsyncWrite) {

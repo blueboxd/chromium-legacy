@@ -285,7 +285,10 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  SendProtocolResponse(call_id, message->serialize(/*binary=*/true));
+  SendProtocolResponse(
+      call_id,
+      protocol::ProtocolMessage{
+          WTF::String(), WebVector<uint8_t>(message->serializeToBinary())});
 }
 
 void DevToolsSession::fallThrough(int call_id,
@@ -343,15 +346,19 @@ class DevToolsSession::Notification {
       : v8_notification_(std::move(notification)) {}
 
   protocol::ProtocolMessage Serialize() {
-    protocol::ProtocolMessage result;
     if (blink_notification_) {
-      result = blink_notification_->serialize(/*binary=*/true);
+      auto result = protocol::ProtocolMessage{
+          WTF::String(),
+          WebVector<uint8_t>(blink_notification_->serializeToBinary())};
       blink_notification_.reset();
-    } else if (v8_notification_) {
-      result = ToProtocolMessage(std::move(v8_notification_));
-      v8_notification_.reset();
+      return result;
     }
-    return result;
+    if (v8_notification_) {
+      auto result = ToProtocolMessage(std::move(v8_notification_));
+      v8_notification_.reset();
+      return result;
+    }
+    return protocol::ProtocolMessage();
   }
 
  private:

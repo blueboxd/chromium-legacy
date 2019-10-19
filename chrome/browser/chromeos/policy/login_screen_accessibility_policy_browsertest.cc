@@ -919,8 +919,9 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   EXPECT_FALSE(accessibility_manager->IsFocusHighlightEnabled());
 }
 
+// TODO(crbug.com/1015763): Flaky on ChromeOS.
 IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
-                       DeviceLoginScreenFullScreenMagnifier) {
+                       DISABLED_DeviceLoginScreenFullScreenMagnifier) {
   // Verifies that the state of the full-screen magnifier accessibility
   // feature on the login screen can be controlled through device policy.
   chromeos::MagnificationManager* magnification_manager =

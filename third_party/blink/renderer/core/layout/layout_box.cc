@@ -401,16 +401,6 @@ void LayoutBox::UpdateBackgroundAttachmentFixedStatusAfterStyleChange() {
   if (!GetFrameView())
     return;
 
-  // On low-powered/mobile devices, preventing blitting on a scroll can cause
-  // noticeable delays when scrolling a page with a fixed background image. As
-  // an optimization, assuming there are no fixed positoned elements on the
-  // page, we can acclerate scrolling (via blitting) if we ignore the CSS
-  // property "background-attachment: fixed".
-  bool ignore_fixed_background_attachment =
-      RuntimeEnabledFeatures::FastMobileScrollingEnabled();
-  if (ignore_fixed_background_attachment)
-    return;
-
   SetIsBackgroundAttachmentFixedObject(
       !BackgroundTransfersToView() &&
       StyleRef().HasFixedAttachmentBackgroundImage());

@@ -391,6 +391,9 @@ namespace autotestPrivate {
     static void getAllEnterprisePolicies(
         AllEnterprisePoliciesCallback callback);
 
+    // Refreshes the Enterprise Policies.
+    static void refreshEnterprisePolicies(VoidCallback callback);
+
     // Simulates a memory access bug for asan testing.
     static void simulateAsanMemoryBug();
 

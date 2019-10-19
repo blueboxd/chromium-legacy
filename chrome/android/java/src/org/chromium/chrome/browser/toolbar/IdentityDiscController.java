@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.signin.ChromeSigninController;
@@ -132,7 +133,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     private void showIdentityDisc(String accountName) {
         Drawable profileImage = mProfileDataCache.getProfileDataOrDefault(accountName).getImage();
         mToolbarManager.enableExperimentalButton(view -> {
-            RecordUserAction.record("MobileToolbarIdentityDiscTap");
+            recordIdentityDiscUsed();
             PreferencesLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
         }, profileImage, R.string.accessibility_toolbar_btn_identity_disc);
     }
@@ -207,5 +208,16 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         mToolbarManager.showIPHOnExperimentalButton(R.string.iph_identity_disc_text,
                 R.string.iph_identity_disc_accessibility_text,
                 () -> { tracker.dismissed(FeatureConstants.IDENTITY_DISC_FEATURE); });
+    }
+
+    /**
+     * Records IdentityDisc usage with feature engagement tracker. This signal can be used to decide
+     * whether to show in-product help.
+     */
+    private void recordIdentityDiscUsed() {
+        Profile profile = Profile.getLastUsedProfile();
+        Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
+        tracker.notifyEvent(EventConstants.IDENTITY_DISC_USED);
+        RecordUserAction.record("MobileToolbarIdentityDiscTap");
     }
 }

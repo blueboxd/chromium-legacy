@@ -406,3 +406,14 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 1, 1);
 }
+
+// The rest of cookie testing is done in
+// SubresourceLoadingPageLoadMetricsObserverBrowserTest.
+TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, HadCookies_None) {
+  StartTest(true /* data_saver_enabled */);
+
+  tester()->NavigateToUntrackedUrl();
+
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", 0);
+}

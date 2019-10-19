@@ -448,17 +448,13 @@ class JPEGImageReader final {
 
         switch (info_.jpeg_color_space) {
           case JCS_YCbCr:
-            // libjpeg can convert YCbCr image pixels to RGB.
-            // TODO(crbug.com/919627): is the info_.scale_denom <= 8 actually
-            // needed?
-            info_.out_color_space = rgbOutputColorSpace();
-            if (decoder_->HasImagePlanes() && info_.scale_denom <= 8 &&
-                (YuvSubsampling(info_) != cc::YUVSubsampling::kUnknown))
+            if (decoder_->CanDecodeToYUV() &&
+                YuvSubsampling(info_) == cc::YUVSubsampling::k420)
               override_color_space = JCS_YCbCr;
-            break;
+            FALLTHROUGH;  // libjpeg can convert YCbCr image pixels to RGB.
           case JCS_GRAYSCALE:
+            FALLTHROUGH;  // libjpeg can convert GRAYSCALE image pixels to RGB.
           case JCS_RGB:
-            // libjpeg can convert GRAYSCALE image pixels to RGB.
             info_.out_color_space = rgbOutputColorSpace();
             break;
           case JCS_CMYK:
@@ -596,6 +592,9 @@ class JPEGImageReader final {
       }
       FALLTHROUGH;
       case JPEG_START_DECOMPRESS:
+        if (info_.out_color_space == JCS_YCbCr)
+          DCHECK(decoder_->HasImagePlanes());
+
         // Set parameters for decompression.
         // FIXME -- Should reset dct_method and dither mode for final pass
         // of progressive JPEG.
@@ -820,14 +819,20 @@ void term_source(j_decompress_ptr jd) {
       ->Complete();
 }
 
-JPEGImageDecoder::JPEGImageDecoder(AlphaOption alpha_option,
-                                   const ColorBehavior& color_behavior,
-                                   size_t max_decoded_bytes,
-                                   size_t offset)
-    : ImageDecoder(alpha_option,
-                   ImageDecoder::kDefaultBitDepth,
-                   color_behavior,
-                   max_decoded_bytes),
+JPEGImageDecoder::JPEGImageDecoder(
+    AlphaOption alpha_option,
+    const ColorBehavior& color_behavior,
+    size_t max_decoded_bytes,
+    const OverrideAllowDecodeToYuv allow_decode_to_yuv,
+    size_t offset)
+    : ImageDecoder(
+          alpha_option,
+          ImageDecoder::kDefaultBitDepth,
+          color_behavior,
+          max_decoded_bytes,
+          // TODO(crbug.com/919627): replace kDefault case with runtime flag
+          (allow_decode_to_yuv == OverrideAllowDecodeToYuv::kDeny ? false
+                                                                  : false)),
       offset_(offset) {}
 
 JPEGImageDecoder::~JPEGImageDecoder() = default;
@@ -844,6 +849,17 @@ bool JPEGImageDecoder::SetSize(unsigned width, unsigned height) {
 }
 
 void JPEGImageDecoder::OnSetData(SegmentReader* data) {
+  // TODO(crbug.com/943519): Incremental YUV decoding is not currently
+  // supported.
+  if (IsAllDataReceived()) {
+    // TODO(crbug.com/919627): Right now |allow_decode_to_yuv_| is false by
+    // default and is only set true to for unit tests.
+    //
+    // Calling IsSizeAvailable() ensures the reader is created and the output
+    // color space is set.
+    allow_decode_to_yuv_ &=
+        IsSizeAvailable() && reader_->Info()->out_color_space == JCS_YCbCr;
+  }
   if (reader_)
     reader_->SetData(data);
 }
@@ -889,21 +905,6 @@ unsigned JPEGImageDecoder::DesiredScaleNumerator() const {
 
 bool JPEGImageDecoder::ShouldGenerateAllSizes() const {
   return supported_decode_sizes_.IsEmpty();
-}
-
-bool JPEGImageDecoder::CanDecodeToYUV() {
-  // TODO(crbug.com/919627): Right now |allow_decode_to_yuv_| is false by
-  // default and is only set true for unit tests.
-  //
-  // Returning false here is a bit deceptive because the
-  // JPEG decoder does support YUV. But the rest of the infrastructure at levels
-  // above the decoder is not quite there yet to handle the resulting JPEG YUV
-  // data, so for now we disable that path.
-  //
-  // Calling IsSizeAvailable() ensures the reader is created and the output
-  // color space is set.
-  return allow_decode_to_yuv_ && IsSizeAvailable() &&
-         reader_->Info()->out_color_space == JCS_YCbCr;
 }
 
 void JPEGImageDecoder::DecodeToYUV() {
@@ -1028,6 +1029,8 @@ bool OutputRows(JPEGImageReader* reader, ImageFrame& buffer) {
 static bool OutputRawData(JPEGImageReader* reader, ImagePlanes* image_planes) {
   JSAMPARRAY samples = reader->Samples();
   jpeg_decompress_struct* info = reader->Info();
+
+  DCHECK_EQ(info->out_color_space, JCS_YCbCr);
 
   JSAMPARRAY bufferraw[3];
   JSAMPROW bufferraw2[32];

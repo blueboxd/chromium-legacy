@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay_mock.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -1478,8 +1479,19 @@ class StubWebThemeEngine : public WebThemeEngine {
     return painted_color_scheme_[part];
   }
 
+  blink::PreferredColorScheme PreferredColorScheme() const override {
+    return preferred_color_scheme_;
+  }
+
+  void SetPreferredColorScheme(
+      const blink::PreferredColorScheme preferred_color_scheme) override {
+    preferred_color_scheme_ = preferred_color_scheme;
+  }
+
  private:
   std::array<WebColorScheme, kPartProgressBar + 1> painted_color_scheme_;
+  blink::PreferredColorScheme preferred_color_scheme_ =
+      blink::PreferredColorScheme::kNoPreference;
 };
 
 constexpr int StubWebThemeEngine::kMinimumHorizontalLength;
@@ -2750,8 +2762,9 @@ TEST_P(ScrollbarColorSchemeTest, MAYBE_ThemeEnginePaint) {
     </div>
   )HTML");
 
-  GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(GetDocument(),
+                                              PreferredColorScheme::kDark);
 
   Compositor().BeginFrame();
 

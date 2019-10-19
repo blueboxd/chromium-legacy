@@ -1487,9 +1487,11 @@ void NetworkContext::LoadHttpAuthCache(const base::UnguessableToken& cache_key,
   std::move(callback).Run();
 }
 
-void NetworkContext::AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
-                                       const net::AuthCredentials& credentials,
-                                       AddAuthCacheEntryCallback callback) {
+void NetworkContext::AddAuthCacheEntry(
+    const net::AuthChallengeInfo& challenge,
+    const net::NetworkIsolationKey& network_isolation_key,
+    const net::AuthCredentials& credentials,
+    AddAuthCacheEntryCallback callback) {
   if (challenge.challenger.scheme() == url::kFtpScheme) {
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
     net::FtpAuthCache* auth_cache = url_request_context_->ftp_auth_cache();
@@ -1502,14 +1504,12 @@ void NetworkContext::AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
         url_request_context_->http_transaction_factory()
             ->GetSession()
             ->http_auth_cache();
-    // TODO(mmenke): Use correct NetworkIsolationKey. Either make it a parameter
-    // to this method, or add it as a field of net::AuthChallengeInfo.
     http_auth_cache->Add(challenge.challenger.GetURL(),
                          challenge.is_proxy ? net::HttpAuth::AUTH_PROXY
                                             : net::HttpAuth::AUTH_SERVER,
                          challenge.realm,
                          net::HttpAuth::StringToScheme(challenge.scheme),
-                         net::NetworkIsolationKey(), challenge.challenge,
+                         network_isolation_key, challenge.challenge,
                          credentials, challenge.path);
   }
   std::move(callback).Run();
@@ -1826,6 +1826,11 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   session_params.disable_idle_sockets_close_on_memory_pressure =
       params_->disable_idle_sockets_close_on_memory_pressure;
+
+  if (network_service_) {
+    session_params.key_auth_cache_server_entries_by_network_isolation_key =
+        network_service_->split_auth_cache_by_network_isolation_key();
+  }
 
   builder.set_http_network_session_params(session_params);
 

@@ -125,9 +125,9 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // marked upon calling.
   inline bool MarkHeaderNoTracing(HeapObjectHeader*);
 
-  // Account for an object's live bytes. Should only be adjusted when
+  // Account for |size| live bytes. Should only be adjusted when
   // transitioning an object from unmarked to marked state.
-  ALWAYS_INLINE void AccountMarkedBytes(HeapObjectHeader*);
+  ALWAYS_INLINE void AccountMarkedBytes(size_t size);
 
   void RegisterBackingStoreReference(void** slot);
 
@@ -142,12 +142,8 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   int task_id_;
 };
 
-ALWAYS_INLINE void MarkingVisitorBase::AccountMarkedBytes(
-    HeapObjectHeader* header) {
-  marked_bytes_ +=
-      header->IsLargeObject()
-          ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))->size()
-          : header->size();
+ALWAYS_INLINE void MarkingVisitorBase::AccountMarkedBytes(size_t size) {
+  marked_bytes_ += size;
 }
 
 inline bool MarkingVisitorBase::MarkHeaderNoTracing(HeapObjectHeader* header) {
@@ -161,7 +157,11 @@ inline bool MarkingVisitorBase::MarkHeaderNoTracing(HeapObjectHeader* header) {
   DCHECK(!header->IsFree());
 
   if (header->TryMark<HeapObjectHeader::AccessMode::kAtomic>()) {
-    AccountMarkedBytes(header);
+    const size_t size =
+        header->IsLargeObject()
+            ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))->size()
+            : header->size();
+    AccountMarkedBytes(size);
     return true;
   }
   return false;
@@ -216,6 +216,8 @@ class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
   // Exact version of the marking write barriers.
   static bool WriteBarrierSlow(void*);
   static void TraceMarkedBackingStoreSlow(void*);
+
+  WriteBarrierWorklist::View write_barrier_worklist_;
 };
 
 ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(void* value) {

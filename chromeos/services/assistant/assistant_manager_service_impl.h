@@ -206,6 +206,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   assistant_client::AssistantManagerInternal* assistant_manager_internal() {
     return assistant_manager_internal_;
   }
+  CrosPlatformApi* platform_api() { return platform_api_.get(); }
 
   // media_session::mojom::MediaControllerObserver overrides:
   void MediaSessionInfoChanged(

@@ -341,6 +341,10 @@ class OmniboxViewViews : public OmniboxView,
   // and gets a tap. So we use this variable to remember focus state before tap.
   bool select_all_on_gesture_tap_ = false;
 
+  // True if we should suppress on-focus suggestions, because we are currently
+  // processing a focus ovent that we know the user didn't explicitly initiate.
+  bool suppress_on_focus_suggestions_ = false;
+
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.
   base::TimeTicks insert_char_time_;

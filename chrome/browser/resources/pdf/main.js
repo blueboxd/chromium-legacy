@@ -2,7 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import './elements/viewer-error-screen.js';
+import './elements/viewer-page-indicator.js';
+import './elements/viewer-password-screen.js';
+import './elements/viewer-pdf-toolbar.js';
+import './elements/viewer-zoom-toolbar.js';
+import './elements/shared-vars.js';
+// <if expr="chromeos">
+import './elements/viewer-ink-host.js';
+import './elements/viewer-form-warning.js';
+// </if>
+import {PDFViewer} from './pdf_viewer.js';
 
 /**
  * Global PDFViewer object, accessible for testing.
@@ -12,7 +22,6 @@
 window.viewer = null;
 
 
-(function() {
 /**
  * Stores any pending messages received which should be passed to the
  * PDFViewer when it is created.
@@ -73,17 +82,14 @@ function main() {
   // Set up an event listener to catch scripting messages which are sent prior
   // to the PDFViewer being created.
   window.addEventListener('message', handleScriptingMessage, false);
-  HTMLImports.whenReady(() => {
-    let chain = createBrowserApi();
+  let chain = createBrowserApi();
 
-    // Content settings may not be present in test environments.
-    if (chrome.contentSettings) {
-      chain = chain.then(configureJavaScriptContentSetting);
-    }
+  // Content settings may not be present in test environments.
+  if (chrome.contentSettings) {
+    chain = chain.then(configureJavaScriptContentSetting);
+  }
 
-    chain = chain.then(initViewer);
-  });
+  chain = chain.then(initViewer);
 }
 
 main();
-})();

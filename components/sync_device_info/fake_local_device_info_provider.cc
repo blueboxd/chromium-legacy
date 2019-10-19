@@ -17,7 +17,7 @@ FakeLocalDeviceInfoProvider::FakeLocalDeviceInfoProvider()
           "user_agent",
           sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
           "device_id",
-          base::SysInfo::HardwareInfo{"model", "manufacturer", "serial"},
+          base::SysInfo::HardwareInfo{"manufacturer", "model", "serial"},
           /*last_updated_timestamp=*/base::Time::Now(),
           /*send_tab_to_self_receiving_enabled=*/false,
           /*sharing_info=*/base::nullopt) {}

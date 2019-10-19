@@ -78,7 +78,7 @@ TEST_F(ChromeComponentExtensionResourceManagerTest,
 TEST_F(ChromeComponentExtensionResourceManagerTest,
        IsComponentExtensionResource_Generated) {
   // Check that the file being used for testing is indeed a generated resource.
-  int generated_resource_id = IDR_PDF_SHARED_VARS_M_JS;
+  int generated_resource_id = IDR_PDF_SHARED_VARS_JS;
   bool found_resource = false;
   for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
     if (kComponentExtensionResources[i].value == generated_resource_id) {
@@ -100,7 +100,7 @@ TEST_F(ChromeComponentExtensionResourceManagerTest,
 
   base::FilePath extension_path = resources_dir.AppendASCII("pdf");
   base::FilePath resource_path =
-      base::FilePath().AppendASCII("elements/shared-vars.m.js");
+      base::FilePath().AppendASCII("elements/shared-vars.js");
 
   // Check that the resource is classified as a component resource.
   int resource_id = 0;

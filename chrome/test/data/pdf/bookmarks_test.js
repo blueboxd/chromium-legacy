@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {createBookmarksForTest} from './test_util.js';
+
 var tests = [
   /**
    * Test that the correct bookmarks were loaded for
@@ -61,14 +64,14 @@ var tests = [
     bookmarkContent.bookmarks = viewer.bookmarks;
     document.body.appendChild(bookmarkContent);
 
-    Polymer.dom.flush();
+    flush();
 
     var rootBookmarks =
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
     chrome.test.assertEq(3, rootBookmarks.length, 'three root bookmarks');
     rootBookmarks[0].$.expand.click();
 
-    Polymer.dom.flush();
+    flush();
 
     var subBookmarks =
         rootBookmarks[0].shadowRoot.querySelectorAll('viewer-bookmark');

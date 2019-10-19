@@ -11,6 +11,8 @@ from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithOwner
 from .constant import Constant
+from .constructor import Constructor
+from .constructor import ConstructorGroup
 from .exposure import Exposure
 from .idl_type import IdlType
 from .ir_map import IRMap
@@ -34,6 +36,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                      inherited=None,
                      attributes=None,
                      constants=None,
+                     constructors=None,
                      operations=None,
                      stringifier=None,
                      iterable=None,
@@ -47,6 +50,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             assert inherited is None or isinstance(inherited, RefById)
             assert attributes is None or isinstance(attributes, (list, tuple))
             assert constants is None or isinstance(constants, (list, tuple))
+            assert constructors is None or isinstance(constructors,
+                                                      (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
             assert stringifier is None or isinstance(stringifier,
                                                      Stringifier.IR)
@@ -56,12 +61,16 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
 
             attributes = attributes or []
             constants = constants or []
+            constructors = constructors or []
             operations = operations or []
             assert all(
                 isinstance(attribute, Attribute.IR)
                 for attribute in attributes)
             assert all(
                 isinstance(constant, Constant.IR) for constant in constants)
+            assert all(
+                isinstance(constructor, Constructor.IR)
+                for constructor in constructors)
             assert all(
                 isinstance(operation, Operation.IR)
                 for operation in operations)
@@ -89,6 +98,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.inherited = inherited
             self.attributes = list(attributes)
             self.constants = list(constants)
+            self.constructors = list(constructors)
+            self.constructor_groups = []
             self.operations = list(operations)
             self.operation_groups = []
             self.stringifier = stringifier
@@ -101,6 +112,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
                 yield attribute
             for constant in self.constants:
                 yield constant
+            for constructor in self.constructors:
+                yield constructor
             for operation in self.operations:
                 yield operation
 
@@ -126,6 +139,19 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         self._constants = tuple([
             Constant(constant_ir, owner=self) for constant_ir in ir.constants
         ])
+        self._constructors = tuple([
+            Constructor(constructor_ir, owner=self)
+            for constructor_ir in ir.constructors
+        ])
+        self._constructor_groups = tuple([
+            ConstructorGroup(
+                constructor_group_ir,
+                filter(
+                    lambda x: x.identifier == constructor_group_ir.identifier,
+                    self._constructors),
+                owner=self) for constructor_group_ir in ir.constructor_groups
+        ])
+        assert len(self._constructor_groups) <= 1
         self._operations = tuple([
             Operation(operation_ir, owner=self)
             for operation_ir in ir.operations
@@ -179,6 +205,20 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._constants
 
     @property
+    def constructors(self):
+        """Returns constructors."""
+        return self._constructors
+
+    @property
+    def constructor_groups(self):
+        """
+        Returns groups of constructors.
+
+        Constructors are grouped as operations are. There is 0 or 1 group.
+        """
+        return self._constructor_groups
+
+    @property
     def operations(self):
         """
         Returns all operations, including special operations without an
@@ -199,11 +239,6 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         operation group.
         """
         return self._operation_groups
-
-    @property
-    def constructors(self):
-        """Returns a constructor group."""
-        assert False, "Not implemented yet."
 
     @property
     def named_constructor(self):

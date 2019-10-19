@@ -78,21 +78,6 @@ UIImage* GetOmniboxSuggestionIconForAutocompleteMatchType(
 
 #pragma mark - Security icons.
 
-NSString* GetLocationBarSecurityIconTypeAssetName(
-    LocationBarSecurityIconType iconType) {
-  switch (iconType) {
-    case INSECURE:
-      return @"location_bar_insecure";
-    case SECURE:
-      return @"location_bar_secure";
-    case DANGEROUS:
-      return @"location_bar_dangerous";
-    case LOCATION_BAR_SECURITY_ICON_TYPE_COUNT:
-      NOTREACHED();
-      return @"location_bar_insecure";
-  }
-}
-
 // Returns the asset with "always template" rendering mode.
 UIImage* GetLocationBarSecurityIcon(LocationBarSecurityIconType iconType) {
   NSString* imageName = GetLocationBarSecurityIconTypeAssetName(iconType);

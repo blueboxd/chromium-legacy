@@ -108,9 +108,10 @@ static void SendProtocolResponseOrNotification(
     content::DevToolsAgentHostClient* client,
     content::DevToolsAgentHost* agent_host,
     std::unique_ptr<protocol::Serializable> message) {
-  std::string cbor = message->serialize(/*binary=*/true);
+  std::vector<uint8_t> cbor = message->serializeToBinary();
   if (client->UsesBinaryProtocol()) {
-    client->DispatchProtocolMessage(agent_host, cbor);
+    client->DispatchProtocolMessage(agent_host,
+                                    std::string(cbor.begin(), cbor.end()));
     return;
   }
   std::string json;

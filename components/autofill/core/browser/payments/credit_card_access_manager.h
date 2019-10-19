@@ -131,10 +131,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void OnDidGetUnmaskDetails(AutofillClient::PaymentsRpcResult result,
                              AutofillClient::UnmaskDetails& unmask_details);
 
-  // Calls either CreditCardFIDOAuthenticator::Authenticate() or
-  // CreditCardCVCAuthenticator::Authenticate() depending on the response
-  // contained in |unmask_details_|.
-  void Authenticate(bool did_get_unmask_details = false);
+  // If OnDidGetUnmaskDetails() was invoked by PaymentsClient, then
+  // |get_unmask_details_returned| should be set to true. Based on the
+  // contents of |unmask_details_|, either FIDO authentication or CVC
+  // authentication will be prompted. If |get_unmask_details_returned| is false,
+  // then only CVC authentication will be prompted.
+  void Authenticate(bool get_unmask_details_returned = false);
 
   // CreditCardCVCAuthenticator::Requester:
   void OnCVCAuthenticationComplete(

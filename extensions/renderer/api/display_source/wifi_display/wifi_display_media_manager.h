@@ -34,7 +34,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   WiFiDisplayMediaManager(
       const blink::WebMediaStreamTrack& video_track,
       const blink::WebMediaStreamTrack& audio_track,
-      const std::string& sink_ip_address,
+      const net::IPAddress& sink_ip_address,
       service_manager::InterfaceProvider* interface_provider,
       const ErrorCallback& error_callback);
 
@@ -79,7 +79,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   std::unique_ptr<WiFiDisplayVideoSink> video_sink_;
 
   service_manager::InterfaceProvider* interface_provider_;
-  std::string sink_ip_address_;
+  net::IPAddress sink_ip_address_;
   std::pair<int, int> sink_rtp_ports_;
   wds::H264VideoFormat optimal_video_format_;
   wds::AudioCodec optimal_audio_codec_;

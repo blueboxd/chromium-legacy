@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "net/http/http_raw_request_headers.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_body_drainer.h"
@@ -31,7 +32,10 @@ int HttpBasicStream::InitializeStream(const HttpRequestInfo* request_info,
   state_.Initialize(request_info, priority, net_log);
   int ret = OK;
   if (!can_send_early) {
-    ret = parser()->ConfirmHandshake(std::move(callback));
+    // parser() cannot outlive |this|, so we can use base::Unretained().
+    ret = parser()->ConfirmHandshake(
+        base::BindOnce(&HttpBasicStream::OnHandshakeConfirmed,
+                       base::Unretained(this), std::move(callback)));
   }
   return ret;
 }
@@ -125,6 +129,14 @@ bool HttpBasicStream::GetLoadTimingInfo(
     return false;
   }
 
+  // If the request waited for handshake confirmation, shift |ssl_end| to
+  // include that time.
+  if (!load_timing_info->connect_timing.ssl_end.is_null() &&
+      !confirm_handshake_end_.is_null()) {
+    load_timing_info->connect_timing.ssl_end = confirm_handshake_end_;
+    load_timing_info->connect_timing.connect_end = confirm_handshake_end_;
+  }
+
   load_timing_info->receive_headers_start = parser()->response_start_time();
   return true;
 }
@@ -178,6 +190,17 @@ void HttpBasicStream::SetPriority(RequestPriority priority) {
 void HttpBasicStream::SetRequestHeadersCallback(
     RequestHeadersCallback callback) {
   request_headers_callback_ = std::move(callback);
+}
+
+void HttpBasicStream::OnHandshakeConfirmed(CompletionOnceCallback callback,
+                                           int rv) {
+  if (rv == OK) {
+    // Note this time is only recorded if ConfirmHandshake() completed
+    // asynchronously. If it was synchronous, GetLoadTimingInfo() assumes the
+    // handshake was already confirmed or there was nothing to confirm.
+    confirm_handshake_end_ = base::TimeTicks::Now();
+  }
+  std::move(callback).Run(rv);
 }
 
 }  // namespace net

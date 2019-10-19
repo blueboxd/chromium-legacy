@@ -236,12 +236,6 @@ bool ImageFrameGenerator::GetYUVComponentSizes(
       ImageDecoder::kDefaultBitDepth, decoder_color_behavior_);
   DCHECK(decoder);
 
-  // Setting a dummy ImagePlanes object signals to the decoder that we want to
-  // do YUV decoding.
-  std::unique_ptr<ImagePlanes> dummy_image_planes =
-      std::make_unique<ImagePlanes>();
-  decoder->SetImagePlanes(std::move(dummy_image_planes));
-
   DCHECK(decoder->CanDecodeToYUV());
   *yuv_color_space = decoder->GetYUVColorSpace();
 

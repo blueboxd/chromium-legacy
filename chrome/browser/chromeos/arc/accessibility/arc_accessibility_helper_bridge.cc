@@ -578,7 +578,7 @@ void ArcAccessibilityHelperBridge::OnAction(
   AXTreeSourceArc* tree_source = GetFromTreeId(data.target_tree_id);
   if (!tree_source)
     return;
-  action_data->window_id = tree_source->window_id();
+  action_data->window_id = tree_source->GetWindowId();
 
   switch (data.action) {
     case ax::mojom::Action::kDoDefault:

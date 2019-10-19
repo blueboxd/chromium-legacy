@@ -19,6 +19,8 @@ enum class BadgeType {
   kBadgeTypeIncognito = 3,
   // Badge type for when there are more than one badge to be displayed.
   kBadgeTypeOverflow = 4,
+  // Badge type for Save Credit Card Infobar.
+  kBadgeTypeSaveCard = 5,
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_BADGES_BADGE_TYPE_H_

@@ -84,7 +84,21 @@ source_set("omnibox_util") {
     "//ios/chrome/browser/ui:feature_flags",
   ]
   public_deps = [
+    ":omnibox_icon_type_constants",
     "//ios/chrome/app/theme",
+  ]
+}
+
+# This target can also be used on EG2 tests, so it should only contain constants
+source_set("omnibox_icon_type_constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "omnibox_icon_type.h",
+    "omnibox_icon_type.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -161,6 +175,7 @@ source_set("omnibox_internal") {
     "//url",
   ]
   public_deps = [
+    ":omnibox_icon_type_constants",
     "//components/omnibox/browser",
   ]
   libs = [

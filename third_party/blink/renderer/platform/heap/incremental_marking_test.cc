@@ -111,12 +111,14 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
       : IncrementalMarkingScopeBase(thread_state),
         gc_forbidden_scope_(thread_state),
         marking_worklist_(heap_.GetMarkingWorklist()),
+        write_barrier_worklist_(heap_.GetWriteBarrierWorklist()),
         not_fully_constructed_worklist_(
             heap_.GetNotFullyConstructedWorklist()) {
     thread_state_->SetGCPhase(ThreadState::GCPhase::kMarking);
     ThreadState::AtomicPauseScope atomic_pause_scope_(thread_state_);
     ScriptForbiddenScope script_forbidden_scope;
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     thread_state->EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor = std::make_unique<MarkingVisitor>(
@@ -125,6 +127,7 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
 
   ~IncrementalMarkingScope() {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     thread_state_->DisableIncrementalMarkingBarrier();
     // Need to clear out unused worklists that might have been polluted during
@@ -135,6 +138,9 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
   }
 
   MarkingWorklist* marking_worklist() const { return marking_worklist_; }
+  WriteBarrierWorklist* write_barrier_worklist() const {
+    return write_barrier_worklist_;
+  }
   NotFullyConstructedWorklist* not_fully_constructed_worklist() const {
     return not_fully_constructed_worklist_;
   }
@@ -142,6 +148,7 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
  protected:
   ThreadState::GCForbiddenScope gc_forbidden_scope_;
   MarkingWorklist* const marking_worklist_;
+  WriteBarrierWorklist* const write_barrier_worklist_;
   NotFullyConstructedWorklist* const not_fully_constructed_worklist_;
 };
 
@@ -156,6 +163,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
         objects_(objects),
         backing_visitor_(thread_state_, &objects_) {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     for (void* object : objects_) {
       // Ensure that the object is in the normal arena so we can ignore backing
       // objects on the marking stack.
@@ -168,9 +176,8 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
   }
 
   ~ExpectWriteBarrierFires() {
-    EXPECT_FALSE(marking_worklist_->IsGlobalEmpty());
+    // All objects watched should be on the marking or write barrier worklist.
     MarkingItem item;
-    // All objects watched should be on the marking stack.
     while (marking_worklist_->Pop(WorklistTaskId::MutatorThread, &item)) {
       // Inspect backing stores to allow specifying objects that are only
       // reachable through a backing store.
@@ -184,6 +191,21 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
       if (objects_.end() != pos)
         objects_.erase(pos);
     }
+    HeapObjectHeader* header;
+    while (
+        write_barrier_worklist_->Pop(WorklistTaskId::MutatorThread, &header)) {
+      // Inspect backing stores to allow specifying objects that are only
+      // reachable through a backing store.
+      if (!ThreadHeap::IsNormalArenaIndex(
+              PageFromObject(header->Payload())->Arena()->ArenaIndex())) {
+        backing_visitor_.ProcessBackingStore(header);
+        continue;
+      }
+      auto** pos =
+          std::find(objects_.begin(), objects_.end(), header->Payload());
+      if (objects_.end() != pos)
+        objects_.erase(pos);
+    }
     EXPECT_TRUE(objects_.IsEmpty());
     // All headers of objects watched should be marked at this point.
     for (HeapObjectHeader* header : headers_) {
@@ -191,6 +213,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
       header->Unmark();
     }
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
   }
 
  private:
@@ -208,6 +231,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
                             std::initializer_list<void*> objects)
       : IncrementalMarkingScope(thread_state) {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     for (void* object : objects_) {
       HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
       headers_.push_back(std::make_pair(header, header->IsMarked()));
@@ -216,6 +240,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
 
   ~ExpectNoWriteBarrierFires() {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
+    EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
     for (const auto& pair : headers_) {
       EXPECT_EQ(pair.second, pair.first->IsMarked());
       pair.first->Unmark();
@@ -1442,7 +1467,6 @@ TEST_F(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
 
   // Clear any objects that have been added to the regular marking worklist in
   // the process of calling the constructor.
-  EXPECT_FALSE(scope.marking_worklist()->IsGlobalEmpty());
   MarkingItem marking_item;
   while (scope.marking_worklist()->Pop(WorklistTaskId::MutatorThread,
                                        &marking_item)) {
@@ -1452,6 +1476,14 @@ TEST_F(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
       header->Unmark();
   }
   EXPECT_TRUE(scope.marking_worklist()->IsGlobalEmpty());
+  // Clear any write barriers so far.
+  HeapObjectHeader* header;
+  while (scope.write_barrier_worklist()->Pop(WorklistTaskId::MutatorThread,
+                                             &header)) {
+    if (header->IsMarked())
+      header->Unmark();
+  }
+  EXPECT_TRUE(scope.write_barrier_worklist()->IsGlobalEmpty());
 
   EXPECT_FALSE(scope.not_fully_constructed_worklist()->IsGlobalEmpty());
   NotFullyConstructedItem partial_item;

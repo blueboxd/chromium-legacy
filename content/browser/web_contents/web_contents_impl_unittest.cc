@@ -3444,17 +3444,15 @@ TEST_F(WebContentsImplTest, RegisterProtocolHandlerDifferentOrigin) {
       .Times(1);
 
   {
-    FrameHostMsg_RegisterProtocolHandler message(
-        main_test_rfh()->GetRoutingID(), "mailto", handler_url1,
-        base::string16(), /*user_gesture=*/true);
-    contents()->OnMessageReceived(main_test_rfh(), message);
+    contents()->RegisterProtocolHandler(main_test_rfh(), "mailto", handler_url1,
+                                        base::string16(),
+                                        /*user_gesture=*/true);
   }
 
   {
-    FrameHostMsg_RegisterProtocolHandler message(
-        main_test_rfh()->GetRoutingID(), "mailto", handler_url2,
-        base::string16(), /*user_gesture=*/true);
-    contents()->OnMessageReceived(main_test_rfh(), message);
+    contents()->RegisterProtocolHandler(main_test_rfh(), "mailto", handler_url2,
+                                        base::string16(),
+                                        /*user_gesture=*/true);
   }
 
   contents()->SetDelegate(nullptr);
@@ -3475,10 +3473,9 @@ TEST_F(WebContentsImplTest, RegisterProtocolHandlerDataURL) {
       .Times(0);
 
   {
-    FrameHostMsg_RegisterProtocolHandler message(
-        main_test_rfh()->GetRoutingID(), "mailto", data_handler,
-        base::string16(), /*user_gesture=*/true);
-    contents()->OnMessageReceived(main_test_rfh(), message);
+    contents()->RegisterProtocolHandler(main_test_rfh(), "mailto", data_handler,
+                                        base::string16(),
+                                        /*user_gesture=*/true);
   }
 
   contents()->SetDelegate(nullptr);

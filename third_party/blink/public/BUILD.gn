@@ -113,7 +113,6 @@ source_set("test_headers") {
     "web/modules/peerconnection/mock_peer_connection_dependency_factory.h",
     "web/modules/peerconnection/mock_peer_connection_impl.h",
     "web/modules/peerconnection/mock_web_rtc_peer_connection_handler_client.h",
-    "web/modules/peerconnection/webrtc_stats_report_obtainer.h",
   ]
   deps = [
     ":blink_headers",

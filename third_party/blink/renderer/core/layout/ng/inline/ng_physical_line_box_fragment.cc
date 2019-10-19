@@ -65,7 +65,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
   DCHECK(!metrics_.IsEmpty() || IsEmptyLineBox());
   base_direction_ = static_cast<unsigned>(builder->base_direction_);
   has_hanging_ = builder->hang_inline_size_ != 0;
-  has_propagated_descendants_ = has_floating_descendants_ ||
+  has_propagated_descendants_ = has_floating_descendants_for_paint_ ||
                                 HasOutOfFlowPositionedDescendants() ||
                                 builder->unpositioned_list_marker_;
 }

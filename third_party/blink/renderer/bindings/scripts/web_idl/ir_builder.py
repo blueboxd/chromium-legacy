@@ -12,6 +12,7 @@ from .composition_parts import DebugInfo
 from .composition_parts import Identifier
 from .composition_parts import Location
 from .constant import Constant
+from .constructor import Constructor
 from .dictionary import Dictionary
 from .dictionary import DictionaryMember
 from .enumeration import Enumeration
@@ -112,18 +113,26 @@ class _IRBuilder(object):
         setlike = self._take_setlike(child_nodes)
         extended_attributes = self._take_extended_attributes(child_nodes)
 
-        members = map(self._build_interface_or_namespace_member, child_nodes)
+        identifier = Identifier(node.GetName())
+        members = [
+            self._build_interface_or_namespace_member(
+                child, interface_identifier=identifier)
+            for child in child_nodes
+        ]
         attributes = []
         constants = []
+        constructors = []
         operations = []
         for member in members:
             if isinstance(member, Attribute.IR):
                 attributes.append(member)
+            elif isinstance(member, Constant.IR):
+                constants.append(member)
+            elif isinstance(member, Constructor.IR):
+                constructors.append(member)
             elif isinstance(member, Operation.IR):
                 if member.identifier:
                     operations.append(member)
-            elif isinstance(member, Constant.IR):
-                constants.append(member)
             else:
                 assert False
 
@@ -134,12 +143,13 @@ class _IRBuilder(object):
         # TODO(peria): Create indexed/named property handlers from |operations|.
 
         return Interface.IR(
-            identifier=Identifier(node.GetName()),
+            identifier=identifier,
             is_partial=bool(node.GetProperty('PARTIAL')),
             is_mixin=bool(node.GetProperty('MIXIN')),
             inherited=inherited,
             attributes=attributes,
             constants=constants,
+            constructors=constructors,
             operations=operations,
             stringifier=stringifier,
             iterable=iterable,
@@ -179,8 +189,10 @@ class _IRBuilder(object):
             component=self._component,
             debug_info=self._build_debug_info(node))
 
-    def _build_interface_or_namespace_member(
-            self, node, fallback_extended_attributes=None):
+    def _build_interface_or_namespace_member(self,
+                                             node,
+                                             fallback_extended_attributes=None,
+                                             interface_identifier=None):
         def build_attribute(node):
             child_nodes = list(node.GetChildren())
             idl_type = self._take_type(child_nodes)
@@ -214,6 +226,23 @@ class _IRBuilder(object):
                 component=self._component,
                 debug_info=self._build_debug_info(node))
 
+        def build_constructor(node):
+            assert interface_identifier is not None
+            child_nodes = list(node.GetChildren())
+            arguments = self._take_arguments(child_nodes)
+            extended_attributes = self._take_extended_attributes(
+                child_nodes) or fallback_extended_attributes
+            assert len(child_nodes) == 0
+            return_type = self._idl_type_factory.reference_type(
+                ref_to_idl_type=self._create_ref_to_idl_type(
+                    interface_identifier))
+            return Constructor.IR(
+                arguments=arguments,
+                return_type=return_type,
+                extended_attributes=extended_attributes,
+                component=self._component,
+                debug_info=self._build_debug_info(node))
+
         def build_operation(node):
             child_nodes = list(node.GetChildren())
             arguments = self._take_arguments(child_nodes)
@@ -233,6 +262,7 @@ class _IRBuilder(object):
         build_functions = {
             'Attribute': build_attribute,
             'Const': build_constant,
+            'Constructor': build_constructor,
             'Operation': build_operation,
         }
         return build_functions[node.GetClass()](node)

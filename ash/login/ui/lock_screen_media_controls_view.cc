@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_util.h"
+#include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -42,39 +43,36 @@ using media_session::mojom::MediaSessionAction;
 
 namespace {
 
-constexpr SkColor kMediaButtonColor = SK_ColorWHITE;
-constexpr SkColor kProgressBarForeground =
-    SkColorSetARGB(0xFF, 0x8A, 0xB4, 0xF8);
+constexpr SkColor kProgressBarForeground = gfx::kGoogleBlue300;
 constexpr SkColor kProgressBarBackground =
-    SkColorSetARGB(0x4C, 0x8A, 0xB4, 0xF8);
+    SkColorSetA(gfx::kGoogleBlue300, 0x4C);  // 30%
 
 // Maximum number of actions that should be displayed on |button_row_|.
 constexpr size_t kMaxActions = 5;
 
 // Dimensions.
-constexpr gfx::Insets kMediaControlsInsets = gfx::Insets(15, 15, 15, 15);
+constexpr gfx::Insets kMediaControlsInsets = gfx::Insets(16, 16, 16, 16);
 constexpr int kMediaControlsCornerRadius = 16;
-constexpr int kMinimumIconSize = 16;
-constexpr int kDesiredIconSize = 20;
-constexpr int kIconSize = 20;
-constexpr int kMinimumArtworkSize = 50;
-constexpr int kDesiredArtworkSize = 80;
-constexpr gfx::Size kArtworkSize = gfx::Size(80, 80);
-constexpr int kArtworkRowSeparator = 10;
-constexpr gfx::Size kArtworkRowPreferredSize = gfx::Size(300, 10);
-constexpr gfx::Size kMediaButtonSize = gfx::Size(46, 46);
-constexpr int kMediaButtonRowSeparator = 14;
-constexpr gfx::Insets kButtonRowInsets = gfx::Insets(10, 0, 0, 0);
-constexpr int kPlayPauseIconSize = 28;
-constexpr int kChangeTrackIconSize = 14;
-constexpr int kSeekingIconsSize = 26;
+constexpr int kMinimumSourceIconSize = 16;
+constexpr int kDesiredSourceIconSize = 20;
+constexpr int kMinimumArtworkSize = 30;
+constexpr int kDesiredArtworkSize = 48;
+constexpr int kArtworkRowPadding = 16;
+constexpr gfx::Insets kArtworkRowInsets = gfx::Insets(24, 0, 9, 0);
+constexpr gfx::Size kArtworkRowPreferredSize =
+    gfx::Size(328, kDesiredArtworkSize);
+constexpr int kMediaButtonRowPadding = 16;
+constexpr gfx::Insets kButtonRowInsets = gfx::Insets(4, 0, 0, 0);
+constexpr int kPlayPauseIconSize = 40;
+constexpr int kMediaControlsIconSize = 24;
+constexpr gfx::Size kPlayPauseButtonSize = gfx::Size(72, 72);
+constexpr gfx::Size kMediaControlsButtonSize = gfx::Size(48, 48);
 constexpr gfx::Size kMediaControlsButtonRowSize =
-    gfx::Size(300, kMediaButtonSize.height());
+    gfx::Size(328, kPlayPauseButtonSize.height());
 constexpr gfx::Size kMediaButtonGroupSize =
-    gfx::Size(2 * kMediaButtonSize.width() + kMediaButtonRowSeparator,
-              kMediaButtonSize.height());
+    gfx::Size(2 * kMediaControlsButtonSize.width() + kMediaButtonRowPadding,
+              kPlayPauseButtonSize.height());
 constexpr int kArtworkCornerRadius = 4;
-constexpr int kMediaActionButtonCornerRadius = kMediaButtonSize.width() / 2;
 
 constexpr int kDragVelocityThreshold = 6;
 constexpr int kDistanceDismissalThreshold = 20;
@@ -109,17 +107,17 @@ gfx::Size ScaleSizeToFitView(const gfx::Size& size,
 const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
   switch (action) {
     case MediaSessionAction::kPreviousTrack:
-      return kLockScreenPreviousTrackIcon;
+      return vector_icons::kMediaPreviousTrackIcon;
     case MediaSessionAction::kPause:
-      return kLockScreenPauseIcon;
+      return vector_icons::kPauseIcon;
     case MediaSessionAction::kNextTrack:
-      return kLockScreenNextTrackIcon;
+      return vector_icons::kMediaNextTrackIcon;
     case MediaSessionAction::kPlay:
-      return kLockScreenPlayIcon;
+      return vector_icons::kPlayArrowIcon;
     case MediaSessionAction::kSeekBackward:
-      return kLockScreenSeekBackwardIcon;
+      return vector_icons::kMediaSeekBackwardIcon;
     case MediaSessionAction::kSeekForward:
-      return kLockScreenSeekForwardIcon;
+      return vector_icons::kMediaSeekForwardIcon;
 
     // The following actions are not yet supported on the controls.
     case MediaSessionAction::kStop:
@@ -141,7 +139,10 @@ class MediaActionButton : public views::ImageButton {
                     int icon_size,
                     MediaSessionAction action,
                     const base::string16& accessible_name)
-      : views::ImageButton(listener), icon_size_(icon_size) {
+      : views::ImageButton(listener),
+        is_play_pause_(action == MediaSessionAction::kPause ||
+                       action == MediaSessionAction::kPlay),
+        icon_size_(icon_size) {
     SetInkDropMode(views::Button::InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
     SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
@@ -149,7 +150,8 @@ class MediaActionButton : public views::ImageButton {
     SetBorder(
         views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
             views::INSETS_VECTOR_IMAGE_BUTTON)));
-    SetPreferredSize(kMediaButtonSize);
+    SetPreferredSize(is_play_pause_ ? kPlayPauseButtonSize
+                                    : kMediaControlsButtonSize);
     SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     SetAction(action, accessible_name);
   }
@@ -160,16 +162,22 @@ class MediaActionButton : public views::ImageButton {
                  const base::string16& accessible_name) {
     set_tag(static_cast<int>(action));
     SetTooltipText(accessible_name);
-    views::SetImageFromVectorIcon(this, GetVectorIconForMediaAction(action),
-                                  icon_size_, kMediaButtonColor);
+    views::SetImageFromVectorIcon(
+        this, GetVectorIconForMediaAction(action), icon_size_,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconPrimary,
+            AshColorProvider::AshColorMode::kDark));
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return std::make_unique<views::RoundRectInkDropMask>(
-        size(), gfx::Insets(), kMediaActionButtonCornerRadius);
+    return std::make_unique<views::CircleInkDropMask>(
+        size(), GetLocalBounds().CenterPoint(),
+        is_play_pause_ ? kPlayPauseButtonSize.width() / 2
+                       : kMediaControlsButtonSize.width() / 2);
   }
 
  private:
+  const bool is_play_pause_;
   int const icon_size_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaActionButton);
@@ -196,6 +204,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
     const Callbacks& callbacks)
     : connector_(connector),
       hide_controls_timer_(new base::OneShotTimer()),
+      hide_artwork_timer_(new base::OneShotTimer()),
       media_controls_enabled_(callbacks.media_controls_enabled),
       hide_media_controls_(callbacks.hide_media_controls),
       show_media_controls_(callbacks.show_media_controls) {
@@ -234,16 +243,18 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   artwork_row->SetPreferredSize(kArtworkRowPreferredSize);
   auto* artwork_row_layout =
       artwork_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kArtworkRowSeparator));
+          views::BoxLayout::Orientation::kHorizontal, kArtworkRowInsets,
+          kArtworkRowPadding));
   artwork_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   artwork_row_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
 
   auto session_artwork = std::make_unique<views::ImageView>();
-  session_artwork->SetPreferredSize(kArtworkSize);
+  session_artwork->SetPreferredSize(
+      gfx::Size(kDesiredArtworkSize, kDesiredArtworkSize));
   session_artwork_ = artwork_row->AddChildView(std::move(session_artwork));
+  session_artwork_->SetVisible(false);
 
   // |track_column| contains the title and artist labels of the current media
   // session.
@@ -259,7 +270,9 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   auto title_label = std::make_unique<views::Label>();
   title_label->SetFontList(base_font_list.Derive(
       2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD));
-  title_label->SetEnabledColor(SK_ColorWHITE);
+  title_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextPrimary,
+      AshColorProvider::AshColorMode::kDark));
   title_label->SetAutoColorReadabilityEnabled(false);
   title_label->SetElideBehavior(gfx::ELIDE_TAIL);
   title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -268,7 +281,9 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   auto artist_label = std::make_unique<views::Label>();
   artist_label->SetFontList(base_font_list.Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::LIGHT));
-  artist_label->SetEnabledColor(SK_ColorWHITE);
+  artist_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::AshColorMode::kDark));
   artist_label->SetAutoColorReadabilityEnabled(false);
   artist_label->SetElideBehavior(gfx::ELIDE_TAIL);
   artist_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -298,7 +313,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   auto* button_row_layout =
       button_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, kButtonRowInsets,
-          kMediaButtonRowSeparator));
+          kMediaButtonRowPadding));
   button_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   button_row_layout->set_main_axis_alignment(
@@ -307,7 +322,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   auto* left_control_group_layout =
       left_control_group->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kMediaButtonRowSeparator));
+          kMediaButtonRowPadding));
   left_control_group_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   left_control_group_layout->set_main_axis_alignment(
@@ -316,7 +331,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   auto* right_control_group_layout =
       right_control_group->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-          kMediaButtonRowSeparator));
+          kMediaButtonRowPadding));
   right_control_group_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   right_control_group_layout->set_main_axis_alignment(
@@ -330,13 +345,13 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   media_action_buttons_.push_back(
       left_control_group->AddChildView(std::make_unique<MediaActionButton>(
-          this, kChangeTrackIconSize, MediaSessionAction::kPreviousTrack,
+          this, kMediaControlsIconSize, MediaSessionAction::kPreviousTrack,
           l10n_util::GetStringUTF16(
               IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK))));
 
   media_action_buttons_.push_back(
       left_control_group->AddChildView(std::make_unique<MediaActionButton>(
-          this, kSeekingIconsSize, MediaSessionAction::kSeekBackward,
+          this, kMediaControlsIconSize, MediaSessionAction::kSeekBackward,
           l10n_util::GetStringUTF16(
               IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_BACKWARD))));
 
@@ -354,13 +369,13 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   media_action_buttons_.push_back(
       right_control_group->AddChildView(std::make_unique<MediaActionButton>(
-          this, kSeekingIconsSize, MediaSessionAction::kSeekForward,
+          this, kMediaControlsIconSize, MediaSessionAction::kSeekForward,
           l10n_util::GetStringUTF16(
               IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_FORWARD))));
 
   media_action_buttons_.push_back(
       right_control_group->AddChildView(std::make_unique<MediaActionButton>(
-          this, kChangeTrackIconSize, MediaSessionAction::kNextTrack,
+          this, kMediaControlsIconSize, MediaSessionAction::kNextTrack,
           l10n_util::GetStringUTF16(
               IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK))));
 
@@ -398,7 +413,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   media_controller_remote_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kSourceIcon,
-      kMinimumIconSize, kDesiredIconSize,
+      kMinimumSourceIconSize, kDesiredSourceIconSize,
       icon_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
@@ -590,8 +605,9 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
 
   switch (type) {
     case media_session::mojom::MediaSessionImageType::kArtwork: {
-      base::Optional<gfx::ImageSkia> session_artwork =
-          gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
+      base::Optional<gfx::ImageSkia> session_artwork;
+      if (!converted_bitmap.empty())
+        session_artwork = gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
       SetArtwork(session_artwork);
       break;
     }
@@ -599,8 +615,9 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
       gfx::ImageSkia session_icon =
           gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
       if (session_icon.isNull()) {
-        session_icon = gfx::CreateVectorIcon(message_center::kProductIcon,
-                                             kIconSize, gfx::kChromeIconGrey);
+        session_icon =
+            gfx::CreateVectorIcon(message_center::kProductIcon,
+                                  kDesiredSourceIconSize, gfx::kChromeIconGrey);
       }
       header_row_->SetAppIcon(session_icon);
     }
@@ -719,6 +736,12 @@ void LockScreenMediaControlsView::Hide(HideReason reason) {
   hide_media_controls_.Run();
 }
 
+void LockScreenMediaControlsView::HideArtwork() {
+  session_artwork_->SetVisible(false);
+  session_artwork_->SetImage(nullptr);
+  session_artwork_->InvalidateLayout();
+}
+
 void LockScreenMediaControlsView::SetShown(Shown shown) {
   DCHECK(!shown_);
   shown_ = shown;
@@ -744,12 +767,25 @@ void LockScreenMediaControlsView::Dismiss() {
 void LockScreenMediaControlsView::SetArtwork(
     base::Optional<gfx::ImageSkia> img) {
   if (!img.has_value()) {
-    session_artwork_->SetImage(nullptr);
+    if (!session_artwork_->GetVisible() || hide_artwork_timer_->IsRunning())
+      return;
+
+    hide_artwork_timer_->Start(
+        FROM_HERE, kNextMediaDelay,
+        base::BindOnce(&LockScreenMediaControlsView::HideArtwork,
+                       base::Unretained(this)));
     return;
   }
 
-  session_artwork_->SetImageSize(ScaleSizeToFitView(img->size(), kArtworkSize));
+  if (hide_artwork_timer_->IsRunning())
+    hide_artwork_timer_->Stop();
+
+  session_artwork_->SetVisible(true);
+  session_artwork_->SetImageSize(
+      ScaleSizeToFitView(img->size(), session_artwork_->GetPreferredSize()));
   session_artwork_->SetImage(*img);
+
+  Layout();
   session_artwork_->set_clip_path(GetArtworkClipPath());
 }
 

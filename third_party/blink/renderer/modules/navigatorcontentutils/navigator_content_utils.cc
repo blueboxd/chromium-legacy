@@ -136,10 +136,8 @@ NavigatorContentUtils& NavigatorContentUtils::From(Navigator& navigator,
   NavigatorContentUtils* navigator_content_utils =
       Supplement<Navigator>::From<NavigatorContentUtils>(navigator);
   if (!navigator_content_utils) {
-    WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
     navigator_content_utils = MakeGarbageCollected<NavigatorContentUtils>(
-        navigator,
-        MakeGarbageCollected<NavigatorContentUtilsClient>(web_frame));
+        navigator, MakeGarbageCollected<NavigatorContentUtilsClient>(&frame));
     ProvideTo(navigator, navigator_content_utils);
   }
   return *navigator_content_utils;

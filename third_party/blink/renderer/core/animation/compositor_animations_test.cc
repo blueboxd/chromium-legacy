@@ -103,7 +103,7 @@ CSSPaintImageGenerator* ProvideOverrideGenerator(
 }
 }  // namespace
 
-using namespace css_test_helpers;
+using css_test_helpers::RegisterProperty;
 
 class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
                                           public RenderingTest {

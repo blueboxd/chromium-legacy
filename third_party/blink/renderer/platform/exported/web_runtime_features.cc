@@ -192,10 +192,6 @@ void WebRuntimeFeatures::EnableFallbackCursorMode(bool enable) {
   RuntimeEnabledFeatures::SetFallbackCursorModeEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableFastMobileScrolling(bool enable) {
-  RuntimeEnabledFeatures::SetFastMobileScrollingEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableFeaturePolicyForSandbox(bool enable) {
   RuntimeEnabledFeatures::SetFeaturePolicyForSandboxEnabled(enable);
 }
@@ -294,6 +290,10 @@ void WebRuntimeFeatures::EnableNavigatorContentUtils(bool enable) {
 
 void WebRuntimeFeatures::EnableNetInfoDownlinkMax(bool enable) {
   RuntimeEnabledFeatures::SetNetInfoDownlinkMaxEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableNeverSlowMode(bool enable) {
+  RuntimeEnabledFeatures::SetNeverSlowModeEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableOnDeviceChange(bool enable) {

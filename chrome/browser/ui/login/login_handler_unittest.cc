@@ -8,6 +8,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/login/login_tab_helper.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "net/base/auth.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -111,6 +114,15 @@ base::string16 ExpectedAuthority(bool is_proxy, const char* prefix) {
   return str;
 }
 
+class LoginHandlerWithWebContentsTest : public ChromeRenderViewHostTestHarness {
+ public:
+  LoginHandlerWithWebContentsTest() {}
+  ~LoginHandlerWithWebContentsTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginHandlerWithWebContentsTest);
+};
+
 }  // namespace
 
 TEST(LoginHandlerTest, DialogStringsAndRealm) {
@@ -144,4 +156,16 @@ TEST(LoginHandlerTest, DialogStringsAndRealm) {
     EXPECT_STREQ(test_case.expected.signon_realm,
                  LoginHandler::GetSignonRealm(request_url, auth_info).c_str());
   }
+}
+
+// Tests that LoginTabHelper does not crash if
+// WillProcessMainFrameUnauthorizedResponse() is called when there is no pending
+// entry. Regression test for https://crbug.com/1015787.
+TEST_F(LoginHandlerWithWebContentsTest, NoPendingEntryDoesNotCrash) {
+  LoginTabHelper::CreateForWebContents(web_contents());
+  LoginTabHelper* helper = LoginTabHelper::FromWebContents(web_contents());
+  content::MockNavigationHandle handle;
+  content::NavigationThrottle::ThrottleCheckResult result =
+      helper->WillProcessMainFrameUnauthorizedResponse(&handle);
+  EXPECT_EQ(content::NavigationThrottle::CANCEL, result.action());
 }

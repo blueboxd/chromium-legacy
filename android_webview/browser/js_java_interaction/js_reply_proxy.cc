@@ -10,7 +10,8 @@
 namespace android_webview {
 
 JsReplyProxy::JsReplyProxy(
-    mojo::PendingRemote<mojom::JavaToJsMessaging> java_to_js_messaging)
+    mojo::PendingAssociatedRemote<mojom::JavaToJsMessaging>
+        java_to_js_messaging)
     : java_to_js_messaging_(std::move(java_to_js_messaging)) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_ref_ = JavaObjectWeakGlobalRef(

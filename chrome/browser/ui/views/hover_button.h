@@ -30,6 +30,27 @@ class View;
 
 class PageInfoBubbleViewBrowserTest;
 
+// A special class used for wrapping a single line styled label.
+// |views::StyledLabel|s are all multi-line. With a layout manager,
+// |StyledLabel| will try use the available space to size itself, and long
+// titles will wrap to the next line (for smaller |HoverButton|s, this will
+// also cover up |subtitle_|). Wrap it in a parent view with no layout manager
+// to ensure it keeps its original size set by SizeToFit(). Long titles
+// will then be truncated.
+class SingleLineStyledLabelWrapper : public views::View {
+ public:
+  explicit SingleLineStyledLabelWrapper(const base::string16& title);
+  ~SingleLineStyledLabelWrapper() override = default;
+
+  // views::View
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+
+  views::StyledLabel* label();
+
+ private:
+  views::StyledLabel* label_;
+};
+
 // A button taking the full width of its parent that shows a background color
 // when hovered over.
 // TODO (cyan): HoverButton should extend ButtonListener.
@@ -108,7 +129,6 @@ class HoverButton : public views::LabelButton,
   void StateChanged(ButtonState old_state) override;
   SkColor GetInkDropBaseColor() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  void Layout() override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 

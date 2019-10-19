@@ -41,7 +41,7 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   }
 }
 
-void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
+bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
                                      float device_scale_factor,
                                      const gfx::ColorSpace& color_space,
                                      bool has_alpha,
@@ -65,6 +65,7 @@ void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
     sk_surfaces_.resize(vulkan_surface_->swap_chain()->num_images());
     sk_color_space_ = std::move(sk_color_space);
   }
+  return true;
 }
 
 void SkiaOutputDeviceVulkan::SwapBuffers(

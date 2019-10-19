@@ -656,6 +656,13 @@ void NetworkService::SetEnvironment(
     env->SetVar(variable->name, variable->value);
 }
 
+void NetworkService::SetSplitAuthCacheByNetworkIsolationKey(
+    bool split_auth_cache_by_network_isolation_key) {
+  DCHECK(network_contexts_.empty());
+  split_auth_cache_by_network_isolation_key_ =
+      split_auth_cache_by_network_isolation_key;
+}
+
 #if defined(OS_ANDROID)
 void NetworkService::DumpWithoutCrashing(base::Time dump_request_time) {
   static base::debug::CrashKeyString* time_key =

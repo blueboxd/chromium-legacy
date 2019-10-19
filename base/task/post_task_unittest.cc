@@ -73,6 +73,9 @@ class MockTaskExecutor : public TaskExecutor {
                    SingleThreadTaskRunnerThreadMode thread_mode));
 #endif  // defined(OS_WIN)
 
+  MOCK_METHOD0(GetContinuationTaskRunner,
+               const scoped_refptr<SequencedTaskRunner>&());
+
   TestSimpleTaskRunner* runner() const { return runner_.get(); }
 
  private:
@@ -274,6 +277,49 @@ TEST_F(PostTaskTestWithExecutor,
       FROM_HERE, BindLambdaForTesting([&]() {
         EXPECT_TRUE(
             PostTask(FROM_HERE, {CurrentThread()}, current_thread_task));
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor, TaskRunnerTaskGetContinuationTaskRunner) {
+  auto task_runner = CreateTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(task_runner->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                      // GetContinuationTaskRunner is
+                                      // meaningless in this context.
+                                      EXPECT_DCHECK_DEATH(
+                                          GetContinuationTaskRunner());
+                                      run_loop.Quit();
+                                    })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       SequencedTaskRunnerTaskGetContinuationTaskRunner) {
+  auto sequenced_task_runner = CreateSequencedTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(sequenced_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_EQ(GetContinuationTaskRunner(), sequenced_task_runner);
+        run_loop.Quit();
+      })));
+
+  run_loop.Run();
+}
+
+TEST_F(PostTaskTestWithExecutor,
+       SingleThreadTaskRunnerTaskGetContinuationTaskRunner) {
+  auto single_thread_task_runner = CreateSingleThreadTaskRunner({ThreadPool()});
+  RunLoop run_loop;
+
+  EXPECT_TRUE(single_thread_task_runner->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_EQ(GetContinuationTaskRunner(), single_thread_task_runner);
+        run_loop.Quit();
       })));
 
   run_loop.Run();

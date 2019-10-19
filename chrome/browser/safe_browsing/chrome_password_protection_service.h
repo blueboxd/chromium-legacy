@@ -149,7 +149,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Check if Gaia password hash has changed. If it is changed, it will call
   // |OnGaiaPasswordChanged|. |username| is used to get the appropriate account
   // to check if the account is a Gmail account as no reporting is done for
-  // those accounts.
+  // those accounts. This method is only called if there was already an existing
+  // password hash in the hash password manager reused password.
   void CheckGaiaPasswordChangeForAllSignedInUsers(const std::string& username);
 
   // Called when user's GAIA password changed. |username| is used to get

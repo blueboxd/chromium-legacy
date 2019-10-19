@@ -309,7 +309,7 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
   DCHECK_EQ(sub_type_, other.sub_type_);
   DCHECK_EQ(style_variant_, other.style_variant_);
 
-  DCHECK_EQ(has_floating_descendants_, other.has_floating_descendants_);
+  // |has_floating_descendants_for_paint_| can change during simplified layout.
   DCHECK_EQ(has_orthogonal_flow_roots_, other.has_orthogonal_flow_roots_);
   DCHECK_EQ(may_have_descendant_above_block_start_,
             other.may_have_descendant_above_block_start_);

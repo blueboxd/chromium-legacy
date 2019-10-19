@@ -76,6 +76,7 @@ include_rules = [
   "+ui/display",
   "+ui/gfx",
   "+ui/gl",
+  "+ui/native_theme",
   "+ui/touch_selection/touch_handle.h",
 
   # Temporary until we bundle our own favicon. See

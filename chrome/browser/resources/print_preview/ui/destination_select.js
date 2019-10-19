@@ -59,12 +59,54 @@ Polymer({
   },
 
   /**
-   * @param {string} icon The icon set and icon to obtain.
-   * @return {string} An inline svg corresponding to |icon| and the image for
-   *     the dropdown arrow.
+   * Returns the iconset and icon for the selected printer. If printer details
+   * have not yet been retrieved from the backend, attempts to return an
+   * appropriate icon early based on the printer's sticky information.
+   * @return {string} The iconset and icon for the current selection.
    * @private
    */
-  getBackgroundImages_: function(icon) {
+  getDestinationIcon_: function() {
+    if (!this.selectedValue) {
+      return '';
+    }
+
+    // If the destination matches the selected value, pull the icon from the
+    // destination.
+    if (this.destination && this.destination.key === this.selectedValue) {
+      return this.destination.icon;
+    }
+
+    // Check for the Docs or Save as PDF ids first.
+    const keyParams = this.selectedValue.split('/');
+    if (keyParams[0] === print_preview.Destination.GooglePromotedId.DOCS) {
+      return 'print-preview:save-to-drive';
+    }
+    if (keyParams[0] ===
+        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
+      return 'cr:insert-drive-file';
+    }
+
+    // Otherwise, must be in the recent list.
+    const recent = this.recentDestinationList.find(d => {
+      return print_preview.createRecentDestinationKey(d) === this.selectedValue;
+    });
+    if (recent && recent.icon) {
+      return recent.icon;
+    }
+
+    // The key/recent destinations don't have information about what icon to
+    // use, so just return the generic print icon for now. It will be updated
+    // when the destination is set.
+    return 'print-preview:print';
+  },
+
+  /**
+   * @return {string} An inline svg corresponding to the icon for the current
+   *     destination and the image for the dropdown arrow.
+   * @private
+   */
+  getBackgroundImages_: function() {
+    const icon = this.getDestinationIcon_();
     if (!icon) {
       return '';
     }

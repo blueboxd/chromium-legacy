@@ -431,7 +431,10 @@ void OmniboxViewViews::SetFocus(bool is_user_initiated) {
             ->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_YES));
   }
 
+  suppress_on_focus_suggestions_ = !is_user_initiated;
   RequestFocus();
+  suppress_on_focus_suggestions_ = false;
+
   // Restore caret visibility if focus is explicitly requested. This is
   // necessary because if we already have invisible focus, the RequestFocus()
   // call above will short-circuit, preventing us from reaching
@@ -1306,7 +1309,7 @@ void OmniboxViewViews::OnFocus() {
   // Investigate why it's needed and see if we can remove it.
   model()->ResetDisplayTexts();
   // TODO(oshima): Get control key state.
-  model()->OnSetFocus(false);
+  model()->OnSetFocus(false, suppress_on_focus_suggestions_);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
 
   // Restore the selection we saved in OnBlur() if it's still valid.

@@ -17,6 +17,7 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VI
 import androidx.annotation.Px;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.touch_to_fill.TouchToFillComponent.UserAction;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CredentialProperties;
 import org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.HeaderProperties;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
@@ -37,6 +38,7 @@ class TouchToFillMediator {
             "PasswordManager.TouchToFill.DismissalReason";
     static final String UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX =
             "PasswordManager.TouchToFill.CredentialIndex";
+    static final String UMA_TOUCH_TO_FILL_USER_ACTION = "PasswordManager.TouchToFill.UserAction";
 
     private TouchToFillComponent.Delegate mDelegate;
     private PropertyModel mModel;
@@ -84,7 +86,6 @@ class TouchToFillMediator {
 
     private void onSelectedCredential(Credential credential) {
         mModel.set(VISIBLE, false);
-        mDelegate.onCredentialSelected(credential);
         if (mCredentials.size() > 1) {
             // We only record this histogram in case multiple credentials were shown to the user.
             // Otherwise the single credential case where position should always be 0 will dominate
@@ -92,6 +93,10 @@ class TouchToFillMediator {
             RecordHistogram.recordCount100Histogram(
                     UMA_TOUCH_TO_FILL_CREDENTIAL_INDEX, mCredentials.indexOf(credential));
         }
+
+        RecordHistogram.recordEnumeratedHistogram(UMA_TOUCH_TO_FILL_USER_ACTION,
+                UserAction.SELECT_CREDENTIAL, UserAction.MAX_VALUE + 1);
+        mDelegate.onCredentialSelected(credential);
     }
 
     public void onDismissed(@StateChangeReason int reason) {
@@ -99,11 +104,15 @@ class TouchToFillMediator {
         mModel.set(VISIBLE, false);
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_TOUCH_TO_FILL_DISMISSAL_REASON, reason, StateChangeReason.MAX_VALUE + 1);
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_TOUCH_TO_FILL_USER_ACTION, UserAction.DISMISS, UserAction.MAX_VALUE + 1);
         mDelegate.onDismissed();
     }
 
     private void onManagePasswordSelected() {
         mModel.set(VISIBLE, false);
+        RecordHistogram.recordEnumeratedHistogram(UMA_TOUCH_TO_FILL_USER_ACTION,
+                UserAction.SELECT_MANAGE_PASSWORDS, UserAction.MAX_VALUE + 1);
         mDelegate.onManagePasswordsSelected();
     }
 }

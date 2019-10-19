@@ -1060,4 +1060,55 @@ TEST_F(GpuControlListEntryTest, HardwareOverlay) {
 }
 #endif  // OS_WIN
 
+TEST_F(GpuControlListEntryTest, TestSubpixelFontRendering) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_SubpixelFontRendering);
+
+  GPUInfo gpu_info;
+  gpu_info.subpixel_font_rendering = true;
+  gpu_info.gl_renderer = "Mali0xx";
+
+  EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  gpu_info.subpixel_font_rendering = false;
+  gpu_info.gl_renderer = "Mali1xx";
+  EXPECT_FALSE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  gpu_info.subpixel_font_rendering = false;
+  gpu_info.gl_renderer = "DontCare";
+  EXPECT_FALSE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  gpu_info.subpixel_font_rendering = true;
+  gpu_info.gl_renderer = "DontCare";
+  EXPECT_FALSE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  gpu_info.subpixel_font_rendering = false;
+  gpu_info.gl_renderer = "Supported";
+  EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  gpu_info.subpixel_font_rendering = true;
+  gpu_info.gl_renderer = "Supported";
+  EXPECT_FALSE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  gpu_info.subpixel_font_rendering = true;
+  gpu_info.gl_renderer = "Others";
+  EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  // Not ChromeOS
+  EXPECT_FALSE(entry.Contains(kOsLinux, "10.0", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, TestSubpixelFontRenderingDontCare) {
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_SubpixelFontRenderingDontCare);
+
+  GPUInfo gpu_info;
+  gpu_info.subpixel_font_rendering = true;
+  gpu_info.gl_renderer = "Mali0xx";
+
+  EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+
+  gpu_info.subpixel_font_rendering = false;
+  EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.0", gpu_info));
+}
+
 }  // namespace gpu

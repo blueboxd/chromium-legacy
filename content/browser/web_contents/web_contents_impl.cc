@@ -601,7 +601,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_overlay_content_(false),
       showing_context_menu_(false),
       text_autosizer_page_info_({0, 0, 1.f}),
-      native_theme_observer_(this),
       had_inner_webcontents_(false) {
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
@@ -616,11 +615,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
   binders_.Add(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
-
-  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
-  native_theme_observer_.Add(native_theme);
-  using_dark_colors_ = native_theme->ShouldUseDarkColors();
-  preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -689,7 +683,8 @@ WebContentsImpl::~WebContentsImpl() {
   // destroyed.
   RenderFrameHostManager* root = GetRenderManager();
 
-  GetController().GetBackForwardCache().Flush();
+  GetController().GetBackForwardCache().Shutdown();
+
   root->current_frame_host()->SetRenderFrameCreated(false);
   root->current_frame_host()->ResetNavigationRequests();
 
@@ -917,10 +912,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
                         OnDidRunContentWithCertificateErrors)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RegisterProtocolHandler,
-                        OnRegisterProtocolHandler)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UnregisterProtocolHandler,
-                        OnUnregisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
                         OnUpdatePageImportanceSignals)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
@@ -4935,11 +4926,11 @@ void WebContentsImpl::EnumerateDirectory(
     listener->FileSelectionCanceled();
 }
 
-void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
-                                                const std::string& protocol,
-                                                const GURL& url,
-                                                const base::string16& title,
-                                                bool user_gesture) {
+void WebContentsImpl::RegisterProtocolHandler(RenderFrameHostImpl* source,
+                                              const std::string& protocol,
+                                              const GURL& url,
+                                              const base::string16& title,
+                                              bool user_gesture) {
   // TODO(nick): Should we consider |source| here or pass it to the delegate?
   // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
@@ -4955,10 +4946,10 @@ void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
   delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
 }
 
-void WebContentsImpl::OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
-                                                  const std::string& protocol,
-                                                  const GURL& url,
-                                                  bool user_gesture) {
+void WebContentsImpl::UnregisterProtocolHandler(RenderFrameHostImpl* source,
+                                                const std::string& protocol,
+                                                const GURL& url,
+                                                bool user_gesture) {
   // TODO(nick): Should we consider |source| here or pass it to the delegate?
   // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
@@ -6564,11 +6555,6 @@ std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderFrameHost(
   return CreateWebUI(url);
 }
 
-NavigationEntry*
-    WebContentsImpl::GetLastCommittedNavigationEntryForRenderManager() {
-  return controller_.GetLastCommittedEntry();
-}
-
 InterstitialPageImpl* WebContentsImpl::GetInterstitialForRenderManager() {
   return interstitial_page_;
 }
@@ -7361,27 +7347,6 @@ void WebContentsImpl::MediaMutedStatusChanged(const MediaPlayerId& id,
 
 void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
   GetMainFrame()->SetVisibilityForChildViews(visible);
-}
-
-void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
-  DCHECK(native_theme_observer_.IsObserving(observed_theme));
-
-  bool using_dark_colors = observed_theme->ShouldUseDarkColors();
-  ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
-      observed_theme->GetPreferredColorScheme();
-  bool preferences_changed = false;
-
-  if (using_dark_colors_ != using_dark_colors) {
-    using_dark_colors_ = using_dark_colors;
-    preferences_changed = true;
-  }
-  if (preferred_color_scheme_ != preferred_color_scheme) {
-    preferred_color_scheme_ = preferred_color_scheme;
-    preferences_changed = true;
-  }
-
-  if (preferences_changed)
-    NotifyPreferencesChanged();
 }
 
 mojom::FrameInputHandler* WebContentsImpl::GetFocusedFrameInputHandler() {

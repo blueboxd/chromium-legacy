@@ -1660,7 +1660,7 @@ class LargeMixin : public GarbageCollected<LargeMixin>, public Mixin {
 };
 
 TEST(HeapDeathTest, LargeGarbageCollectedMixin) {
-  EXPECT_DEATH(MakeGarbageCollected<LargeMixin>(), "");
+  EXPECT_DEATH(MakeGarbageCollected<LargeMixin>(AdditionalBytes(1)), "");
 }
 
 TEST_F(HeapTest, Transition) {

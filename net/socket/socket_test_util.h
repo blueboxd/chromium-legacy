@@ -475,9 +475,16 @@ struct SSLSocketDataProvider {
 
   // Result for Connect().
   MockConnect connect;
+  // Callback to run when Connect() is called. This is called at most once per
+  // socket but is repeating because SSLSocketDataProvider is copyable.
+  base::RepeatingClosure connect_callback;
 
-  // Result for Confirm().
+  // Result for ConfirmHandshake().
   MockConfirm confirm;
+  // Callback to run when ConfirmHandshake() is called. This is called at most
+  // once per socket but is repeating because SSLSocketDataProvider is
+  // copyable.
+  base::RepeatingClosure confirm_callback;
 
   // Result for GetNegotiatedProtocol().
   NextProto next_proto;

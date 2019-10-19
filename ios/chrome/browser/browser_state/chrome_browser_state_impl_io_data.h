@@ -22,6 +22,7 @@ namespace net {
 class CookieStore;
 class HttpNetworkSession;
 class HttpTransactionFactory;
+class URLRequestJobFactoryImpl;
 }  // namespace net
 
 class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
@@ -129,7 +130,7 @@ class ChromeBrowserStateImplIOData : public ChromeBrowserStateIOData {
 
   mutable std::unique_ptr<net::CookieStore> main_cookie_store_;
 
-  mutable std::unique_ptr<net::URLRequestJobFactory> main_job_factory_;
+  mutable std::unique_ptr<net::URLRequestJobFactoryImpl> main_job_factory_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

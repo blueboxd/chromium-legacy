@@ -87,7 +87,7 @@ class WiFiDisplayVideoSink : public content::MediaStreamVideoSink {
 WiFiDisplayMediaManager::WiFiDisplayMediaManager(
     const blink::WebMediaStreamTrack& video_track,
     const blink::WebMediaStreamTrack& audio_track,
-    const std::string& sink_ip_address,
+    const net::IPAddress& sink_ip_address,
     service_manager::InterfaceProvider* interface_provider,
     const ErrorCallback& error_callback)
     : video_track_(video_track),

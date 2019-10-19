@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+
+import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 const colors = [
   // row 1
   {name: 'annotationColorBlack', color: '#000000'},
@@ -54,6 +58,8 @@ const sizes = [
  */
 Polymer({
   is: 'viewer-pen-options',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     expanded_: {
@@ -111,7 +117,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    Polymer.RenderStatus.beforeNextRender(this, () => {
+    beforeNextRender(this, () => {
       this.updateExpandedStateAndFinishAnimations_();
     });
   },
@@ -126,21 +132,36 @@ Polymer({
       const separator = this.$.separator;
       const expand = this.$.expand;
       this.expandAnimations_ = [
-        colors.animate({height: ['32px', '188px']}, {
-          easing: 'ease-in-out',
-          duration: 250,
-          fill: 'both',
-        }),
-        separator.animate({opacity: [0, 1]}, {
-          easing: 'ease-in-out',
-          duration: 250,
-          fill: 'both',
-        }),
-        expand.animate({transform: ['rotate(0deg)', 'rotate(180deg)']}, {
-          easing: 'ease-in-out',
-          duration: 250,
-          fill: 'forwards',
-        }),
+        colors.animate(
+            [
+              {height: '32px'},
+              {height: '188px'},
+            ],
+            {
+              easing: 'ease-in-out',
+              duration: 250,
+              fill: 'both',
+            }),
+        separator.animate(
+            [
+              {opacity: 0},
+              {opacity: 1},
+            ],
+            {
+              easing: 'ease-in-out',
+              duration: 250,
+              fill: 'both',
+            }),
+        expand.animate(
+            [
+              {transform: 'rotate(0deg)'},
+              {transform: 'rotate(180deg)'},
+            ],
+            {
+              easing: 'ease-in-out',
+              duration: 250,
+              fill: 'forwards',
+            }),
       ];
     }
     for (const animation of this.expandAnimations_) {

@@ -1282,7 +1282,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
             boolean isRoot, boolean isEditableText, String role, String roleDescription,
             String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage,
-            boolean contentInvalid) {
+            boolean contentInvalid, String targetUrl) {
         // Requires KitKat or higher.
     }
 

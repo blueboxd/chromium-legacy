@@ -99,6 +99,14 @@ bool ValidateRules(
 
 }  // namespace
 
+UrlRequestRewriteRulesManager::ActiveFrame::ActiveFrame(
+    content::RenderFrameHost* rfh,
+    mojo::AssociatedRemote<mojom::UrlRequestRulesReceiver> ar)
+    : render_frame_host(rfh), associated_remote(std::move(ar)) {}
+UrlRequestRewriteRulesManager::ActiveFrame::ActiveFrame(
+    UrlRequestRewriteRulesManager::ActiveFrame&&) = default;
+UrlRequestRewriteRulesManager::ActiveFrame::~ActiveFrame() = default;
+
 // static
 UrlRequestRewriteRulesManager*
 UrlRequestRewriteRulesManager::ForFrameTreeNodeId(int frame_tree_node_id) {
@@ -136,8 +144,9 @@ zx_status_t UrlRequestRewriteRulesManager::OnRulesUpdated(
               std::move(rules)));
 
   // Send the updated rules to the receivers.
-  for (const auto& receiver_pair : rules_receivers_per_frame_id_) {
-    receiver_pair.second->OnRulesUpdated(mojo::Clone(cached_rules_->data));
+  for (const auto& receiver_pair : active_frames_) {
+    receiver_pair.second.associated_remote->OnRulesUpdated(
+        mojo::Clone(cached_rules_->data));
   }
 
   // TODO(crbug.com/976975): Only call the callback when there are pending
@@ -158,12 +167,11 @@ void UrlRequestRewriteRulesManager::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   int frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
 
-  if (rules_receivers_per_frame_id_.find(frame_tree_node_id) !=
-      rules_receivers_per_frame_id_.end()) {
+  if (active_frames_.find(frame_tree_node_id) != active_frames_.end()) {
     // This happens on cross-process navigations. It is not necessary to refresh
     // the global map in this case as RenderFrameDeleted will not have been
     // called for this RenderFrameHost.
-    size_t deleted = rules_receivers_per_frame_id_.erase(frame_tree_node_id);
+    size_t deleted = active_frames_.erase(frame_tree_node_id);
     DCHECK(deleted == 1);
   } else {
     // Register this instance of UrlRequestRewriteRulesManager as the URL
@@ -177,24 +185,32 @@ void UrlRequestRewriteRulesManager::RenderFrameCreated(
   mojo::AssociatedRemote<mojom::UrlRequestRulesReceiver> rules_receiver;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &rules_receiver);
-  auto iter = rules_receivers_per_frame_id_.emplace(frame_tree_node_id,
-                                                    std::move(rules_receiver));
+  ActiveFrame active_frame(render_frame_host, std::move(rules_receiver));
+  auto iter =
+      active_frames_.emplace(frame_tree_node_id, std::move(active_frame));
   DCHECK(iter.second);
 
   base::AutoLock auto_lock(lock_);
   if (cached_rules_) {
     // Send an initial set of rules.
-    iter.first->second->OnRulesUpdated(mojo::Clone(cached_rules_->data));
+    iter.first->second.associated_remote->OnRulesUpdated(
+        mojo::Clone(cached_rules_->data));
   }
 }
 
 void UrlRequestRewriteRulesManager::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   int frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
+  auto iter = active_frames_.find(frame_tree_node_id);
+  DCHECK(iter != active_frames_.end());
 
+  // On cross-process navigations, the new RenderFrameHost is created before
+  // the old one is deleted. When that happens, the map has already been
+  // updated, so it is safe to return here.
+  if (iter->second.render_frame_host != render_frame_host)
+    return;
+
+  active_frames_.erase(iter);
   size_t deleted = GetRewriterMap().erase(frame_tree_node_id);
-  DCHECK(deleted == 1);
-
-  deleted = rules_receivers_per_frame_id_.erase(frame_tree_node_id);
   DCHECK(deleted == 1);
 }

@@ -75,11 +75,16 @@ void SetPageFrozenImpl(
   }
 }
 
-bool IsExtendedSupportEnabled() {
-  static constexpr base::FeatureParam<bool> extended_support_enabled(
-      &features::kBackForwardCache,
-      "experimental extended supported feature set", false);
-  return extended_support_enabled.Get();
+bool IsServiceWorkerSupported() {
+  static constexpr base::FeatureParam<bool> service_worker_supported(
+      &features::kBackForwardCache, "service_worker_supported", false);
+  return service_worker_supported.Get();
+}
+
+bool IsGeolocationSupported() {
+  static constexpr base::FeatureParam<bool> geolocation_supported(
+      &features::kBackForwardCache, "geolocation_supported", false);
+  return geolocation_supported.Get();
 }
 
 uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
@@ -115,9 +120,12 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
 
   uint64_t result = kAlwaysDisallowedFeatures;
 
-  if (!IsExtendedSupportEnabled()) {
+  if (!IsServiceWorkerSupported()) {
     result |=
         ToFeatureBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage);
+  }
+
+  if (!IsGeolocationSupported()) {
     result |= ToFeatureBit(
         WebSchedulerTrackedFeature::kRequestedGeolocationPermission);
   }
@@ -224,6 +232,8 @@ std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
       return "No: scheduler tracked feature is used";
     case Reason::kConflictingBrowsingInstance:
       return "No: conflicting BrowsingInstance";
+    case Reason::kCacheFlushed:
+      return "No: cache flushed";
   }
 }
 
@@ -463,6 +473,13 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
 
 void BackForwardCacheImpl::Flush() {
   TRACE_EVENT0("navigation", "BackForwardCache::Flush");
+  for (std::unique_ptr<Entry>& entry : entries_) {
+    entry->render_frame_host->EvictFromBackForwardCacheWithReason(
+        BackForwardCacheMetrics::NotRestoredReason::kCacheFlushed);
+  }
+}
+
+void BackForwardCacheImpl::Shutdown() {
   entries_.clear();
 }
 

@@ -150,15 +150,29 @@ mojo.internal.interfaceSupport.ConnectionErrorEventRouter = class {
 };
 
 /**
+ * @interface
+ * @export
+ */
+mojo.internal.interfaceSupport.PendingReceiver = class {
+  /**
+   * @return {!MojoHandle}
+   * @export
+   */
+  get handle() {}
+};
+
+/**
  * Generic helper used to implement all generated remote classes. Knows how to
  * serialize requests and deserialize their replies, both according to
  * declarative message structure specs.
- * @template T
+ *
+ * TODO(crbug.com/1012109): Use a bounded generic type instead of
+ * mojo.internal.interfaceSupport.PendingReceiver.
  * @export
  */
 mojo.internal.interfaceSupport.InterfaceRemoteBase = class {
   /**
-   * @param {!function(new:T, !MojoHandle)} requestType
+   * @param {!function(new:mojo.internal.interfaceSupport.PendingReceiver, !MojoHandle)} requestType
    * @param {MojoHandle=} opt_handle The message pipe handle to use as a remote
    *     endpoint. If null, this object must be bound with bindHandle before
    *     it can be used to send any messages.
@@ -168,7 +182,7 @@ mojo.internal.interfaceSupport.InterfaceRemoteBase = class {
     /** @public {?MojoHandle} */
     this.handle = null;
 
-    /** @private {!function(new:T, !MojoHandle)} */
+    /** @private {!function(new:mojo.internal.interfaceSupport.PendingReceiver, !MojoHandle)} */
     this.requestType_ = requestType;
 
     /** @private {?mojo.internal.interfaceSupport.HandleReader} */
@@ -194,7 +208,7 @@ mojo.internal.interfaceSupport.InterfaceRemoteBase = class {
   }
 
   /**
-   * @return {!T}
+   * @return {!mojo.internal.interfaceSupport.PendingReceiver}
    */
   bindNewPipeAndPassReceiver() {
     let {handle0, handle1} = Mojo.createMessagePipe();

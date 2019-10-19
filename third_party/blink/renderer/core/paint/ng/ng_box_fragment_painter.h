@@ -117,11 +117,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   MoveTo PaintBoxItem(const NGFragmentItem& item,
                       const PaintInfo& paint_info,
                       const PhysicalOffset& paint_offset);
-  void PaintInlineFloatingChildren(NGPaintFragment::ChildList,
-                                   const PaintInfo&);
   void PaintFloatingItems(const PaintInfo&);
-  void PaintBlockFloatingChildren(const NGPhysicalContainerFragment&,
-                                  const PaintInfo&);
+  void PaintFloatingChildren(const NGPhysicalContainerFragment&,
+                             const PaintInfo& paint_info,
+                             const PaintInfo& float_paint_info);
   void PaintFloats(const PaintInfo&);
   void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
   void PaintAtomicInline(const PaintInfo&);

@@ -15,8 +15,6 @@ import unittest
 
 from chrome_telemetry_build import chromium_config
 
-from core import path_util
-
 from telemetry import benchmark as benchmark_module
 from telemetry import decorators
 from telemetry.testing import options_for_unittests
@@ -87,17 +85,8 @@ def SmokeTestGenerator(benchmark, num_pages=1):
           benchmark_cls=SinglePageBenchmark,
           environment=chromium_config.GetDefaultChromiumConfig())
       options.pageset_repeat = 1  # For smoke testing only run the page once.
-
       single_page_benchmark = SinglePageBenchmark()
-      # TODO(crbug.com/985103): Remove this code once
-      # AugmentExpectationsWithFile is deleted and replaced with functionality
-      # in story_filter.py.
-      if hasattr(single_page_benchmark, 'AugmentExpectationsWithFile'):
-        with open(path_util.GetExpectationsPath()) as fp:
-          single_page_benchmark.AugmentExpectationsWithFile(fp.read())
-
       return_code = single_page_benchmark.Run(options)
-
     if return_code == -1:
       self.skipTest('The benchmark was not run.')
     self.assertEqual(0, return_code, msg='Failed: %s' % benchmark)

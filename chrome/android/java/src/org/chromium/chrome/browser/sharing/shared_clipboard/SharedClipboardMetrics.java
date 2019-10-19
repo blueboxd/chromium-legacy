@@ -11,6 +11,11 @@ import org.chromium.chrome.browser.sharing.SharingDialogType;
  * Helper Class for Shared Clipboard metrics.
  */
 public class SharedClipboardMetrics {
+    public static void recordDeviceCount(int count) {
+        RecordHistogram.recordLinearCountHistogram("Sharing.SharedClipboardDevicesToShow", count,
+                /*min=*/1, /*max=*/20, /*num buckets=*/21);
+    }
+
     public static void recordDeviceClick(int index) {
         RecordHistogram.recordLinearCountHistogram("Sharing.SharedClipboardSelectedDeviceIndex",
                 index, /*min=*/1, /*max=*/20, /*num buckets=*/21);

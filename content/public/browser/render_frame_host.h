@@ -298,7 +298,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Text surrounding selection.
   virtual void RequestTextSurroundingSelection(
-      blink::mojom::Frame::GetTextSurroundingSelectionCallback callback,
+      blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
       int max_length) = 0;
 
   // Generates an intervention report in this frame.

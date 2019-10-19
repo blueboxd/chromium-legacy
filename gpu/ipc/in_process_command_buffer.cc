@@ -680,7 +680,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       if (!context_state_) {
         context_state_ = base::MakeRefCounted<SharedContextState>(
             gl_share_group_, surface_, real_context,
-            use_virtualized_gl_context_, base::DoNothing());
+            use_virtualized_gl_context_, base::DoNothing(),
+            task_executor_->gpu_preferences().gr_context_type);
         context_state_->InitializeGL(task_executor_->gpu_preferences(),
                                      context_group_->feature_info());
         context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
@@ -892,16 +893,16 @@ void InProcessCommandBuffer::OnParseError() {
         GpuDriverBugWorkarounds workarounds(
             GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
 
-        // Work around issues with recovery by allowing a new GPU process to
-        // launch.
-        if (workarounds.exit_on_context_lost)
-          gpu_channel_manager_delegate_->MaybeExitOnContextLost();
-
         // Lose all other contexts.
         if (gl::GLContext::LosesAllContextsOnContextLost() ||
             (context_state_ && context_state_->use_virtualized_gl_contexts())) {
           gpu_channel_manager_delegate_->LoseAllContexts();
         }
+
+        // Work around issues with recovery by allowing a new GPU process to
+        // launch.
+        if (workarounds.exit_on_context_lost)
+          gpu_channel_manager_delegate_->MaybeExitOnContextLost();
       }
     }
   }

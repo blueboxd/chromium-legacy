@@ -166,6 +166,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void SetEnvironment(
       std::vector<mojom::EnvironmentVariablePtr> environment) override;
+  void SetSplitAuthCacheByNetworkIsolationKey(
+      bool split_auth_cache_by_network_isolation_key) override;
 #if defined(OS_ANDROID)
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
@@ -214,6 +216,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void set_host_resolver_factory_for_testing(
       std::unique_ptr<net::HostResolver::Factory> host_resolver_factory) {
     host_resolver_factory_ = std::move(host_resolver_factory);
+  }
+
+  bool split_auth_cache_by_network_isolation_key() const {
+    return split_auth_cache_by_network_isolation_key_;
   }
 
   static NetworkService* GetNetworkServiceForTesting();
@@ -313,6 +319,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   // A timer that periodically calls ReportMetrics every hour.
   base::RepeatingTimer metrics_trigger_timer_;
+
+  // Whether new NetworkContexts will be configured to partition their
+  // HttpAuthCaches by NetworkIsolationKey.
+  bool split_auth_cache_by_network_isolation_key_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

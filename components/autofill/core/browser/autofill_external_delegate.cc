@@ -132,6 +132,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   InsertDataListValues(&suggestions);
 
   if (suggestions.empty()) {
+    OnAutofillAvailabilityEvent(mojom::AutofillState::kNoSuggestions);
     // No suggestions, any popup currently showing is obsolete.
     manager_->client()->HideAutofillPopup();
     return;
@@ -170,6 +171,10 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 }
 
 void AutofillExternalDelegate::OnPopupShown() {
+  // If a popup was shown, then we showed either autofill or autocomplete.
+  OnAutofillAvailabilityEvent(
+      has_autofill_suggestions_ ? mojom::AutofillState::kAutofillAvailable
+                                : mojom::AutofillState::kAutocompleteAvailable);
   manager_->DidShowSuggestions(has_autofill_suggestions_, query_form_,
                                query_field_);
 

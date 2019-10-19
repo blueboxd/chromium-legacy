@@ -150,7 +150,7 @@ class APP_LIST_EXPORT AppListPresenterImpl
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
   // PaginationModelObserver overrides:
-  void TotalPagesChanged() override;
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
 
   // Registers a callback that is run when the next frame successfully makes it

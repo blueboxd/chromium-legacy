@@ -121,6 +121,7 @@ void LoginTabHelper::DidFinishNavigation(
   }
 
   challenge_ = navigation_handle->GetAuthChallengeInfo().value();
+  network_isolation_key_ = navigation_handle->GetNetworkIsolationKey();
 
   url_for_delegate_ = navigation_handle->GetURL();
   delegate_ = CreateLoginPrompt(
@@ -166,12 +167,9 @@ LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
   // commits. Comparing against GetVisibleEntry() would also work, but it's less
   // specific and not guaranteed to exist in all cases (e.g., in the case of
   // navigating a window just opened via window.open()).
-  //
-  // TODO(https://crbug.com/1006955): if this line is crashing, the assumption
-  // that GetPendingEntry() must be non-null is incorrect, in which case a null
-  // check should be added here.
-  if (web_contents()->GetController().GetPendingEntry()->GetUniqueID() ==
-      navigation_entry_id_with_cancelled_prompt_) {
+  if (web_contents()->GetController().GetPendingEntry() &&
+      web_contents()->GetController().GetPendingEntry()->GetUniqueID() ==
+          navigation_entry_id_with_cancelled_prompt_) {
     // Note the navigation handle ID so that when this refresh navigation
     // finishes, DidFinishNavigation declines to show another login prompt. We
     // need the navigation handle ID (rather than the navigation entry ID) here
@@ -202,7 +200,8 @@ void LoginTabHelper::HandleCredentials(
     content::BrowserContext::GetDefaultStoragePartition(
         web_contents()->GetBrowserContext())
         ->GetNetworkContext()
-        ->AddAuthCacheEntry(challenge_, credentials.value(),
+        ->AddAuthCacheEntry(challenge_, network_isolation_key_,
+                            credentials.value(),
                             base::BindOnce(&LoginTabHelper::Reload,
                                            weak_ptr_factory_.GetWeakPtr()));
   }

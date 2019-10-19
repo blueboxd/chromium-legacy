@@ -259,17 +259,29 @@ bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
     if (!closed_stream_has_load_timing_info_)
       return false;
     *load_timing_info = closed_stream_load_timing_info_;
-    return true;
+  } else {
+    // If |stream_| has yet to be created, or does not yet have an ID, fail.
+    // The reused flag can only be correctly set once a stream has an ID.
+    // Streams get their IDs once the request has been successfully sent, so
+    // this does not behave that differently from other stream types.
+    if (!stream_ || stream_->stream_id() == 0)
+      return false;
+
+    if (!stream_->GetLoadTimingInfo(load_timing_info))
+      return false;
   }
 
-  // If |stream_| has yet to be created, or does not yet have an ID, fail.
-  // The reused flag can only be correctly set once a stream has an ID.  Streams
-  // get their IDs once the request has been successfully sent, so this does not
-  // behave that differently from other stream types.
-  if (!stream_ || stream_->stream_id() == 0)
-    return false;
+  // If the request waited for handshake confirmation, shift |ssl_end| to
+  // include that time.
+  if (!load_timing_info->connect_timing.ssl_end.is_null() &&
+      !stream_request_.confirm_handshake_end().is_null()) {
+    load_timing_info->connect_timing.ssl_end =
+        stream_request_.confirm_handshake_end();
+    load_timing_info->connect_timing.connect_end =
+        stream_request_.confirm_handshake_end();
+  }
 
-  return stream_->GetLoadTimingInfo(load_timing_info);
+  return true;
 }
 
 int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,

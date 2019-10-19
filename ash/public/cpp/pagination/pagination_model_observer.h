@@ -12,7 +12,7 @@ namespace ash {
 class ASH_PUBLIC_EXPORT PaginationModelObserver {
  public:
   // Invoked when the total number of page is changed.
-  virtual void TotalPagesChanged() {}
+  virtual void TotalPagesChanged(int previous_page_count, int new_page_count) {}
 
   // Invoked when the selected page index is changed.
   virtual void SelectedPageChanged(int old_selected, int new_selected) {}

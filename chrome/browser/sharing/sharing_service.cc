@@ -37,6 +37,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
+#include "chrome/browser/sharing/sharing_service_proxy_android.h"
+#else
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_desktop.h"
+#endif  // defined(OS_ANDROID)
+
 namespace {
 // Util function to return a string denoting the type of device.
 std::string GetDeviceType(sync_pb::SyncEnums::DeviceType type) {
@@ -161,28 +168,32 @@ SharingService::SharingService(
 
   // Initialize sharing handlers.
   fcm_handler_->AddSharingHandler(
+      chrome_browser_sharing::SharingMessage::kPingMessage,
+      &ping_message_handler_);
+
+  fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
       &ack_message_handler_);
   ack_message_handler_.AddObserver(this);
-  fcm_handler_->AddSharingHandler(
-      chrome_browser_sharing::SharingMessage::kPingMessage,
-      &ping_message_handler_);
+
 #if defined(OS_ANDROID)
+  // Note: IsClickToCallSupported() is not used as it requires JNI call.
   if (base::FeatureList::IsEnabled(kClickToCallReceiver)) {
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kClickToCallMessage,
-        sharing_service_proxy_android_.click_to_call_message_handler());
+        &click_to_call_message_handler_);
   }
-
-  shared_clipboard_message_handler_ =
-      std::make_unique<SharedClipboardMessageHandlerAndroid>(this);
-#else
-  shared_clipboard_message_handler_ =
-      std::make_unique<SharedClipboardMessageHandlerDesktop>(
-          this, notification_display_service);
 #endif  // defined(OS_ANDROID)
 
   if (sharing_device_registration_->IsSharedClipboardSupported()) {
+#if defined(OS_ANDROID)
+    shared_clipboard_message_handler_ =
+        std::make_unique<SharedClipboardMessageHandlerAndroid>(this);
+#else
+    shared_clipboard_message_handler_ =
+        std::make_unique<SharedClipboardMessageHandlerDesktop>(
+            this, notification_display_service);
+#endif  // defined(OS_ANDROID)
     fcm_handler_->AddSharingHandler(
         chrome_browser_sharing::SharingMessage::kSharedClipboardMessage,
         shared_clipboard_message_handler_.get());
@@ -325,6 +336,14 @@ void SharingService::SetDeviceInfoTrackerForTesting(
   device_info_tracker_ = tracker;
 }
 
+SharingService::State SharingService::GetStateForTesting() const {
+  return state_;
+}
+
+SharingSyncPreference* SharingService::GetSyncPreferencesForTesting() const {
+  return sync_prefs_.get();
+}
+
 void SharingService::OnMessageSent(
     base::TimeTicks start_time,
     const std::string& message_guid,
@@ -388,14 +407,6 @@ void SharingService::OnDeviceInfoChange() {
     std::move(callback).Run();
   }
   device_candidates_initialized_callbacks_.clear();
-}
-
-void SharingService::RegisterHandler(
-    chrome_browser_sharing::SharingMessage::PayloadCase payload_type,
-    SharingMessageHandler* handler) {}
-
-SharingService::State SharingService::GetState() const {
-  return state_;
 }
 
 void SharingService::OnSyncShutdown(syncer::SyncService* sync) {
@@ -547,10 +558,6 @@ bool SharingService::IsSyncEnabled() const {
          sync_service_->GetTransportState() ==
              syncer::SyncService::TransportState::ACTIVE &&
          sync_service_->GetActiveDataTypes().HasAll(GetRequiredSyncDataTypes());
-}
-
-SharingSyncPreference* SharingService::GetSyncPreferences() const {
-  return sync_prefs_.get();
 }
 
 bool SharingService::IsSyncDisabled() const {

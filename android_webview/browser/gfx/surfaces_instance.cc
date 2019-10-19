@@ -123,7 +123,9 @@ SurfacesInstance::SurfacesInstance()
       shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
           share_group_, gl_surface_, std::move(gl_context),
           false /* use_virtualized_gl_contexts */,
-          base::BindOnce(&OnContextLost), vulkan_context_provider.get());
+          base::BindOnce(&OnContextLost),
+          GpuServiceWebView::GetInstance()->gpu_preferences().gr_context_type,
+          vulkan_context_provider.get());
       if (!enable_vulkan) {
         auto feature_info = base::MakeRefCounted<gpu::gles2::FeatureInfo>(
             workarounds, GpuServiceWebView::GetInstance()->gpu_feature_info());

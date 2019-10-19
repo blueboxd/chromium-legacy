@@ -778,17 +778,6 @@ class BLINK_EXPORT WebLocalFrameClient {
                                                 SuddenTerminationDisablerType) {
   }
 
-  // Navigator Content Utils  --------------------------------------------
-
-  // Registers a new URL handler for the given protocol.
-  virtual void RegisterProtocolHandler(const WebString& scheme,
-                                       const WebURL& url,
-                                       const WebString& title) {}
-
-  // Unregisters a given URL handler for the given protocol.
-  virtual void UnregisterProtocolHandler(const WebString& scheme,
-                                         const WebURL& url) {}
-
   // Audio Output Devices API --------------------------------------------
 
   // Checks that the given audio sink exists and is authorized. The result is

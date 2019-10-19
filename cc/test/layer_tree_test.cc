@@ -1051,6 +1051,8 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
         ::switches::kUseVulkan,
         use_gpu ? ::switches::kVulkanImplementationNameNative
                 : ::switches::kVulkanImplementationNameSwiftshader);
+    command_line->AppendSwitchASCII(
+        ::switches::kGrContextType, ::switches::kGrContextTypeVulkan);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(

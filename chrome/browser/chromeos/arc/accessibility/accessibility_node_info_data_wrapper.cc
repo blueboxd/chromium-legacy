@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
-#include "components/exo/wm_helper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
@@ -30,7 +29,7 @@ using AXStringProperty = mojom::AccessibilityStringProperty;
 AccessibilityNodeInfoDataWrapper::AccessibilityNodeInfoDataWrapper(
     AXTreeSourceArc* tree_source,
     AXNodeInfoData* node)
-    : tree_source_(tree_source), node_ptr_(node) {}
+    : AccessibilityInfoDataWrapper(tree_source), node_ptr_(node) {}
 
 bool AccessibilityNodeInfoDataWrapper::IsNode() const {
   return true;
@@ -143,8 +142,8 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
     // need additional information contained only in the CollectionInfo. The
     // CollectionInfo should be an ancestor of this node.
     AXCollectionInfoData* collection_info = nullptr;
-    for (const ArcAccessibilityInfoData* container =
-             static_cast<const ArcAccessibilityInfoData*>(this);
+    for (const AccessibilityInfoDataWrapper* container =
+             static_cast<const AccessibilityInfoDataWrapper*>(this);
          container;) {
       if (!container || !container->IsNode())
         break;
@@ -272,7 +271,7 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXState(
 
 void AccessibilityNodeInfoDataWrapper::Serialize(
     ui::AXNodeData* out_data) const {
-  PopulateAXRole(out_data);
+  AccessibilityInfoDataWrapper::Serialize(out_data);
 
   // String properties.
   int labelled_by = -1;
@@ -287,7 +286,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   GetProperty(AXStringProperty::TEXT, &text);
 
   if (GetProperty(AXIntProperty::LABELED_BY, &labelled_by)) {
-    ArcAccessibilityInfoData* labelled_by_node =
+    AccessibilityInfoDataWrapper* labelled_by_node =
         tree_source_->GetFromId(labelled_by);
     if (labelled_by_node && labelled_by_node->IsNode()) {
       ui::AXNodeData labelled_by_data;
@@ -401,29 +400,6 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
                                 range_info->max);
   }
 
-  exo::WMHelper* wm_helper =
-      exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance() : nullptr;
-
-  // To get bounds of a node which can be passed to AXNodeData.location,
-  // - Root node must exist.
-  // - Window where this tree is attached to need to be focused.
-  if (tree_source_->GetRoot()->GetId() != ui::AXNode::kInvalidAXID &&
-      wm_helper) {
-    aura::Window* active_window = (tree_source_->is_notification() ||
-                                   tree_source_->is_input_method_window())
-                                      ? nullptr
-                                      : wm_helper->GetActiveWindow();
-    const gfx::Rect& local_bounds = tree_source_->GetBounds(
-        tree_source_->GetFromId(GetId()), active_window);
-    out_data->relative_bounds.bounds.SetRect(local_bounds.x(), local_bounds.y(),
-                                             local_bounds.width(),
-                                             local_bounds.height());
-  }
-  // TODO(katie): Try using offset_container_id to make bounds calculations
-  // more efficient. If this is the child of the root, set the
-  // offset_container_id to be the root. Otherwise, set it to the first node
-  // child of the root.
-
   // Integer properties.
   int32_t val;
   if (GetProperty(AXIntProperty::TEXT_SELECTION_START, &val) && val >= 0)
@@ -470,7 +446,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
 }
 
 void AccessibilityNodeInfoDataWrapper::GetChildren(
-    std::vector<ArcAccessibilityInfoData*>* children) const {
+    std::vector<AccessibilityInfoDataWrapper*>* children) const {
   if (!node_ptr_->int_list_properties)
     return;
   auto it =
@@ -598,9 +574,9 @@ void AccessibilityNodeInfoDataWrapper::ComputeNameFromContents(
   }
 
   // Otherwise, continue looking for a name in this subtree.
-  std::vector<ArcAccessibilityInfoData*> children;
+  std::vector<AccessibilityInfoDataWrapper*> children;
   data->GetChildren(&children);
-  for (ArcAccessibilityInfoData* child : children) {
+  for (AccessibilityInfoDataWrapper* child : children) {
     ComputeNameFromContents(
         static_cast<AccessibilityNodeInfoDataWrapper*>(child), names);
   }

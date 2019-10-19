@@ -22,8 +22,8 @@
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/public/web/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
-#include "third_party/blink/public/web/modules/peerconnection/webrtc_stats_report_obtainer.h"
 #include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/modules/peerconnection/test_webrtc_stats_report_obtainer.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
@@ -118,9 +118,9 @@ class RTCRtpSenderImplTest : public ::testing::Test {
                           std::move(run_loop));
   }
 
-  scoped_refptr<blink::WebRTCStatsReportObtainer> CallGetStats() {
-    scoped_refptr<blink::WebRTCStatsReportObtainer> obtainer =
-        new blink::WebRTCStatsReportObtainer();
+  scoped_refptr<blink::TestWebRTCStatsReportObtainer> CallGetStats() {
+    scoped_refptr<blink::TestWebRTCStatsReportObtainer> obtainer =
+        base::MakeRefCounted<TestWebRTCStatsReportObtainer>();
     sender_->GetStats(obtainer->GetStatsCallbackWrapper(), {});
     return obtainer;
   }

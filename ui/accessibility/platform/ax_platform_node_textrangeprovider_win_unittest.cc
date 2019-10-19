@@ -196,6 +196,10 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     return text_range->owner_;
   }
 
+  void NormalizeTextRange(AXPlatformNodeTextRangeProviderWin* text_range) {
+    text_range->NormalizeTextRange();
+  }
+
   void GetTextRangeProviderFromTextNode(
       ComPtr<ITextRangeProvider>& text_range_provider,
       ui::AXNode* text_node) {
@@ -4499,6 +4503,120 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       /*count*/ 12,
       /*expected_text*/ L".3..4..5..13..14..11.",
       /*expected_count*/ 12);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestNormalizeTextRangePastEndOfDocument) {
+  ui::AXTreeUpdate initial_state;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  initial_state.tree_data.tree_id = tree_id;
+  initial_state.has_tree_data = true;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].child_ids = {3};
+  initial_state.nodes[1].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[1].SetName("aaa");
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kInlineTextBox;
+  initial_state.nodes[2].SetName("aaa");
+
+  Init(initial_state);
+  AXNodePosition::SetTree(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider,
+                                   GetNodeFromTree(tree_id, 3));
+
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"aaa");
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 2,
+      /*expected_text*/ L"a",
+      /*expected_count*/ 2);
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> text_range_provider_win;
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range_provider_win));
+
+  const AXNodePosition::AXPositionInstance start_after_move =
+      GetStart(text_range_provider_win.Get())->Clone();
+  const AXNodePosition::AXPositionInstance end_after_move =
+      GetEnd(text_range_provider_win.Get())->Clone();
+  EXPECT_LT(*start_after_move, *end_after_move);
+
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0] = initial_state.nodes[1];
+  update.nodes[0].SetName("aa");
+  update.nodes[1] = initial_state.nodes[2];
+  update.nodes[1].SetName("aa");
+  ASSERT_TRUE(tree_->Unserialize(update));
+
+  NormalizeTextRange(text_range_provider_win.Get());
+  EXPECT_EQ(*start_after_move, *GetStart(text_range_provider_win.Get()));
+  EXPECT_EQ(*end_after_move, *GetEnd(text_range_provider_win.Get()));
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestNormalizeTextRangePastEndOfDocumentWithIgnoredNodes) {
+  ui::AXTreeUpdate initial_state;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  initial_state.tree_data.tree_id = tree_id;
+  initial_state.has_tree_data = true;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(4);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].child_ids = {3, 4};
+  initial_state.nodes[1].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[1].SetName("aaa");
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kInlineTextBox;
+  initial_state.nodes[2].SetName("aaa");
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kInlineTextBox;
+  initial_state.nodes[3].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[3].SetName("ignored");
+
+  Init(initial_state);
+  AXNodePosition::SetTree(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider,
+                                   GetNodeFromTree(tree_id, 3));
+
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"aaa");
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 2,
+      /*expected_text*/ L"a",
+      /*expected_count*/ 2);
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> text_range_provider_win;
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&text_range_provider_win));
+
+  const AXNodePosition::AXPositionInstance start_after_move =
+      GetStart(text_range_provider_win.Get())->Clone();
+  const AXNodePosition::AXPositionInstance end_after_move =
+      GetEnd(text_range_provider_win.Get())->Clone();
+  EXPECT_LT(*start_after_move, *end_after_move);
+
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0] = initial_state.nodes[1];
+  update.nodes[0].SetName("aa");
+  update.nodes[1] = initial_state.nodes[2];
+  update.nodes[1].SetName("aa");
+  ASSERT_TRUE(tree_->Unserialize(update));
+
+  NormalizeTextRange(text_range_provider_win.Get());
+  EXPECT_EQ(*start_after_move, *GetStart(text_range_provider_win.Get()));
+  EXPECT_EQ(*end_after_move, *GetEnd(text_range_provider_win.Get()));
 }
 
 }  // namespace ui

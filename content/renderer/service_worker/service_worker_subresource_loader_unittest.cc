@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -466,9 +465,10 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
   ~ServiceWorkerSubresourceLoaderTest() override = default;
 
   void SetUp() override {
-    network::mojom::URLLoaderFactoryPtr fake_loader_factory;
-    mojo::MakeStrongBinding(std::make_unique<FakeNetworkURLLoaderFactory>(),
-                            MakeRequest(&fake_loader_factory));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> fake_loader_factory;
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<FakeNetworkURLLoaderFactory>(),
+        fake_loader_factory.InitWithNewPipeAndPassReceiver());
     loader_factory_ =
         base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(fake_loader_factory));

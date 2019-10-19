@@ -861,7 +861,6 @@ void HTMLInputElement::ParseAttribute(
       LogUpdateAttributeIfIsolatedWorldAndInDocument("input", params);
     TextControlElement::ParseAttribute(params);
   }
-  input_type_view_->AttributeChanged();
 }
 
 void HTMLInputElement::ParserDidSetAttributes() {

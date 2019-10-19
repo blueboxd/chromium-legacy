@@ -331,8 +331,9 @@ TtsPlatform* TtsControllerImpl::GetTtsPlatform() {
 }
 
 void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
-  // TODO(crbug/1003410): Change to always have a valid TtsControllerDelegate.
-  // This may involve modifying tests to register a mock implementation.
+  // Note: this would only happen if a content embedder failed to provide
+  // their own TtsControllerDelegate. Chrome provides one, and Content Shell
+  // provides a mock one for web tests.
   if (!GetTtsControllerDelegate()) {
     utterance->OnTtsEvent(TTS_EVENT_CANCELLED, kInvalidCharIndex,
                           kInvalidLength, std::string());

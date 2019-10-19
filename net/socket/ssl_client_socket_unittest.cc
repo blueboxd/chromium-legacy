@@ -1972,9 +1972,9 @@ TEST_P(SSLClientSocketReadTest, Read_FullDuplex) {
   // Issue a "hanging" Read first.
   TestCompletionCallback callback;
   scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(4096);
-  rv = Read(sock_.get(), buf.get(), 4096, callback.callback());
+  int read_rv = Read(sock_.get(), buf.get(), 4096, callback.callback());
   // We haven't written the request, so there should be no response yet.
-  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  ASSERT_THAT(read_rv, IsError(ERR_IO_PENDING));
 
   // Write the request.
   // The request is padded with a User-Agent header to a size that causes the
@@ -1994,8 +1994,9 @@ TEST_P(SSLClientSocketReadTest, Read_FullDuplex) {
   EXPECT_EQ(static_cast<int>(request_text.size()), rv);
 
   // Now get the Read result.
-  rv = WaitForReadCompletion(sock_.get(), buf.get(), 4096, &callback, rv);
-  EXPECT_GT(rv, 0);
+  read_rv =
+      WaitForReadCompletion(sock_.get(), buf.get(), 4096, &callback, read_rv);
+  EXPECT_GT(read_rv, 0);
 }
 
 // Attempts to Read() and Write() from an SSLClientSocketNSS in full duplex

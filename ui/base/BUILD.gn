@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/dcheck_always_on.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -423,6 +424,10 @@ jumbo_component("base") {
     "//ui/strings",
     "//url",
   ]
+
+  if (is_debug || dcheck_always_on) {
+    deps += [ "//third_party/re2" ]
+  }
 
   if (!is_ios) {
     # iOS does not use Chromium-specific code for event handling.

@@ -131,12 +131,6 @@ base::OnceCallback<void(Params&&...)> WrapCallback(
       base::RetainedRef(std::move(runner)), std::move(callback));
 }
 
-void DestroyBinding(mojo::BindingSet<mojom::GpuService>* binding,
-                    base::WaitableEvent* wait) {
-  binding->CloseAllBindings();
-  wait->Signal();
-}
-
 }  // namespace
 
 GpuServiceImpl::GpuServiceImpl(
@@ -163,8 +157,7 @@ GpuServiceImpl::GpuServiceImpl(
 #if BUILDFLAG(ENABLE_VULKAN)
       vulkan_implementation_(vulkan_implementation),
 #endif
-      exit_callback_(std::move(exit_callback)),
-      bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()) {
+      exit_callback_(std::move(exit_callback)) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
   DCHECK(exit_callback_);
 
@@ -214,11 +207,18 @@ GpuServiceImpl::~GpuServiceImpl() {
   bind_task_tracker_.TryCancelAll();
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get().Reset();
+
+  // Destroy the receiver on the IO thread.
   base::WaitableEvent wait;
-  if (io_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&DestroyBinding, bindings_.get(), &wait))) {
+  auto destroy_receiver_task = base::BindOnce(
+      [](mojo::Receiver<mojom::GpuService>* receiver,
+         base::WaitableEvent* wait) {
+        receiver->reset();
+        wait->Signal();
+      },
+      &receiver_, &wait);
+  if (io_runner_->PostTask(FROM_HERE, std::move(destroy_receiver_task)))
     wait.Wait();
-  }
 
   if (watchdog_thread_)
     watchdog_thread_->OnGpuProcessTearDown();
@@ -338,15 +338,17 @@ void GpuServiceImpl::InitializeWithHost(
     watchdog_thread()->AddPowerObserver();
 }
 
-void GpuServiceImpl::Bind(mojom::GpuServiceRequest request) {
+void GpuServiceImpl::Bind(
+    mojo::PendingReceiver<mojom::GpuService> pending_receiver) {
   if (main_runner_->BelongsToCurrentThread()) {
     bind_task_tracker_.PostTask(
         io_runner_.get(), FROM_HERE,
         base::BindOnce(&GpuServiceImpl::Bind, base::Unretained(this),
-                       std::move(request)));
+                       std::move(pending_receiver)));
     return;
   }
-  bindings_->AddBinding(this, std::move(request));
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 void GpuServiceImpl::DisableGpuCompositing() {
@@ -727,13 +729,22 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
                                          bool is_gpu_host,
                                          bool cache_shaders_on_disk,
                                          EstablishGpuChannelCallback callback) {
-  if (gpu::IsReservedClientId(client_id)) {
-    // This returns a null handle, which is treated by the client as a failure
-    // case.
-    std::move(callback).Run(mojo::ScopedMessagePipeHandle());
-    return;
-  }
+  // This should always be called on the IO thread first.
   if (io_runner_->BelongsToCurrentThread()) {
+    if (IsExiting()) {
+      // We are already exiting so there is no point in responding. Close the
+      // receiver so we can safely drop the callback.
+      receiver_.reset();
+      return;
+    }
+
+    if (gpu::IsReservedClientId(client_id)) {
+      // This returns a null handle, which is treated by the client as a failure
+      // case.
+      std::move(callback).Run(mojo::ScopedMessagePipeHandle());
+      return;
+    }
+
     EstablishGpuChannelCallback wrap_callback = base::BindOnce(
         [](scoped_refptr<base::SingleThreadTaskRunner> runner,
            EstablishGpuChannelCallback cb,

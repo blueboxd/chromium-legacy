@@ -104,7 +104,8 @@ class WebWorkerFetchContextImpl::Factory : public blink::WebURLLoaderFactory {
   }
 
   void SetServiceWorkerURLLoaderFactory(
-      network::mojom::URLLoaderFactoryPtr service_worker_loader_factory) {
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          service_worker_loader_factory) {
     if (!service_worker_loader_factory) {
       service_worker_loader_factory_ = nullptr;
       return;
@@ -607,13 +608,14 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
     return;
   if (GetControllerServiceWorkerMode() !=
       blink::mojom::ControllerServiceWorkerMode::kControlled) {
-    web_loader_factory_->SetServiceWorkerURLLoaderFactory(nullptr);
+    web_loader_factory_->SetServiceWorkerURLLoaderFactory(mojo::NullRemote());
     return;
   }
   if (!service_worker_container_host_)
     return;
 
-  network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      service_worker_url_loader_factory;
   mojo::PendingRemote<blink::mojom::ServiceWorkerContainerHost>
       service_worker_container_host;
   service_worker_container_host_->CloneContainerHost(
@@ -625,11 +627,12 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&CreateServiceWorkerSubresourceLoaderFactory,
-                     std::move(service_worker_container_host), client_id_,
-                     fallback_factory_->Clone(),
-                     mojo::MakeRequest(&service_worker_url_loader_factory),
-                     task_runner));
+      base::BindOnce(
+          &CreateServiceWorkerSubresourceLoaderFactory,
+          std::move(service_worker_container_host), client_id_,
+          fallback_factory_->Clone(),
+          service_worker_url_loader_factory.InitWithNewPipeAndPassReceiver(),
+          task_runner));
   web_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
 }

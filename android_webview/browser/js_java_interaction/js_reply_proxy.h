@@ -8,15 +8,15 @@
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
 namespace android_webview {
 
 class JsReplyProxy {
  public:
-  explicit JsReplyProxy(
-      mojo::PendingRemote<mojom::JavaToJsMessaging> java_to_js_messaging);
+  explicit JsReplyProxy(mojo::PendingAssociatedRemote<mojom::JavaToJsMessaging>
+                            java_to_js_messaging);
 
   ~JsReplyProxy();
 
@@ -27,7 +27,7 @@ class JsReplyProxy {
 
  private:
   JavaObjectWeakGlobalRef java_ref_;
-  mojo::Remote<mojom::JavaToJsMessaging> java_to_js_messaging_;
+  mojo::AssociatedRemote<mojom::JavaToJsMessaging> java_to_js_messaging_;
 
   DISALLOW_COPY_AND_ASSIGN(JsReplyProxy);
 };

@@ -689,7 +689,9 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     public int getBaseStatusBarColor() {
-        return isStatusBarDefaultThemeColor() ? Color.BLACK : mBrandColor;
+        // White default color is used to match CCTs and WebAPK shell. The returned color is ignored
+        // pre Android M when isStatusBarDefaultThemeColor() == true.
+        return isStatusBarDefaultThemeColor() ? Color.WHITE : mBrandColor;
     }
 
     @Override

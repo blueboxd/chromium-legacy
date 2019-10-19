@@ -438,7 +438,6 @@ WindowCycleList::~WindowCycleList() {
 
   if (!windows_.empty() && user_did_accept_) {
     auto* target_window = windows_[current_index_];
-    target_window->Show();
     SelectWindow(target_window);
   }
 
@@ -575,12 +574,20 @@ void WindowCycleList::InitWindowCycleView() {
 }
 
 void WindowCycleList::SelectWindow(aura::Window* window) {
+  // If the list has only one window, the window can be selected twice (in
+  // Step() and the destructor). This causes ARC PIP windows to be restored
+  // twice, which leads to a wrong window state.
+  if (window_selected_)
+    return;
+
   window->Show();
   auto* window_state = WindowState::Get(window);
   if (window_util::IsArcPipWindow(window))
     window_state->Restore();
   else
     window_state->Activate();
+
+  window_selected_ = true;
 }
 
 }  // namespace ash

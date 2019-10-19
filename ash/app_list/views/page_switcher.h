@@ -40,7 +40,7 @@ class PageSwitcher : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from PaginationModelObserver:
-  void TotalPagesChanged() override;
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
 
   ash::PaginationModel* model_;  // Owned by AppsGridView.

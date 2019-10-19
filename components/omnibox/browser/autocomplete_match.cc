@@ -1078,8 +1078,9 @@ void AutocompleteMatch::InlineTailPrefix(const base::string16& common_prefix) {
     contents = ellipsis + contents;
     // If the first class is not already NONE, prepend a NONE class for the new
     // ellipsis.
-    if (contents_class[0].offset == 0 &&
-        contents_class[0].style != ACMatchClassification::NONE) {
+    if (contents_class.empty() ||
+        (contents_class[0].offset == 0 &&
+         contents_class[0].style != ACMatchClassification::NONE)) {
       contents_class.insert(contents_class.begin(),
                             {0, ACMatchClassification::NONE});
     }

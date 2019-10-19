@@ -8,6 +8,7 @@ import itertools
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .composition_parts import Identifier
+from .constructor import ConstructorGroup
 from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
@@ -283,13 +284,19 @@ class IdlCompiler(object):
 
         for old_ir in old_irs:
             assert not old_ir.operation_groups
+            assert not old_ir.constructor_groups
             new_ir = make_copy(old_ir)
             sort_key = lambda x: x.identifier
             new_ir.operation_groups = [
                 OperationGroup.IR(operations=list(operations))
                 for identifier, operations in itertools.groupby(
-                    sorted(old_ir.operations, key=sort_key), key=sort_key)
+                    sorted(new_ir.operations, key=sort_key), key=sort_key)
                 if identifier
+            ]
+            new_ir.constructor_groups = [
+                ConstructorGroup.IR(constructors=list(constructors))
+                for identifier, constructors in itertools.groupby(
+                    sorted(new_ir.constructors, key=sort_key), key=sort_key)
             ]
             self._ir_map.add(new_ir)
 

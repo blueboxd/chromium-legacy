@@ -147,11 +147,6 @@ class CONTENT_EXPORT RenderFrameHostManager
         RenderFrameHost* new_host) = 0;
     virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
 
-    // Returns the navigation entry of the current navigation, or NULL if there
-    // is none.
-    virtual NavigationEntry*
-    GetLastCommittedNavigationEntryForRenderManager() = 0;
-
     // Returns the interstitial page showing in the delegate, or null if there
     // is none.
     virtual InterstitialPageImpl* GetInterstitialForRenderManager() = 0;
@@ -590,11 +585,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Delete a RenderFrameProxyHost owned by this object.
   void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 
-  // Returns whether this tab should transition to a new renderer for
-  // cross-site URLs.  Enabled unless we see the --single-process command line
-  // switch.
-  bool ShouldTransitionCrossSite();
-
   // Returns true if for the navigation from |current_effective_url| to
   // |new_effective_url|, a new SiteInstance and BrowsingInstance should be
   // created (even if we are in a process model that doesn't usually swap).
@@ -605,7 +595,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // should be the same as |new_is_view_source_mode|.
   //
   // We use the effective URL here, since that's what is used in the
-  // SiteInstance's site and when we later call IsSameWebSite.  If there is no
+  // SiteInstance's site and when we later call IsSameSite.  If there is no
   // current NavigationEntry, check the current SiteInstance's site, which might
   // already be committed to a Web UI URL (such as the NTP).
   bool ShouldSwapBrowsingInstancesForNavigation(

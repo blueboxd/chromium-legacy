@@ -16,23 +16,19 @@ void TopContainerBackground::Paint(gfx::Canvas* canvas,
                                    views::View* view) const {
   const ui::ThemeProvider* const theme_provider = view->GetThemeProvider();
   if (theme_provider->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    // Calculate the offset of the upper-left corner of the owner view in the
-    // browser view. Not all views are directly parented to the browser, so we
-    // have to walk up the view hierarchy. This will tell us the offset into the
-    // tiled image that will correspond to the upper-left corner of the view.
-    int x = 0;
-    int y = 0;
-    views::View* current = view;
-    for (; current != browser_view_; current = current->parent()) {
-      x += current->x();
-      y += current->y();
-    }
-    x += browser_view_->frame()->GetThemeBackgroundXInset();
+    // This is a recapitulation of the logic originally used to place the
+    // background image in the bookmarks bar. It is used to ensure backwards-
+    // compatibility with existing themes, even though it is not technically
+    // correct in all cases.
+    gfx::Point pos = view->GetMirroredPosition() +
+                     browser_view_->GetMirroredPosition().OffsetFromOrigin();
+    pos.Offset(browser_view_->frame()->GetThemeBackgroundXInset(),
+               -browser_view_->frame()->GetTopInset());
+    const gfx::Rect bounds = view->GetLocalBounds();
 
-    // Start tiling from coordinates (x, y) in the image into local space,
-    // filling the entire local bounds of the owner view.
     canvas->TileImageInt(*theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                         x, y, 0, 0, view->width(), view->height());
+                         pos.x(), pos.y(), bounds.x(), bounds.y(),
+                         bounds.width(), bounds.height());
   } else {
     canvas->DrawColor(theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
   }

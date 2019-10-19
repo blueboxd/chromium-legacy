@@ -50,6 +50,7 @@
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/filters/vp9_parser.h"
+#include "media/gpu/windows/d3d11_video_device_format_support.h"
 #include "media/gpu/windows/dxva_picture_buffer_win.h"
 #include "media/gpu/windows/supported_profile_helpers.h"
 #include "media/video/h264_parser.h"
@@ -881,19 +882,15 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   if (!options.ExtendedResourceSharing)
     support_copy_nv12_textures_ = false;
 
-  UINT nv12_format_support = 0;
-  hr =
-      D3D11Device()->CheckFormatSupport(DXGI_FORMAT_NV12, &nv12_format_support);
-  RETURN_ON_HR_FAILURE(hr, "Failed to check NV12 format support", false);
+  FormatSupportChecker checker(ShouldUseANGLEDevice() ? angle_device_
+                                                      : d3d11_device_);
+  RETURN_ON_FAILURE(checker.Initialize(), "Failed to check format supports!",
+                    false);
 
-  if (!(nv12_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
+  if (!checker.CheckOutputFormatSupport(DXGI_FORMAT_NV12))
     support_copy_nv12_textures_ = false;
 
-  UINT fp16_format_support = 0;
-  hr = D3D11Device()->CheckFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT,
-                                         &fp16_format_support);
-  if (FAILED(hr) ||
-      !(fp16_format_support & D3D11_FORMAT_SUPPORT_VIDEO_PROCESSOR_OUTPUT))
+  if (!checker.CheckOutputFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT))
     use_fp16_ = false;
 
   // Enable multithreaded mode on the device. This ensures that accesses to

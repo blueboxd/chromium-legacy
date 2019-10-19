@@ -12,8 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequence_bound.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/unguessable_token.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -71,9 +71,6 @@ class LevelDBDatabaseImpl {
 
   void RewriteDB(StatusCallback callback);
 
-  void Write(std::vector<mojom::BatchedOperationPtr> operations,
-             StatusCallback callback);
-
   using GetCallback =
       base::OnceCallback<void(Status status, const std::vector<uint8_t>&)>;
   void Get(const std::vector<uint8_t>& key, GetCallback callback);
@@ -109,6 +106,13 @@ class LevelDBDatabaseImpl {
       tasks_to_run_on_open_.push_back(std::move(wrapped_task));
     }
   }
+
+  using BatchDatabaseTask =
+      base::OnceCallback<void(leveldb::WriteBatch*,
+                              const storage::DomStorageDatabase&)>;
+  void RunBatchDatabaseTasks(
+      std::vector<BatchDatabaseTask> tasks,
+      base::OnceCallback<void(leveldb::Status)> callback);
 
  private:
   void OnDatabaseOpened(

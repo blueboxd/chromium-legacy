@@ -276,8 +276,9 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   ServiceWorkerProviderContextTest() = default;
 
   void EnableNetworkService() {
-    network::mojom::URLLoaderFactoryPtr fake_loader_factory;
-    fake_loader_factory_.AddReceiver(MakeRequest(&fake_loader_factory));
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> fake_loader_factory;
+    fake_loader_factory_.AddReceiver(
+        fake_loader_factory.InitWithNewPipeAndPassReceiver());
     loader_factory_ =
         base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
             std::move(fake_loader_factory));

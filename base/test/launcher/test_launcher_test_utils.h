@@ -37,6 +37,10 @@ bool ValidateTestResult(const Value* iteration_data,
                         const std::string& status,
                         size_t result_part_count);
 
+// Validate test_locations contains all tests in |test_case_name|.
+bool ValidateTestLocations(const Value* test_locations,
+                           const std::string& test_case_name);
+
 // Validate test_locations contains the correct file name and line number.
 bool ValidateTestLocation(const Value* test_locations,
                           const std::string& test_name,

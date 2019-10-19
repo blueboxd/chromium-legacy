@@ -11,12 +11,15 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gtest_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::test::TaskEnvironment;
+using ::testing::IsNull;
+using ::testing::NotNull;
 
 namespace content {
 
@@ -219,6 +222,39 @@ TEST(BrowserTaskEnvironmentTest, CurrentThreadIOWithRealIOThread) {
                   base::CreateSingleThreadTaskRunner({base::CurrentThread()}));
         run_loop.Quit();
       }));
+
+  run_loop.Run();
+}
+
+TEST(BrowserTaskEnvironmentTest, GetCurrentTaskWithNoTaskRunning) {
+  BrowserTaskEnvironment task_environment;
+  EXPECT_DCHECK_DEATH(base::GetContinuationTaskRunner());
+}
+
+TEST(BrowserTaskEnvironmentTest, GetContinuationTaskRunnerUI) {
+  BrowserTaskEnvironment task_environment;
+  base::RunLoop run_loop;
+  auto ui_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+
+  ui_task_runner->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                             EXPECT_EQ(ui_task_runner,
+                                       base::GetContinuationTaskRunner());
+                             run_loop.Quit();
+                           }));
+
+  run_loop.Run();
+}
+
+TEST(BrowserTaskEnvironmentTest, GetContinuationTaskRunnerIO) {
+  BrowserTaskEnvironment task_environment;
+  base::RunLoop run_loop;
+  auto io_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+
+  io_task_runner->PostTask(FROM_HERE, base::BindLambdaForTesting([&]() {
+                             EXPECT_EQ(io_task_runner,
+                                       base::GetContinuationTaskRunner());
+                             run_loop.Quit();
+                           }));
 
   run_loop.Run();
 }

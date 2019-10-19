@@ -224,7 +224,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       sub_type_(sub_type),
       style_variant_((unsigned)builder->style_variant_),
       is_hidden_for_paint_(builder->is_hidden_for_paint_),
-      has_floating_descendants_(false),
+      has_floating_descendants_for_paint_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false) {
   DCHECK(builder->layout_object_);
@@ -241,7 +241,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       sub_type_(sub_type),
       style_variant_((unsigned)style_variant),
       is_hidden_for_paint_(false),
-      has_floating_descendants_(false),
+      has_floating_descendants_for_paint_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false) {
   DCHECK(layout_object);

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -11,7 +13,6 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 
@@ -27,11 +28,6 @@ class CompositingReasonFinderTest : public RenderingTest {
   }
 };
 
-class CompositingReasonFinderTestPlatform : public TestingPlatformSupport {
- public:
-  bool IsLowEndDevice() override { return true; }
-};
-
 TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
   EXPECT_FALSE(CompositingReason::kComboAllDirectNonStyleDeterminedReasons &
                (~CompositingReason::kComboAllDirectReasons));
@@ -42,9 +38,7 @@ TEST_F(CompositingReasonFinderTest, CompositingReasonDependencies) {
                CompositingReason::kComboAllStyleDeterminedReasons);
 }
 
-TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3DLowEnd) {
-  ScopedTestingPlatformSupport<CompositingReasonFinderTestPlatform> platform;
-
+TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(0)'></div>
@@ -56,21 +50,18 @@ TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3DLowEnd) {
   EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
 }
 
-TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3DLowEnd) {
-  ScopedTestingPlatformSupport<CompositingReasonFinderTestPlatform> platform;
+class CompositingReasonFinderTestWithCompositeTrivial3D
+    : public CompositingReasonFinderTest {
+ public:
+  CompositingReasonFinderTestWithCompositeTrivial3D() {
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kDoNotCompositeTrivial3D);
+  }
 
-  SetBodyInnerHTML(R"HTML(
-    <div id='target'
-      style='width: 100px; height: 100px; transform: translateZ(1px)'></div>
-  )HTML");
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
-  Element* target = GetDocument().getElementById("target");
-  PaintLayer* paint_layer =
-      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
-}
-
-TEST_F(CompositingReasonFinderTest, PromoteTrivial3DByDefault) {
+TEST_F(CompositingReasonFinderTestWithCompositeTrivial3D, PromoteTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(0)'></div>
@@ -82,7 +73,7 @@ TEST_F(CompositingReasonFinderTest, PromoteTrivial3DByDefault) {
   EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
 }
 
-TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3DByDefault) {
+TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3D) {
   SetBodyInnerHTML(R"HTML(
     <div id='target'
       style='width: 100px; height: 100px; transform: translateZ(1px)'></div>

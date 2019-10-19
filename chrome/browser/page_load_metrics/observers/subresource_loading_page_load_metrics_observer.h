@@ -15,7 +15,13 @@
 #include "base/time/time.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
+
+namespace content {
+class BrowserContext;
+class NavigationHandle;
+}  // namespace content
 
 // Records metrics related to loading of subresources on a page.
 class SubresourceLoadingPageLoadMetricsObserver
@@ -32,10 +38,23 @@ class SubresourceLoadingPageLoadMetricsObserver
  private:
   void RecordMetrics();
 
+  // Starts an async call to the cookie manager to determine if there are likely
+  // to be cookies set on a mainframe request. This is called on navigation
+  // start and redirects but should not be called on commit because it'll get
+  // cookies from the mainframe response, if any.
+  void CheckForCookiesOnURL(content::BrowserContext* browser_context,
+                            const GURL& url);
+
+  // Used as a callback for the cookie manager query.
+  void OnCookieResult(const net::CookieStatusList& cookies,
+                      const net::CookieStatusList& excluded_cookies);
+
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,
                         bool started_in_foreground) override;
+  ObservePolicy OnRedirect(
+      content::NavigationHandle* navigation_handle) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
@@ -60,6 +79,11 @@ class SubresourceLoadingPageLoadMetricsObserver
   // HistoryService, to any origin in the redirect chain. Set to -1 if there is
   // a response from the history service but was no previous visit.
   base::Optional<int> min_days_since_last_visit_to_origin_;
+
+  // Set to true if any main frame request in the redirect chain had cookies set
+  // on the request. Set to false if there were no cookies set. Not set if we
+  // didn't get a response from the CookieManager before recording metrics.
+  base::Optional<bool> mainframe_had_cookies_;
 
   // Task tracker for calls for the history service.
   base::CancelableTaskTracker task_tracker_;

@@ -137,6 +137,8 @@ static_library("common") {
     "daemon_process.cc",
     "daemon_process.h",
     "daemon_process_win.cc",
+    "desktop_capturer_checker.cc",
+    "desktop_capturer_checker.h",
     "desktop_capturer_proxy.cc",
     "desktop_capturer_proxy.h",
     "desktop_display_info.cc",

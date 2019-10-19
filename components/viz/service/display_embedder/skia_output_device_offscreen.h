@@ -25,7 +25,7 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   ~SkiaOutputDeviceOffscreen() override;
 
   // SkiaOutputDevice implementation:
-  void Reshape(const gfx::Size& size,
+  bool Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha,

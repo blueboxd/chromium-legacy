@@ -51,10 +51,10 @@ std::set<int32_t> GetThrottledHashes() {
   // either downlink or uplink traffic and are expected to cause traffic
   // contention with the P2P traffic on slow connections.
   if (throttled_traffic_annotation_tags.empty()) {
-    // 6019475: safe_browsing_module_loader
-    // 82509217: safe_browsing_v4_update
     // 727528: metrics_report_uma
-    throttled_traffic_annotation_tags = "6019475,82509217,727528";
+    // 727478: metrics_report_uma
+    // 18300705: gcm_channel_status_request
+    throttled_traffic_annotation_tags = "727528,727478,18300705";
   }
 
   const std::vector<std::string>& tokens =

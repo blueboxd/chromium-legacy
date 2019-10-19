@@ -699,7 +699,8 @@ const char* ContentsView::GetClassName() const {
   return "ContentsView";
 }
 
-void ContentsView::TotalPagesChanged() {}
+void ContentsView::TotalPagesChanged(int previous_page_count,
+                                     int new_page_count) {}
 
 void ContentsView::SelectedPageChanged(int old_selected, int new_selected) {
   if (old_selected >= 0)

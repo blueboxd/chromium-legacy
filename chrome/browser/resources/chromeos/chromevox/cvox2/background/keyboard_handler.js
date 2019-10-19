@@ -35,7 +35,8 @@ BackgroundKeyboardHandler.prototype = {
   /**
    * Handles key down events.
    * @param {Event} evt The key down event to process.
-   * @return {boolean} True if the default action should be performed.
+   * @return {boolean} This value has no effect since we ignore it in
+   *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */
   onKeyDown: function(evt) {
     EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
@@ -49,7 +50,12 @@ BackgroundKeyboardHandler.prototype = {
     // commands.
     if (!MathHandler.onKeyDown(evt) ||
         !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt) ||
-        evt.metaKey || evt.keyCode == 91) {
+        // We natively always capture Search, so we have to be very careful to
+        // either eat it here or re-inject it; otherwise, some components, like
+        // ARC++ with TalkBack never get it. We only want to re-inject when
+        // ChromeVox has no range.
+        (ChromeVoxState.instance.currentRange &&
+         (evt.metaKey || evt.keyCode == 91))) {
       evt.preventDefault();
       evt.stopPropagation();
       this.eatenKeyDowns_.add(evt.keyCode);
@@ -60,7 +66,8 @@ BackgroundKeyboardHandler.prototype = {
   /**
    * Handles key up events.
    * @param {Event} evt The key down event to process.
-   * @return {boolean} True if the default action should be performed.
+   * @return {boolean} This value has no effect since we ignore it in
+   *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */
   onKeyUp: function(evt) {
     // Reset pass through mode once a keyup (not involving the pass through key)

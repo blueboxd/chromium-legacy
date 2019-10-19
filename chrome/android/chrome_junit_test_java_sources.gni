@@ -144,7 +144,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omnibox/AutocompleteEditTextTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/AutocompleteStateUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/KeyboardHideHelperUnitTest.java",
-  "junit/src/org/chromium/chrome/browser/omnibox/SearchEngineLogoUtilsTest.java",
+  "junit/src/org/chromium/chrome/browser/omnibox/SearchEngineLogoUtilsUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/SpannableAutocompleteEditTextModelUnitTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/UrlBarDataTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/UrlBarUnitTest.java",

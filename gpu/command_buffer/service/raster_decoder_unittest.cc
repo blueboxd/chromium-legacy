@@ -296,7 +296,8 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
 
     context_state_ = base::MakeRefCounted<SharedContextState>(
         std::move(share_group), std::move(surface), std::move(context),
-        false /* use_virtualized_gl_contexts */, base::DoNothing());
+        false /* use_virtualized_gl_contexts */, base::DoNothing(),
+        GpuPreferences().gr_context_type);
     context_state_->InitializeGrContext(workarounds, nullptr);
     context_state_->InitializeGL(GpuPreferences(), feature_info);
   }

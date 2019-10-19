@@ -28,10 +28,8 @@ crbug.com/1014750 wpt_internal/webgpu/cts.html?q=cts:validation/createView:it+is
 #
 # Mac (Metal) specific
 #
-# TODO(crbug.com/1014785): Theses should be [ Mac ], but that doesn't work right now under the mac10.14 config that we run on dawn-mac-x64-deps-rel.
-#
 
-crbug.com/1014744 wpt_internal/webgpu/cts.html?q=cts:command_buffer/render/storeop:storeOp+controls+whether+1x1+drawn+quad+is+stored={"storeOp":"clear","expected":0} [ Failure ]
+crbug.com/1014744 [ Mac ] wpt_internal/webgpu/cts.html?q=cts:command_buffer/render/storeop:storeOp+controls+whether+1x1+drawn+quad+is+stored={"storeOp":"clear","expected":0} [ Failure ]
 
 #
 # Linux (Vulkan) specific

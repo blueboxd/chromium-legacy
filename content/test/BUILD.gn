@@ -369,7 +369,6 @@ jumbo_static_library("test_support") {
     ":content_test_mojo_bindings",
     "//base/third_party/dynamic_annotations",
     "//cc:test_support",
-    "//components/services/leveldb/public/mojom",
     "//components/viz/host",
     "//components/viz/service",
     "//content/app:both_for_content_tests",

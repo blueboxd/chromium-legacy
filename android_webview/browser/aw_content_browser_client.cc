@@ -89,8 +89,6 @@
 #include "content/public/common/web_preferences.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cert_request_info.h"

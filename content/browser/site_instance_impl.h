@@ -71,10 +71,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // without converting them to effective URLs first.  This is useful for
   // avoiding OOPIFs when otherwise same-site URLs may look cross-site via
   // their effective URLs.
-  static bool IsSameWebSite(const IsolationContext& isolation_context,
-                            const GURL& src_url,
-                            const GURL& dest_url,
-                            bool should_compare_effective_urls);
+  static bool IsSameSite(const IsolationContext& isolation_context,
+                         const GURL& src_url,
+                         const GURL& dest_url,
+                         bool should_compare_effective_urls);
 
   // SiteInstance interface overrides.
   int32_t GetId() override;

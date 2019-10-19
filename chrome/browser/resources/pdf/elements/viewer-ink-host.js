@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 /** @enum {string} */
 const State = {
   LOADING: 'loading',
@@ -17,6 +19,8 @@ const BACKGROUND_COLOR = '#525659';
  */
 Polymer({
   is: 'viewer-ink-host',
+
+  _template: html`{__html_template__}`,
 
   /** @private {InkAPI} */
   ink_: null,

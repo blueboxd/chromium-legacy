@@ -112,46 +112,6 @@ void LevelDBDatabaseImpl::RewriteDB(StatusCallback callback) {
           std::move(callback), base::SequencedTaskRunnerHandle::Get()));
 }
 
-void LevelDBDatabaseImpl::Write(
-    std::vector<mojom::BatchedOperationPtr> operations,
-    StatusCallback callback) {
-  RunDatabaseTask(
-      base::BindOnce(
-          [](std::vector<mojom::BatchedOperationPtr> operations,
-             const storage::DomStorageDatabase& db) {
-            WriteBatch batch;
-            for (auto& op : operations) {
-              switch (op->type) {
-                case mojom::BatchOperationType::PUT_KEY: {
-                  if (op->value) {
-                    batch.Put(GetSliceFor(op->key), GetSliceFor(*(op->value)));
-                  } else {
-                    batch.Put(GetSliceFor(op->key), Slice());
-                  }
-                  break;
-                }
-                case mojom::BatchOperationType::DELETE_KEY: {
-                  batch.Delete(GetSliceFor(op->key));
-                  break;
-                }
-                case mojom::BatchOperationType::DELETE_PREFIXED_KEY: {
-                  db.DeletePrefixed(op->key, &batch);
-                  break;
-                }
-                case mojom::BatchOperationType::COPY_PREFIXED_KEY: {
-                  // DCHECK is fine here since browser code is the only caller.
-                  DCHECK(op->value);
-                  db.CopyPrefixed(op->key, *(op->value), &batch);
-                  break;
-                }
-              }
-            }
-            return db.Commit(&batch);
-          },
-          std::move(operations)),
-      std::move(callback));
-}
-
 void LevelDBDatabaseImpl::Get(const std::vector<uint8_t>& key,
                               GetCallback callback) {
   struct GetResult {
@@ -189,6 +149,21 @@ void LevelDBDatabaseImpl::CopyPrefixed(
                         return db.Commit(&batch);
                       },
                       source_key_prefix, destination_key_prefix),
+                  std::move(callback));
+}
+
+void LevelDBDatabaseImpl::RunBatchDatabaseTasks(
+    std::vector<BatchDatabaseTask> tasks,
+    base::OnceCallback<void(leveldb::Status)> callback) {
+  RunDatabaseTask(base::BindOnce(
+                      [](std::vector<BatchDatabaseTask> tasks,
+                         const storage::DomStorageDatabase& db) {
+                        leveldb::WriteBatch batch;
+                        for (auto& task : tasks)
+                          std::move(task).Run(&batch, db);
+                        return db.Commit(&batch);
+                      },
+                      std::move(tasks)),
                   std::move(callback));
 }
 

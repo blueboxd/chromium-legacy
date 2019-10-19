@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
+import {Bookmark} from './elements/viewer-bookmark.js';
+import {FitToChangedEvent} from './elements/viewer-zoom-toolbar.js';
 
 /**
  * @typedef {{
@@ -82,7 +83,7 @@ function getScrollbarWidth() {
  * @param {string} url The URL to get the filename from.
  * @return {string} The filename component.
  */
-function getFilenameFromURL(url) {
+export function getFilenameFromURL(url) {
   // Ignore the query and fragment.
   const mainUrl = url.split(/#|\?/)[0];
   const components = mainUrl.split(/\/|\\/);
@@ -103,7 +104,7 @@ function getFilenameFromURL(url) {
  * @param {Element} activeElement The currently selected DOM node.
  * @return {boolean} True if keydown events should be ignored.
  */
-function shouldIgnoreKeyEvents(activeElement) {
+export function shouldIgnoreKeyEvents(activeElement) {
   while (activeElement.shadowRoot != null &&
          activeElement.shadowRoot.activeElement != null) {
     activeElement = activeElement.shadowRoot.activeElement;
@@ -119,7 +120,7 @@ function shouldIgnoreKeyEvents(activeElement) {
  * Creates a new PDFViewer. There should only be one of these objects per
  * document.
  */
-class PDFViewer {
+export class PDFViewer {
   /**
    * @param {!BrowserApi} browserApi An object providing an API to the browser.
    */
@@ -1165,7 +1166,12 @@ class PDFViewer {
       } else {
         targetOrigin = this.originalUrl_;
       }
-      this.parentWindow_.postMessage(message, targetOrigin);
+      try {
+        this.parentWindow_.postMessage(message, targetOrigin);
+      } catch (ok) {
+        // TODO(crbug.com/1004425): targetOrigin probably was rejected, such as
+        // a "data:" URL. This shouldn't cause this method to throw, though.
+      }
     }
   }
 
@@ -1490,6 +1496,10 @@ class PDFViewer {
     }
   }
 }
+
+// Export PDFViewer on |window| such that scripts injected from
+// pdf_extension_test.cc can access it.
+window.PDFViewer = PDFViewer;
 
 /**
  * The height of the toolbar along the top of the page. The document will be

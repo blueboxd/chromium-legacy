@@ -379,6 +379,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->rgba_visual = data.rgba_visual();
 #endif
   out->oop_rasterization_supported = data.oop_rasterization_supported();
+  out->subpixel_font_rendering = data.subpixel_font_rendering();
 
 #if defined(OS_WIN)
   out->direct_composition = data.direct_composition();

@@ -373,18 +373,14 @@ LayoutSize BackgroundImageGeometry::GetBackgroundObjectDimensions(
   return LayoutSize(width, column_height);
 }
 
-namespace {
-
-bool ShouldUseFixedAttachment(const FillLayer& fill_layer) {
-  if (RuntimeEnabledFeatures::FastMobileScrollingEnabled()) {
-    // As a side effect of an optimization to blit on scroll, we do not honor
-    // the CSS property "background-attachment: fixed" because it may result in
-    // rendering artifacts. Note, these artifacts only appear if we are blitting
-    // on scroll of a page that has fixed background images.
-    return false;
-  }
-  return fill_layer.Attachment() == EFillAttachment::kFixed;
+bool BackgroundImageGeometry::ShouldUseFixedAttachment(
+    const FillLayer& fill_layer) {
+  // Solid color background should use default attachment.
+  return fill_layer.GetImage() &&
+         fill_layer.Attachment() == EFillAttachment::kFixed;
 }
+
+namespace {
 
 LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
                                           const LayoutBoxModelObject* container,

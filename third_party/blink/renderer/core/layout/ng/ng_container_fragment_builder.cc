@@ -95,15 +95,14 @@ void NGContainerFragmentBuilder::AddChild(
        child.MayHaveDescendantAboveBlockStart()))
     may_have_descendant_above_block_start_ = true;
 
-  // Compute |has_floating_descendants_| to optimize tree traversal in paint.
-  if (!has_floating_descendants_) {
-    if (child.IsFloating()) {
-      has_floating_descendants_ = true;
-    } else {
-      if (!child.IsBlockFormattingContextRoot() &&
-          child.HasFloatingDescendants())
-        has_floating_descendants_ = true;
-    }
+  // Compute |has_floating_descendants_for_paint_| to optimize tree traversal
+  // in paint.
+  if (!has_floating_descendants_for_paint_) {
+    // TODO(layout-dev): The |NGPhysicalFragment::IsAtomicInline| check should
+    // be checking for any children which paint all phases atomically.
+    if (child.IsFloating() || child.IsLegacyLayoutRoot() ||
+        (child.HasFloatingDescendantsForPaint() && !child.IsAtomicInline()))
+      has_floating_descendants_for_paint_ = true;
   }
 
   // The |has_adjoining_object_descendants_| is used to determine if a fragment

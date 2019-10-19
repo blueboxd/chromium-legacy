@@ -45,7 +45,7 @@
       <template is="dom-if" if="[[securityIsVisible_(mojoType_)]]" restamp>
         <network-config-select id="security"
             label="[[i18n('OncWiFi-Security')]]"
-            value="{{securityType}}" key="security"
+            value="{{securityType_}}" key="security"
             disabled="[[!securityIsEnabled_(guid, mojoType_)]]"
             items="[[getSecurityItems_(mojoType_)]]"
             onc-prefix="WiFi.Security"
@@ -55,7 +55,7 @@
 
       <!-- Passphrase (WiFi) -->
       <template is="dom-if" restamp
-          if="[[configRequiresPassphrase_(mojoType_, securityType)]]">
+          if="[[configRequiresPassphrase_(mojoType_, securityType_)]]">
         <network-password-input id="wifi-passphrase"
             label="[[i18n('OncWiFi-Passphrase')]]"
             value="{{configProperties_.typeConfig.wifi.passphrase}}"

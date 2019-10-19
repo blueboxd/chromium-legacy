@@ -86,6 +86,13 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnBlockedFrame(const quic::QuicBlockedFrame& frame) override;
   void OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) override;
   void OnPingFrame(const quic::QuicPingFrame& frame) override;
+  void OnPaddingFrame(const quic::QuicPaddingFrame& frame) override;
+  void OnNewConnectionIdFrame(
+      const quic::QuicNewConnectionIdFrame& frame) override;
+  void OnNewTokenFrame(const quic::QuicNewTokenFrame& frame) override;
+  void OnRetireConnectionIdFrame(
+      const quic::QuicRetireConnectionIdFrame& frame) override;
+  void OnMessageFrame(const quic::QuicMessageFrame& frame) override;
   void OnPublicResetPacket(const quic::QuicPublicResetPacket& packet) override;
   void OnVersionNegotiationPacket(
       const quic::QuicVersionNegotiationPacket& packet) override;

@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "components/base32/base32.h"
-#include "content/public/common/content_switches.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -16,48 +16,29 @@ namespace subresource_redirect {
 
 GURL GetSubresourceURLForURL(const GURL& original_url) {
   DCHECK(original_url.is_valid());
-  std::string fragment;
-  if (original_url.has_ref()) {
-    fragment = "#" + original_url.ref();
-  }
 
+  GURL compressed_url = GetSubresourceRedirectOrigin().GetURL();
   std::string origin_hash = base::ToLowerASCII(base32::Base32Encode(
       crypto::SHA256HashString(
           original_url.scheme() + "://" + original_url.host() + ":" +
           base::NumberToString(original_url.EffectiveIntPort())),
       base32::Base32EncodePolicy::OMIT_PADDING));
-  GURL subresource_host = GetLitePageSubresourceDomainURL();
+  std::string host_str = origin_hash + "." + compressed_url.host();
+  std::string query_str =
+      "u=" + net::EscapeQueryParamValue(original_url.GetAsReferrer().spec(),
+                                        true /* use_plus */);
+  std::string ref_str = original_url.ref();
 
-  GURL compressed_url(
-      subresource_host.scheme() + "://" + origin_hash + "." +
-      subresource_host.host() +
-      (subresource_host.has_port() ? (":" + subresource_host.port()) : "") +
-      "/i?u=" +
-      // Strip out the fragment so that it is not sent to the server.
-      net::EscapeQueryParamValue(original_url.GetAsReferrer().spec(),
-                                 true /* use_plus */) +
-      fragment);
+  GURL::Replacements replacements;
+  replacements.SetHostStr(host_str);
+  replacements.SetPathStr("/i");
+  replacements.SetQueryStr(query_str);
+  if (!ref_str.empty())
+    replacements.SetRefStr(ref_str);
 
+  compressed_url = compressed_url.ReplaceComponents(replacements);
   DCHECK(compressed_url.is_valid());
-  DCHECK_EQ(subresource_host.scheme(), compressed_url.scheme());
   return compressed_url;
-}
-
-GURL GetLitePageSubresourceDomainURL() {
-  // Command line options take highest precedence.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kLitePagesServerSubresourceHost)) {
-    const std::string switch_value = command_line->GetSwitchValueASCII(
-        switches::kLitePagesServerSubresourceHost);
-    const GURL url(switch_value);
-    if (url.is_valid())
-      return url;
-    LOG(ERROR) << "The following litepages previews host URL specified at the "
-               << "command-line is invalid: " << switch_value;
-  }
-
-  // No override use the default litepages domain.
-  return GURL("https://litepages.googlezip.net/");
 }
 
 }  // namespace subresource_redirect

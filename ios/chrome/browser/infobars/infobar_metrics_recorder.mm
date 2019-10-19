@@ -64,6 +64,19 @@ const char kInfobarSaveCardModalEventHistogram[] =
 const char kInfobarSaveCardBadgeTappedHistogram[] =
     "Mobile.Messages.Badge.Tapped.InfobarTypeSaveCard";
 
+// Histogram names for InfobarTypeTranslate.
+// Banner.
+const char kInfobarTranslateBannerEventHistogram[] =
+    "Mobile.Messages.Banner.Event.InfobarTypeTranslate";
+const char kInfobarTranslateBannerDismissTypeHistogram[] =
+    "Mobile.Messages.Banner.Dismiss.InfobarTypeTranslate";
+// Modal.
+const char kInfobarTranslateModalEventHistogram[] =
+    "Mobile.Messages.Modal.Event.InfobarTypeTranslate";
+// Badge.
+const char kInfobarTranslateBadgeTappedHistogram[] =
+    "Mobile.Messages.Badge.Tapped.InfobarTypeTranslate";
+
 }  // namespace
 
 @interface InfobarMetricsRecorder ()
@@ -99,6 +112,9 @@ const char kInfobarSaveCardBadgeTappedHistogram[] =
     case InfobarType::kInfobarTypeSaveCard:
       UMA_HISTOGRAM_ENUMERATION(kInfobarSaveCardBannerEventHistogram, event);
       break;
+    case InfobarType::kInfobarTypeTranslate:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateBannerEventHistogram, event);
+      break;
   }
 }
 
@@ -118,6 +134,10 @@ const char kInfobarSaveCardBadgeTappedHistogram[] =
       break;
     case InfobarType::kInfobarTypeSaveCard:
       UMA_HISTOGRAM_ENUMERATION(kInfobarSaveCardBannerDismissTypeHistogram,
+                                dismissType);
+      break;
+    case InfobarType::kInfobarTypeTranslate:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateBannerDismissTypeHistogram,
                                 dismissType);
       break;
   }
@@ -143,6 +163,9 @@ const char kInfobarSaveCardBadgeTappedHistogram[] =
     case InfobarType::kInfobarTypeSaveCard:
       UMA_HISTOGRAM_ENUMERATION(kInfobarSaveCardModalEventHistogram, event);
       break;
+    case InfobarType::kInfobarTypeTranslate:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateModalEventHistogram, event);
+      break;
   }
 }
 
@@ -161,6 +184,9 @@ const char kInfobarSaveCardBadgeTappedHistogram[] =
       break;
     case InfobarType::kInfobarTypeSaveCard:
       UMA_HISTOGRAM_ENUMERATION(kInfobarSaveCardBadgeTappedHistogram, state);
+      break;
+    case InfobarType::kInfobarTypeTranslate:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateBadgeTappedHistogram, state);
       break;
   }
 }

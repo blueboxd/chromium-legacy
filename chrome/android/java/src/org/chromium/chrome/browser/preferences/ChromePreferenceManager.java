@@ -115,11 +115,14 @@ public class ChromePreferenceManager {
             "signin_promo_last_shown_account_names";
 
     /**
-     * This value may have been explicitly set to false when we used to keep existing low-end
-     * devices on the normal UI rather than the simplified UI. We want to keep the existing device
-     * settings. For all new low-end devices they should get the simplified UI by default.
+     * This value was used prior to KitKat to keep existing low-end devices on the normal UI rather
+     * than the simplified UI.
+     *
+     * This value may still exist in shared preferences file. Do not reuse.
      */
+    @Deprecated
     public static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
+
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
     private static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
             "contextual_search_tap_triggered_promo_count";

@@ -544,6 +544,11 @@ class HttpNetworkTransactionTest : public PlatformTest,
 
   void CheckErrorIsPassedBack(int error, IoMode mode);
 
+  base::RepeatingClosure FastForwardByCallback(base::TimeDelta delta) {
+    return base::BindRepeating(&HttpNetworkTransactionTest::FastForwardBy,
+                               base::Unretained(this), delta);
+  }
+
   const CommonConnectJobParams dummy_connect_job_params_;
 
   // These clocks are defined here, even though they're only used in the
@@ -20605,6 +20610,7 @@ TEST_F(HttpNetworkTransactionTest, AlwaysFailRequestToCache) {
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
+  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
@@ -20626,7 +20632,9 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
   StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.connect_callback = FastForwardByCallback(kDelay);
   ssl.confirm = MockConfirm(SYNCHRONOUS, OK);
+  ssl.confirm_callback = FastForwardByCallback(kDelay);
   session_deps_.enable_early_data = true;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
@@ -20636,6 +20644,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
@@ -20652,12 +20661,22 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
   ASSERT_FALSE(ssl.ConfirmDataConsumed());
   ASSERT_TRUE(ssl.WriteBeforeConfirm());
 
+  // The handshake time should include the time it took to run Connect(), but
+  // not ConfirmHandshake().
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  EXPECT_EQ(load_timing_info.connect_timing.connect_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_end, start_time + kDelay);
+  EXPECT_EQ(load_timing_info.connect_timing.connect_end, start_time + kDelay);
+
   trans.reset();
 
   session->CloseAllConnections();
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
+  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("https://www.example.org/");
@@ -20681,7 +20700,9 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
   StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.connect_callback = FastForwardByCallback(kDelay);
   ssl.confirm = MockConfirm(SYNCHRONOUS, OK);
+  ssl.confirm_callback = FastForwardByCallback(kDelay);
   session_deps_.enable_early_data = true;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
@@ -20691,6 +20712,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
@@ -20705,6 +20727,17 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
 
   // Check that the Write didn't get called before ConfirmHandshake completed.
   ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  // The handshake time should include the time it took to run Connect(), but
+  // not ConfirmHandshake(). If ConfirmHandshake() returns synchronously, we
+  // assume the connection did not negotiate 0-RTT or the handshake was already
+  // confirmed.
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  EXPECT_EQ(load_timing_info.connect_timing.connect_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_end, start_time + kDelay);
+  EXPECT_EQ(load_timing_info.connect_timing.connect_end, start_time + kDelay);
 
   trans.reset();
 
@@ -20766,6 +20799,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
+  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("https://www.example.org/");
@@ -20789,7 +20823,9 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
   StaticSocketDataProvider data(data_reads, data_writes);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  ssl.connect_callback = FastForwardByCallback(kDelay);
   ssl.confirm = MockConfirm(ASYNC, OK);
+  ssl.confirm_callback = FastForwardByCallback(kDelay);
   session_deps_.enable_early_data = true;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
@@ -20799,6 +20835,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
@@ -20813,6 +20850,16 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
 
   // Check that the Write didn't get called before ConfirmHandshake completed.
   ASSERT_FALSE(ssl.WriteBeforeConfirm());
+
+  // The handshake time should include the time it took to run Connect() and
+  // ConfirmHandshake().
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  EXPECT_EQ(load_timing_info.connect_timing.connect_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_start, start_time);
+  EXPECT_EQ(load_timing_info.connect_timing.ssl_end, start_time + 2 * kDelay);
+  EXPECT_EQ(load_timing_info.connect_timing.connect_end,
+            start_time + 2 * kDelay);
 
   trans.reset();
 

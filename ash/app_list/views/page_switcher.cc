@@ -225,7 +225,7 @@ PageSwitcher::PageSwitcher(ash::PaginationModel* model,
 
   AddChildView(buttons_);
 
-  TotalPagesChanged();
+  TotalPagesChanged(0, model->total_pages());
   SelectedPageChanged(-1, model->selected_page());
   model_->AddObserver(this);
 }
@@ -279,7 +279,8 @@ void PageSwitcher::ButtonPressed(views::Button* sender,
   model_->SelectPage(page, true /* animate */);
 }
 
-void PageSwitcher::TotalPagesChanged() {
+void PageSwitcher::TotalPagesChanged(int previous_page_count,
+                                     int new_page_count) {
   if (!model_)
     return;
 

@@ -345,6 +345,15 @@ void Page::PlatformColorsChanged() {
     }
 }
 
+void Page::ColorSchemeChanged() {
+  for (const Page* page : AllPages())
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+        local_frame->GetDocument()->ColorSchemeChanged();
+    }
+}
+
 void Page::InitialStyleChanged() {
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {

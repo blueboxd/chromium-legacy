@@ -5,6 +5,10 @@
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 static_library("demographic_metrics_provider") {
   sources = [
     "demographic_metrics_provider.cc",
@@ -166,6 +170,24 @@ jumbo_static_library("metrics") {
 
   if (is_fuchsia) {
     sources += [ "drive_metrics_provider_fuchsia.cc" ]
+  }
+}
+
+if (is_android) {
+  java_cpp_strings("java_switches_srcjar") {
+    # External code should depend on ":metrics_java" instead.
+    visibility = [ ":*" ]
+    sources = [
+      "//components/metrics/metrics_switches.cc",
+    ]
+    template =
+        "//components/metrics/android/java_templates/MetricsSwitches.java.tmpl"
+  }
+
+  android_library("metrics_java") {
+    # Right now, this only includes the Java switches. But if we need more Java
+    # files, they should be added here as necessary.
+    srcjar_deps = [ ":java_switches_srcjar" ]
   }
 }
 

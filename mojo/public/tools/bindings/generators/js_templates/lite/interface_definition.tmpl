@@ -28,7 +28,10 @@ goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.remote}}
 goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.pending_receiver}}');
 {% endif %}
 
-/** @export */
+/**
+ * @implements {mojo.internal.interfaceSupport.PendingReceiver}
+ * @export
+ */
 {{module.namespace}}.{{interface.name}}{{primitives_names.pending_receiver}} = class {
   /** @param {!MojoHandle} handle */
   constructor(handle) {

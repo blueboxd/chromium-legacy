@@ -34,10 +34,9 @@ namespace ash {
 // static
 void MessageCenterController::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(
-      prefs::kMessageCenterLockScreenMode,
-      prefs::kMessageCenterLockScreenModeHide,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterStringPref(prefs::kMessageCenterLockScreenMode,
+                               prefs::kMessageCenterLockScreenModeHide,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 namespace {

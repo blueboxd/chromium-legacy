@@ -28,7 +28,8 @@ interface JsToJavaMessaging {
 
   // When there is a new JavaToJsMessaging created in renderer, we need to send
   // it to browser, so browser could send message back to Js.
-  SetJavaToJsMessaging(pending_remote<JavaToJsMessaging> java_to_js_messaging);
+  SetJavaToJsMessaging(
+    pending_associated_remote<JavaToJsMessaging> java_to_js_messaging);
 };
 
 // For Java to reply back to injected JavaScript object. Implemented by

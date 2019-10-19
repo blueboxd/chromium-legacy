@@ -747,16 +747,9 @@
              "--site-per-process"]
   },
   {
-    "prefix": "split-http-cache-not-site-per-process",
-    "base": "http/tests/devtools/isolated-code-cache",
-    "args": ["--enable-features=SplitCacheByNetworkIsolationKey",
-             "--disable-site-isolation-trials"]
-  },
-  {
     "prefix": "not-site-per-process",
     "base": "http/tests/devtools/isolated-code-cache",
-    "args": ["--disable-site-isolation-trials",
-             "--disable-features=SplitCacheByNetworkIsolationKey"]
+    "args": ["--disable-site-isolation-trials"]
   },
   {
     "prefix": "not-site-per-process",

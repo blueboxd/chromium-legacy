@@ -323,6 +323,12 @@ bool GpuControlList::More::Contains(const GPUInfo& gpu_info) const {
 #endif  // OS_WIN
       break;
   }
+  if ((subpixel_font_rendering == kUnsupported &&
+       gpu_info.subpixel_font_rendering) ||
+      (subpixel_font_rendering == kSupported &&
+       !gpu_info.subpixel_font_rendering)) {
+    return false;
+  }
   return true;
 }
 

@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "components/services/leveldb/leveldb_database_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_area_impl.h"
@@ -211,16 +210,16 @@ void SessionStorageContextMojo::CloneSessionNamespace(
         DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
         // The namespace exists on disk but is not in-use, so do the appropriate
         // metadata operations to clone the namespace and set up the new object.
-        std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+        std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
         auto source_namespace_entry =
             metadata_.GetOrCreateNamespaceEntry(clone_from_namespace_id);
         auto namespace_entry =
             metadata_.GetOrCreateNamespaceEntry(clone_to_namespace_id);
-        metadata_.RegisterShallowClonedNamespace(
-            source_namespace_entry, namespace_entry, &save_operations);
+        metadata_.RegisterShallowClonedNamespace(source_namespace_entry,
+                                                 namespace_entry, &save_tasks);
         if (database_) {
-          database_->Write(
-              std::move(save_operations),
+          database_->RunBatchDatabaseTasks(
+              std::move(save_tasks),
               base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
                              weak_ptr_factory_.GetWeakPtr()));
         }
@@ -321,11 +320,11 @@ void SessionStorageContextMojo::DeleteStorage(const url::Origin& origin,
   } else {
     // If we don't have the namespace loaded, then we can delete it all
     // using the metadata.
-    std::vector<leveldb::mojom::BatchedOperationPtr> delete_operations;
-    metadata_.DeleteArea(namespace_id, origin, &delete_operations);
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+    metadata_.DeleteArea(namespace_id, origin, &tasks);
     if (database_) {
-      database_->Write(
-          std::move(delete_operations),
+      database_->RunBatchDatabaseTasks(
+          std::move(tasks),
           base::BindOnce(&SessionStorageContextMojo::OnCommitResultWithCallback,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     } else {
@@ -459,16 +458,17 @@ void SessionStorageContextMojo::ScavengeUnusedNamespaces(
     }
     namespaces_to_delete.push_back(namespace_id);
   }
-  std::vector<leveldb::mojom::BatchedOperationPtr> delete_operations;
-  for (const auto& namespace_id : namespaces_to_delete) {
-    metadata_.DeleteNamespace(namespace_id, &delete_operations);
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
+  for (const auto& namespace_id : namespaces_to_delete)
+    metadata_.DeleteNamespace(namespace_id, &save_tasks);
+
+  if (database_) {
+    database_->RunBatchDatabaseTasks(
+        std::move(save_tasks),
+        base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (!delete_operations.empty()) {
-    database_->Write(std::move(delete_operations),
-                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                    weak_ptr_factory_.GetWeakPtr()));
-  }
   protected_namespaces_from_scavenge_.clear();
   if (done)
     std::move(done).Run();
@@ -545,14 +545,15 @@ scoped_refptr<SessionStorageMetadata::MapData>
 SessionStorageContextMojo::RegisterNewAreaMap(
     SessionStorageMetadata::NamespaceEntry namespace_entry,
     const url::Origin& origin) {
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
   scoped_refptr<SessionStorageMetadata::MapData> map_entry =
-      metadata_.RegisterNewMap(namespace_entry, origin, &save_operations);
+      metadata_.RegisterNewMap(namespace_entry, origin, &save_tasks);
 
   if (database_) {
-    database_->Write(std::move(save_operations),
-                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                    weak_ptr_factory_.GetWeakPtr()));
+    database_->RunBatchDatabaseTasks(
+        std::move(save_tasks),
+        base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
   return map_entry;
 }
@@ -618,7 +619,7 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
     SessionStorageMetadata::NamespaceEntry source_namespace_entry,
     const std::string& new_namespace_id,
     const SessionStorageNamespaceImplMojo::OriginAreas& clone_from_areas) {
-  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> save_tasks;
 
   bool found = false;
   auto it = namespaces_.find(new_namespace_id);
@@ -634,11 +635,12 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
   DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
   auto namespace_entry = metadata_.GetOrCreateNamespaceEntry(new_namespace_id);
   metadata_.RegisterShallowClonedNamespace(source_namespace_entry,
-                                           namespace_entry, &save_operations);
+                                           namespace_entry, &save_tasks);
   if (database_) {
-    database_->Write(std::move(save_operations),
-                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                    weak_ptr_factory_.GetWeakPtr()));
+    database_->RunBatchDatabaseTasks(
+        std::move(save_tasks),
+        base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (found) {
@@ -669,12 +671,13 @@ SessionStorageContextMojo::CreateSessionStorageNamespaceImplMojo(
 void SessionStorageContextMojo::DoDatabaseDelete(
     const std::string& namespace_id) {
   DCHECK_EQ(connection_state_, CONNECTION_FINISHED);
-  std::vector<leveldb::mojom::BatchedOperationPtr> delete_operations;
-  metadata_.DeleteNamespace(namespace_id, &delete_operations);
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> tasks;
+  metadata_.DeleteNamespace(namespace_id, &tasks);
   if (database_) {
-    database_->Write(std::move(delete_operations),
-                     base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
-                                    weak_ptr_factory_.GetWeakPtr()));
+    database_->RunBatchDatabaseTasks(
+        std::move(tasks),
+        base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -811,10 +814,10 @@ void SessionStorageContextMojo::OnGotDatabaseMetadata(
     ValueAndStatus version,
     KeyValuePairsAndStatus namespaces,
     ValueAndStatus next_map_id) {
-  std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations;
+  std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask> migration_tasks;
 
   MetadataParseResult version_parse =
-      ParseDatabaseVersion(std::move(version), &migration_operations);
+      ParseDatabaseVersion(std::move(version), &migration_tasks);
   if (version_parse.open_result != OpenResult::kSuccess) {
     LogDatabaseOpenResult(version_parse.open_result);
     DeleteAndRecreateDatabase(version_parse.histogram_name);
@@ -822,7 +825,7 @@ void SessionStorageContextMojo::OnGotDatabaseMetadata(
   }
 
   MetadataParseResult namespaces_parse =
-      ParseNamespaces(std::move(namespaces), std::move(migration_operations));
+      ParseNamespaces(std::move(namespaces), std::move(migration_tasks));
   if (namespaces_parse.open_result != OpenResult::kSuccess) {
     LogDatabaseOpenResult(namespaces_parse.open_result);
     DeleteAndRecreateDatabase(namespaces_parse.histogram_name);
@@ -843,10 +846,11 @@ void SessionStorageContextMojo::OnGotDatabaseMetadata(
 SessionStorageContextMojo::MetadataParseResult
 SessionStorageContextMojo::ParseDatabaseVersion(
     ValueAndStatus version,
-    std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations) {
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>*
+        migration_tasks) {
   if (version.status.ok()) {
     if (!metadata_.ParseDatabaseVersion(std::move(version.value),
-                                        migration_operations)) {
+                                        migration_tasks)) {
       return {OpenResult::kInvalidVersion,
               "SessionStorageContext.OpenResultAfterInvalidVersion"};
     }
@@ -856,7 +860,7 @@ SessionStorageContextMojo::ParseDatabaseVersion(
 
   if (version.status.IsNotFound()) {
     // treat as v0 or new database
-    metadata_.ParseDatabaseVersion(base::nullopt, migration_operations);
+    metadata_.ParseDatabaseVersion(base::nullopt, migration_tasks);
     return {OpenResult::kSuccess, ""};
   }
 
@@ -872,7 +876,8 @@ SessionStorageContextMojo::ParseDatabaseVersion(
 SessionStorageContextMojo::MetadataParseResult
 SessionStorageContextMojo::ParseNamespaces(
     KeyValuePairsAndStatus namespaces,
-    std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations) {
+    std::vector<leveldb::LevelDBDatabaseImpl::BatchDatabaseTask>
+        migration_tasks) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
 
   if (!namespaces.status.ok()) {
@@ -885,7 +890,7 @@ SessionStorageContextMojo::ParseNamespaces(
   }
 
   bool parsing_success = metadata_.ParseNamespaces(
-      std::move(namespaces.key_value_pairs), &migration_operations);
+      std::move(namespaces.key_value_pairs), &migration_tasks);
 
   if (!parsing_success) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -896,13 +901,13 @@ SessionStorageContextMojo::ParseNamespaces(
             "SessionStorageContext.OpenResultAfterReadNamespacesError"};
   }
 
-  if (!migration_operations.empty()) {
+  if (!migration_tasks.empty()) {
     // In tests this write may happen synchronously, which is problematic since
     // the OnCommitResult callback can be invoked before the database is fully
     // initialized. There's no harm in deferring in other situations, so we just
     // always defer here.
-    database_->Write(
-        std::move(migration_operations),
+    database_->RunBatchDatabaseTasks(
+        std::move(migration_tasks),
         base::BindOnce(
             [](base::OnceCallback<void(leveldb::Status)> callback,
                scoped_refptr<base::SequencedTaskRunner> callback_task_runner,

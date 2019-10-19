@@ -103,6 +103,8 @@ public class SharedClipboardShareActivity
             SharedClipboardMetrics.recordShowEducationalDialog();
         }
 
+        SharedClipboardMetrics.recordDeviceCount(mAdapter.getCount());
+
         ListView listView = findViewById(R.id.device_picker_list);
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(this);

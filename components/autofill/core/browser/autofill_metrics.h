@@ -685,6 +685,20 @@ class AutofillMetrics {
     NUM_UNMASK_PROMPT_EVENTS,
   };
 
+  // Events related to user-perceived latency due to GetDetailsForGetRealPan
+  // call.
+  enum class PreflightCallEvent {
+    // Returned before card chosen.
+    kPreflightCallReturnedBeforeCardChosen = 0,
+    // Did not return before card was chosen. When opted-in, this means
+    // the UI had to wait for the call to return. When opted-out, this means we
+    // did not offer to opt-in.
+    kCardChosenBeforePreflightCallReturned = 1,
+    // Preflight call was irrelevant; skipped waiting.
+    kDidNotChooseMaskedCard = 2,
+    kMaxValue = kDidNotChooseMaskedCard,
+  };
+
   // Possible results of Payments RPCs.
   enum PaymentsRpcResult {
     // Request succeeded.
@@ -1040,6 +1054,11 @@ class AutofillMetrics {
   // Logs the duration of the PaymentsClient::GetUnmaskDetails() call (aka
   // GetDetailsForGetRealPan).
   static void LogCardUnmaskPreflightDuration(const base::TimeDelta& duration);
+
+  // Logs the existence of any user-perceived latency between selecting a Google
+  // Payments server card and seeing a card unmask prompt.
+  static void LogUserPerceivedLatencyOnCardSelection(PreflightCallEvent event,
+                                                     bool fido_auth_enabled);
 
   // Logs |event| to the unmask prompt events histogram.
   static void LogUnmaskPromptEvent(UnmaskPromptEvent event);

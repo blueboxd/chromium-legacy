@@ -27,15 +27,24 @@ class SubresourceLoadingPageLoadMetricsObserverBrowserTest
         "chrome/test/data/subresource_loading");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+
+  void NavigateToPath(const std::string& path) {
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("origin.com", path));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void NavigateAway() {
+    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+    base::RunLoop().RunUntilIdle();
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        BeforeFCPPlumbing) {
-  GURL url = embedded_test_server()->GetURL("origin.com", "/index.html");
-
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  NavigateToPath("/index.html");
+  NavigateAway();
 
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.LoadedCSSJSBeforeFCP.Noncached", 2,
@@ -44,25 +53,59 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
                        HistoryPlumbing) {
-  GURL url = embedded_test_server()->GetURL("origin.com", "/index.html");
-
   base::HistogramTester histogram_tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  NavigateToPath("/index.html");
+  NavigateAway();
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
 
   // Revisit and expect a 0 days-ago entry.
-  ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
-  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  NavigateToPath("/index.html");
+  NavigateAway();
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
+                       MainFrameHadCookies_None) {
+  base::HistogramTester histogram_tester;
+  NavigateToPath("/index.html");
+  NavigateAway();
+
+  histogram_tester.ExpectUniqueSample(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
+                       MainFrameHadCookies_CookiesOnNextPageLoad) {
+  base::HistogramTester histogram_tester;
+  NavigateToPath("/set_cookies.html");
+  NavigateToPath("/index.html");
+  NavigateAway();
+
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
+  // From the first page load.
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
+                       MainFrameHadCookies_CookiesOnRedirect) {
+  base::HistogramTester histogram_tester;
+  NavigateToPath("/set_cookies.html");
+  NavigateToPath("/redirect_to_index.html");
+  NavigateAway();
+
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", true, 1);
+  // From the first page load.
+  histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", false, 1);
 }

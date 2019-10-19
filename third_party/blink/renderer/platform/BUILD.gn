@@ -2117,6 +2117,19 @@ fuzzer_test("blink_png_decoder_fuzzer") {
   ]
 }
 
+# Fuzzer for blink::DateTimeFormat.
+fuzzer_test("blink_date_time_format_fuzzer") {
+  sources = [
+    "text/date_time_format_fuzzer.cc",
+  ]
+  deps = [
+    ":blink_fuzzer_test_support",
+    ":platform",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/date.dict"
+  seed_corpus = "text/date_time_format_fuzzer_seed_corpus"
+}
+
 # Fuzzer for blink::JSONParser.
 fuzzer_test("blink_json_parser_fuzzer") {
   sources = [

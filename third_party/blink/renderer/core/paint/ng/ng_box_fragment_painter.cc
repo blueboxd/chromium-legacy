@@ -378,7 +378,7 @@ void NGBoxFragmentPainter::PaintObject(
       if (paint_phase == PaintPhase::kFloat ||
           paint_phase == PaintPhase::kSelection ||
           paint_phase == PaintPhase::kTextClip) {
-        if (physical_box_fragment.HasFloatingDescendants())
+        if (physical_box_fragment.HasFloatingDescendantsForPaint())
           PaintFloats(paint_info);
       }
     } else {
@@ -387,8 +387,10 @@ void NGBoxFragmentPainter::PaintObject(
 
       if (paint_phase == PaintPhase::kFloat ||
           paint_phase == PaintPhase::kSelection ||
-          paint_phase == PaintPhase::kTextClip)
-        PaintFloats(paint_info);
+          paint_phase == PaintPhase::kTextClip) {
+        if (physical_box_fragment.HasFloatingDescendantsForPaint())
+          PaintFloats(paint_info);
+      }
     }
   }
 
@@ -479,36 +481,9 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
   }
 }
 
-void NGBoxFragmentPainter::PaintInlineFloatingChildren(
-    NGPaintFragment::ChildList children,
-    const PaintInfo& paint_info) {
-  for (const NGPaintFragment* child : children) {
-    const NGPhysicalFragment& child_fragment = child->PhysicalFragment();
-    if (child_fragment.HasSelfPaintingLayer())
-      continue;
-    if (child_fragment.IsFloating()) {
-      // TODO(kojii): The float is outside of the inline formatting context and
-      // that it maybe another NG inline formatting context, NG block layout, or
-      // legacy. NGBoxFragmentPainter can handle only the first case. In order
-      // to cover more tests for other two cases, we always fallback to legacy,
-      // which will forward back to NGBoxFragmentPainter if the float is for
-      // NGBoxFragmentPainter. We can shortcut this for the first case when
-      // we're more stable.
-      ObjectPainter(*child_fragment.GetLayoutObject())
-          .PaintAllPhasesAtomically(paint_info);
-      continue;
-    }
-    if (const auto* child_container =
-            DynamicTo<NGPhysicalContainerFragment>(&child_fragment)) {
-      if (child_container->HasFloatingDescendants())
-        PaintInlineFloatingChildren(child->Children(), paint_info);
-    }
-  }
-}
-
 void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info) {
   DCHECK(items_);
-  DCHECK(PhysicalFragment().HasFloatingDescendants());
+  DCHECK(PhysicalFragment().HasFloatingDescendantsForPaint());
 
   for (const std::unique_ptr<NGFragmentItem>& item : items_->Items()) {
     const NGPhysicalBoxFragment* child_fragment = item->BoxFragment();
@@ -527,13 +502,21 @@ void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info) {
   }
 }
 
-void NGBoxFragmentPainter::PaintBlockFloatingChildren(
+void NGBoxFragmentPainter::PaintFloatingChildren(
     const NGPhysicalContainerFragment& container,
-    const PaintInfo& paint_info) {
+    const PaintInfo& paint_info,
+    const PaintInfo& float_paint_info) {
   for (const NGLink& child : container.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
     if (child_fragment.HasSelfPaintingLayer())
       continue;
+
+    // Atomic-inlines paint atomically, and shouldn't be traversed.
+    // TODO(layout-dev): This check should include all children which paint
+    // atomically.
+    if (child_fragment.IsAtomicInline())
+      continue;
+
     if (child_fragment.IsFloating()) {
       // TODO(kojii): The float is outside of the inline formatting context and
       // that it maybe another NG inline formatting context, NG block layout, or
@@ -543,31 +526,36 @@ void NGBoxFragmentPainter::PaintBlockFloatingChildren(
       // NGBoxFragmentPainter. We can shortcut this for the first case when
       // we're more stable.
       ObjectPainter(*child_fragment.GetLayoutObject())
-          .PaintAllPhasesAtomically(paint_info);
+          .PaintAllPhasesAtomically(float_paint_info);
       continue;
     }
+
+    if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox &&
+        FragmentRequiresLegacyFallback(child_fragment)) {
+      child_fragment.GetLayoutObject()->Paint(paint_info);
+      continue;
+    }
+
     if (const auto* child_container =
-            DynamicTo<NGPhysicalContainerFragment>(&child_fragment))
-      PaintBlockFloatingChildren(*child_container, paint_info);
+            DynamicTo<NGPhysicalContainerFragment>(&child_fragment)) {
+      if (child_container->HasFloatingDescendantsForPaint())
+        PaintFloatingChildren(*child_container, paint_info, float_paint_info);
+    }
   }
 }
 
 void NGBoxFragmentPainter::PaintFloats(const PaintInfo& paint_info) {
-  DCHECK(PhysicalFragment().HasFloatingDescendants() ||
+  DCHECK(PhysicalFragment().HasFloatingDescendantsForPaint() ||
          !PhysicalFragment().ChildrenInline());
 
   PaintInfo float_paint_info(paint_info);
   if (paint_info.phase == PaintPhase::kFloat)
     float_paint_info.phase = PaintPhase::kForeground;
-  if (paint_fragment_) {
-    PaintInlineFloatingChildren(paint_fragment_->Children(), float_paint_info);
-    return;
-  }
   if (items_) {
     PaintFloatingItems(float_paint_info);
     return;
   }
-  PaintBlockFloatingChildren(PhysicalFragment(), float_paint_info);
+  PaintFloatingChildren(PhysicalFragment(), paint_info, float_paint_info);
 }
 
 void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
@@ -1503,7 +1491,7 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
   // restructuring. Changing the caller logic isn't easy because currently
   // floats are in the bounds of line boxes only in NG.
   const auto& line = To<NGPhysicalLineBoxFragment>(fragment.PhysicalFragment());
-  if (line.HasFloatingDescendants()) {
+  if (line.HasFloatingDescendantsForPaint()) {
     DCHECK_NE(action, kHitTestFloat);
     if (HitTestChildren(result, fragment.Children(), hit_test_location,
                         physical_offset, kHitTestFloat)) {

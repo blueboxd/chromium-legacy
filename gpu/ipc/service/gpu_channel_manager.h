@@ -288,7 +288,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   scoped_refptr<SharedContextState> shared_context_state_;
 
   // With --enable-vulkan, |vulkan_context_provider_| will be set from
-  // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
+  // viz::GpuServiceImpl. The raster decoders will use it for rasterization if
+  // --gr-context-type is also set to Vulkan.
   viz::VulkanContextProvider* vulkan_context_provider_ = nullptr;
 
   // If features::SkiaOnMetad, |metal_context_provider_| will be set from

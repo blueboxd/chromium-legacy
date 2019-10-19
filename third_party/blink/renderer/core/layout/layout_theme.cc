@@ -656,6 +656,10 @@ void LayoutTheme::PlatformColorsDidChange() {
   Page::PlatformColorsChanged();
 }
 
+void LayoutTheme::ColorSchemeDidChange() {
+  Page::ColorSchemeChanged();
+}
+
 void LayoutTheme::SetCaretBlinkInterval(base::TimeDelta interval) {
   caret_blink_interval_ = interval;
 }

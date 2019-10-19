@@ -20,6 +20,14 @@ namespace chromeos {
 // Compound mixin class for easily logging in as regular or child accounts for
 // browser tests. Initiates other mixins required to log in users, sets up their
 // user policies and gaia auth.
+// To use:
+// * Make your browser test class inherit from MixinBasedInProcessBrowserTest.
+// * Instantiate this class while passing in the inherited mixin_host_ member to
+// the constructor.
+// Note: the desired LogInType must be known at construction time.
+// * Pass the inherited embedded_test_server() into the constructor
+// as well.
+// * Call LogInUser() or SetUpOnMainThreadHelper() to log in.
 class LoggedInUserMixin {
  public:
   enum class LogInType { kRegular, kChild };

@@ -318,6 +318,9 @@ const base::Feature kNetworkServiceInProcess {
 #endif
 };
 
+const base::Feature kNeverSlowMode{"NeverSlowMode",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Kill switch for Web Notification content images.
 const base::Feature kNotificationContentImage{"NotificationContentImage",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

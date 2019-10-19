@@ -4,6 +4,7 @@
 
 #include "content/browser/sms/sms_service.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -262,7 +263,7 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
   EXPECT_EQ(SmsStatus::kSuccess, sms_status);
 }
 
-TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
+TEST_F(SmsServiceTest, AtMostOneSmsRequestPerOrigin) {
   NavigateAndCommit(GURL(kTestUrl));
 
   Service service(web_contents());
@@ -274,15 +275,19 @@ TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
 
   base::RunLoop sms1_loop, sms2_loop;
 
-  // Expects only one CreateSmsDialog() and OnReceive() call to be made since at
-  // most one sms request can be pending.
-  service.CreateSmsPrompt(main_rfh(), true);
+  // Expect SMS Prompt to be created once.
+  EXPECT_CALL(*service.delegate(), CreateSmsPrompt(main_rfh(), _, _, _, _))
+      .WillOnce(
+          Invoke([](RenderFrameHost*, const Origin& origin, const std::string&,
+                    base::OnceClosure on_confirm, base::OnceClosure on_cancel) {
+            std::move(on_confirm).Run();
+          }));
 
-  // Expects only one Retrieve() call to be made since at most one sms request
-  // can be pending.
-  EXPECT_CALL(*service.provider(), Retrieve()).Times(1);
+  EXPECT_CALL(*service.provider(), Retrieve())
+      .WillOnce(Return())
+      .WillOnce(Invoke(
+          [&service]() { service.NotifyReceive(GURL(kTestUrl), "second"); }));
 
-  // Make the first SMS request.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status1, &response1, &sms1_loop](
                                SmsStatus status, const Optional<string>& sms) {
@@ -291,8 +296,8 @@ TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
         sms1_loop.Quit();
       }));
 
-  // Make the second SMS request, and it will be canceled because the first SMS
-  // request is still pending.
+  // Make the 2nd SMS request which will cancel the 1st request because only
+  // one request can be pending per origin per tab.
   service.MakeRequest(
       BindLambdaForTesting([&sms_status2, &response2, &sms2_loop](
                                SmsStatus status, const Optional<string>& sms) {
@@ -301,18 +306,69 @@ TEST_F(SmsServiceTest, AtMostOnePendingSmsRequest) {
         sms2_loop.Quit();
       }));
 
+  sms1_loop.Run();
   sms2_loop.Run();
 
-  EXPECT_EQ(base::nullopt, response2);
-  EXPECT_EQ(SmsStatus::kCancelled, sms_status2);
+  EXPECT_EQ(base::nullopt, response1);
+  EXPECT_EQ(SmsStatus::kCancelled, sms_status1);
 
-  // Delivers the first SMS.
-  service.NotifyReceive(GURL(kTestUrl), "first");
+  EXPECT_EQ("second", response2.value());
+  EXPECT_EQ(SmsStatus::kSuccess, sms_status2);
+}
+
+TEST_F(SmsServiceTest, SecondRequestDuringPrompt) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  Service service(web_contents());
+
+  SmsStatus sms_status1;
+  Optional<string> response1;
+  SmsStatus sms_status2;
+  Optional<string> response2;
+  base::OnceClosure prompt_confirm;
+
+  base::RunLoop sms1_loop, sms2_loop;
+
+  // Expect SMS Prompt to be created once.
+  EXPECT_CALL(*service.delegate(), CreateSmsPrompt(main_rfh(), _, _, _, _))
+      .WillOnce(Invoke([&](RenderFrameHost*, const Origin& origin,
+                           const std::string&, base::OnceClosure on_confirm,
+                           base::OnceClosure on_cancel) {
+        prompt_confirm = std::move(on_confirm);
+        sms1_loop.Quit();
+      }));
+
+  EXPECT_CALL(*service.provider(), Retrieve())
+      .WillOnce(Invoke(
+          [&service]() { service.NotifyReceive(GURL(kTestUrl), "second"); }))
+      .WillOnce(Return());
+
+  // First request.
+  service.MakeRequest(
+      BindLambdaForTesting([&sms_status1, &response1, &prompt_confirm](
+                               SmsStatus status, const Optional<string>& sms) {
+        sms_status1 = status;
+        response1 = sms;
+        std::move(prompt_confirm).Run();
+      }));
+
+  // Make second request before confirming prompt.
+  service.MakeRequest(
+      BindLambdaForTesting([&sms_status2, &response2, &sms2_loop](
+                               SmsStatus status, const Optional<string>& sms) {
+        sms_status2 = status;
+        response2 = sms;
+        sms2_loop.Quit();
+      }));
 
   sms1_loop.Run();
+  sms2_loop.Run();
 
-  EXPECT_EQ("first", response1.value());
-  EXPECT_EQ(SmsStatus::kSuccess, sms_status1);
+  EXPECT_EQ(base::nullopt, response1);
+  EXPECT_EQ(SmsStatus::kCancelled, sms_status1);
+
+  EXPECT_EQ("second", response2.value());
+  EXPECT_EQ(SmsStatus::kSuccess, sms_status2);
 }
 
 TEST_F(SmsServiceTest, CleansUp) {
@@ -401,8 +457,8 @@ TEST_F(SmsServiceTest, Cancel) {
   }));
 
   EXPECT_CALL(*service.delegate(), CreateSmsPrompt(main_rfh(), _, _, _, _))
-      .WillOnce(Invoke([&](RenderFrameHost*, const Origin&, const std::string&,
-                           base::OnceClosure, base::OnceClosure on_cancel) {
+      .WillOnce(Invoke([](RenderFrameHost*, const Origin&, const std::string&,
+                          base::OnceClosure, base::OnceClosure on_cancel) {
         // Simulates the user pressing "Cancel".
         std::move(on_cancel).Run();
       }));

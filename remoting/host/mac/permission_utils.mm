@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
@@ -109,9 +111,28 @@ void ShowScreenRecordingPermissionDialog() {
 namespace remoting {
 namespace mac {
 
+// Heuristic to check screen capture permission. See http://crbug.com/993692
+// Copied from
+// chrome/browser/media/webrtc/system_media_capture_permissions_mac.mm
+// TODO(garykac) Move webrtc version where it can be shared.
 bool CanRecordScreen() {
-  // Return true for now to avoid showing the dialog constantly.
-  // TODO(b/1012545) Perform real check for Screen Capture.
+  if (@available(macOS 10.15, *)) {
+    base::ScopedCFTypeRef<CFArrayRef> window_list(CGWindowListCopyWindowInfo(
+        kCGWindowListOptionOnScreenOnly, kCGNullWindowID));
+    NSUInteger num_windows = CFArrayGetCount(window_list);
+    NSUInteger num_windows_with_name = 0;
+    for (NSDictionary* dict in base::mac::CFToNSCast(window_list.get())) {
+      if ([dict objectForKey:base::mac::CFToNSCast(kCGWindowName)]) {
+        num_windows_with_name++;
+      } else {
+        // No kCGWindowName detected implies no permission.
+        break;
+      }
+    }
+    return num_windows == num_windows_with_name;
+  }
+
+  // Previous to 10.15, screen capture was always allowed.
   return true;
 }
 

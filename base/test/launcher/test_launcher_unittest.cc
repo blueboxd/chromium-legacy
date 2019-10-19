@@ -701,17 +701,8 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   Value* val = root->FindDictKey("test_locations");
   ASSERT_TRUE(val);
   EXPECT_EQ(4u, val->DictSize());
-  // If path or test location changes, the following expectation
-  // will need to change accordingly.
-  std::string file_name = "../../base/test/launcher/test_launcher_unittest.cc";
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_PassTest", file_name, 659));
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_FailTest", file_name, 663));
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_CrashTest", file_name, 667));
-  EXPECT_TRUE(test_launcher_utils::ValidateTestLocation(
-      val, "MockUnitTests.DISABLED_NoRunTest", file_name, 671));
+
+  EXPECT_TRUE(test_launcher_utils::ValidateTestLocations(val, "MockUnitTests"));
 
   val = root->FindListKey("per_iteration_data");
   ASSERT_TRUE(val);

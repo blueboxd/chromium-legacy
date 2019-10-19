@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {getFilenameFromURL, shouldIgnoreKeyEvents} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
+import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
 var tests = [
   /**
    * Test that some key elements exist and that they have a shadowRoot. This
@@ -77,13 +80,13 @@ var tests = [
 
     dropdown.$.button.click();
     chrome.test.assertTrue(dropdown.dropdownOpen);
-    MockInteractions.pressAndReleaseKeyOn(document, ESC_KEY);
+    pressAndReleaseKeyOn(document, ESC_KEY);
     chrome.test.assertFalse(
         dropdown.dropdownOpen, 'Escape key closes dropdown');
     chrome.test.assertTrue(
         toolbar.opened, 'First escape key does not close toolbar');
 
-    MockInteractions.pressAndReleaseKeyOn(document, ESC_KEY);
+    pressAndReleaseKeyOn(document, ESC_KEY);
     chrome.test.assertFalse(toolbar.opened, 'Second escape key closes toolbar');
 
     chrome.test.succeed();

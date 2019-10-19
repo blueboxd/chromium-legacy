@@ -864,6 +864,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool headers_include_h2_stream_dependency_;
   Http2PriorityDependencies priority_dependency_state_;
 
+  quic::QuicStreamId max_allowed_push_id_;
+
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);

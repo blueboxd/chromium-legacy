@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
 
   // 3) Flush A.
   web_contents()->GetController().GetBackForwardCache().Flush();
-  EXPECT_TRUE(delete_observer_rfh_a.deleted());  // Flush is synchronous.
+  delete_observer_rfh_a.WaitUntilDeleted();
   EXPECT_FALSE(delete_observer_rfh_b.deleted());
 
   // 4) Go back to a new A.
@@ -527,7 +527,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
 
   // 5) Flush B.
   web_contents()->GetController().GetBackForwardCache().Flush();
-  EXPECT_TRUE(delete_observer_rfh_b.deleted());  // Flush is synchronous.
+  delete_observer_rfh_b.WaitUntilDeleted();
 }
 
 // Check the visible URL in the omnibox is properly updated when restoring a
@@ -2029,6 +2029,48 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
+// Similar to ReissuesNavigationIfEvictedDuringNavigation, except that
+// BackForwardCache::Flush is the source of the eviction.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       FlushCacheDuringNavigationToCachedPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to page A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a1(rfh_a1);
+
+  // 2) Navigate to page B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b2 = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b2(rfh_b2);
+  EXPECT_FALSE(delete_observer_rfh_a1.deleted());
+  EXPECT_TRUE(rfh_a1->is_in_back_forward_cache());
+  EXPECT_NE(rfh_a1, rfh_b2);
+
+  // 3) Start navigation to page A, and flush the cache during the navigation.
+  TestNavigationManager navigation_manager(shell()->web_contents(), url_a);
+  web_contents()->GetController().GoBack();
+
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+
+  // Flush the cache, which contains the document being navigated to.
+  web_contents()->GetController().GetBackForwardCache().Flush();
+
+  // The navigation should get canceled, then reissued; ultimately resulting in
+  // a successful navigation using a new RenderFrameHost.
+  navigation_manager.WaitForNavigationFinished();
+
+  // rfh_a should have been deleted, and page A navigated to normally.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  delete_observer_rfh_a1.WaitUntilDeleted();
+  EXPECT_TRUE(rfh_b2->is_in_back_forward_cache());
+  RenderFrameHostImpl* rfh_a3 = current_frame_host();
+  EXPECT_EQ(rfh_a3->GetLastCommittedURL(), url_a);
+}
+
 // Test that if the renderer process crashes while a document is in the
 // BackForwardCache, it gets evicted.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -2316,7 +2358,7 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
 
  protected:
   base::FieldTrialParams GetFeatureParams() override {
-    return {{"experimental extended supported feature set", "true"}};
+    return {{"service_worker_supported", "true"}};
   }
 };
 
@@ -2577,7 +2619,7 @@ class GeolocationBackForwardCacheBrowserTest
   GeolocationBackForwardCacheBrowserTest() : geo_override_(0.0, 0.0) {}
 
   base::FieldTrialParams GetFeatureParams() override {
-    return {{"experimental extended supported feature set", "true"}};
+    return {{"geolocation_supported", "true"}};
   }
 
   device::ScopedGeolocationOverrider geo_override_;
@@ -3005,6 +3047,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
   // not be stored in back-forward cache.
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   delete_observer_rfh_b.WaitUntilDeleted();
+
+  // 6) Go back to B.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Nothing is recorded when the domain does not match.
+  ExpectOutcomeIsEmpty(FROM_HERE);
+  ExpectNotRestoredIsEmpty(FROM_HERE);
 }
 
 // Check the BackForwardCache is disabled when the WebUSB feature is used.

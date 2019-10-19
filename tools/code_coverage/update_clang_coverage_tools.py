@@ -48,15 +48,15 @@ def DownloadCoverageToolsIfNeeded():
 
       return package_version
 
-  cov_path = os.path.join(clang_update.LLVM_BUILD_DIR, 'llvm-cov')
-  profdata_path = os.path.join(clang_update.LLVM_BUILD_DIR, 'llvm-profdata')
+  cov_path = os.path.join(clang_update.LLVM_BUILD_DIR, 'bin', 'llvm-cov')
+  profdata_path = os.path.join(
+      clang_update.LLVM_BUILD_DIR, 'bin', 'llvm-profdata')
 
   host_platform = coverage_utils.GetHostPlatform()
   clang_revision = _GetRevisionFromStampFile(clang_update.STAMP_FILE)
   coverage_revision_stamp_file = os.path.join(
       os.path.dirname(clang_update.STAMP_FILE), 'cr_coverage_revision')
   coverage_revision = _GetRevisionFromStampFile(coverage_revision_stamp_file)
-
   has_coverage_tools = (
       os.path.exists(cov_path) and os.path.exists(profdata_path))
 

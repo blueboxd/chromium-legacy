@@ -84,6 +84,7 @@ if (enable_mojom_closure_compile || closure_compile) {
                       "language_in=ECMASCRIPT_2017",
                       "language_out=ECMASCRIPT_2015",
                       "generate_exports",
+                      "export_local_property_definitions",
                     ]
   }
 } else {

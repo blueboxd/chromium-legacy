@@ -38,6 +38,8 @@
 #include "net/dns/public/dns_protocol.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -1634,6 +1636,32 @@ TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
     }
     client_impl->ClearOnClearSiteDataCounter();
   }
+}
+
+TEST_F(NetworkServiceTest, SplitAuthCacheByNetworkIsolationKey) {
+  service()->SetSplitAuthCacheByNetworkIsolationKey(true);
+  mojo::Remote<mojom::NetworkContext> network_context_remote;
+  NetworkContext network_context(
+      service(), network_context_remote.BindNewPipeAndPassReceiver(),
+      CreateContextParams());
+  EXPECT_TRUE(network_context.url_request_context()
+                  ->http_transaction_factory()
+                  ->GetSession()
+                  ->params()
+                  .key_auth_cache_server_entries_by_network_isolation_key);
+}
+
+TEST_F(NetworkServiceTest, NoSplitAuthCacheByNetworkIsolationKey) {
+  service()->SetSplitAuthCacheByNetworkIsolationKey(false);
+  mojo::Remote<mojom::NetworkContext> network_context_remote;
+  NetworkContext network_context(
+      service(), network_context_remote.BindNewPipeAndPassReceiver(),
+      CreateContextParams());
+  EXPECT_FALSE(network_context.url_request_context()
+                   ->http_transaction_factory()
+                   ->GetSession()
+                   ->params()
+                   .key_auth_cache_server_entries_by_network_isolation_key);
 }
 
 }  // namespace

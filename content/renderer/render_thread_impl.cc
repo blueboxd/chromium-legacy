@@ -2166,6 +2166,7 @@ void RenderThreadImpl::UpdateSystemColorInfo(
       params->is_dark_mode, params->is_high_contrast,
       params->preferred_color_scheme, params->colors);
   blink::SystemColorsChanged();
+  blink::ColorSchemeChanged();
 }
 
 void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {

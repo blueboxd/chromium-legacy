@@ -216,7 +216,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void ScheduleDelayedWork();
   void PerformDelayedWork();
 
-  bool is_using_vulkan() const { return !!vulkan_context_provider_; }
+  bool is_using_vulkan() const {
+    return !!vulkan_context_provider_ &&
+           gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan;
+  }
 
   SkSurface* output_sk_surface() const {
     return scoped_output_device_paint_->sk_surface();

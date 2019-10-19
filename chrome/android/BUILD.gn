@@ -18,6 +18,7 @@ import("//chrome/android/features/vr/public_vr_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
 import("//chrome/android/modules/chrome_feature_module_tmpl.gni")
 import("//chrome/android/monochrome_android_manifest_jinja_variables.gni")
+import("//chrome/browser/share/android/java_sources.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
@@ -478,6 +479,10 @@ android_library("chrome_java") {
   ]
 
   processor_args_javac = [ "dagger.fastInit=enabled" ]
+
+  # TODO(gayane): Instead of adding source files, add it as a separate
+  # dependency when circular deps is resolved.
+  java_files += share_java_sources
 }
 
 generate_locale_config_srcjar("chrome_locale_config") {
@@ -811,6 +816,7 @@ android_library("chrome_test_java") {
     "//components/invalidation/impl:java",
     "//components/invalidation/impl:javatests",
     "//components/location/android:location_java",
+    "//components/metrics:metrics_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/minidump_uploader:minidump_uploader_javatests",
     "//components/navigation_interception/android:navigation_interception_java",

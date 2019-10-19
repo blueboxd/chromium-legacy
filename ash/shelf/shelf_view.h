@@ -118,7 +118,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public VirtualKeyboardModel::Observer,
                              public ShelfConfig::Observer {
  public:
-  ShelfView(ShelfModel* model, Shelf* shelf);
+  ShelfView(ShelfModel* model,
+            Shelf* shelf,
+            ApplicationDragAndDropHost* drag_and_drop_host);
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
@@ -726,6 +728,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // axis is x-axis when the shelf is horizontally aligned; otherwise, it
   // becomes y-axis)
   int app_icons_layout_offset_ = 0;
+
+  // When the scrollable shelf is enabled, |drag_and_drop_host_| should be
+  // ScrollableShelfView.
+  ApplicationDragAndDropHost* drag_and_drop_host_ = nullptr;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 

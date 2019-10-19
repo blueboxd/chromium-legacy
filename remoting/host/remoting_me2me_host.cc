@@ -117,6 +117,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "remoting/host/desktop_capturer_checker.h"
 #include "remoting/host/mac/permission_utils.h"
 #endif  // defined(OS_MACOSX)
 
@@ -453,6 +454,10 @@ class HostProcess : public ConfigWatcher::Delegate,
   scoped_refptr<PairingRegistry> pairing_registry_;
 
   ShutdownWatchdog* shutdown_watchdog_;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<DesktopCapturerChecker> capture_checker_;
+#endif  // defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(HostProcess);
 };
@@ -1556,8 +1561,16 @@ void HostProcess::StartHost() {
   // Ensure we are not running as root (i.e. at the login screen).
   DCHECK_NE(getuid(), 0U);
 
+  // Capture a single screen image to trigger OS permission checks which will
+  // add our binary to the list of apps that can be granted permission. This
+  // is only needed for OS X 10.15 and later.
+  if (!base::mac::IsAtLeastOS10_15()) {
+    capture_checker_.reset(new DesktopCapturerChecker());
+    capture_checker_->TriggerSingleCapture();
+  }
+
   mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
-#endif
+#endif  // defined(OS_MACOSX)
 
   host_->Start(host_owner_);
 

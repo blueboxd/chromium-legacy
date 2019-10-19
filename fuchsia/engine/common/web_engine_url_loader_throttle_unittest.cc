@@ -90,3 +90,37 @@ TEST_F(WebEngineURLLoaderThrottleTest, WildcardHosts) {
   throttle.WillStartRequest(&request4, &defer);
   EXPECT_FALSE(request4.headers.HasHeader("Header"));
 }
+
+// Tests URL replacement rules that replace to a data URL do not append query or
+// ref from the original URL.
+TEST_F(WebEngineURLLoaderThrottleTest, DataReplacementUrl) {
+  const char kCssDataURI[] = "data:text/css,";
+
+  mojom::UrlRequestRewriteReplaceUrlPtr replace_url =
+      mojom::UrlRequestRewriteReplaceUrl::New();
+  replace_url->url_ends_with = ".css";
+  replace_url->new_url = GURL(kCssDataURI);
+  mojom::UrlRequestRewritePtr rewrite =
+      mojom::UrlRequestRewrite::NewReplaceUrl(std::move(replace_url));
+  std::vector<mojom::UrlRequestRewritePtr> rewrites;
+  rewrites.push_back(std::move(rewrite));
+  mojom::UrlRequestRewriteRulePtr rule = mojom::UrlRequestRewriteRule::New();
+  rule->hosts_filter = base::Optional<std::vector<std::string>>({"*.test.net"});
+  rule->rewrites = std::move(rewrites);
+
+  std::vector<mojom::UrlRequestRewriteRulePtr> rules;
+  rules.push_back(std::move(rule));
+
+  TestCachedRulesProvider provider;
+  provider.SetCachedRules(
+      base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
+          std::move(rules)));
+
+  WebEngineURLLoaderThrottle throttle(&provider);
+  bool defer = false;
+
+  network::ResourceRequest request;
+  request.url = GURL("http://test.net/style.css?query#ref");
+  throttle.WillStartRequest(&request, &defer);
+  EXPECT_EQ(request.url, base::StringPiece(kCssDataURI));
+}

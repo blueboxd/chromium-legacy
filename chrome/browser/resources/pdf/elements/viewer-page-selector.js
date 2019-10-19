@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 Polymer({
   is: 'viewer-page-selector',
+
+  _template: html`{__html_template__}`,
 
   properties: {
     /**
@@ -26,7 +32,7 @@ Polymer({
 
   /** @return {!CrInputElement} */
   get pageSelector() {
-    return this.$.pageselector;
+    return /** @type {!CrInputElement} */ (this.$.pageselector);
   },
 
   pageNoCommitted: function() {

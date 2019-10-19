@@ -282,7 +282,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   size_t GetProxyCount() override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
-      blink::mojom::Frame::GetTextSurroundingSelectionCallback callback,
+      blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
       int max_length) override;
   void SendInterventionReport(const std::string& id,
                               const std::string& message) override;
@@ -814,8 +814,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns remote to renderer side FindInPage associated with this frame.
   const mojo::AssociatedRemote<blink::mojom::FindInPage>& GetFindInPage();
 
-  // Returns associated remote for the blink::mojom::Frame Mojo interface.
-  const mojo::AssociatedRemote<blink::mojom::Frame>& GetAssociatedFrameRemote();
+  // Returns associated remote for the blink::mojom::LocalFrame Mojo interface.
+  const mojo::AssociatedRemote<blink::mojom::LocalFrame>&
+  GetAssociatedLocalFrameRemote();
 
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
@@ -1206,6 +1207,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void EnterFullscreen(blink::mojom::FullscreenOptionsPtr options) override;
   void ExitFullscreen() override;
   void FullscreenStateChanged(bool is_fullscreen) override;
+  void RegisterProtocolHandler(const std::string& scheme,
+                               const GURL& url,
+                               const base::string16& title,
+                               bool user_gesture) override;
+  void UnregisterProtocolHandler(const std::string& scheme,
+                                 const GURL& url,
+                                 bool user_gesture) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2162,7 +2170,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedRemote<blink::mojom::FindInPage> find_in_page_;
 
   // Holder of Mojo connection with the Frame service in Blink.
-  mojo::AssociatedRemote<blink::mojom::Frame> frame_remote_;
+  mojo::AssociatedRemote<blink::mojom::LocalFrame> local_frame_remote_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
   // OnCrossDocumentCommitProcessed has returned a positive answer for this

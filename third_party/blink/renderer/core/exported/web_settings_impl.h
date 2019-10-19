@@ -222,7 +222,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetLazyImageFirstKFullyLoad4G(int) override;
 
   void SetForceDarkModeEnabled(bool) override;
-  void SetPreferredColorScheme(PreferredColorScheme) override;
   void SetNavigationControls(NavigationControls) override;
 
   bool RenderVSyncNotificationEnabled() const {

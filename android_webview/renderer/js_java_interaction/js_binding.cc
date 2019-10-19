@@ -76,7 +76,7 @@ JsBinding::JsBinding(content::RenderFrame* render_frame,
       js_java_configurator_->GetJsToJavaMessage(js_object_name_);
   if (js_to_java_messaging) {
     js_to_java_messaging->SetJavaToJsMessaging(
-        receiver_.BindNewPipeAndPassRemote());
+        receiver_.BindNewEndpointAndPassRemote());
   }
 }
 

@@ -66,25 +66,16 @@ WiFiDisplayMediaServiceImpl::WiFiDisplayMediaServiceImpl()
 
 WiFiDisplayMediaServiceImpl::~WiFiDisplayMediaServiceImpl() {}
 
-void WiFiDisplayMediaServiceImpl::SetDesinationPoint(
-    const std::string& ip_address,
-    int32_t port,
-    const SetDesinationPointCallback& callback) {
+void WiFiDisplayMediaServiceImpl::SetDestinationPoint(
+    const net::IPEndPoint& ip_end_point,
+    const SetDestinationPointCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::IPAddress address;
-  if (!address.AssignFromIPLiteral(std::string(ip_address))) {
-    DVLOG(1) << "Failed to parse IP address from " << ip_address;
-    callback.Run(false);
-    return;
-  }
-  net::IPEndPoint end_point(address, static_cast<uint16_t>(port));
-
   rtp_socket_.reset(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                                        net::RandIntCallback(), nullptr,
                                        net::NetLogSource()));
-  if (rtp_socket_->Open(end_point.GetFamily()) != net::OK ||
-      rtp_socket_->Connect(end_point) != net::OK) {
-    DVLOG(1) << "Could not connect to " << end_point.ToString();
+  if (rtp_socket_->Open(ip_end_point.GetFamily()) != net::OK ||
+      rtp_socket_->Connect(ip_end_point) != net::OK) {
+    DVLOG(1) << "Could not connect to " << ip_end_point.ToString();
     callback.Run(false);
     rtp_socket_.reset();
     return;

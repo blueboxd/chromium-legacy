@@ -120,7 +120,7 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordReuseDetected(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -145,7 +145,7 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordChanged(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUserName, user_name);
@@ -178,7 +178,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -220,7 +220,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -257,7 +257,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -277,7 +277,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
     const std::string& mime_type,
     const std::string& trigger,
     const int64_t content_size) {
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, url.spec());
@@ -303,7 +303,7 @@ void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
     const std::string& mime_type,
     const std::string& trigger,
     const int64_t content_size) {
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, url.spec());
@@ -333,7 +333,7 @@ void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
     const std::string& mime_type,
     const std::string& trigger,
     const int64_t content_size) {
-  if (IsRealtimeReportingEnabled()) {
+  if (IsRealtimeReportingEnabled() && client_) {
     // Create a real-time event dictionary from the arguments and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, url.spec());
@@ -357,7 +357,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarning(
     const std::string& threat_type,
     const std::string& mime_type,
     const int64_t content_size) {
-  if (!IsRealtimeReportingEnabled())
+  if (!IsRealtimeReportingEnabled() || !client_)
     return;
 
   // Create a real-time event dictionary and report it.
@@ -384,7 +384,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
     const std::string& threat_type,
     const std::string& mime_type,
     const int64_t content_size) {
-  if (!IsRealtimeReportingEnabled())
+  if (!IsRealtimeReportingEnabled() || !client_)
     return;
 
   // Create a real-time event dictionary and report it.

@@ -27,6 +27,12 @@ CONTENT_EXPORT ui::NativeTheme::ColorScheme NativeColorScheme(
 CONTENT_EXPORT ui::NativeTheme::SystemThemeColor NativeSystemThemeColor(
     blink::WebThemeEngine::SystemThemeColor theme_color);
 
+CONTENT_EXPORT ui::NativeTheme::PreferredColorScheme NativePreferredColorScheme(
+    blink::PreferredColorScheme preferred_color_scheme);
+
+CONTENT_EXPORT blink::PreferredColorScheme WebPreferredColorScheme(
+    ui::NativeTheme::PreferredColorScheme preferred_color_scheme);
+
 }  // namespace content
 
 #endif  // CONTENT_CHILD_WEBTHEMEENGINE_IMPL_CONVERSIONS_H_

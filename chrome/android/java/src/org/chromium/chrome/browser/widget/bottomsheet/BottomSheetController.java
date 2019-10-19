@@ -96,7 +96,11 @@ public class BottomSheetController implements Destroyable {
 
             @Override
             public void onDestroyed(Tab tab) {
-                if (mLastActivityTab == tab) mLastActivityTab = null;
+                if (mLastActivityTab != tab) return;
+                mLastActivityTab = null;
+
+                // Remove the suppressed sheet if its lifecycle is tied to the tab being destroyed.
+                clearRequestsAndHide();
             }
         };
 

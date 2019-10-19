@@ -151,18 +151,23 @@ class NET_EXPORT CertVerifier {
   // Returns OK if successful or an error code upon failure.
   //
   // The |*verify_result| structure, including the |verify_result->cert_status|
-  // bitmask, is always filled out regardless of the return value.  If the
+  // bitmask, is always filled out regardless of the return value. If the
   // certificate has multiple errors, the corresponding status flags are set in
   // |verify_result->cert_status|, and the error code for the most serious
   // error is returned.
   //
-  // |callback| must not be null.  ERR_IO_PENDING is returned if the operation
+  // |callback| must not be null. ERR_IO_PENDING is returned if the operation
   // could not be completed synchronously, in which case the result code will
   // be passed to the callback when available.
   //
-  // On asynchronous completion (when Verify returns ERR_IO_PENDING) |out_req|
-  // will be reset with a pointer to the request. Freeing this pointer before
-  // the request has completed will cancel it.
+  // |*out_req| is used to store a request handle in the event of asynchronous
+  // completion (when Verify returns ERR_IO_PENDING). Provided that neither
+  // the CertVerifier nor the Request have been deleted, |callback| will be
+  // invoked once the underlying verification finishes. If either the
+  // CertVerifier or the Request are deleted, then |callback| will be Reset()
+  // and will not be invoked. It is fine for |out_req| to outlive the
+  // CertVerifier, and it is fine to reset |out_req| or delete the
+  // CertVerifier during the processing of |callback|.
   //
   // If Verify() completes synchronously then |out_req| *may* be reset to
   // nullptr. However it is not guaranteed that all implementations will reset

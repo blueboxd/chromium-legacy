@@ -49,10 +49,12 @@ SharedContextState::SharedContextState(
     scoped_refptr<gl::GLContext> context,
     bool use_virtualized_gl_contexts,
     base::OnceClosure context_lost_callback,
+    GrContextType gr_context_type,
     viz::VulkanContextProvider* vulkan_context_provider,
     viz::MetalContextProvider* metal_context_provider)
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
       context_lost_callback_(std::move(context_lost_callback)),
+      gr_context_type_(gr_context_type),
       vk_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
       share_group_(std::move(share_group)),

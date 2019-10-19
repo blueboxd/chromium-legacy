@@ -37,6 +37,11 @@ class IncognitoSwitchViewBinder {
                     : R.string.accessibility_tab_switcher_standard_stack_selected;
             incognitoSwitch.announceForAccessibility(
                     incognitoSwitch.getResources().getString(stackAnnouncementId));
+            final int descriptionResId = isIncognito
+                    ? R.string.accessibility_tabstrip_btn_incognito_toggle_incognito
+                    : R.string.accessibility_tabstrip_btn_incognito_toggle_standard;
+            incognitoSwitch.setContentDescription(
+                    incognitoSwitch.getResources().getString(descriptionResId));
         } else if (IS_VISIBLE == propertyKey) {
             incognitoSwitch.setVisibility(model.get(IS_VISIBLE) ? View.VISIBLE : View.GONE);
         }

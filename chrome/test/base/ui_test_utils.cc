@@ -481,7 +481,8 @@ void SendToOmniboxAndSubmit(Browser* browser,
                             base::TimeTicks match_selection_timestamp) {
   LocationBar* location_bar = browser->window()->GetLocationBar();
   OmniboxView* omnibox = location_bar->GetOmniboxView();
-  omnibox->model()->OnSetFocus(false);
+  omnibox->model()->OnSetFocus(/*control_down=*/false,
+                               /*suppress_on_focus_suggestions=*/false);
   omnibox->SetUserText(base::ASCIIToUTF16(input));
   location_bar->AcceptInput(match_selection_timestamp);
 

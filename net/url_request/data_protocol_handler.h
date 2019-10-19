@@ -15,8 +15,8 @@ namespace net {
 class URLRequestJob;
 
 // Implements a ProtocolHandler for Data jobs.
-class NET_EXPORT DataProtocolHandler
-    : public URLRequestJobFactory::ProtocolHandler {
+// TODO(mmenke): This class is now only used in tests. Remove it.
+class DataProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
  public:
   DataProtocolHandler();
   URLRequestJob* MaybeCreateJob(

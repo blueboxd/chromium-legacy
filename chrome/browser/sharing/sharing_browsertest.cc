@@ -147,7 +147,8 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
 void SharingBrowserTest::CheckLastReceiver(
     const std::string& device_guid) const {
   auto sharing_info =
-      sharing_service_->GetSyncPreferences()->GetSharingInfo(device_guid);
+      sharing_service_->GetSyncPreferencesForTesting()->GetSharingInfo(
+          device_guid);
   ASSERT_TRUE(sharing_info);
   EXPECT_EQ(sharing_info->fcm_token, gcm_service_->last_receiver_id());
 }

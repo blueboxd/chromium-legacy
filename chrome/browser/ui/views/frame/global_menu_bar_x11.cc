@@ -269,7 +269,8 @@ void GlobalMenuBarX11::Initialize(DbusMenu::InitializedCallback callback) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   DCHECK(profile_manager);
   avatar_menu_ = std::make_unique<AvatarMenu>(
-      &profile_manager->GetProfileAttributesStorage(), this, nullptr);
+      &profile_manager->GetProfileAttributesStorage(), this,
+      BrowserList::GetInstance()->GetLastActive());
   avatar_menu_->RebuildMenu();
   BrowserList::AddObserver(this);
 

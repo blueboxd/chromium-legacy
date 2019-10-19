@@ -12,8 +12,12 @@
 // Enables tests to force certificate verification results.
 class MockCertVerifierRuleAndroid {
  public:
-  // |result| is the certificate verification result to force.
-  MockCertVerifierRuleAndroid(int result);
+  MockCertVerifierRuleAndroid();
+
+  // Sets the certificate verification result to force.
+  void SetResult(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 int result);
 
   void SetUp(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void TearDown(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

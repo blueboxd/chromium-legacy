@@ -138,6 +138,12 @@ void WebviewRpcInstance::ProcessRequestOnWebviewThread(
 }
 
 void WebviewRpcInstance::InitComplete(bool ok) {
+  if (!ok) {
+    destroying_ = true;
+    delete this;
+    return;
+  }
+
   request_ = std::make_unique<webview::WebviewRequest>();
   io_.Read(request_.get(), &read_callback_);
 
@@ -263,6 +269,7 @@ WebviewAsyncService::WebviewAsyncService(
 }
 
 WebviewAsyncService::~WebviewAsyncService() {
+  cq_->Shutdown();
   base::PlatformThread::Join(rpc_thread_);
 }
 

@@ -203,7 +203,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   const char* GetClassName() const override;
 
   // Overridden from PaginationModelObserver:
-  void TotalPagesChanged() override;
+  void TotalPagesChanged(int previous_page_count, int new_page_count) override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarted() override;
   void TransitionChanged() override;

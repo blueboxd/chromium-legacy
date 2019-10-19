@@ -82,6 +82,7 @@ using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
 using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
+using WriteBarrierWorklist = Worklist<HeapObjectHeader*, 256>;
 using NotFullyConstructedWorklist =
     Worklist<NotFullyConstructedItem, 16 /* local entries */>;
 using WeakCallbackWorklist =
@@ -225,6 +226,10 @@ class PLATFORM_EXPORT ThreadHeap {
 
   MarkingWorklist* GetMarkingWorklist() const {
     return marking_worklist_.get();
+  }
+
+  WriteBarrierWorklist* GetWriteBarrierWorklist() const {
+    return write_barrier_worklist_.get();
   }
 
   NotFullyConstructedWorklist* GetNotFullyConstructedWorklist() const {
@@ -438,6 +443,11 @@ class PLATFORM_EXPORT ThreadHeap {
   // contain almost all objects.
   std::unique_ptr<MarkingWorklist> marking_worklist_;
 
+  // Objects on this worklist have been collected in the write barrier. The
+  // worklist is different from |marking_worklist_| to minimize execution in the
+  // path where a write barrier is executed.
+  std::unique_ptr<WriteBarrierWorklist> write_barrier_worklist_;
+
   // Objects on this worklist were observed to be in construction (in their
   // constructor) and thus have been delayed for processing. They have not yet
   // been assigned a valid header and trace callback.
@@ -524,11 +534,6 @@ class GarbageCollected {
 
   template <typename Derived>
   static void* AllocateObject(size_t size) {
-    if (IsGarbageCollectedMixin<T>::value) {
-      // Ban large mixin so we can use PageFromObject() on them.
-      CHECK_GE(kLargeObjectSizeThreshold, size)
-          << "GarbageCollectedMixin may not be a large object";
-    }
     return ThreadHeap::Allocate<GCInfoFoldedType<Derived>>(size);
   }
 
@@ -577,7 +582,10 @@ T* MakeGarbageCollected(Args&&... args) {
                     internal::IsGarbageCollectedContainer<T>::value ||
                     internal::HasFinalizeGarbageCollectedObject<T>::value,
                 "Finalized GarbageCollected class should either have a virtual "
-                "destructor or be marked as final.");
+                "destructor or be marked as final");
+  static_assert(!IsGarbageCollectedMixin<T>::value ||
+                    sizeof(T) <= kLargeObjectSizeThreshold,
+                "GarbageCollectedMixin may not be a large object");
   void* memory = T::template AllocateObject<T>(sizeof(T));
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
@@ -605,8 +613,13 @@ T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
                     internal::HasFinalizeGarbageCollectedObject<T>::value,
                 "Finalized GarbageCollected class should either have a virtual "
                 "destructor or be marked as final.");
-  void* memory =
-      T::template AllocateObject<T>(sizeof(T) + additional_bytes.value);
+  const size_t size = sizeof(T) + additional_bytes.value;
+  if (IsGarbageCollectedMixin<T>::value) {
+    // Ban large mixin so we can use PageFromObject() on them.
+    CHECK_GE(kLargeObjectSizeThreshold, size)
+        << "GarbageCollectedMixin may not be a large object";
+  }
+  void* memory = T::template AllocateObject<T>(size);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);

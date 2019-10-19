@@ -26,6 +26,8 @@
       break;
     case BadgeType::kBadgeTypePasswordUpdate:
       return [self passwordsUpdateBadgeButton];
+    case BadgeType::kBadgeTypeSaveCard:
+      return [self saveCardBadgeButton];
     case BadgeType::kBadgeTypeIncognito:
       return [self incognitoBadgeButton];
     case BadgeType::kBadgeTypeOverflow:
@@ -65,6 +67,19 @@
       kBadgeButtonUpdatePasswordAccessibilityIdentifier;
   button.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT);
+  return button;
+}
+
+- (BadgeButton*)saveCardBadgeButton {
+  BadgeButton* button =
+      [self createButtonForType:BadgeType::kBadgeTypePasswordUpdate
+                     imageNamed:@"infobar_save_card_icon"
+                  renderingMode:UIImageRenderingModeAlwaysTemplate];
+  [button addTarget:self.delegate
+                action:@selector(saveCardBadgeButtonTapped:)
+      forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityIdentifier = kBadgeButtonSaveCardAccessibilityIdentifier;
+  // TODO(crbug.com/1014652): Create a11y label hint.
   return button;
 }
 

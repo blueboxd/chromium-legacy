@@ -618,4 +618,50 @@ TEST(PolicyEngineTest, PolicyRuleCopyConstructorTwoStrings) {
   EXPECT_EQ(POLICY_MATCH, result);
   EXPECT_EQ(ASK_BROKER, pol_ev_copy.GetAction());
 }
+
+TEST(PolicyEngineTest, PolicyGenDoneCalledTwice) {
+  SetupNtdllImports();
+  // The specific rules here are not important.
+  PolicyRule pr_orig(ASK_BROKER);
+  EXPECT_TRUE(pr_orig.AddStringMatch(IF, 0, L"hello.*", CASE_SENSITIVE));
+
+  PolicyRule pr_copy(pr_orig);
+  EXPECT_TRUE(pr_orig.AddStringMatch(IF_NOT, 0, L"*.txt", CASE_SENSITIVE));
+  EXPECT_TRUE(pr_copy.AddStringMatch(IF_NOT, 0, L"*.txt", CASE_SENSITIVE));
+
+  PolicyGlobal* policy = MakePolicyMemory();
+  LowLevelPolicy policyGen(policy);
+  EXPECT_TRUE(policyGen.AddRule(1, &pr_orig));
+  EXPECT_TRUE(policyGen.AddRule(2, &pr_copy));
+  EXPECT_TRUE(policyGen.Done());
+
+  // Obtain opcode counts.
+  size_t tc1 = policy->entry[1]->opcode_count;
+  size_t tc2 = policy->entry[2]->opcode_count;
+
+  // Call Done() again.
+  EXPECT_TRUE(policyGen.Done());
+
+  // Expect same opcode counts.
+  EXPECT_EQ(tc1, policy->entry[1]->opcode_count);
+  EXPECT_EQ(tc2, policy->entry[2]->opcode_count);
+
+  // Confirm the rules work as before.
+  const wchar_t* name = nullptr;
+  POLPARAMS_BEGIN(eval_params)
+    POLPARAM(name)
+  POLPARAMS_END;
+
+  PolicyResult result;
+  PolicyProcessor pol_ev_orig(policy->entry[1]);
+  name = L"domo.txt";
+  result = pol_ev_orig.Evaluate(kShortEval, eval_params, _countof(eval_params));
+  EXPECT_EQ(NO_POLICY_MATCH, result);
+
+  name = L"hello.bmp";
+  result = pol_ev_orig.Evaluate(kShortEval, eval_params, _countof(eval_params));
+  EXPECT_EQ(POLICY_MATCH, result);
+  EXPECT_EQ(ASK_BROKER, pol_ev_orig.GetAction());
+}
+
 }  // namespace sandbox

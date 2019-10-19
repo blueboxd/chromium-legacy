@@ -62,14 +62,16 @@
 using base::Time;
 
 namespace history {
+
 namespace {
 
-const base::Feature kHistoryServiceUsesTaskScheduler{
-    "HistoryServiceUsesTaskScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
-
-static const char* kHistoryThreadName = "Chrome_HistoryThread";
+const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 }  // namespace
+
+// static
+const base::Feature HistoryService::kHistoryServiceUsesTaskScheduler{
+    "HistoryServiceUsesTaskScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Sends messages from the backend to us on the main thread. This must be a
 // separate class from the history service so that it can hold a reference to

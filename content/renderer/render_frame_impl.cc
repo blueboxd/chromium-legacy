@@ -5705,21 +5705,6 @@ void RenderFrameImpl::SuddenTerminationDisablerChanged(
                                                          disabler_type));
 }
 
-void RenderFrameImpl::RegisterProtocolHandler(const WebString& scheme,
-                                              const WebURL& url,
-                                              const WebString& title) {
-  bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture(frame_);
-  Send(new FrameHostMsg_RegisterProtocolHandler(routing_id_, scheme.Utf8(), url,
-                                                title.Utf16(), user_gesture));
-}
-
-void RenderFrameImpl::UnregisterProtocolHandler(const WebString& scheme,
-                                                const WebURL& url) {
-  bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture(frame_);
-  Send(new FrameHostMsg_UnregisterProtocolHandler(routing_id_, scheme.Utf8(),
-                                                  url, user_gesture));
-}
-
 void RenderFrameImpl::DidSerializeDataForFrame(
     const WebVector<char>& data,
     WebFrameSerializerClient::FrameSerializationStatus status) {

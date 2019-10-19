@@ -1077,6 +1077,12 @@ bool NGBlockNode::IsAtomicInlineLevel() const {
   return GetLayoutBox()->IsAtomicInlineLevel() && GetLayoutBox()->IsInline();
 }
 
+bool NGBlockNode::MayHaveAspectRatio() const {
+  LayoutBox* layout_object = GetLayoutBox();
+  return layout_object->IsImage() || layout_object->IsVideo() ||
+         layout_object->IsCanvas();
+}
+
 bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
   auto* layout_box = DynamicTo<LayoutBlock>(GetLayoutBox());
   return layout_box &&

@@ -374,9 +374,7 @@ void TextFieldInputType::ListAttributeTargetChanged() {
   }
 }
 
-void TextFieldInputType::AttributeChanged() {
-  // TODO(crbug.com/1012774): Updating on any attribute update should be
-  // unnecessary. We should figure out what attributes affect.
+void TextFieldInputType::ValueAttributeChanged() {
   UpdateView();
 }
 

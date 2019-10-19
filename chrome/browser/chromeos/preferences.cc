@@ -220,136 +220,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAppReinstallRecommendationEnabled,
                                 false);
 
-  // TODO(jamescook): Move ownership and registration into ash. This will need
-  // changes to policy::RecommendationRestorer which requires that prefs are
-  // available immediately during startup.
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityStickyKeysEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityLargeCursorEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(ash::prefs::kAccessibilityLargeCursorDipSize,
-                                ash::kDefaultLargeCursorSize,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(ash::prefs::kAccessibilitySpokenFeedbackEnabled,
-                                false, PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityHighContrastEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kHighContrastAcceleratorDialogHasBeenAccepted, false,
-      PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(ash::prefs::kDockedMagnifierEnabled, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted, false,
-      PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityScreenMagnifierCenterFocus, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      ash::prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted, false,
-      PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kDictationAcceleratorDialogHasBeenAccepted, false,
-      PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, false,
-      PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityScreenMagnifierEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityDictationEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterDoublePref(ash::prefs::kAccessibilityScreenMagnifierScale,
-                               std::numeric_limits<double>::min(),
-                               PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityAutoclickEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilityAutoclickDelayMs, ash::kDefaultAutoclickDelayMs,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilityAutoclickEventType,
-      static_cast<int>(ash::kDefaultAutoclickEventType),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityAutoclickRevertToLeftClick, true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityAutoclickStabilizePosition, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilityAutoclickMovementThreshold,
-      ash::kDefaultAutoclickMovementThreshold,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilityAutoclickMenuPosition,
-      static_cast<int>(ash::kDefaultAutoclickMenuPosition),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityVirtualKeyboardEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityMonoAudioEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityCaretHighlightEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityCursorHighlightEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilityFocusHighlightEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilitySelectToSpeakEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilitySwitchAccessEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterListPref(
-      ash::prefs::kAccessibilitySwitchAccessSelectKeyCodes,
-      base::Value(std::vector<base::Value>()),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilitySwitchAccessSelectSetting,
-      ash::kSwitchAccessAssignmentNone,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterListPref(
-      ash::prefs::kAccessibilitySwitchAccessNextKeyCodes,
-      base::Value(std::vector<base::Value>()),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilitySwitchAccessNextSetting,
-      ash::kSwitchAccessAssignmentNone,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterListPref(
-      ash::prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
-      base::Value(std::vector<base::Value>()),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilitySwitchAccessPreviousSetting,
-      ash::kSwitchAccessAssignmentNone,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
-      ash::kDefaultSwitchAccessAutoScanSpeed.InMilliseconds(),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(
-      ash::prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
-      ash::kDefaultSwitchAccessAutoScanSpeed.InMilliseconds(),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kShouldAlwaysShowAccessibilityMenu, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-
   registry->RegisterIntegerPref(
       prefs::kMouseSensitivity,
       3,
@@ -387,8 +257,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapSearchKeyTo,
       static_cast<int>(ui::chromeos::ModifierKey::kSearchKey),
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
-          PrefRegistry::PUBLIC);  // Used in ash.
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapControlKeyTo,
       static_cast<int>(ui::chromeos::ModifierKey::kControlKey),
@@ -450,14 +319,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kNoteTakingAppsLockScreenWhitelist);
   registry->RegisterBooleanPref(prefs::kRestoreLastLockScreenNote, true);
   registry->RegisterDictionaryPref(prefs::kNoteTakingAppsLockScreenToastShown);
-
-  // TODO(warx): Move prefs::kAllowScreenLock and prefs::kEnableAutoScreenLock
-  // registration to ash, which requires refactoring in SessionControllerClient.
-  registry->RegisterBooleanPref(ash::prefs::kAllowScreenLock, true,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(
-      ash::prefs::kEnableAutoScreenLock, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
@@ -545,16 +406,16 @@ void Preferences::RegisterProfilePrefs(
   // Text-to-speech prefs.
   registry->RegisterDictionaryPref(
       prefs::kTextToSpeechLangToVoiceName,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterDoublePref(
-      prefs::kTextToSpeechRate, blink::mojom::kSpeechSynthesisDefaultRate,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterDoublePref(
-      prefs::kTextToSpeechPitch, blink::mojom::kSpeechSynthesisDefaultPitch,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterDoublePref(
-      prefs::kTextToSpeechVolume, blink::mojom::kSpeechSynthesisDefaultVolume,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kTextToSpeechRate,
+                               blink::mojom::kSpeechSynthesisDefaultRate,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kTextToSpeechPitch,
+                               blink::mojom::kSpeechSynthesisDefaultPitch,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDoublePref(prefs::kTextToSpeechVolume,
+                               blink::mojom::kSpeechSynthesisDefaultVolume,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // By default showing Sync Consent is set to true. It can changed by policy.
   registry->RegisterBooleanPref(prefs::kEnableSyncConsent, true);

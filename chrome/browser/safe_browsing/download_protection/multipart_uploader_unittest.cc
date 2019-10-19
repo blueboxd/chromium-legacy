@@ -62,7 +62,8 @@ TEST_F(MultipartUploadRequestTest, GeneratesCorrectBody) {
             expected_body);
 }
 
-TEST_F(MultipartUploadRequestTest, RetriesCorrectly) {
+// TODO(crbug.com/1015974): Re-enable this test.
+TEST_F(MultipartUploadRequestTest, DISABLED_RetriesCorrectly) {
   MockMultipartUploadRequest mock_request;
 
   EXPECT_CALL(mock_request, SendRequest())

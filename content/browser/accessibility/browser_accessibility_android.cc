@@ -1656,6 +1656,13 @@ bool BrowserAccessibilityAndroid::HasFocusableNonOptionChild() const {
   return false;
 }
 
+base::string16 BrowserAccessibilityAndroid::GetTargetUrl() const {
+  if (ui::IsImage(GetRole()) || ui::IsLink(GetRole()))
+    return GetString16Attribute(ax::mojom::StringAttribute::kUrl);
+
+  return {};
+}
+
 bool BrowserAccessibilityAndroid::HasNonEmptyValue() const {
   return IsEditableText() && !GetValue().empty();
 }

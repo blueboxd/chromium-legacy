@@ -49,10 +49,10 @@ void TaskTracker::StartDistiller(
   if (distiller_) {
     return;
   }
-  if (entry_.pages_size() == 0) {
+  if (entry_.pages.empty()) {
     return;
   }
-  GURL url(entry_.pages(0).url());
+  GURL url(entry_.pages[0]);
   DCHECK(url.is_valid());
 
   distiller_ = factory->CreateDistillerForUrl(url);
@@ -97,16 +97,16 @@ std::unique_ptr<ViewerHandle> TaskTracker::AddViewer(
 }
 
 const std::string& TaskTracker::GetEntryId() const {
-  return entry_.entry_id();
+  return entry_.entry_id;
 }
 
 bool TaskTracker::HasEntryId(const std::string& entry_id) const {
-  return entry_.entry_id() == entry_id;
+  return entry_.entry_id == entry_id;
 }
 
 bool TaskTracker::HasUrl(const GURL& url) const {
-  for (int i = 0; i < entry_.pages_size(); ++i) {
-    if (entry_.pages(i).url() == url.spec()) {
+  for (const GURL& page : entry_.pages) {
+    if (page == url) {
       return true;
     }
   }
@@ -208,11 +208,10 @@ void TaskTracker::DistilledArticleReady(
   content_ready_ = true;
 
   distilled_article_ = std::move(distilled_article);
-  entry_.set_title(distilled_article_->title());
-  entry_.clear_pages();
+  entry_.title = distilled_article_->title();
+  entry_.pages.clear();
   for (int i = 0; i < distilled_article_->pages_size(); ++i) {
-    sync_pb::ArticlePage* page = entry_.add_pages();
-    page->set_url(distilled_article_->pages(i).url());
+    entry_.pages.push_back(GURL(distilled_article_->pages(i).url()));
   }
 
   NotifyViewersAndCallbacks();

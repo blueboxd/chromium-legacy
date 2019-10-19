@@ -97,6 +97,10 @@ std::unique_ptr<CryptographerImpl> CryptographerImpl::CloneImpl() const {
       new CryptographerImpl(key_bag_.Clone(), default_encryption_key_name_));
 }
 
+size_t CryptographerImpl::KeyBagSizeForTesting() const {
+  return key_bag_.size();
+}
+
 std::unique_ptr<Cryptographer> CryptographerImpl::Clone() const {
   return CloneImpl();
 }

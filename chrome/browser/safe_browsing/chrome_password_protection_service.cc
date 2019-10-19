@@ -806,13 +806,14 @@ void ChromePasswordProtectionService::
   }
 
   // For non sync password changes, we have to loop through all the password
-  // hashes and find the hash associated with the username. Right now this
-  // double counts when a password is first saved which is inaccurate.
+  // hashes and find the hash associated with the username.
   password_manager::HashPasswordManager hash_password_manager;
   hash_password_manager.set_prefs(profile_->GetPrefs());
   for (const auto& hash_data :
        hash_password_manager.RetrieveAllPasswordHashes()) {
-    if (hash_data.username == username) {
+    if (password_manager::AreUsernamesSame(
+            hash_data.username, /*is_username1_gaia_account=*/true, username,
+            /*is_username2_gaia_account=*/true)) {
       OnGaiaPasswordChanged(username, /*is_other_gaia_password=*/true);
       break;
     }

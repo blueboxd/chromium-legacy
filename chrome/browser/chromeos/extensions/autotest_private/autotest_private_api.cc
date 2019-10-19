@@ -33,6 +33,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -88,6 +89,7 @@
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "extensions/browser/event_router.h"
@@ -665,6 +667,26 @@ AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
 
   return RespondNow(OneArgument(
       base::Value::ToUniquePtrValue(std::move(all_policies_array))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateRefreshEnterprisePoliciesFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateRefreshEnterprisePoliciesFunction::
+    ~AutotestPrivateRefreshEnterprisePoliciesFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateRefreshEnterprisePoliciesFunction::Run() {
+  DVLOG(1) << "AutotestPrivateRefreshEnterprisePoliciesFunction";
+
+  g_browser_process->policy_service()->RefreshPolicies(base::Bind(
+      &AutotestPrivateRefreshEnterprisePoliciesFunction::RefreshDone, this));
+  return RespondLater();
+}
+
+void AutotestPrivateRefreshEnterprisePoliciesFunction::RefreshDone() {
+  Respond(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -26,9 +26,9 @@ class WiFiDisplayMediaServiceImpl : public mojom::WiFiDisplayMediaService {
   static void BindToRequest(mojom::WiFiDisplayMediaServiceRequest request,
                             content::RenderFrameHost* render_frame_host);
 
-  void SetDesinationPoint(const std::string& ip_address,
-                          int32_t port,
-                          const SetDesinationPointCallback& callback) override;
+  void SetDestinationPoint(
+      const net::IPEndPoint& ip_end_point,
+      const SetDestinationPointCallback& callback) override;
   void SendMediaPacket(mojom::WiFiDisplayMediaPacketPtr packet) override;
 
  private:

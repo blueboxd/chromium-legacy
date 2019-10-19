@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_SCROLLABLE_SHELF_VIEW_H_
 #define ASH_SHELF_SCROLLABLE_SHELF_VIEW_H_
 
+#include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/scroll_arrow_view.h"
@@ -29,8 +30,15 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShelfButtonDelegate,
                                        public ShelfTooltipDelegate,
                                        public views::ContextMenuController,
+                                       public ApplicationDragAndDropHost,
                                        public ui::ImplicitAnimationObserver {
  public:
+  class TestObserver {
+   public:
+    virtual ~TestObserver() = default;
+    virtual void OnPageFlipTimerFired() = 0;
+  };
+
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
     // accommodate all of shelf icons.
@@ -71,6 +79,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   views::View* GetShelfContainerViewForTest();
   bool ShouldAdjustForTest() const;
 
+  void SetTestObserver(TestObserver* test_observer);
+
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
   ScrollArrowView* left_arrow() { return left_arrow_; }
@@ -84,6 +94,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   void set_default_last_focusable_child(bool default_last_focusable_child) {
     default_last_focusable_child_ = default_last_focusable_child;
+  }
+
+  void set_page_flip_time_threshold(base::TimeDelta page_flip_time_threshold) {
+    page_flip_time_threshold_ = page_flip_time_threshold;
   }
 
   const gfx::Rect& visible_space() const { return visible_space_; }
@@ -176,6 +190,20 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
       views::View* view) override;
   base::string16 GetTitleForView(const views::View* view) const override;
   views::View* GetViewForEvent(const ui::Event& event) override;
+
+  // ApplicationDragAndDropHost:
+  void CreateDragIconProxyByLocationWithNoAnimation(
+      const gfx::Point& origin_in_screen_coordinates,
+      const gfx::ImageSkia& icon,
+      views::View* replaced_view,
+      float scale_factor,
+      int blur_radius) override;
+  void UpdateDragIconProxy(
+      const gfx::Point& location_in_screen_coordinates) override;
+  void DestroyDragIconProxy() override;
+  bool StartDrag(const std::string& app_id,
+                 const gfx::Point& location_in_screen_coordinates) override;
+  bool Drag(const gfx::Point& location_in_screen_coordinates) override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -270,6 +298,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // ripple ring.
   gfx::RoundedCornersF CalculateShelfContainerRoundedCorners() const;
 
+  // Scrolls to a new page if |drag_icon_| is dragged out of |visible_space_|
+  // for enough time. The function is called when |page_flip_timer_| is fired.
+  void OnPageFlipTimer();
+
+  bool IsDragIconWithinVisibleSpace() const;
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
@@ -322,6 +356,17 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // should show.
   bool should_show_start_gradient_zone_ = false;
   bool should_show_end_gradient_zone_ = false;
+
+  // Waiting time before flipping the page.
+  base::TimeDelta page_flip_time_threshold_;
+
+  TestObserver* test_observer_ = nullptr;
+
+  // Replaces the dragged app icon during drag procedure. It ensures that the
+  // app icon can be dragged out of the shelf view.
+  std::unique_ptr<DragImageView> drag_icon_;
+
+  base::OneShotTimer page_flip_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfView);
 };

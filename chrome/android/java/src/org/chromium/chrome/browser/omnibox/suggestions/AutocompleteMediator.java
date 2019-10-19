@@ -381,7 +381,7 @@ class AutocompleteMediator
                 private void maybeTriggerCacheRefresh(String url) {
                     if (url == null) return;
                     if (!UrlConstants.NTP_URL.equals(url)) return;
-                    AutocompleteController.nativePrefetchZeroSuggestResults();
+                    AutocompleteControllerJni.get().prefetchZeroSuggestResults();
                 }
             };
         }

@@ -23,7 +23,7 @@ class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceX11() override;
 
-  void Reshape(const gfx::Size& size,
+  bool Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha,

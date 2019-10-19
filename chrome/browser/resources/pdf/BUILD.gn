@@ -113,6 +113,7 @@ js_library("pdf_viewer") {
 }
 
 js_type_check("pdf_resources") {
+  is_polymer3 = true
   deps = [
     ":browser_api",
     ":controller",

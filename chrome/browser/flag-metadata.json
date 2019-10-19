@@ -1424,8 +1424,8 @@
   },
   {
     "name": "enable-lookalike-url-navigation-suggestions",
-    "owners": [ "jdeblasio", "meacer" ],
-    "expiry_milestone": 78
+    "owners": [ "jdeblasio", "meacer", "livvielin" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-mark-http-as",

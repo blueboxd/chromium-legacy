@@ -1918,7 +1918,7 @@ void LayerTreeImpl::UnregisterScrollbar(
       scrollbar_ids.vertical == Layer::INVALID_ID) {
     element_id_to_scrollbar_layer_ids_.erase(scroll_element_id);
     if (IsActiveTree()) {
-      host_impl_->UnregisterScrollbarAnimationController(scroll_element_id);
+      host_impl_->DidUnregisterScrollbarLayer(scroll_element_id);
     }
   }
 }

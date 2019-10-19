@@ -63,6 +63,11 @@ class BASE_EXPORT TaskExecutor {
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) = 0;
 #endif  // defined(OS_WIN)
+
+  // Returns the sequence the current task was posted on, if any, or null
+  // otherwise (e.g. for parallel tasks).
+  virtual const scoped_refptr<SequencedTaskRunner>&
+  GetContinuationTaskRunner() = 0;
 };
 
 // Register a TaskExecutor with the //base/task/post_task.h API in the current

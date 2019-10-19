@@ -177,7 +177,7 @@ PageIndicatorView::PageIndicatorView(UnifiedSystemTrayController* controller,
 
   AddChildView(buttons_container_);
 
-  TotalPagesChanged();
+  TotalPagesChanged(0, model_->total_pages());
 
   DCHECK(model_);
   model_->AddObserver(this);
@@ -214,7 +214,8 @@ void PageIndicatorView::SetExpandedAmount(double expanded_amount) {
   layer()->SetOpacity(std::max(0., 6 * expanded_amount_ - 5.));
 }
 
-void PageIndicatorView::TotalPagesChanged() {
+void PageIndicatorView::TotalPagesChanged(int previous_page_count,
+                                          int new_page_count) {
   DCHECK(model_);
 
   buttons_container_->RemoveAllChildViews(true);

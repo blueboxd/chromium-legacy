@@ -119,7 +119,6 @@ void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
       items_builder_->AddLine(*line, offset);
       // TODO(kojii): We probably don't need to AddChild this line, but there
       // maybe OOF objects. Investigate how to handle them.
-      return;
     }
   }
   AddChild(fragment, offset, inline_container);
@@ -228,8 +227,10 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     }
   }
 
-  if (!has_floating_descendants_ && items_builder_)
-    has_floating_descendants_ = items_builder_->HasFloatingDescendants();
+  if (!has_floating_descendants_for_paint_ && items_builder_) {
+    has_floating_descendants_for_paint_ =
+        items_builder_->HasFloatingDescendantsForPaint();
+  }
 
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       NGPhysicalBoxFragment::Create(this, block_or_line_writing_mode);

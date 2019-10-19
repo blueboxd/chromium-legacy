@@ -64,3 +64,11 @@ imageset("infobar_settings_icon") {
     "infobar_settings_icon.imageset/infobar_settings_icon@3x.png",
   ]
 }
+
+imageset("infobar_save_card_icon") {
+  sources = [
+    "infobar_save_card_icon.imageset/Contents.json",
+    "infobar_save_card_icon.imageset/infobar_save_card_icon@2x.png",
+    "infobar_save_card_icon.imageset/infobar_save_card_icon@3x.png",
+  ]
+}

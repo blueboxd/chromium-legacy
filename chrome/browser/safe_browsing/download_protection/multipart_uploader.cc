@@ -63,7 +63,9 @@ MultipartUploadRequest::~MultipartUploadRequest() {}
 void MultipartUploadRequest::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  SendRequest();
+  // TODO(crbug.com/1015974): Re-enable this.
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback_), /*success=*/false, ""));
 }
 
 std::string MultipartUploadRequest::GenerateRequestBody(

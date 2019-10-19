@@ -82,7 +82,7 @@ void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
 
 SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {}
 
-void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
+bool SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
                                  float device_scale_factor,
                                  const gfx::ColorSpace& color_space,
                                  bool has_alpha,
@@ -93,8 +93,8 @@ void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
       gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
   if (!gl_surface_->Resize(size, device_scale_factor, surface_color_space,
                            has_alpha)) {
-    LOG(FATAL) << "Failed to resize.";
-    // TODO(penghuang): Handle the failure.
+    DLOG(ERROR) << "Failed to resize.";
+    return false;
   }
   SkSurfaceProps surface_props =
       SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
@@ -112,6 +112,7 @@ void SkiaOutputDeviceGL::Reshape(const gfx::Size& size,
       gr_context_, render_target, origin, color_type,
       color_space.ToSkColorSpace(), &surface_props);
   DCHECK(sk_surface_);
+  return true;
 }
 
 void SkiaOutputDeviceGL::SwapBuffers(

@@ -98,6 +98,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
       const TaskTraits& traits,
       SingleThreadTaskRunnerThreadMode thread_mode) override;
 #endif  // defined(OS_WIN)
+  const scoped_refptr<SequencedTaskRunner>& GetContinuationTaskRunner()
+      override;
   scoped_refptr<UpdateableSequencedTaskRunner>
   CreateUpdateableSequencedTaskRunner(const TaskTraits& traits);
 

@@ -89,16 +89,13 @@ id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
 
 @implementation AutofillAddCreditCardTestCase
 
-- (void)launchAppForTestMethod {
+- (void)setUp {
+  [super setUp];
   [[AppLaunchManager sharedManager]
       ensureAppLaunchedWithFeaturesEnabled:{kSettingsAddPaymentMethod,
                                             kCreditCardScanner}
                                   disabled:{}
                               forceRestart:NO];
-}
-
-- (void)setUp {
-  [super setUp];
   GREYAssertTrue([ChromeEarlGrey isSettingsAddPaymentMethodEnabled],
                  @"SettingsAddPaymentMethod should be enabled");
   GREYAssertTrue([ChromeEarlGrey isCreditCardScannerEnabled],

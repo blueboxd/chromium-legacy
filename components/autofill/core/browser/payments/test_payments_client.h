@@ -56,6 +56,10 @@ class TestPaymentsClient : public payments::PaymentsClient {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrateCardsCallback callback) override;
 
+  // Some metrics are affected by the latency of GetUnmaskDetails, so it is
+  // useful to control whether or not GetUnmaskDetails() is responded to.
+  void ShouldReturnUnmaskDetailsImmediately(bool should_return_unmask_details);
+
   void AllowFidoRegistration(bool offer_fido_opt_in = true);
 
   void AddFidoEligibleCard(std::string server_id,
@@ -92,6 +96,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
  private:
   std::string server_id_;
+  // Some metrics are affected by the latency of GetUnmaskDetails, so it is
+  // useful to control whether or not GetUnmaskDetails() is responded to.
+  bool should_return_unmask_details_ = true;
   AutofillClient::UnmaskDetails unmask_details_;
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   std::vector<AutofillProfile> upload_details_addresses_;

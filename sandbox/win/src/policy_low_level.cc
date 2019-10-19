@@ -113,10 +113,10 @@ bool LowLevelPolicy::Done() {
       svc_opcode_count += op_count;
     }
 
-    current_buffer->opcode_count += svc_opcode_count;
-    size_t policy_byte_count =
+    current_buffer->opcode_count = svc_opcode_count;
+    size_t policy_buffers_occupied =
         (svc_opcode_count * sizeof(PolicyOpcode)) / sizeof(current_buffer[0]);
-    current_buffer = &current_buffer[policy_byte_count + 1];
+    current_buffer = &current_buffer[policy_buffers_occupied + 1];
   }
 
   return true;

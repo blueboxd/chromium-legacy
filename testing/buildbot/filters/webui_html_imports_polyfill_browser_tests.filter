@@ -37,16 +37,6 @@ DownloadsManagerTest.*
 DownloadsToolbarTest.*
 DownloadsUrlTest.*
 
-PDFAnnotationsTest.*
-PDFExtensionClipboardTest.*
-PDFExtensionHitTestTest.*
-PDFExtensionInternalLinkClickTest.*
-PDFExtensionLinkClickTest.*
-PDFExtensionLoadTest.*
-PDFExtensionTest.*
-PDFIsolatedExtensionTest.*
-PDFPluginDisabledTest.*
-
 PrintPreviewAdvancedDialogTest.*
 PrintPreviewAdvancedItemTest.*
 PrintPreviewAppTest.*

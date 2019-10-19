@@ -44,20 +44,18 @@ const int kMinimumPrimaryIconSizeInPx = 144;
 
 // This constant is the smallest possible adaptive launcher icon size for any
 // device density.
-// The adaptive icon size guide states that an adaptive launcher icon should be
-// 108dp.
-// (https://developer.android.com/guide/practices/ui_guidelines/icon_design_adaptive)
-// For a manifest to be valid, we do NOT need an maskable icon to be
-// 108dp for the device's screen density. Instead, we only need the maskable
-// icon be larger than (or equal to) 108dp in the smallest screen density (that
-// is the mdpi screen density). For mdpi devices, 1dp is 1px. Therefore, we have
-// 108px here.
+// The ideal icon size is 83dp (see documentation for
+// R.dimen.webapk_adaptive_icon_size for discussion of maskable icon size). For
+// a manifest to be valid, we do NOT need an maskable icon to be 83dp for the
+// device's screen density. Instead, we only need the maskable icon be larger
+// than (or equal to) 83dp in the smallest screen density (that is the mdpi
+// screen density). For mdpi devices, 1dp is 1px. Therefore, we have 83px here.
 // Requiring the minimum icon size (in pixel) independent of the device's screen
 // density is because we use mipmap-anydpi-v26 to specify adaptive launcher
 // icon, and it will make the icon adaptive as long as there is one usable
 // maskable icon (if that icon is of wrong size, it'll be automatically
 // resized).
-const int kMinimumPrimaryAdaptiveLauncherIconSizeInPx = 108;
+const int kMinimumPrimaryAdaptiveLauncherIconSizeInPx = 83;
 
 #if !defined(OS_ANDROID)
 const int kMinimumBadgeIconSizeInPx = 72;

@@ -85,7 +85,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // TODO(crbug.com/922900): investigate whether we need this getter outside of
   // tests and decide whether this method should be a part of
   // SyncEncryptionHandler interface.
-  const Cryptographer& GetCryptographerForTesting() const;
+  const CryptographerImpl& GetCryptographerForTesting() const;
   sync_pb::NigoriSpecifics::PassphraseType GetPassphraseTypeForTesting() const;
   ModelTypeSet GetEncryptedTypesForTesting() const;
   bool HasPendingKeysForTesting() const;
@@ -105,11 +105,20 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   void UpdateCryptographerFromNonKeystoreNigori(
       const sync_pb::EncryptedData& keybag);
 
-  // Uses the cryptographer to try to decrypt pending keys. If success, the
-  // newly decrypted keys are put in the cryptographer's keybag, pending keys
-  // are cleared and the function returns true. Otherwise, it returns false and
-  // the state remains unchanged. It does not change the default key.
-  bool TryDecryptPendingKeys();
+  // Uses |key_bag| to try to decrypt pending keys as represented in
+  // |state_.pending_keys| (which must be set).
+  //
+  // If decryption is possible, the newly decrypted keys are put in the
+  // |state_.cryptographer|'s keybag and the default key is updated. In that
+  // case pending keys are cleared.
+  //
+  // If |key_bag| is not capable of decrypting pending keys,
+  // |state_.pending_keys| stays set. Such outcome is not itself considered
+  // and error and returns base::nullopt.
+  //
+  // Errors may be returned, in rare cases, for fatal protocol violations.
+  base::Optional<ModelError> TryDecryptPendingKeysWith(
+      const NigoriKeyBag& key_bag);
 
   base::Time GetExplicitPassphraseTime() const;
 

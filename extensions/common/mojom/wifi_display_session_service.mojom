@@ -4,6 +4,9 @@
 
 module extensions.mojom;
 
+import "services/network/public/mojom/ip_address.mojom";
+import "services/network/public/mojom/ip_endpoint.mojom";
+
 struct WiFiDisplayMediaPacket {
   array<uint8> data;
 };
@@ -29,7 +32,8 @@ interface WiFiDisplaySessionService {
 
 interface WiFiDisplaySessionServiceClient {
   // Notification of a successfull connection to a sink.
-  OnConnected(string local_ip_address, string sink_ip_address);
+  OnConnected(network.mojom.IPAddress local_ip_address,
+              network.mojom.IPAddress sink_ip_address);
 
   // Notification of a handled connection request.
   OnConnectRequestHandled(bool success, string error_message);
@@ -54,7 +58,7 @@ interface WiFiDisplaySessionServiceClient {
 // connected sink.
 interface WiFiDisplayMediaService {
   // Sets the destination point for sending media stream.
-  SetDesinationPoint(string ip_address, int32 port) => (bool success);
+  SetDestinationPoint(network.mojom.IPEndPoint ip_end_point) => (bool success);
 
   // Sends media packet to the destination point.
   SendMediaPacket(WiFiDisplayMediaPacket packet);

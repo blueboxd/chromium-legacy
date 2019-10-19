@@ -249,6 +249,11 @@ extern const char kOptionalArticleThumbnailDescription[];
 extern const char kPasswordLeakDetectionName[];
 extern const char kPasswordLeakDetectionDescription[];
 
+// Title and description for the flag that enables Messages UI on
+// SaveCard Infobars.
+extern const char kSaveCardInfobarMessagesUIName[];
+extern const char kSaveCardInfobarMessagesUIDescription[];
+
 // Title and description for the flag to toggle the flag of the search button.
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];
@@ -314,6 +319,11 @@ extern const char kToolbarContainerDescription[];
 // toolbar.
 extern const char kToolbarNewTabButtonName[];
 extern const char kToolbarNewTabButtonDescription[];
+
+// Title and description for the flag to enable the Messages UI for Translate
+// Infobars.
+extern const char kTranslateInfobarMessagesUIName[];
+extern const char kTranslateInfobarMessagesUIDescription[];
 
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];

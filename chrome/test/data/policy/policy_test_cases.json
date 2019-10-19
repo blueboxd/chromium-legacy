@@ -1602,6 +1602,24 @@
     "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
+  "DefaultInsecureContentSetting": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultInsecureContentSetting": 2 },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.insecure_content",
+        "indicator_selector": "[content-setting=mixed-script]",
+        "indicator_tests": [
+          { "policy": { "DefaultInsecureContentSetting": 2 },
+            "value": "block"},
+          { "policy": { "DefaultInsecureContentSetting": 3 },
+            "value": "ask"}
+        ]
+      }
+    ],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
   "DefaultJavaScriptSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultJavaScriptSetting": 2 },
@@ -1941,6 +1959,38 @@
         "indicator_selector": "[content-exception=images]",
         "indicator_tests": [
           { "policy": { "ImagesBlockedForUrls": ["[*.]google.com"] } }
+        ]
+      }
+    ],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
+  "InsecureContentAllowedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "InsecureContentAllowedForUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_insecure_content_allowed_for_urls",
+        "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=mixed-script]').click();",
+        "indicator_selector": "[content-exception=mixed-script]",
+        "indicator_tests": [
+          { "policy": { "InsecureContentAllowedForUrls": ["[*.]google.com"] } }
+        ]
+      }
+    ],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
+  "InsecureContentBlockedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "InsecureContentBlockedForUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_insecure_content_blocked_for_urls",
+        "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=mixed-script]').click();",
+        "indicator_selector": "[content-exception=mixed-script]",
+        "indicator_tests": [
+          { "policy": { "InsecureContentBlockedForUrls": ["[*.]google.com"] } }
         ]
       }
     ],

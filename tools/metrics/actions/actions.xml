@@ -22077,6 +22077,28 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TasksSurface.FakeBox.LongPressed">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user long pressed the fake box on the tasks surface.
+  </description>
+</action>
+
+<action name="TasksSurface.FakeBox.Tapped">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user taps the fake box on the tasks surface.
+  </description>
+</action>
+
+<action name="TasksSurface.FakeBox.VoiceSearch">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    Recorded when the user taps the voice search button in the fake box on the
+    tasks surface.
+  </description>
+</action>
+
 <action name="TerminalSystemAppMenuButtonButton_Clicked">
   <owner>alancutter@chromium.org</owner>
   <owner>calamity@chromium.org</owner>
@@ -23353,6 +23375,7 @@ should be able to be added at any place in this file.
   <suffix name="GlobalMediaControls" label="For GlobalMediaControls feature."/>
   <suffix name="HomePageButton" label="For HomePageButton feature."/>
   <suffix name="HomepageTile" label="For HomepageTile feature."/>
+  <suffix name="IdentityDisc" label="For IdentityDisc feature."/>
   <suffix name="IncognitoWindow" label="For IncognitoWindow feature."/>
   <suffix name="LongPressToolbarTip" label="For LongPressToolbar feature."/>
   <suffix name="MediaDownload" label="For MediaDownload feature."/>

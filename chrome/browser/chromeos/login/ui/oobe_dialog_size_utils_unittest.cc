@@ -76,66 +76,82 @@ class OobeDialogSizeUtilsTest : public testing::Test {
 TEST_F(OobeDialogSizeUtilsTest, Chromebook) {
   gfx::Rect usual_device(1200, 800);
   gfx::Rect dialog;
+  OobeDialogPaddingMode padding;
 
-  CalculateOobeDialogBounds(usual_device, kShelfHeight, &dialog);
+  CalculateOobeDialogBounds(usual_device, kShelfHeight, &dialog, &padding);
   ValidateDialog(SizeWithoutShelf(usual_device), dialog);
+  EXPECT_EQ(padding, OobeDialogPaddingMode::PADDING_WIDE);
 }
 
 // We have plenty of space on the screen, but virtual keyboard takes some space.
 TEST_F(OobeDialogSizeUtilsTest, ChromebookVirtualKeyboard) {
   gfx::Rect usual_device_with_keyboard(1200, 800 - kVirtualKeyboardHeight);
   gfx::Rect dialog;
+  OobeDialogPaddingMode padding;
 
-  CalculateOobeDialogBounds(usual_device_with_keyboard, 0, &dialog);
+  CalculateOobeDialogBounds(usual_device_with_keyboard, 0, &dialog, &padding);
   ValidateDialog(usual_device_with_keyboard, dialog);
+  EXPECT_EQ(padding, OobeDialogPaddingMode::PADDING_NARROW);
 }
 
 // Tablet device can have smaller screen size.
 TEST_F(OobeDialogSizeUtilsTest, TabletHorizontal) {
   gfx::Rect tablet_device(1080, 675);
   gfx::Rect dialog;
+  OobeDialogPaddingMode padding;
 
-  CalculateOobeDialogBounds(tablet_device, kShelfHeight, &dialog);
+  CalculateOobeDialogBounds(tablet_device, kShelfHeight, &dialog, &padding);
   ValidateDialog(SizeWithoutShelf(tablet_device), dialog);
+  EXPECT_EQ(padding, OobeDialogPaddingMode::PADDING_NARROW);
 }
 
-// Tablet device in horizontal mode with virtual keyboard have restricted space.
+// Tablet device in horizontal mode with virtual keyboard have restricted
+// vertical space.
 TEST_F(OobeDialogSizeUtilsTest, TabletHorizontalVirtualKeyboard) {
   gfx::Rect tablet_device(1080, 675 - kVirtualKeyboardHeight);
   gfx::Rect dialog;
+  OobeDialogPaddingMode padding;
 
-  CalculateOobeDialogBounds(tablet_device, 0, &dialog);
+  CalculateOobeDialogBounds(tablet_device, 0, &dialog, &padding);
   ValidateDialog(tablet_device, dialog);
+  EXPECT_EQ(padding, OobeDialogPaddingMode::PADDING_NARROW);
 }
 
-// Tablet device in horizontal mode with docked magnifier have restricted space.
+// Tablet device in horizontal mode with docked magnifier have restricted
+// vertical space.
 TEST_F(OobeDialogSizeUtilsTest, TabletHorizontalDockedMagnifier) {
   gfx::Rect tablet_device(0, 0, 1080, 675 - kDockedMagnifierHeight);
   gfx::Rect dialog;
+  OobeDialogPaddingMode padding;
 
-  CalculateOobeDialogBounds(tablet_device, 0, &dialog);
+  CalculateOobeDialogBounds(tablet_device, 0, &dialog, &padding);
   ValidateDialog(tablet_device, dialog);
+  EXPECT_EQ(padding, OobeDialogPaddingMode::PADDING_NARROW);
 }
 
 // Tablet device in horizontal mode with virtual keyboard and docked
-// magnifier results in very few space.
+// magnifier results in very few vertical space.
 TEST_F(OobeDialogSizeUtilsTest, TabletHorizontalVirtualKeyboardMagnifier) {
   gfx::Rect tablet_device(
       0, 0, 1080, 675 - kVirtualKeyboardHeight - kDockedMagnifierHeight);
 
   gfx::Rect dialog;
+  OobeDialogPaddingMode padding;
 
-  CalculateOobeDialogBounds(tablet_device, 0, &dialog);
+  CalculateOobeDialogBounds(tablet_device, 0, &dialog, &padding);
   ValidateDialog(tablet_device, dialog);
+  EXPECT_EQ(padding, OobeDialogPaddingMode::PADDING_NARROW);
 }
 
 // Tablet in vertical mode puts some strain on dialog width.
 TEST_F(OobeDialogSizeUtilsTest, TabletVertical) {
   gfx::Rect tablet_device(675, 1080);
   gfx::Rect dialog;
+  OobeDialogPaddingMode padding;
 
-  CalculateOobeDialogBounds(tablet_device, kShelfHeight, &dialog);
+  CalculateOobeDialogBounds(tablet_device, kShelfHeight, &dialog, &padding);
   ValidateDialog(SizeWithoutShelf(tablet_device), dialog);
+  EXPECT_EQ(padding, OobeDialogPaddingMode::PADDING_NARROW);
 }
 
 }  // namespace chromeos

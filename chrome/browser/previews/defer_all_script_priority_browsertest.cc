@@ -36,6 +36,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace {
 
@@ -80,6 +81,7 @@ class DeferAllScriptPriorityBrowserTest
       scoped_feature_list_.InitWithFeatures(
           {previews::features::kPreviews,
            previews::features::kDeferAllScriptPreviews,
+           blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
            optimization_guide::features::kOptimizationHints,
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
@@ -87,6 +89,7 @@ class DeferAllScriptPriorityBrowserTest
     } else {
       scoped_feature_list_.InitWithFeatures(
           {previews::features::kPreviews,
+           blink::features::kLowerJavaScriptPriorityWhenForceDeferred,
            optimization_guide::features::kOptimizationHints,
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},

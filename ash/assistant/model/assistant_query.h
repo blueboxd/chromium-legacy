@@ -31,7 +31,9 @@ enum class AssistantQuerySource {
   kStylus = 3,
   kSuggestionChip = 4,
   kVoiceInput = 5,
-  kMaxValue = kVoiceInput
+  kProactiveSuggestions = 6,
+  kLibAssistantInitiated = 7,
+  kMaxValue = kLibAssistantInitiated
 };
 
 // AssistantQuery --------------------------------------------------------------
@@ -87,9 +89,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNullQuery
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantTextQuery
     : public AssistantQuery {
  public:
-  AssistantTextQuery(
-      const std::string& text = std::string(),
-      AssistantQuerySource source = AssistantQuerySource::kUnspecified)
+  AssistantTextQuery(const std::string& text, AssistantQuerySource source)
       : AssistantQuery(AssistantQueryType::kText, source), text_(text) {}
 
   ~AssistantTextQuery() override = default;

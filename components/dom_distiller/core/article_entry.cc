@@ -8,24 +8,18 @@
 
 namespace dom_distiller {
 
-bool IsEntryPageValid(const ArticleEntryPage& page) {
-  return page.has_url();
-}
+ArticleEntry::ArticleEntry() = default;
+ArticleEntry::ArticleEntry(const ArticleEntry&) = default;
+ArticleEntry::~ArticleEntry() = default;
 
 bool IsEntryValid(const ArticleEntry& entry) {
-  if (!entry.has_entry_id())
+  if (entry.entry_id.empty())
     return false;
-  for (int i = 0; i < entry.pages_size(); ++i) {
-    if (!IsEntryPageValid(entry.pages(i)))
+  for (const GURL& page : entry.pages) {
+    if (!page.is_valid())
       return false;
   }
   return true;
-}
-
-bool AreEntriesEqual(const ArticleEntry& left, const ArticleEntry& right) {
-  DCHECK(IsEntryValid(left));
-  DCHECK(IsEntryValid(right));
-  return left.SerializeAsString() == right.SerializeAsString();
 }
 
 }  // namespace dom_distiller

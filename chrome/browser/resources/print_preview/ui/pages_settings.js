@@ -247,6 +247,11 @@ Polymer({
         }
       }
     }
+
+    // Page numbers should be sorted to match the order of the pages in the
+    // rendered PDF.
+    pages.sort((left, right) => left - right);
+
     this.errorState_ = PagesInputErrorState.NO_ERROR;
     this.pagesToPrint_ = pages;
   },

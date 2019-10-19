@@ -821,18 +821,28 @@ RenderFrameHost* ChildFrameAt(RenderFrameHost* frame, size_t index);
 bool ExecuteWebUIResourceTest(WebContents* web_contents,
                               const std::vector<int>& js_resource_ids);
 
-// Returns the serialized cookie string for the given url.
-std::string GetCookies(BrowserContext* browser_context, const GURL& url);
+// Returns the serialized cookie string for the given url. Uses a strictly
+// same-site SameSiteCookieContext by default, which gets cookies regardless of
+// their SameSite attribute.
+std::string GetCookies(
+    BrowserContext* browser_context,
+    const GURL& url,
+    net::CookieOptions::SameSiteCookieContext context =
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
 
 // Returns the canonical cookies for the given url.
 std::vector<net::CanonicalCookie> GetCanonicalCookies(
     BrowserContext* browser_context,
     const GURL& url);
 
-// Sets a cookie for the given url. Returns true on success.
+// Sets a cookie for the given url. Uses a strictly same-site
+// SameSiteCookieContext by default, which gets cookies regardless of their
+// SameSite attribute. Returns true on success.
 bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
-               const std::string& value);
+               const std::string& value,
+               net::CookieOptions::SameSiteCookieContext context =
+                   net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
 
 // Fetch the histograms data from other processes. This should be called after
 // the test code has been executed but before performing assertions.

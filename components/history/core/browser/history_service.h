@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -87,6 +88,8 @@ class WebHistoryService;
 // as information about downloads.
 class HistoryService : public KeyedService {
  public:
+  static const base::Feature kHistoryServiceUsesTaskScheduler;
+
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
   // null during testing, while |visit_delegate| may be null if the embedder use

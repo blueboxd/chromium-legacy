@@ -74,6 +74,7 @@ source_set("infobars_ui") {
     "resources:infobar_passwords_icon",
     "resources:infobar_popup_blocker",
     "resources:infobar_reveal_password_icon",
+    "resources:infobar_save_card_icon",
     "resources:infobar_settings_icon",
     "resources:infobar_warning",
     "//base",

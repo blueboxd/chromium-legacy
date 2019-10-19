@@ -57,4 +57,8 @@ void SystemColorsChanged() {
   LayoutTheme::GetTheme().PlatformColorsDidChange();
 }
 
+void ColorSchemeChanged() {
+  LayoutTheme::GetTheme().ColorSchemeDidChange();
+}
+
 }  // namespace blink

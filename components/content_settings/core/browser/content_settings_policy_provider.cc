@@ -44,6 +44,10 @@ const PrefsForManagedContentSettingsMapEntry
          CONTENT_SETTING_ALLOW},
         {prefs::kManagedImagesBlockedForUrls, CONTENT_SETTINGS_TYPE_IMAGES,
          CONTENT_SETTING_BLOCK},
+        {prefs::kManagedInsecureContentAllowedForUrls,
+         CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, CONTENT_SETTING_ALLOW},
+        {prefs::kManagedInsecureContentBlockedForUrls,
+         CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, CONTENT_SETTING_BLOCK},
         {prefs::kManagedJavaScriptAllowedForUrls,
          CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_ALLOW},
         {prefs::kManagedJavaScriptBlockedForUrls,
@@ -92,6 +96,8 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultMediaStreamSetting},
         {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
          prefs::kManagedDefaultMediaStreamSetting},
+        {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+         prefs::kManagedDefaultInsecureContentSetting},
         {CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
          prefs::kManagedDefaultNotificationsSetting},
         {CONTENT_SETTINGS_TYPE_PLUGINS, prefs::kManagedDefaultPluginsSetting},
@@ -112,6 +118,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kManagedCookiesSessionOnlyForUrls);
   registry->RegisterListPref(prefs::kManagedImagesAllowedForUrls);
   registry->RegisterListPref(prefs::kManagedImagesBlockedForUrls);
+  registry->RegisterListPref(prefs::kManagedInsecureContentAllowedForUrls);
+  registry->RegisterListPref(prefs::kManagedInsecureContentBlockedForUrls);
   registry->RegisterListPref(prefs::kManagedJavaScriptAllowedForUrls);
   registry->RegisterListPref(prefs::kManagedJavaScriptBlockedForUrls);
   registry->RegisterListPref(prefs::kManagedNotificationsAllowedForUrls);
@@ -134,6 +142,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kManagedDefaultGeolocationSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultImagesSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultInsecureContentSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultJavaScriptSetting,
                                 CONTENT_SETTING_DEFAULT);
@@ -168,6 +178,10 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
       prefs::kManagedCookiesSessionOnlyForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedImagesAllowedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedImagesBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedInsecureContentAllowedForUrls,
+                             callback);
+  pref_change_registrar_.Add(prefs::kManagedInsecureContentBlockedForUrls,
+                             callback);
   pref_change_registrar_.Add(prefs::kManagedJavaScriptAllowedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedJavaScriptBlockedForUrls, callback);
   pref_change_registrar_.Add(
@@ -194,6 +208,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(
       prefs::kManagedDefaultGeolocationSetting, callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultImagesSetting, callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultInsecureContentSetting,
+                             callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultJavaScriptSetting, callback);
   pref_change_registrar_.Add(
       prefs::kManagedDefaultNotificationsSetting, callback);
@@ -470,6 +486,8 @@ void PolicyProvider::OnPreferenceChanged(const std::string& name) {
       name == prefs::kManagedCookiesSessionOnlyForUrls ||
       name == prefs::kManagedImagesAllowedForUrls ||
       name == prefs::kManagedImagesBlockedForUrls ||
+      name == prefs::kManagedInsecureContentAllowedForUrls ||
+      name == prefs::kManagedInsecureContentBlockedForUrls ||
       name == prefs::kManagedJavaScriptAllowedForUrls ||
       name == prefs::kManagedJavaScriptBlockedForUrls ||
       name == prefs::kManagedNotificationsAllowedForUrls ||

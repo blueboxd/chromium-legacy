@@ -666,6 +666,14 @@ var policyTests = [
         chrome.test.succeed();
       }));
   },
+  function refreshEnterprisePolicies() {
+    chrome.autotestPrivate.refreshEnterprisePolicies(
+      chrome.test.callbackPass(function() {
+        chrome.test.succeed();
+      })
+    );
+  },
+
 ];
 
 var arcPerformanceTracingTests = [

@@ -12,6 +12,7 @@
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/constants.h"
+#include "chromeos/services/assistant/cros_platform_api.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
@@ -126,6 +127,8 @@ void AssistantSettingsManagerImpl::StartSpeakerIdEnrollment(
   DCHECK(HasStarted(assistant_manager_service_));
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
+  assistant_manager_service_->platform_api()->SetMicState(true);
+
   if (!assistant_manager_service_->assistant_manager_internal())
     return;
 
@@ -152,6 +155,8 @@ void AssistantSettingsManagerImpl::StopSpeakerIdEnrollment(
     StopSpeakerIdEnrollmentCallback callback) {
   DCHECK(HasStarted(assistant_manager_service_));
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
+
+  assistant_manager_service_->platform_api()->SetMicState(false);
 
   if (!assistant_manager_service_->assistant_manager_internal()) {
     std::move(callback).Run();

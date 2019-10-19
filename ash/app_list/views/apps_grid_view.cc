@@ -2674,7 +2674,26 @@ void AppsGridView::OnAppListItemHighlight(size_t index, bool highlight) {
   }
 }
 
-void AppsGridView::TotalPagesChanged() {}
+void AppsGridView::TotalPagesChanged(int previous_page_count,
+                                     int new_page_count) {
+  // Don't record from folder.
+  if (folder_delegate_)
+    return;
+
+  // Initial setup for the AppList starts with -1 pages. Ignore the page count
+  // change resulting from the initialization of the view.
+  if (previous_page_count == -1)
+    return;
+
+  if (previous_page_count < new_page_count) {
+    AppListPageCreationType type = AppListPageCreationType::kSyncOrInstall;
+    if (handling_keyboard_move_)
+      type = AppListPageCreationType::kMovingAppWithKeyboard;
+    else if (dragging())
+      type = AppListPageCreationType::kDraggingApp;
+    UMA_HISTOGRAM_ENUMERATION("Apps.AppList.AppsGridAddPage", type);
+  }
+}
 
 void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
   items_container_->layer()->SetTransform(gfx::Transform());

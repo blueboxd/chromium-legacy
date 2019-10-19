@@ -126,18 +126,15 @@ void ShelfController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // These prefs are public for ChromeLauncherController's OnIsSyncingChanged.
   // See the pref names definitions for explanations of the synced, local, and
   // per-display behaviors.
-  registry->RegisterStringPref(
-      prefs::kShelfAutoHideBehavior, kShelfAutoHideBehaviorNever,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterStringPref(prefs::kShelfAutoHideBehavior,
+                               kShelfAutoHideBehaviorNever,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kShelfAutoHideBehaviorLocal,
-                               std::string(), PrefRegistry::PUBLIC);
-  registry->RegisterStringPref(
-      prefs::kShelfAlignment, kShelfAlignmentBottom,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  registry->RegisterStringPref(prefs::kShelfAlignmentLocal, std::string(),
-                               PrefRegistry::PUBLIC);
-  registry->RegisterDictionaryPref(prefs::kShelfPreferences,
-                                   PrefRegistry::PUBLIC);
+                               std::string());
+  registry->RegisterStringPref(prefs::kShelfAlignment, kShelfAlignmentBottom,
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kShelfAlignmentLocal, std::string());
+  registry->RegisterDictionaryPref(prefs::kShelfPreferences);
 }
 
 void ShelfController::OnActiveUserPrefServiceChanged(

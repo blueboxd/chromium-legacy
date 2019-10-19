@@ -23,13 +23,12 @@
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
-
-using namespace css_test_helpers;
 
 TEST(ComputedStyleTest, ShapeOutsideBoxEqual) {
   ShapeValue* shape1 = ShapeValue::CreateBoxShapeValue(CSSBoxType::kContent);
@@ -451,7 +450,8 @@ TEST(ComputedStyleTest, AnimationFlags) {
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
   auto* document = MakeGarbageCollected<Document>();
-  RegisterProperty(*document, "--x", "<length>", "0px", false);
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
@@ -480,14 +480,15 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
 
 TEST(ComputedStyleTest, CustomPropertiesEqual_Data) {
   auto* document = MakeGarbageCollected<Document>();
-  RegisterProperty(*document, "--x", "<length>", "0px", false);
+  css_test_helpers::RegisterProperty(*document, "--x", "<length>", "0px",
+                                     false);
 
   scoped_refptr<ComputedStyle> style1 = ComputedStyle::Create();
   scoped_refptr<ComputedStyle> style2 = ComputedStyle::Create();
 
-  auto value1 = CreateVariableData("foo");
-  auto value2 = CreateVariableData("bar");
-  auto value3 = CreateVariableData("foo");
+  auto value1 = css_test_helpers::CreateVariableData("foo");
+  auto value2 = css_test_helpers::CreateVariableData("bar");
+  auto value3 = css_test_helpers::CreateVariableData("foo");
 
   Vector<AtomicString> properties;
   properties.push_back("--x");
@@ -512,8 +513,9 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
       std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
 
-  dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
+                                              PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);
@@ -549,8 +551,9 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
       CSSPropertyID::kColor, "-internal-light-dark-color(black, white)",
       ua_context);
 
-  dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
+  ColorSchemeHelper color_scheme_helper;
+  color_scheme_helper.SetPreferredColorScheme(dummy_page_holder_->GetDocument(),
+                                              PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
                            initial, initial);

@@ -10,6 +10,10 @@ if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
+declare_args() {
+  subpixel_font_rendering_disabled = false
+}
+
 jumbo_component("service") {
   output_name = "gpu_ipc_service"
   sources = [
@@ -51,6 +55,9 @@ jumbo_component("service") {
   defines = [ "GPU_IPC_SERVICE_IMPLEMENTATION" ]
   if (is_chromecast) {
     defines += [ "IS_CHROMECAST" ]
+  }
+  if (subpixel_font_rendering_disabled) {
+    defines += [ "SUBPIXEL_FONT_RENDERING_DISABLED" ]
   }
   public_deps = [
     "//base",

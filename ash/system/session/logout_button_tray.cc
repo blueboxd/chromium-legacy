@@ -56,10 +56,8 @@ LogoutButtonTray::~LogoutButtonTray() {
 
 // static
 void LogoutButtonTray::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000,
-                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray, false);
+  registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000);
 }
 
 void LogoutButtonTray::UpdateAfterShelfAlignmentChange() {

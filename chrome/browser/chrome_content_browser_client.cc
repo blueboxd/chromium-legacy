@@ -3071,6 +3071,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
                                               "holdback_web", false);
 
+  auto* native_theme = GetWebTheme();
   auto* contents = content::WebContents::FromRenderViewHost(rvh);
   if (contents) {
 #if defined(OS_ANDROID)
@@ -3085,9 +3086,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->picture_in_picture_enabled =
           delegate->IsPictureInPictureEnabled();
 
-      web_prefs->preferred_color_scheme =
-          delegate->IsNightModeEnabled() ? blink::PreferredColorScheme::kDark
-                                         : blink::PreferredColorScheme::kLight;
+      // Notify NativeTheme of changes to night mode.
+      native_theme->set_preferred_color_scheme(
+          delegate->IsNightModeEnabled()
+              ? ui::NativeTheme::PreferredColorScheme::kDark
+              : ui::NativeTheme::PreferredColorScheme::kLight);
     }
 #endif  // defined(OS_ANDROID)
 
@@ -3241,7 +3244,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
-  auto* native_theme = GetWebTheme();
 #if !defined(OS_ANDROID)
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     // If autoplay is allowed by policy then force the no user gesture required
@@ -3259,38 +3261,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             ? content::AutoplayPolicy::kDocumentUserActivationRequired
             : content::AutoplayPolicy::kNoUserGestureRequired;
   }
-
-  switch (native_theme->GetPreferredColorScheme()) {
-    case ui::NativeTheme::PreferredColorScheme::kDark:
-      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
-      break;
-    case ui::NativeTheme::PreferredColorScheme::kLight:
-      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
-      break;
-    case ui::NativeTheme::PreferredColorScheme::kNoPreference:
-      web_prefs->preferred_color_scheme =
-          blink::PreferredColorScheme::kNoPreference;
-  }
 #endif  // !defined(OS_ANDROID)
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
-
-  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
-  // disabled; some of the UI is not yet correctly themed. Note: the WebUI CSS
-  // explicitly uses light (instead of not dark), which is why we don't reset
-  // back to no-preference. https://crbug.com/965811
-  if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-    const GURL url = rvh->GetSiteInstance()->GetSiteURL();
-    bool force_light = url.SchemeIs(content::kChromeUIScheme);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    if (!force_light) {
-      force_light = url.SchemeIs(extensions::kExtensionScheme) &&
-                    url.host_piece() == extension_misc::kPdfExtensionId;
-    }
-#endif
-    if (force_light)
-      web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
-  }
 
   // Apply native CaptionStyle parameters.
   base::Optional<ui::CaptionStyle> style;
@@ -4892,7 +4865,7 @@ bool ChromeContentBrowserClient::HandleWebUIReverse(
          url->host() == chrome::kChromeUISettingsHost;
 }
 
-const ui::NativeTheme* ChromeContentBrowserClient::GetWebTheme() const {
+ui::NativeTheme* ChromeContentBrowserClient::GetWebTheme() const {
   return ui::NativeTheme::GetInstanceForWeb();
 }
 

@@ -30,7 +30,7 @@ public class TemplateUrlServiceFactory {
     }
 
     @VisibleForTesting
-    static void setInstanceForTesting(TemplateUrlService service) {
+    public static void setInstanceForTesting(TemplateUrlService service) {
         sTemplateUrlService = service;
     }
 

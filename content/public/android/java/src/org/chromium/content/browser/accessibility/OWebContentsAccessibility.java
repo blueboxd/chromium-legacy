@@ -42,10 +42,10 @@ public class OWebContentsAccessibility extends LollipopWebContentsAccessibility 
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
             boolean isRoot, boolean isEditableText, String role, String roleDescription,
             String hint, int selectionStartIndex, int selectionEndIndex, boolean hasImage,
-            boolean contentInvalid) {
+            boolean contentInvalid, String targetUrl) {
         super.setAccessibilityNodeInfoKitKatAttributes(node, isRoot, isEditableText, role,
                 roleDescription, hint, selectionStartIndex, selectionEndIndex, hasImage,
-                contentInvalid);
+                contentInvalid, targetUrl);
         node.setHintText(hint);
     }
 

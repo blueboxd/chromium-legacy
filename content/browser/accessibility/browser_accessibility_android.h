@@ -151,6 +151,9 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
                          std::vector<int32_t>* word_ends,
                          int offset);
 
+  // Return the target of a link or the source of an image.
+  base::string16 GetTargetUrl() const;
+
   // Used to keep track of when to stop reporting content_invalid.
   // Timer only applies if node has focus.
   void ResetContentInvalidTimer();

@@ -136,6 +136,20 @@ constexpr char kSideVolumeButtonLocationFilePath[] =
 constexpr base::TimeDelta kVolumeAdjustTimeout =
     base::TimeDelta::FromSeconds(2);
 
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+// Records the result of triggering the rotation accelerator.
+enum class RotationAcceleratorAction {
+  kCancelledDialog = 0,
+  kAcceptedDialog = 1,
+  kAlreadyAcceptedDialog = 2,
+  kMaxValue = kAlreadyAcceptedDialog,
+};
+
+void RecordRotationAcceleratorAction(const RotationAcceleratorAction& action) {
+  UMA_HISTOGRAM_ENUMERATION("Ash.Accelerators.Rotation.Usage", action);
+}
+
 void RecordTabletVolumeAdjustTypeHistogram(TabletModeVolumeAdjustType type) {
   UMA_HISTOGRAM_ENUMERATION(kTabletCountOfVolumeAdjustType, type);
 }
@@ -529,6 +543,18 @@ void RotateScreen() {
       display::Display::RotationSource::USER);
 }
 
+void OnRotationDialogAccepted() {
+  RecordRotationAcceleratorAction(RotationAcceleratorAction::kAcceptedDialog);
+  RotateScreen();
+  Shell::Get()
+      ->accessibility_controller()
+      ->SetDisplayRotationAcceleratorDialogBeenAccepted();
+}
+
+void OnRotationDialogCancelled() {
+  RecordRotationAcceleratorAction(RotationAcceleratorAction::kCancelledDialog);
+}
+
 // Rotates the screen.
 void HandleRotateScreen() {
   if (Shell::Get()->display_manager()->IsInUnifiedMode())
@@ -543,13 +569,11 @@ void HandleRotateScreen() {
   if (!dialog_ever_accepted) {
     Shell::Get()->accelerator_controller()->MaybeShowConfirmationDialog(
         IDS_ASH_ROTATE_SCREEN_TITLE, IDS_ASH_ROTATE_SCREEN_BODY,
-        base::BindOnce([]() {
-          RotateScreen();
-          Shell::Get()
-              ->accessibility_controller()
-              ->SetDisplayRotationAcceleratorDialogBeenAccepted();
-        }));
+        base::BindOnce(&OnRotationDialogAccepted),
+        base::BindOnce(&OnRotationDialogCancelled));
   } else {
+    RecordRotationAcceleratorAction(
+        RotationAcceleratorAction::kAlreadyAcceptedDialog);
     RotateScreen();
   }
 }
@@ -1074,7 +1098,8 @@ void HandleToggleDockedMagnifier() {
               ->accessibility_controller()
               ->SetDockedMagnifierAcceleratorDialogAccepted();
           SetDockedMagnifierEnabled(true);
-        }));
+        }),
+        base::DoNothing());
   } else {
     SetDockedMagnifierEnabled(!current_enabled);
   }
@@ -1139,7 +1164,8 @@ void HandleToggleHighContrast() {
               ->accessibility_controller()
               ->SetHighContrastAcceleratorDialogAccepted();
           SetHighContrastEnabled(true);
-        }));
+        }),
+        base::DoNothing());
   } else {
     SetHighContrastEnabled(!current_enabled);
   }
@@ -1163,7 +1189,8 @@ void HandleToggleFullscreenMagnifier() {
               ->accessibility_controller()
               ->SetScreenMagnifierAcceleratorDialogAccepted();
           SetFullscreenMagnifierEnabled(true);
-        }));
+        }),
+        base::DoNothing());
   } else {
     SetFullscreenMagnifierEnabled(!current_enabled);
   }
@@ -2137,13 +2164,15 @@ AcceleratorControllerImpl::MaybeDeprecatedAcceleratorPressed(
 void AcceleratorControllerImpl::MaybeShowConfirmationDialog(
     int window_title_text_id,
     int dialog_text_id,
-    base::OnceClosure on_accept_callback) {
+    base::OnceClosure on_accept_callback,
+    base::OnceClosure on_cancel_callback) {
   // An active dialog exists already.
   if (confirmation_dialog_)
     return;
 
   auto* dialog = new AcceleratorConfirmationDialog(
-      window_title_text_id, dialog_text_id, std::move(on_accept_callback));
+      window_title_text_id, dialog_text_id, std::move(on_accept_callback),
+      std::move(on_cancel_callback));
   confirmation_dialog_ = dialog->GetWeakPtr();
 }
 

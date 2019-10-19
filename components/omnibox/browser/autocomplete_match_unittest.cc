@@ -137,6 +137,11 @@ TEST(AutocompleteMatchTest, InlineTailPrefix) {
        // should prepend ellipsis, and offset remainder
        {{0, ACMatchClassification::NONE}, {2, ACMatchClassification::MATCH}},
        {{0, ACMatchClassification::NONE}, {6, ACMatchClassification::MATCH}}},
+      {"90123456",
+       "... 90123456",
+       // should prepend ellipsis
+       {},
+       {{0, ACMatchClassification::NONE}}},
   };
   for (const auto& test_case : cases) {
     AutocompleteMatch match;

@@ -130,12 +130,29 @@ class PLATFORM_EXPORT SchedulerHelper
  private:
   friend class SchedulerHelperTest;
 
+  // Like SimpleTaskExecutor except it knows how to get the current task runner
+  // from the SequenceManager to implement GetContinuationTaskRunner.
+  class BlinkTaskExecutor : public base::SimpleTaskExecutor {
+   public:
+    BlinkTaskExecutor(
+        scoped_refptr<base::SingleThreadTaskRunner> default_task_queue,
+        base::sequence_manager::SequenceManager* sequence_manager);
+
+    ~BlinkTaskExecutor() override;
+
+    // base::TaskExecutor implementation.
+    const scoped_refptr<base::SequencedTaskRunner>& GetContinuationTaskRunner()
+        override;
+
+   private:
+    base::sequence_manager::SequenceManager* sequence_manager_;  // NOT OWNED
+  };
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   Observer* observer_;  // NOT OWNED
 
   UkmTaskSampler ukm_task_sampler_;
-  base::Optional<base::SimpleTaskExecutor> simple_task_executor_;
+  base::Optional<BlinkTaskExecutor> blink_task_executor_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelper);
 };

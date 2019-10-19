@@ -2220,14 +2220,26 @@ class ComputedStyle : public ComputedStyleBase,
     return TableLayout() == ETableLayout::kFixed && !LogicalWidth().IsAuto();
   }
 
-  // Returns true if the computed style contains a 3D transform operation.
-  // This can be individual operations from the transform property, or
-  // individual values from translate/rotate/scale properties. Note that
-  // perspective is omitted, since it does not by itself specify a 3D transform.
+  // Returns true if the computed style contains a 3D transform operation. This
+  // can be individual operations from the transform property, or individual
+  // values from translate/rotate/scale properties. Perspective is omitted since
+  // it does not, by itself, specify a 3D transform.
   bool Has3DTransformOperation() const {
     return Transform().HasNonPerspective3DOperation() ||
            (Translate() && Translate()->Z() != 0) ||
            (Rotate() && (Rotate()->X() != 0 || Rotate()->Y() != 0)) ||
+           (Scale() && Scale()->Z() != 1);
+  }
+  // Returns true if the computed style contains a 3D transform operation with a
+  // non-trivial component in the Z axis. This can be individual operations from
+  // the transform property, or individual values from translate/rotate/scale
+  // properties. Perspective is omitted since it does not, by itself, specify a
+  // 3D transform.
+  bool HasNonTrivial3DTransformOperation() const {
+    return Transform().HasNonTrivial3DComponent() ||
+           (Translate() && Translate()->Z() != 0) ||
+           (Rotate() && Rotate()->Angle() != 0 &&
+            (Rotate()->X() != 0 || Rotate()->Y() != 0)) ||
            (Scale() && Scale()->Z() != 1);
   }
   bool HasTransform() const {

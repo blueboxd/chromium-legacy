@@ -87,6 +87,9 @@ collect_idl_files("web_idl_in_core") {
   # generator to the new one.
   inputs += [ "${bindings_scripts_dir}/web_idl/migration_adapter.idl" ]
 
+  # Additional IDL files to test and demonstrate the new IDL compiler.
+  inputs += [ "${bindings_scripts_dir}/web_idl/idl_compiler_test.idl" ]
+
   component = "core"
   output = "${bindings_output_dir}/web_idl_in_core.pickle"
   deps = [

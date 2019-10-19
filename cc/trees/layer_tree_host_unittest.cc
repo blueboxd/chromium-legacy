@@ -1139,7 +1139,6 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
       case 3:
         EXPECT_FALSE(GetRenderSurface(root_impl)->AncestorPropertyChanged());
         EXPECT_TRUE(GetRenderSurface(child_impl)->AncestorPropertyChanged());
-        EndTest();
         PostSetNeedsCommitToMainThread();
         break;
       case 4:
@@ -1158,8 +1157,7 @@ class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
   scoped_refptr<Layer> grand_child_;
 };
 
-// TODO(crbug.com/1014263): Disable because this test is flaky.
-// SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
 
 class LayerTreeHostTestLayerListSurfaceDamage : public LayerTreeHostTest {
  protected:

@@ -72,7 +72,7 @@ class SkiaOutputDevice {
   virtual ~SkiaOutputDevice();
 
   // Changes the size of draw surface and invalidates it's contents.
-  virtual void Reshape(const gfx::Size& size,
+  virtual bool Reshape(const gfx::Size& size,
                        float device_scale_factor,
                        const gfx::ColorSpace& color_space,
                        bool has_alpha,

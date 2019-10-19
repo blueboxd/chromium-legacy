@@ -42,7 +42,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
-#import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
+#import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
@@ -144,7 +144,7 @@
 // Coordinator for the translate infobar's language selection and translate
 // option popup menus.
 @property(nonatomic, strong)
-    TranslateInfobarCoordinator* translateInfobarCoordinator;
+    LegacyTranslateInfobarCoordinator* translateInfobarCoordinator;
 
 @end
 
@@ -300,7 +300,7 @@
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
-  self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
+  self.translateInfobarCoordinator = [[LegacyTranslateInfobarCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
                     webStateList:self.tabModel.webStateList

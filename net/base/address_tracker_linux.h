@@ -13,6 +13,8 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
+#include <string>
 #include <unordered_set>
 
 #include "base/callback.h"
@@ -120,7 +122,7 @@ class NET_EXPORT_PRIVATE AddressTrackerLinux {
   // to true if |online_links_| changed with regards to a tunnel interface while
   // reading the message from |buffer|.
   void HandleMessage(const char* buffer,
-                     size_t length,
+                     int length,
                      bool* address_changed,
                      bool* link_changed,
                      bool* tunnel_changed);

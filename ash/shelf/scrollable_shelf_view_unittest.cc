@@ -16,6 +16,31 @@
 
 namespace ash {
 
+class PageFlipWaiter : public ScrollableShelfView::TestObserver {
+ public:
+  explicit PageFlipWaiter(ScrollableShelfView* scrollable_shelf_view)
+      : scrollable_shelf_view_(scrollable_shelf_view) {
+    scrollable_shelf_view->SetTestObserver(this);
+  }
+  ~PageFlipWaiter() override {
+    scrollable_shelf_view_->SetTestObserver(nullptr);
+  }
+
+  void Wait() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+ private:
+  void OnPageFlipTimerFired() override {
+    DCHECK(run_loop_.get());
+    run_loop_->Quit();
+  }
+
+  ScrollableShelfView* scrollable_shelf_view_ = nullptr;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
 class TestShelfItemDelegate : public ShelfItemDelegate {
  public:
   explicit TestShelfItemDelegate(const ShelfID& shelf_id)
@@ -343,6 +368,47 @@ TEST_F(ScrollableShelfViewTest, ShowTooltipForArrowButtons) {
       left_arrow->GetBoundsInScreen().CenterPoint());
   tooltip_manager->ShowTooltip(left_arrow);
   EXPECT_TRUE(tooltip_manager->IsVisible());
+}
+
+// Verifies that dragging an app icon to a new shelf page works well.
+TEST_F(ScrollableShelfViewTest, DragIconToNewPage) {
+  scrollable_shelf_view_->set_page_flip_time_threshold(
+      base::TimeDelta::FromMilliseconds(10));
+
+  AddAppShortcutsUntilOverflow();
+  GetEventGenerator()->GestureTapAt(
+      scrollable_shelf_view_->right_arrow()->GetBoundsInScreen().CenterPoint());
+  AddAppShortcutsUntilRightArrowIsShown();
+  ASSERT_EQ(ScrollableShelfView::kShowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  views::ViewModel* view_model = shelf_view_->view_model();
+  views::View* dragged_view =
+      view_model->view_at(scrollable_shelf_view_->last_tappable_app_index());
+  const gfx::Point drag_start_point =
+      dragged_view->GetBoundsInScreen().CenterPoint();
+  const gfx::Point drag_end_point =
+      scrollable_shelf_view_->left_arrow()->GetBoundsInScreen().CenterPoint();
+
+  ASSERT_NE(0, view_model->GetIndexOfView(dragged_view));
+
+  // Drag |dragged_view| from |drag_start_point| to |drag_end_point|. Wait
+  // for enough time before releasing the mouse button.
+  GetEventGenerator()->MoveMouseTo(drag_start_point);
+  GetEventGenerator()->PressLeftButton();
+  GetEventGenerator()->MoveMouseTo(drag_end_point);
+  {
+    PageFlipWaiter waiter(scrollable_shelf_view_);
+    waiter.Wait();
+  }
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // Verifies that:
+  // (1) Scrollable shelf view has the expected layout strategy.
+  // (2) The dragged view has the correct view index.
+  EXPECT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  EXPECT_EQ(0, view_model->GetIndexOfView(dragged_view));
 }
 
 }  // namespace ash

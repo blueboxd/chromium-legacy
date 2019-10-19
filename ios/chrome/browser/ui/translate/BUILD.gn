@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("translate") {
+source_set("legacy_translate") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "translate_infobar_coordinator.h",
-    "translate_infobar_coordinator.mm",
-    "translate_infobar_mediator.h",
-    "translate_infobar_mediator.mm",
+    "legacy_translate_infobar_coordinator.h",
+    "legacy_translate_infobar_coordinator.mm",
+    "legacy_translate_infobar_mediator.h",
+    "legacy_translate_infobar_mediator.mm",
   ]
   deps = [
     ":translate_ui",
@@ -77,7 +77,7 @@ source_set("unit_tests") {
     "translate_infobar_mediator_unittest.mm",
   ]
   deps = [
-    ":translate",
+    ":legacy_translate",
     "//components/language/ios/browser",
     "//components/translate/core/browser:test_support",
     "//ios/chrome/browser/browser_state:test_support",

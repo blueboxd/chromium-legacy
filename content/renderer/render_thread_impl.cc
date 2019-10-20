@@ -753,8 +753,6 @@ void RenderThreadImpl::Init() {
   browser_plugin_manager_.reset(new BrowserPluginManager());
   AddObserver(browser_plugin_manager_.get());
 
-  AddObserver(PeerConnectionTracker::GetInstance());
-
   unfreezable_message_filter_ = new UnfreezableMessageFilter(this);
   AddFilter(unfreezable_message_filter_.get());
 
@@ -767,6 +765,13 @@ void RenderThreadImpl::Init() {
   registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
+  registry->AddInterface(
+      // Unretained here is safe, since PeerConnectionTracker instance
+      // is a leaky singleton.
+      base::BindRepeating(
+          &PeerConnectionTracker::Bind,
+          base::Unretained(PeerConnectionTracker::GetInstance())),
+      base::ThreadTaskRunnerHandle::Get());
 
   if (base::FeatureList::IsEnabled(
           blink::features::kOffMainThreadServiceWorkerStartup)) {

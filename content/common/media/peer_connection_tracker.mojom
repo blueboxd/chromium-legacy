@@ -4,6 +4,8 @@
 
 module content.mojom;
 
+import "mojo/public/mojom/base/values.mojom";
+
 struct PeerConnectionInfo {
   // ID of the peer connection. Unique only within the renderer process.
   int32 lid;
@@ -17,6 +19,25 @@ struct PeerConnectionInfo {
   // The URL of the blink::WebLocalFrame within which this peer connection
   // lives. Used for debugging purposes (displayed by WebRTC-Internals).
   string url;
+};
+
+// This interface collects data about each peer connection and sends it to the
+// browser process.
+interface PeerConnectionManager {
+    // Called when the browser process reports a suspend event from the OS.
+    OnSuspend();
+
+    // Enable WebRtc event log output.
+    StartEventLog(int32 peer_connection_local_id, int32 output_period_ms);
+
+    // Disable WebRtc event log output.
+    StopEventLog(int32 peer_connection_local_id);
+
+    // Requests standard PeerConnection stats for webrtc-internals.
+    GetStandardStats();
+
+    // Requests legacy PeerConnection stats for webrtc-internals.
+    GetLegacyStats();
 };
 
 // This interface allows forwarding PeerConnection events to WebRTCInternals in
@@ -59,4 +80,14 @@ interface PeerConnectionTrackerHost {
 
   // Logs WebRtc log for the connection id.
   WebRtcEventLogWrite(int32 lid, string output);
+
+  // Adds standard PeerConnection stats for webrtc-internals.
+  // |lid| is the renderer local id,
+  // |value| is the list of stats reports.
+  AddStandardStats(int32 lid, mojo_base.mojom.ListValue value);
+
+  // Adds legacy PeerConnection stats for webrtc-internals.
+  // |lid| is the renderer local id,
+  // |value| is the list of stats reports.
+  AddLegacyStats(int32 lid, mojo_base.mojom.ListValue value);
 };

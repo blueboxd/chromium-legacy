@@ -32,7 +32,7 @@ class TestSubresourceLoadingPageLoadMetricsObserver
  public:
   void CallOnOriginLastVisitResult(
       history::HistoryLastVisitToHostResult result) {
-    OnOriginLastVisitResult(result);
+    OnOriginLastVisitResult(base::Time::Now(), result);
   }
 };
 
@@ -350,6 +350,8 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_None) {
   tester()->NavigateToUntrackedUrl();
 
   tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 0);
+  tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", 0);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.DaysSinceLastVisitToOrigin", 0);
@@ -361,6 +363,8 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Fail) {
       {false /* success */, base::Time()});
   tester()->NavigateToUntrackedUrl();
 
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 1);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", 0);
   tester()->histogram_tester().ExpectTotalCount(
@@ -374,6 +378,8 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
       {true /* success */, base::Time()});
   tester()->NavigateToUntrackedUrl();
 
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", false, 1);
   tester()->histogram_tester().ExpectTotalCount(
@@ -387,6 +393,8 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, LastVisitToHost_Today) {
 
   tester()->NavigateToUntrackedUrl();
 
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
   tester()->histogram_tester().ExpectUniqueSample(
@@ -401,6 +409,8 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest,
 
   tester()->NavigateToUntrackedUrl();
 
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.HistoryQueryTime", 1);
   tester()->histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.SubresourceLoading.HasPreviousVisitToOrigin", true, 1);
   tester()->histogram_tester().ExpectUniqueSample(
@@ -414,6 +424,8 @@ TEST_F(SubresourceLoadingPageLoadMetricsObserverTest, HadCookies_None) {
 
   tester()->NavigateToUntrackedUrl();
 
+  tester()->histogram_tester().ExpectTotalCount(
+      "PageLoad.Clients.SubresourceLoading.CookiesQueryTime", 0);
   tester()->histogram_tester().ExpectTotalCount(
       "PageLoad.Clients.SubresourceLoading.MainFrameHadCookies", 0);
 }

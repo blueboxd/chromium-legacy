@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_SUBRESOURCE_LOADING_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -33,7 +34,8 @@ class SubresourceLoadingPageLoadMetricsObserver
  protected:
   // Used as a callback for history service query results. Protected for
   // testing.
-  void OnOriginLastVisitResult(history::HistoryLastVisitToHostResult result);
+  void OnOriginLastVisitResult(base::Time query_start_time,
+                               history::HistoryLastVisitToHostResult result);
 
  private:
   void RecordMetrics();
@@ -46,7 +48,8 @@ class SubresourceLoadingPageLoadMetricsObserver
                             const GURL& url);
 
   // Used as a callback for the cookie manager query.
-  void OnCookieResult(const net::CookieStatusList& cookies,
+  void OnCookieResult(base::Time query_start_time,
+                      const net::CookieStatusList& cookies,
                       const net::CookieStatusList& excluded_cookies);
 
   // page_load_metrics::PageLoadMetricsObserver:
@@ -74,6 +77,13 @@ class SubresourceLoadingPageLoadMetricsObserver
 
   size_t loaded_css_js_from_cache_before_fcp_ = 0;
   size_t loaded_css_js_from_network_before_fcp_ = 0;
+
+  // These vectors hold the durations that queries to the cookie manager and
+  // history service took, respectively. Since we only want to record these when
+  // we also record the query results, the query times are stashed here until
+  // |RecordMetrics()| is called.
+  std::vector<base::TimeDelta> cookie_query_times_;
+  std::vector<base::TimeDelta> history_query_times_;
 
   // The minimum number of days since the last visit, as reported by
   // HistoryService, to any origin in the redirect chain. Set to -1 if there is

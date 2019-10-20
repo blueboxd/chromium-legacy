@@ -180,7 +180,6 @@ source_set("common") {
     "mac/font_loader.mm",
     "media/cdm_info.cc",
     "media/media_player_delegate_messages.h",
-    "media/peer_connection_tracker_messages.h",
     "navigation_gesture.h",
     "navigation_params.cc",
     "navigation_params.h",

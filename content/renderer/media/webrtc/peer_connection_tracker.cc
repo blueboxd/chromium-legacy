@@ -14,14 +14,12 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -463,8 +461,11 @@ class InternalLegacyStatsObserver : public webrtc::StatsObserver {
  public:
   InternalLegacyStatsObserver(
       int lid,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread)
-      : lid_(lid), main_thread_(std::move(main_thread)) {}
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      base::OnceCallback<void(int, base::Value)> completion_callback)
+      : lid_(lid),
+        main_thread_(std::move(main_thread)),
+        completion_callback_(std::move(completion_callback)) {}
 
   void OnComplete(const StatsReports& reports) override {
     std::unique_ptr<base::ListValue> list(new base::ListValue());
@@ -479,7 +480,8 @@ class InternalLegacyStatsObserver : public webrtc::StatsObserver {
       main_thread_->PostTask(
           FROM_HERE,
           base::BindOnce(&InternalLegacyStatsObserver::OnCompleteImpl,
-                         std::move(list), lid_));
+                         std::move(list), lid_,
+                         std::move(completion_callback_)));
     }
   }
 
@@ -494,14 +496,17 @@ class InternalLegacyStatsObserver : public webrtc::StatsObserver {
  private:
   // Static since |this| will most likely have been deleted by the time we
   // get here.
-  static void OnCompleteImpl(std::unique_ptr<base::ListValue> list, int lid) {
+  static void OnCompleteImpl(
+      std::unique_ptr<base::ListValue> list,
+      int lid,
+      base::OnceCallback<void(int, base::Value)> completion_callback) {
     DCHECK(!list->empty());
-    RenderThreadImpl::current()->Send(
-        new PeerConnectionTrackerHost_AddLegacyStats(lid, *list.get()));
+    std::move(completion_callback).Run(lid, std::move(*list.get()));
   }
 
   const int lid_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  base::OnceCallback<void(int, base::Value)> completion_callback_;
 };
 
 // chrome://webrtc-internals displays stats and stats graphs. The call path
@@ -513,8 +518,11 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
  public:
   InternalStandardStatsObserver(
       int lid,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread)
-      : lid_(lid), main_thread_(std::move(main_thread)) {}
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      base::OnceCallback<void(int, base::Value)> completion_callback)
+      : lid_(lid),
+        main_thread_(std::move(main_thread)),
+        completion_callback_(std::move(completion_callback)) {}
 
   void OnStatsDelivered(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override {
@@ -534,8 +542,7 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
   void OnStatsDeliveredOnMainThread(
       rtc::scoped_refptr<const webrtc::RTCStatsReport> report) {
     auto list = ReportToList(report);
-    RenderThreadImpl::current()->Send(
-        new PeerConnectionTrackerHost_AddStandardStats(lid_, *list.get()));
+    std::move(completion_callback_).Run(lid_, std::move(*list.get()));
   }
 
   std::unique_ptr<base::ListValue> ReportToList(
@@ -602,6 +609,7 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
 
   const int lid_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  base::OnceCallback<void(int, base::Value)> completion_callback_;
 };
 
 struct PeerConnectionTrackerLazyInstanceTraits
@@ -625,67 +633,25 @@ PeerConnectionTracker* PeerConnectionTracker::GetInstance() {
 PeerConnectionTracker::PeerConnectionTracker(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : next_local_id_(1),
-      send_target_for_test_(nullptr),
-      main_thread_task_runner_(std::move(main_thread_task_runner)) {}
+      main_thread_task_runner_(std::move(main_thread_task_runner)) {
+  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      peer_connection_tracker_host_.BindNewPipeAndPassReceiver());
+}
 
 PeerConnectionTracker::PeerConnectionTracker(
-    mojom::PeerConnectionTrackerHostAssociatedPtr host,
+    mojo::Remote<mojom::PeerConnectionTrackerHost> host,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : next_local_id_(1),
-      send_target_for_test_(nullptr),
-      peer_connection_tracker_host_ptr_(std::move(host)),
+      peer_connection_tracker_host_(std::move(host)),
       main_thread_task_runner_(std::move(main_thread_task_runner)) {}
 
 PeerConnectionTracker::~PeerConnectionTracker() {
 }
 
-bool PeerConnectionTracker::OnControlMessageReceived(
-    const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PeerConnectionTracker, message)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_GetStandardStats,
-                        OnGetStandardStats)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_GetLegacyStats, OnGetLegacyStats)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_OnSuspend, OnSuspend)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLog, OnStartEventLog)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StopEventLog, OnStopEventLog)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void PeerConnectionTracker::OnGetStandardStats() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-
-  const std::string empty_track_id;
-  for (const auto& pair : peer_connection_local_id_map_) {
-    scoped_refptr<InternalStandardStatsObserver> observer(
-        new rtc::RefCountedObject<InternalStandardStatsObserver>(
-            pair.second, main_thread_task_runner_));
-    pair.first->GetStandardStatsForTracker(observer);
-  }
-}
-
-void PeerConnectionTracker::OnGetLegacyStats() {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-
-  const std::string empty_track_id;
-  for (const auto& pair : peer_connection_local_id_map_) {
-    rtc::scoped_refptr<InternalLegacyStatsObserver> observer(
-        new rtc::RefCountedObject<InternalLegacyStatsObserver>(
-            pair.second, main_thread_task_runner_));
-
-    pair.first->GetStats(
-        observer, webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
-        nullptr);
-  }
-}
-
-RenderThread* PeerConnectionTracker::SendTarget() {
-  if (send_target_for_test_) {
-    return send_target_for_test_;
-  }
-  return RenderThreadImpl::current();
+void PeerConnectionTracker::Bind(
+    mojo::PendingReceiver<mojom::PeerConnectionManager> receiver) {
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
 }
 
 void PeerConnectionTracker::OnSuspend() {
@@ -696,8 +662,8 @@ void PeerConnectionTracker::OnSuspend() {
   }
 }
 
-void PeerConnectionTracker::OnStartEventLog(int peer_connection_local_id,
-                                            int output_period_ms) {
+void PeerConnectionTracker::StartEventLog(int peer_connection_local_id,
+                                          int output_period_ms) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   for (auto& it : peer_connection_local_id_map_) {
     if (it.second == peer_connection_local_id) {
@@ -707,13 +673,41 @@ void PeerConnectionTracker::OnStartEventLog(int peer_connection_local_id,
   }
 }
 
-void PeerConnectionTracker::OnStopEventLog(int peer_connection_local_id) {
+void PeerConnectionTracker::StopEventLog(int peer_connection_local_id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   for (auto& it : peer_connection_local_id_map_) {
     if (it.second == peer_connection_local_id) {
       it.first->StopEventLog();
       return;
     }
+  }
+}
+
+void PeerConnectionTracker::GetStandardStats() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+
+  for (const auto& pair : peer_connection_local_id_map_) {
+    scoped_refptr<InternalStandardStatsObserver> observer(
+        new rtc::RefCountedObject<InternalStandardStatsObserver>(
+            pair.second, main_thread_task_runner_,
+            base::BindOnce(&PeerConnectionTracker::AddStandardStats,
+                           AsWeakPtr())));
+    pair.first->GetStandardStatsForTracker(observer);
+  }
+}
+
+void PeerConnectionTracker::GetLegacyStats() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+
+  for (const auto& pair : peer_connection_local_id_map_) {
+    rtc::scoped_refptr<InternalLegacyStatsObserver> observer(
+        new rtc::RefCountedObject<InternalLegacyStatsObserver>(
+            pair.second, main_thread_task_runner_,
+            base::BindOnce(&PeerConnectionTracker::AddLegacyStats,
+                           AsWeakPtr())));
+    pair.first->GetStats(
+        observer, webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
+        nullptr);
   }
 }
 
@@ -738,7 +732,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
     info->url = "test:testing";
 
   int32_t lid = info->lid;
-  GetPeerConnectionTrackerHost()->AddPeerConnection(std::move(info));
+  peer_connection_tracker_host_->AddPeerConnection(std::move(info));
 
   peer_connection_local_id_map_.insert(std::make_pair(pc_handler, lid));
 }
@@ -756,7 +750,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
     return;
   }
 
-  GetPeerConnectionTrackerHost()->RemovePeerConnection(it->second);
+  peer_connection_tracker_host_->RemovePeerConnection(it->second);
 
   peer_connection_local_id_map_.erase(it);
 }
@@ -1051,8 +1045,8 @@ void PeerConnectionTracker::TrackSessionId(RTCPeerConnectionHandler* pc_handler,
   if (local_id == -1) {
     return;
   }
-  GetPeerConnectionTrackerHost().get()->OnPeerConnectionSessionIdSet(
-      local_id, session_id);
+  peer_connection_tracker_host_->OnPeerConnectionSessionIdSet(local_id,
+                                                              session_id);
 }
 
 void PeerConnectionTracker::TrackOnRenegotiationNeeded(
@@ -1068,7 +1062,7 @@ void PeerConnectionTracker::TrackGetUserMedia(
     const blink::WebUserMediaRequest& user_media_request) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
 
-  GetPeerConnectionTrackerHost()->GetUserMedia(
+  peer_connection_tracker_host_->GetUserMedia(
       user_media_request.GetSecurityOrigin().ToString().Utf8(),
       user_media_request.Audio(), user_media_request.Video(),
       SerializeMediaConstraints(user_media_request.AudioConstraints()),
@@ -1082,7 +1076,7 @@ void PeerConnectionTracker::TrackRtcEventLogWrite(
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  GetPeerConnectionTrackerHost()->WebRtcEventLogWrite(id, output);
+  peer_connection_tracker_host_->WebRtcEventLogWrite(id, output);
 }
 
 int PeerConnectionTracker::GetNextLocalID() {
@@ -1107,21 +1101,16 @@ void PeerConnectionTracker::SendPeerConnectionUpdate(
     const std::string& callback_type,
     const std::string& value) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  GetPeerConnectionTrackerHost().get()->UpdatePeerConnection(
-      local_id, callback_type, value);
+  peer_connection_tracker_host_->UpdatePeerConnection(local_id, callback_type,
+                                                      value);
 }
 
-void PeerConnectionTracker::OverrideSendTargetForTesting(RenderThread* target) {
-  send_target_for_test_ = target;
+void PeerConnectionTracker::AddStandardStats(int lid, base::Value value) {
+  peer_connection_tracker_host_->AddStandardStats(lid, std::move(value));
 }
 
-const mojom::PeerConnectionTrackerHostAssociatedPtr&
-PeerConnectionTracker::GetPeerConnectionTrackerHost() {
-  if (!peer_connection_tracker_host_ptr_) {
-    RenderThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
-        &peer_connection_tracker_host_ptr_);
-  }
-  return peer_connection_tracker_host_ptr_;
+void PeerConnectionTracker::AddLegacyStats(int lid, base::Value value) {
+  peer_connection_tracker_host_->AddLegacyStats(lid, std::move(value));
 }
 
 }  // namespace content

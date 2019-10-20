@@ -41,6 +41,7 @@
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
+#include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
@@ -567,6 +568,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   size_t keep_alive_ref_count() const { return keep_alive_ref_count_; }
 
+  PeerConnectionTrackerHost* GetPeerConnectionTrackerHost();
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;
@@ -740,6 +743,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateMediaStreamTrackMetricsHost(
       mojo::PendingReceiver<blink::mojom::MediaStreamTrackMetricsHost>
           receiver);
+
+  void BindPeerConnectionTrackerHost(
+      mojo::PendingReceiver<mojom::PeerConnectionTrackerHost> receiver);
 
 #if BUILDFLAG(ENABLE_MDNS)
   void CreateMdnsResponder(
@@ -976,9 +982,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Forwards messages between WebRTCInternals in the browser process
   // and PeerConnectionTracker in the renderer process.
-  // It holds a raw pointer to webrtc_eventlog_host_, and therefore should be
-  // defined below it so it is destructed first.
-  scoped_refptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
+  std::unique_ptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
 
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks keep_alive_start_time_;

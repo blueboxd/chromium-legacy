@@ -92,7 +92,7 @@ SubresourceLoadingPageLoadMetricsObserver::OnCommit(
         navigation_start_ /* end_time */,
         base::BindOnce(
             &SubresourceLoadingPageLoadMetricsObserver::OnOriginLastVisitResult,
-            weak_factory_.GetWeakPtr()),
+            weak_factory_.GetWeakPtr(), base::Time::Now()),
         &task_tracker_);
   }
 
@@ -100,7 +100,10 @@ SubresourceLoadingPageLoadMetricsObserver::OnCommit(
 }
 
 void SubresourceLoadingPageLoadMetricsObserver::OnOriginLastVisitResult(
+    base::Time query_start_time,
     history::HistoryLastVisitToHostResult result) {
+  history_query_times_.push_back(base::Time::Now() - query_start_time);
+
   if (!result.success)
     return;
 
@@ -129,12 +132,14 @@ void SubresourceLoadingPageLoadMetricsObserver::CheckForCookiesOnURL(
   partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       url, net::CookieOptions::MakeAllInclusive(),
       base::BindOnce(&SubresourceLoadingPageLoadMetricsObserver::OnCookieResult,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), base::Time::Now()));
 }
 
 void SubresourceLoadingPageLoadMetricsObserver::OnCookieResult(
+    base::Time query_start_time,
     const net::CookieStatusList& cookies,
     const net::CookieStatusList& excluded_cookies) {
+  cookie_query_times_.push_back(base::Time::Now() - query_start_time);
   mainframe_had_cookies_ =
       mainframe_had_cookies_.value_or(false) || !cookies.empty();
 }
@@ -169,6 +174,17 @@ void SubresourceLoadingPageLoadMetricsObserver::RecordMetrics() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   task_tracker_.TryCancelAll();
+
+  for (base::TimeDelta cookie_query_time : cookie_query_times_) {
+    UMA_HISTOGRAM_TIMES("PageLoad.Clients.SubresourceLoading.CookiesQueryTime",
+                        cookie_query_time);
+  }
+  cookie_query_times_.clear();
+  for (base::TimeDelta history_query_time : history_query_times_) {
+    UMA_HISTOGRAM_TIMES("PageLoad.Clients.SubresourceLoading.HistoryQueryTime",
+                        history_query_time);
+  }
+  history_query_times_.clear();
 
   // TODO(crbug.com/995437): Add UKM for data saver users once all metrics
   // are in place.

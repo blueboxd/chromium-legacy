@@ -32,6 +32,7 @@ const service_manager::Manifest& GetContentRendererManifest() {
                   "content.mojom.ChildProcess",
                   "content.mojom.FrameFactory",
                   "content.mojom.MhtmlFileWriter",
+                  "content.mojom.PeerConnectionManager",
                   "content.mojom.RenderWidgetWindowTreeClientFactory",
                   "content.mojom.ResourceUsageReporter",
                   "IPC.mojom.ChannelBootstrap",

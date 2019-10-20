@@ -7,14 +7,12 @@
 
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/media/peer_connection_tracker.mojom.h"
-#include "content/public/renderer/render_thread_observer.h"
-#include "ipc/ipc_platform_file.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
@@ -36,21 +34,22 @@ class DataChannelInterface;
 
 namespace content {
 class RTCPeerConnectionHandler;
-class RenderThread;
 
 // This class collects data about each peer connection,
 // sends it to the browser process, and handles messages
 // from the browser process.
 class CONTENT_EXPORT PeerConnectionTracker
-    : public RenderThreadObserver,
+    : public mojom::PeerConnectionManager,
       public base::SupportsWeakPtr<PeerConnectionTracker> {
  public:
   static PeerConnectionTracker* GetInstance();
 
+  // TODO(crbug.com/787254): Make these ctors private, and accessible to
+  // tests only.
   explicit PeerConnectionTracker(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   PeerConnectionTracker(
-      mojom::PeerConnectionTrackerHostAssociatedPtr host,
+      mojo::Remote<mojom::PeerConnectionTrackerHost> host,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~PeerConnectionTracker() override;
 
@@ -76,15 +75,12 @@ class CONTENT_EXPORT PeerConnectionTracker
     kSetRemoteDescription,
   };
 
-  // RenderThreadObserver implementation.
-  bool OnControlMessageReceived(const IPC::Message& message) override;
+  void Bind(mojo::PendingReceiver<mojom::PeerConnectionManager> receiver);
 
-  //
   // The following methods send an update to the browser process when a
   // PeerConnection update happens. The caller should call the Track* methods
   // after calling RegisterPeerConnection and before calling
   // UnregisterPeerConnection, otherwise the Track* call has no effect.
-  //
 
   // Sends an update when a PeerConnection has been created in Javascript. This
   // should be called once and only once for each PeerConnection. The
@@ -221,10 +217,10 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Sends a new fragment on an RtcEventLog.
   virtual void TrackRtcEventLogWrite(RTCPeerConnectionHandler* pc_handler,
                                      const std::string& output);
-  // For testing: Override the class that gets posted messages.
-  void OverrideSendTargetForTesting(RenderThread* target);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);
+
   // Assign a local ID to a peer connection so that the browser process can
   // uniquely identify a peer connection in the renderer process.
   // The return value will always be positive.
@@ -240,18 +236,13 @@ class CONTENT_EXPORT PeerConnectionTracker
                         const blink::WebRTCRtpTransceiver& transceiver,
                         size_t transceiver_index);
 
-  // IPC Message handler for getting all stats.
-  void OnGetStandardStats();
-  void OnGetLegacyStats();
-
-  // Called when the browser process reports a suspend event from the OS.
-  void OnSuspend();
-
-  // IPC Message handler for starting event log.
-  void OnStartEventLog(int peer_connection_local_id, int output_period_ms);
-
-  // IPC Message handler for stopping event log.
-  void OnStopEventLog(int peer_connection_local_id);
+  // PeerConnectionTracker implementation.
+  void OnSuspend() override;
+  void StartEventLog(int peer_connection_local_id,
+                     int output_period_ms) override;
+  void StopEventLog(int peer_connection_local_id) override;
+  void GetStandardStats() override;
+  void GetLegacyStats() override;
 
   // Called to deliver an update to the host (PeerConnectionTrackerHost).
   // |local_id| - The id of the registered RTCPeerConnectionHandler.
@@ -268,9 +259,8 @@ class CONTENT_EXPORT PeerConnectionTracker
                                 const std::string& callback_type,
                                 const std::string& value);
 
-  RenderThread* SendTarget();
-  const mojom::PeerConnectionTrackerHostAssociatedPtr&
-  GetPeerConnectionTrackerHost();
+  void AddStandardStats(int lid, base::Value value);
+  void AddLegacyStats(int lid, base::Value value);
 
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
   typedef std::map<RTCPeerConnectionHandler*, int> PeerConnectionLocalIdMap;
@@ -279,9 +269,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   // This keeps track of the next available local ID.
   int next_local_id_;
   THREAD_CHECKER(main_thread_);
-  RenderThread* send_target_for_test_;
-  mojom::PeerConnectionTrackerHostAssociatedPtr
-      peer_connection_tracker_host_ptr_;
+  mojo::Remote<mojom::PeerConnectionTrackerHost> peer_connection_tracker_host_;
+  mojo::Receiver<mojom::PeerConnectionManager> receiver_{this};
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

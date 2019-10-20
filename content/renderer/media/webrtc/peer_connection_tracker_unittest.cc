@@ -6,11 +6,7 @@
 
 #include "base/test/task_environment.h"
 #include "content/common/media/peer_connection_tracker.mojom.h"
-#include "content/common/media/peer_connection_tracker_messages.h"
-#include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
-#include "ipc/ipc_message_macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -57,7 +53,7 @@ const char* kDefaultReceiverString =
 
 class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
  public:
-  MockPeerConnectionTrackerHost() : binding_(this) {}
+  MockPeerConnectionTrackerHost() {}
   MOCK_METHOD3(UpdatePeerConnection,
                void(int, const std::string&, const std::string&));
   MOCK_METHOD1(AddPeerConnection, void(mojom::PeerConnectionInfoPtr));
@@ -70,15 +66,17 @@ class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
                     const std::string&,
                     const std::string&));
   MOCK_METHOD2(WebRtcEventLogWrite, void(int, const std::string&));
-  mojom::PeerConnectionTrackerHostAssociatedPtr CreateInterfacePtrAndBind() {
-    mojom::PeerConnectionTrackerHostAssociatedPtr
-        peer_connection_tracker_host_ptr_;
-    binding_.Bind(mojo::MakeRequestAssociatedWithDedicatedPipe(
-                      &peer_connection_tracker_host_ptr_),
-                  blink::scheduler::GetSingleThreadTaskRunnerForTesting());
-    return peer_connection_tracker_host_ptr_;
+  MOCK_METHOD2(AddStandardStats, void(int, base::Value));
+  MOCK_METHOD2(AddLegacyStats, void(int, base::Value));
+
+  mojo::Remote<mojom::PeerConnectionTrackerHost> CreatePendingRemoteAndBind() {
+    receiver_.reset();
+    return mojo::Remote<mojom::PeerConnectionTrackerHost>(
+        receiver_.BindNewPipeAndPassRemote(
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   }
-  mojo::AssociatedBinding<mojom::PeerConnectionTrackerHost> binding_;
+
+  mojo::Receiver<mojom::PeerConnectionTrackerHost> receiver_{this};
 };
 
 // Creates a transceiver that is expected to be logged as
@@ -140,7 +138,7 @@ class PeerConnectionTrackerTest : public ::testing::Test {
   void CreateTrackerWithMocks() {
     mock_host_.reset(new MockPeerConnectionTrackerHost());
     tracker_.reset(new PeerConnectionTracker(
-        mock_host_->CreateInterfacePtrAndBind(),
+        mock_host_->CreatePendingRemoteAndBind(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
   }
 
@@ -187,8 +185,7 @@ TEST_F(PeerConnectionTrackerTest, OnSuspend) {
   CreateTrackerWithMocks();
   CreateAndRegisterPeerConnectionHandler();
   EXPECT_CALL(*mock_handler_, CloseClientPeerConnection());
-  std::unique_ptr<IPC::Message> message(new PeerConnectionTracker_OnSuspend());
-  tracker_->OnControlMessageReceived(*message.get());
+  tracker_->OnSuspend();
 }
 
 TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {

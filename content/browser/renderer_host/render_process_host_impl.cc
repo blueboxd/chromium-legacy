@@ -142,7 +142,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -1848,8 +1847,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetBrowserContext(), storage_partition_impl_, widget_helper_.get());
   AddFilter(render_frame_message_filter_.get());
 
-  peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
-  AddFilter(peer_connection_tracker_host_.get());
 #if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
@@ -1980,6 +1977,15 @@ void RenderProcessHostImpl::AddCorbExceptionForPlugin(int process_id) {
 void RenderProcessHostImpl::CleanupCorbExceptionForPluginUponDestruction() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cleanup_corb_exception_for_plugin_upon_destruction_ = true;
+}
+
+PeerConnectionTrackerHost*
+RenderProcessHostImpl::GetPeerConnectionTrackerHost() {
+  if (!peer_connection_tracker_host_) {
+    peer_connection_tracker_host_ =
+        std::make_unique<PeerConnectionTrackerHost>(this);
+  }
+  return peer_connection_tracker_host_.get();
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
@@ -2153,6 +2159,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::BindRepeating(&metrics::CreateSingleSampleMetricsProvider));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&RenderProcessHostImpl::BindPeerConnectionTrackerHost,
+                          base::Unretained(this)));
 
   AddUIThreadInterface(
       registry.get(),
@@ -3635,11 +3646,11 @@ RenderProcessHostImpl::StartRtpDump(
 
 void RenderProcessHostImpl::EnableWebRtcEventLogOutput(int lid,
                                                        int output_period_ms) {
-  Send(new PeerConnectionTracker_StartEventLog(lid, output_period_ms));
+  GetPeerConnectionTrackerHost()->StartEventLog(lid, output_period_ms);
 }
 
 void RenderProcessHostImpl::DisableWebRtcEventLogOutput(int lid) {
-  Send(new PeerConnectionTracker_StopEventLog(lid));
+  GetPeerConnectionTrackerHost()->StopEventLog(lid);
 }
 
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
@@ -4697,6 +4708,11 @@ void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
   if (!media_stream_track_metrics_host_)
     media_stream_track_metrics_host_.reset(new MediaStreamTrackMetricsHost());
   media_stream_track_metrics_host_->BindReceiver(std::move(receiver));
+}
+
+void RenderProcessHostImpl::BindPeerConnectionTrackerHost(
+    mojo::PendingReceiver<mojom::PeerConnectionTrackerHost> receiver) {
+  GetPeerConnectionTrackerHost()->BindReceiver(std::move(receiver));
 }
 
 #if BUILDFLAG(ENABLE_MDNS)

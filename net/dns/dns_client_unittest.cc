@@ -8,15 +8,19 @@
 
 #include "base/bind.h"
 #include "base/rand_util.h"
+#include "base/test/task_environment.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/dns/dns_config.h"
+#include "net/dns/dns_test_util.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+
+class ClientSocketFactory;
 
 namespace {
 
@@ -32,6 +36,10 @@ class AlwaysFailSocketFactory : public MockClientSocketFactory {
 
 class DnsClientTest : public TestWithTaskEnvironment {
  protected:
+  DnsClientTest()
+      : TestWithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+
   void SetUp() override {
     client_ = DnsClient::CreateClientForTesting(
         nullptr /* net_log */, &socket_factory_, base::Bind(&base::RandInt));
@@ -58,8 +66,6 @@ class DnsClientTest : public TestWithTaskEnvironment {
 
   std::unique_ptr<DnsClient> client_;
   AlwaysFailSocketFactory socket_factory_;
-
- private:
 };
 
 TEST_F(DnsClientTest, NoConfig) {
@@ -238,6 +244,58 @@ TEST_F(DnsClientTest, OverrideToInvalid) {
   client_->SetConfigOverrides(std::move(overrides));
 
   EXPECT_FALSE(client_->GetEffectiveConfig());
+}
+
+TEST_F(DnsClientTest, DohProbes) {
+  URLRequestContext context;
+  client_->SetRequestContextForProbes(&context);
+
+  client_->SetSystemConfig(ValidConfigWithDoh());
+  auto transaction_factory =
+      std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
+  auto* transaction_factory_ptr = transaction_factory.get();
+  client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
+
+  client_->StartDohProbesForTesting();
+  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
+  FastForwardBy(DnsClient::kInitialDohTimeout);
+  EXPECT_TRUE(transaction_factory_ptr->doh_probes_running());
+}
+
+TEST_F(DnsClientTest, CancelDohProbesBeforeEnabled) {
+  URLRequestContext context;
+  client_->SetRequestContextForProbes(&context);
+
+  client_->SetSystemConfig(ValidConfigWithDoh());
+  auto transaction_factory =
+      std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
+  auto* transaction_factory_ptr = transaction_factory.get();
+  client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
+
+  client_->StartDohProbesForTesting();
+  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
+  client_->CancelProbesForContext(&context);
+
+  FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
+}
+
+TEST_F(DnsClientTest, CancelDohProbesAfterEnabled) {
+  URLRequestContext context;
+  client_->SetRequestContextForProbes(&context);
+
+  client_->SetSystemConfig(ValidConfigWithDoh());
+  auto transaction_factory =
+      std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
+  auto* transaction_factory_ptr = transaction_factory.get();
+  client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
+
+  client_->StartDohProbesForTesting();
+  FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(transaction_factory_ptr->doh_probes_running());
+
+  client_->CancelProbesForContext(&context);
+  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
 }
 
 }  // namespace

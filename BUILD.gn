@@ -387,6 +387,10 @@ group("gn_all") {
     if (enable_chrome_android_internal) {
       deps += [ "//clank" ]
     }
+
+    if (public_android_sdk) {
+      deps += [ "//chrome/android/monochrome:monochrome_apk_checker" ]
+    }
   }
 
   # NOTE: The following should really be 'is_android', but the fuzzing build

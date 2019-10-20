@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -57,13 +56,13 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   enum class Action {
     kUnknown = 0,
     kNone = 1,
-    kPreresolve = 2,
-    kPreconnect = 3,
+    // DEPRECATED: kPreresolve = 2,
+    // DEPRECATED: kPreconnect = 3,
     kPrefetch = 4,
-    kPreconnectOnVisibilityChange = 5,
-    kDeprecatedPreconnectOnAppForeground = 6,  // Deprecated.
-    kPreconnectAfterTimeout = 7,
-    kMaxValue = kPreconnectAfterTimeout,
+    // DEPRECATED: kPreconnectOnVisibilityChange = 5,
+    // DEPRECATED: kPreconnectOnAppForeground = 6,  // Deprecated.
+    // DEPRECATED: kPreconnectAfterTimeout = 7,
+    kMaxValue = kPrefetch,
   };
 
   // Enum describing the accuracy of actions taken by the navigation predictor.
@@ -88,18 +87,15 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
     // Navigation predictor preconnected to an origin, and an anchor element was
     // clicked whose URL had the same origin as the preconnected origin.
-    kPreconnectActionClickToSameOrigin = 4,
+    // DEPRECATED: kPreconnectActionClickToSameOrigin = 4,
 
     // Navigation predictor preconnected to an origin, and an anchor element was
     // clicked whose URL had a different origin than the preconnected origin.
-    kPreconnectActionClickToDifferentOrigin = 5,
-    kMaxValue = kPreconnectActionClickToDifferentOrigin,
+    // DEPRECATED: kPreconnectActionClickToDifferentOrigin = 5,
+    kMaxValue = kPrefetchActionClickToDifferentOrigin,
   };
 
  protected:
-  // Origin that we decided to preconnect to.
-  base::Optional<url::Origin> preconnect_origin_;
-
   // URL that we decided to prefetch.
   base::Optional<GURL> prefetch_url_;
 
@@ -166,11 +162,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores) const;
 
-  base::Optional<url::Origin> GetOriginToPreconnect(
-      const GURL& document_url,
-      const std::vector<std::unique_ptr<NavigationScore>>&
-          sorted_navigation_scores) const;
-
   // Record anchor element metrics on page load.
   void RecordMetricsOnLoad(
       const blink::mojom::AnchorElementMetrics& metric) const;
@@ -186,8 +177,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // content::WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
 
-  // MaybePreconnectNow preconnects to an origin server if it's allowed.
-  void MaybePreconnectNow(Action log_action);
+  // Records metrics on which action the predictor is taking.
+  void RecordAction(Action log_action);
 
   // Sends metrics to the UKM id at |ukm_source_id_|.
   void MaybeSendMetricsToUkm() const;
@@ -271,17 +262,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // they are not comparable.
   const int prefetch_url_score_threshold_;
 
-  // Minimum preconnect score that the origin should have for preconnect. Note
-  // that scores of origins are computed differently from scores of URLs, so
-  // they are not comparable.
-  const int preconnect_origin_score_threshold_;
-
-  // True if |this| is allowed to preconnect to same origin hosts.
-  const bool same_origin_preconnecting_allowed_;
-
-  // True if |this| should use the PrerenderManager to prefetch after
-  // a preconnect.
-  const bool prefetch_after_preconnect_;
+  // True if |this| should use the PrerenderManager to prefetch.
+  const bool prefetch_enabled_;
 
   // True by default, otherwise navigation scores will not be normalized
   // by the sum of metrics weights nor normalized from 0 to 100 across
@@ -301,9 +283,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Current visibility state of the web contents.
   content::Visibility current_visibility_;
-
-  // Used to preconnect regularly.
-  base::OneShotTimer timer_;
 
   // PrerenderHandle returned after completing a prefetch in PrerenderManager.
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;

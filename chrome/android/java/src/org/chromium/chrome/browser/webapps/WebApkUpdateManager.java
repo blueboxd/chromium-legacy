@@ -331,7 +331,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             return WebApkUpdateReason.NAME_DIFFERS;
         } else if (oldInfo.backgroundColor() != fetchedInfo.backgroundColor()) {
             return WebApkUpdateReason.BACKGROUND_COLOR_DIFFERS;
-        } else if (oldInfo.themeColor() != fetchedInfo.themeColor()) {
+        } else if (oldInfo.toolbarColor() != fetchedInfo.toolbarColor()) {
             return WebApkUpdateReason.THEME_COLOR_DIFFERS;
         } else if (oldInfo.orientation() != fetchedInfo.orientation()) {
             return WebApkUpdateReason.ORIENTATION_DIFFERS;
@@ -379,7 +379,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
                 info.manifestStartUrl(), info.scopeUrl(), info.name(), info.shortName(),
                 primaryIconUrl, info.icon().bitmap(), info.isIconAdaptive(), badgeIconUrl,
                 info.badgeIcon().bitmap(), iconUrls, iconHashes, info.displayMode(),
-                info.orientation(), info.themeColor(), info.backgroundColor(),
+                info.orientation(), info.toolbarColor(), info.backgroundColor(),
                 info.shareTarget().getAction(), info.shareTarget().getParamTitle(),
                 info.shareTarget().getParamText(), info.shareTarget().getParamUrl(),
                 info.shareTarget().isShareMethodPost(),

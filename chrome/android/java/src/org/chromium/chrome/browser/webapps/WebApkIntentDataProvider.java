@@ -53,11 +53,13 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
 
     private static final String TAG = "WebApkInfo";
 
+    private int mToolbarColor;
     private WebappExtras mWebappExtras;
     private WebApkExtras mWebApkExtras;
 
     public static WebApkIntentDataProvider createEmpty() {
-        return new WebApkIntentDataProvider(WebappExtras.createEmpty(), WebApkExtras.createEmpty());
+        return new WebApkIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
+                WebappExtras.createEmpty(), WebApkExtras.createEmpty());
     }
 
     /**
@@ -343,7 +345,7 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
         WebappExtras webappExtras =
                 new WebappExtras(WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope,
                         primaryIcon, name, shortName, displayMode, orientation, source,
-                        WebappIntentDataProvider.colorFromLongColor(themeColor),
+                        WebappIntentDataProvider.isLongColorValid(themeColor),
                         WebappIntentDataProvider.colorFromLongColor(backgroundColor),
                         defaultBackgroundColor, false /* isIconGenerated */, isPrimaryIconMaskable,
                         forceNavigation);
@@ -351,10 +353,15 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
                 isSplashIconMaskable, shellApkVersion, manifestUrl, manifestStartUrl, distributor,
                 iconUrlToMurmur2HashMap, shareTarget, isSplashProvidedByWebApk, shareData,
                 webApkVersionCode);
-        return new WebApkIntentDataProvider(webappExtras, webApkExtras);
+        int toolbarColor = webappExtras.hasCustomToolbarColor
+                ? (int) themeColor
+                : WebappIntentDataProvider.getDefaultToolbarColor();
+        return new WebApkIntentDataProvider(toolbarColor, webappExtras, webApkExtras);
     }
 
-    private WebApkIntentDataProvider(WebappExtras webappExtras, WebApkExtras webApkExtras) {
+    private WebApkIntentDataProvider(
+            int toolbarColor, WebappExtras webappExtras, WebApkExtras webApkExtras) {
+        mToolbarColor = toolbarColor;
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
     }
@@ -533,6 +540,11 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
             return new Pair<>(shareTargetActivityName, target);
         }
         return new Pair<>(null, new ShareTarget());
+    }
+
+    @Override
+    public int getToolbarColor() {
+        return mToolbarColor;
     }
 
     @Override

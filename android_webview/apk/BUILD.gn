@@ -10,25 +10,8 @@ generate_jni("apk_jni_headers") {
   ]
 }
 
-# Monochrome uses a different copy of LicenseContentProvider.java.
-# This one is used in Trichrome and SystemWebview.
-android_library("webview_license_provider_java") {
-  java_files =
-      [ "java/src/com/android/webview/chromium/LicenseContentProvider.java" ]
-  deps = [
-    ":apk_java",
-    "//base:base_java",
-    "//components/about_ui/android:aboutui_java",
-  ]
-}
-
-# Contains the native dependencies used by LicenseContentProvider via JNI.
-# This should be included in the shared library of any APK that depends on
-# :webview_license_provider_java.
-group("webview_license_provider") {
-  deps = [
-    "//components/about_ui",
-  ]
+# Empty target to avoid breaking Clank.
+java_group("webview_license_provider_java") {
 }
 
 # Contains classes needed by the webview apk, but not used when loading the apk
@@ -36,6 +19,7 @@ group("webview_license_provider") {
 android_library("apk_java") {
   java_files = [
     "java/src/com/android/webview/chromium/LicenseActivity.java",
+    "java/src/com/android/webview/chromium/LicenseContentProvider.java",
     "java/src/com/android/webview/chromium/WebViewApkApplication.java",
   ]
   deps = [
@@ -43,6 +27,7 @@ android_library("apk_java") {
     "//android_webview:common_commandline_java",
     "//base:base_java",
     "//base:jni_java",
+    "//components/about_ui/android:aboutui_java",
     "//components/embedder_support/android:application_java",
     "//ui/android:ui_java",
   ]
@@ -57,5 +42,8 @@ source_set("apk") {
     ":apk_jni_headers",
     "//android_webview/common",
     "//base",
+
+    # Called via JNI by LicenseContentProvider in :apk_java.
+    "//components/about_ui:about_ui_android",
   ]
 }

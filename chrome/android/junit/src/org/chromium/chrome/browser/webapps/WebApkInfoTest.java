@@ -164,8 +164,8 @@ public class WebApkInfoTest {
         Assert.assertEquals(SHORT_NAME, info.shortName());
         Assert.assertEquals(WebDisplayMode.MINIMAL_UI, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.PORTRAIT, info.orientation());
-        Assert.assertTrue(info.hasValidThemeColor());
-        Assert.assertEquals(1L, info.themeColor());
+        Assert.assertTrue(info.hasValidToolbarColor());
+        Assert.assertEquals(1L, info.toolbarColor());
         Assert.assertTrue(info.hasValidBackgroundColor());
         Assert.assertEquals(2L, info.backgroundColor());
         Assert.assertEquals(WEBAPK_PACKAGE_NAME, info.webApkPackageName());

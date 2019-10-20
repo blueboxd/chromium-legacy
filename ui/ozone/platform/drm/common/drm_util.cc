@@ -15,7 +15,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/util/edid_parser.h"
@@ -30,8 +30,8 @@ static const size_t kDefaultCursorHeight = 64;
 // Used in the GetColorSpaceFromEdid function to collect data on whether the
 // color space extracted from an EDID blob passed the sanity checks.
 void EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("DrmUtil.GetColorSpaceFromEdid.ChecksOutcome",
-                            outcome);
+  base::UmaHistogramEnumeration("DrmUtil.GetColorSpaceFromEdid.ChecksOutcome",
+                                outcome);
 }
 
 bool IsCrtcInUse(
@@ -466,8 +466,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
 
   ScopedDrmPropertyBlobPtr edid_blob(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));
-  UMA_HISTOGRAM_BOOLEAN("DrmUtil.CreateDisplaySnapshot.HasEdidBlob",
-                        !!edid_blob);
+  base::UmaHistogramBoolean("DrmUtil.CreateDisplaySnapshot.HasEdidBlob",
+                            !!edid_blob);
   std::vector<uint8_t> edid;
   if (edid_blob) {
     edid.assign(static_cast<uint8_t*>(edid_blob->data),
@@ -482,7 +482,11 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     has_overscan =
         edid_parser.has_overscan_flag() && edid_parser.overscan_flag();
     display_color_space = GetColorSpaceFromEdid(edid_parser);
+    base::UmaHistogramBoolean("DrmUtil.CreateDisplaySnapshot.IsHDR",
+                              display_color_space.IsHDR());
     bits_per_channel = std::max(edid_parser.bits_per_channel(), 0);
+    base::UmaHistogramCounts100("DrmUtil.CreateDisplaySnapshot.BitsPerChannel",
+                                bits_per_channel);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "
             << info->connector()->connector_id;
@@ -701,9 +705,29 @@ gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser) {
         EdidColorSpaceChecksOutcome::kErrorBadGamma);
     return gfx::ColorSpace();
   }
+  EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome::kSuccess);
+
+  gfx::ColorSpace::TransferID transfer_id =
+      gfx::ColorSpace::TransferID::INVALID;
+  if (base::Contains(edid_parser.supported_color_primary_ids(),
+                     gfx::ColorSpace::PrimaryID::BT2020)) {
+    if (base::Contains(edid_parser.supported_color_transfer_ids(),
+                       gfx::ColorSpace::TransferID::SMPTEST2084)) {
+      transfer_id = gfx::ColorSpace::TransferID::SMPTEST2084;
+    } else if (base::Contains(edid_parser.supported_color_transfer_ids(),
+                              gfx::ColorSpace::TransferID::ARIB_STD_B67)) {
+      transfer_id = gfx::ColorSpace::TransferID::ARIB_STD_B67;
+    }
+  } else if (gamma == 2.2f) {
+    transfer_id = gfx::ColorSpace::TransferID::GAMMA22;
+  } else if (gamma == 2.4f) {
+    transfer_id = gfx::ColorSpace::TransferID::GAMMA24;
+  }
+
+  if (transfer_id != gfx::ColorSpace::TransferID::INVALID)
+    return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer_id);
 
   skcms_TransferFunction transfer = {gamma, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
-  EmitEdidColorSpaceChecksOutcomeUma(EdidColorSpaceChecksOutcome::kSuccess);
   return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer);
 }
 

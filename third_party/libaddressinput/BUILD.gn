@@ -308,3 +308,13 @@ fuzzer_test("libaddressinput_parse_format_rule_fuzzer") {
   ]
   dict = "//third_party/libaddressinput/fuzz/data/fmt.dict"
 }
+
+fuzzer_test("libaddressinput_address_formatter_fuzzer") {
+  sources = [
+    "fuzz/address_formatter_fuzzer.cc",
+  ]
+  deps = [
+    ":libaddressinput",
+    ":util",
+  ]
+}

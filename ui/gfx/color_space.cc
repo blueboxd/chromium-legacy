@@ -93,6 +93,15 @@ ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
   return result;
 }
 
+// static
+ColorSpace ColorSpace::CreateCustom(const skcms_Matrix3x3& to_XYZD50,
+                                    TransferID transfer) {
+  ColorSpace result(ColorSpace::PrimaryID::CUSTOM, transfer,
+                    ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+  result.SetCustomPrimaries(to_XYZD50);
+  return result;
+}
+
 void ColorSpace::SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50) {
   const PrimaryID kIDsToCheck[] = {
       PrimaryID::BT709,

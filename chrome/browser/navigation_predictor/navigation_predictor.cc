@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -16,8 +15,6 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
-#include "chrome/browser/predictors/loading_predictor.h"
-#include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -29,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "net/base/features.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -38,11 +34,6 @@
 #include "url/url_canon.h"
 
 namespace {
-
-// Holds back the actual preconenct, but records histograms and acts normally
-// otherwise.
-const base::Feature kNavigationPredictorPreconnectHoldback{
-    "NavigationPredictorPreconnectHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsMainFrame(content::RenderFrameHost* rfh) {
   // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
@@ -205,16 +196,7 @@ NavigationPredictor::NavigationPredictor(
           blink::features::kNavigationPredictor,
           "prefetch_url_score_threshold",
           0)),
-      preconnect_origin_score_threshold_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kNavigationPredictor,
-          "preconnect_origin_score_threshold",
-          0)),
-      same_origin_preconnecting_allowed_(
-          base::GetFieldTrialParamByFeatureAsBool(
-              blink::features::kNavigationPredictor,
-              "same_origin_preconnecting_allowed",
-              true)),
-      prefetch_after_preconnect_(base::GetFieldTrialParamByFeatureAsBool(
+      prefetch_enabled_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "prefetch_after_preconnect",
           false)),
@@ -225,7 +207,6 @@ NavigationPredictor::NavigationPredictor(
       render_frame_host_(render_frame_host) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK_LE(0, preconnect_origin_score_threshold_);
   DCHECK(render_frame_host_);
 
   if (!IsMainFrame(render_frame_host))
@@ -299,30 +280,11 @@ void NavigationPredictor::RecordActionAccuracyOnClick(
   static constexpr char histogram_name_non_dse[] =
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken";
 
-  if (!prefetch_url_ && !preconnect_origin_) {
+  if (!prefetch_url_) {
     base::UmaHistogramEnumeration(source_is_default_search_engine_page_
                                       ? histogram_name_dse
                                       : histogram_name_non_dse,
                                   ActionAccuracy::kNoActionTakenClickHappened);
-    return;
-  }
-
-  // Exactly one action must have been taken.
-  DCHECK(prefetch_url_.has_value() != preconnect_origin_.has_value());
-
-  if (preconnect_origin_) {
-    if (url::Origin::Create(target_url) == preconnect_origin_) {
-      base::UmaHistogramEnumeration(
-          source_is_default_search_engine_page_ ? histogram_name_dse
-                                                : histogram_name_non_dse,
-          ActionAccuracy::kPreconnectActionClickToSameOrigin);
-      return;
-    }
-
-    base::UmaHistogramEnumeration(
-        source_is_default_search_engine_page_ ? histogram_name_dse
-                                              : histogram_name_non_dse,
-        ActionAccuracy::kPreconnectActionClickToDifferentOrigin);
     return;
   }
 
@@ -368,79 +330,22 @@ void NavigationPredictor::OnVisibilityChanged(content::Visibility visibility) {
       prerender_handle_->OnNavigateAway();
       prerender_handle_.reset();
     }
-
-    // Stop any future preconnects while hidden.
-    timer_.Stop();
     return;
   }
 
   current_visibility_ = visibility;
 
-  // Previously, the visibility was HIDDEN, and now it is VISIBLE implying that
-  // the web contents that was fully hidden is now fully visible.
-  MaybePreconnectNow(Action::kPreconnectOnVisibilityChange);
   if (prefetch_url_.has_value()) {
     MaybePrefetch();
   }
 }
 
-void NavigationPredictor::MaybePreconnectNow(Action log_action) {
-  base::Optional<url::Origin> preconnect_origin = preconnect_origin_;
-
-  if (prefetch_url_ && !preconnect_origin) {
-    // Preconnect to the origin of the prefetch URL.
-    preconnect_origin = url::Origin::Create(prefetch_url_.value());
-  }
-
-  if (!preconnect_origin)
-    return;
-  if (preconnect_origin->scheme() != url::kHttpScheme &&
-      preconnect_origin->scheme() != url::kHttpsScheme) {
-    return;
-  }
-
+void NavigationPredictor::RecordAction(Action log_action) {
   std::string action_histogram_name =
       source_is_default_search_engine_page_
           ? "NavigationPredictor.OnDSE.ActionTaken"
           : "NavigationPredictor.OnNonDSE.ActionTaken";
   base::UmaHistogramEnumeration(action_histogram_name, log_action);
-
-  if (!same_origin_preconnecting_allowed_)
-    return;
-
-  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context_));
-  GURL preconnect_url_serialized(preconnect_origin->Serialize());
-  DCHECK(preconnect_url_serialized.is_valid());
-  if (!base::FeatureList::IsEnabled(kNavigationPredictorPreconnectHoldback)) {
-    loading_predictor->PrepareForPageLoad(
-        preconnect_url_serialized, predictors::HintOrigin::NAVIGATION_PREDICTOR,
-        true);
-  }
-
-  if (current_visibility_ != content::Visibility::VISIBLE)
-    return;
-
-  // The delay beyond the idle socket timeout that net uses when
-  // re-preconnecting. If negative, no retries occur.
-  int retry_delay_ms = base::GetFieldTrialParamByFeatureAsInt(
-      blink::features::kNavigationPredictor, "retry_preconnect_wait_time_ms",
-      50);
-
-  if (retry_delay_ms < 0) {
-    return;
-  }
-
-  // Set/Reset the timer to fire after the preconnect times out. Add an extra
-  // delay to make sure the preconnect has expired if it wasn't used.
-  timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
-          net::features::kNetUnusedIdleSocketTimeout,
-          "unused_idle_socket_timeout_seconds", 60)) +
-          base::TimeDelta::FromMilliseconds(retry_delay_ms),
-      base::BindOnce(&NavigationPredictor::MaybePreconnectNow,
-                     base::Unretained(this), Action::kPreconnectAfterTimeout));
 }
 
 void NavigationPredictor::MaybeSendMetricsToUkm() const {
@@ -972,7 +877,6 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
           ? "NavigationPredictor.OnDSE.ActionTaken"
           : "NavigationPredictor.OnNonDSE.ActionTaken";
 
-  DCHECK(!preconnect_origin_.has_value());
   DCHECK(!prefetch_url_.has_value());
 
   NotifyPredictionUpdated(sorted_navigation_scores);
@@ -981,28 +885,19 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   prefetch_url_ = GetUrlToPrefetch(document_url, sorted_navigation_scores);
   if (prefetch_url_.has_value()) {
     DCHECK_EQ(document_url.host(), prefetch_url_->host());
-    MaybePreconnectNow(Action::kPrefetch);
+    RecordAction(Action::kPrefetch);
     MaybePrefetch();
     return;
   }
 
-  // Compute preconnect origin only if there is no valid prefetch URL.
-  preconnect_origin_ =
-      GetOriginToPreconnect(document_url, sorted_navigation_scores);
-  if (preconnect_origin_.has_value()) {
-    DCHECK_EQ(document_url.host(), preconnect_origin_->host());
-    MaybePreconnectNow(Action::kPreconnect);
-    return;
-  }
-
-  base::UmaHistogramEnumeration(action_histogram_name, Action::kNone);
+  RecordAction(Action::kNone);
 }
 
 void NavigationPredictor::MaybePrefetch() {
   // If prefetches aren't allowed here, this URL has already
   // been prefetched, or the current tab is hidden,
   // we shouldn't prefetch again.
-  if (!prefetch_after_preconnect_ || prefetch_url_prefetched_ ||
+  if (!prefetch_enabled_ || prefetch_url_prefetched_ ||
       current_visibility_ == content::Visibility::HIDDEN) {
     return;
   }
@@ -1071,90 +966,6 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
   return url_to_prefetch;
 }
 
-base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
-    const GURL& document_url,
-    const std::vector<std::unique_ptr<NavigationScore>>&
-        sorted_navigation_scores) const {
-  // On search engine results page, next navigation is likely to be a different
-  // origin. Currently, the preconnect is only allowed for same origins. Hence,
-  // preconnect is currently disabled on search engine results page.
-  if (source_is_default_search_engine_page_)
-    return base::nullopt;
-
-  if (base::GetFieldTrialParamByFeatureAsBool(
-          blink::features::kNavigationPredictor, "preconnect_skip_link_scores",
-          true)) {
-    return url::Origin::Create(document_url);
-  }
-
-  // Compute preconnect score for each origins: Multiple anchor elements on
-  // the webpage may point to the same origin. The preconnect score for an
-  // origin is computed by taking sum of score of all anchor elements that
-  // point to that origin.
-  std::map<url::Origin, double> preconnect_score_by_origin_map;
-  for (const auto& navigation_score : sorted_navigation_scores) {
-    const url::Origin origin = url::Origin::Create(navigation_score->url);
-
-    auto iter = preconnect_score_by_origin_map.find(origin);
-    if (iter == preconnect_score_by_origin_map.end()) {
-      preconnect_score_by_origin_map[origin] = navigation_score->score;
-    } else {
-      double& existing_metric = iter->second;
-      existing_metric += navigation_score->score;
-    }
-  }
-
-  struct ScoreByOrigin {
-    url::Origin origin;
-    double score;
-
-    ScoreByOrigin(const url::Origin& origin, double score)
-        : origin(origin), score(score) {}
-  };
-
-  // |sorted_preconnect_scores| would contain preconnect scores of different
-  // origins sorted in descending order of the preconnect score.
-  std::vector<ScoreByOrigin> sorted_preconnect_scores;
-
-  // First copy all entries from |preconnect_score_by_origin_map| to
-  // |sorted_preconnect_scores|.
-  for (const auto& score_by_origin_map_entry : preconnect_score_by_origin_map) {
-    ScoreByOrigin entry(score_by_origin_map_entry.first,
-                        score_by_origin_map_entry.second);
-    sorted_preconnect_scores.push_back(entry);
-  }
-
-  if (sorted_preconnect_scores.empty())
-    return base::nullopt;
-
-  // Sort scores by the calculated preconnect score in descending order.
-  std::sort(sorted_preconnect_scores.begin(), sorted_preconnect_scores.end(),
-            [](const auto& a, const auto& b) { return a.score > b.score; });
-
-#if DCHECK_IS_ON()
-  // |sum_of_scores| must be close to the total score of 100.
-  double sum_of_scores = 0.0;
-  for (const auto& score_by_origin : sorted_preconnect_scores)
-    sum_of_scores += score_by_origin.score;
-  // Allow an error of 2.0. i.e., |sum_of_scores| is expected to be between 98
-  // and 102.
-  DCHECK_GE(2.0, std::abs(sum_of_scores - 100));
-#endif
-
-  // Connect to the origin with highest score provided the origin is same
-  // as the document origin.
-  if (sorted_preconnect_scores[0].origin != url::Origin::Create(document_url)) {
-    return base::nullopt;
-  }
-
-  // If the prediction score of the highest scoring origin is less than the
-  // threshold, then return.
-  if (sorted_preconnect_scores[0].score < preconnect_origin_score_threshold_) {
-    return base::nullopt;
-  }
-
-  return sorted_preconnect_scores[0].origin;
-}
 
 void NavigationPredictor::RecordMetricsOnLoad(
     const blink::mojom::AnchorElementMetrics& metric) const {

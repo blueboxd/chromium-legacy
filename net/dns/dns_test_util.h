@@ -13,10 +13,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
 
@@ -259,7 +262,47 @@ struct MockDnsClientRule {
 
 typedef std::vector<MockDnsClientRule> MockDnsClientRuleList;
 
-// MockDnsClient provides MockTransactionFactory.
+// A DnsTransactionFactory which creates MockTransaction.
+class MockDnsTransactionFactory : public DnsTransactionFactory {
+ public:
+  explicit MockDnsTransactionFactory(MockDnsClientRuleList rules);
+  ~MockDnsTransactionFactory() override;
+
+  std::unique_ptr<DnsTransaction> CreateTransaction(
+      const std::string& hostname,
+      uint16_t qtype,
+      DnsTransactionFactory::CallbackType callback,
+      const NetLogWithSource&,
+      bool secure,
+      DnsConfig::SecureDnsMode secure_dns_mode,
+      URLRequestContext* url_request_context) override;
+
+  void AddEDNSOption(const OptRecordRdata::Opt& opt) override;
+
+  base::TimeDelta GetDelayUntilNextProbeForTest(
+      unsigned doh_server_index) override;
+
+  void StartDohProbes(URLRequestContext* url_request_context,
+                      bool network_change) override;
+
+  void CancelDohProbes() override;
+
+  DnsConfig::SecureDnsMode GetSecureDnsModeForTest() override;
+
+  void CompleteDelayedTransactions();
+
+  bool doh_probes_running() { return doh_probes_running_; }
+
+ private:
+  class MockTransaction;
+  using DelayedTransactionList = std::vector<base::WeakPtr<MockTransaction>>;
+
+  MockDnsClientRuleList rules_;
+  DelayedTransactionList delayed_transactions_;
+  bool doh_probes_running_ = false;
+};
+
+// MockDnsClient provides MockDnsTransactionFactory.
 class MockDnsClient : public DnsClient {
  public:
   MockDnsClient(DnsConfig config, MockDnsClientRuleList rules);
@@ -285,6 +328,9 @@ class MockDnsClient : public DnsClient {
   base::Optional<DnsConfig> GetSystemConfigForTesting() const override;
   DnsConfigOverrides GetConfigOverridesForTesting() const override;
   void SetProbeSuccessForTest(unsigned index, bool success) override;
+  void SetTransactionFactoryForTesting(
+      std::unique_ptr<DnsTransactionFactory> factory) override;
+  void StartDohProbesForTesting() override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();
@@ -302,8 +348,6 @@ class MockDnsClient : public DnsClient {
   }
 
  private:
-  class MockTransactionFactory;
-
   base::Optional<DnsConfig> BuildEffectiveConfig();
 
   bool insecure_enabled_ = false;
@@ -315,7 +359,7 @@ class MockDnsClient : public DnsClient {
   base::Optional<DnsConfig> config_;
   DnsConfigOverrides overrides_;
   base::Optional<DnsConfig> effective_config_;
-  std::unique_ptr<MockTransactionFactory> factory_;
+  std::unique_ptr<MockDnsTransactionFactory> factory_;
   std::unique_ptr<AddressSorter> address_sorter_;
 };
 

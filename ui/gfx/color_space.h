@@ -151,6 +151,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
              const skcms_TransferFunction& fn,
              MatrixID matrix,
              RangeID full_range);
+
   explicit ColorSpace(const SkColorSpace& sk_color_space);
 
   // Returns true if this is not the default-constructor object.
@@ -167,6 +168,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
   static ColorSpace CreateCustom(const skcms_Matrix3x3& to_XYZD50,
                                  const skcms_TransferFunction& fn);
+  static ColorSpace CreateCustom(const skcms_Matrix3x3& to_XYZD50,
+                                 TransferID transfer);
   static constexpr ColorSpace CreateXYZD50() {
     return ColorSpace(PrimaryID::XYZ_D50, TransferID::LINEAR, MatrixID::RGB,
                       RangeID::FULL);
@@ -220,7 +223,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   size_t GetHash() const;
   std::string ToString() const;
 
-  // Returns true if the decoded values can be outside of the 0.0-1.0 range.
+  // Returns true if the transfer function is an HDR one (SMPTE 2084, HLG, etc).
   bool IsHDR() const;
 
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.

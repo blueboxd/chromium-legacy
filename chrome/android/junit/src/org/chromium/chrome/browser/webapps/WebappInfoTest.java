@@ -142,16 +142,16 @@ public class WebappInfoTest {
     public void testNormalColors() {
         String name = "longName";
         String shortName = "name";
-        long themeColor = Color.argb(0xff, 0, 0xff, 0);
+        long toolbarColor = Color.argb(0xff, 0, 0xff, 0);
         long backgroundColor = Color.argb(0xff, 0, 0, 0xff);
 
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor);
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(themeColor, info.themeColor());
+        Assert.assertEquals(toolbarColor, info.toolbarColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
 
@@ -164,22 +164,22 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
+        Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.toolbarColor());
         Assert.assertEquals(
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
     }
 
     @Test
     public void testColorsIntentCreation() {
-        long themeColor = Color.argb(0xff, 0, 0xff, 0);
+        long toolbarColor = Color.argb(0xff, 0, 0xff, 0);
         long backgroundColor = Color.argb(0xff, 0, 0, 0xff);
 
         Intent intent = createIntentWithUrlAndId();
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor);
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
 
         WebappInfo info = WebappInfo.create(intent);
-        Assert.assertEquals(themeColor, info.themeColor());
+        Assert.assertEquals(toolbarColor, info.toolbarColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
 

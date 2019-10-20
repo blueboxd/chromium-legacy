@@ -64,6 +64,25 @@ const unsigned char kEve[] =
     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfc"
     "\x00\x4c\x51\x31\x32\x33\x50\x31\x4a\x58\x33\x32\x0a\x20\x00\xb6";
 
+// A Samsung monitor that supports HDR metadata.
+constexpr unsigned char kHDR[] =
+    "\x00\xff\xff\xff\xff\xff\xff\x00\x4c\x2d\xf6\x0d\x00\x0e\x00\x01"
+    "\x01\x1b\x01\x03\x80\x5f\x36\x78\x0a\x23\xad\xa4\x54\x4d\x99\x26"
+    "\x0f\x47\x4a\xbd\xef\x80\x71\x4f\x81\xc0\x81\x00\x81\x80\x95\x00"
+    "\xa9\xc0\xb3\x00\x01\x01\x04\x74\x00\x30\xf2\x70\x5a\x80\xb0\x58"
+    "\x8a\x00\x50\x1d\x74\x00\x00\x1e\x02\x3a\x80\x18\x71\x38\x2d\x40"
+    "\x58\x2c\x45\x00\x50\x1d\x74\x00\x00\x1e\x00\x00\x00\xfd\x00\x18"
+    "\x4b\x0f\x51\x1e\x00\x0a\x20\x20\x20\x20\x20\x20\x00\x00\x00\xfc"
+    "\x00\x53\x41\x4d\x53\x55\x4e\x47\x0a\x20\x20\x20\x20\x20\x01\x5a"
+    "\x02\x03\x4f\xf0\x53\x5f\x10\x1f\x04\x13\x05\x14\x20\x21\x22\x5d"
+    "\x5e\x62\x63\x64\x07\x16\x03\x12\x2c\x09\x07\x07\x15\x07\x50\x3d"
+    "\x04\xc0\x57\x07\x00\x83\x01\x00\x00\xe2\x00\x0f\xe3\x05\x83\x01"
+    "\x6e\x03\x0c\x00\x30\x00\xb8\x3c\x20\x00\x80\x01\x02\x03\x04\xe3"
+    "\x06\x0d\x01\xe5\x0e\x60\x61\x65\x66\xe5\x01\x8b\x84\x90\x01\x01"
+    "\x1d\x80\xd0\x72\x1c\x16\x20\x10\x2c\x25\x80\x50\x1d\x74\x00\x00"
+    "\x9e\x66\x21\x56\xaa\x51\x00\x1e\x30\x46\x8f\x33\x00\x50\x1d\x74"
+    "\x00\x00\x1e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xbd";
+
 // Partially valid EDID: gamma information is marked as non existent.
 const unsigned char kEdidWithNoGamma[] =
     "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x22\xF0\x76\x26\x01\x01\x01\x01"
@@ -391,6 +410,30 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
           EdidColorSpaceChecksOutcome::kSuccess),
       3);
 
+  // Test with a display that supports HDR.
+  constexpr SkColorSpacePrimaries expected_hdr_primaries = {.fRX = 0.640625f,
+                                                            .fRY = 0.330078f,
+                                                            .fGX = 0.300781f,
+                                                            .fGY = 0.600586f,
+                                                            .fBX = 0.150391f,
+                                                            .fBY = 0.060547f,
+                                                            .fWX = 0.280273f,
+                                                            .fWY = 0.290039f};
+  skcms_Matrix3x3 expected_hdr_toXYZ50_matrix;
+  expected_hdr_primaries.toXYZD50(&expected_hdr_toXYZ50_matrix);
+  const std::vector<uint8_t> hdr_edid(kHDR, kHDR + base::size(kHDR) - 1);
+  const gfx::ColorSpace expected_hdr_color_space =
+      gfx::ColorSpace::CreateCustom(expected_hdr_toXYZ50_matrix,
+                                    gfx::ColorSpace::TransferID::SMPTEST2084);
+  EXPECT_TRUE(expected_hdr_color_space.IsHDR());
+  EXPECT_EQ(expected_hdr_color_space.ToString(),
+            GetColorSpaceFromEdid(display::EdidParser(hdr_edid)).ToString());
+  histogram_tester.ExpectBucketCount(
+      "DrmUtil.GetColorSpaceFromEdid.ChecksOutcome",
+      static_cast<base::HistogramBase::Sample>(
+          EdidColorSpaceChecksOutcome::kSuccess),
+      4);
+
   // Test with gamma marked as non-existent.
   const std::vector<uint8_t> no_gamma_edid(
       kEdidWithNoGamma, kEdidWithNoGamma + base::size(kEdidWithNoGamma) - 1);
@@ -403,7 +446,7 @@ TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
           EdidColorSpaceChecksOutcome::kErrorBadGamma),
       1);
   histogram_tester.ExpectTotalCount(
-      "DrmUtil.GetColorSpaceFromEdid.ChecksOutcome", 4);
+      "DrmUtil.GetColorSpaceFromEdid.ChecksOutcome", 5);
 }
 
 TEST_F(DrmUtilTest, GetInvalidColorSpaceFromEdid) {

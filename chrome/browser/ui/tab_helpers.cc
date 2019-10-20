@@ -34,6 +34,7 @@
 #include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 #include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_preconnect_client.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
@@ -232,6 +233,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   NativeFileSystemPermissionRequestManager::CreateForWebContents(web_contents);
   NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
+  NavigationPredictorPreconnectClient::CreateForWebContents(web_contents);
   OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);

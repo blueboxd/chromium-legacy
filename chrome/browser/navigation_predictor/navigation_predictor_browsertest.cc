@@ -52,29 +52,6 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
   }
 }
 
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-void RetryForHistogramBucketUntilCountReached(
-    base::HistogramTester* histogram_tester,
-    const std::string& histogram_name,
-    base::HistogramBase::Sample target_bucket,
-    size_t count) {
-  base::RunLoop().RunUntilIdle();
-  for (size_t attempt = 0; attempt < 50; ++attempt) {
-    const std::vector<base::Bucket> buckets =
-        histogram_tester->GetAllSamples(histogram_name);
-    size_t total_count = 0;
-    for (const auto& bucket : buckets) {
-      if (bucket.min == target_bucket)
-        total_count += bucket.count;
-    }
-    if (total_count >= count)
-      return;
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    base::RunLoop().RunUntilIdle();
-  }
-}
-
 // Verifies that all URLs specified in |expected_urls| are present in
 // |urls_from_observed_prediction|. Ordering of URLs is NOT verified.
 void VerifyURLsPresent(const std::vector<GURL>& urls_from_observed_prediction,
@@ -328,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, ClickAnchorElement) {
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
 }
 
 // Simulate a click at the anchor element.
@@ -405,101 +382,6 @@ IN_PROC_BROWSER_TEST_F(
       NavigationPredictor::ActionAccuracy::
           kPrefetchActionClickToDifferentOrigin,
       1);
-
-  // Change to visibile.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  histogram_tester.ExpectBucketCount(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
-
-  // Hiding and showing the tab again should cause change in histograms since
-  // Pre* on tab foreground is done more than once per page.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    3);
-}
-
-class NavigationPredictorBrowserTestWithUnusedIdleSocketTimeout
-    : public NavigationPredictorBrowserTest {
- public:
-  NavigationPredictorBrowserTestWithUnusedIdleSocketTimeout() {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        net::features::kNetUnusedIdleSocketTimeout,
-        {{"unused_idle_socket_timeout_seconds", "0"}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Test that we preconnect after the last preconnect timed out.
-IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTestWithUnusedIdleSocketTimeout,
-    DISABLE_ON_CHROMEOS(ActionAccuracy_timeout)) {
-  base::HistogramTester histogram_tester;
-
-  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  WaitForLayout();
-
-  RetryForHistogramBucketUntilCountReached(
-      &histogram_tester, "NavigationPredictor.OnNonDSE.ActionTaken",
-      static_cast<base::HistogramBase::Sample>(
-          NavigationPredictor::Action::kPreconnectAfterTimeout),
-      1);
-
-  EXPECT_LT(0, histogram_tester.GetBucketCount(
-                   "NavigationPredictor.OnNonDSE.ActionTaken",
-                   static_cast<base::HistogramBase::Sample>(
-                       NavigationPredictor::Action::kPreconnectAfterTimeout)));
-}
-
-class NavigationPredictorBrowserTestWithNegativePredictorRetryPreconnect
-    : public NavigationPredictorBrowserTest {
- public:
-  NavigationPredictorBrowserTestWithNegativePredictorRetryPreconnect() {
-    // -1 would force synchronous retries if retries were not disabled.
-    net_feature_list_.InitAndEnableFeatureWithParameters(
-        net::features::kNetUnusedIdleSocketTimeout,
-        {{"unused_idle_socket_timeout_seconds", "-1"}});
-    predictor_feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kNavigationPredictor,
-        {{"retry_preconnect_wait_time_ms", "-1"}});
-  }
-
- private:
-  base::test::ScopedFeatureList net_feature_list_;
-  base::test::ScopedFeatureList predictor_feature_list_;
-};
-
-// Test that we don't preconnect after the last preconnect timed out when
-// retry_preconnect_wait_time_ms is negative.
-IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTestWithNegativePredictorRetryPreconnect,
-    DISABLE_ON_CHROMEOS(ActionAccuracy_timeout_no_retry)) {
-  base::HistogramTester histogram_tester;
-
-  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  WaitForLayout();
-
-  EXPECT_EQ(0, histogram_tester.GetBucketCount(
-                   "NavigationPredictor.OnNonDSE.ActionTaken",
-                   static_cast<base::HistogramBase::Sample>(
-                       NavigationPredictor::Action::kPreconnectAfterTimeout)));
 }
 
 class NavigationPredictorBrowserTestWithDefaultPredictorEnabled
@@ -536,61 +418,6 @@ IN_PROC_BROWSER_TEST_F(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPrefetch, 1);
 
-  // Change to visible.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    1);
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  histogram_tester.ExpectBucketCount(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 1);
-
-  // Hiding and showing the tab again should cause change in histograms since
-  // Pre* on tab foreground is done more than once per page.
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    2);
-  browser()->tab_strip_model()->GetActiveWebContents()->WasShown();
-  histogram_tester.ExpectTotalCount("NavigationPredictor.OnNonDSE.ActionTaken",
-                                    3);
-  histogram_tester.ExpectBucketCount(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnectOnVisibilityChange, 2);
-}
-
-class NavigationPredictorBrowserTestNoSkipLinkScores
-    : public NavigationPredictorBrowserTest {
- public:
-  NavigationPredictorBrowserTestNoSkipLinkScores() {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kNavigationPredictor,
-        {{"preconnect_skip_link_scores", "false"}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTestNoSkipLinkScores,
-    DISABLE_ON_CHROMEOS(NoPreconnectNonSearchOnOtherHostLinks)) {
-  base::HistogramTester histogram_tester;
-
-  // This page only has non-same host links.
-  const GURL& url = GetTestURL("/anchors_different_area.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  WaitForLayout();
-
-  histogram_tester.ExpectUniqueSample(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -605,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
 }
 
 class NavigationPredictorBrowserTestWithPrefetchAfterPreconnect
@@ -664,40 +491,6 @@ IN_PROC_BROWSER_TEST_F(
         kv.second.get(),
         ukm::builders::NoStatePrefetch::kPrefetchedRecently_PrefetchAgeName));
   }
-}
-
-IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTestWithDefaultPredictorEnabled,
-    DISABLE_ON_CHROMEOS(NoPreconnectSearch)) {
-  static const char kShortName[] = "test";
-  static const char kSearchURL[] =
-      "/anchors_different_area.html?q={searchTerms}";
-
-  // Set up default search engine.
-  TemplateURLService* model =
-      TemplateURLServiceFactory::GetForProfile(browser()->profile());
-  ASSERT_TRUE(model);
-  search_test_utils::WaitForTemplateURLServiceToLoad(model);
-  ASSERT_TRUE(model->loaded());
-
-  TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(kShortName));
-  data.SetKeyword(data.short_name());
-  data.SetURL(GetTestURL(kSearchURL).spec());
-
-  TemplateURL* template_url = model->Add(std::make_unique<TemplateURL>(data));
-  ASSERT_TRUE(template_url);
-  model->SetUserSelectedDefaultSearchProvider(template_url);
-
-  base::HistogramTester histogram_tester;
-
-  // This page only has non-same host links.
-  const GURL& url = GetTestURL("/anchors_different_area.html?q=cats");
-  ui_test_utils::NavigateToURL(browser(), url);
-  WaitForLayout();
-
-  histogram_tester.ExpectUniqueSample("NavigationPredictor.OnDSE.ActionTaken",
-                                      NavigationPredictor::Action::kNone, 1);
 }
 
 // Simulate a click at the anchor element.
@@ -919,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
@@ -1055,7 +848,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, Incognito) {
 
 // Verify that the observers are notified of predictions on search results page.
 IN_PROC_BROWSER_TEST_F(
-    NavigationPredictorBrowserTestWithDefaultPredictorEnabled,
+    NavigationPredictorBrowserTestWithPrefetchAfterPreconnect,
     DISABLE_ON_CHROMEOS(ObserverNotifiedOnSearchPage)) {
   TestObserver observer;
 

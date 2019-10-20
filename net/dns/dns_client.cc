@@ -80,9 +80,6 @@ void UpdateConfigForDohUpgrade(DnsConfig* config) {
   }
 }
 
-constexpr base::TimeDelta kInitialDoHTimeout =
-    base::TimeDelta::FromMilliseconds(5000);
-
 class DnsClientImpl : public DnsClient,
                       public NetworkChangeNotifier::ConnectionTypeObserver {
  public:
@@ -96,7 +93,7 @@ class DnsClientImpl : public DnsClient,
         rand_int_callback_(rand_int_callback) {
     NetworkChangeNotifier::AddConnectionTypeObserver(this);
     delayed_probes_allowed_timer_.Start(
-        FROM_HERE, kInitialDoHTimeout,
+        FROM_HERE, kInitialDohTimeout,
         base::Bind(&DnsClientImpl::SetProbesAllowed, base::Unretained(this)));
   }
 
@@ -166,6 +163,10 @@ class DnsClientImpl : public DnsClient,
 
   void SetRequestContextForProbes(
       URLRequestContext* url_request_context) override {
+    DCHECK(url_request_context);
+    DCHECK(!url_request_context_for_probes_ ||
+           url_request_context == url_request_context_for_probes_);
+
     url_request_context_for_probes_ = url_request_context;
   }
 
@@ -174,6 +175,7 @@ class DnsClientImpl : public DnsClient,
       return;
 
     factory_->CancelDohProbes();
+    delayed_probes_start_timer_.Stop();
     url_request_context_for_probes_ = nullptr;
   }
 
@@ -201,6 +203,15 @@ class DnsClientImpl : public DnsClient,
 
   void SetProbeSuccessForTest(unsigned index, bool success) override {
     session_->SetProbeSuccess(index, success);
+  }
+
+  void SetTransactionFactoryForTesting(
+      std::unique_ptr<DnsTransactionFactory> factory) override {
+    factory_ = std::move(factory);
+  }
+
+  void StartDohProbesForTesting() override {
+    StartDohProbes(false /* network_change */);
   }
 
  private:
@@ -279,14 +290,14 @@ class DnsClientImpl : public DnsClient,
       return;
 
     if (probes_allowed_) {
+      delayed_probes_start_timer_.Stop();
       factory_->StartDohProbes(url_request_context_for_probes_, network_change);
     } else {
-      base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE,
+      delayed_probes_start_timer_.Start(
+          FROM_HERE, delayed_probes_allowed_timer_.GetCurrentDelay(),
           base::BindOnce(&DnsTransactionFactory::StartDohProbes,
                          factory_->weak_factory_.GetWeakPtr(),
-                         url_request_context_for_probes_, network_change),
-          delayed_probes_allowed_timer_.GetCurrentDelay());
+                         url_request_context_for_probes_, network_change));
     }
   }
 
@@ -306,6 +317,7 @@ class DnsClientImpl : public DnsClient,
   // prevent interference with startup tasks.
   bool probes_allowed_;
   base::OneShotTimer delayed_probes_allowed_timer_;
+  base::OneShotTimer delayed_probes_start_timer_;
   URLRequestContext* url_request_context_for_probes_;
 
   NetLog* net_log_;
@@ -317,6 +329,10 @@ class DnsClientImpl : public DnsClient,
 };
 
 }  // namespace
+
+// static
+const base::TimeDelta DnsClient::kInitialDohTimeout =
+    base::TimeDelta::FromSeconds(5);
 
 // static
 std::unique_ptr<DnsClient> DnsClient::CreateClient(NetLog* net_log) {

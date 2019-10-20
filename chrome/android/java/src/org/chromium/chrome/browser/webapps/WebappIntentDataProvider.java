@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
@@ -24,10 +25,18 @@ import org.chromium.webapk.lib.common.splash.SplashLayout;
 public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider {
     private static final String TAG = "WebappInfo";
 
+    private int mToolbarColor;
     private WebappExtras mWebappExtras;
 
     public static WebappIntentDataProvider createEmpty() {
-        return new WebappIntentDataProvider(WebappExtras.createEmpty());
+        return new WebappIntentDataProvider(getDefaultToolbarColor(), WebappExtras.createEmpty());
+    }
+
+    /**
+     * Returns the toolbar color to use if a custom color is not specified by the webapp.
+     */
+    public static int getDefaultToolbarColor() {
+        return Color.WHITE;
     }
 
     /**
@@ -42,15 +51,17 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         return ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
     }
 
+    public static boolean isLongColorValid(long longColor) {
+        return (longColor != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+    }
+
     /**
      * Converts color from unsigned long where an unspecified color is represented as
      * {@link ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING} to a signed Integer where an
      * unspecified color is represented as null.
      */
     public static Integer colorFromLongColor(long longColor) {
-        return (longColor == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING)
-                ? null
-                : Integer.valueOf((int) longColor);
+        return isLongColorValid(longColor) ? Integer.valueOf((int) longColor) : null;
     }
 
     public static String idFromIntent(Intent intent) {
@@ -96,6 +107,11 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
             return null;
         }
 
+        long themeColor = IntentUtils.safeGetLongExtra(intent, ShortcutHelper.EXTRA_THEME_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+        boolean hasValidToolbarColor = isLongColorValid(themeColor);
+        int toolbarColor = hasValidToolbarColor ? (int) themeColor : getDefaultToolbarColor();
+
         String icon = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_ICON);
 
         String scope = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_SCOPE);
@@ -109,9 +125,6 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         int orientation = IntentUtils.safeGetIntExtra(
                 intent, ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         int source = sourceFromIntent(intent);
-        Integer themeColor = colorFromLongColor(
-                IntentUtils.safeGetLongExtra(intent, ShortcutHelper.EXTRA_THEME_COLOR,
-                        ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
         Integer backgroundColor = colorFromLongColor(
                 IntentUtils.safeGetLongExtra(intent, ShortcutHelper.EXTRA_BACKGROUND_COLOR,
                         ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING));
@@ -129,13 +142,19 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
                 SplashLayout.getDefaultBackgroundColor(ContextUtils.getApplicationContext());
 
         WebappExtras webappExtras = new WebappExtras(id, url, scope, new WebappIcon(icon), name,
-                shortName, displayMode, orientation, source, themeColor, backgroundColor,
+                shortName, displayMode, orientation, source, hasValidToolbarColor, backgroundColor,
                 defaultBackgroundColor, isIconGenerated, isIconAdaptive, forceNavigation);
-        return new WebappIntentDataProvider(webappExtras);
+        return new WebappIntentDataProvider(toolbarColor, webappExtras);
     }
 
-    private WebappIntentDataProvider(WebappExtras webappExtras) {
+    private WebappIntentDataProvider(int toolbarColor, WebappExtras webappExtras) {
+        mToolbarColor = toolbarColor;
         mWebappExtras = webappExtras;
+    }
+
+    @Override
+    public int getToolbarColor() {
+        return mToolbarColor;
     }
 
     @Override

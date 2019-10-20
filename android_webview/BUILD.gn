@@ -467,7 +467,6 @@ source_set("common") {
   deps = [
     ":browser_jni_headers",
     "//android_webview/apk",
-    "//android_webview/apk:webview_license_provider",
     "//android_webview/browser",
     "//android_webview/browser/gfx",
     "//android_webview/common",

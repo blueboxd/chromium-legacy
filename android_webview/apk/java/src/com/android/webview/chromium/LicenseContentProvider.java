@@ -31,7 +31,6 @@ public class LicenseContentProvider
         extends ContentProvider implements ContentProvider.PipeDataWriter<String> {
     public static final String LICENSES_URI_SUFFIX = "LicenseContentProvider/webview_licenses";
     public static final String LICENSES_CONTENT_TYPE = "text/html";
-    private static final String TAG = "LicenseCP";
 
     @Override
     public boolean onCreate() {

@@ -84,24 +84,24 @@ public class WebappInfo {
     }
 
     /**
-     * Theme color is actually a 32 bit unsigned integer which encodes a color
-     * in ARGB format. mThemeColor is a long because we also need to encode the
-     * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
+     * Returns the toolbar color if it is valid, and
+     * ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING otherwise.
      */
-    public long themeColor() {
-        return WebappIntentDataProvider.colorFromIntegerColor(getWebappExtras().themeColor);
+    public long toolbarColor() {
+        return hasValidToolbarColor() ? mProvider.getToolbarColor()
+                                      : ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING;
     }
 
     /**
-     * Returns whether the theme color specified in the Intent is valid.
+     * Returns whether the toolbar color specified in the Intent is valid.
      */
-    public boolean hasValidThemeColor() {
-        return getWebappExtras().themeColor != null;
+    public boolean hasValidToolbarColor() {
+        return getWebappExtras().hasCustomToolbarColor;
     }
 
     /**
      * Background color is actually a 32 bit unsigned integer which encodes a color
-     * in ARGB format. mBackgroundColor is a long because we also need to encode the
+     * in ARGB format. Return value is a long because we also need to encode the
      * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
      */
     public long backgroundColor() {
@@ -170,7 +170,7 @@ public class WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode());
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation());
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
-        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor());
+        intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor());
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor());
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, isIconAdaptive());

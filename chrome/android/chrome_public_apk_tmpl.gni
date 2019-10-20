@@ -372,7 +372,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         "//android_webview/apk:apk_java",
         "//android_webview/glue",
         "//chrome/android:monochrome_java",
-        "//chrome/android/monochrome:monochrome_license_provider_java",
         "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
       ]
       loadable_modules += [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]

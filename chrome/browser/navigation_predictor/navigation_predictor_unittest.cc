@@ -46,10 +46,6 @@ class TestNavigationPredictor : public NavigationPredictor {
 
   base::Optional<GURL> prefetch_url() const { return prefetch_url_; }
 
-  base::Optional<url::Origin> preconnect_origin() const {
-    return preconnect_origin_;
-  }
-
   const std::map<GURL, int>& GetAreaRankMap() const { return area_rank_map_; }
 
   bool prefetch_url_prefetched() const { return prefetch_url_prefetched_; }
@@ -131,10 +127,6 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     return predictor_service_helper_->prefetch_url();
   }
 
-  base::Optional<url::Origin> preconnect_origin() const {
-    return predictor_service_helper_->preconnect_origin();
-  }
-
   bool prefetch_url_prefetched() {
     return predictor_service_helper_->prefetch_url_prefetched();
   }
@@ -147,8 +139,7 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
         !field_trial_initiated_);
   }
 
-  void SetupFieldTrial(base::Optional<int> preconnect_origin_score_threshold,
-                       base::Optional<int> prefetch_url_score_threshold,
+  void SetupFieldTrial(base::Optional<int> prefetch_url_score_threshold,
                        base::Optional<bool> prefetch_after_preconnect) {
     if (field_trial_initiated_)
       return;
@@ -158,10 +149,6 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     const std::string kGroupName = "GroupFoo2";  // Value not used
 
     std::map<std::string, std::string> params;
-    if (preconnect_origin_score_threshold.has_value()) {
-      params["preconnect_origin_score_threshold"] =
-          base::NumberToString(preconnect_origin_score_threshold.value());
-    }
     if (prefetch_url_score_threshold.has_value()) {
       params["prefetch_url_score_threshold"] =
           base::NumberToString(prefetch_url_score_threshold.value());
@@ -478,7 +465,7 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
   EXPECT_FALSE(prefetch_url().has_value());
 
   auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
@@ -488,8 +475,7 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
-      1);
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
 }
 
 TEST_F(NavigationPredictorTest,
@@ -509,7 +495,7 @@ TEST_F(NavigationPredictorTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
   EXPECT_FALSE(prefetch_url().has_value());
 }
 
@@ -517,7 +503,7 @@ class NavigationPredictorSendUkmMetricsEnabledTest
     : public NavigationPredictorTest {
  public:
   NavigationPredictorSendUkmMetricsEnabledTest() {
-    SetupFieldTrial(base::nullopt, base::nullopt, base::nullopt);
+    SetupFieldTrial(base::nullopt, base::nullopt);
   }
 
   void SetUp() override {
@@ -751,7 +737,7 @@ class NavigationPredictorPrefetchAfterPreconnectEnabledTest
     : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchAfterPreconnectEnabledTest() {
-    SetupFieldTrial(base::nullopt, base::nullopt, true);
+    SetupFieldTrial(base::nullopt, true);
   }
 
   void SetUp() override {
@@ -811,8 +797,7 @@ TEST_F(NavigationPredictorPrefetchAfterPreconnectEnabledTest,
 class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchDisabledTest() {
-    SetupFieldTrial(0 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt);
+    SetupFieldTrial(101 /* prefetch_url_score_threshold */, base::nullopt);
   }
 
   void SetUp() override {
@@ -847,9 +832,8 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
   EXPECT_FALSE(prefetch_url().has_value());
-  EXPECT_EQ(url::Origin::Create(GURL(source)), preconnect_origin());
 
   auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
   predictor_service()->ReportAnchorElementMetricsOnClick(
@@ -858,8 +842,7 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
-      1);
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
 }
 
 // Disables prefetch and loads a page where the preconnect score of a cross
@@ -886,9 +869,8 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
   EXPECT_FALSE(prefetch_url().has_value());
-  EXPECT_TRUE(preconnect_origin().has_value());
 
   auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
   predictor_service()->ReportAnchorElementMetricsOnClick(
@@ -897,8 +879,7 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
-      1);
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
 }
 
 // Framework for testing cases where preconnect and prefetch are effectively
@@ -907,8 +888,7 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
     : public NavigationPredictorTest {
  public:
   NavigationPredictorPreconnectPrefetchDisabledTest() {
-    SetupFieldTrial(101 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt);
+    SetupFieldTrial(101 /* prefetch_url_score_threshold */, base::nullopt);
   }
 
   void SetUp() override {
@@ -938,7 +918,7 @@ TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kPreconnect, 1);
+      NavigationPredictor::Action::kNone, 1);
   EXPECT_FALSE(prefetch_url().has_value());
 
   auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
@@ -948,6 +928,5 @@ TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
-      1);
+      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
 }

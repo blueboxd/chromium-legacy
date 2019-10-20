@@ -664,8 +664,8 @@ public class WebappActivity extends SingleTabActivity {
             icon = mLargestFavicon;
         }
 
-        if (mBrandColor == null && mWebappInfo.hasValidThemeColor()) {
-            mBrandColor = (int) mWebappInfo.themeColor();
+        if (mBrandColor == null && mWebappInfo.hasValidToolbarColor()) {
+            mBrandColor = (int) mWebappInfo.toolbarColor();
         }
 
         int taskDescriptionColor =

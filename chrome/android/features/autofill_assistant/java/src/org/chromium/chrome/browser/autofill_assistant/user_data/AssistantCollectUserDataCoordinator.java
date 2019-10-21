@@ -119,6 +119,7 @@ public class AssistantCollectUserDataCoordinator {
                 AssistantTagsForTesting.COLLECT_USER_DATA_PAYMENT_METHOD_SECTION_TAG);
         shippingAddressSection.getView().setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_SHIPPING_ADDRESS_SECTION_TAG);
+        termsSection.getView().setTag(AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_SECTION_TAG);
 
         // Bind view and mediator through the model.
         mViewHolder = new AssistantCollectUserDataBinder.ViewHolder(mPaymentRequestUI,

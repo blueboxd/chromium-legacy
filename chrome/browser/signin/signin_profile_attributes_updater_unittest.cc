@@ -28,20 +28,17 @@ const char kEmail[] = "example@email.com";
 
 #if !defined(OS_CHROMEOS)
 void CheckProfilePrefsReset(PrefService* pref_service) {
-  EXPECT_TRUE(pref_service->GetBoolean(prefs::kProfileUsingDefaultName));
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kProfileUsingDefaultAvatar));
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar));
 }
 
 void CheckProfilePrefsSet(PrefService* pref_service) {
-  EXPECT_FALSE(pref_service->GetBoolean(prefs::kProfileUsingDefaultName));
   EXPECT_FALSE(pref_service->GetBoolean(prefs::kProfileUsingDefaultAvatar));
   EXPECT_TRUE(pref_service->GetBoolean(prefs::kProfileUsingGAIAAvatar));
 }
 
 // Set the prefs to nondefault values.
 void SetProfilePrefs(PrefService* pref_service) {
-  pref_service->SetBoolean(prefs::kProfileUsingDefaultName, false);
   pref_service->SetBoolean(prefs::kProfileUsingDefaultAvatar, false);
   pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, true);
   CheckProfilePrefsSet(pref_service);

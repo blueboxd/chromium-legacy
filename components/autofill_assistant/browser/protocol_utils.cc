@@ -52,6 +52,9 @@ void FillClientContext(const ClientContextProto& client_context,
   if (trigger_context.is_cct()) {
     proto->set_is_cct(true);
   }
+  if (trigger_context.is_onboarding_shown()) {
+    proto->set_is_onboarding_shown(true);
+  }
   if (trigger_context.is_direct_action()) {
     proto->set_is_direct_action(true);
   }

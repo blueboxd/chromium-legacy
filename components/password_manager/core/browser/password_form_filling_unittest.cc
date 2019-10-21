@@ -264,7 +264,7 @@ TEST_F(PasswordFormFillingTest, TouchToFill) {
     SCOPED_TRACE(testing::Message() << "Enable Touch To Fill: "
                                     << std::boolalpha << enable_touch_to_fill);
     base::test::ScopedFeatureList features;
-    features.InitWithFeatureState(autofill::features::kTouchToFillAndroid,
+    features.InitWithFeatureState(autofill::features::kAutofillTouchToFill,
                                   enable_touch_to_fill);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(

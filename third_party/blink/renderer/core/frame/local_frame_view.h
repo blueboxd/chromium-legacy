@@ -294,9 +294,7 @@ class CORE_EXPORT LocalFrameView final
   // Objects with background-attachment:fixed.
   void AddBackgroundAttachmentFixedObject(LayoutObject*);
   void RemoveBackgroundAttachmentFixedObject(LayoutObject*);
-  bool HasBackgroundAttachmentFixedObjects() const {
-    return background_attachment_fixed_objects_.size();
-  }
+  bool RequiresMainThreadScrollingForBackgroundAttachmentFixed() const;
   const ObjectSet& BackgroundAttachmentFixedObjects() const {
     return background_attachment_fixed_objects_;
   }

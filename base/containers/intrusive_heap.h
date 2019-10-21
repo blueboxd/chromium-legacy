@@ -458,7 +458,7 @@ class IntrusiveHeap {
   // General operations.
 
   void swap(IntrusiveHeap& other) noexcept;
-  friend void swap(IntrusiveHeap& lhs, IntrusiveHeap& rhs);
+  friend void swap(IntrusiveHeap& lhs, IntrusiveHeap& rhs) { lhs.swap(rhs); }
 
   // Comparison operators. These check for exact equality. Two heaps that are
   // semantically equivalent (contain the same elements, but in different

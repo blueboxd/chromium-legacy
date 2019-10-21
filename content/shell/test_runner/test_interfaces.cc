@@ -137,9 +137,6 @@ void TestInterfaces::WindowClosed(WebViewTestProxy* proxy) {
     return;
   }
   window_list_.erase(pos);
-
-  if (proxy->webview() == main_view_)
-    SetMainView(nullptr);
 }
 
 TestRunner* TestInterfaces::GetTestRunner() {

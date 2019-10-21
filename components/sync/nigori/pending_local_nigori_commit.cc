@@ -32,23 +32,6 @@ KeyDerivationMethod GetDefaultKeyDerivationMethodForCustomPassphrase() {
   return KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003;
 }
 
-KeyDerivationParams CreateKeyDerivationParamsForCustomPassphrase(
-    const base::RepeatingCallback<std::string()>& random_salt_generator) {
-  KeyDerivationMethod method =
-      GetDefaultKeyDerivationMethodForCustomPassphrase();
-  switch (method) {
-    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return KeyDerivationParams::CreateForPbkdf2();
-    case KeyDerivationMethod::SCRYPT_8192_8_11:
-      return KeyDerivationParams::CreateForScrypt(random_salt_generator.Run());
-    case KeyDerivationMethod::UNSUPPORTED:
-      break;
-  }
-
-  NOTREACHED();
-  return KeyDerivationParams::CreateWithUnsupportedMethod();
-}
-
 class CustomPassphraseSetter : public PendingLocalNigoriCommit {
  public:
   CustomPassphraseSetter(
@@ -194,6 +177,23 @@ class KeystoreKeyRotator : public PendingLocalNigoriCommit {
 };
 
 }  // namespace
+
+KeyDerivationParams CreateKeyDerivationParamsForCustomPassphrase(
+    const base::RepeatingCallback<std::string()>& random_salt_generator) {
+  KeyDerivationMethod method =
+      GetDefaultKeyDerivationMethodForCustomPassphrase();
+  switch (method) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return KeyDerivationParams::CreateForPbkdf2();
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      return KeyDerivationParams::CreateForScrypt(random_salt_generator.Run());
+    case KeyDerivationMethod::UNSUPPORTED:
+      break;
+  }
+
+  NOTREACHED();
+  return KeyDerivationParams::CreateWithUnsupportedMethod();
+}
 
 // static
 std::unique_ptr<PendingLocalNigoriCommit>

@@ -285,22 +285,6 @@ void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
     window->layer()->SetOpacity(opacity);
 }
 
-void ScopedOverviewTransformWindow::SetClipping(const gfx::SizeF& size) {
-  // If width or height are 0, restore the overview clipping.
-  if (size.IsEmpty()) {
-    window_->layer()->SetClipRect(overview_clip_rect_);
-    return;
-  }
-
-  // Compute the clip rect. Transform affects the clip rect, so take that into
-  // account.
-  gfx::Rect clip_rect;
-  const gfx::Vector2dF scale = window_->layer()->GetTargetTransform().Scale2d();
-  clip_rect.set_width(size.width() / scale.x());
-  clip_rect.set_height(size.height() / scale.y());
-  window_->layer()->SetClipRect(clip_rect);
-}
-
 gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
     const gfx::RectF& rect,
     const gfx::RectF& bounds,
@@ -433,7 +417,6 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
     ScopedOverviewAnimationSettings settings(
         OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
     layer->SetClipRect(clip_rect);
-    overview_clip_rect_ = clip_rect;
   }
 }
 

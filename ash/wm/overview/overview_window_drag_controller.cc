@@ -580,10 +580,10 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
   snap_position_ = GetSnapPosition(location_in_screen);
   IndicatorState indicator_state =
       GetIndicatorState(item_->GetWindow(), snap_position_);
-  overview_session_->SetSplitViewDragIndicatorsIndicatorState(
-      indicator_state, gfx::ToRoundedPoint(location_in_screen));
   item_->overview_grid()->RearrangeDuringDrag(item_->GetWindow(),
                                               indicator_state);
+  overview_session_->SetSplitViewDragIndicatorsIndicatorState(
+      indicator_state, gfx::ToRoundedPoint(location_in_screen));
 }
 
 gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()

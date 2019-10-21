@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 
+#include <stack>
 #include <string>
 
 #include "base/strings/stringprintf.h"
@@ -21,11 +22,14 @@
 
 namespace arc {
 
+using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXEventData = mojom::AccessibilityEventData;
 using AXEventType = mojom::AccessibilityEventType;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
 using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
+using AXNodeInfoDataPtr = mojom::AccessibilityNodeInfoDataPtr;
 using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
+using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
 
 AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
     : current_tree_serializer_(new AXTreeArcSerializer(this)),
@@ -55,17 +59,21 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   // Finally, we cache each node's computed bounds, based on its descendants.
   std::map<int32_t, int32_t> all_parent_map;
   std::map<int32_t, std::vector<int32_t>> all_children_map;
+  // Mapping nodeId to index in event_data->node_data.
+  std::map<int32_t, int32_t> node_data_index_map;
+
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
-    if (!event_data->node_data[i]->int_list_properties)
-      continue;
-    auto it = event_data->node_data[i]->int_list_properties->find(
-        AXIntListProperty::CHILD_NODE_IDS);
-    if (it == event_data->node_data[i]->int_list_properties->end())
-      continue;
-    all_children_map[event_data->node_data[i]->id] = it->second;
-    for (size_t j = 0; j < it->second.size(); ++j)
-      all_parent_map[it->second[j]] = event_data->node_data[i]->id;
+    int32_t node_id = event_data->node_data[i]->id;
+    node_data_index_map[node_id] = i;
+    std::vector<int32_t> children;
+    if (GetIntListProperty(event_data->node_data[i].get(),
+                           AXIntListProperty::CHILD_NODE_IDS, &children)) {
+      for (const int32_t child : children)
+        all_parent_map[child] = node_id;
+      all_children_map.emplace(node_id, children);
+    }
   }
+
   if (event_data->window_data) {
     for (size_t i = 0; i < event_data->window_data->size(); ++i) {
       int32_t window_id = event_data->window_data->at(i)->window_id;
@@ -74,16 +82,15 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
         all_parent_map[root_node_id] = window_id;
         all_children_map[window_id] = {root_node_id};
       }
-      if (!event_data->window_data->at(i)->int_list_properties)
-        continue;
-      auto it = event_data->window_data->at(i)->int_list_properties->find(
-          mojom::AccessibilityWindowIntListProperty::CHILD_WINDOW_IDS);
-      if (it == event_data->window_data->at(i)->int_list_properties->end())
-        continue;
-      all_children_map[window_id].insert(all_children_map[window_id].begin(),
-                                         it->second.begin(), it->second.end());
-      for (size_t j = 0; j < it->second.size(); ++j)
-        all_parent_map[it->second[j]] = window_id;
+      std::vector<int32_t> children;
+      if (GetIntListProperty(event_data->window_data->at(i).get(),
+                             AXWindowIntListProperty::CHILD_WINDOW_IDS,
+                             &children)) {
+        for (const int32_t child : children)
+          all_parent_map[child] = window_id;
+        all_children_map[window_id].insert(all_children_map[window_id].begin(),
+                                           children.begin(), children.end());
+      }
     }
   }
 
@@ -106,9 +113,9 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     int32_t parent = stack.top();
     stack.pop();
     const std::vector<int32_t>& children = all_children_map[parent];
-    for (auto it = children.begin(); it != children.end(); ++it) {
-      parent_map_[*it] = parent;
-      stack.push(*it);
+    for (const int32_t child : children) {
+      parent_map_[child] = parent;
+      stack.push(child);
     }
   }
 
@@ -119,8 +126,10 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (parent_map_.find(id) == parent_map_.end() && id != root_id_)
       continue;
     AXNodeInfoData* node = event_data->node_data[i].get();
-    tree_map_[id] =
-        std::make_unique<AccessibilityNodeInfoDataWrapper>(this, node);
+    bool is_clickable_leaf =
+        ComputeIsClickableLeaf(i, event_data->node_data, node_data_index_map);
+    tree_map_[id] = std::make_unique<AccessibilityNodeInfoDataWrapper>(
+        this, node, is_clickable_leaf);
 
     if (tree_map_[id]->IsFocused())
       focused_id_ = id;
@@ -364,6 +373,35 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
   for (AccessibilityInfoDataWrapper* child : children)
     ComputeEnclosingBoundsInternal(child, computed_bounds);
   return;
+}
+
+bool AXTreeSourceArc::ComputeIsClickableLeaf(
+    int32_t root_index,
+    const std::vector<AXNodeInfoDataPtr>& nodes,
+    const std::map<int32_t, int32_t>& node_id_to_array_index) const {
+  AXNodeInfoData* node = nodes[root_index].get();
+  if (!GetBooleanProperty(node, AXBooleanProperty::CLICKABLE))
+    return false;
+
+  std::vector<int32_t> children;
+  if (!GetIntListProperty(node, AXIntListProperty::CHILD_NODE_IDS, &children))
+    return true;
+
+  std::stack<int32_t, std::vector<int32_t>> stack(children);
+  while (!stack.empty()) {
+    int32_t parent_id = stack.top();
+    stack.pop();
+    AXNodeInfoData* parent_node =
+        nodes[node_id_to_array_index.at(parent_id)].get();
+    if (GetBooleanProperty(parent_node, AXBooleanProperty::CLICKABLE))
+      return false;
+    if (GetIntListProperty(parent_node, AXIntListProperty::CHILD_NODE_IDS,
+                           &children)) {
+      for (const int32_t child : children)
+        stack.push(child);
+    }
+  }
+  return true;
 }
 
 void AXTreeSourceArc::Reset() {

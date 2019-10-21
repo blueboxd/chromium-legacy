@@ -29,7 +29,6 @@ extern const char kSyncShortNudgeDelayForTest[];
 extern const base::Feature kStopSyncInPausedState;
 extern const base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase;
-extern const base::Feature kSyncUSSBookmarks;
 extern const base::Feature kSyncUSSPasswords;
 extern const base::Feature kSyncUSSNigori;
 extern const base::Feature kSyncWifiConfigurations;

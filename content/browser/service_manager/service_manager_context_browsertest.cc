@@ -83,17 +83,19 @@ using ServiceManagerContextBrowserTest = ContentBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ServiceManagerContextBrowserTest,
                        ServiceProcessReportsPID) {
-  service_manager::mojom::ServiceManagerListenerPtr listener_proxy;
-  ServiceInstanceListener listener(mojo::MakeRequest(&listener_proxy));
+  mojo::Remote<service_manager::mojom::ServiceManager> service_manager;
+  GetSystemConnector()->Connect(service_manager::mojom::kServiceName,
+                                service_manager.BindNewPipeAndPassReceiver());
 
-  auto* connector = GetSystemConnector();
-  service_manager::mojom::ServiceManagerPtr service_manager;
-  connector->BindInterface(service_manager::mojom::kServiceName,
-                           &service_manager);
+  mojo::PendingRemote<service_manager::mojom::ServiceManagerListener>
+      listener_proxy;
+  ServiceInstanceListener listener(
+      listener_proxy.InitWithNewPipeAndPassReceiver());
+
   service_manager->AddListener(std::move(listener_proxy));
   listener.WaitForInit();
 
-  connector->WarmService(service_manager::ServiceFilter::ByName(
+  GetSystemConnector()->WarmService(service_manager::ServiceFilter::ByName(
       data_decoder::mojom::kServiceName));
 
   // PID should be non-zero, confirming that it was indeed properly reported to

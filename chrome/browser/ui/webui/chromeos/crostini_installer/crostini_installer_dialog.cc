@@ -6,8 +6,14 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/common/webui_url_constants.h"
+#include "ui/base/ui_base_types.h"
 
 namespace {
+// The dialog content area size. Note that the height is less than the design
+// spec to compensate for title bar height.
+constexpr int kDialogWidth = 768;
+constexpr int kDialogHeight = 608;
+
 GURL GetUrl() {
   return GURL{chrome::kChromeUICrostiniInstallerUrl};
 }
@@ -39,6 +45,30 @@ CrostiniInstallerDialog::CrostiniInstallerDialog(Profile* profile)
 CrostiniInstallerDialog::~CrostiniInstallerDialog() {
   crostini::CrostiniManager::GetForProfile(profile_)->SetInstallerViewStatus(
       false);
+}
+
+void CrostiniInstallerDialog::GetDialogSize(gfx::Size* size) const {
+  size->SetSize(::kDialogWidth, ::kDialogHeight);
+}
+
+bool CrostiniInstallerDialog::ShouldShowCloseButton() const {
+  return false;
+}
+
+bool CrostiniInstallerDialog::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
+    // Prevent the dialog from being closed. The web page should control closing
+    // logic.
+    return true;
+  }
+
+  return SystemWebDialogDelegate::AcceleratorPressed(accelerator);
+}
+
+void CrostiniInstallerDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  params->z_order = ui::ZOrderLevel::kNormal;
 }
 
 }  // namespace chromeos

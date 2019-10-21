@@ -52,8 +52,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 template <typename Strategy>
@@ -603,16 +601,25 @@ static bool ShouldEmitNewlinesBeforeAndAfterNode(const Node& node) {
   if (!r) {
     if (HasDisplayContents(node))
       return false;
-    return (node.HasTagName(kBlockquoteTag) || node.HasTagName(kDdTag) ||
-            node.HasTagName(kDivTag) || node.HasTagName(kDlTag) ||
-            node.HasTagName(kDtTag) || node.HasTagName(kH1Tag) ||
-            node.HasTagName(kH2Tag) || node.HasTagName(kH3Tag) ||
-            node.HasTagName(kH4Tag) || node.HasTagName(kH5Tag) ||
-            node.HasTagName(kH6Tag) || node.HasTagName(kHrTag) ||
-            node.HasTagName(kLiTag) || node.HasTagName(kListingTag) ||
-            node.HasTagName(kOlTag) || node.HasTagName(kPTag) ||
-            node.HasTagName(kPreTag) || node.HasTagName(kTrTag) ||
-            node.HasTagName(kUlTag));
+    return (node.HasTagName(html_names::kBlockquoteTag) ||
+            node.HasTagName(html_names::kDdTag) ||
+            node.HasTagName(html_names::kDivTag) ||
+            node.HasTagName(html_names::kDlTag) ||
+            node.HasTagName(html_names::kDtTag) ||
+            node.HasTagName(html_names::kH1Tag) ||
+            node.HasTagName(html_names::kH2Tag) ||
+            node.HasTagName(html_names::kH3Tag) ||
+            node.HasTagName(html_names::kH4Tag) ||
+            node.HasTagName(html_names::kH5Tag) ||
+            node.HasTagName(html_names::kH6Tag) ||
+            node.HasTagName(html_names::kHrTag) ||
+            node.HasTagName(html_names::kLiTag) ||
+            node.HasTagName(html_names::kListingTag) ||
+            node.HasTagName(html_names::kOlTag) ||
+            node.HasTagName(html_names::kPTag) ||
+            node.HasTagName(html_names::kPreTag) ||
+            node.HasTagName(html_names::kTrTag) ||
+            node.HasTagName(html_names::kUlTag));
   }
 
   // Need to make an exception for option and optgroup, because we want to
@@ -669,7 +676,7 @@ static bool ShouldEmitExtraNewlineForNode(const Node* node) {
   if (!r || !r->IsBox())
     return false;
 
-  return node->HasTagName(kPTag);
+  return node->HasTagName(html_names::kPTag);
 }
 
 // Whether or not we should emit a character as we enter node_ (if it's a

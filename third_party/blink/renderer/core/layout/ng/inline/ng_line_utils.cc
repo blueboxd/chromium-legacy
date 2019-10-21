@@ -15,7 +15,7 @@ const NGPaintFragment* NGContainingLineBoxOf(
   const NGCaretPosition caret_position = ComputeNGCaretPosition(position);
   if (caret_position.IsNull())
     return nullptr;
-  return caret_position.fragment->ContainerLineBox();
+  return caret_position.PaintFragment()->ContainerLineBox();
 }
 
 bool InSameNGLineBox(const PositionWithAffinity& position1,

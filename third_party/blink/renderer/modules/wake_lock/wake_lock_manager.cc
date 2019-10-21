@@ -34,7 +34,7 @@ void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   //      object.
   // 4.2. Let record be the platform wake lock's state record associated with
   //      document and type.
-  // 4.3. Add lockPromise to record.[[ActiveLocks]].
+  // 4.3. Add lock to record.[[ActiveLocks]].
   // 5. Return active.
   if (!wake_lock_) {
     mojo::Remote<mojom::blink::WakeLockService> wake_lock_service;
@@ -49,6 +49,10 @@ void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
         &WakeLockManager::OnWakeLockConnectionError, WrapWeakPersistent(this)));
     wake_lock_->RequestWakeLock();
   }
+  // https://w3c.github.io/wake-lock/#the-request-method
+  // 5.2. Let lock be a new WakeLockSentinel object with its type attribute set
+  // to type.
+  // 5.4. Resolve promise with lock.
   auto* sentinel = MakeGarbageCollected<WakeLockSentinel>(
       resolver->GetScriptState(), wake_lock_type_, this);
   wake_lock_sentinels_.insert(sentinel);
@@ -56,13 +60,29 @@ void WakeLockManager::AcquireWakeLock(ScriptPromiseResolver* resolver) {
 }
 
 void WakeLockManager::UnregisterSentinel(WakeLockSentinel* sentinel) {
+  // https://w3c.github.io/wake-lock/#release-wake-lock-algorithm
+  // 1. Let document be the responsible document of the current settings object.
+  // 2. Let record be the platform wake lock's state record associated with
+  // document and type.
+  // 3. If record.[[ActiveLocks]] does not contain lock, abort these steps.
   auto iterator = wake_lock_sentinels_.find(sentinel);
   DCHECK(iterator != wake_lock_sentinels_.end());
+
+  // 4. Remove lock from record.[[ActiveLocks]].
   wake_lock_sentinels_.erase(iterator);
 
+  // 5. If the internal slot [[ActiveLocks]] of all the platform wake lock's
+  // state records are all empty, then run the following steps in parallel:
+  // 5.1. Ask the underlying operation system to release the wake lock of type
+  //      type and let success be true if the operation succeeded, or else
+  //      false.
   if (wake_lock_sentinels_.IsEmpty() && wake_lock_.is_bound()) {
     wake_lock_->CancelWakeLock();
     wake_lock_.reset();
+
+    // 5.2. If success is true and type is "screen" run the following:
+    // 5.2.1. Reset the platform-specific inactivity timer after which the
+    //        screen is actually turned off.
   }
 }
 

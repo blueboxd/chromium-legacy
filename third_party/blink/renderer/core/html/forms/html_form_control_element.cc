@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/css/selector_checker.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -296,8 +297,7 @@ bool HTMLFormControlElement::MayTriggerVirtualKeyboard() const {
 }
 
 bool HTMLFormControlElement::ShouldHaveFocusAppearance() const {
-  return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
-         GetDocument().HadKeyboardEvent() || MayTriggerVirtualKeyboard();
+  return SelectorChecker::MatchesFocusVisiblePseudoClass(*this);
 }
 
 int HTMLFormControlElement::tabIndex() const {

@@ -117,9 +117,9 @@ class ServiceManagerListenerTest : public testing::Test, public Service {
     mojom::ServiceManagerPtr service_manager;
     connector()->BindInterface(mojom::kServiceName, &service_manager);
 
-    mojom::ServiceManagerListenerPtr listener_proxy;
-    listener_ =
-        std::make_unique<TestListener>(mojo::MakeRequest(&listener_proxy));
+    mojo::PendingRemote<mojom::ServiceManagerListener> listener_proxy;
+    listener_ = std::make_unique<TestListener>(
+        listener_proxy.InitWithNewPipeAndPassReceiver());
     service_manager->AddListener(std::move(listener_proxy));
     listener_->WaitForInit();
   }

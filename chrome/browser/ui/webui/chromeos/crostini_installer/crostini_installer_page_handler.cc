@@ -49,16 +49,16 @@ void CrostiniInstallerPageHandler::Close() {
 void CrostiniInstallerPageHandler::OnProgressUpdate(
     crostini::mojom::InstallerState installer_state,
     double progress_fraction) {
-  // TODO(lxj)
+  page_->OnProgressUpdate(installer_state, progress_fraction);
 }
 
 void CrostiniInstallerPageHandler::OnInstallFinished(
     crostini::mojom::InstallerError error) {
-  // TODO(lxj)
+  page_->OnInstallFinished(error);
 }
 
 void CrostiniInstallerPageHandler::OnCanceled() {
-  // TODO(lxj)
+  page_->OnCanceled();
 }
 
 }  // namespace chromeos

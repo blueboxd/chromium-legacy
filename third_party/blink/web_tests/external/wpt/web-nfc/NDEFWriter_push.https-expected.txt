@@ -1,0 +1,37 @@
+This is a testharness.js-based test.
+PASS Test that promise is rejected with TypeError if NDEFMessageSource is invalid.
+PASS Test that promise is rejected with SyntaxError if NDEFMessageSource contains invalid records.
+PASS NDEFWriter.push should fail if abort push request before push happends.
+PASS NDEFWriter.push should fail if signal's aborted flag is set.
+PASS NDEFWriter.push should fail if signal is not an AbortSignal.
+PASS Synchronously signaled abort.
+PASS NDEFWriter.push should fail when NFC HW is disabled.
+PASS NDEFWriter.push should fail when NFC HW is not supported.
+PASS NDEFWriter.push should fail with TypeError when invalid timeout is provided.
+PASS NDEFWriter.push should fail with TypeError when invalid negative timeout value is provided.
+PASS NDEFWriter.push should fail with TimeoutError when timer expires.
+PASS Reject promise with NotSupportedError if NFC message size exceeds 32KB.
+PASS Reject promise with SyntaxError if WebNFC Id cannot be created from provided URL.
+PASS Reject promise with exceptions thrown from serializing the 'json' record data.
+PASS NDEFWriter.push should fail with TypeError when invalid target value is provided.
+PASS Test that WebNFC API is not accessible from iframe context.
+PASS NDEFWriter.push should succeed when NFC HW is enabled
+PASS NDEFWriter.push NDEFMessage containing text, json, opaque, url and external records with default NDEFPushOptions.
+PASS Test that NDEFWriter.push succeeds when message is DOMString.
+PASS Test that NDEFWriter.push succeeds when message is ArrayBuffer.
+PASS NDEFWriter.push with 'empty' record should succeed.
+PASS Check that default NDEFPushOptions values are correctly set.
+PASS Check that provided NDEFPushOptions values are correctly converted.
+PASS NDEFWriter.push should read data when ignoreRead is false.
+PASS NDEFWriter.push should ignore reading data when ignoreRead is true.
+PASS NDEFWriter.push should replace all previously configured push operations.
+PASS Test that recordType should be set to 'text' if NDEFRecordInit.record's recordType is undefined and NDEFRecordInit.record's data is DOMString.
+PASS Test that recordType should be set to 'opaque' if NDEFRecordInit.record's recordType is undefined and NDEFRecordInit.record's data is ArrayBuffer.
+PASS Test that recordType should be set to 'json' if NDEFRecordInit.record's recordType is undefined and NDEFRecordInit.record's data is not DOMString or ArrayBuffer.
+PASS Test that mediaType should be set to 'text/plain' if NDEFRecordInit.record's recordType is 'text' and NDEFRecordInit.record's mediaType is undefined.
+PASS Test that mediaType should be set to 'application/octet-stream' if NDEFRecordInit.record's recordType is 'opaque' and NDEFRecordInit.record's mediaType is undefined.
+PASS Test that mediaType should be set to 'application/json' if NDEFRecordInit.record's recordType is 'json' and NDEFRecordInit.record's mediaType is undefined.
+FAIL Test that mediaType should be set to 'text/plain' if NDEFRecordInit.record's recordType is 'url' and NDEFRecordInit.record's mediaType is undefined. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'substring' of null"
+PASS Test that mediaType should be set to 'application/octet-stream' if NDEFRecordInit.record's recordType is external type and NDEFRecordInit.record's mediaType is undefined.
+Harness: the test ran to completion.
+

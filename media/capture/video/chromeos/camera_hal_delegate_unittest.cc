@@ -18,6 +18,7 @@
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +47,7 @@ class CameraHalDelegateTest : public ::testing::Test {
     camera_hal_delegate_ =
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
     camera_hal_delegate_->SetCameraModule(
-        mock_camera_module_.GetInterfacePtrInfo());
+        mock_camera_module_.GetPendingRemote());
   }
 
   void TearDown() override {
@@ -154,7 +155,7 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       };
 
   auto set_callbacks_cb =
-      [&](cros::mojom::CameraModuleCallbacksPtr& callbacks,
+      [&](mojo::PendingRemote<cros::mojom::CameraModuleCallbacks>& callbacks,
           cros::mojom::CameraModule::SetCallbacksCallback&) {
         mock_camera_module_.NotifyCameraDeviceChange(
             2, cros::mojom::CameraDeviceStatus::CAMERA_DEVICE_STATUS_PRESENT);
@@ -163,10 +164,10 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
   EXPECT_CALL(mock_camera_module_, DoGetNumberOfCameras(_))
       .Times(1)
       .WillOnce(Invoke(get_number_of_cameras_cb));
-  EXPECT_CALL(
-      mock_camera_module_,
-      DoSetCallbacks(A<cros::mojom::CameraModuleCallbacksPtr&>(),
-                     A<cros::mojom::CameraModule::SetCallbacksCallback&>()))
+  EXPECT_CALL(mock_camera_module_,
+              DoSetCallbacks(
+                  A<mojo::PendingRemote<cros::mojom::CameraModuleCallbacks>&>(),
+                  A<cros::mojom::CameraModule::SetCallbacksCallback&>()))
       .Times(1)
       .WillOnce(Invoke(set_callbacks_cb));
   EXPECT_CALL(mock_camera_module_,

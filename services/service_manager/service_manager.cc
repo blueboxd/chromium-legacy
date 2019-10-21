@@ -401,9 +401,10 @@ void ServiceManager::DestroyInstance(ServiceInstance* instance) {
 }
 
 void ServiceManager::OnInstanceStopped(const Identity& identity) {
-  listeners_.ForAllPtrs([&identity](mojom::ServiceManagerListener* listener) {
+  for (auto& listener : listeners_) {
     listener->OnServiceStopped(identity);
-  });
+  }
+
   if (!instance_quit_callback_.is_null())
     std::move(instance_quit_callback_).Run(identity);
 }
@@ -416,31 +417,29 @@ ServiceInstance* ServiceManager::GetExistingInstance(
 
 void ServiceManager::NotifyServiceCreated(const ServiceInstance& instance) {
   mojom::RunningServiceInfoPtr info = instance.CreateRunningServiceInfo();
-  listeners_.ForAllPtrs([&info](mojom::ServiceManagerListener* listener) {
+  for (auto& listener : listeners_) {
     listener->OnServiceCreated(info.Clone());
-  });
+  }
 }
 
 void ServiceManager::NotifyServiceStarted(const Identity& identity,
                                           base::ProcessId pid) {
-  listeners_.ForAllPtrs(
-      [&identity, pid](mojom::ServiceManagerListener* listener) {
-        listener->OnServiceStarted(identity, pid);
-      });
+  for (auto& listener : listeners_) {
+    listener->OnServiceStarted(identity, pid);
+  }
 }
 
 void ServiceManager::NotifyServiceFailedToStart(const Identity& identity) {
-  listeners_.ForAllPtrs([&identity](mojom::ServiceManagerListener* listener) {
+  for (auto& listener : listeners_) {
     listener->OnServiceFailedToStart(identity);
-  });
+  }
 }
 
 void ServiceManager::NotifyServicePIDReceived(const Identity& identity,
                                               base::ProcessId pid) {
-  listeners_.ForAllPtrs(
-      [&identity, pid](mojom::ServiceManagerListener* listener) {
-        listener->OnServicePIDReceived(identity, pid);
-      });
+  for (auto& listener : listeners_) {
+    listener->OnServicePIDReceived(identity, pid);
+  }
 }
 
 ServiceInstance* ServiceManager::CreateServiceInstance(
@@ -461,13 +460,16 @@ ServiceInstance* ServiceManager::CreateServiceInstance(
   return raw_instance;
 }
 
-void ServiceManager::AddListener(mojom::ServiceManagerListenerPtr listener) {
+void ServiceManager::AddListener(
+    mojo::PendingRemote<mojom::ServiceManagerListener> listener) {
   std::vector<mojom::RunningServiceInfoPtr> infos;
   for (auto& instance : instances_)
     infos.push_back(instance->CreateRunningServiceInfo());
 
-  listener->OnInit(std::move(infos));
-  listeners_.AddPtr(std::move(listener));
+  mojo::Remote<mojom::ServiceManagerListener> listener_remote;
+  listener_remote.Bind(std::move(listener));
+  listener_remote->OnInit(std::move(infos));
+  listeners_.Add(std::move(listener_remote));
 }
 
 void ServiceManager::OnBindInterface(

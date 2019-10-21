@@ -228,6 +228,27 @@ void BookmarkRemoteUpdatesHandler::Process(
             bookmark_tracker_->model_type_state().cache_guid() &&
         bookmark_tracker_->GetEntityForSyncId(
             update_entity.originator_client_item_id) != nullptr) {
+      if (tracked_entity) {
+        // We generally shouldn't have an entry for both the old ID and the new
+        // ID, but it could happen due to some past bug (see crbug.com/1004205).
+        // In that case, the two entries should be duplicates in the sense that
+        // they have the same URL.
+        // TODO(crbug.com/516866): Clean up the workaround once this has been
+        // resolved.
+        const SyncedBookmarkTracker::Entity* old_entity =
+            bookmark_tracker_->GetEntityForSyncId(
+                update_entity.originator_client_item_id);
+        const bookmarks::BookmarkNode* old_node = old_entity->bookmark_node();
+        const bookmarks::BookmarkNode* new_node =
+            tracked_entity->bookmark_node();
+        CHECK(old_node->type() == bookmarks::BookmarkNode::URL);
+        CHECK(new_node->type() == bookmarks::BookmarkNode::URL);
+        CHECK(old_node->url() == new_node->url());
+        bookmark_tracker_->Remove(update_entity.originator_client_item_id);
+        bookmark_model_->Remove(old_node);
+        continue;
+      }
+
       bookmark_tracker_->UpdateSyncForLocalCreationIfNeeded(
           /*old_id=*/update_entity.originator_client_item_id,
           /*new_id=*/update_entity.id);

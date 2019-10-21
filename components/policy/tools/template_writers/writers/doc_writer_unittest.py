@@ -1396,7 +1396,8 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
             123
     }
     self.writer._AddPolicySection(self.doc_root, policy)
-    self.assertTrue(self.writer.IsPolicySupportedOnPlatform(policy, 'android'))
+    self.assertTrue(
+        self.writer.IsPolicyOrItemSupportedOnPlatform(policy, 'android'))
     self.assertEquals(
         self.doc_root.toxml(), '<root>'
         '<div style="margin-left: 0px">'

@@ -1208,46 +1208,6 @@ TEST_P(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
   EXPECT_EQ(right_window.get(), window_util::GetActiveWindow());
 }
 
-// Test that if before tablet mode, the active window is an ARC window snapped
-// on the left and the previous window is snapped on the right, then split view
-// is not activated.
-TEST_P(TabletModeControllerTest,
-       StartTabletActiveArcLeftSnapPreviousRightSnap) {
-  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
-  left_window->SetProperty(aura::client::kAppType,
-                           static_cast<int>(AppType::ARC_APP));
-  std::unique_ptr<aura::Window> right_window =
-      CreateDesktopWindowSnappedRight();
-  wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_EQ(SplitViewController::State::kNoSnap,
-            split_view_controller()->state());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-}
-
-// Test that if before tablet mode, the active window is snapped on the left,
-// the previous window is an ARC window snapped on the right, and the third
-// window is snapped on the right (just to test that it is ignored after the ARC
-// window), then split view is activated with the active window on the left.
-TEST_P(TabletModeControllerTest,
-       StartTabletActiveLeftSnapPreviousArcRightSnap) {
-  std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
-  std::unique_ptr<aura::Window> right_window =
-      CreateDesktopWindowSnappedRight();
-  right_window->SetProperty(aura::client::kAppType,
-                            static_cast<int>(AppType::ARC_APP));
-  std::unique_ptr<aura::Window> extra_right_window =
-      CreateDesktopWindowSnappedRight();
-  wm::ActivateWindow(right_window.get());
-  wm::ActivateWindow(left_window.get());
-  tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
-            split_view_controller()->state());
-  EXPECT_EQ(left_window.get(), split_view_controller()->left_window());
-  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_EQ(left_window.get(), window_util::GetActiveWindow());
-}
-
 // Test that if before tablet mode, the active window is a transient child of a
 // window snapped on the left, then split view is activated with the parent
 // snapped on the left.

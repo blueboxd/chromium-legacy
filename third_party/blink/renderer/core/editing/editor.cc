@@ -93,8 +93,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 bool IsInPasswordFieldWithUnrevealedPassword(const Position& position) {
@@ -639,7 +637,8 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
     if (direction == WritingDirection::kNatural)
       return;
     focused_element->setAttribute(
-        kDirAttr, direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
+        html_names::kDirAttr,
+        direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
     focused_element->DispatchInputEvent();
     return;
   }

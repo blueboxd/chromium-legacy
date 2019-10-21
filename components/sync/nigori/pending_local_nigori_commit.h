@@ -14,7 +14,11 @@
 
 namespace syncer {
 
+class KeyDerivationParams;
 struct NigoriState;
+
+KeyDerivationParams CreateKeyDerivationParamsForCustomPassphrase(
+    const base::RepeatingCallback<std::string()>& random_salt_generator);
 
 // Interface representing an intended local change to the Nigori state that
 // is pending a commit to the sync server.

@@ -246,10 +246,10 @@ class LifecycleTest : public testing::Test {
     mojom::ServiceManagerPtr service_manager;
     connector()->BindInterface(service_manager::mojom::kServiceName,
                                &service_manager);
-    mojom::ServiceManagerListenerPtr listener;
+    mojo::PendingRemote<mojom::ServiceManagerListener> listener;
     base::RunLoop loop;
-    InstanceState* state =
-        new InstanceState(MakeRequest(&listener), loop.QuitClosure());
+    InstanceState* state = new InstanceState(
+        listener.InitWithNewPipeAndPassReceiver(), loop.QuitClosure());
     service_manager->AddListener(std::move(listener));
     loop.Run();
     return base::WrapUnique(state);

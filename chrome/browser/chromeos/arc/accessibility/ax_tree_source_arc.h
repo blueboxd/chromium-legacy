@@ -105,6 +105,12 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   void ComputeEnclosingBoundsInternal(AccessibilityInfoDataWrapper* info_data,
                                       gfx::Rect& computed_bounds) const;
 
+  // Computes the node is clickable and there is no clickable descendant of it.
+  bool ComputeIsClickableLeaf(
+      int32_t root_index,
+      const std::vector<mojom::AccessibilityNodeInfoDataPtr>& nodes,
+      const std::map<int32_t, int32_t>& node_id_to_array_index) const;
+
   // Resets tree state.
   void Reset();
 

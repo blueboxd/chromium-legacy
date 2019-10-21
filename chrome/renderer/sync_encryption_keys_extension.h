@@ -10,7 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/sync_encryption_keys_extension.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -26,7 +28,8 @@ class SyncEncryptionKeysExtension : public content::RenderFrameObserver {
 
   // content::RenderFrameObserver:
   void OnDestruct() override;
-  void DidClearWindowObject() override;
+  void DidCreateScriptContext(v8::Local<v8::Context> v8_context,
+                              int32_t world_id) override;
 
  private:
   explicit SyncEncryptionKeysExtension(content::RenderFrame* frame);
@@ -36,6 +39,7 @@ class SyncEncryptionKeysExtension : public content::RenderFrameObserver {
   void RunCompletionCallback(
       std::unique_ptr<v8::Global<v8::Function>> callback);
 
+  mojo::AssociatedRemote<chrome::mojom::SyncEncryptionKeysExtension> remote_;
   base::WeakPtrFactory<SyncEncryptionKeysExtension> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionKeysExtension);

@@ -2229,11 +2229,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return self.webView;
 }
 
-- (CRWJSInjector*)JSInjectorForJSNavigationHandler:
-    (CRWJSNavigationHandler*)navigationHandler {
-  return self.jsInjector;
-}
-
 - (void)JSNavigationHandlerUpdateSSLStatusForCurrentNavigationItem:
     (CRWJSNavigationHandler*)navigationHandler {
   [self updateSSLStatusForCurrentNavigationItem];

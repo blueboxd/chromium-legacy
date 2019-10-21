@@ -1020,17 +1020,17 @@
   },
   "devtools_closure_compile": {
     "args": [
-      "../../third_party/blink/renderer/devtools/scripts/compile_frontend.py",
+      "../../third_party/devtools-frontend/src/scripts/compile_frontend.py",
     ],
-    "label": "//third_party/blink/renderer/devtools:devtools_closure_compile",
+    "label": "//third_party/devtools-frontend/src:devtools_closure_compile",
     "script": "//testing/scripts/run_devtools_check.py",
     "type": "script",
   },
   "devtools_eslint": {
     "args": [
-      "../../third_party/blink/renderer/devtools/scripts/lint_javascript.py",
+      "../../third_party/devtools-frontend/src/scripts/lint_javascript.py",
     ],
-    "label": "//third_party/blink/renderer/devtools:devtools_eslint",
+    "label": "//third_party/devtools-frontend/src:devtools_eslint",
     "script": "//testing/scripts/run_devtools_check.py",
     "type": "script",
   },

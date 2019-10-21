@@ -40,7 +40,7 @@ WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
                                                       WakeLockType::kSystem)} {}
 
 ScriptPromise WakeLock::request(ScriptState* script_state, const String& type) {
-  // https://w3c.github.io/wake-lock/#request-static-method
+  // https://w3c.github.io/wake-lock/#the-request-method
   auto* context = ExecutionContext::From(script_state);
   DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
 
@@ -110,6 +110,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state, const String& type) {
     }
   }
 
+  // 1. Let promise be a new promise.
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -127,10 +128,8 @@ ScriptPromise WakeLock::request(ScriptState* script_state, const String& type) {
       break;
   }
 
-  // 6. Run the following steps in parallel, but abort when options' signal
-  // member is present and its aborted flag is set:
-  // 6.1. Let state be the result of awaiting obtain permission steps with
-  //      type:
+  // 5. Run the following steps in parallel, but abort when type is "screen" and
+  // document is hidden:
   DoRequest(wake_lock_type, resolver);
 
   // 7. Return promise.
@@ -138,6 +137,8 @@ ScriptPromise WakeLock::request(ScriptState* script_state, const String& type) {
 }
 
 void WakeLock::DoRequest(WakeLockType type, ScriptPromiseResolver* resolver) {
+  // https://w3c.github.io/wake-lock/#the-request-method
+  // 5.1. Let state be the result of awaiting obtain permission steps with type:
   ObtainPermission(
       type, WTF::Bind(&WakeLock::DidReceivePermissionResponse,
                       WrapPersistent(this), type, WrapPersistent(resolver)));
@@ -146,11 +147,11 @@ void WakeLock::DoRequest(WakeLockType type, ScriptPromiseResolver* resolver) {
 void WakeLock::DidReceivePermissionResponse(WakeLockType type,
                                             ScriptPromiseResolver* resolver,
                                             PermissionStatus status) {
-  // https://w3c.github.io/wake-lock/#request-static-method
+  // https://w3c.github.io/wake-lock/#the-request-method
   DCHECK(status == PermissionStatus::GRANTED ||
          status == PermissionStatus::DENIED);
   DCHECK(resolver);
-  // 6.1.1. If state is "denied", then reject promise with a "NotAllowedError"
+  // 5.1.1. If state is "denied", then reject promise with a "NotAllowedError"
   //        DOMException, and abort these steps.
   if (status != PermissionStatus::GRANTED) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -158,9 +159,8 @@ void WakeLock::DidReceivePermissionResponse(WakeLockType type,
         "Wake Lock permission request denied"));
     return;
   }
-  // https://github.com/w3c/wake-lock/issues/222: the page can become hidden
-  // between request() and WakeLockManager::AcquireWakeLock(), in which case
-  // we need to abort early.
+  // 6. If aborted, run these steps:
+  // 6.1. Reject promise with a "NotAllowedError" DOMException.
   if (type == WakeLockType::kScreen &&
       !(GetPage() && GetPage()->IsPageVisible())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -168,9 +168,9 @@ void WakeLock::DidReceivePermissionResponse(WakeLockType type,
         "The requesting page is not visible"));
     return;
   }
-  // 6.2. Let success be the result of awaiting acquire a wake lock with promise
+  // 5.3. Let success be the result of awaiting acquire a wake lock with lock
   // and type:
-  // 6.2.1. If success is false then reject promise with a "NotAllowedError"
+  // 5.3.1. If success is false then reject promise with a "NotAllowedError"
   //        DOMException, and abort these steps.
   WakeLockManager* manager = managers_[static_cast<size_t>(type)];
   DCHECK(manager);
@@ -182,12 +182,12 @@ void WakeLock::ContextDestroyed(ExecutionContext*) {
   // 1. Let document be the responsible document of the current settings object.
   // 2. Let screenRecord be the platform wake lock's state record associated
   // with document and wake lock type "screen".
-  // 3. For each lockPromise in screenRecord.[[ActiveLocks]]:
-  // 3.1. Run release a wake lock with lockPromise and "screen".
+  // 3. For each lock in screenRecord.[[ActiveLocks]]:
+  // 3.1. Run release a wake lock with lock and "screen".
   // 4. Let systemRecord be the platform wake lock's state record associated
   // with document and wake lock type "system".
-  // 5. For each lockPromise in systemRecord.[[ActiveLocks]]:
-  // 5.1. Run release a wake lock with lockPromise and "system".
+  // 5. For each lock in systemRecord.[[ActiveLocks]]:
+  // 5.1. Run release a wake lock with lock and "system".
   for (WakeLockManager* manager : managers_) {
     if (manager)
       manager->ClearWakeLocks();
@@ -202,8 +202,8 @@ void WakeLock::PageVisibilityChanged() {
     return;
   // 3. Let screenRecord be the platform wake lock's state record associated
   // with wake lock type "screen".
-  // 4. For each lockPromise in screenRecord.[[ActiveLocks]]:
-  // 4.1. Run release a wake lock with lockPromise and "screen".
+  // 4. For each lock in screenRecord.[[ActiveLocks]]:
+  // 4.1. Run release a wake lock with lock and "screen".
   WakeLockManager* manager =
       managers_[static_cast<size_t>(WakeLockType::kScreen)];
   if (manager)

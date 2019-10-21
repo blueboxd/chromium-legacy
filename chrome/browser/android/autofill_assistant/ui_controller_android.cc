@@ -881,6 +881,14 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
         base::android::ConvertUTF8ToJavaString(
             env, collect_user_data_options->date_time_range.end_label()));
   }
+  Java_AssistantCollectUserDataModel_setTermsRequireReviewText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->terms_require_review_text));
+  Java_AssistantCollectUserDataModel_setThirdPartyPrivacyNoticeText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->thirdparty_privacy_notice_text));
 
   Java_AssistantCollectUserDataModel_setPrependedSections(
       env, jmodel,

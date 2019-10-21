@@ -41,17 +41,12 @@ namespace {
 
 // This function is called to check if window[i] is eligible to be carried over
 // to split view mode during clamshell <-> tablet mode transition or multi-user
-// switch transition. Returns true if windows[i] exists, can snap in split view,
-// and is not an ARC window.
-// TODO(xdai): Make it work for ARC windows. (see
-// https://crbug.com/922282 and
-// https://buganizer.corp.google.com/issues/123432223).
+// switch transition. Returns true if windows[i] exists and can snap in split
+// view.
 bool IsCarryOverCandidateForSplitView(
     const MruWindowTracker::WindowList& windows,
     size_t i) {
-  return windows.size() > i && CanSnapInSplitview(windows[i]) &&
-         static_cast<ash::AppType>(windows[i]->GetProperty(
-             aura::client::kAppType)) != AppType::ARC_APP;
+  return windows.size() > i && CanSnapInSplitview(windows[i]);
 }
 
 // Returns the windows that are going to be carried over to splitview during
@@ -347,6 +342,7 @@ void TabletModeWindowManager::WindowStateDestroyed(aura::Window* window) {
 }
 
 void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
+  is_exiting_ = true;
   for (auto& pair : window_state_map_)
     pair.second->set_ignore_wm_events(true);
 }
@@ -382,6 +378,12 @@ void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
 void TabletModeWindowManager::OnSplitViewStateChanged(
     SplitViewController::State previous_state,
     SplitViewController::State state) {
+  // All TabletModeWindowState will ignore further WMEvents, but we still have
+  // to manually prevent sending maximizing events to ClientControlledState ARC
+  // windows e.g. ARC apps.
+  if (is_exiting_)
+    return;
+
   if (state != SplitViewController::State::kNoSnap)
     return;
   switch (

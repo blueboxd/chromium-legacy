@@ -98,6 +98,7 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   AssertClientContext(request.client_context());
   EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
   EXPECT_TRUE(request.client_context().is_cct());
+  EXPECT_FALSE(request.client_context().is_onboarding_shown());
   EXPECT_FALSE(request.client_context().is_direct_action());
 
   const InitialScriptActionsRequestProto& initial = request.initial_request();
@@ -110,6 +111,41 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   EXPECT_EQ("d", initial.script_parameters(1).value());
   EXPECT_EQ("global_payload", request.global_payload());
   EXPECT_EQ("script_payload", request.script_payload());
+}
+
+TEST(ProtocolUtilsTest, TestCreateInitialScriptActionsRequestFlags) {
+  std::map<std::string, std::string> parameters;
+
+  ScriptActionRequestProto request;
+
+  // With flags.
+  TriggerContextImpl trigger_context_flags(parameters, std::string());
+  trigger_context_flags.SetCCT(true);
+  trigger_context_flags.SetOnboardingShown(true);
+  trigger_context_flags.SetDirectAction(true);
+
+  EXPECT_TRUE(
+      request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
+          "script_path", GURL("http://example.com/"), trigger_context_flags,
+          "global_payload", "script_payload", CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
+  EXPECT_TRUE(request.client_context().is_cct());
+  EXPECT_TRUE(request.client_context().is_onboarding_shown());
+  EXPECT_TRUE(request.client_context().is_direct_action());
+
+  // Without flags.
+  TriggerContextImpl trigger_context_no_flags(parameters, std::string());
+
+  EXPECT_TRUE(
+      request.ParseFromString(ProtocolUtils::CreateInitialScriptActionsRequest(
+          "script_path", GURL("http://example.com/"), trigger_context_no_flags,
+          "global_payload", "script_payload", CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
+  EXPECT_FALSE(request.client_context().is_cct());
+  EXPECT_FALSE(request.client_context().is_onboarding_shown());
+  EXPECT_FALSE(request.client_context().is_direct_action());
 }
 
 TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
@@ -131,6 +167,44 @@ TEST(ProtocolUtilsTest, CreateNextScriptActionsRequest) {
   EXPECT_EQ(1, request.next_request().processed_actions().size());
 }
 
+TEST(ProtocolUtilsTest, TestCreateNextScriptActionsRequestFlags) {
+  std::map<std::string, std::string> parameters;
+
+  std::vector<ProcessedActionProto> processed_actions;
+  processed_actions.emplace_back(ProcessedActionProto());
+
+  ScriptActionRequestProto request;
+
+  // With flags.
+  TriggerContextImpl trigger_context_flags(parameters, std::string());
+  trigger_context_flags.SetCCT(true);
+  trigger_context_flags.SetOnboardingShown(true);
+  trigger_context_flags.SetDirectAction(true);
+
+  EXPECT_TRUE(
+      request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
+          trigger_context_flags, "global_payload", "script_payload",
+          processed_actions, CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
+  EXPECT_TRUE(request.client_context().is_cct());
+  EXPECT_TRUE(request.client_context().is_onboarding_shown());
+  EXPECT_TRUE(request.client_context().is_direct_action());
+
+  // Without flags.
+  TriggerContextImpl trigger_context_no_flags(parameters, std::string());
+
+  EXPECT_TRUE(
+      request.ParseFromString(ProtocolUtils::CreateNextScriptActionsRequest(
+          trigger_context_no_flags, "global_payload", "script_payload",
+          processed_actions, CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
+  EXPECT_FALSE(request.client_context().is_cct());
+  EXPECT_FALSE(request.client_context().is_onboarding_shown());
+  EXPECT_FALSE(request.client_context().is_direct_action());
+}
+
 TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
   std::map<std::string, std::string> parameters;
   parameters["a"] = "b";
@@ -146,6 +220,7 @@ TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
   AssertClientContext(request.client_context());
   EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
   EXPECT_FALSE(request.client_context().is_cct());
+  EXPECT_FALSE(request.client_context().is_onboarding_shown());
   EXPECT_TRUE(request.client_context().is_direct_action());
 
   EXPECT_EQ("http://example.com/", request.url());
@@ -154,6 +229,38 @@ TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
   EXPECT_EQ("b", request.script_parameters(0).value());
   EXPECT_EQ("c", request.script_parameters(1).name());
   EXPECT_EQ("d", request.script_parameters(1).value());
+}
+
+TEST(ProtocolUtilsTest, TestCreateGetScriptsRequestFlags) {
+  std::map<std::string, std::string> parameters;
+  SupportsScriptRequestProto request;
+
+  // With flags.
+  TriggerContextImpl trigger_context_flags(parameters, std::string());
+  trigger_context_flags.SetCCT(true);
+  trigger_context_flags.SetOnboardingShown(true);
+  trigger_context_flags.SetDirectAction(true);
+
+  EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
+      GURL("http://example.com/"), trigger_context_flags,
+      CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
+  EXPECT_TRUE(request.client_context().is_cct());
+  EXPECT_TRUE(request.client_context().is_onboarding_shown());
+  EXPECT_TRUE(request.client_context().is_direct_action());
+
+  // Without flags.
+  TriggerContextImpl trigger_context_no_flags(parameters, std::string());
+
+  EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
+      GURL("http://example.com/"), trigger_context_no_flags,
+      CreateClientContextProto())));
+
+  AssertClientContext(request.client_context());
+  EXPECT_FALSE(request.client_context().is_cct());
+  EXPECT_FALSE(request.client_context().is_onboarding_shown());
+  EXPECT_FALSE(request.client_context().is_direct_action());
 }
 
 TEST(ProtocolUtilsTest, AddScriptIgnoreInvalid) {

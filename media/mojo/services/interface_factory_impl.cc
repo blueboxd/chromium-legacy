@@ -83,13 +83,12 @@ void InterfaceFactoryImpl::CreateAudioDecoder(
 }
 
 void InterfaceFactoryImpl::CreateVideoDecoder(
-    mojom::VideoDecoderRequest request) {
+    mojo::PendingReceiver<mojom::VideoDecoder> receiver) {
   DVLOG(2) << __func__;
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  video_decoder_bindings_.AddBinding(
-      std::make_unique<MojoVideoDecoderService>(mojo_media_client_,
-                                                &cdm_service_context_),
-      std::move(request));
+  video_decoder_receivers_.Add(std::make_unique<MojoVideoDecoderService>(
+                                   mojo_media_client_, &cdm_service_context_),
+                               std::move(receiver));
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 }
 
@@ -233,7 +232,7 @@ bool InterfaceFactoryImpl::IsEmpty() {
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  if (!video_decoder_bindings_.empty())
+  if (!video_decoder_receivers_.empty())
     return false;
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
@@ -270,7 +269,7 @@ void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  video_decoder_bindings_.set_connection_error_handler(connection_error_cb);
+  video_decoder_receivers_.set_disconnect_handler(connection_error_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)

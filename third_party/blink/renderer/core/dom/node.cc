@@ -2883,15 +2883,8 @@ void Node::DefaultEventHandler(Event& event) {
   }
 }
 
-void Node::WillCallDefaultEventHandler(const Event& event) {
-  if (!event.IsKeyboardEvent())
-    return;
-
-  if (!IsFocused() || GetDocument().LastFocusType() != kWebFocusTypeMouse)
-    return;
-
-  if (event.type() != event_type_names::kKeydown ||
-      GetDocument().HadKeyboardEvent())
+void Node::UpdateHadKeyboardEvent(const Event& event) {
+  if (GetDocument().HadKeyboardEvent())
     return;
 
   GetDocument().SetHadKeyboardEvent(true);
@@ -3005,7 +2998,7 @@ HTMLSlotElement* Node::assignedSlotForBinding() {
 }
 
 void Node::SetFocused(bool flag, WebFocusType focus_type) {
-  if (!flag || focus_type == kWebFocusTypeMouse)
+  if (focus_type == kWebFocusTypeMouse)
     GetDocument().SetHadKeyboardEvent(false);
   GetDocument().UserActionElements().SetFocused(this, flag);
 }

@@ -96,12 +96,6 @@ bool NigoriKeyBag::HasKey(const std::string& key_name) const {
   return nigori_map_.count(key_name) != 0;
 }
 
-bool NigoriKeyBag::HasKey(const sync_pb::NigoriKey& key) const {
-  std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
-      key.deprecated_user_key(), key.encryption_key(), key.mac_key());
-  return HasKey(ComputeNigoriName(*nigori));
-}
-
 sync_pb::NigoriKey NigoriKeyBag::ExportKey(const std::string& key_name) const {
   DCHECK(HasKey(key_name));
   sync_pb::NigoriKey key =

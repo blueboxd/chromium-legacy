@@ -58,7 +58,7 @@ enum PipelineStatus {
   PIPELINE_STATUS_MAX = DEMUXER_ERROR_DETECTED_HLS,
 };
 
-typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;
+typedef base::RepeatingCallback<void(PipelineStatus)> PipelineStatusCB;
 
 struct PipelineDecoderInfo {
   bool is_platform_decoder = false;

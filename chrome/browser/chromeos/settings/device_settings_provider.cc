@@ -92,6 +92,7 @@ const char* const kKnownSettings[] = {
     kDeviceScheduledUpdateCheck,
     kDeviceSecondFactorAuthenticationMode,
     kDeviceUnaffiliatedCrostiniAllowed,
+    kDeviceWebBasedAttestationAllowedUrls,
     kDeviceWiFiAllowed,
     kDeviceWilcoDtcAllowed,
     kDisplayRotationDefault,
@@ -404,6 +405,19 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     new_values_cache->SetInteger(kSamlLoginAuthenticationType,
                                  policy.saml_login_authentication_type()
                                      .saml_login_authentication_type());
+  }
+
+  if (policy.has_device_web_based_attestation_allowed_urls()) {
+    const em::StringListPolicyProto& container(
+        policy.device_web_based_attestation_allowed_urls());
+
+    base::Value urls(base::Value::Type::LIST);
+    for (const std::string& entry : container.value().entries()) {
+      urls.Append(entry);
+    }
+
+    new_values_cache->SetValue(kDeviceWebBasedAttestationAllowedUrls,
+                               std::move(urls));
   }
 }
 

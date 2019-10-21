@@ -52,8 +52,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 const unsigned kFileIdentifierLength = 6;
 const unsigned kRegionIdentifierLength = 6;
 const unsigned kStyleIdentifierLength = 5;
@@ -608,7 +606,7 @@ void VTTTreeBuilder::ConstructTreeFromToken(Document& document) {
       child->SetTrack(track_);
 
       if (!token_.Classes().IsEmpty())
-        child->setAttribute(kClassAttr, token_.Classes());
+        child->setAttribute(html_names::kClassAttr, token_.Classes());
 
       if (node_type == kVTTNodeTypeVoice) {
         child->setAttribute(VTTElement::VoiceAttributeName(),

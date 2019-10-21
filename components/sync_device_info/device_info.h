@@ -120,6 +120,8 @@ class DeviceInfo {
 
   void set_sharing_info(const base::Optional<SharingInfo>& sharing_info);
 
+  void set_client_name(const std::string& client_name);
+
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.
   std::unique_ptr<base::DictionaryValue> ToValue();
@@ -127,7 +129,7 @@ class DeviceInfo {
  private:
   const std::string guid_;
 
-  const std::string client_name_;
+  std::string client_name_;
 
   const std::string chrome_version_;
 

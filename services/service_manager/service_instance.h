@@ -152,7 +152,8 @@ class ServiceInstance : public mojom::Connector,
   void RequestQuit() override;
 
   // mojom::ServiceManager:
-  void AddListener(mojom::ServiceManagerListenerPtr listener) override;
+  void AddListener(
+      mojo::PendingRemote<mojom::ServiceManagerListener> listener) override;
 
   // Always owns |this|.
   service_manager::ServiceManager* const service_manager_;

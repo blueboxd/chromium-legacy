@@ -20,6 +20,7 @@
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
@@ -331,6 +332,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
  protected:
+  WebAppInstallTask& install_task() { return *install_task_; }
   TestWebAppRegistryController& controller() {
     return *test_registry_controller_;
   }
@@ -1163,6 +1165,30 @@ TEST_F(WebAppInstallTaskTest,
     auto app_id =
         InstallWebAppFromInfoRetrieveIcons(url, /*is_locally_installed*/ true);
     EXPECT_TRUE(registrar().GetAppById(app_id)->is_locally_installed());
+  }
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_ExpectAppId) {
+  const auto url1 = GURL("https://example.com/");
+  const auto url2 = GURL("https://example.org/");
+  const AppId app_id1 = GenerateAppIdFromURL(url1);
+  const AppId app_id2 = GenerateAppIdFromURL(url2);
+  ASSERT_NE(app_id1, app_id2);
+  {
+    CreateDefaultDataToRetrieve(url1);
+    install_task().ExpectAppId(app_id1);
+    InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+    EXPECT_EQ(app_id1, result.app_id);
+    EXPECT_TRUE(registrar().GetAppById(app_id1));
+  }
+  {
+    CreateDefaultDataToRetrieve(url2);
+    install_task().ExpectAppId(app_id1);
+    InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
+    EXPECT_EQ(InstallResultCode::kExpectedAppIdCheckFailed, result.code);
+    EXPECT_EQ(app_id2, result.app_id);
+    EXPECT_FALSE(registrar().GetAppById(app_id2));
   }
 }
 

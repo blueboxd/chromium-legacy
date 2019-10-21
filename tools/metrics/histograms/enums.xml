@@ -11378,6 +11378,17 @@ Called by update_net_error_codes.py.-->
   <int value="2147483646" label="STATUS_DATATYPE_MISALIGNMENT"/>
 </enum>
 
+<enum name="CrasHfpCodec">
+  <summary>
+    List of codec ids used for SCO audio, in Bluetooth Hands-free profile. This
+    list should be aligned with CRAS:
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_hfp_slc.h
+  </summary>
+  <int value="0" label="HFP_CODEC_UNUSED"/>
+  <int value="1" label="HFP_CODEC_ID_CVSD"/>
+  <int value="2" label="HFP_CODEC_ID_MSBC"/>
+</enum>
+
 <enum name="CrashpadExceptionCaptureResult">
   <int value="0" label="kSuccess"/>
   <int value="1" label="kUnexpectedExceptionBehavior"/>
@@ -13963,6 +13974,7 @@ Called by update_net_error_codes.py.-->
   <int value="98" label="Phone Chooser"/>
   <int value="99" label="QR Code Generator"/>
   <int value="100" label="Crostini Force Close"/>
+  <int value="101" label="App Uninstall"/>
 </enum>
 
 <enum name="DialogOriginRelationship">
@@ -18445,6 +18457,7 @@ Called by update_net_error_codes.py.-->
   <int value="633" label="DefaultInsecureContentSetting"/>
   <int value="634" label="InsecureContentAllowedForUrls"/>
   <int value="635" label="InsecureContentBlockedForUrls"/>
+  <int value="636" label="DeviceWebBasedAttestationAllowedUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -39207,7 +39220,7 @@ from previous Chrome versions.
   <int value="0" label="Fetch succeeded"/>
   <int value="1" label="Fetch failed because of empty URL"/>
   <int value="2" label="Fetch failed (unspecified reason)"/>
-  <int value="3" label="Fetch failed because the document origin is unique"/>
+  <int value="3" label="Fetch failed because the document origin is opaque"/>
 </enum>
 
 <enum name="MappedCSSProperties">
@@ -64173,6 +64186,7 @@ Full version information for the fingerprint enum values:
   <int value="12" label="WebAppDisabled"/>
   <int value="13" label="InstallURLRedirected"/>
   <int value="14" label="InstallURLLoadFailed"/>
+  <int value="15" label="ExpectedAppIdCheckFailed"/>
 </enum>
 
 <enum name="WebAppInstallSource">

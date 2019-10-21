@@ -1193,6 +1193,25 @@ void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
   object->SetAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
 }
 
+bool LocalFrameView::RequiresMainThreadScrollingForBackgroundAttachmentFixed()
+    const {
+  if (background_attachment_fixed_objects_.IsEmpty())
+    return false;
+  if (background_attachment_fixed_objects_.size() > 1)
+    return true;
+
+  const auto* object =
+      ToLayoutBoxModelObject(*background_attachment_fixed_objects_.begin());
+  // We should not add such object in the set.
+  DCHECK(!object->BackgroundTransfersToView());
+  // If the background is viewport background and it paints onto the main
+  // graphics layer only, then it doesn't need main thread scrolling.
+  if (object->IsLayoutView() &&
+      object->GetBackgroundPaintLocation() == kBackgroundPaintInGraphicsLayer)
+    return false;
+  return true;
+}
+
 void LocalFrameView::AddViewportConstrainedObject(LayoutObject& object) {
   if (!viewport_constrained_objects_)
     viewport_constrained_objects_ = std::make_unique<ObjectSet>();
@@ -4210,7 +4229,7 @@ MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()
   if (ShouldThrottleRendering())
     return reasons;
 
-  if (HasBackgroundAttachmentFixedObjects()) {
+  if (RequiresMainThreadScrollingForBackgroundAttachmentFixed()) {
     reasons |=
         cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
   }

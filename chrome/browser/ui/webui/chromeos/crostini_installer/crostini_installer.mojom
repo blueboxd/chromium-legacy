@@ -4,6 +4,8 @@
 
 module chromeos.crostini_installer.mojom;
 
+import "chrome/browser/chromeos/crostini/crostini_installer_types.mojom";
+
 // Lives in the browser process. A renderer uses this to create a page handler
 // for controlling Crostini installation.
 interface PageHandlerFactory {
@@ -31,4 +33,14 @@ interface PageHandler {
 // Lives in the renderer process. The browser uses this to sends installation
 // updates to the web page in the render.
 interface Page {
+  // Callback to receive the install progress once the installation has
+  // started.
+  OnProgressUpdate(crostini.mojom.InstallerState install_state,
+                   double progress_fraction);
+  // This is called when the installation finished. |error| is kNone if the
+  // install succeeded.
+  OnInstallFinished(crostini.mojom.InstallerError error);
+  // After user cancels the installation, this is called when the cancellation
+  // finishes.
+  OnCanceled();
 };

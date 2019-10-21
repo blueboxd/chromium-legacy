@@ -38,6 +38,10 @@ class KeystoreKeysCryptographer {
     return keystore_keys_;
   }
 
+  // Returns name of Nigori key derived from last keystore key if !IsEmpty()
+  // and empty string otherwise.
+  std::string GetLastKeystoreKeyName() const;
+
   bool IsEmpty() const;
 
   std::unique_ptr<KeystoreKeysCryptographer> Clone() const;

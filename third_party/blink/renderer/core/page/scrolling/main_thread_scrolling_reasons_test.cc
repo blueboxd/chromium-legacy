@@ -103,6 +103,8 @@ class MainThreadScrollingReasonsTest : public testing::Test {
   frame_test_helpers::WebViewHelper helper_;
 };
 
+// More cases are tested in LocalFrameViewTest
+// .RequiresMainThreadScrollingForBackgroundFixedAttachment.
 TEST_F(MainThreadScrollingReasonsTest,
        BackgroundAttachmentFixedShouldTriggerMainThreadScroll) {
   RegisterMockedHttpURLLoad("iframe-background-attachment-fixed.html");

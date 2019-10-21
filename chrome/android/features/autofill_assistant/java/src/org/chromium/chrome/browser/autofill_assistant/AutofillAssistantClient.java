@@ -112,6 +112,8 @@ class AutofillAssistantClient {
                 AutofillAssistantClient.this, initialUrl, experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
                 parameters.values().toArray(new String[parameters.size()]), onboardingCoordinator,
+                /* onboardingShown= */
+                onboardingCoordinator != null && onboardingCoordinator.getOnboardingShown(),
                 AutofillAssistantServiceInjector.getServiceToInject());
     }
 
@@ -344,7 +346,8 @@ class AutofillAssistantClient {
         AutofillAssistantClient fromWebContents(WebContents webContents);
         boolean start(long nativeClientAndroid, AutofillAssistantClient caller, String initialUrl,
                 String experimentIds, String[] parameterNames, String[] parameterValues,
-                @Nullable AssistantOnboardingCoordinator onboardingCoordinator, long nativeService);
+                @Nullable AssistantOnboardingCoordinator onboardingCoordinator,
+                boolean onboardingShown, long nativeService);
         void onAccessToken(long nativeClientAndroid, AutofillAssistantClient caller,
                 boolean success, String accessToken);
         String getPrimaryAccountName(long nativeClientAndroid, AutofillAssistantClient caller);

@@ -60,6 +60,18 @@ class MockConsumer : public FormFetcher::Consumer {
   MOCK_METHOD0(OnFetchCompleted, void());
 };
 
+// MockConsumer that takes ownership of the FormFetcher itself.
+class MockOwningConsumer : public FormFetcher::Consumer {
+ public:
+  explicit MockOwningConsumer(std::unique_ptr<FormFetcher> form_fetcher)
+      : form_fetcher_(std::move(form_fetcher)) {}
+
+  MOCK_METHOD0(OnFetchCompleted, void());
+
+ private:
+  std::unique_ptr<FormFetcher> form_fetcher_;
+};
+
 class NameFilter : public StubCredentialsFilter {
  public:
   // This class filters out all credentials which have |name| as
@@ -701,6 +713,29 @@ TEST_P(FormFetcherImplTest, RemoveConsumer) {
   form_fetcher_->RemoveConsumer(&consumer_);
   EXPECT_CALL(consumer_, OnFetchCompleted).Times(0);
   form_fetcher_->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
+}
+
+// Check that destroying the fetcher while notifying its consumers is handled
+// gracefully.
+TEST_P(FormFetcherImplTest, DestroyFetcherFromConsumer) {
+  Fetch();
+
+  // Construct an owning consumer and register it and a regular consumer.
+  auto* form_fetcher = form_fetcher_.get();
+  auto owning_consumer =
+      std::make_unique<MockOwningConsumer>(std::move(form_fetcher_));
+  form_fetcher->AddConsumer(owning_consumer.get());
+  form_fetcher->AddConsumer(&consumer_);
+
+  // Destroy the form fetcher when notifying the owning consumer. Make sure the
+  // second consumer does not get notified anymore.
+  EXPECT_CALL(*owning_consumer, OnFetchCompleted).WillOnce([&owning_consumer] {
+    owning_consumer.reset();
+  });
+
+  EXPECT_CALL(consumer_, OnFetchCompleted).Times(0);
+  form_fetcher->OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>>());
 }
 

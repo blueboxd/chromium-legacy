@@ -27,7 +27,6 @@ void MockVendorTagOps::Bind(
     mojo::PendingReceiver<cros::mojom::VendorTagOps> receiver) {
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  cros::mojom::CameraModulePtrInfo ptr_info;
   mock_vendor_tag_ops_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&MockVendorTagOps::BindOnThread, base::Unretained(this),

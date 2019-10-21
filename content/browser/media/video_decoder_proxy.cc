@@ -34,12 +34,12 @@ void VideoDecoderProxy::CreateAudioDecoder(
     mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) {}
 
 void VideoDecoderProxy::CreateVideoDecoder(
-    media::mojom::VideoDecoderRequest request) {
+    mojo::PendingReceiver<media::mojom::VideoDecoder> receiver) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   InterfaceFactory* factory = GetMediaInterfaceFactory();
   if (factory)
-    factory->CreateVideoDecoder(std::move(request));
+    factory->CreateVideoDecoder(std::move(receiver));
 }
 
 void VideoDecoderProxy::CreateDefaultRenderer(

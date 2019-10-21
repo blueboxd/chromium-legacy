@@ -1992,6 +1992,9 @@ static void ActivityLoggingSetterForAllWorldsLongAttributeAttributeSetter(
   impl->setActivityLoggingSetterForAllWorldsLongAttribute(cpp_value);
 }
 
+// Define a private property key shared between getter and setter.
+static int cached_attribute_any_attribute_private_property_key;
+
 static void CachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -2000,6 +2003,7 @@ static void CachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbac
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
+          &cached_attribute_any_attribute_private_property_key,
           "TestObject#CachedAttributeAnyAttribute");
   if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
     v8::Local<v8::Value> v8_value;
@@ -2036,9 +2040,14 @@ static void CachedAttributeAnyAttributeAttributeSetter(
   // [CachedAttribute]
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
-      isolate, "TestObject#CachedAttributeAnyAttribute")
+      isolate,
+      &cached_attribute_any_attribute_private_property_key,
+      "TestObject#CachedAttributeAnyAttribute")
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
+
+// Define a private property key shared between getter and setter.
+static int cached_array_attribute_private_property_key;
 
 static void CachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2048,6 +2057,7 @@ static void CachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
+          &cached_array_attribute_private_property_key,
           "TestObject#CachedArrayAttribute");
   if (!static_cast<const TestObject*>(impl)->isFrozenArrayDirty()) {
     v8::Local<v8::Value> v8_value;
@@ -2088,9 +2098,43 @@ static void CachedArrayAttributeAttributeSetter(
   // [CachedAttribute]
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
-      isolate, "TestObject#CachedArrayAttribute")
+      isolate,
+      &cached_array_attribute_private_property_key,
+      "TestObject#CachedArrayAttribute")
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
+
+static void ReadonlyCachedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestObject* impl = V8TestObject::ToImpl(holder);
+
+  // [CachedAttribute]
+  static int readonly_cached_attribute_private_property_key;
+
+  V8PrivateProperty::Symbol property_symbol =
+      V8PrivateProperty::GetSymbol(info.GetIsolate(),
+          &readonly_cached_attribute_private_property_key,
+          "TestObject#ReadonlyCachedAttribute");
+  if (!static_cast<const TestObject*>(impl)->isStringDirty()) {
+    v8::Local<v8::Value> v8_value;
+    if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {
+      V8SetReturnValue(info, v8_value);
+      return;
+    }
+  }
+
+  String cpp_value(impl->readonlyCachedAttribute());
+
+  // [CachedAttribute]
+  v8::Local<v8::Value> v8_value(V8String(info.GetIsolate(), cpp_value));
+  property_symbol.Set(holder, v8_value);
+
+  V8SetReturnValue(info, v8_value);
+}
+
+// Define a private property key shared between getter and setter.
+static int cached_string_or_none_attribute_private_property_key;
 
 static void CachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2100,6 +2144,7 @@ static void CachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbac
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
+          &cached_string_or_none_attribute_private_property_key,
           "TestObject#CachedStringOrNoneAttribute");
   if (!static_cast<const TestObject*>(impl)->isStringDirty()) {
     v8::Local<v8::Value> v8_value;
@@ -2138,7 +2183,9 @@ static void CachedStringOrNoneAttributeAttributeSetter(
   // [CachedAttribute]
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
-      isolate, "TestObject#CachedStringOrNoneAttribute")
+      isolate,
+      &cached_string_or_none_attribute_private_property_key,
+      "TestObject#CachedStringOrNoneAttribute")
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
 
@@ -3100,6 +3147,9 @@ static void RaisesExceptionTestInterfaceEmptyAttributeAttributeSetter(
   impl->setRaisesExceptionTestInterfaceEmptyAttribute(cpp_value, exception_state);
 }
 
+// Define a private property key shared between getter and setter.
+static int cached_attribute_raises_exception_getter_any_attribute_private_property_key;
+
 static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -3108,6 +3158,7 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
   // [CachedAttribute]
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
+          &cached_attribute_raises_exception_getter_any_attribute_private_property_key,
           "TestObject#CachedAttributeRaisesExceptionGetterAnyAttribute");
   if (!static_cast<const TestObject*>(impl)->isValueDirty()) {
     v8::Local<v8::Value> v8_value;
@@ -3151,7 +3202,9 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(
   // [CachedAttribute]
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
-      isolate, "TestObject#CachedAttributeRaisesExceptionGetterAnyAttribute")
+      isolate,
+      &cached_attribute_raises_exception_getter_any_attribute_private_property_key,
+      "TestObject#CachedAttributeRaisesExceptionGetterAnyAttribute")
       .DeleteProperty(holder, v8::Undefined(isolate));
 }
 
@@ -10283,6 +10336,12 @@ void V8TestObject::CachedArrayAttributeAttributeSetterCallback(
   test_object_v8_internal::CachedArrayAttributeAttributeSetter(v8_value, info);
 }
 
+void V8TestObject::ReadonlyCachedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_readonlyCachedAttribute_Getter");
+
+  test_object_v8_internal::ReadonlyCachedAttributeAttributeGetter(info);
+}
+
 void V8TestObject::CachedStringOrNoneAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_cachedStringOrNoneAttribute_Getter");
 
@@ -13346,6 +13405,7 @@ static void InstallV8TestObjectTemplate(
       { "activityLoggingSetterForAllWorldsLongAttribute", V8TestObject::ActivityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback, V8TestObject::ActivityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
       { "cachedAttributeAnyAttribute", V8TestObject::CachedAttributeAnyAttributeAttributeGetterCallback, V8TestObject::CachedAttributeAnyAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
       { "cachedArrayAttribute", V8TestObject::CachedArrayAttributeAttributeGetterCallback, V8TestObject::CachedArrayAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "readonlyCachedAttribute", V8TestObject::ReadonlyCachedAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
       { "cachedStringOrNoneAttribute", V8TestObject::CachedStringOrNoneAttributeAttributeGetterCallback, V8TestObject::CachedStringOrNoneAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
       { "callWithExecutionContextAnyAttribute", V8TestObject::CallWithExecutionContextAnyAttributeAttributeGetterCallback, V8TestObject::CallWithExecutionContextAnyAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
       { "callWithScriptStateAnyAttribute", V8TestObject::CallWithScriptStateAnyAttributeAttributeGetterCallback, V8TestObject::CallWithScriptStateAnyAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },

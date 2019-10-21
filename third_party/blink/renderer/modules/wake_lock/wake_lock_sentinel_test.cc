@@ -103,4 +103,40 @@ TEST(WakeLockSentinelTest, ContextDestruction) {
   EXPECT_FALSE(sentinel->HasPendingActivity());
 }
 
+TEST(WakeLockSentinelTest, HasPendingActivityConditions) {
+  MockWakeLockService wake_lock_service;
+  WakeLockTestingContext context(&wake_lock_service);
+
+  auto* manager = MakeGarbageCollected<WakeLockManager>(context.GetDocument(),
+                                                        WakeLockType::kScreen);
+  auto* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise promise = resolver->Promise();
+  manager->AcquireWakeLock(resolver);
+  context.WaitForPromiseFulfillment(promise);
+  auto* sentinel =
+      ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(promise);
+  ASSERT_TRUE(sentinel);
+
+  // A new WakeLockSentinel was created and it can be GC'ed.
+  EXPECT_FALSE(sentinel->HasPendingActivity());
+
+  base::RunLoop run_loop;
+  auto* event_listener =
+      MakeGarbageCollected<SyncEventListener>(run_loop.QuitClosure());
+  sentinel->addEventListener(event_type_names::kRelease, event_listener);
+
+  // The sentinel cannot be GC'ed, it has an event listener and it has not been
+  // released.
+  EXPECT_TRUE(sentinel->HasPendingActivity());
+
+  // An event such as a page visibility change will eventually call this method.
+  manager->ClearWakeLocks();
+  run_loop.Run();
+
+  // The sentinel can be GC'ed even though it still has an event listener, as
+  // it has already been released.
+  EXPECT_FALSE(sentinel->HasPendingActivity());
+}
+
 }  // namespace blink

@@ -67,7 +67,9 @@ enum class InstallResultCode {
   kInstallURLRedirected = 13,
   // The network request for the install URL failed or timed out.
   kInstallURLLoadFailed = 14,
-  kMaxValue = kInstallURLLoadFailed
+  // The requested app_id check failed: actual resulting app_id doesn't match.
+  kExpectedAppIdCheckFailed = 15,
+  kMaxValue = kExpectedAppIdCheckFailed
 };
 
 // Checks if InstallResultCode is not a failure.

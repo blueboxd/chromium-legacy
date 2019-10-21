@@ -69,10 +69,10 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
       // |caret_position| here.
       return PositionWithAffinityTemplate<Strategy>();
     }
-    DCHECK(caret_position.fragment);
-    DCHECK(caret_position.fragment->ContainerLineBox());
+    DCHECK(caret_position.PaintFragment());
+    DCHECK(caret_position.PaintFragment()->ContainerLineBox());
     const NGPaintFragment* line_box_paint =
-        caret_position.fragment->ContainerLineBox();
+        caret_position.PaintFragment()->ContainerLineBox();
     const NGPhysicalLineBoxFragment& line_box =
         To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
     const PhysicalOffset start_point = line_box.LineStartPoint();
@@ -255,10 +255,10 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
       // |caret_position| here.
       return PositionWithAffinityTemplate<Strategy>();
     }
-    DCHECK(caret_position.fragment);
-    DCHECK(caret_position.fragment->ContainerLineBox());
+    DCHECK(caret_position.PaintFragment());
+    DCHECK(caret_position.PaintFragment()->ContainerLineBox());
     const NGPaintFragment* line_box_paint =
-        caret_position.fragment->ContainerLineBox();
+        caret_position.PaintFragment()->ContainerLineBox();
     const NGPhysicalLineBoxFragment& line_box =
         To<NGPhysicalLineBoxFragment>(line_box_paint->PhysicalFragment());
     const PhysicalOffset end_point = line_box.LineEndPoint();

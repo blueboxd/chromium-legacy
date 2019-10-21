@@ -37,8 +37,9 @@ class LocalCameraClientObserver : public CameraClientObserver {
       scoped_refptr<CameraHalDelegate> camera_hal_delegate)
       : camera_hal_delegate_(std::move(camera_hal_delegate)) {}
 
-  void OnChannelCreated(cros::mojom::CameraModulePtr camera_module) override {
-    camera_hal_delegate_->SetCameraModule(camera_module.PassInterface());
+  void OnChannelCreated(
+      mojo::PendingRemote<cros::mojom::CameraModule> camera_module) override {
+    camera_hal_delegate_->SetCameraModule(std::move(camera_module));
   }
 
  private:
@@ -113,10 +114,10 @@ void CameraHalDelegate::RegisterCameraClient() {
 }
 
 void CameraHalDelegate::SetCameraModule(
-    cros::mojom::CameraModulePtrInfo camera_module_ptr_info) {
+    mojo::PendingRemote<cros::mojom::CameraModule> camera_module) {
   ipc_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&CameraHalDelegate::SetCameraModuleOnIpcThread,
-                                this, base::Passed(&camera_module_ptr_info)));
+                                this, std::move(camera_module)));
 }
 
 void CameraHalDelegate::Reset() {
@@ -348,24 +349,24 @@ int CameraHalDelegate::GetCameraIdFromDeviceId(const std::string& device_id) {
 }
 
 void CameraHalDelegate::SetCameraModuleOnIpcThread(
-    cros::mojom::CameraModulePtrInfo camera_module_ptr_info) {
+    mojo::PendingRemote<cros::mojom::CameraModule> camera_module) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (camera_module_.is_bound()) {
     LOG(ERROR) << "CameraModule is already bound";
     return;
   }
-  camera_module_ = mojo::MakeProxy(std::move(camera_module_ptr_info));
-  camera_module_.set_connection_error_handler(
-      base::BindOnce(&CameraHalDelegate::ResetMojoInterfaceOnIpcThread, this));
+  if (camera_module.is_valid()) {
+    camera_module_.Bind(std::move(camera_module));
+    camera_module_.set_disconnect_handler(base::BindOnce(
+        &CameraHalDelegate::ResetMojoInterfaceOnIpcThread, this));
+  }
   camera_module_has_been_set_.Signal();
 }
 
 void CameraHalDelegate::ResetMojoInterfaceOnIpcThread() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   camera_module_.reset();
-  if (camera_module_callbacks_.is_bound()) {
-    camera_module_callbacks_.Close();
-  }
+  camera_module_callbacks_.reset();
   vendor_tag_ops_delegate_.Reset();
   builtin_camera_info_updated_.Reset();
   camera_module_has_been_set_.Reset();
@@ -416,12 +417,8 @@ void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
   // Per camera HAL v3 specification SetCallbacks() should be called after the
   // first time GetNumberOfCameras() is called, and before other CameraModule
   // functions are called.
-  cros::mojom::CameraModuleCallbacksPtr camera_module_callbacks_ptr;
-  cros::mojom::CameraModuleCallbacksRequest camera_module_callbacks_request =
-      mojo::MakeRequest(&camera_module_callbacks_ptr);
-  camera_module_callbacks_.Bind(std::move(camera_module_callbacks_request));
   camera_module_->SetCallbacks(
-      std::move(camera_module_callbacks_ptr),
+      camera_module_callbacks_.BindNewPipeAndPassRemote(),
       base::BindOnce(&CameraHalDelegate::OnSetCallbacksOnIpcThread, this));
 
   camera_module_->GetVendorTagOps(

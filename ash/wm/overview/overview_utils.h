@@ -9,9 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_animation_type.h"
-#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
-#include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
@@ -77,18 +75,6 @@ bool IsSlidingOutOverviewFromShelf();
 
 // Maximize the window if it is snapped without animation.
 void MaximizeIfSnapped(aura::Window* window);
-
-// Get the grid bounds if a window is snapped in splitview, or what they will be
-// when snapped based on |indicator_state|.
-gfx::Rect GetGridBoundsInScreenForSplitview(
-    aura::Window* window,
-    base::Optional<IndicatorState> indicator_state = base::nullopt);
-
-// Gets the bounds of a window if it were to be snapped or about to be snapped
-// in splitview. Returns nothing if we are not in tablet mode, or if we aren't
-// in splitview, or if we aren't showing a splitview preview.
-base::Optional<gfx::RectF> GetSplitviewBoundsMaintainingAspectRatio(
-    aura::Window* window);
 
 // Check if kNewOverviewLayout is enabled for tablet mode.
 bool ShouldUseTabletModeGridLayout();

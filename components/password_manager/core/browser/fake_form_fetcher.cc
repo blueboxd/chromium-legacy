@@ -19,11 +19,11 @@ FakeFormFetcher::FakeFormFetcher() = default;
 FakeFormFetcher::~FakeFormFetcher() = default;
 
 void FakeFormFetcher::AddConsumer(Consumer* consumer) {
-  consumers_.insert(consumer);
+  consumers_.AddObserver(consumer);
 }
 
 void FakeFormFetcher::RemoveConsumer(Consumer* consumer) {
-  consumers_.erase(consumer);
+  consumers_.RemoveObserver(consumer);
 }
 
 FormFetcher::State FakeFormFetcher::GetState() const {
@@ -77,8 +77,8 @@ void FakeFormFetcher::SetBlacklisted(bool is_blacklisted) {
 
 void FakeFormFetcher::NotifyFetchCompleted() {
   state_ = State::NOT_WAITING;
-  for (Consumer* consumer : consumers_)
-    consumer->OnFetchCompleted();
+  for (Consumer& consumer : consumers_)
+    consumer.OnFetchCompleted();
 }
 
 void FakeFormFetcher::Fetch() {

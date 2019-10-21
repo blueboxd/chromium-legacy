@@ -5,10 +5,10 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FAKE_FORM_FETCHER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_FAKE_FORM_FETCHER_H_
 
-#include <set>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -87,7 +87,7 @@ class FakeFormFetcher : public FormFetcher {
   std::unique_ptr<FormFetcher> Clone() override;
 
  private:
-  std::set<Consumer*> consumers_;
+  base::ObserverList<Consumer> consumers_;
   State state_ = State::NOT_WAITING;
   autofill::PasswordForm::Scheme scheme_ =
       autofill::PasswordForm::Scheme::kHtml;

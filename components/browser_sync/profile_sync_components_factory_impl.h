@@ -78,9 +78,6 @@ class ProfileSyncComponentsFactoryImpl
       const std::string& name,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs) override;
-  syncer::SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
-      syncer::UserShare* user_share) override;
 
  private:
   // Factory function for ModelTypeController instances for models living on

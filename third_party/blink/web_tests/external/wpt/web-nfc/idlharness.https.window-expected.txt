@@ -40,53 +40,53 @@ PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "arrayBuffer()" with the proper type
 PASS NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "json()" with the proper type
 FAIL NDEFRecord interface: new NDEFRecord({"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}); must inherit property "toRecords()" with the proper type assert_inherits: property "toRecords" not found in prototype chain
-PASS NFCWriter interface: existence and properties of interface object
-PASS NFCWriter interface object length
-PASS NFCWriter interface object name
-PASS NFCWriter interface: existence and properties of interface prototype object
-PASS NFCWriter interface: existence and properties of interface prototype object's "constructor" property
-PASS NFCWriter interface: existence and properties of interface prototype object's @@unscopables property
-PASS NFCWriter interface: operation push(NDEFMessageSource, NFCPushOptions)
-PASS NFCWriter must be primary interface of new NFCWriter();
-PASS Stringification of new NFCWriter();
-PASS NFCWriter interface: new NFCWriter(); must inherit property "push(NDEFMessageSource, NFCPushOptions)" with the proper type
-PASS NFCWriter interface: calling push(NDEFMessageSource, NFCPushOptions) on new NFCWriter(); with too few arguments must throw TypeError
-PASS NFCReader interface: existence and properties of interface object
-PASS NFCReader interface object length
-PASS NFCReader interface object name
-PASS NFCReader interface: existence and properties of interface prototype object
-PASS NFCReader interface: existence and properties of interface prototype object's "constructor" property
-PASS NFCReader interface: existence and properties of interface prototype object's @@unscopables property
-PASS NFCReader interface: attribute onreading
-PASS NFCReader interface: attribute onerror
-PASS NFCReader interface: operation scan(NFCScanOptions)
-PASS NFCReader must be primary interface of new NFCReader();
-PASS Stringification of new NFCReader();
-PASS NFCReader interface: new NFCReader(); must inherit property "onreading" with the proper type
-PASS NFCReader interface: new NFCReader(); must inherit property "onerror" with the proper type
-PASS NFCReader interface: new NFCReader(); must inherit property "scan(NFCScanOptions)" with the proper type
-PASS NFCReader interface: calling scan(NFCScanOptions) on new NFCReader(); with too few arguments must throw TypeError
-PASS NFCReadingEvent interface: existence and properties of interface object
-PASS NFCReadingEvent interface object length
-PASS NFCReadingEvent interface object name
-PASS NFCReadingEvent interface: existence and properties of interface prototype object
-PASS NFCReadingEvent interface: existence and properties of interface prototype object's "constructor" property
-PASS NFCReadingEvent interface: existence and properties of interface prototype object's @@unscopables property
-PASS NFCReadingEvent interface: attribute serialNumber
-PASS NFCReadingEvent interface: attribute message
-PASS NFCReadingEvent must be primary interface of new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
-PASS Stringification of new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
-PASS NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "serialNumber" with the proper type
-PASS NFCReadingEvent interface: new NFCReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "message" with the proper type
-PASS NFCErrorEvent interface: existence and properties of interface object
-PASS NFCErrorEvent interface object length
-PASS NFCErrorEvent interface object name
-PASS NFCErrorEvent interface: existence and properties of interface prototype object
-PASS NFCErrorEvent interface: existence and properties of interface prototype object's "constructor" property
-PASS NFCErrorEvent interface: existence and properties of interface prototype object's @@unscopables property
-PASS NFCErrorEvent interface: attribute error
-PASS NFCErrorEvent must be primary interface of new NFCErrorEvent("error", { error: new DOMException() });
-PASS Stringification of new NFCErrorEvent("error", { error: new DOMException() });
-PASS NFCErrorEvent interface: new NFCErrorEvent("error", { error: new DOMException() }); must inherit property "error" with the proper type
+PASS NDEFWriter interface: existence and properties of interface object
+PASS NDEFWriter interface object length
+PASS NDEFWriter interface object name
+PASS NDEFWriter interface: existence and properties of interface prototype object
+PASS NDEFWriter interface: existence and properties of interface prototype object's "constructor" property
+PASS NDEFWriter interface: existence and properties of interface prototype object's @@unscopables property
+PASS NDEFWriter interface: operation push(NDEFMessageSource, NDEFPushOptions)
+PASS NDEFWriter must be primary interface of new NDEFWriter();
+PASS Stringification of new NDEFWriter();
+PASS NDEFWriter interface: new NDEFWriter(); must inherit property "push(NDEFMessageSource, NDEFPushOptions)" with the proper type
+PASS NDEFWriter interface: calling push(NDEFMessageSource, NDEFPushOptions) on new NDEFWriter(); with too few arguments must throw TypeError
+PASS NDEFReader interface: existence and properties of interface object
+PASS NDEFReader interface object length
+PASS NDEFReader interface object name
+PASS NDEFReader interface: existence and properties of interface prototype object
+PASS NDEFReader interface: existence and properties of interface prototype object's "constructor" property
+PASS NDEFReader interface: existence and properties of interface prototype object's @@unscopables property
+PASS NDEFReader interface: attribute onreading
+PASS NDEFReader interface: attribute onerror
+PASS NDEFReader interface: operation scan(NDEFScanOptions)
+PASS NDEFReader must be primary interface of new NDEFReader();
+PASS Stringification of new NDEFReader();
+PASS NDEFReader interface: new NDEFReader(); must inherit property "onreading" with the proper type
+PASS NDEFReader interface: new NDEFReader(); must inherit property "onerror" with the proper type
+PASS NDEFReader interface: new NDEFReader(); must inherit property "scan(NDEFScanOptions)" with the proper type
+PASS NDEFReader interface: calling scan(NDEFScanOptions) on new NDEFReader(); with too few arguments must throw TypeError
+PASS NDEFReadingEvent interface: existence and properties of interface object
+PASS NDEFReadingEvent interface object length
+PASS NDEFReadingEvent interface object name
+PASS NDEFReadingEvent interface: existence and properties of interface prototype object
+PASS NDEFReadingEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS NDEFReadingEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS NDEFReadingEvent interface: attribute serialNumber
+PASS NDEFReadingEvent interface: attribute message
+PASS NDEFReadingEvent must be primary interface of new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
+PASS Stringification of new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} })
+PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "serialNumber" with the proper type
+PASS NDEFReadingEvent interface: new NDEFReadingEvent("reading", { message: {"url":"/custom/path","records":[{"recordType":"text","mediaType":"text/plain","data":"Hello World","id":"/custom/path"}]} }) must inherit property "message" with the proper type
+PASS NDEFErrorEvent interface: existence and properties of interface object
+PASS NDEFErrorEvent interface object length
+PASS NDEFErrorEvent interface object name
+PASS NDEFErrorEvent interface: existence and properties of interface prototype object
+PASS NDEFErrorEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS NDEFErrorEvent interface: existence and properties of interface prototype object's @@unscopables property
+PASS NDEFErrorEvent interface: attribute error
+PASS NDEFErrorEvent must be primary interface of new NDEFErrorEvent("error", { error: new DOMException() });
+PASS Stringification of new NDEFErrorEvent("error", { error: new DOMException() });
+PASS NDEFErrorEvent interface: new NDEFErrorEvent("error", { error: new DOMException() }); must inherit property "error" with the proper type
 Harness: the test ran to completion.
 

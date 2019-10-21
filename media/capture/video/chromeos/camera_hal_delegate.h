@@ -20,7 +20,9 @@
 #include "media/capture/video/chromeos/vendor_tag_ops_delegate.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video_capture_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -46,7 +48,8 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // Registers the camera client observer to the CameraHalDispatcher instance.
   void RegisterCameraClient();
 
-  void SetCameraModule(cros::mojom::CameraModulePtrInfo camera_module_ptr_info);
+  void SetCameraModule(
+      mojo::PendingRemote<cros::mojom::CameraModule> camera_module);
 
   // Resets various mojo bindings, WaitableEvents, and cached information.
   void Reset();
@@ -86,7 +89,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
   ~CameraHalDelegate() final;
 
   void SetCameraModuleOnIpcThread(
-      cros::mojom::CameraModulePtrInfo camera_module_ptr_info);
+      mojo::PendingRemote<cros::mojom::CameraModule> camera_module);
 
   // Resets the Mojo interface and bindings.
   void ResetMojoInterfaceOnIpcThread();
@@ -174,11 +177,11 @@ class CAPTURE_EXPORT CameraHalDelegate final
 
   // The Mojo proxy to access the camera module at the remote camera HAL.  Bound
   // to |ipc_task_runner_|.
-  cros::mojom::CameraModulePtr camera_module_;
+  mojo::Remote<cros::mojom::CameraModule> camera_module_;
 
-  // The Mojo binding serving the camera module callbacks.  Bound to
+  // The Mojo receiver serving the camera module callbacks.  Bound to
   // |ipc_task_runner_|.
-  mojo::Binding<cros::mojom::CameraModuleCallbacks> camera_module_callbacks_;
+  mojo::Receiver<cros::mojom::CameraModuleCallbacks> camera_module_callbacks_;
 
   // An internal delegate to handle VendorTagOps mojo connection and query
   // information of vendor tags.  Bound to |ipc_task_runner_|.

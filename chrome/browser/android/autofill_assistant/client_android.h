@@ -47,6 +47,7 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobjectArray>& parameter_names,
       const base::android::JavaParamRef<jobjectArray>& parameter_values,
       const base::android::JavaParamRef<jobject>& jonboarding_coordinator,
+      jboolean jonboarding_shown,
       jlong jservice);
   void DestroyUI(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& jcaller);

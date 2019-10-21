@@ -52,7 +52,10 @@ DeviceInfo::DeviceInfo(const std::string& guid,
       hardware_info_(hardware_info),
       last_updated_timestamp_(last_updated_timestamp),
       send_tab_to_self_receiving_enabled_(send_tab_to_self_receiving_enabled),
-      sharing_info_(sharing_info) {}
+      sharing_info_(sharing_info) {
+  // We do not store device's serial number in DeviceInfo.
+  hardware_info_.serial_number.clear();
+}
 
 DeviceInfo::~DeviceInfo() {}
 
@@ -144,6 +147,7 @@ bool DeviceInfo::Equals(const DeviceInfo& other) const {
          this->sync_user_agent() == other.sync_user_agent() &&
          this->device_type() == other.device_type() &&
          this->signin_scoped_device_id() == other.signin_scoped_device_id() &&
+         this->hardware_info() == other.hardware_info() &&
          this->send_tab_to_self_receiving_enabled() ==
              other.send_tab_to_self_receiving_enabled() &&
          this->sharing_info() == other.sharing_info();
@@ -174,6 +178,10 @@ void DeviceInfo::set_send_tab_to_self_receiving_enabled(bool new_value) {
 void DeviceInfo::set_sharing_info(
     const base::Optional<SharingInfo>& sharing_info) {
   sharing_info_ = sharing_info;
+}
+
+void DeviceInfo::set_client_name(const std::string& client_name) {
+  client_name_ = client_name;
 }
 
 }  // namespace syncer

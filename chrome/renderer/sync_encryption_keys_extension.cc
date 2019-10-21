@@ -10,11 +10,13 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/arguments.h"
 #include "gin/function_template.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "url/origin.h"
@@ -45,13 +47,17 @@ void SyncEncryptionKeysExtension::OnDestruct() {
   delete this;
 }
 
-void SyncEncryptionKeysExtension::DidClearWindowObject() {
+void SyncEncryptionKeysExtension::DidCreateScriptContext(
+    v8::Local<v8::Context> v8_context,
+    int32_t world_id) {
   if (!render_frame()) {
     return;
   }
 
   url::Origin origin = render_frame()->GetWebFrame()->GetSecurityOrigin();
-  if (origin == GetAllowedOrigin()) {
+  if (render_frame()->IsMainFrame() &&
+      world_id == content::ISOLATED_WORLD_ID_GLOBAL &&
+      origin == GetAllowedOrigin()) {
     Install();
   }
 }
@@ -63,8 +69,9 @@ void SyncEncryptionKeysExtension::Install() {
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       render_frame()->GetWebFrame()->MainWorldScriptContext();
-  if (context.IsEmpty())
+  if (context.IsEmpty()) {
     return;
+  }
 
   v8::Context::Scope context_scope(context);
 
@@ -118,16 +125,22 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
   auto global_callback =
       std::make_unique<v8::Global<v8::Function>>(args->isolate(), callback);
 
-  // TODO(crbug.com/1000146): Pass along the encryption keys to the browser
-  // process.
-  NOTIMPLEMENTED();
-  RunCompletionCallback(std::move(global_callback));
+  if (!remote_.is_bound()) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&remote_);
+  }
+
+  remote_->SetEncryptionKeys(
+      encryption_keys, account_id,
+      base::BindOnce(&SyncEncryptionKeysExtension::RunCompletionCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(global_callback)));
 }
 
 void SyncEncryptionKeysExtension::RunCompletionCallback(
     std::unique_ptr<v8::Global<v8::Function>> callback) {
-  if (!render_frame())
+  if (!render_frame()) {
     return;
+  }
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);

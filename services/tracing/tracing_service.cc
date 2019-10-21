@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/tracing/agent_registry.h"
 #include "services/tracing/coordinator.h"
@@ -34,14 +34,15 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
       : connector_(connector),
         agent_registry_(agent_registry),
         coordinator_(coordinator) {
-    service_manager::mojom::ServiceManagerPtr service_manager;
-    connector_->BindInterface(service_manager::mojom::kServiceName,
-                              &service_manager);
-    service_manager::mojom::ServiceManagerListenerPtr listener;
-    service_manager::mojom::ServiceManagerListenerRequest request(
-        mojo::MakeRequest(&listener));
+    mojo::Remote<service_manager::mojom::ServiceManager> service_manager;
+    connector_->Connect(service_manager::mojom::kServiceName,
+                        service_manager.BindNewPipeAndPassReceiver());
+    mojo::PendingRemote<service_manager::mojom::ServiceManagerListener>
+        listener;
+    mojo::PendingReceiver<service_manager::mojom::ServiceManagerListener>
+        request(listener.InitWithNewPipeAndPassReceiver());
     service_manager->AddListener(std::move(listener));
-    binding_.Bind(std::move(request));
+    receiver_.Bind(std::move(request));
   }
 
   size_t CountServicesWithPID(uint32_t pid) {
@@ -158,7 +159,8 @@ class ServiceListener : public service_manager::mojom::ServiceManagerListener {
     agent_registry_->BindAgentRegistryReceiver(std::move(registry_receiver));
   }
 
-  mojo::Binding<service_manager::mojom::ServiceManagerListener> binding_{this};
+  mojo::Receiver<service_manager::mojom::ServiceManagerListener> receiver_{
+      this};
   service_manager::Connector* const connector_;
   AgentRegistry* const agent_registry_;
   Coordinator* const coordinator_;

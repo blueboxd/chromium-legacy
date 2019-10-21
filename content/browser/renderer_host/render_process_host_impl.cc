@@ -179,6 +179,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "device/gamepad/gamepad_haptics_manager.h"
+#include "google_apis/gaia/gaia_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -3079,6 +3080,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceOverlayFullscreenVideo,
     switches::kForceVideoOverlays,
     switches::kFullMemoryCrashReport,
+    switches::kGaiaUrl,
     switches::kIPCConnectionTimeout,
     switches::kJavaScriptFlags,
     switches::kLogBestEffortTasks,

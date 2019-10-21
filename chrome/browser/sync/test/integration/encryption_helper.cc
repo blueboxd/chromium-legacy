@@ -179,6 +179,23 @@ std::string PassphraseRequiredStateChecker::GetDebugMessage() const {
          std::string(desired_state_ ? "required" : "not required");
 }
 
+TrustedVaultKeyRequiredStateChecker::TrustedVaultKeyRequiredStateChecker(
+    syncer::ProfileSyncService* service,
+    bool desired_state)
+    : SingleClientStatusChangeChecker(service), desired_state_(desired_state) {}
+
+bool TrustedVaultKeyRequiredStateChecker::IsExitConditionSatisfied() {
+  return service()
+             ->GetUserSettings()
+             ->IsTrustedVaultKeyRequiredForPreferredDataTypes() ==
+         desired_state_;
+}
+
+std::string TrustedVaultKeyRequiredStateChecker::GetDebugMessage() const {
+  return "Waiting until trusted vault keys are " +
+         std::string(desired_state_ ? "required" : "not required");
+}
+
 ScopedScryptFeatureToggler::ScopedScryptFeatureToggler(
     bool force_disabled,
     bool use_for_new_passphrases) {

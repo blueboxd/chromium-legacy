@@ -42,7 +42,7 @@ class ImageSkia;
 // 1. Add an interface to the uninstall, like what is done by
 // extension_uninstall_dialog_->ConfirmUninstallByExtension.
 class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
-                               views::BubbleDialogDelegateView {
+                               public views::BubbleDialogDelegateView {
  public:
   AppUninstallDialogView(Profile* profile,
                          apps::mojom::AppType app_type,

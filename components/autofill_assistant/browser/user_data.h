@@ -86,6 +86,8 @@ struct CollectUserDataOptions {
 
   // If empty, terms and conditions should not be shown.
   std::string accept_terms_and_conditions_text;
+  std::string terms_require_review_text;
+  std::string thirdparty_privacy_notice_text;
   bool show_terms_as_checkbox = false;
 
   std::vector<std::string> supported_basic_card_networks;

@@ -41,8 +41,6 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 namespace {
 
 Position AdjustedSelectionStartForStyleComputation(const Position& position) {
@@ -204,7 +202,7 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
 bool EditingStyleUtilities::IsTransparentColorValue(const CSSValue* css_value) {
   if (!css_value)
     return true;
-  if (auto* color_value = DynamicTo<CSSColorValue>(css_value))
+  if (auto* color_value = DynamicTo<cssvalue::CSSColorValue>(css_value))
     return !color_value->Value().Alpha();
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(css_value))
     return identifier_value->GetValueID() == CSSValueID::kTransparent;

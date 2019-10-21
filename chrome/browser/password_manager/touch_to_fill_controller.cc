@@ -48,7 +48,7 @@ void TouchToFillController::Show(base::span<const CredentialPair> credentials,
   const TouchToFillView::IsOriginSecure is_origin_secure(
       network::IsUrlPotentiallyTrustworthy(url));
   if (base::GetFieldTrialParamByFeatureAsBool(
-          autofill::features::kTouchToFillAndroid, "insecure-origins-only",
+          autofill::features::kAutofillTouchToFill, "insecure-origins-only",
           /*default_value=*/false) &&
       is_origin_secure) {
     driver->TouchToFillDismissed();

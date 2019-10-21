@@ -153,9 +153,6 @@ extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 extern const char kEnableClipboardProviderTextSuggestionsName[];
 extern const char kEnableClipboardProviderTextSuggestionsDescription[];
 
-extern const char kEnableSyncUSSBookmarksName[];
-extern const char kEnableSyncUSSBookmarksDescription[];
-
 extern const char kEnableSyncUSSPasswordsName[];
 extern const char kEnableSyncUSSPasswordsDescription[];
 

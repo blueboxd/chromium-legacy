@@ -38,6 +38,12 @@ constexpr CGFloat PopoverLoadingHeight = 185.5;
 // amount of seconds.
 constexpr CGFloat kMinimumLoadingTime = 0.5;
 
+// Height of the section header.
+constexpr CGFloat kSectionHeaderHeight = 6;
+
+// Height of the section footer.
+constexpr CGFloat kSectionFooterHeight = 14;
+
 }  // namespace
 
 @interface FallbackViewController ()
@@ -83,8 +89,8 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
   [super viewDidLoad];
 
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-  self.tableView.sectionHeaderHeight = 0;
-  self.tableView.sectionFooterHeight = 20.0;
+  self.tableView.sectionHeaderHeight = kSectionHeaderHeight;
+  self.tableView.sectionFooterHeight = kSectionFooterHeight;
   self.tableView.estimatedRowHeight = 1;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
   self.tableView.allowsSelection = NO;

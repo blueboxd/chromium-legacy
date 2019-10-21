@@ -178,7 +178,7 @@ bool IsAtFragmentStart(const NGCaretPosition& caret_position) {
       return false;
     case NGCaretPositionType::kAtTextOffset:
       const auto& text_fragment = To<NGPhysicalTextFragment>(
-          caret_position.fragment->PhysicalFragment());
+          caret_position.PaintFragment()->PhysicalFragment());
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset == text_fragment.StartOffset();
   }
@@ -195,7 +195,7 @@ bool IsAtFragmentEnd(const NGCaretPosition& caret_position) {
       return true;
     case NGCaretPositionType::kAtTextOffset:
       const auto& text_fragment = To<NGPhysicalTextFragment>(
-          caret_position.fragment->PhysicalFragment());
+          caret_position.PaintFragment()->PhysicalFragment());
       DCHECK(caret_position.text_offset.has_value());
       return *caret_position.text_offset == text_fragment.EndOffset();
   }
@@ -205,12 +205,13 @@ bool IsAtFragmentEnd(const NGCaretPosition& caret_position) {
 
 // Returns whether |caret_position| is at the left or right side of fragment.
 SideAffinity GetSideAffinity(const NGCaretPosition& caret_position) {
-  DCHECK(caret_position.fragment);
+  DCHECK(caret_position.PaintFragment());
   DCHECK(IsAtFragmentStart(caret_position) || IsAtFragmentEnd(caret_position));
   const bool is_at_start = IsAtFragmentStart(caret_position);
   const bool is_at_left_side =
-      is_at_start ==
-      IsLtr(caret_position.fragment->PhysicalFragment().ResolvedDirection());
+      is_at_start == IsLtr(caret_position.PaintFragment()
+                               ->PhysicalFragment()
+                               .ResolvedDirection());
   return is_at_left_side ? SideAffinity::kLeft : SideAffinity::kRight;
 }
 
@@ -235,8 +236,9 @@ class AbstractInlineBoxAndSideAffinity {
 
   explicit AbstractInlineBoxAndSideAffinity(
       const NGCaretPosition& caret_position)
-      : box_(*caret_position.fragment), side_(GetSideAffinity(caret_position)) {
-    DCHECK(caret_position.fragment);
+      : box_(*caret_position.PaintFragment()),
+        side_(GetSideAffinity(caret_position)) {
+    DCHECK(caret_position.PaintFragment());
   }
 
   InlineBoxPosition ToInlineBoxPosition() const {
@@ -254,9 +256,11 @@ class AbstractInlineBoxAndSideAffinity {
     const NGPaintFragment& fragment = box_.GetNGPaintFragment();
     const NGPhysicalFragment& physical_fragment = fragment.PhysicalFragment();
     DCHECK(physical_fragment.IsInline());
+    NGInlineCursor cursor;
+    cursor.MoveTo(fragment);
 
     if (physical_fragment.IsBox()) {
-      return {&fragment,
+      return {cursor,
               is_at_start ? NGCaretPositionType::kBeforeBox
                           : NGCaretPositionType::kAfterBox,
               base::nullopt};
@@ -264,7 +268,7 @@ class AbstractInlineBoxAndSideAffinity {
 
     const auto& text_fragment = To<NGPhysicalTextFragment>(physical_fragment);
     return {
-        &fragment, NGCaretPositionType::kAtTextOffset,
+        cursor, NGCaretPositionType::kAtTextOffset,
         is_at_start ? text_fragment.StartOffset() : text_fragment.EndOffset()};
   }
 
@@ -730,8 +734,9 @@ class RangeSelectionAdjuster {
         const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
         if (caret_position.IsNull())
           return RenderedPosition();
-        return RenderedPosition(AbstractInlineBox(*caret_position.fragment),
-                                GetPotentialBidiBoundaryType(caret_position));
+        return RenderedPosition(
+            AbstractInlineBox(*caret_position.PaintFragment()),
+            GetPotentialBidiBoundaryType(caret_position));
       }
 
       const InlineBoxPosition box_position = ComputeInlineBoxPosition(adjusted);

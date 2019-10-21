@@ -1186,7 +1186,7 @@
   },
   {
     "name": "enable-devtools-experiments",
-    "owners": [ "//third_party/blink/renderer/devtools/OWNERS" ],
+    "owners": [ "//third_party/devtools-frontend/src/OWNERS" ],
     // This is a catch-all for ongoing devtools experiments.
     "expiry_milestone": -1
   },

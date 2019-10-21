@@ -28,8 +28,11 @@ using AXStringProperty = mojom::AccessibilityStringProperty;
 
 AccessibilityNodeInfoDataWrapper::AccessibilityNodeInfoDataWrapper(
     AXTreeSourceArc* tree_source,
-    AXNodeInfoData* node)
-    : AccessibilityInfoDataWrapper(tree_source), node_ptr_(node) {}
+    AXNodeInfoData* node,
+    bool is_clickable_leaf)
+    : AccessibilityInfoDataWrapper(tree_source),
+      node_ptr_(node),
+      is_clickable_leaf_(is_clickable_leaf) {}
 
 bool AccessibilityNodeInfoDataWrapper::IsNode() const {
   return true;
@@ -323,7 +326,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
       out_data->SetName(names[0]);
     else if (names.size() > 1)
       out_data->SetName(base::JoinString(names, " "));
-  } else if (GetProperty(AXBooleanProperty::CLICKABLE)) {
+  } else if (is_clickable_leaf_) {
     // Compute the name by joining all nodes with names.
     std::vector<std::string> names;
     ComputeNameFromContents(this, &names);
@@ -375,7 +378,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (GetProperty(AXBooleanProperty::SCROLLABLE)) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable, true);
   }
-  if (GetProperty(AXBooleanProperty::CLICKABLE)) {
+  if (is_clickable_leaf_) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClickable, true);
   }
   if (GetProperty(AXBooleanProperty::SELECTED)) {

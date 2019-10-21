@@ -94,8 +94,14 @@
       <message name="IDS_REAUTH_FID_DESCRIPTION" desc="">
         Your session has expired. Sign in using your Google work account.
       </message>
+      <message name="IDS_REAUTH_NOT_ENROLLED_WITH_MDM_FID_DESCRIPTION" desc="">
+        Your device needs to enroll with device management. Sign in using your Google work account.
+      </message>
+      <message name="IDS_REAUTH_MISSING_PASSWORD_RECOVERY_INFO_FID_DESCRIPTION" desc="">
+        Your device is missing recovery info. Sign in using your Google work account.
+      </message>
       <message name="IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION" desc="">
-        Sign in using your gsuite work account.
+        Sign in using your GSuite work account.
       </message>
       <message name="IDS_AUTH_FID_PROVIDER_LABEL" desc="">
         Add work account
@@ -146,7 +152,7 @@
         Password
       </message>
       <message name="IDS_EMPTY_ACCESS_TOKEN" desc="">
-        Only Gsuite Enterprise users are allowed to login.
+        Only GSuite Enterprise users are allowed to login.
       </message>
       <message name="IDS_INVALID_AD_UPN" desc="">
         No Domain user could be found for your account. Please contact your administrator.

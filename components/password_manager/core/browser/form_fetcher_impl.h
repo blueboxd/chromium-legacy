@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/http_password_store_migrator.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -128,8 +129,9 @@ class FormFetcherImpl : public FormFetcher,
   // Statistics for the current domain.
   std::vector<InteractionsStats> interactions_stats_;
 
-  // Consumers of the fetcher, all are assumed to outlive |this|.
-  std::set<FormFetcher::Consumer*> consumers_;
+  // Consumers of the fetcher, all are assumed to either outlive |this| or
+  // remove themselves from the list during their destruction.
+  base::ObserverList<FormFetcher::Consumer> consumers_;
 
   // Indicates whether HTTP passwords should be migrated to HTTPS.
   const bool should_migrate_http_passwords_;

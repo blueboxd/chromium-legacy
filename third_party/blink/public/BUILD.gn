@@ -577,7 +577,7 @@ source_set("blink_headers") {
 }
 
 if (external_devtools_frontend) {
-  devtools_frontend_path = "//third_party/devtools-frontend"
+  devtools_frontend_path = "//third_party/devtools-frontend/src"
 } else {
   devtools_frontend_path = "//third_party/blink/renderer/devtools"
 }

@@ -59,6 +59,17 @@ using ::testing::Invoke;
 using ::testing::Property;
 using ::testing::Return;
 
+void SetRequiredTermsFields(CollectUserDataProto* data,
+                            bool request_terms_and_conditions = false) {
+  data->set_thirdparty_privacy_notice_text("privacy");
+
+  if (request_terms_and_conditions) {
+    data->set_accept_terms_and_conditions_text("terms and conditions");
+    data->set_terms_require_review_text("terms review");
+  }
+  data->set_request_terms_and_conditions(request_terms_and_conditions);
+}
+
 class CollectUserDataActionTest : public content::RenderViewHostTestHarness {
  public:
   void SetUp() override {
@@ -99,20 +110,158 @@ class CollectUserDataActionTest : public content::RenderViewHostTestHarness {
   ClientMemory client_memory_;
 };
 
+TEST_F(CollectUserDataActionTest, FailsForMissingPrivacyText) {
+  ActionProto action_proto;
+  action_proto.mutable_collect_user_data();
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, SucceedsForPrivacyTextPresent) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->terms_and_conditions = ACCEPTED;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(
+              &ProcessedActionProto::collect_user_data_result,
+              Property(
+                  &CollectUserDataResultProto::is_terms_and_conditions_accepted,
+                  true))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, FailsForMissingTermsAcceptTextIfRequired) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(true);
+  collect_user_data_proto->set_terms_require_review_text("terms review");
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, FailsForMissingTermsReviewTextIfRequired) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(true);
+  collect_user_data_proto->set_accept_terms_and_conditions_text(
+      "terms and conditions");
+  collect_user_data_proto->set_show_terms_as_checkbox(false);
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, SucceedsForCheckboxIfReviewTextMissing) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(true);
+  collect_user_data_proto->set_accept_terms_and_conditions_text(
+      "terms and conditions");
+  collect_user_data_proto->set_show_terms_as_checkbox(true);
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->terms_and_conditions = ACCEPTED;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(
+              &ProcessedActionProto::collect_user_data_result,
+              Property(
+                  &CollectUserDataResultProto::is_terms_and_conditions_accepted,
+                  true))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, SucceedsForAllTermsTextPresent) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_thirdparty_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(true);
+  collect_user_data_proto->set_accept_terms_and_conditions_text(
+      "terms and conditions");
+  collect_user_data_proto->set_show_terms_as_checkbox(false);
+  collect_user_data_proto->set_terms_require_review_text("terms review");
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+             std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->terms_and_conditions = ACCEPTED;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, ACTION_APPLIED),
+          Property(
+              &ProcessedActionProto::collect_user_data_result,
+              Property(
+                  &CollectUserDataResultProto::is_terms_and_conditions_accepted,
+                  true))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
 TEST_F(CollectUserDataActionTest, PromptIsShown) {
   const char kPrompt[] = "Some message.";
 
   ActionProto action_proto;
+  SetRequiredTermsFields(action_proto.mutable_collect_user_data());
   action_proto.mutable_collect_user_data()->set_prompt(kPrompt);
-  CollectUserDataAction action(&mock_action_delegate_, action_proto);
 
   EXPECT_CALL(mock_action_delegate_, SetStatusMessage(kPrompt));
   EXPECT_CALL(callback_, Run(_));
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }
 
 TEST_F(CollectUserDataActionTest, SelectLogin) {
   ActionProto action_proto;
+  SetRequiredTermsFields(action_proto.mutable_collect_user_data());
   auto* login_details =
       action_proto.mutable_collect_user_data()->mutable_login_details();
   auto* login_option = login_details->add_login_options();
@@ -148,9 +297,10 @@ TEST_F(CollectUserDataActionTest, SelectLogin) {
 
 TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
   ActionProto action_proto;
-  auto* collect_user_data = action_proto.mutable_collect_user_data();
-  collect_user_data->set_request_terms_and_conditions(false);
-  auto* login_details = collect_user_data->mutable_login_details();
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* login_details = collect_user_data_proto->mutable_login_details();
   auto* login_option = login_details->add_login_options();
   login_option->mutable_custom()->set_label("Guest Checkout");
   login_option->set_payload("guest");
@@ -176,8 +326,9 @@ TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
 
 TEST_F(CollectUserDataActionTest, SelectLoginFailsIfNoOptionAvailable) {
   ActionProto action_proto;
-  auto* collect_user_data = action_proto.mutable_collect_user_data();
-  auto* login_details = collect_user_data->mutable_login_details();
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
+  auto* login_details = collect_user_data_proto->mutable_login_details();
   auto* login_option = login_details->add_login_options();
   login_option->mutable_password_manager();
   login_option->set_payload("password_manager");
@@ -195,6 +346,7 @@ TEST_F(CollectUserDataActionTest, SelectLoginFailsIfNoOptionAvailable) {
 TEST_F(CollectUserDataActionTest, SelectContactDetails) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* contact_details_proto =
       collect_user_data_proto->mutable_contact_details();
@@ -250,6 +402,7 @@ TEST_F(CollectUserDataActionTest, SelectContactDetails) {
 
 TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
   ActionProto action_proto;
+  SetRequiredTermsFields(action_proto.mutable_collect_user_data());
   action_proto.mutable_collect_user_data()->set_request_payment_method(true);
   action_proto.mutable_collect_user_data()->set_request_terms_and_conditions(
       false);
@@ -308,6 +461,7 @@ TEST_F(CollectUserDataActionTest, MandatoryPostalCodeWithoutErrorMessageFails) {
 TEST_F(CollectUserDataActionTest, ContactDetailsCanHandleUtf8) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* contact_details_proto =
       collect_user_data_proto->mutable_contact_details();
@@ -492,6 +646,7 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_DateTimeRange) {
 TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   auto* date_time_proto = collect_user_data_proto->mutable_date_time_range();
   SetDateTimeProto(date_time_proto->mutable_start(), 2019, 10, 21, 8, 0, 0);
@@ -534,6 +689,7 @@ TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
 TEST_F(CollectUserDataActionTest, StaticSectionValid) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   ON_CALL(mock_action_delegate_, CollectUserData(_, _))
       .WillByDefault(Invoke(
@@ -576,6 +732,7 @@ TEST_F(CollectUserDataActionTest, StaticSectionValid) {
 TEST_F(CollectUserDataActionTest, TextInputSectionValid) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   ON_CALL(mock_action_delegate_, CollectUserData(_, _))
       .WillByDefault(Invoke(
@@ -660,6 +817,7 @@ TEST_F(CollectUserDataActionTest, TextInputSectionValid) {
 TEST_F(CollectUserDataActionTest, TextInputSectionWritesToClientMemory) {
   ActionProto action_proto;
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(collect_user_data_proto);
   collect_user_data_proto->set_request_terms_and_conditions(false);
   ON_CALL(mock_action_delegate_, CollectUserData(_, _))
       .WillByDefault(Invoke(

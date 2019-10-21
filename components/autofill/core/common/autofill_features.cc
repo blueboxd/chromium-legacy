@@ -174,6 +174,10 @@ const base::Feature kAutofillSkipComparingInferredLabels{
 const base::Feature kAutofillTokenPrefixMatching{
     "AutofillTokenPrefixMatching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the touch to fill feature for Android.
+const base::Feature kAutofillTouchToFill = {"TouchToFillAndroid",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -196,10 +200,6 @@ const base::Feature kAutofillManualFallbackAndroid{
 // Controls whether to use modernized style for the Autofill dropdown.
 const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the touch to fill feature for Android.
-const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // OS_ANDROID
 

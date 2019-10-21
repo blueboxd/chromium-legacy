@@ -53,6 +53,10 @@ class TriggerContext {
   // Java.
   virtual bool is_cct() const = 0;
 
+  // Returns true if the onboarding was shown at the beginning when this
+  // autofill assistant flow got triggered.
+  virtual bool is_onboarding_shown() const = 0;
+
   // Returns true if the current action was triggered by a direct action.
   virtual bool is_direct_action() const = 0;
 };
@@ -76,10 +80,12 @@ class TriggerContextImpl : public TriggerContext {
       const std::string& name) const override;
 
   void SetCCT(bool value) { cct_ = value; }
+  void SetOnboardingShown(bool value) { onboarding_shown_ = value; }
   void SetDirectAction(bool value) { direct_action_ = value; }
 
   std::string experiment_ids() const override;
   bool is_cct() const override;
+  bool is_onboarding_shown() const override;
   bool is_direct_action() const override;
 
  private:
@@ -93,6 +99,8 @@ class TriggerContextImpl : public TriggerContext {
   bool cct_ = false;
 
   bool direct_action_ = false;
+
+  bool onboarding_shown_ = false;
 };
 
 // Merges several TriggerContexts together.
@@ -110,6 +118,7 @@ class MergedTriggerContext : public TriggerContext {
       const std::string& name) const override;
   std::string experiment_ids() const override;
   bool is_cct() const override;
+  bool is_onboarding_shown() const override;
   bool is_direct_action() const override;
 
  private:

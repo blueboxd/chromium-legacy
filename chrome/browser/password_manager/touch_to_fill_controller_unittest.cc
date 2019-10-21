@@ -147,7 +147,7 @@ TEST_F(TouchToFillControllerTest, Dismiss) {
 TEST_F(TouchToFillControllerTest, CanDisableOnHttps) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      autofill::features::kTouchToFillAndroid,
+      autofill::features::kAutofillTouchToFill,
       {
           {"insecure-origins-only", "true"},
       });

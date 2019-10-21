@@ -135,7 +135,7 @@ class TemplateWriterUnittests(unittest.TestCase):
     if platform != '*':
       self.assertEqual(
           tw.IsPolicySupported(policy),
-          tw.IsPolicySupportedOnPlatform(policy, platform))
+          tw.IsPolicyOrItemSupportedOnPlatform(policy, platform))
     return tw.IsPolicySupported(policy)
 
   def testSortingGroupsFirst(self):

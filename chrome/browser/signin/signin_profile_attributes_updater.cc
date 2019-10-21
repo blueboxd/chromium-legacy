@@ -63,7 +63,6 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
       !gaia::AreEmailsSame(account_info.email,
                            base::UTF16ToUTF8(entry->GetUserName()))) {
     // Reset prefs. Note: this will also update the |ProfileAttributesEntry|.
-    prefs_->ClearPref(prefs::kProfileUsingDefaultName);
     prefs_->ClearPref(prefs::kProfileUsingDefaultAvatar);
     prefs_->ClearPref(prefs::kProfileUsingGAIAAvatar);
   }

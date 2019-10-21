@@ -671,6 +671,7 @@
         'AttestationEnabledForUser',
         'AttestationExtensionWhitelist',
         'AttestationForContentProtectionEnabled',
+        'DeviceWebBasedAttestationAllowedUrls',
       ],
     },
     {
@@ -1482,6 +1483,10 @@
           'name': 'Forced',
           'value': 2,
           'caption': '''Incognito mode forced''',
+          'supported_on': [
+            'chrome.*:14-',
+            'chrome_os:14-',
+          ],
         },
       ],
       'supported_on': [
@@ -1503,7 +1508,7 @@
 
       If 'Disabled' is selected, pages may not be opened in Incognito mode.
 
-      If 'Forced' is selected, pages may be opened ONLY in Incognito mode.''',
+      If 'Forced' is selected, pages may be opened ONLY in Incognito mode. Note that 'Forced' does not work for Android-on-Chrome''',
     },
     {
       'name': 'SavingBrowserHistoryDisabled',
@@ -9056,7 +9061,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9086,7 +9092,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9116,7 +9123,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9148,7 +9156,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:27-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:27-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9178,7 +9187,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9206,7 +9216,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9236,7 +9247,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9266,7 +9278,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9298,7 +9311,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:27-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:27-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9328,7 +9342,8 @@
         'type': 'integer',
         'minimum': 0
       },
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9378,7 +9393,8 @@
           'caption': '''Do nothing''',
         },
       ],
-      'supported_on': ['chrome_os:26-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:26-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9424,7 +9440,8 @@
           'caption': '''Do nothing''',
         },
       ],
-      'supported_on': ['chrome_os:30-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -9472,7 +9489,8 @@
           'caption': '''Do nothing''',
         },
       ],
-      'supported_on': ['chrome_os:30-81'],
+      # TODO(https://crbug.com/1016253): Remove this policy in M82.
+      'supported_on': ['chrome_os:30-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -18439,10 +18457,10 @@
       'id': 627,
       'caption': '''Allow the audio sandbox to run''',
       'tags': ['system-security'],
-      'desc': '''This policy controls the audio process sandboxed.
+      'desc': '''This policy controls the audio process sandbox.
       If this policy is enabled, the audio process will run sandboxed.
       If this policy is disabled, the audio process will run unsandboxed and the WebRTC audio-processing module will run in the renderer process.
-      This leaves users open to security risks related to running the audio stack unsandboxed.
+      This leaves users open to security risks related to running the audio subsystem unsandboxed.
       If this policy is not set, the default configuration for the audio sandbox will be used, which may differ per platform.
       This policy is intended to give enterprises flexibility to disable the audio sandbox if they use security software setups that interfere with the sandbox.'''
     },
@@ -18620,7 +18638,31 @@
       'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display blockable (i.e. active) mixed content (i.e. HTTP content on HTTPS sites).
 
           If this policy is left not set blockable mixed content will be blocked, but users will be allowed to set exceptions to allow it for specific sites.''',
-    }
+    },
+    {
+      'name': 'DeviceWebBasedAttestationAllowedUrls',
+      'owners': ['miersh@google.com', 'pmarko@chromium.com', 'file://chrome/browser/chromeos/login/OWNERS'],
+      'device_only': True,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': ['https://www.example.com/', 'https://[*.]example.edu/'],
+      'id': 636,
+      'caption': '''URLs that will be granted access to perform the device attestation during SAML authentication''',
+      'tags': [],
+      'desc': '''This policy configures which URLs will be granted access to use remote attestation of device identity during the SAML flow on the sign-in screen.
+
+      Specifically, if a URL matches one of the patterns provided through this policy, it will be allowed to receive a HTTP header containing a response to a remote attestation challenge, attesting device identity and device state.
+
+      If this policy is not set or is set to an empty list, no URL is allowed to use remote attestation on the sign-in screen.'''
+    },
   ],
 
   'messages': {
@@ -18991,7 +19033,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',
     'DeviceScheduledUpdateCheck': 'device_scheduled_update_check.device_scheduled_update_check_settings',
     'DevicePowerwashAllowed': 'device_powerwash_allowed.device_powerwash_allowed',
-    'DeviceLoginScreenWebUsbAllowDevicesForUrls': 'device_login_screen_webusb_allow_devices_for_urls.device_login_screen_webusb_allow_devices_for_urls'
+    'DeviceLoginScreenWebUsbAllowDevicesForUrls': 'device_login_screen_webusb_allow_devices_for_urls.device_login_screen_webusb_allow_devices_for_urls',
+    'DeviceWebBasedAttestationAllowedUrls': 'device_web_based_attestation_allowed_urls.value',
   },
   'policy_atomic_group_definitions': [
     {
@@ -19442,6 +19485,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 635,
+  'highest_id_currently_used': 636,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -36,11 +36,9 @@ class ScriptWrappable;
   X(DOMException, Error)                                \
   X(Global, Event)                                      \
   X(IDBCursor, Request)                                 \
-  X(IntersectionObserver, Callback)                     \
   X(MessageChannel, Port1)                              \
   X(MessageChannel, Port2)                              \
   X(MessageEvent, CachedData)                           \
-  X(MutationObserver, Callback)                         \
   X(NamedConstructor, Initialized)                      \
   X(PopStateEvent, State)                               \
   X(SameObject, DetectedBarcodeCornerPoints)            \

@@ -117,7 +117,7 @@ LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
   if (caret_position.IsNull())
     return LocalCaretRect();
 
-  const NGPaintFragment& fragment = *caret_position.fragment;
+  const NGPaintFragment& fragment = *caret_position.PaintFragment();
   const LayoutObject* layout_object = fragment.GetLayoutObject();
   switch (caret_position.position_type) {
     case NGCaretPositionType::kBeforeBox:
@@ -146,7 +146,7 @@ LocalCaretRect ComputeLocalSelectionRect(
   if (!caret_rect.layout_object)
     return caret_rect;
 
-  const NGPaintFragment& fragment = *caret_position.fragment;
+  const NGPaintFragment& fragment = *caret_position.PaintFragment();
   const NGPaintFragment* line_box = fragment.ContainerLineBox();
   // TODO(xiaochengh): We'll hit this DCHECK for caret in empty block if we
   // enable LayoutNG in contenteditable.

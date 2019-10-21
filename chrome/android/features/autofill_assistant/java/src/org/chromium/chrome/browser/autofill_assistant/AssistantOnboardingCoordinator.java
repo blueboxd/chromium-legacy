@@ -49,6 +49,8 @@ class AssistantOnboardingCoordinator {
     private AssistantBottomSheetContent mContent;
     private boolean mAnimate = true;
 
+    private boolean mOnboardingShown;
+
     AssistantOnboardingCoordinator(String experimentIds, Context context,
             BottomSheetController controller, @Nullable Tab tab) {
         mExperimentIds = experimentIds;
@@ -69,6 +71,7 @@ class AssistantOnboardingCoordinator {
      */
     void show(Callback<Boolean> callback) {
         AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_SHOWN);
+        mOnboardingShown = true;
 
         if (mTab != null) {
             // If there's a tab, cover it with an overlay.
@@ -125,6 +128,14 @@ class AssistantOnboardingCoordinator {
     @VisibleForTesting
     void disableAnimationForTesting() {
         mAnimate = false;
+    }
+
+    /**
+     * Returns {@code true} if the onboarding has been shown at the beginning when this
+     * autofill assistant flow got triggered.
+     */
+    boolean getOnboardingShown() {
+        return mOnboardingShown;
     }
 
     /**

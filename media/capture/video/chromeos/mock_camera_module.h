@@ -11,8 +11,10 @@
 #include "base/threading/thread.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -41,11 +43,13 @@ class MockCameraModule : public cros::mojom::CameraModule {
   MOCK_METHOD2(DoGetCameraInfo,
                void(int32_t camera_id, GetCameraInfoCallback& callback));
 
-  void SetCallbacks(cros::mojom::CameraModuleCallbacksPtr callbacks,
-                    SetCallbacksCallback callback) override;
-  MOCK_METHOD2(DoSetCallbacks,
-               void(cros::mojom::CameraModuleCallbacksPtr& callbacks,
-                    SetCallbacksCallback& callback));
+  void SetCallbacks(
+      mojo::PendingRemote<cros::mojom::CameraModuleCallbacks> callbacks,
+      SetCallbacksCallback callback) override;
+  MOCK_METHOD2(
+      DoSetCallbacks,
+      void(mojo::PendingRemote<cros::mojom::CameraModuleCallbacks>& callbacks,
+           SetCallbacksCallback& callback));
 
   void Init(InitCallback callback) override;
   MOCK_METHOD1(DoInit, void(InitCallback& callback));
@@ -69,7 +73,7 @@ class MockCameraModule : public cros::mojom::CameraModule {
   void NotifyCameraDeviceChange(int camera_id,
                                 cros::mojom::CameraDeviceStatus status);
 
-  cros::mojom::CameraModulePtrInfo GetInterfacePtrInfo();
+  mojo::PendingRemote<cros::mojom::CameraModule> GetPendingRemote();
 
  private:
   void NotifyCameraDeviceChangeOnThread(int camera_id,
@@ -77,12 +81,13 @@ class MockCameraModule : public cros::mojom::CameraModule {
 
   void CloseBindingOnThread();
 
-  void BindOnThread(base::WaitableEvent* done,
-                    cros::mojom::CameraModulePtrInfo* ptr_info);
+  void BindOnThread(
+      base::WaitableEvent* done,
+      mojo::PendingRemote<cros::mojom::CameraModule>* pending_remote);
 
   base::Thread mock_module_thread_;
-  mojo::Binding<cros::mojom::CameraModule> binding_;
-  cros::mojom::CameraModuleCallbacksPtr callbacks_;
+  mojo::Receiver<cros::mojom::CameraModule> receiver_{this};
+  mojo::Remote<cros::mojom::CameraModuleCallbacks> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCameraModule);
 };

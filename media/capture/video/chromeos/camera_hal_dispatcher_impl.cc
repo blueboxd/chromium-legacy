@@ -22,6 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
@@ -70,7 +71,8 @@ class MojoCameraClientObserver : public CameraClientObserver {
       mojo::PendingRemote<cros::mojom::CameraHalClient> client)
       : client_(std::move(client)) {}
 
-  void OnChannelCreated(cros::mojom::CameraModulePtr camera_module) override {
+  void OnChannelCreated(
+      mojo::PendingRemote<cros::mojom::CameraModule> camera_module) override {
     client_->SetUpChannel(std::move(camera_module));
   }
 
@@ -357,11 +359,10 @@ void CameraHalDispatcherImpl::AddClientObserverOnProxyThread(
 void CameraHalDispatcherImpl::EstablishMojoChannel(
     CameraClientObserver* client_observer) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
-  cros::mojom::CameraModulePtr camera_module_ptr;
-  cros::mojom::CameraModuleRequest camera_module_request =
-      mojo::MakeRequest(&camera_module_ptr);
-  camera_hal_server_->CreateChannel(std::move(camera_module_request));
-  client_observer->OnChannelCreated(std::move(camera_module_ptr));
+  mojo::PendingRemote<cros::mojom::CameraModule> camera_module;
+  camera_hal_server_->CreateChannel(
+      camera_module.InitWithNewPipeAndPassReceiver());
+  client_observer->OnChannelCreated(std::move(camera_module));
 }
 
 void CameraHalDispatcherImpl::OnPeerConnected(

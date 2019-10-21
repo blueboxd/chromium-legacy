@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.ContactEditor;
 import org.chromium.chrome.browser.payments.PaymentInstrument;
 import org.chromium.chrome.browser.widget.prefeditor.EditorDialog;
-import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -329,6 +328,24 @@ class AssistantCollectUserDataBinder
             view.mAppendedSections.setSections(
                     model.get(AssistantCollectUserDataModel.APPENDED_SECTIONS));
             return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT) {
+            view.mTermsSection.setAcceptTermsAndConditionsText(
+                    model.get(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
+            view.mTermsAsCheckboxSection.setAcceptTermsAndConditionsText(
+                    model.get(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.TERMS_REQUIRE_REVIEW_TEXT) {
+            view.mTermsSection.setTermsRequireReviewText(
+                    model.get(AssistantCollectUserDataModel.TERMS_REQUIRE_REVIEW_TEXT));
+            view.mTermsAsCheckboxSection.setTermsRequireReviewText(
+                    model.get(AssistantCollectUserDataModel.TERMS_REQUIRE_REVIEW_TEXT));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT) {
+            view.mTermsSection.setThirdPartyPrivacyNoticeText(
+                    model.get(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT));
+            view.mTermsAsCheckboxSection.setThirdPartyPrivacyNoticeText(
+                    model.get(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT));
+            return true;
         }
 
         return false;
@@ -352,12 +369,6 @@ class AssistantCollectUserDataBinder
         } else if (propertyKey == AssistantCollectUserDataModel.REQUEST_PAYMENT) {
             view.mPaymentMethodSection.setVisible(
                     (model.get(AssistantCollectUserDataModel.REQUEST_PAYMENT)));
-            return true;
-        } else if (propertyKey == AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT) {
-            view.mTermsSection.setAcceptTermsAndConditionsText(
-                    model.get(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
-            view.mTermsAsCheckboxSection.setAcceptTermsAndConditionsText(
-                    model.get(AssistantCollectUserDataModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX) {
             if (model.get(AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX)) {
@@ -397,13 +408,7 @@ class AssistantCollectUserDataBinder
                 // Update available profiles and credit cards before PR is made visible.
                 updateAvailableProfiles(model, view);
                 updateAvailablePaymentMethods(model);
-                WebContents webContents = model.get(AssistantCollectUserDataModel.WEB_CONTENTS);
-                if (webContents != null) {
-                    String origin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
-                            webContents.getLastCommittedUrl());
-                    view.mTermsSection.setOrigin(origin);
-                    view.mTermsAsCheckboxSection.setOrigin(origin);
-                }
+
                 view.startListenToPersonalDataManager(() -> {
                     AssistantCollectUserDataBinder.this.updateAvailableProfiles(model, view);
                     AssistantCollectUserDataBinder.this.updateAvailablePaymentMethods(model);

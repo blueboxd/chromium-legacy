@@ -173,8 +173,8 @@ class ServiceManagerTest : public testing::Test,
     connector()->BindInterface(service_manager::mojom::kServiceName,
                                &service_manager);
 
-    mojom::ServiceManagerListenerPtr listener;
-    binding_.Bind(mojo::MakeRequest(&listener));
+    mojo::PendingRemote<mojom::ServiceManagerListener> listener;
+    binding_.Bind(listener.InitWithNewPipeAndPassReceiver());
     service_manager->AddListener(std::move(listener));
 
     wait_for_instances_loop_ = std::make_unique<base::RunLoop>();

@@ -112,10 +112,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // Sets the opacity of the managed windows.
   void SetOpacity(float opacity);
 
-  // Apply clipping on the managed windows. If |size| is empty, then restore
-  // |overview_clip_rect_|.
-  void SetClipping(const gfx::SizeF& size);
-
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
   // tall in the original window getting replaced by a window caption that is
@@ -214,11 +210,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // The original clipping on the layer of the window before entering overview
   // mode.
   gfx::Rect original_clip_rect_;
-
-  // The clippng on the layer of |window_| after entering overview mode.
-  // Additional clipping may be added, and when that additional clipping is
-  // removed, we should go back to this clipping.
-  gfx::Rect overview_clip_rect_;
 
   std::unique_ptr<ScopedOverviewHideWindows> hidden_transient_children_;
 

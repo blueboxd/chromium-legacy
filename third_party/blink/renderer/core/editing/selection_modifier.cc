@@ -160,7 +160,7 @@ base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
 
   if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
     if (const NGPaintFragment* fragment =
-            ComputeNGCaretPosition(adjusted).fragment)
+            ComputeNGCaretPosition(adjusted).PaintFragment())
       return fragment->PhysicalFragment().ResolvedDirection();
     return base::nullopt;
   }
@@ -182,7 +182,7 @@ base::Optional<TextDirection> LineDirectionAt(const VisiblePosition& position) {
 
   if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
     if (const NGPaintFragment* fragment =
-            ComputeNGCaretPosition(adjusted).fragment) {
+            ComputeNGCaretPosition(adjusted).PaintFragment()) {
       return ParagraphDirectionOf(*fragment);
     }
     return base::nullopt;

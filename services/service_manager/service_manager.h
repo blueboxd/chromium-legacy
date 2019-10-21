@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/service_manager/catalog.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -184,7 +185,7 @@ class ServiceManager : public Service {
                                          const Manifest& manifest);
 
   // Called from the instance implementing mojom::ServiceManager.
-  void AddListener(mojom::ServiceManagerListenerPtr listener);
+  void AddListener(mojo::PendingRemote<mojom::ServiceManagerListener> listener);
 
   // Service:
   void OnBindInterface(const BindSourceInfo& source_info,
@@ -210,7 +211,7 @@ class ServiceManager : public Service {
   // ServiceInstance still has an entry in |instances_|.
   ServiceInstance* service_manager_instance_;
 
-  mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
+  mojo::RemoteSet<mojom::ServiceManagerListener> listeners_;
   base::OnceCallback<void(const Identity&)> instance_quit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);

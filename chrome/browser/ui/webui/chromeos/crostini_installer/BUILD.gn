@@ -8,4 +8,8 @@ mojom("mojo_bindings") {
   sources = [
     "crostini_installer.mojom",
   ]
+
+  public_deps = [
+    "//chrome/browser/chromeos/crostini:crostini_installer_types_mojom",
+  ]
 }

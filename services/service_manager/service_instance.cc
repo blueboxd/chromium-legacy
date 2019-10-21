@@ -588,7 +588,8 @@ void ServiceInstance::RequestQuit() {
   OnServiceDisconnected();
 }
 
-void ServiceInstance::AddListener(mojom::ServiceManagerListenerPtr listener) {
+void ServiceInstance::AddListener(
+    mojo::PendingRemote<mojom::ServiceManagerListener> listener) {
   service_manager_->AddListener(std::move(listener));
 }
 

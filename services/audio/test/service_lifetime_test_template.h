@@ -32,9 +32,10 @@ class ServiceLifetimeTestTemplate : public TestBase {
         service_manager::mojom::kServiceName,
         service_manager.BindNewPipeAndPassReceiver());
 
-    service_manager::mojom::ServiceManagerListenerPtr listener;
+    mojo::PendingRemote<service_manager::mojom::ServiceManagerListener>
+        listener;
     service_observer_ = std::make_unique<ServiceObserverMock>(
-        mojom::kServiceName, mojo::MakeRequest(&listener));
+        mojom::kServiceName, listener.InitWithNewPipeAndPassReceiver());
 
     base::RunLoop wait_loop;
     EXPECT_CALL(*service_observer_, Initialized())

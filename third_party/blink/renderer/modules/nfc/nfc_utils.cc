@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
-using device::mojom::blink::NFCPushTarget;
+using device::mojom::blink::NDEFPushTarget;
 
 namespace blink {
 
@@ -38,47 +38,47 @@ bool SetNDEFMessageURL(const String& origin,
   return origin_url.IsValid();
 }
 
-NFCPushTarget StringToNFCPushTarget(const String& target) {
+NDEFPushTarget StringToNDEFPushTarget(const String& target) {
   if (target == "tag")
-    return NFCPushTarget::TAG;
+    return NDEFPushTarget::TAG;
 
   if (target == "peer")
-    return NFCPushTarget::PEER;
+    return NDEFPushTarget::PEER;
 
-  return NFCPushTarget::ANY;
+  return NDEFPushTarget::ANY;
 }
 
-DOMException* NFCErrorTypeToDOMException(
-    device::mojom::blink::NFCErrorType error_type) {
+DOMException* NDEFErrorTypeToDOMException(
+    device::mojom::blink::NDEFErrorType error_type) {
   switch (error_type) {
-    case device::mojom::blink::NFCErrorType::NOT_ALLOWED:
+    case device::mojom::blink::NDEFErrorType::NOT_ALLOWED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError, "NFC operation not allowed.");
-    case device::mojom::blink::NFCErrorType::NOT_SUPPORTED:
+    case device::mojom::blink::NDEFErrorType::NOT_SUPPORTED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "No NFC adapter or cannot establish connection.");
-    case device::mojom::blink::NFCErrorType::NOT_READABLE:
+    case device::mojom::blink::NDEFErrorType::NOT_READABLE:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotReadableError, "NFC is not enabled.");
-    case device::mojom::blink::NFCErrorType::NOT_FOUND:
+    case device::mojom::blink::NDEFErrorType::NOT_FOUND:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotFoundError,
           "Provided watch id cannot be found.");
-    case device::mojom::blink::NFCErrorType::INVALID_MESSAGE:
+    case device::mojom::blink::NDEFErrorType::INVALID_MESSAGE:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSyntaxError, "Invalid NFC message was provided.");
-    case device::mojom::blink::NFCErrorType::OPERATION_CANCELLED:
+    case device::mojom::blink::NDEFErrorType::OPERATION_CANCELLED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kAbortError, "The NFC operation was cancelled.");
-    case device::mojom::blink::NFCErrorType::TIMER_EXPIRED:
+    case device::mojom::blink::NDEFErrorType::TIMER_EXPIRED:
       return MakeGarbageCollected<DOMException>(DOMExceptionCode::kTimeoutError,
                                                 "NFC operation has timed out.");
-    case device::mojom::blink::NFCErrorType::CANNOT_CANCEL:
+    case device::mojom::blink::NDEFErrorType::CANNOT_CANCEL:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNoModificationAllowedError,
           "NFC operation cannot be cancelled.");
-    case device::mojom::blink::NFCErrorType::IO_ERROR:
+    case device::mojom::blink::NDEFErrorType::IO_ERROR:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNetworkError,
           "NFC data transfer error has occurred.");

@@ -86,15 +86,19 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 
 {##############################################################################}
 {# Attributes #}
-{% from 'attributes.cc.tmpl' import attribute_getter,
-       attribute_setter,
+{% from 'attributes.cc.tmpl' import attribute_getter, attribute_setter,
        with context %}
 {% for attribute in attributes %}
 {% for world_suffix in attribute.world_suffixes %}
-{% if not attribute.has_custom_getter and not attribute.constructor_type %}
+{% if attribute.private_property_is_shared_between_getter_and_setter %}
+// Define a private property key shared between getter and setter.
+static int {{attribute.private_property_key_name}};
+{% endif %}
+
+{% if attribute.does_generate_getter %}
 {{attribute_getter(attribute, world_suffix)}}
 {% endif %}
-{% if attribute.has_setter and not (attribute.has_custom_setter or attribute.is_lenient_setter) %}
+{% if attribute.does_generate_setter %}
 {{attribute_setter(attribute, world_suffix)}}
 {% endif %}
 {% endfor %}

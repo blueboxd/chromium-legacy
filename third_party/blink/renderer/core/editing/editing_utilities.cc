@@ -82,8 +82,6 @@
 
 namespace blink {
 
-using namespace html_names;
-
 namespace {
 
 std::ostream& operator<<(std::ostream& os, PositionMoveType type) {
@@ -412,8 +410,10 @@ bool IsEditableElement(const Node& node) {
       return true;
   }
 
-  if (auto* element = DynamicTo<Element>(&node))
-    return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), "textbox");
+  if (auto* element = DynamicTo<Element>(&node)) {
+    return EqualIgnoringASCIICase(element->getAttribute(html_names::kRoleAttr),
+                                  "textbox");
+  }
 
   return false;
 }
@@ -1122,10 +1122,13 @@ bool IsPresentationalHTMLElement(const Node* node) {
   if (!element)
     return false;
 
-  return element->HasTagName(kUTag) || element->HasTagName(kSTag) ||
-         element->HasTagName(kStrikeTag) || element->HasTagName(kITag) ||
-         element->HasTagName(kEmTag) || element->HasTagName(kBTag) ||
-         element->HasTagName(kStrongTag);
+  return element->HasTagName(html_names::kUTag) ||
+         element->HasTagName(html_names::kSTag) ||
+         element->HasTagName(html_names::kStrikeTag) ||
+         element->HasTagName(html_names::kITag) ||
+         element->HasTagName(html_names::kEmTag) ||
+         element->HasTagName(html_names::kBTag) ||
+         element->HasTagName(html_names::kStrongTag);
 }
 
 Element* AssociatedElementOf(const Position& position) {
@@ -1289,7 +1292,7 @@ static HTMLSpanElement* CreateTabSpanElement(Document& document,
                                              Text* tab_text_node) {
   // Make the span to hold the tab.
   auto* span_element = MakeGarbageCollected<HTMLSpanElement>(document);
-  span_element->setAttribute(kStyleAttr, "white-space:pre");
+  span_element->setAttribute(html_names::kStyleAttr, "white-space:pre");
 
   // Add tab text to that span.
   if (!tab_text_node)
@@ -1391,7 +1394,7 @@ bool IsMailHTMLBlockquoteElement(const Node* node) {
   if (!element)
     return false;
 
-  return element->HasTagName(kBlockquoteTag) &&
+  return element->HasTagName(html_names::kBlockquoteTag) &&
          element->getAttribute("type") == "cite";
 }
 
@@ -1516,12 +1519,17 @@ bool IsNonTableCellHTMLBlockElement(const Node* node) {
   if (!element)
     return false;
 
-  return element->HasTagName(kListingTag) || element->HasTagName(kOlTag) ||
-         element->HasTagName(kPreTag) || element->HasTagName(kTableTag) ||
-         element->HasTagName(kUlTag) || element->HasTagName(kXmpTag) ||
-         element->HasTagName(kH1Tag) || element->HasTagName(kH2Tag) ||
-         element->HasTagName(kH3Tag) || element->HasTagName(kH4Tag) ||
-         element->HasTagName(kH5Tag);
+  return element->HasTagName(html_names::kListingTag) ||
+         element->HasTagName(html_names::kOlTag) ||
+         element->HasTagName(html_names::kPreTag) ||
+         element->HasTagName(html_names::kTableTag) ||
+         element->HasTagName(html_names::kUlTag) ||
+         element->HasTagName(html_names::kXmpTag) ||
+         element->HasTagName(html_names::kH1Tag) ||
+         element->HasTagName(html_names::kH2Tag) ||
+         element->HasTagName(html_names::kH3Tag) ||
+         element->HasTagName(html_names::kH4Tag) ||
+         element->HasTagName(html_names::kH5Tag);
 }
 
 bool IsBlockFlowElement(const Node& node) {
@@ -1708,7 +1716,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   // TODO(editing-dev): This should probably be reconciled with
   // HitTestResult::absoluteImageURL.
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
-    return To<HTMLElement>(node).getAttribute(kSrcAttr);
+    return To<HTMLElement>(node).getAttribute(html_names::kSrcAttr);
   if (IsSVGImageElement(node))
     return To<SVGElement>(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||

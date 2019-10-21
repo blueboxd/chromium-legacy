@@ -131,6 +131,15 @@ checks. If you need to deceive the CORS protocol, you also need to specify
 </p>
 
 <p>
+<span class="availability">Starting from Chrome 79</span>, the webRequest API
+<strong>does not</strong> intercept CORS preflight requests and responses by
+default. A CORS preflight for a request URL is visible to an extension if there
+is a listener with <code>'extraHeaders'</code> specified in
+<code>opt_extraInfoSpec</code> for the request URL. <code>onBeforeRequest</code>
+can also take <code>'extraHeaders'</code> from Chrome 79.
+</p>
+
+<p>
 <span class="availability">Starting from Chrome 79</span>, the following request
 header is <strong>not provided</strong> and cannot be modified or removed
 without specifying <code>'extraHeaders'</code> in

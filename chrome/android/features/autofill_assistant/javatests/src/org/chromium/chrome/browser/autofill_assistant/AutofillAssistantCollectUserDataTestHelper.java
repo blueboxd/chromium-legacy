@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator.DIVIDER_TAG;
 
 import android.view.View;
+import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
@@ -51,6 +52,7 @@ public class AutofillAssistantCollectUserDataTestHelper {
         final AssistantVerticalExpander mLoginsSection;
         final AssistantVerticalExpander mDateRangeStartSection;
         final AssistantVerticalExpander mDateRangeEndSection;
+        final LinearLayout mTermsSection;
         final AssistantChoiceList mContactList;
         final AssistantChoiceList mPaymentMethodList;
         final AssistantChoiceList mShippingAddressList;
@@ -72,6 +74,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
                     AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_START_TAG);
             mDateRangeEndSection = coordinator.getView().findViewWithTag(
                     AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_END_TAG);
+            mTermsSection = coordinator.getView().findViewWithTag(
+                    AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_SECTION_TAG);
             mDividers = findViewsWithTag(coordinator.getView(), DIVIDER_TAG);
             mContactList = (AssistantChoiceList) (findViewsWithTag(
                     mContactSection, COLLECT_USER_DATA_CHOICE_LIST)

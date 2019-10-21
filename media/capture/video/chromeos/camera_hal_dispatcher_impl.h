@@ -39,7 +39,8 @@ using MojoJpegEncodeAcceleratorFactoryCB = base::RepeatingCallback<void(
 class CAPTURE_EXPORT CameraClientObserver {
  public:
   virtual ~CameraClientObserver();
-  virtual void OnChannelCreated(cros::mojom::CameraModulePtr camera_module) = 0;
+  virtual void OnChannelCreated(
+      mojo::PendingRemote<cros::mojom::CameraModule> camera_module) = 0;
 };
 
 // The CameraHalDispatcherImpl hosts and waits on the unix domain socket

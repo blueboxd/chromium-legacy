@@ -657,6 +657,7 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
       ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_,
       "forced", IsForcedGC(reason));
   EnterAtomicPause();
+  EnterNoAllocationScope();
   EnterGCForbiddenScope();
   // Compaction needs to be canceled when incremental marking ends with a
   // conservative GC.
@@ -1268,8 +1269,9 @@ void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
       ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue, "epoch", gc_age_,
       "forced", IsForcedGC(current_gc_data_.reason));
   MarkPhaseEpilogue(marking_type);
-  LeaveAtomicPause();
   LeaveGCForbiddenScope();
+  LeaveNoAllocationScope();
+  LeaveAtomicPause();
   static_cast<MutexBase&>(ProcessHeap::CrossThreadPersistentMutex()).unlock();
 }
 

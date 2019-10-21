@@ -16,7 +16,7 @@ static const CGFloat kButtonHorizontalMargin = 16;
 static const CGFloat kChipsHorizontalMargin = -1;
 
 // The multiplier for the base system spacing at the top margin.
-static const CGFloat TopSystemSpacingMultiplier = 1.58;
+static const CGFloat TopSystemSpacingMultiplier = 2;
 
 // The multiplier for the base system spacing at the bottom margin.
 static const CGFloat BottomSystemSpacingMultiplier = 2.26;

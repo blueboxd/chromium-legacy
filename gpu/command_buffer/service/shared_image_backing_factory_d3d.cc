@@ -393,7 +393,7 @@ DawnTexture SharedImageRepresentationDawnD3D::BeginAccess(
   desc.sampleCount = 1;
 
   texture_ =
-      dawn_native::d3d12::WrapSharedHandle(device_, &desc, shared_handle);
+      dawn_native::d3d12::WrapSharedHandle(device_, &desc, shared_handle, 0);
   if (texture_) {
     // Keep a reference to the texture so that it stays valid (its content
     // might be destroyed).

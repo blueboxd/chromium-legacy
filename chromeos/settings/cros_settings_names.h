@@ -232,6 +232,9 @@ extern const char kDeviceSecondFactorAuthenticationMode[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDevicePowerwashAllowed[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kDeviceWebBasedAttestationAllowedUrls[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

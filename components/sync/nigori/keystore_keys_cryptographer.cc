@@ -13,18 +13,27 @@
 
 namespace syncer {
 
-namespace {
+// static
+std::unique_ptr<KeystoreKeysCryptographer>
+KeystoreKeysCryptographer::CreateEmpty() {
+  return base::WrapUnique(new KeystoreKeysCryptographer(
+      CryptographerImpl::CreateEmpty(),
+      /*keystore_keys=*/std::vector<std::string>()));
+}
 
-std::unique_ptr<CryptographerImpl> CreateCryptographerFromKeystoreKeys(
+// static
+std::unique_ptr<KeystoreKeysCryptographer>
+KeystoreKeysCryptographer::FromKeystoreKeys(
     const std::vector<std::string>& keystore_keys) {
+  if (keystore_keys.empty()) {
+    return CreateEmpty();
+  }
+
   std::unique_ptr<CryptographerImpl> cryptographer =
       CryptographerImpl::CreateEmpty();
 
-  if (keystore_keys.empty()) {
-    return cryptographer;
-  }
-
   std::string last_key_name;
+
   for (const std::string& key : keystore_keys) {
     last_key_name =
         cryptographer->EmplaceKey(key, KeyDerivationParams::CreateForPbkdf2());
@@ -40,28 +49,6 @@ std::unique_ptr<CryptographerImpl> CreateCryptographerFromKeystoreKeys(
   DCHECK(!last_key_name.empty());
   cryptographer->SelectDefaultEncryptionKey(last_key_name);
 
-  return cryptographer;
-}
-
-}  // namespace
-
-// static
-std::unique_ptr<KeystoreKeysCryptographer>
-KeystoreKeysCryptographer::CreateEmpty() {
-  return base::WrapUnique(new KeystoreKeysCryptographer(
-      CryptographerImpl::CreateEmpty(),
-      /*keystore_keys=*/std::vector<std::string>()));
-}
-
-// static
-std::unique_ptr<KeystoreKeysCryptographer>
-KeystoreKeysCryptographer::FromKeystoreKeys(
-    const std::vector<std::string>& keystore_keys) {
-  std::unique_ptr<CryptographerImpl> cryptographer =
-      CreateCryptographerFromKeystoreKeys(keystore_keys);
-  if (!cryptographer) {
-    return nullptr;
-  }
   return base::WrapUnique(
       new KeystoreKeysCryptographer(std::move(cryptographer), keystore_keys));
 }
@@ -74,6 +61,10 @@ KeystoreKeysCryptographer::KeystoreKeysCryptographer(
 }
 
 KeystoreKeysCryptographer::~KeystoreKeysCryptographer() = default;
+
+std::string KeystoreKeysCryptographer::GetLastKeystoreKeyName() const {
+  return cryptographer_->GetDefaultEncryptionKeyName();
+}
 
 bool KeystoreKeysCryptographer::IsEmpty() const {
   return keystore_keys_.empty();

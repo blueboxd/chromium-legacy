@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 
-#include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace arc {
@@ -62,6 +61,18 @@ ax::mojom::Event ToAXEvent(
       return ax::mojom::Event::kChildrenChanged;
   }
   return ax::mojom::Event::kChildrenChanged;
+}
+
+bool GetBooleanProperty(mojom::AccessibilityNodeInfoData* node,
+                        mojom::AccessibilityBooleanProperty prop) {
+  if (!node || !node->boolean_properties)
+    return false;
+
+  auto it = node->boolean_properties->find(prop);
+  if (it == node->boolean_properties->end())
+    return false;
+
+  return it->second;
 }
 
 }  // namespace arc

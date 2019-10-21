@@ -16,13 +16,6 @@ namespace syncer {
 
 namespace {
 
-std::string ComputePbkdf2KeyName(const std::string& password) {
-  std::string key_name;
-  Nigori::CreateByDerivation(KeyDerivationParams::CreateForPbkdf2(), password)
-      ->Permute(Nigori::Password, kNigoriKeyName, &key_name);
-  return key_name;
-}
-
 sync_pb::CustomPassphraseKeyDerivationParams
 CustomPassphraseKeyDerivationParamsToProto(const KeyDerivationParams& params) {
   sync_pb::CustomPassphraseKeyDerivationParams output;
@@ -181,11 +174,9 @@ sync_pb::NigoriModel NigoriState::ToLocalProto() const {
   if (pending_keys.has_value()) {
     *proto.mutable_pending_keys() = *pending_keys;
   }
-  const std::vector<std::string>& keystore_keys =
-      keystore_keys_cryptographer->keystore_keys();
-  if (!keystore_keys.empty()) {
+  if (!keystore_keys_cryptographer->IsEmpty()) {
     proto.set_current_keystore_key_name(
-        ComputePbkdf2KeyName(keystore_keys.back()));
+        keystore_keys_cryptographer->GetLastKeystoreKeyName());
   }
   proto.set_passphrase_type(passphrase_type);
   if (!keystore_migration_time.is_null()) {
@@ -212,7 +203,8 @@ sync_pb::NigoriModel NigoriState::ToLocalProto() const {
   // allow rollback of USS Nigori. Having keybag with all keystore keys and
   // |current_keystore_key_name| is enough to support all logic. We should
   // remove them few milestones after USS migration completed.
-  for (const std::string& keystore_key : keystore_keys) {
+  for (const std::string& keystore_key :
+       keystore_keys_cryptographer->keystore_keys()) {
     proto.add_keystore_key(keystore_key);
   }
   if (pending_keystore_decryptor_token.has_value()) {
@@ -290,15 +282,11 @@ NigoriState NigoriState::Clone() const {
 }
 
 bool NigoriState::NeedsKeystoreKeyRotation() const {
-  if (keystore_keys_cryptographer->IsEmpty() ||
-      passphrase_type != sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE ||
-      pending_keys.has_value()) {
-    return false;
-  }
-
-  const sync_pb::NigoriKey rotated_default_key =
-      keystore_keys_cryptographer->ToCryptographerImpl()->ExportDefaultKey();
-  return !cryptographer->HasKey(rotated_default_key);
+  return !keystore_keys_cryptographer->IsEmpty() &&
+         passphrase_type == sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE &&
+         !pending_keys.has_value() &&
+         !cryptographer->HasKey(
+             keystore_keys_cryptographer->GetLastKeystoreKeyName());
 }
 
 }  // namespace syncer

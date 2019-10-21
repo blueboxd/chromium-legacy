@@ -102,6 +102,28 @@ TEST(TriggerContextText, MergeCCT) {
   EXPECT_TRUE(one_with_cct->is_cct());
 }
 
+TEST(TriggerContextTest, OnboardingShown) {
+  TriggerContextImpl context;
+
+  EXPECT_FALSE(context.is_onboarding_shown());
+  context.SetOnboardingShown(true);
+  EXPECT_TRUE(context.is_onboarding_shown());
+}
+
+TEST(TriggerContextTest, MergeOnboardingShown) {
+  auto empty = TriggerContext::CreateEmpty();
+
+  auto all_empty = TriggerContext::Merge({empty.get(), empty.get()});
+  EXPECT_FALSE(all_empty->is_onboarding_shown());
+
+  TriggerContextImpl onboarding_context;
+  onboarding_context.SetOnboardingShown(true);
+  auto one_with_onboarding =
+      TriggerContext::Merge({empty.get(), &onboarding_context, empty.get()});
+
+  EXPECT_TRUE(one_with_onboarding->is_onboarding_shown());
+}
+
 TEST(TriggerContextText, DirectAction) {
   TriggerContextImpl context;
 

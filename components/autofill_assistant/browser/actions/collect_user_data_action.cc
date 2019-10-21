@@ -650,14 +650,26 @@ CollectUserDataAction::CreateOptionsFromProto() {
   if (collect_user_data.request_terms_and_conditions()) {
     collect_user_data_options->show_terms_as_checkbox =
         collect_user_data.show_terms_as_checkbox();
+
+    if (collect_user_data.accept_terms_and_conditions_text().empty()) {
+      return nullptr;
+    }
     collect_user_data_options->accept_terms_and_conditions_text =
         collect_user_data.accept_terms_and_conditions_text();
-    if (collect_user_data_options->accept_terms_and_conditions_text.empty()) {
-      collect_user_data_options->accept_terms_and_conditions_text =
-          l10n_util::GetStringUTF8(
-              IDS_AUTOFILL_ASSISTANT_3RD_PARTY_TERMS_ACCEPT);
+
+    if (!collect_user_data.show_terms_as_checkbox() &&
+        collect_user_data.terms_require_review_text().empty()) {
+      return nullptr;
     }
+    collect_user_data_options->terms_require_review_text =
+        collect_user_data.terms_require_review_text();
   }
+
+  if (collect_user_data.thirdparty_privacy_notice_text().empty()) {
+    return nullptr;
+  }
+  collect_user_data_options->thirdparty_privacy_notice_text =
+      collect_user_data.thirdparty_privacy_notice_text();
 
   collect_user_data_options->default_email =
       delegate_->GetAccountEmailAddress();

@@ -5,7 +5,7 @@ currently supported on Linux, Windows, Mac, and ChromeOS.
 
 * [Old Ash Doc](https://www.chromium.org/developers/how-tos/inspecting-ash)
 * [Backend Source Code](https://cs.chromium.org/chromium/src/components/ui_devtools/)
-* [Inspector Frontend Source Code](https://cs.chromium.org/chromium/src/third_party/blink/renderer/devtools/front_end/)
+* [Inspector Frontend Source Code](https://chromium.googlesource.com/devtools/devtools-frontend)
 
 ## How to run
 

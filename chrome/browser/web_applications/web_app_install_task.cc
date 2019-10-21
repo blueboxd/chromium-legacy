@@ -71,6 +71,10 @@ WebAppInstallTask::WebAppInstallTask(
 
 WebAppInstallTask::~WebAppInstallTask() = default;
 
+void WebAppInstallTask::ExpectAppId(const AppId& expected_app_id) {
+  expected_app_id_ = expected_app_id;
+}
+
 void WebAppInstallTask::InstallWebAppFromManifest(
     content::WebContents* contents,
     WebappInstallSource install_source,
@@ -296,6 +300,15 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 
   UpdateWebAppInfoFromManifest(manifest, web_app_info.get(),
                                for_installable_site);
+
+  AppId app_id = GenerateAppIdFromURL(web_app_info->app_url);
+
+  // Do the app_id expectation check if requested.
+  if (expected_app_id_.has_value() && *expected_app_id_ != app_id) {
+    CallInstallCallback(std::move(app_id),
+                        InstallResultCode::kExpectedAppIdCheckFailed);
+    return;
+  }
 
   std::vector<GURL> icon_urls =
       GetValidIconUrlsToDownload(*web_app_info, /*data=*/nullptr);

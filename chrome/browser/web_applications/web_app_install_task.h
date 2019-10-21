@@ -44,6 +44,11 @@ class WebAppInstallTask : content::WebContentsObserver {
                     std::unique_ptr<WebAppDataRetriever> data_retriever);
   ~WebAppInstallTask() override;
 
+  // Request the app_id expectation check. Install fails with
+  // kExpectedAppIdCheckFailed if actual app_id doesn't match expected app_id.
+  // The actual resulting app_id is reported as a part of OnceInstallCallback.
+  void ExpectAppId(const AppId& expected_app_id);
+
   // Checks a WebApp installability, retrieves manifest and icons and
   // then performs the actual installation.
   void InstallWebAppFromManifest(
@@ -172,6 +177,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   InstallManager::WebAppInstallDialogCallback dialog_callback_;
   InstallManager::OnceInstallCallback install_callback_;
   base::Optional<InstallManager::InstallParams> install_params_;
+  base::Optional<AppId> expected_app_id_;
   bool background_installation_ = false;
 
   // The mechanism via which the app creation was triggered, will stay as

@@ -51,7 +51,8 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // media::mojom::InterfaceFactory implementation.
   void CreateAudioDecoder(
       mojo::PendingReceiver<media::mojom::AudioDecoder> receiver) final;
-  void CreateVideoDecoder(media::mojom::VideoDecoderRequest request) final;
+  void CreateVideoDecoder(
+      mojo::PendingReceiver<media::mojom::VideoDecoder> receiver) final;
   void CreateDefaultRenderer(const std::string& audio_device_id,
                              media::mojom::RendererRequest request) final;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)

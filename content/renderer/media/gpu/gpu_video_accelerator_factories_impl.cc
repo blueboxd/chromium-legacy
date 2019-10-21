@@ -31,6 +31,7 @@
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkPostConfig.h"
 
@@ -129,7 +130,8 @@ void GpuVideoAcceleratorFactoriesImpl::BindOnTaskRunner(
   // (a) saves an ipc call, and (b) makes the return of those configs atomic.
   // Otherwise, we might have received configs for kDefault but not yet
   // kAlternate, for example.
-  interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder_));
+  interface_factory_->CreateVideoDecoder(
+      video_decoder_.BindNewPipeAndPassReceiver());
   video_decoder_->GetSupportedConfigs(base::BindOnce(
       &GpuVideoAcceleratorFactoriesImpl::OnSupportedDecoderConfigs,
       base::Unretained(this)));
@@ -236,8 +238,9 @@ GpuVideoAcceleratorFactoriesImpl::CreateVideoDecoder(
   if (CheckContextLost())
     return nullptr;
 
-  media::mojom::VideoDecoderPtr video_decoder;
-  interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder));
+  mojo::PendingRemote<media::mojom::VideoDecoder> video_decoder;
+  interface_factory_->CreateVideoDecoder(
+      video_decoder.InitWithNewPipeAndPassReceiver());
   return std::make_unique<media::MojoVideoDecoder>(
       task_runner_, this, media_log, std::move(video_decoder), implementation,
       request_overlay_info_cb, rendering_color_space_);

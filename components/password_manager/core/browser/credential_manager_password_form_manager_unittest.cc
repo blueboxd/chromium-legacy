@@ -106,34 +106,6 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPasswordFormManagerTest);
 };
 
-// Test that aborting early does not cause use after free.
-TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
-  auto saved_form = std::make_unique<PasswordForm>();
-  saved_form->password_value = base::ASCIIToUTF16("password");
-  MockDelegate delegate;
-  auto form_manager = std::make_unique<CredentialManagerPasswordFormManager>(
-      &client_, std::move(saved_form), &delegate,
-      std::make_unique<StubFormSaver>(), std::make_unique<FakeFormFetcher>());
-
-  auto deleter = [&form_manager]() { form_manager.reset(); };
-
-  // Simulate that the PasswordStore responded to the FormFetcher. As a result,
-  // |form_manager| should call the delegate's OnProvisionalSaveComplete, which
-  // in turn should delete |form_fetcher|.
-  EXPECT_CALL(delegate, OnProvisionalSaveComplete()).WillOnce(Invoke(deleter));
-  static_cast<FakeFormFetcher*>(form_manager->GetFormFetcher())
-      ->NotifyFetchCompleted();
-  // Check that |form_manager| was not deleted yet; doing so would have caused
-  // use after free during NotifyFetchCompleted.
-  EXPECT_TRUE(form_manager);
-
-  base::RunLoop().RunUntilIdle();
-
-  // Ultimately, |form_fetcher| should have been deleted. It just should happen
-  // after it finishes executing.
-  EXPECT_FALSE(form_manager);
-}
-
 // Ensure that GetCredentialSource is actually overriden and returns the proper
 // value.
 TEST_F(CredentialManagerPasswordFormManagerTest, GetCredentialSource) {

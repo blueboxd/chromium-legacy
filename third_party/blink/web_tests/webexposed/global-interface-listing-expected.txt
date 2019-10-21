@@ -5111,10 +5111,27 @@ interface MutationRecord
     getter target
     getter type
     method constructor
+interface NDEFErrorEvent : Event
+    attribute @@toStringTag
+    getter error
+    method constructor
 interface NDEFMessage
     attribute @@toStringTag
     getter records
     getter url
+    method constructor
+interface NDEFReader : EventTarget
+    attribute @@toStringTag
+    getter onerror
+    getter onreading
+    method constructor
+    method scan
+    setter onerror
+    setter onreading
+interface NDEFReadingEvent : Event
+    attribute @@toStringTag
+    getter message
+    getter serialNumber
     method constructor
 interface NDEFRecord
     attribute @@toStringTag
@@ -5124,24 +5141,7 @@ interface NDEFRecord
     method constructor
     method json
     method text
-interface NFCErrorEvent : Event
-    attribute @@toStringTag
-    getter error
-    method constructor
-interface NFCReader : EventTarget
-    attribute @@toStringTag
-    getter onerror
-    getter onreading
-    method constructor
-    method scan
-    setter onerror
-    setter onreading
-interface NFCReadingEvent : Event
-    attribute @@toStringTag
-    getter message
-    getter serialNumber
-    method constructor
-interface NFCWriter
+interface NDEFWriter
     attribute @@toStringTag
     method constructor
     method push

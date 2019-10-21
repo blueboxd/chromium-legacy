@@ -40,16 +40,16 @@ void MediaInterfaceFactory::CreateAudioDecoder(
 }
 
 void MediaInterfaceFactory::CreateVideoDecoder(
-    media::mojom::VideoDecoderRequest request) {
+    mojo::PendingReceiver<media::mojom::VideoDecoder> receiver) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaInterfaceFactory::CreateVideoDecoder,
-                                  weak_this_, std::move(request)));
+                                  weak_this_, std::move(receiver)));
     return;
   }
 
   DVLOG(1) << __func__;
-  GetMediaInterfaceFactory()->CreateVideoDecoder(std::move(request));
+  GetMediaInterfaceFactory()->CreateVideoDecoder(std::move(receiver));
 }
 
 void MediaInterfaceFactory::CreateDefaultRenderer(

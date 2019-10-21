@@ -40,7 +40,6 @@ class NigoriKeyBag {
 
   size_t size() const;
   bool HasKey(const std::string& key_name) const;
-  bool HasKey(const sync_pb::NigoriKey& key) const;
 
   // |key_name| must exist in this keybag.
   sync_pb::NigoriKey ExportKey(const std::string& key_name) const;

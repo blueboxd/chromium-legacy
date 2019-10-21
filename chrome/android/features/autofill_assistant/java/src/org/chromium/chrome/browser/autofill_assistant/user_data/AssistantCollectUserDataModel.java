@@ -130,6 +130,12 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<List<AssistantAdditionalSectionFactory>>
             APPENDED_SECTIONS = new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<String> TERMS_REQUIRE_REVIEW_TEXT =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<String> THIRDPARTY_PRIVACY_NOTICE_TEXT =
+            new WritableObjectPropertyKey<>();
+
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
                 LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, DEFAULT_EMAIL, REQUEST_NAME,
@@ -139,7 +145,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, AVAILABLE_LOGINS,
                 EXPANDED_SECTION, REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
                 REQUEST_DATE_RANGE, DATE_RANGE_START, DATE_RANGE_START_LABEL, DATE_RANGE_END,
-                DATE_RANGE_END_LABEL, PREPENDED_SECTIONS, APPENDED_SECTIONS);
+                DATE_RANGE_END_LABEL, PREPENDED_SECTIONS, APPENDED_SECTIONS,
+                TERMS_REQUIRE_REVIEW_TEXT, THIRDPARTY_PRIVACY_NOTICE_TEXT);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -338,5 +345,15 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setAppendedSections(List<AssistantAdditionalSectionFactory> sections) {
         set(APPENDED_SECTIONS, sections);
+    }
+
+    @CalledByNative
+    private void setTermsRequireReviewText(String text) {
+        set(TERMS_REQUIRE_REVIEW_TEXT, text);
+    }
+
+    @CalledByNative
+    private void setThirdPartyPrivacyNoticeText(String text) {
+        set(THIRDPARTY_PRIVACY_NOTICE_TEXT, text);
     }
 }

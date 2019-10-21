@@ -1005,7 +1005,7 @@ void V4L2VideoEncodeAccelerator::PumpBitstreamBuffers() {
       if (bitstream_buffer_pool_.empty()) {
         DVLOGF(4) << "No free bitstream buffer, skip.";
         output_buffer_queue_.push_front(std::move(output_buf));
-        return;
+        break;
       }
 
       auto buffer_ref = std::move(bitstream_buffer_pool_.back());
@@ -1043,6 +1043,13 @@ void V4L2VideoEncodeAccelerator::PumpBitstreamBuffers() {
       cmd.cmd = V4L2_ENC_CMD_START;
       IOCTL_OR_ERROR_RETURN(VIDIOC_ENCODER_CMD, &cmd);
     }
+  }
+
+  // We may free some V4L2 output buffers above. Enqueue them if needed.
+  if (output_queue_->FreeBuffersCount() > 0) {
+    encoder_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::Enqueue,
+                                  base::Unretained(this)));
   }
 }
 

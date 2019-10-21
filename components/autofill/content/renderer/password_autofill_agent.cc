@@ -849,6 +849,13 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (generation_popup_showing)
     return false;
 
+  // Don't call ShowSuggestionPopup if Touch To Fill is currently showing. Since
+  // Touch To Fill in spirit is very similar to a suggestion pop-up, return true
+  // so that the AutofillAgent does not try to show other autofill suggestions
+  // instead.
+  if (touch_to_fill_state_ == TouchToFillState::kIsShowing)
+    return true;
+
   // Chrome should never show more than one account for a password element since
   // this implies that the username element cannot be modified. Thus even if
   // |show_all| is true, check if the element in question is a password element

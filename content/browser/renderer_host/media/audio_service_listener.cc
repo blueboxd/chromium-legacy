@@ -88,21 +88,20 @@ void AudioServiceListener::Metrics::LogServiceStartStatus(
 
 AudioServiceListener::AudioServiceListener(
     std::unique_ptr<service_manager::Connector> connector)
-    : binding_(this),
-      connector_(std::move(connector)),
+    : connector_(std::move(connector)),
       metrics_(base::DefaultTickClock::GetInstance()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   if (!connector_)
     return;  // Happens in unittests.
 
-  service_manager::mojom::ServiceManagerPtr service_manager;
-  connector_->BindInterface(service_manager::mojom::kServiceName,
-                            &service_manager);
-  service_manager::mojom::ServiceManagerListenerPtr listener;
-  service_manager::mojom::ServiceManagerListenerRequest request(
-      mojo::MakeRequest(&listener));
+  mojo::Remote<service_manager::mojom::ServiceManager> service_manager;
+  connector_->Connect(service_manager::mojom::kServiceName,
+                      service_manager.BindNewPipeAndPassReceiver());
+  mojo::PendingRemote<service_manager::mojom::ServiceManagerListener> listener;
+  mojo::PendingReceiver<service_manager::mojom::ServiceManagerListener> request(
+      listener.InitWithNewPipeAndPassReceiver());
   service_manager->AddListener(std::move(listener));
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(request));
 }
 
 AudioServiceListener::~AudioServiceListener() {

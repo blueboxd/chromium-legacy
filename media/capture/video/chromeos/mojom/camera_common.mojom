@@ -101,7 +101,8 @@ interface CameraModule {
   GetCameraInfo@2(int32 camera_id) => (int32 result, CameraInfo? camera_info);
 
   // Registers the CameraModuleCallbacks interface with the camera HAL.
-  SetCallbacks@3(CameraModuleCallbacks callbacks) => (int32 result);
+  SetCallbacks@3(pending_remote<CameraModuleCallbacks> callbacks)
+      => (int32 result);
 
   // Turns on or off the torch mode of the flash unit associated with the given
   // |camera_id|.

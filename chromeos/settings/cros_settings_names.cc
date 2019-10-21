@@ -396,4 +396,9 @@ const char kDeviceSecondFactorAuthenticationMode[] =
 
 // A boolean pref specifying if the device is allowed to powerwash.
 const char kDevicePowerwashAllowed[] = "cros.device.device_powerwash_allowed";
+
+// A list pref storing URL patterns that are allowed for device attestation
+// during SAML authentication.
+extern const char kDeviceWebBasedAttestationAllowedUrls[] =
+    "cros.device.device_web_based_attestation_allowed_urls";
 }  // namespace chromeos

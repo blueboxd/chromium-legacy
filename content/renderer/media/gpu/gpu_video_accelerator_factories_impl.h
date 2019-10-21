@@ -27,6 +27,7 @@
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/supported_video_decoder_config.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
@@ -178,7 +179,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
 
   // SupportedDecoderConfigs state.
-  mojo::InterfacePtr<media::mojom::VideoDecoder> video_decoder_;
+  mojo::Remote<media::mojom::VideoDecoder> video_decoder_;
   base::Lock supported_decoder_configs_lock_;
   // If the Optional is empty, then we have not yet gotten the configs.  If the
   // Optional contains an empty vector, then we have gotten the result and there

@@ -103,7 +103,22 @@ HRESULT CReauthCredential::GetStringValueImpl(DWORD field_id, wchar_t** value) {
         OSUserManager::Get()->IsUserDomainJoined(sid)) {
       description_label_id = IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION_BASE;
     } else {
-      description_label_id = IDS_REAUTH_FID_DESCRIPTION_BASE;
+      auto auth_enforce_reason =
+          AssociatedUserValidator::Get()->GetAuthEnforceReason(sid);
+      switch (auth_enforce_reason) {
+        case AssociatedUserValidator::EnforceAuthReason::NOT_ENROLLED_WITH_MDM:
+          description_label_id =
+              IDS_REAUTH_NOT_ENROLLED_WITH_MDM_FID_DESCRIPTION_BASE;
+          break;
+        case AssociatedUserValidator::EnforceAuthReason::
+            MISSING_PASSWORD_RECOVERY_INFO:
+          description_label_id =
+              IDS_REAUTH_MISSING_PASSWORD_RECOVERY_INFO_FID_DESCRIPTION_BASE;
+          break;
+        default:
+          description_label_id = IDS_REAUTH_FID_DESCRIPTION_BASE;
+          break;
+      }
     }
 
     base::string16 label(GetStringResource(description_label_id));

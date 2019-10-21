@@ -5006,6 +5006,16 @@
     ]
   },
 
+  "DeviceWebBasedAttestationAllowedUrls": {
+    "os": ["chromeos"],
+    "test_policy": { "DeviceWebBasedAttestationAllowedUrls": ["[*.]example.com"] },
+    "pref_mappings": [
+      {
+        "pref": "cros.device.web_based_attestation_allowed_urls"
+      }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

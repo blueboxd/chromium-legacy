@@ -42,20 +42,20 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.device.mojom.NdefError;
+import org.chromium.device.mojom.NdefErrorType;
 import org.chromium.device.mojom.NdefMessage;
+import org.chromium.device.mojom.NdefPushOptions;
+import org.chromium.device.mojom.NdefPushTarget;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordTypeFilter;
+import org.chromium.device.mojom.NdefScanOptions;
 import org.chromium.device.mojom.Nfc.CancelAllWatchesResponse;
 import org.chromium.device.mojom.Nfc.CancelPushResponse;
 import org.chromium.device.mojom.Nfc.CancelWatchResponse;
 import org.chromium.device.mojom.Nfc.PushResponse;
 import org.chromium.device.mojom.Nfc.WatchResponse;
 import org.chromium.device.mojom.NfcClient;
-import org.chromium.device.mojom.NfcError;
-import org.chromium.device.mojom.NfcErrorType;
-import org.chromium.device.mojom.NfcPushOptions;
-import org.chromium.device.mojom.NfcPushTarget;
-import org.chromium.device.mojom.NfcScanOptions;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.io.IOException;
@@ -82,7 +82,7 @@ public class NFCTest {
     @Mock
     private NfcTagHandler mNfcTagHandler;
     @Captor
-    private ArgumentCaptor<NfcError> mErrorCaptor;
+    private ArgumentCaptor<NdefError> mErrorCaptor;
     @Captor
     private ArgumentCaptor<int[]> mOnWatchCallbackCaptor;
 
@@ -174,7 +174,7 @@ public class NFCTest {
         CancelAllWatchesResponse mockCallback = mock(CancelAllWatchesResponse.class);
         nfc.cancelAllWatches(mockCallback);
         verify(mockCallback).call(mErrorCaptor.capture());
-        assertEquals(NfcErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -190,7 +190,7 @@ public class NFCTest {
         CancelAllWatchesResponse mockCallback = mock(CancelAllWatchesResponse.class);
         nfc.cancelAllWatches(mockCallback);
         verify(mockCallback).call(mErrorCaptor.capture());
-        assertEquals(NfcErrorType.NOT_ALLOWED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.NOT_ALLOWED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -202,7 +202,7 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         WatchResponse mockCallback = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), mNextWatchId, mockCallback);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockCallback);
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
     }
@@ -423,10 +423,10 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         PushResponse mockCallback = mock(PushResponse.class);
-        nfc.push(new NdefMessage(), createNfcPushOptions(), mockCallback);
+        nfc.push(new NdefMessage(), createNdefPushOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
-        assertEquals(NfcErrorType.INVALID_MESSAGE, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.INVALID_MESSAGE, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -443,7 +443,7 @@ public class NFCTest {
         mDelegate.invokeCallback();
         nfc.setClient(mNfcClient);
         WatchResponse mockCallback = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), mNextWatchId, mockCallback);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockCallback);
         nfc.suspendNfcOperations();
         verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
         nfc.resumeNfcOperations();
@@ -473,7 +473,7 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         PushResponse mockCallback = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
@@ -489,12 +489,12 @@ public class NFCTest {
         mDelegate.invokeCallback();
         PushResponse mockPushCallback = mock(PushResponse.class);
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockPushCallback);
-        nfc.cancelPush(NfcPushTarget.ANY, mockCancelPushCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockPushCallback);
+        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
 
         // Check that push request was cancelled with OPERATION_CANCELLED.
         verify(mockPushCallback).call(mErrorCaptor.capture());
-        assertEquals(NfcErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
 
         // Check that cancel request was successfuly completed.
         verify(mockCancelPushCallback).call(mErrorCaptor.capture());
@@ -512,7 +512,7 @@ public class NFCTest {
         nfc.setClient(mNfcClient);
         int watchId1 = mNextWatchId++;
         WatchResponse mockWatchCallback1 = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), watchId1, mockWatchCallback1);
+        nfc.watch(createNdefScanOptions(), watchId1, mockWatchCallback1);
 
         // Check that watch requests were completed successfully.
         verify(mockWatchCallback1).call(mErrorCaptor.capture());
@@ -520,7 +520,7 @@ public class NFCTest {
 
         int watchId2 = mNextWatchId++;
         WatchResponse mockWatchCallback2 = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), watchId2, mockWatchCallback2);
+        nfc.watch(createNdefScanOptions(), watchId2, mockWatchCallback2);
         verify(mockWatchCallback2).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
 
@@ -546,7 +546,7 @@ public class NFCTest {
         nfc.setClient(mNfcClient);
 
         // Should match by WebNFC Id (exact match).
-        NfcScanOptions options1 = createNfcScanOptions();
+        NdefScanOptions options1 = createNdefScanOptions();
         options1.url = TEST_URL;
         int watchId1 = mNextWatchId++;
         WatchResponse mockWatchCallback1 = mock(WatchResponse.class);
@@ -555,7 +555,7 @@ public class NFCTest {
         assertNull(mErrorCaptor.getValue());
 
         // Should match by media type.
-        NfcScanOptions options2 = createNfcScanOptions();
+        NdefScanOptions options2 = createNdefScanOptions();
         options2.mediaType = TEXT_MIME;
         int watchId2 = mNextWatchId++;
         WatchResponse mockWatchCallback2 = mock(WatchResponse.class);
@@ -564,7 +564,7 @@ public class NFCTest {
         assertNull(mErrorCaptor.getValue());
 
         // Should match by record type.
-        NfcScanOptions options3 = createNfcScanOptions();
+        NdefScanOptions options3 = createNdefScanOptions();
         NdefRecordTypeFilter typeFilter = new NdefRecordTypeFilter();
         typeFilter.recordType = NdefMessageUtils.RECORD_TYPE_URL;
         options3.recordFilter = typeFilter;
@@ -575,7 +575,7 @@ public class NFCTest {
         assertNull(mErrorCaptor.getValue());
 
         // Should not match
-        NfcScanOptions options4 = createNfcScanOptions();
+        NdefScanOptions options4 = createNdefScanOptions();
         options4.url = AUTHOR_RECORD_DOMAIN;
         int watchId4 = mNextWatchId++;
         WatchResponse mockWatchCallback4 = mock(WatchResponse.class);
@@ -604,7 +604,7 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), mNextWatchId, mockWatchCallback);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
 
         verify(mockWatchCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
@@ -632,11 +632,11 @@ public class NFCTest {
         mDelegate.invokeCallback();
         WatchResponse mockWatchCallback1 = mock(WatchResponse.class);
         WatchResponse mockWatchCallback2 = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), mNextWatchId++, mockWatchCallback1);
+        nfc.watch(createNdefScanOptions(), mNextWatchId++, mockWatchCallback1);
         verify(mockWatchCallback1).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
 
-        nfc.watch(createNfcScanOptions(), mNextWatchId++, mockWatchCallback2);
+        nfc.watch(createNdefScanOptions(), mNextWatchId++, mockWatchCallback2);
         verify(mockWatchCallback2).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
 
@@ -657,7 +657,7 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), mNextWatchId, mockWatchCallback);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
 
         verify(mockWatchCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
@@ -666,7 +666,7 @@ public class NFCTest {
         nfc.cancelWatch(mNextWatchId + 1, mockCancelWatchCallback);
 
         verify(mockCancelWatchCallback).call(mErrorCaptor.capture());
-        assertEquals(NfcErrorType.NOT_FOUND, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.NOT_FOUND, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -682,7 +682,7 @@ public class NFCTest {
         nfc.cancelAllWatches(mockCallback);
 
         verify(mockCallback).call(mErrorCaptor.capture());
-        assertEquals(NfcErrorType.NOT_FOUND, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.NOT_FOUND, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -695,7 +695,7 @@ public class NFCTest {
         mDelegate.invokeCallback();
         nfc.setClient(mNfcClient);
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), mNextWatchId, mockWatchCallback);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
 
         // Force read operation to fail
         doThrow(IllegalStateException.class).when(mNfcTagHandler).read();
@@ -723,13 +723,13 @@ public class NFCTest {
         doThrow(IllegalStateException.class)
                 .when(mNfcTagHandler)
                 .write(any(android.nfc.NdefMessage.class));
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
 
         // Test that correct error is returned.
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.IO_ERROR, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.IO_ERROR, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -743,7 +743,7 @@ public class NFCTest {
         PushResponse mockCallback = mock(PushResponse.class);
 
         // Set 1 millisecond timeout.
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(1), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback);
 
         // Wait for timeout.
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
@@ -751,7 +751,7 @@ public class NFCTest {
         // Test that correct error is returned.
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -765,8 +765,8 @@ public class NFCTest {
 
         PushResponse mockCallback1 = mock(PushResponse.class);
         PushResponse mockCallback2 = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback1);
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback2);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback1);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback2);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -775,7 +775,7 @@ public class NFCTest {
 
         verify(mockCallback1).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -789,7 +789,7 @@ public class NFCTest {
         PushResponse mockCallback = mock(PushResponse.class);
 
         // Set 1 millisecond timeout.
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(1), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -804,7 +804,7 @@ public class NFCTest {
         // Test that correct error is returned.
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -820,23 +820,23 @@ public class NFCTest {
         PushResponse mockCallback1 = mock(PushResponse.class);
 
         // First push without timeout, must be completed with OPERATION_CANCELLED.
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback1);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback1);
 
         PushResponse mockCallback2 = mock(PushResponse.class);
 
         // Second push with 1 millisecond timeout, should be cancelled before timer expires,
         // thus, operation must be completed with OPERATION_CANCELLED.
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(1), mockCallback2);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback2);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
                         (Bundle) isNull());
         verify(mockCallback1).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
 
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
-        nfc.cancelPush(NfcPushTarget.ANY, mockCancelPushCallback);
+        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
 
         // Reader mode is disabled after cancelPush is invoked.
         verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
@@ -850,7 +850,7 @@ public class NFCTest {
         // Test that correct error is returned.
         verify(mockCallback2).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -866,12 +866,12 @@ public class NFCTest {
         PushResponse mockCallback1 = mock(PushResponse.class);
 
         // First push without timeout, must be completed with OPERATION_CANCELLED.
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(1), mockCallback1);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback1);
 
         PushResponse mockCallback2 = mock(PushResponse.class);
 
         // Second push with 1 millisecond timeout, should be cancelled with TIMER_EXPIRED.
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(1), mockCallback2);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback2);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -882,7 +882,7 @@ public class NFCTest {
 
         verify(mockCallback1).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
 
         // Wait for delayed tasks to complete.
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
@@ -893,7 +893,7 @@ public class NFCTest {
         // Test that correct error is returned for second push.
         verify(mockCallback2).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -906,11 +906,11 @@ public class NFCTest {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
-        nfc.watch(createNfcScanOptions(), mNextWatchId, mockWatchCallback);
+        nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
 
         PushResponse mockPushCallback = mock(PushResponse.class);
         // Should be cancelled with TIMER_EXPIRED.
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(1), mockPushCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockPushCallback);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
@@ -922,7 +922,7 @@ public class NFCTest {
         // Push was cancelled with TIMER_EXPIRED.
         verify(mockPushCallback).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
 
         verify(mNfcAdapter, times(0)).disableReaderMode(mActivity);
 
@@ -948,19 +948,19 @@ public class NFCTest {
         PushResponse mockCallback = mock(PushResponse.class);
 
         // Long overflow
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(Long.MAX_VALUE + 1), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(Long.MAX_VALUE + 1), mockCallback);
 
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
 
         // Test negative timeout
         PushResponse mockCallback2 = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(-1), mockCallback2);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(-1), mockCallback2);
 
         verify(mockCallback2).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NfcErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -976,7 +976,7 @@ public class NFCTest {
         // Should match.
         int watchId1 = mNextWatchId++;
         {
-            NfcScanOptions options = createNfcScanOptions();
+            NdefScanOptions options = createNdefScanOptions();
             options.url = "https://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId1, mockWatchCallback);
@@ -987,7 +987,7 @@ public class NFCTest {
         // Should match.
         int watchId2 = mNextWatchId++;
         {
-            NfcScanOptions options = createNfcScanOptions();
+            NdefScanOptions options = createNdefScanOptions();
             options.url = "https://test.com/contact/42";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId2, mockWatchCallback);
@@ -998,7 +998,7 @@ public class NFCTest {
         // Should match.
         int watchId3 = mNextWatchId++;
         {
-            NfcScanOptions options = createNfcScanOptions();
+            NdefScanOptions options = createNdefScanOptions();
             options.url = "https://subdomain.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId3, mockWatchCallback);
@@ -1009,7 +1009,7 @@ public class NFCTest {
         // Should match.
         int watchId4 = mNextWatchId++;
         {
-            NfcScanOptions options = createNfcScanOptions();
+            NdefScanOptions options = createNdefScanOptions();
             options.url = "https://subdomain.test.com/contact";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId4, mockWatchCallback);
@@ -1019,7 +1019,7 @@ public class NFCTest {
 
         // Should not match.
         {
-            NfcScanOptions options = createNfcScanOptions();
+            NdefScanOptions options = createNdefScanOptions();
             options.url = "https://www.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
@@ -1029,7 +1029,7 @@ public class NFCTest {
 
         // Should not match.
         {
-            NfcScanOptions options = createNfcScanOptions();
+            NdefScanOptions options = createNdefScanOptions();
             options.url = "http://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
@@ -1039,7 +1039,7 @@ public class NFCTest {
 
         // Should not match.
         {
-            NfcScanOptions options = createNfcScanOptions();
+            NdefScanOptions options = createNdefScanOptions();
             options.url = "invalid pattern url";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
@@ -1078,7 +1078,7 @@ public class NFCTest {
         nfc.setClient(mNfcClient);
 
         // Should not match when invalid WebNFC Id is received.
-        NfcScanOptions options = createNfcScanOptions();
+        NdefScanOptions options = createNdefScanOptions();
         options.url = "https://test.com/*";
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
         nfc.watch(options, mNextWatchId, mockWatchCallback);
@@ -1118,32 +1118,32 @@ public class NFCTest {
         emptyNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_EMPTY;
         NdefMessage ndefMessage = createMojoNdefMessage(TEST_URL, emptyNdefRecord);
 
-        nfc.push(ndefMessage, createNfcPushOptions(), mockCallback);
+        nfc.push(ndefMessage, createNdefPushOptions(), mockCallback);
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNull(mErrorCaptor.getValue());
     }
 
     /**
-     * Creates NfcPushOptions with default values.
+     * Creates NdefPushOptions with default values.
      */
-    private NfcPushOptions createNfcPushOptions() {
-        return createNfcPushOptions(/*timeout=*/Double.POSITIVE_INFINITY);
+    private NdefPushOptions createNdefPushOptions() {
+        return createNdefPushOptions(/*timeout=*/Double.POSITIVE_INFINITY);
     }
 
     /**
-     * Creates NfcPushOptions with specified timeout.
+     * Creates NdefPushOptions with specified timeout.
      */
-    private NfcPushOptions createNfcPushOptions(double timeout) {
-        NfcPushOptions pushOptions = new NfcPushOptions();
-        pushOptions.target = NfcPushTarget.ANY;
+    private NdefPushOptions createNdefPushOptions(double timeout) {
+        NdefPushOptions pushOptions = new NdefPushOptions();
+        pushOptions.target = NdefPushTarget.ANY;
         pushOptions.timeout = timeout;
         pushOptions.ignoreRead = false;
         return pushOptions;
     }
 
-    private NfcScanOptions createNfcScanOptions() {
-        NfcScanOptions options = new NfcScanOptions();
+    private NdefScanOptions createNdefScanOptions() {
+        NdefScanOptions options = new NdefScanOptions();
         options.url = "";
         options.mediaType = "";
         options.recordFilter = null;

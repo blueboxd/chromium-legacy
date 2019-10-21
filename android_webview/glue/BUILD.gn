@@ -20,6 +20,7 @@ android_library("glue") {
     "//base:jni_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
+    "//components/embedder_support/android:application_java",
     "//content/public/android:content_java",
     "//net/android:net_java",
     "//ui/android:ui_java",

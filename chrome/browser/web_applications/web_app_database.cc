@@ -329,11 +329,11 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
 blink::mojom::DisplayMode ToMojomDisplayMode(
     ::sync_pb::WebAppSpecifics::DisplayMode display_mode) {
   switch (display_mode) {
-    case ::sync_pb::WebAppSpecifics::kBrowser:
+    case ::sync_pb::WebAppSpecifics::BROWSER:
       return blink::mojom::DisplayMode::kBrowser;
-    case ::sync_pb::WebAppSpecifics::kMinimalUi:
+    case ::sync_pb::WebAppSpecifics::MINIMAL_UI:
       return blink::mojom::DisplayMode::kMinimalUi;
-    case ::sync_pb::WebAppSpecifics::kStandalone:
+    case ::sync_pb::WebAppSpecifics::STANDALONE:
       return blink::mojom::DisplayMode::kStandalone;
   }
 }
@@ -342,16 +342,16 @@ blink::mojom::DisplayMode ToMojomDisplayMode(
     blink::mojom::DisplayMode display_mode) {
   switch (display_mode) {
     case blink::mojom::DisplayMode::kBrowser:
-      return ::sync_pb::WebAppSpecifics::kBrowser;
+      return ::sync_pb::WebAppSpecifics::BROWSER;
     case blink::mojom::DisplayMode::kMinimalUi:
-      return ::sync_pb::WebAppSpecifics::kMinimalUi;
+      return ::sync_pb::WebAppSpecifics::MINIMAL_UI;
     case blink::mojom::DisplayMode::kUndefined:
       NOTREACHED();
       FALLTHROUGH;
     case blink::mojom::DisplayMode::kFullscreen:
     case blink::mojom::DisplayMode::kStandalone:
       // We do not persist kFullscreen - see crbug.com/850465.
-      return ::sync_pb::WebAppSpecifics::kStandalone;
+      return ::sync_pb::WebAppSpecifics::STANDALONE;
   }
 }
 

@@ -227,6 +227,12 @@ inline EventDispatchContinuation EventDispatcher::DispatchEventPreProcess(
     pre_dispatch_event_handler_result =
         activation_target->PreDispatchEventHandler(*event_);
   }
+
+  // If this is a trusted keyboard event, update the keyboard event state and
+  // trigger :focus-visible matching if necessary.
+  if (event_->isTrusted() && event_->IsKeyboardEvent())
+    node_->UpdateHadKeyboardEvent(*event_);
+
   return (event_->GetEventPath().IsEmpty() || event_->PropagationStopped())
              ? kDoneDispatching
              : kContinueDispatching;
@@ -351,7 +357,6 @@ inline void EventDispatcher::DispatchEventPostProcess(
   } else if (!event_->DefaultHandled() && is_trusted_or_click) {
     // Non-bubbling events call only one default event handler, the one for the
     // target.
-    node_->WillCallDefaultEventHandler(*event_);
     node_->DefaultEventHandler(*event_);
     DCHECK(!event_->defaultPrevented());
     // For bubbling events, call default event handlers on the same targets in
@@ -359,8 +364,6 @@ inline void EventDispatcher::DispatchEventPostProcess(
     if (!event_->DefaultHandled() && event_->bubbles()) {
       wtf_size_t size = event_->GetEventPath().size();
       for (wtf_size_t i = 1; i < size; ++i) {
-        event_->GetEventPath()[i].GetNode().WillCallDefaultEventHandler(
-            *event_);
         event_->GetEventPath()[i].GetNode().DefaultEventHandler(*event_);
         DCHECK(!event_->defaultPrevented());
         if (event_->DefaultHandled())

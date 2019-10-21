@@ -172,6 +172,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
 
   std::unique_ptr<TabletModeEventHandler> event_handler_;
 
+  // True when tablet mode is about to end.
+  bool is_exiting_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManager);
 };
 

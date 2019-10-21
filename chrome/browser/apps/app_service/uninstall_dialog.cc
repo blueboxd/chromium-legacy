@@ -22,18 +22,20 @@ UninstallDialog::UninstallDialog(Profile* profile,
                                  const std::string& app_name,
                                  apps::mojom::IconKeyPtr icon_key,
                                  apps::IconLoader* icon_loader,
+                                 gfx::NativeWindow parent_window,
                                  UninstallCallback uninstall_callback)
     : profile_(profile),
       app_type_(app_type),
       app_id_(app_id),
       app_name_(app_name),
+      parent_window_(parent_window),
       uninstall_callback_(std::move(uninstall_callback)) {
   int32_t size_hint_in_dip;
   switch (app_type) {
     case apps::mojom::AppType::kCrostini:
       // Crostini uninstall dialog doesn't show the icon.
       UiBase::Create(profile_, app_type_, app_id_, app_name, gfx::ImageSkia(),
-                     this);
+                     parent_window, this);
       return;
     case apps::mojom::AppType::kArc:
       // Currently ARC apps only support 48*48 native icon.
@@ -72,7 +74,7 @@ void UninstallDialog::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
   }
 
   UiBase::Create(profile_, app_type_, app_id_, app_name_,
-                 icon_value->uncompressed, this);
+                 icon_value->uncompressed, parent_window_, this);
 }
 
 }  // namespace apps

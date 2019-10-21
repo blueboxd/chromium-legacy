@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -35,9 +36,13 @@ void apps::UninstallDialog::UiBase::Create(
     const std::string& app_id,
     const std::string& app_name,
     gfx::ImageSkia image,
+    gfx::NativeWindow parent_window,
     apps::UninstallDialog* uninstall_dialog) {
-  new AppUninstallDialogView(profile, app_type, app_id, app_name, image,
-                             uninstall_dialog);
+  constrained_window::CreateBrowserModalDialogViews(
+      (new AppUninstallDialogView(profile, app_type, app_id, app_name, image,
+                                  uninstall_dialog)),
+      parent_window)
+      ->Show();
 }
 
 AppUninstallDialogView::AppUninstallDialogView(
@@ -52,7 +57,8 @@ AppUninstallDialogView::AppUninstallDialogView(
       app_type_(app_type),
       app_name_(app_name) {
   InitializeView(profile, app_id);
-  constrained_window::CreateBrowserModalDialogViews(this, nullptr)->Show();
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
 }
 
 bool AppUninstallDialogView::Cancel() {

@@ -33,6 +33,7 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
                   const std::string& client_name,
                   const base::SysInfo::HardwareInfo& hardware_info) override;
   void Clear() override;
+  void UpdateClientName(const std::string& client_name) override;
   version_info::Channel GetChannel() const override;
   const DeviceInfo* GetLocalDeviceInfo() const override;
   std::unique_ptr<Subscription> RegisterOnInitializedCallback(

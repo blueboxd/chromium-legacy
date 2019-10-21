@@ -1773,7 +1773,8 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
     return reasons;
 
   if (object.IsLayoutView()) {
-    if (object.GetFrameView()->HasBackgroundAttachmentFixedObjects()) {
+    if (object.GetFrameView()
+            ->RequiresMainThreadScrollingForBackgroundAttachmentFixed()) {
       reasons |=
           cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
     }

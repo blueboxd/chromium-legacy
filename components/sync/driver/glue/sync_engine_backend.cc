@@ -80,8 +80,7 @@ bool ShouldEnableUSSNigori() {
   // effect (only clients, which have feature-flag checked participate in the
   // study). Otherwise, we will have different amount of clients in control and
   // experiment groups.
-  return base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks) &&
-         base::FeatureList::IsEnabled(switches::kSyncUSSPasswords) &&
+  return base::FeatureList::IsEnabled(switches::kSyncUSSPasswords) &&
          base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
 }
 

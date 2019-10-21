@@ -14,7 +14,6 @@ class WebStateImpl;
 class UserInteractionState;
 class NavigationContextImpl;
 }
-@class CRWJSInjector;
 @class CRWJSNavigationHandler;
 
 @protocol CRWJSNavigationHandlerDelegate
@@ -33,10 +32,6 @@ class NavigationContextImpl;
 
 // Returns associated WKWebView.
 - (WKWebView*)webViewForJSNavigationHandler:
-    (CRWJSNavigationHandler*)navigationHandler;
-
-// Returns the associated js injector.
-- (CRWJSInjector*)JSInjectorForJSNavigationHandler:
     (CRWJSNavigationHandler*)navigationHandler;
 
 // Instructs the delegate to update SSL status.

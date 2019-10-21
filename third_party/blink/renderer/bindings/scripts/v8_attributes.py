@@ -49,6 +49,7 @@ import v8_utilities
 from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extended_attribute,
                           has_extended_attribute_value, scoped_name, strip_suffix,
                           uncapitalize, extended_attribute_value_as_list, is_unforgeable)
+from blinkbuild.name_style_converter import NameStyleConverter
 
 
 def attribute_context(interface, attribute, interfaces, component_info):
@@ -109,17 +110,50 @@ def attribute_context(interface, attribute, interfaces, component_info):
     is_save_same_object = (
         'SameObject' in attribute.extended_attributes and
         'SaveSameObject' in attribute.extended_attributes)
-    if is_save_same_object:
-        includes.add('platform/bindings/v8_private_property.h')
-
-    cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
-    keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
-    if cached_attribute_validation_method or keep_alive_for_gc:
-        includes.add('platform/bindings/v8_private_property.h')
 
     # [CachedAccessor]
     is_cached_accessor = 'CachedAccessor' in extended_attributes
-    if is_cached_accessor:
+
+    # [LenientSetter]
+    is_lenient_setter = 'LenientSetter' in extended_attributes
+
+    # [CachedAttribute]
+    cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
+
+    keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
+
+    does_generate_getter = (
+        not has_custom_getter(attribute) and
+        not constructor_type
+    )
+    does_generate_setter = (
+        has_setter(interface, attribute) and
+        not (has_custom_setter(attribute) or is_lenient_setter)
+    )
+
+    use_private_property_in_getter = (
+        does_generate_getter and (
+            cached_attribute_validation_method or
+            is_save_same_object or
+            keep_alive_for_gc
+        )
+    )
+    use_private_property_in_setter = (
+        does_generate_setter and
+        cached_attribute_validation_method
+    )
+    private_property_is_shared_between_getter_and_setter = (
+        use_private_property_in_getter and
+        use_private_property_in_setter
+    )
+    private_property_key_name = create_private_property_key_name(attribute)
+
+    does_use_private_property = (
+        use_private_property_in_getter or
+        use_private_property_in_setter or
+        is_cached_accessor
+    )
+    if does_use_private_property:
         includes.add('platform/bindings/v8_private_property.h')
 
     # [LogActivity]
@@ -143,6 +177,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'activity_logging_world_check': v8_utilities.activity_logging_world_check(attribute),  # [ActivityLogging]
+        'cached_accessor_name': '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
         'cached_attribute_validation_method': cached_attribute_validation_method,
         'camel_case_name': NameStyleConverter(attribute.name).to_upper_camel_case(),
         'constructor_type': constructor_type,
@@ -150,8 +185,9 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,
         'cpp_type_initializer': idl_type.cpp_type_initializer,
-        'high_entropy': high_entropy,
         'deprecate_as': deprecate_as,
+        'does_generate_getter': does_generate_getter,
+        'does_generate_setter': does_generate_setter,
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
@@ -164,6 +200,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'has_custom_setter': has_custom_setter(attribute),
         'has_promise_type': idl_type.name == 'Promise',
         'has_setter': has_setter(interface, attribute),
+        'high_entropy': high_entropy,
         'idl_type': str(idl_type),
         'is_cached_accessor': is_cached_accessor,
         'is_call_with_execution_context': has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
@@ -179,7 +216,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
             extended_attributes['RaisesException'] in (None, 'Getter'),
         'is_keep_alive_for_gc': keep_alive_for_gc,
         'is_lazy_data_attribute': is_lazy_data_attribute,
-        'is_lenient_setter': 'LenientSetter' in extended_attributes,
+        'is_lenient_setter': is_lenient_setter,
         'is_lenient_this': 'LenientThis' in extended_attributes,
         'is_nullable': idl_type.is_nullable,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
@@ -195,14 +232,15 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': is_unforgeable(attribute),
+        'measure_as': measure_as,
+        'name': attribute.name,
         'on_instance': v8_utilities.on_instance(interface, attribute),
         'on_interface': v8_utilities.on_interface(interface, attribute),
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
         'origin_trial_feature_name':
             v8_utilities.origin_trial_feature_name(attribute, runtime_features),  # [RuntimeEnabled] for origin trial
-        'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
-        'measure_as': measure_as,
-        'name': attribute.name,
+        'private_property_is_shared_between_getter_and_setter': private_property_is_shared_between_getter_and_setter,
+        'private_property_key_name': private_property_key_name,
         'property_attributes': property_attributes(interface, attribute),
         'reflect_empty': extended_attributes.get('ReflectEmpty'),
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
@@ -211,7 +249,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
         'runtime_enabled_feature_name':
             v8_utilities.runtime_enabled_feature_name(attribute, runtime_features),  # [RuntimeEnabled] if not in origin trial
         'secure_context_test': v8_utilities.secure_context(attribute, interface),  # [SecureContext]
-        'cached_accessor_name': '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
+        'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'world_suffixes': (
             ['', 'ForMainWorld']
             if 'PerWorldBindings' in extended_attributes
@@ -237,6 +275,10 @@ def attribute_context(interface, attribute, interfaces, component_info):
             raise Exception('[CrossOrigin] cannot be used for constructors: %s.%s', interface.name, attribute.name)
 
     return context
+
+
+def create_private_property_key_name(attribute):
+    return NameStyleConverter(attribute.name + '_private_property_key').to_snake_case()
 
 
 def runtime_call_stats_context(interface, attribute, context):

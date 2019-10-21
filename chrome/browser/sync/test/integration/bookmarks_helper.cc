@@ -46,17 +46,55 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
-#include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/tree_node_iterator.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 namespace {
+
+void ApplyBookmarkFavicon(
+    const BookmarkNode* bookmark_node,
+    favicon::FaviconService* favicon_service,
+    const GURL& icon_url,
+    const scoped_refptr<base::RefCountedMemory>& bitmap_data) {
+  // Some tests use no services.
+  if (favicon_service == nullptr)
+    return;
+
+  favicon_service->AddPageNoVisitForBookmark(bookmark_node->url(),
+                                             bookmark_node->GetTitle());
+
+  GURL icon_url_to_use = icon_url;
+
+  if (icon_url.is_empty()) {
+    if (bitmap_data->size() == 0) {
+      // Empty icon URL and no bitmap data means no icon mapping.
+      favicon_service->DeleteFaviconMappings({bookmark_node->url()},
+                                             favicon_base::IconType::kFavicon);
+      return;
+    } else {
+      // Ancient clients (prior to M25) may not be syncing the favicon URL. If
+      // the icon URL is not synced, use the page URL as a fake icon URL as it
+      // is guaranteed to be unique.
+      icon_url_to_use = bookmark_node->url();
+    }
+  }
+
+  // The client may have cached the favicon at 2x. Use MergeFavicon() as not to
+  // overwrite the cached 2x favicon bitmap. Sync favicons are always
+  // gfx::kFaviconSize in width and height. Store the favicon into history
+  // as such.
+  gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
+  favicon_service->MergeFavicon(bookmark_node->url(), icon_url_to_use,
+                                favicon_base::IconType::kFavicon, bitmap_data,
+                                pixel_size);
+}
 
 // History task which signals an event.
 class SignalEventTask : public history::HistoryDBTask {
@@ -248,14 +286,13 @@ void SetFaviconImpl(Profile* profile,
   if (favicon_source == bookmarks_helper::FROM_UI) {
     favicon_service->SetFavicons({node->url()}, icon_url,
                                  favicon_base::IconType::kFavicon, image);
-    } else {
-      sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-          node, favicon_service, icon_url, image.As1xPNGBytes());
-    }
+  } else {
+    ApplyBookmarkFavicon(node, favicon_service, icon_url, image.As1xPNGBytes());
+  }
 
-    // Wait for the favicon for |node| to be invalidated.
-    observer.WaitForSetFavicon();
-    model->GetFavicon(node);
+  // Wait for the favicon for |node| to be invalidated.
+  observer.WaitForSetFavicon();
+  model->GetFavicon(node);
 }
 
 // Expires the favicon for |profile| and |node|. |profile| may be
@@ -293,7 +330,7 @@ void DeleteFaviconMappingsImpl(Profile* profile,
     favicon_service->DeleteFaviconMappings({node->url()},
                                            favicon_base::IconType::kFavicon);
   } else {
-    sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
+    ApplyBookmarkFavicon(
         node, favicon_service, /*icon_url=*/GURL(),
         scoped_refptr<base::RefCountedString>(new base::RefCountedString()));
   }

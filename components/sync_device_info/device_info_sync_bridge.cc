@@ -204,6 +204,16 @@ void DeviceInfoSyncBridge::OnSyncStarting(
   device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
   // SyncMode determines the client name in GetLocalClientName().
   sync_mode_ = request.sync_mode;
+
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;
+  }
+
+  // Local device's client name needs to updated if OnSyncStarting is called
+  // after local device has already been initialized since the client name
+  // depends on |sync_mode_|.
+  local_device_info_provider_->UpdateClientName(GetLocalClientName());
+  ReconcileLocalAndStored();
 }
 
 std::unique_ptr<MetadataChangeList>

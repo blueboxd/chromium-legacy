@@ -32,6 +32,7 @@ class NigoriLocalData;
 namespace syncer {
 
 class Encryptor;
+class KeyDerivationParams;
 class NigoriStorage;
 class PendingLocalNigoriCommit;
 
@@ -89,6 +90,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   sync_pb::NigoriSpecifics::PassphraseType GetPassphraseTypeForTesting() const;
   ModelTypeSet GetEncryptedTypesForTesting() const;
   bool HasPendingKeysForTesting() const;
+  KeyDerivationParams GetCustomPassphraseKeyDerivationParamsForTesting() const;
 
   static std::string PackExplicitPassphraseKeyForTesting(
       const Encryptor& encryptor,

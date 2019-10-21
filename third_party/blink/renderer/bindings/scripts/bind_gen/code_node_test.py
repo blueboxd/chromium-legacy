@@ -4,11 +4,13 @@
 
 import unittest
 
+from .code_node import LikelyExitNode
 from .code_node import LiteralNode
 from .code_node import SequenceNode
 from .code_node import SymbolNode
 from .code_node import SymbolScopeNode
 from .code_node import TextNode
+from .code_node import UnlikelyExitNode
 from .mako_renderer import MakoRenderer
 
 
@@ -110,9 +112,111 @@ class CodeNodeTest(unittest.TestCase):
         self.assertRenderResult(
             root, """
 int var5 = 2;
+int var2 = var5;
 int var4 = 1;
 int var3 = var4;
-int var2 = var5;
 int var1 = var2 + var3;
 (void)var1;
         """)
+
+    def test_symbol_definition_with_exit_branches(self):
+        renderer = MakoRenderer()
+        root = SymbolScopeNode(renderer=renderer)
+
+        root.register_code_symbols([
+            SymbolNode("var1", "int ${var1} = 1;"),
+            SymbolNode("var2", "int ${var2} = 2;"),
+            SymbolNode("var3", "int ${var3} = 3;"),
+            SymbolNode("var4", "int ${var4} = 4;"),
+            SymbolNode("var5", "int ${var5} = 5;"),
+            SymbolNode("var6", "int ${var6} = 6;"),
+        ])
+
+        root.extend([
+            TextNode("${var1};"),
+            UnlikelyExitNode(
+                cond_node=TextNode("${var2}"),
+                body_node=SymbolScopeNode([
+                    TextNode("${var3};"),
+                    TextNode("return ${var4};"),
+                ])),
+            LikelyExitNode(
+                cond_node=TextNode("${var5}"),
+                body_node=SymbolScopeNode([
+                    TextNode("return ${var6};"),
+                ])),
+            TextNode("${var3};"),
+        ])
+
+        self.assertRenderResult(
+            root, """
+int var1 = 1;
+var1;
+int var2 = 2;
+int var3 = 3;
+if (var2) {
+  var3;
+  int var4 = 4;
+  return var4;
+}
+int var5 = 5;
+if (var5) {
+  int var6 = 6;
+  return var6;
+}
+var3;
+""")
+
+    def test_symbol_definition_with_nested_exit_branches(self):
+        renderer = MakoRenderer()
+        root = SymbolScopeNode(renderer=renderer)
+
+        root.register_code_symbols([
+            SymbolNode("var1", "int ${var1} = 1;"),
+            SymbolNode("var2", "int ${var2} = 2;"),
+            SymbolNode("var3", "int ${var3} = 3;"),
+            SymbolNode("var4", "int ${var4} = 4;"),
+            SymbolNode("var5", "int ${var5} = 5;"),
+            SymbolNode("var6", "int ${var6} = 6;"),
+        ])
+
+        root.extend([
+            UnlikelyExitNode(
+                cond_node=LiteralNode("false"),
+                body_node=SymbolScopeNode([
+                    UnlikelyExitNode(
+                        cond_node=LiteralNode("false"),
+                        body_node=SymbolScopeNode([
+                            TextNode("return ${var1};"),
+                        ])),
+                    LiteralNode("return;"),
+                ])),
+            LikelyExitNode(
+                cond_node=LiteralNode("true"),
+                body_node=SymbolScopeNode([
+                    LikelyExitNode(
+                        cond_node=LiteralNode("true"),
+                        body_node=SymbolScopeNode([
+                            TextNode("return ${var2};"),
+                        ])),
+                    LiteralNode("return;"),
+                ])),
+        ])
+
+        self.assertRenderResult(
+            root, """
+if (false) {
+  if (false) {
+    int var1 = 1;
+    return var1;
+  }
+  return;
+}
+if (true) {
+  if (true) {
+    int var2 = 2;
+    return var2;
+  }
+  return;
+}
+""")

@@ -747,6 +747,7 @@ mojom("mojo_bindings") {
     "plugin.mojom",
     "prerender.mojom",
     "renderer_configuration.mojom",
+    "sync_encryption_keys_extension.mojom",
   ]
 
   deps = []

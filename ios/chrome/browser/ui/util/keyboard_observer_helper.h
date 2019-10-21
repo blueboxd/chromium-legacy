@@ -30,7 +30,10 @@ typedef struct {
 
 // Indicates that |UIKeyboardWillHideNotification| was posted but the keyboard
 // was not hidden. For example, this can happen when jumping between fields.
-- (void)keyboardDidStayOnScreen;
+// Deprecated. This is not needed on iOS 13 and will be deleted once support for
+// iOS 12 is removed.
+- (void)keyboardDidStayOnScreen API_DEPRECATED("Not needed on iOS >12",
+                                               ios(11.0, 13.0));
 
 // Indicates that the keyboard state changed, at least on one of the
 // |KeyboardState| aspects.

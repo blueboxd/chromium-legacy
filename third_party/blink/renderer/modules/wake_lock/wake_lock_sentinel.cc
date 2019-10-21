@@ -23,11 +23,20 @@ WakeLockSentinel::WakeLockSentinel(ScriptState* script_state,
 WakeLockSentinel::~WakeLockSentinel() = default;
 
 ScriptPromise WakeLockSentinel::release(ScriptState* script_state) {
+  // https://w3c.github.io/wake-lock/#the-release-method
+  // 1. Let promise be a new promise.
+  // 2. Run the following steps in parallel:
+  // 2.1. Run release wake lock with lock set to this object and type set to the
+  //      value of this object's type attribute.
+  // 2.2. Resolve promise.
+  // 3. Return promise.
   DoRelease();
   return ScriptPromise::CastUndefined(script_state);
 }
 
 String WakeLockSentinel::type() const {
+  // https://w3c.github.io/wake-lock/#dom-wakelocksentinel-type
+  // The type attribute corresponds to the WakeLockSentinel's wake lock type.
   switch (type_) {
     case WakeLockType::kScreen:
       return "screen";
@@ -51,7 +60,10 @@ void WakeLockSentinel::Trace(blink::Visitor* visitor) {
 }
 
 bool WakeLockSentinel::HasPendingActivity() const {
-  return HasEventListeners();
+  // This WakeLockSentinel needs to remain alive as long as:
+  // 1. DoRelease() has not not been called yet AND
+  // 2. It has at least one event listener.
+  return manager_ && HasEventListeners();
 }
 
 void WakeLockSentinel::ContextDestroyed(ExecutionContext*) {
@@ -62,12 +74,18 @@ void WakeLockSentinel::ContextDestroyed(ExecutionContext*) {
 }
 
 void WakeLockSentinel::DoRelease() {
+  // https://w3c.github.io/wake-lock/#release-wake-lock-algorithm
+  // 1. Let document be the responsible document of the current settings object.
+  // 2. Let record be the platform wake lock's state record associated with
+  // document and type.
+  // 3. If record.[[ActiveLocks]] does not contain lock, abort these steps.
   if (!manager_)
     return;
 
   manager_->UnregisterSentinel(this);
   manager_.Clear();
 
+  // 6. Queue a task to fire an event named "release" at lock.
   DispatchEvent(*Event::Create(event_type_names::kRelease));
 }
 

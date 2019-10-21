@@ -42,15 +42,7 @@ void CredentialManagerPasswordFormManager::OnFetchCompleted() {
   PasswordFormManager::OnFetchCompleted();
 
   CreatePendingCredentials();
-
-  // Notify the delegate. This might result in deleting |this|, while
-  // OnFetchCompleted is being called from FormFetcherImpl, owned by |this|. If
-  // done directly, once OnFetchCompleted returns, the FormFetcherImpl will be
-  // used after free. Therefore the call is posted to a separate task.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CredentialManagerPasswordFormManager::NotifyDelegate,
-                     weak_factory_.GetWeakPtr()));
+  NotifyDelegate();
 }
 
 metrics_util::CredentialSourceType

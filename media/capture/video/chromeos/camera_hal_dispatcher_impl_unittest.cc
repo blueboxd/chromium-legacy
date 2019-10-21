@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,12 +31,13 @@ class MockCameraHalServer : public cros::mojom::CameraHalServer {
 
   ~MockCameraHalServer() = default;
 
-  void CreateChannel(
-      cros::mojom::CameraModuleRequest camera_module_request) override {
-    DoCreateChannel(camera_module_request);
+  void CreateChannel(mojo::PendingReceiver<cros::mojom::CameraModule>
+                         camera_module_receiver) override {
+    DoCreateChannel(std::move(camera_module_receiver));
   }
   MOCK_METHOD1(DoCreateChannel,
-               void(cros::mojom::CameraModuleRequest& camera_module_request));
+               void(mojo::PendingReceiver<cros::mojom::CameraModule>
+                        camera_module_receiver));
 
   MOCK_METHOD1(SetTracingEnabled, void(bool enabled));
 
@@ -54,11 +56,13 @@ class MockCameraHalClient : public cros::mojom::CameraHalClient {
 
   ~MockCameraHalClient() = default;
 
-  void SetUpChannel(cros::mojom::CameraModulePtr camera_module_ptr) override {
-    DoSetUpChannel(camera_module_ptr);
+  void SetUpChannel(
+      mojo::PendingRemote<cros::mojom::CameraModule> camera_module) override {
+    DoSetUpChannel(std::move(camera_module));
   }
-  MOCK_METHOD1(DoSetUpChannel,
-               void(cros::mojom::CameraModulePtr& camera_module_ptr));
+  MOCK_METHOD1(
+      DoSetUpChannel,
+      void(mojo::PendingRemote<cros::mojom::CameraModule> camera_module));
 
   mojo::PendingRemote<cros::mojom::CameraHalClient> GetPendingRemote() {
     return receiver_.BindNewPipeAndPassRemote();

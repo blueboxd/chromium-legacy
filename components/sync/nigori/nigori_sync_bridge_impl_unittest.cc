@@ -968,8 +968,12 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
 
-  // TODO(crbug.com/922900): find a good way to get key derivation method and
-  // salt to check expectations about cryptographer state.
+  const KeyParams passphrase_key_params = {
+      bridge()->GetCustomPassphraseKeyDerivationParamsForTesting(),
+      kCustomPassphrase};
+  const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(passphrase_key_params));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(passphrase_key_params));
 }
 
 // Tests that pending local change with setting custom passphrase is applied,
@@ -1027,11 +1031,14 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
 
+  const KeyParams passphrase_key_params = {
+      bridge()->GetCustomPassphraseKeyDerivationParamsForTesting(),
+      kCustomPassphrase};
   const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams1));
   EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams2));
-  // TODO(crbug.com/922900): find a good way to get key derivation method and
-  // salt to check expectations about cryptographer state.
+  EXPECT_THAT(cryptographer, CanDecryptWith(passphrase_key_params));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(passphrase_key_params));
 }
 
 // Tests that SetEncryptionPassphrase() call doesn't lead to custom passphrase

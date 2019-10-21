@@ -31,8 +31,7 @@ bool WebGPUTest::WebGPUSupported() const {
 
 bool WebGPUTest::WebGPUSharedImageSupported() const {
   // Currently WebGPUSharedImage is only implemented on Mac, Linux and Windows
-#if (defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)) && \
-    BUILDFLAG(USE_DAWN)
+#if (defined(OS_MACOSX) || defined(OS_LINUX)) && BUILDFLAG(USE_DAWN)
   return true;
 #else
   return false;

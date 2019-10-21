@@ -101,8 +101,10 @@ void WebViewTestProxy::BindTo(blink::WebLocalFrame* frame) {
 
 WebViewTestProxy::~WebViewTestProxy() {
   test_interfaces_->WindowClosed(this);
-  if (test_interfaces_->GetDelegate() == delegate_.get())
+  if (test_interfaces_->GetDelegate() == delegate_.get()) {
     test_interfaces_->SetDelegate(nullptr);
+    test_interfaces_->SetMainView(nullptr);
+  }
 }
 
 TestRunner* WebViewTestProxy::GetTestRunner() {

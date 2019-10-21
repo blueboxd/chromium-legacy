@@ -95,6 +95,14 @@
         eventSenderKeys = "Tab";
       } else if (charCode == 0xE050) {
         eventSenderKeys = "ShiftRight";
+      } else if (charCode == 0xE012) {
+        eventSenderKeys = "ArrowLeft";
+      } else if (charCode == 0xE013) {
+        eventSenderKeys = "ArrowUp";
+      } else if (charCode == 0xE014) {
+        eventSenderKeys = "ArrowRight";
+      } else if (charCode == 0xE015) {
+        eventSenderKeys = "ArrowDown";
       } else if (charCode >= 0xE000 && charCode <= 0xF8FF) {
         reject(new Error("No support for this code: U+" + charCode.toString(16)));
       }

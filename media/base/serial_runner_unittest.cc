@@ -25,8 +25,9 @@ class SerialRunnerTest : public ::testing::Test {
 
   void RunSerialRunner() {
     task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&SerialRunnerTest::StartRunnerInternal,
-                                  base::Unretained(this), bound_fns_));
+        FROM_HERE,
+        base::BindOnce(&SerialRunnerTest::StartRunnerInternal,
+                       base::Unretained(this), std::move(bound_fns_)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -34,32 +35,29 @@ class SerialRunnerTest : public ::testing::Test {
   // |status|. called(i) returns whether the i'th bound function pushed to the
   // queue was called while running the SerialRunner.
   void PushBoundFunction(PipelineStatus status) {
-    bound_fns_.Push(base::Bind(&SerialRunnerTest::RunBoundFunction,
-                               base::Unretained(this),
-                               status,
-                               called_.size()));
+    bound_fns_.Push(base::BindOnce(&SerialRunnerTest::RunBoundFunction,
+                                   base::Unretained(this), status,
+                                   called_.size()));
     called_.push_back(false);
   }
 
   void PushBoundClosure() {
-    bound_fns_.Push(base::Bind(&SerialRunnerTest::RunBoundClosure,
-                               base::Unretained(this),
-                               called_.size()));
+    bound_fns_.Push(base::BindOnce(&SerialRunnerTest::RunBoundClosure,
+                                   base::Unretained(this), called_.size()));
     called_.push_back(false);
   }
 
   void PushClosure() {
-    bound_fns_.Push(base::Bind(&SerialRunnerTest::RunClosure,
-                               base::Unretained(this),
-                               called_.size()));
+    bound_fns_.Push(base::BindOnce(&SerialRunnerTest::RunClosure,
+                                   base::Unretained(this), called_.size()));
     called_.push_back(false);
   }
 
   // Push a bound function to the queue that will delete the SerialRunner,
   // which should cancel all remaining queued work.
   void PushCancellation() {
-    bound_fns_.Push(base::Bind(&SerialRunnerTest::CancelSerialRunner,
-                               base::Unretained(this)));
+    bound_fns_.Push(base::BindOnce(&SerialRunnerTest::CancelSerialRunner,
+                                   base::Unretained(this)));
   }
 
   // Queries final status of pushed functions and done callback. Valid only
@@ -101,10 +99,12 @@ class SerialRunnerTest : public ::testing::Test {
     called_[index] = true;
   }
 
-  void StartRunnerInternal(const SerialRunner::Queue& bound_fns) {
+  void StartRunnerInternal(SerialRunner::Queue bound_fns) {
     inside_start_ = true;
-    runner_ = SerialRunner::Run(bound_fns_, base::Bind(
-        &SerialRunnerTest::DoneCallback, base::Unretained(this)));
+    runner_ =
+        SerialRunner::Run(std::move(bound_fns),
+                          base::BindRepeating(&SerialRunnerTest::DoneCallback,
+                                              base::Unretained(this)));
     inside_start_ = false;
   }
 

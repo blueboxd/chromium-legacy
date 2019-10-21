@@ -33,6 +33,24 @@ using sync_pb::NigoriSpecifics;
 
 const char kNigoriNonUniqueName[] = "Nigori";
 
+KeyDerivationMethodStateForMetrics GetKeyDerivationMethodStateForMetrics(
+    const base::Optional<KeyDerivationParams>& key_derivation_params) {
+  if (!key_derivation_params.has_value()) {
+    return KeyDerivationMethodStateForMetrics::NOT_SET;
+  }
+  switch (key_derivation_params.value().method()) {
+    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
+      return KeyDerivationMethodStateForMetrics::PBKDF2_HMAC_SHA1_1003;
+    case KeyDerivationMethod::SCRYPT_8192_8_11:
+      return KeyDerivationMethodStateForMetrics::SCRYPT_8192_8_11;
+    case KeyDerivationMethod::UNSUPPORTED:
+      return KeyDerivationMethodStateForMetrics::UNSUPPORTED;
+  }
+
+  NOTREACHED();
+  return KeyDerivationMethodStateForMetrics::UNSUPPORTED;
+}
+
 KeyDerivationMethod GetKeyDerivationMethodFromSpecifics(
     const sync_pb::NigoriSpecifics& specifics) {
   KeyDerivationMethod key_derivation_method = ProtoKeyDerivationMethodToEnum(
@@ -459,6 +477,12 @@ bool NigoriSyncBridgeImpl::Init() {
         enum_passphrase_type, GetExplicitPassphraseTime());
     UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", enum_passphrase_type);
   }
+  if (state_.passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Sync.Crypto.CustomPassphraseKeyDerivationMethodStateOnStartup",
+        GetKeyDerivationMethodStateForMetrics(
+            state_.custom_passphrase_key_derivation_params));
+  }
   UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerReady",
                         state_.cryptographer->CanEncrypt());
   UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerPendingKeys",
@@ -478,6 +502,12 @@ bool NigoriSyncBridgeImpl::Init() {
 void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnNewPassphrase",
+      GetKeyDerivationMethodStateForMetrics(
+          CreateKeyDerivationParamsForCustomPassphrase(
+              random_salt_generator_)));
 
   QueuePendingLocalCommit(PendingLocalNigoriCommit::ForSetCustomPassphrase(
       passphrase, random_salt_generator_));
@@ -512,6 +542,15 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
     // Nigori).
     MaybeNotifyOfPendingKeys();
     return;
+  }
+
+  if (state_.passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE) {
+    DCHECK(state_.custom_passphrase_key_derivation_params.has_value());
+    UMA_HISTOGRAM_ENUMERATION(
+        "Sync.Crypto."
+        "CustomPassphraseKeyDerivationMethodOnSuccessfulDecryption",
+        GetKeyDerivationMethodStateForMetrics(
+            state_.custom_passphrase_key_derivation_params));
   }
 
   DCHECK_EQ(state_.cryptographer->GetDefaultEncryptionKeyName(), new_key_name);
@@ -997,6 +1036,14 @@ ModelTypeSet NigoriSyncBridgeImpl::GetEncryptedTypesForTesting() const {
 
 bool NigoriSyncBridgeImpl::HasPendingKeysForTesting() const {
   return state_.pending_keys.has_value();
+}
+
+KeyDerivationParams
+NigoriSyncBridgeImpl::GetCustomPassphraseKeyDerivationParamsForTesting() const {
+  if (!state_.custom_passphrase_key_derivation_params) {
+    return KeyDerivationParams::CreateForPbkdf2();
+  }
+  return *state_.custom_passphrase_key_derivation_params;
 }
 
 std::string NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(

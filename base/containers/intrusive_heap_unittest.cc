@@ -585,6 +585,17 @@ TEST(IntrusiveHeapTest, Assignment) {
   ExpectCanonical(heap2);
 }
 
+TEST(IntrusiveHeapTest, Swap) {
+  IntrusiveHeapInt heap{CANONICAL_ELEMENTS};
+  IntrusiveHeapInt heap2;
+  swap(heap, heap2);
+  EXPECT_TRUE(heap.empty());
+  ExpectCanonical(heap2);
+  heap.swap(heap2);
+  EXPECT_TRUE(heap2.empty());
+  ExpectCanonical(heap);
+}
+
 TEST(IntrusiveHeapTest, ElementAccess) {
   IntrusiveHeapInt heap{CANONICAL_ELEMENTS};
   EXPECT_EQ(heap.front(), heap[0]);

@@ -56,8 +56,6 @@ GURL URLEscapedForHistory(const GURL& url) {
     web::UserInteractionState* userInteractionState;
 // Returns WKWebView from self.delegate.
 @property(nonatomic, readonly, weak) WKWebView* webView;
-// Returns CRWJSInjector from self.delegate.
-@property(nonatomic, readonly, weak) CRWJSInjector* JSInjector;
 // Returns current URL from self.delegate.
 @property(nonatomic, readonly, assign) GURL currentURL;
 
@@ -130,10 +128,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 - (WKWebView*)webView {
   return [self.delegate webViewForJSNavigationHandler:self];
-}
-
-- (CRWJSInjector*)JSInjector {
-  return [self.delegate JSInjectorForJSNavigationHandler:self];
 }
 
 - (GURL)currentURL {
@@ -223,22 +217,6 @@ GURL URLEscapedForHistory(const GURL& url) {
                                  self.webView)];
   [self.delegate
       JSNavigationHandlerUpdateSSLStatusForCurrentNavigationItem:self];
-
-  // This is needed for some special pushState. See http://crbug.com/949305 .
-  NSString* replaceWebViewJS = [self javaScriptToReplaceWebViewURL:pushURL
-                                                   stateObjectJSON:stateObject];
-  __weak CRWJSNavigationHandler* weakSelf = self;
-  [self.JSInjector
-      executeJavaScript:replaceWebViewJS
-      completionHandler:^(id, NSError*) {
-        CRWJSNavigationHandler* strongSelf = weakSelf;
-        if (strongSelf && !strongSelf.beingDestroyed) {
-          [strongSelf.delegate
-              JSNavigationHandlerOptOutScrollsToTopForSubviews:self];
-          [strongSelf.delegate JSNavigationHandler:self
-                               didFinishNavigation:nullptr];
-        }
-      }];
 }
 
 // Handles the navigation.didReplaceState message sent from |senderFrame|.
@@ -286,17 +264,6 @@ GURL URLEscapedForHistory(const GURL& url) {
                     stateObject:stateObject
                  hasUserGesture:self.userInteractionState->IsUserInteracting(
                                     self.webView)];
-  NSString* replaceStateJS = [self javaScriptToReplaceWebViewURL:replaceURL
-                                                 stateObjectJSON:stateObject];
-  __weak CRWJSNavigationHandler* weakSelf = self;
-  [self.JSInjector executeJavaScript:replaceStateJS
-                   completionHandler:^(id, NSError*) {
-                     CRWJSNavigationHandler* strongSelf = weakSelf;
-                     if (!strongSelf || strongSelf.beingDestroyed)
-                       return;
-                     [strongSelf.delegate JSNavigationHandler:self
-                                          didFinishNavigation:nullptr];
-                   }];
   return;
 }
 

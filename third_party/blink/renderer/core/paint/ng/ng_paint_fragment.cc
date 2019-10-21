@@ -1048,8 +1048,10 @@ PositionWithAffinity NGPaintFragment::PositionForPointInText(
   if (text_fragment.IsGeneratedText())
     return PositionWithAffinity();
   const unsigned text_offset = text_fragment.TextOffsetForPoint(point);
+  NGInlineCursor cursor;
+  cursor.MoveTo(*this);
   const NGCaretPosition unadjusted_position{
-      this, NGCaretPositionType::kAtTextOffset, text_offset};
+      cursor, NGCaretPositionType::kAtTextOffset, text_offset};
   if (RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
     return unadjusted_position.ToPositionInDOMTreeWithAffinity();
   if (text_offset > text_fragment.StartOffset() &&

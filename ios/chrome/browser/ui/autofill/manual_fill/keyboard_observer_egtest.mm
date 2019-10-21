@@ -110,10 +110,15 @@ void TapOnWebElementWithID(const std::string& elementID) {
 }
 
 // Tests the observer correctly identifies when the keyboard stays on screen.
-// TODO(crbug.com/1015550) keyboardDidStayOnScreen is not called on iOS13.
-- (void)DISABLED_testKeyboardDidStayOnScreen {
+- (void)testKeyboardDidStayOnScreen {
+  if (@available(iOS 13, *)) {
+    // On iOS 13 keyboardDidStayOnScreen is not called. This makes the
+    // workaround not needed anymore.
+    return;
+  }
   // Opening the keyboard from a webview blocks EarlGrey's synchronization.
   ScopedSynchronizationDisabler disabler;
+
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
 

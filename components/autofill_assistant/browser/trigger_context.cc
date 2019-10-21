@@ -62,6 +62,10 @@ bool TriggerContextImpl::is_cct() const {
   return cct_;
 }
 
+bool TriggerContextImpl::is_onboarding_shown() const {
+  return onboarding_shown_;
+}
+
 bool TriggerContextImpl::is_direct_action() const {
   return direct_action_;
 }
@@ -107,6 +111,14 @@ std::string MergedTriggerContext::experiment_ids() const {
 bool MergedTriggerContext::is_cct() const {
   for (const TriggerContext* context : contexts_) {
     if (context->is_cct())
+      return true;
+  }
+  return false;
+}
+
+bool MergedTriggerContext::is_onboarding_shown() const {
+  for (const TriggerContext* context : contexts_) {
+    if (context->is_onboarding_shown())
       return true;
   }
   return false;

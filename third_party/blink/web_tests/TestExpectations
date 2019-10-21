@@ -5760,7 +5760,7 @@ crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-
 crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Sheriff 2019-10-18
-crbug.com/996250 external/wpt/web-nfc/NFCReader_scan_iframe.https.html [ Timeout ]
+crbug.com/996250 external/wpt/web-nfc/NDEFReader_scan_iframe.https.html [ Timeout ]
 crbug.com/1015254 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Pass Failure ]
 crbug.com/1015764 compositing/video/video-poster.html [ Pass Crash ]

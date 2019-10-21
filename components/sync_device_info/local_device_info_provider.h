@@ -46,6 +46,10 @@ class MutableLocalDeviceInfoProvider : public LocalDeviceInfoProvider {
                           const std::string& client_name,
                           const base::SysInfo::HardwareInfo& hardware_info) = 0;
   virtual void Clear() = 0;
+
+  // Updates the local device's client name. Initialize() must be called before
+  // calling this function.
+  virtual void UpdateClientName(const std::string& client_name) = 0;
 };
 
 }  // namespace syncer

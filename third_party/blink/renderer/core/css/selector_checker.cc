@@ -1439,6 +1439,9 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
   if (force_pseudo_state)
     return true;
 
+  if (!element.IsFocused() || !IsFrameFocused(element))
+    return false;
+
   const Document& document = element.GetDocument();
   bool always_show_focus_ring = element.MayTriggerVirtualKeyboard();
   bool last_focus_from_mouse =
@@ -1447,8 +1450,8 @@ bool SelectorChecker::MatchesFocusVisiblePseudoClass(const Element& element) {
       document.LastFocusType() == kWebFocusTypeMouse;
   bool had_keyboard_event = document.HadKeyboardEvent();
 
-  return element.IsFocused() && (!last_focus_from_mouse || had_keyboard_event ||
-                                 always_show_focus_ring);
+  return (!last_focus_from_mouse || had_keyboard_event ||
+          always_show_focus_ring);
 }
 
 // static

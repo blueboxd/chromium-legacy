@@ -131,6 +131,7 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobjectArray>& parameter_names,
                           const JavaParamRef<jobjectArray>& parameter_values,
                           const JavaParamRef<jobject>& jonboarding_coordinator,
+                          jboolean jonboarding_shown,
                           jlong jservice) {
   // When Start() is called, AA_START should have been measured. From now on,
   // the client is responsible for keeping track of dropouts, so that for each
@@ -151,6 +152,7 @@ bool ClientAndroid::Start(JNIEnv* env,
   std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
       env, jexperiment_ids, parameter_names, parameter_values);
   trigger_context->SetCCT(true);
+  trigger_context->SetOnboardingShown(jonboarding_shown);
 
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
   return controller_->Start(initial_url, std::move(trigger_context));

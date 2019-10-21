@@ -64,8 +64,8 @@ class NGCaretPositionTest : public NGLayoutTest {
 
 #define TEST_CARET(caret, fragment_, type_, offset_)                         \
   {                                                                          \
-    EXPECT_EQ(&caret.fragment->PhysicalFragment(), fragment_)                \
-        << caret.fragment->PhysicalFragment().ToString();                    \
+    EXPECT_EQ(&caret.PaintFragment()->PhysicalFragment(), fragment_)         \
+        << caret.PaintFragment()->PhysicalFragment().ToString();             \
     EXPECT_EQ(caret.position_type, NGCaretPositionType::type_);              \
     EXPECT_EQ(caret.text_offset, offset_) << caret.text_offset.value_or(-1); \
   }

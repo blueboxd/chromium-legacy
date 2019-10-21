@@ -17,7 +17,8 @@ class AXTreeSourceArc;
 class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
  public:
   AccessibilityNodeInfoDataWrapper(AXTreeSourceArc* tree_source,
-                                   mojom::AccessibilityNodeInfoData* node);
+                                   mojom::AccessibilityNodeInfoData* node,
+                                   bool is_clickable_leaf);
 
   // AccessibilityInfoDataWrapper overrides.
   bool IsNode() const override;
@@ -55,6 +56,8 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
                                std::vector<std::string>* names) const;
 
   mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
+
+  bool is_clickable_leaf_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityNodeInfoDataWrapper);
 };

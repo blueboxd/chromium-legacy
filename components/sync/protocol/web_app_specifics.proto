@@ -17,11 +17,11 @@ message WebAppSpecifics {
   // This enum should be synced with
   // third_party/blink/public/mojom/manifest/display_mode.mojom
   enum DisplayMode {
-    // kUndefined is never serialized.
-    kBrowser = 1;
-    kMinimalUi = 2;
-    kStandalone = 3;
-    // kFullscreen is never serialized.
+    // UNDEFINED is never serialized.
+    BROWSER = 1;
+    MINIMAL_UI = 2;
+    STANDALONE= 3;
+    // FULLSCREEN is never serialized.
   }
 
   optional string launch_url = 1;

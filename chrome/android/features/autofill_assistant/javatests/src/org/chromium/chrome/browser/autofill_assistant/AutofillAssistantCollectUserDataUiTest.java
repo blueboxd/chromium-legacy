@@ -35,6 +35,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTes
 
 import android.support.test.filters.MediumTest;
 import android.view.View;
+import android.widget.TextView;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -636,9 +637,6 @@ public class AutofillAssistantCollectUserDataUiTest {
                     acceptTermsText);
             model.set(AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX, false);
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
-
-            // Setting web contents will set the origin and the decline terms text.
-            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
         });
 
@@ -686,6 +684,46 @@ public class AutofillAssistantCollectUserDataUiTest {
         // Clicking the text will trigger the link.
         onView(acceptMatcher).perform(click());
         assertThat(delegate.mLastLinkClicked, is(42));
+    }
+
+    @Test
+    @MediumTest
+    public void testTermsRequireReview() throws Exception {
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        createCollectUserDataCoordinator(model);
+
+        // Setting a text from "backend".
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.TERMS_REQUIRE_REVIEW_TEXT, "Check terms");
+            model.set(AssistantCollectUserDataModel.SHOW_TERMS_AS_CHECKBOX, false);
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        onView(withTagValue(is(COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW)))
+                .check(matches(allOf(withText("Check terms"), isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    public void testThirdpartyPrivacyNotice() throws Exception {
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+
+        TextView privacyNotice = viewHolder.mTermsSection.findViewById(
+                R.id.payment_request_3rd_party_privacy_notice);
+
+        // Setting a text from "backend".
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.THIRDPARTY_PRIVACY_NOTICE_TEXT,
+                    "Thirdparty privacy notice");
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        onView(is(privacyNotice))
+                .check(matches(allOf(withText("Thirdparty privacy notice"), isDisplayed())));
     }
 
     /**

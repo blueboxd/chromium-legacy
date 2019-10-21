@@ -167,7 +167,8 @@ void WebAppInstallManager::Shutdown() {
 
 void WebAppInstallManager::InstallWebAppsAfterSync(
     std::vector<WebApp*> web_apps) {
-  // TODO(crbug.com/860583): Implement sync-initiated app installs.
+  // TODO(crbug.com/860583): Implement sync-initiated app installs. Use
+  // WebAppInstallTask::ExpectAppId functionality here.
   NOTIMPLEMENTED();
 }
 

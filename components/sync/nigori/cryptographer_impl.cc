@@ -83,8 +83,8 @@ void CryptographerImpl::ClearDefaultEncryptionKey() {
   default_encryption_key_name_.clear();
 }
 
-bool CryptographerImpl::HasKey(const sync_pb::NigoriKey& key) const {
-  return key_bag_.HasKey(key);
+bool CryptographerImpl::HasKey(const std::string& key_name) const {
+  return key_bag_.HasKey(key_name);
 }
 
 sync_pb::NigoriKey CryptographerImpl::ExportDefaultKey() const {

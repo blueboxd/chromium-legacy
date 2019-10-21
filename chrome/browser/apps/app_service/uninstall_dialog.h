@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 
@@ -57,6 +58,7 @@ class UninstallDialog {
                        const std::string& app_id,
                        const std::string& app_name,
                        gfx::ImageSkia image,
+                       gfx::NativeWindow parent_window,
                        UninstallDialog* uninstall_dialog);
 
     gfx::ImageSkia image() const { return image_; }
@@ -86,6 +88,7 @@ class UninstallDialog {
                   const std::string& app_name,
                   apps::mojom::IconKeyPtr icon_key,
                   IconLoader* icon_loader,
+                  gfx::NativeWindow parent_window,
                   UninstallCallback uninstall_callback);
   ~UninstallDialog();
 
@@ -101,6 +104,7 @@ class UninstallDialog {
   apps::mojom::AppType app_type_;
   const std::string app_id_;
   const std::string app_name_;
+  gfx::NativeWindow parent_window_;
   UninstallCallback uninstall_callback_;
 
   base::WeakPtrFactory<UninstallDialog> weak_ptr_factory_{this};

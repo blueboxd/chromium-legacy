@@ -76,4 +76,10 @@ void LocalDeviceInfoProviderImpl::Clear() {
   local_device_info_.reset();
 }
 
+void LocalDeviceInfoProviderImpl::UpdateClientName(
+    const std::string& client_name) {
+  DCHECK(local_device_info_);
+  local_device_info_->set_client_name(client_name);
+}
+
 }  // namespace syncer

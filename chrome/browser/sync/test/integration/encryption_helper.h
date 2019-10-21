@@ -61,8 +61,8 @@ class ServerNigoriChecker : public SingleClientStatusChangeChecker {
   std::string GetDebugMessage() const override;
 
  private:
-  fake_server::FakeServer* fake_server_;
-  syncer::PassphraseType expected_passphrase_type_;
+  fake_server::FakeServer* const fake_server_;
+  const syncer::PassphraseType expected_passphrase_type_;
 };
 
 // Checker used to block until Sync requires or stops requiring a passphrase.
@@ -75,7 +75,22 @@ class PassphraseRequiredStateChecker : public SingleClientStatusChangeChecker {
   std::string GetDebugMessage() const override;
 
  private:
-  bool desired_state_;
+  const bool desired_state_;
+};
+
+// Checker used to block until Sync requires or stops requiring trusted vault
+// keys.
+class TrustedVaultKeyRequiredStateChecker
+    : public SingleClientStatusChangeChecker {
+ public:
+  TrustedVaultKeyRequiredStateChecker(syncer::ProfileSyncService* service,
+                                      bool desired_state);
+
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  const bool desired_state_;
 };
 
 // Helper for setting scrypt-related feature flags.

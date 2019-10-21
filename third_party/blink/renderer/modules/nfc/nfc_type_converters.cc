@@ -9,21 +9,21 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_scan_options.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_scan_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using device::mojom::blink::NDEFMessage;
 using device::mojom::blink::NDEFMessagePtr;
+using device::mojom::blink::NDEFPushOptions;
+using device::mojom::blink::NDEFPushOptionsPtr;
 using device::mojom::blink::NDEFRecord;
 using device::mojom::blink::NDEFRecordPtr;
 using device::mojom::blink::NDEFRecordTypeFilter;
-using device::mojom::blink::NFCPushOptions;
-using device::mojom::blink::NFCPushOptionsPtr;
-using device::mojom::blink::NFCScanOptions;
-using device::mojom::blink::NFCScanOptionsPtr;
+using device::mojom::blink::NDEFScanOptions;
+using device::mojom::blink::NDEFScanOptionsPtr;
 
 // Mojo type converters
 namespace mojo {
@@ -47,14 +47,14 @@ NDEFMessagePtr TypeConverter<NDEFMessagePtr, ::blink::NDEFMessage*>::Convert(
   return messagePtr;
 }
 
-NFCPushOptionsPtr
-TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*>::Convert(
-    const blink::NFCPushOptions* pushOptions) {
-  // https://w3c.github.io/web-nfc/#the-nfcpushoptions-dictionary
-  // Default values for NFCPushOptions dictionary are:
+NDEFPushOptionsPtr
+TypeConverter<NDEFPushOptionsPtr, const blink::NDEFPushOptions*>::Convert(
+    const blink::NDEFPushOptions* pushOptions) {
+  // https://w3c.github.io/web-nfc/#the-ndefpushoptions-dictionary
+  // Default values for NDEFPushOptions dictionary are:
   // target = 'any', timeout = Infinity, ignoreRead = true
-  NFCPushOptionsPtr pushOptionsPtr = NFCPushOptions::New();
-  pushOptionsPtr->target = blink::StringToNFCPushTarget(pushOptions->target());
+  NDEFPushOptionsPtr pushOptionsPtr = NDEFPushOptions::New();
+  pushOptionsPtr->target = blink::StringToNDEFPushTarget(pushOptions->target());
   pushOptionsPtr->ignore_read = pushOptions->ignoreRead();
 
   if (pushOptions->hasTimeout())
@@ -65,13 +65,13 @@ TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*>::Convert(
   return pushOptionsPtr;
 }
 
-NFCScanOptionsPtr
-TypeConverter<NFCScanOptionsPtr, const blink::NFCScanOptions*>::Convert(
-    const blink::NFCScanOptions* scanOptions) {
-  // https://w3c.github.io/web-nfc/#dom-nfcscanoptions
-  // Default values for NFCScanOptions dictionary are:
+NDEFScanOptionsPtr
+TypeConverter<NDEFScanOptionsPtr, const blink::NDEFScanOptions*>::Convert(
+    const blink::NDEFScanOptions* scanOptions) {
+  // https://w3c.github.io/web-nfc/#dom-ndefscanoptions
+  // Default values for NDEFScanOptions dictionary are:
   // url = "", recordType = null, mediaType = ""
-  NFCScanOptionsPtr scanOptionsPtr = NFCScanOptions::New();
+  NDEFScanOptionsPtr scanOptionsPtr = NDEFScanOptions::New();
   scanOptionsPtr->url = scanOptions->url();
   scanOptionsPtr->media_type = scanOptions->mediaType();
 

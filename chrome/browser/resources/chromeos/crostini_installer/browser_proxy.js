@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(lxj): use es6 module when it is ready crbug/1004256
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import './crostini_installer_types.mojom-lite.js';
 import './crostini_installer.mojom-lite.js';
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';

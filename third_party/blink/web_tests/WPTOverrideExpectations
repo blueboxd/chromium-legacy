@@ -1760,7 +1760,7 @@ crbug.com/lpz external/wpt/web-animations/timing-model/animations/setting-the-ta
 crbug.com/lpz external/wpt/web-animations/timing-model/animations/setting-the-timeline-of-an-animation.html [ Failure ]
 crbug.com/lpz external/wpt/web-locks/clientids.tentative.https.html [ Failure ]
 crbug.com/lpz external/wpt/web-locks/query-ordering.tentative.https.html [ Pass Failure ]
-crbug.com/lpz external/wpt/web-nfc/NFCWriter_push.https.html [ Failure ]
+crbug.com/lpz external/wpt/web-nfc/NDEFWriter_push.https.html [ Failure ]
 crbug.com/lpz external/wpt/web-nfc/idlharness.https.window.html [ Failure ]
 crbug.com/lpz external/wpt/webaudio/idlharness.https.window.html [ Failure ]
 crbug.com/lpz external/wpt/webaudio/the-audio-api/the-audioworklet-interface/audioworkletnode-output-channel-count.https.html [ Pass Failure ]

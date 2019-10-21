@@ -45,7 +45,7 @@ interface CameraHalServer {
   // HAL v3 adapter.  Upon successfully binding of |camera_module_request|, the
   // caller will have a established Mojo channel to the camera HAL v3 adapter
   // process.
-  CreateChannel@0(CameraModule& camera_module_request);
+  CreateChannel@0(pending_receiver<CameraModule> camera_module_request);
 
   // Enable or disable tracing.
   [MinVersion=3]
@@ -63,5 +63,5 @@ interface CameraHalClient {
   // CameraHalServer which holds the original Mojo channel crashes,
   // CameraHalDispatcher will call SetUpChannel again once a new CameraHalServer
   // reconnects.
-  SetUpChannel@0(CameraModule camera_module_ptr);
+  SetUpChannel@0(pending_remote<CameraModule> camera_module_ptr);
 };

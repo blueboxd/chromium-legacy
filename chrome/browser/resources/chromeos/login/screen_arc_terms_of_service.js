@@ -304,8 +304,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       if (!isDemoModeSetup) {
         this.getElement_('arc-review-settings').hidden = false;
       }
-      this.getElement_('arc-tos-container').scrollTop =
-          this.getElement_('arc-tos-container').scrollHeight;
+      $('arc-tos-root').getElement('arc-tos-dialog').scrollToBottom();
       this.getElement_('arc-tos-next-button').hidden = true;
       this.getElement_('arc-tos-accept-button').hidden = false;
       this.getElement_('arc-tos-accept-button').focus();
@@ -608,12 +607,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       this.getElement_('arc-pai-service').hidden = true;
       this.getElement_('arc-google-service-confirmation').hidden = true;
       this.getElement_('arc-review-settings').hidden = true;
-      this.getElement_('arc-tos-container').scrollTop =
-          this.getElement_('arc-tos-container').scrollHeight;
       this.getElement_('arc-tos-next-button').hidden = false;
       this.getElement_('arc-tos-accept-button').hidden = true;
       this.getElement_('arc-tos-next-button').focus();
       this.removeClass_('arc-tos-disable-skip');
+      $('arc-tos-root').getElement('arc-tos-dialog').scrollToBottom();
     },
 
     /**

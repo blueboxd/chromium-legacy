@@ -157,6 +157,17 @@ public class AssistantOnboardingCoordinatorTest {
                 instanceOf(AssistantBottomSheetContent.class));
     }
 
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/991938): re-enable
+    public void testShownFlag() throws Exception {
+        AssistantOnboardingCoordinator coordinator = createCoordinator(/* tab= */ null);
+        assertFalse(coordinator.getOnboardingShown());
+
+        showOnboardingAndWait(coordinator, mCallback);
+        assertTrue(coordinator.getOnboardingShown());
+    }
+
     /** Trigger onboarding and wait until it is fully displayed. */
     private void showOnboardingAndWait(
             AssistantOnboardingCoordinator coordinator, Callback<Boolean> callback) {

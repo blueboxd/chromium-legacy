@@ -51,16 +51,6 @@ void FakeMojoPasswordManagerDriver::SameDocumentNavigation(
       submission_indication_event;
 }
 
-void FakeMojoPasswordManagerDriver::ShowPasswordSuggestions(
-    base::i18n::TextDirection text_direction,
-    const base::string16& typed_username,
-    int options,
-    const gfx::RectF& bounds) {
-  called_show_pw_suggestions_ = true;
-  show_pw_suggestions_username_ = typed_username;
-  show_pw_suggestions_options_ = options;
-}
-
 void FakeMojoPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
   called_record_save_progress_ = true;

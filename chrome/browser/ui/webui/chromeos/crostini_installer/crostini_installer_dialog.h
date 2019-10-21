@@ -19,6 +19,12 @@ class CrostiniInstallerDialog : public SystemWebDialogDelegate {
   explicit CrostiniInstallerDialog(Profile* profile);
   ~CrostiniInstallerDialog() override;
 
+  // SystemWebDialogDelegate:
+  void GetDialogSize(gfx::Size* size) const override;
+  bool ShouldShowCloseButton() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
+
   Profile* profile_;
 };
 

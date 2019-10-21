@@ -412,7 +412,8 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
                 'name': 'item1',
                 'value': 'one',
                 'caption': 'string1',
-                'desc': ''
+                'desc': '',
+                'supported_on': ['chrome.win7:2-'],
             },]
         }]
     }
@@ -422,6 +423,8 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       def WritePolicy(self, policy):
         self.tester.assertEquals(policy['supported_on'][0]['platforms'],
                                  ['win7'])
+        self.tester.assertEquals(
+            policy['items'][0]['supported_on'][0]['platforms'], ['win7'])
 
     self.do_test(policy_data_mock, LocalMockWriter())
 

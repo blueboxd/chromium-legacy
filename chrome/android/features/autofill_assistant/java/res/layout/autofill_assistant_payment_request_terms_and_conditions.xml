@@ -31,6 +31,5 @@
         android:layout_marginEnd="@dimen/autofill_assistant_bottombar_horizontal_spacing"
         android:background="@drawable/autofill_assistant_lightblue_rect_bg"
         android:padding="8dp"
-        android:text="@string/autofill_assistant_3rd_party_privacy_notice"
         android:textAppearance="@style/TextAppearance.AssistantBlackCaption"/>
 </LinearLayout>

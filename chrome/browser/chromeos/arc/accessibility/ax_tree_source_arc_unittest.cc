@@ -164,24 +164,25 @@ class AXTreeSourceArcTest : public testing::Test,
   void CallGetChildren(
       AXNodeInfoData* node,
       std::vector<AccessibilityInfoDataWrapper*>* out_children) const {
-    AccessibilityNodeInfoDataWrapper node_data(tree_source_.get(), node);
-    tree_source_->GetChildren(&node_data, out_children);
+    AccessibilityInfoDataWrapper* node_data = tree_source_->GetFromId(node->id);
+    tree_source_->GetChildren(node_data, out_children);
   }
 
   void CallSerializeNode(AXNodeInfoData* node,
                          std::unique_ptr<ui::AXNodeData>* out_data) const {
     ASSERT_TRUE(out_data);
-    AccessibilityNodeInfoDataWrapper node_data(tree_source_.get(), node);
+    AccessibilityInfoDataWrapper* node_data = tree_source_->GetFromId(node->id);
     *out_data = std::make_unique<ui::AXNodeData>();
-    tree_source_->SerializeNode(&node_data, out_data->get());
+    tree_source_->SerializeNode(node_data, out_data->get());
   }
 
   void CallSerializeWindow(AXWindowInfoData* window,
                            std::unique_ptr<ui::AXNodeData>* out_data) const {
     ASSERT_TRUE(out_data);
-    AccessibilityWindowInfoDataWrapper window_data(tree_source_.get(), window);
+    AccessibilityInfoDataWrapper* window_data =
+        tree_source_->GetFromId(window->window_id);
     *out_data = std::make_unique<ui::AXNodeData>();
-    tree_source_->SerializeNode(&window_data, out_data->get());
+    tree_source_->SerializeNode(window_data, out_data->get());
   }
 
   AccessibilityInfoDataWrapper* CallGetFromId(int32_t id) const {
@@ -484,6 +485,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   // Text (empty).
   SetProperty(root, AXStringProperty::TEXT, "");
 
+  CallNotifyAccessibilityEvent(event.get());
   CallSerializeNode(root, &data);
   // With crrev/1786363, empty text on node will not set the name.
   ASSERT_FALSE(
@@ -493,6 +495,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   root->string_properties->clear();
   SetProperty(root, AXStringProperty::TEXT, "label text");
 
+  CallNotifyAccessibilityEvent(event.get());
   CallSerializeNode(root, &data);
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
@@ -501,6 +504,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   // Content description (empty), text (non-empty).
   SetProperty(root, AXStringProperty::CONTENT_DESCRIPTION, "");
 
+  CallNotifyAccessibilityEvent(event.get());
   CallSerializeNode(root, &data);
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
@@ -510,6 +514,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   root->string_properties.value()[AXStringProperty::CONTENT_DESCRIPTION] =
       "label content description";
 
+  CallNotifyAccessibilityEvent(event.get());
   CallSerializeNode(root, &data);
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
@@ -524,14 +529,27 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   SetProperty(child1, AXStringProperty::TEXT, "child1 label text");
   SetProperty(child2, AXStringProperty::TEXT, "child2 label text");
 
+  CallNotifyAccessibilityEvent(event.get());
   CallSerializeNode(root, &data);
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("child1 label text child2 label text", name);
 
+  // If a child is also clickable, do not use child property.
+  SetProperty(child1, AXBooleanProperty::CLICKABLE, true);
+  SetProperty(child2, AXBooleanProperty::CLICKABLE, true);
+
+  CallNotifyAccessibilityEvent(event.get());
+  CallSerializeNode(root, &data);
+  ASSERT_FALSE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+
   // If the node has a name, it should override the contents.
+  child1->boolean_properties->clear();
+  child2->boolean_properties->clear();
   SetProperty(root, AXStringProperty::TEXT, "root label text");
 
+  CallNotifyAccessibilityEvent(event.get());
   CallSerializeNode(root, &data);
   ASSERT_TRUE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
@@ -548,11 +566,10 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   // populated.
   root->boolean_properties->clear();
   root->string_properties->clear();
+  CallNotifyAccessibilityEvent(event.get());
   CallSerializeNode(root, &data);
   ASSERT_FALSE(
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-
-  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputationWindow) {

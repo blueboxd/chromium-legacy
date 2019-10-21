@@ -193,6 +193,85 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
               pageLoaded:NO];
 }
 
+// Tests calling history.replaceState(), then history.pushState() and then
+// navigating back/forward.
+- (void)testHtml5HistoryReplaceStatePushStateThenGoBackAndForward {
+  const GURL firstReplaceStateURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/history.html"
+      "#firstReplaceState");
+  const std::string firstReplaceStateOmniboxText =
+      net::GetContentAndFragmentForUrl(firstReplaceStateURL);
+  const GURL replaceStateThenPushStateURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/history.html"
+      "#replaceStateThenPushState");
+  const std::string replaceStateThenPushStateOmniboxText =
+      net::GetContentAndFragmentForUrl(replaceStateThenPushStateURL);
+
+  web::test::SetUpFileBasedHttpServer();
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kHistoryTestUrl)];
+
+  // Replace state and then push state. Verify that at the end, the URL changed
+  // to the pushed URL and the status was updated.
+  [ChromeEarlGrey tapWebStateElementWithID:@"replaceStateThenPushState"];
+  [self assertStatusText:@"replaceStateThenPushState"
+         withOmniboxText:replaceStateThenPushStateOmniboxText
+              pageLoaded:NO];
+
+  // Go back and check URL.
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [self assertStatusText:@"firstReplaceState"
+         withOmniboxText:firstReplaceStateOmniboxText
+              pageLoaded:NO];
+
+  // Go forward and check URL.
+  [[EarlGrey selectElementWithMatcher:ForwardButton()]
+      performAction:grey_tap()];
+  [self assertStatusText:@"replaceStateThenPushState"
+         withOmniboxText:replaceStateThenPushStateOmniboxText
+              pageLoaded:NO];
+}
+
+// Tests calling history.pushState(), then history.replaceState() and then
+// navigating back/forward.
+- (void)testHtml5HistoryPushStateReplaceStateThenGoBackAndForward {
+  const GURL firstPushStateURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/history.html#firstPushState");
+  const std::string firstPushStateOmniboxText =
+      net::GetContentAndFragmentForUrl(firstPushStateURL);
+  const GURL pushStateThenReplaceStateURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/history.html"
+      "#pushStateThenReplaceState");
+  const std::string pushStateThenReplaceStateOmniboxText =
+      net::GetContentAndFragmentForUrl(pushStateThenReplaceStateURL);
+
+  web::test::SetUpFileBasedHttpServer();
+
+  const GURL historyTestURL = web::test::HttpServer::MakeUrl(kHistoryTestUrl);
+  [ChromeEarlGrey loadURL:historyTestURL];
+  const std::string historyTestOmniboxText =
+      net::GetContentAndFragmentForUrl(historyTestURL);
+
+  // Push state and then replace state. Verify that at the end, the URL changed
+  // to the replaceState URL and the status was updated.
+  [ChromeEarlGrey tapWebStateElementWithID:@"pushStateThenReplaceState"];
+  [self assertStatusText:@"pushStateThenReplaceState"
+         withOmniboxText:pushStateThenReplaceStateOmniboxText
+              pageLoaded:NO];
+
+  // Go back and check URL.
+  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [self assertStatusText:nil
+         withOmniboxText:historyTestOmniboxText
+              pageLoaded:NO];
+
+  // Go forward and check URL.
+  [[EarlGrey selectElementWithMatcher:ForwardButton()]
+      performAction:grey_tap()];
+  [self assertStatusText:@"pushStateThenReplaceState"
+         withOmniboxText:pushStateThenReplaceStateOmniboxText
+              pageLoaded:NO];
+}
+
 // Tests that page loads occur when navigating to or past a non-pushed URL.
 - (void)testHtml5HistoryNavigatingPastNonPushedURL {
   GURL nonPushedURL = web::test::HttpServer::MakeUrl(kNonPushedUrl);

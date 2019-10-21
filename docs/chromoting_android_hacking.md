@@ -80,8 +80,6 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="remoting/android/java/src"/>
 <classpathentry kind="src" path="remoting/android/apk/src"/>
 <classpathentry kind="src" path="remoting/android/javatests/src"/>
-<classpathentry kind="src" path="third_party/blink/renderer/devtools/scripts/jsdoc-validator/src"/>
-<classpathentry kind="src" path="third_party/blink/renderer/devtools/scripts/compiler-runner/src"/>
 <classpathentry kind="src" path="third_party/webrtc/voice_engine/test/android/android_test/src"/>
 <classpathentry kind="src" path="third_party/webrtc/modules/video_capture/android/java/src"/>
 <classpathentry kind="src" path="third_party/webrtc/modules/video_render/android/java/src"/>

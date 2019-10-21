@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list_types.h"
 #include "base/strings/string16.h"
 
 namespace autofill {
@@ -33,10 +34,8 @@ class FormFetcher {
   enum class State { WAITING, NOT_WAITING };
 
   // API to be implemented by classes which want the results from FormFetcher.
-  class Consumer {
+  class Consumer : public base::CheckedObserver {
    public:
-    virtual ~Consumer() = default;
-
     // FormFetcher calls this method every time the state changes from WAITING
     // to NOT_WAITING. It is now safe for consumers to call the accessor
     // functions for matches.

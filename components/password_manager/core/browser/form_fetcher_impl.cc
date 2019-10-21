@@ -79,14 +79,14 @@ FormFetcherImpl::~FormFetcherImpl() = default;
 
 void FormFetcherImpl::AddConsumer(FormFetcher::Consumer* consumer) {
   DCHECK(consumer);
-  consumers_.insert(consumer);
+  consumers_.AddObserver(consumer);
   if (state_ == State::NOT_WAITING)
     consumer->OnFetchCompleted();
 }
 
 void FormFetcherImpl::RemoveConsumer(FormFetcher::Consumer* consumer) {
-  size_t removed_consumers = consumers_.erase(consumer);
-  DCHECK_EQ(1u, removed_consumers);
+  DCHECK(consumers_.HasObserver(consumer));
+  consumers_.RemoveObserver(consumer);
 }
 
 FormFetcherImpl::State FormFetcherImpl::GetState() const {
@@ -239,8 +239,8 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
       sort_matches_by_date_last_used_, &non_federated_same_scheme_,
       &best_matches_, &preferred_match_);
 
-  for (auto* consumer : consumers_)
-    consumer->OnFetchCompleted();
+  for (auto& consumer : consumers_)
+    consumer.OnFetchCompleted();
 }
 
 void FormFetcherImpl::SplitResults(

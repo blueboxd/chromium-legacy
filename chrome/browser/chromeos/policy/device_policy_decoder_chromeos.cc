@@ -485,6 +485,24 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_device_web_based_attestation_allowed_urls()) {
+    const em::StringListPolicyProto& container(
+        policy.device_web_based_attestation_allowed_urls());
+
+    PolicyLevel level;
+    if (GetPolicyLevel(container.has_policy_options(),
+                       container.policy_options(), &level)) {
+      auto urls = std::make_unique<base::Value>(base::Value::Type::LIST);
+      for (const std::string& entry : container.value().entries()) {
+        urls->Append(entry);
+      }
+
+      policies->Set(key::kDeviceWebBasedAttestationAllowedUrls, level,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(urls),
+                    nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

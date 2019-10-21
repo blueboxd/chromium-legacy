@@ -213,41 +213,6 @@ DeviceInfoSpecifics CreateSpecifics(
   return specifics;
 }
 
-DeviceInfoSpecifics DeviceInfoToSpecifics(const DeviceInfo& info) {
-  auto hardware_info = info.hardware_info();
-  DeviceInfoSpecifics specifics;
-  specifics.set_cache_guid(info.guid());
-  specifics.set_client_name(info.client_name());
-  specifics.set_chrome_version(info.chrome_version());
-  specifics.set_sync_user_agent(info.sync_user_agent());
-  specifics.set_device_type(info.device_type());
-  specifics.set_signin_scoped_device_id(info.signin_scoped_device_id());
-  specifics.set_model(hardware_info.model);
-  specifics.set_manufacturer(hardware_info.manufacturer);
-  specifics.set_last_updated_timestamp(TimeToProtoTime(base::Time::Now()));
-
-  sync_pb::FeatureSpecificFields* feature_fields =
-      specifics.mutable_feature_fields();
-  feature_fields->set_send_tab_to_self_receiving_enabled(
-      info.send_tab_to_self_receiving_enabled());
-
-  const base::Optional<DeviceInfo::SharingInfo>& sharing_info =
-      info.sharing_info();
-  if (sharing_info) {
-    sync_pb::SharingSpecificFields* sharing_fields =
-        specifics.mutable_sharing_fields();
-    sharing_fields->set_fcm_token(sharing_info->fcm_token);
-    sharing_fields->set_p256dh(sharing_info->p256dh);
-    sharing_fields->set_auth_secret(sharing_info->auth_secret);
-    for (sync_pb::SharingSpecificFields::EnabledFeatures feature :
-         sharing_info->enabled_features) {
-      sharing_fields->add_enabled_features(feature);
-    }
-  }
-
-  return specifics;
-}
-
 ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
   ModelTypeState state;
   state.set_initial_sync_done(true);
@@ -317,6 +282,11 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
 
   void Clear() override { local_device_info_.reset(); }
 
+  void UpdateClientName(const std::string& client_name) override {
+    ASSERT_TRUE(local_device_info_);
+    local_device_info_->set_client_name(client_name);
+  }
+
   version_info::Channel GetChannel() const override {
     return version_info::Channel::UNKNOWN;
   }
@@ -344,7 +314,14 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
       : store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
         local_hardware_info_(GetLocalHardwareInfoBlocking()) {
     DeviceInfoPrefs::RegisterProfilePrefs(pref_service_.registry());
-    ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+
+    // By default, mimic a real processor's behavior for IsTrackingMetadata().
+    ON_CALL(mock_processor_, ModelReadyToSync(_))
+        .WillByDefault([this](std::unique_ptr<MetadataBatch> batch) {
+          ON_CALL(mock_processor_, IsTrackingMetadata())
+              .WillByDefault(
+                  Return(batch->GetModelTypeState().initial_sync_done()));
+        });
   }
 
   ~DeviceInfoSyncBridgeTest() override {
@@ -393,6 +370,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
         bridge()->CreateMetadataChangeList();
 
     metadata_change_list->UpdateModelTypeState(StateWithEncryption(""));
+    ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
     bridge()->MergeSyncData(std::move(metadata_change_list),
                             EntityChangeList());
   }
@@ -789,6 +767,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeEmpty) {
   EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
 
   bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   auto error = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
                                        EntityChangeList());
   EXPECT_FALSE(error);
@@ -810,6 +789,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuid) {
   EXPECT_CALL(*processor(), Delete(_, _)).Times(0);
 
   bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   auto error =
       bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
                               EntityAddList({CreateLocalDeviceSpecifics()}));
@@ -1051,6 +1031,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithClearData) {
   // If sync is re-enabled and the remote data is now empty, we shouldn't
   // contain remote data.
   bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
                           EntityChangeList());
   // Local device.
@@ -1200,27 +1181,17 @@ TEST_F(DeviceInfoSyncBridgeTest, RefreshLocalDeviceNameForSyncModeToggle) {
   ASSERT_EQ(expected_device_name_full_sync, device->client_name());
 
   // Toggle to transport only sync mode.
-  syncer::EntityChangeList entity_change_list;
-  entity_change_list.push_back(EntityChange::CreateUpdate(
-      device->guid(), SpecificsToEntity(DeviceInfoToSpecifics(*device))));
-  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
   bridge()->OnSyncStarting(
       TestDataTypeActivationRequest(SyncMode::kTransportOnly));
-  bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                          std::move(entity_change_list));
 
   device = local_device()->GetLocalDeviceInfo();
   ASSERT_TRUE(device);
   ASSERT_EQ(expected_device_name_transport_only, device->client_name());
 
   // Toggle to full sync mode.
-  ASSERT_TRUE(entity_change_list.empty());
-  entity_change_list.push_back(EntityChange::CreateUpdate(
-      device->guid(), SpecificsToEntity(DeviceInfoToSpecifics(*device))));
-  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
   bridge()->OnSyncStarting(TestDataTypeActivationRequest(SyncMode::kFull));
-  bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                          std::move(entity_change_list));
 
   device = local_device()->GetLocalDeviceInfo();
   ASSERT_TRUE(device);

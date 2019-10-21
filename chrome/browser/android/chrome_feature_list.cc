@@ -62,7 +62,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableCompanyName,
     &autofill_assistant::features::kAutofillAssistant,
     &autofill_assistant::features::kAutofillAssistantDirectActions,
-    &autofill::features::kTouchToFillAndroid,
+    &autofill::features::kAutofillTouchToFill,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kAppNotificationStatusMessaging,

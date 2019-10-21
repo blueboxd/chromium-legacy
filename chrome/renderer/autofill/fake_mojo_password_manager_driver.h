@@ -34,23 +34,11 @@ class FakeMojoPasswordManagerDriver
   // TODO(crbug.com/948062): Migrate the other methods to GMock as well.
   MOCK_METHOD0(ShowTouchToFill, void());
 
-  bool called_show_pw_suggestions() const {
-    return called_show_pw_suggestions_;
-  }
-
-  const base::Optional<base::string16>& show_pw_suggestions_username() const {
-    return show_pw_suggestions_username_;
-  }
-
-  int show_pw_suggestions_options() const {
-    return show_pw_suggestions_options_;
-  }
-
-  void reset_show_pw_suggestions() {
-    called_show_pw_suggestions_ = false;
-    show_pw_suggestions_username_ = base::nullopt;
-    show_pw_suggestions_options_ = -1;
-  }
+  MOCK_METHOD4(ShowPasswordSuggestions,
+               void(base::i18n::TextDirection,
+                    const base::string16&,
+                    int,
+                    const gfx::RectF&));
 
   bool called_show_not_secure_warning() const {
     return called_show_not_secure_warning_;
@@ -153,11 +141,6 @@ class FakeMojoPasswordManagerDriver
   void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
                                   submission_indication_event) override;
 
-  void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
-                               const base::string16& typed_username,
-                               int options,
-                               const gfx::RectF& bounds) override;
-
   void RecordSavePasswordProgress(const std::string& log) override;
 
   void UserModifiedPasswordField() override;
@@ -176,11 +159,6 @@ class FakeMojoPasswordManagerDriver
   void LogFirstFillingResult(uint32_t form_renderer_id,
                              int32_t result) override {}
 
-  // Records whether ShowPasswordSuggestions() gets called.
-  bool called_show_pw_suggestions_ = false;
-  // Records data received via ShowPasswordSuggestions() call.
-  base::Optional<base::string16> show_pw_suggestions_username_;
-  int show_pw_suggestions_options_ = -1;
   // Records whether ShowNotSecureWarning() gets called.
   bool called_show_not_secure_warning_ = false;
   // Records whether PasswordFormSubmitted() gets called.

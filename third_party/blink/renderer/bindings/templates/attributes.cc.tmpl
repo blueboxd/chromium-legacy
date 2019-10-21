@@ -79,8 +79,13 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetHistoryStateSymbol(info.GetIsolate());
   {% else %}
+  {% if not attribute.private_property_is_shared_between_getter_and_setter %}
+  static int {{attribute.private_property_key_name}};
+
+  {% endif %}
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
+          &{{attribute.private_property_key_name}},
           "{{cpp_class}}#{{attribute.camel_case_name}}");
   {% endif %}
   if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
@@ -472,7 +477,9 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   // [CachedAttribute]
   // Invalidate the cached value.
   V8PrivateProperty::GetSymbol(
-      isolate, "{{cpp_class}}#{{attribute.camel_case_name}}")
+      isolate,
+      &{{attribute.private_property_key_name}},
+      "{{cpp_class}}#{{attribute.camel_case_name}}")
       .DeleteProperty(holder, v8::Undefined(isolate));
   {% endif %}
   {% endif %}{# attribute.is_put_forwards #}

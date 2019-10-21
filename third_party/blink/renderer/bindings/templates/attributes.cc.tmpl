@@ -182,7 +182,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   if ({{attribute.cpp_value}} && DOMDataStore::SetReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value_to_script_wrappable}}))
     return;
   v8::Local<v8::Value> v8_value(ToV8({{attribute.cpp_value_to_script_wrappable}}, holder, info.GetIsolate()));
-  // This key is used for uniquely identifying v8::Private.
   static int private_property_key;
   V8PrivateProperty::GetSymbol(
       info.GetIsolate(), &private_property_key, "KeepAlive#{{interface_name}}#{{attribute.name}}")

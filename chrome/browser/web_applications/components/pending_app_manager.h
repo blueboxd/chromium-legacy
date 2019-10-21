@@ -24,6 +24,7 @@ namespace web_app {
 enum class InstallResultCode;
 
 class AppRegistrar;
+class AppShortcutManager;
 class InstallFinalizer;
 class WebAppUiManager;
 
@@ -112,6 +113,7 @@ class PendingAppManager {
 
  protected:
   AppRegistrar* registrar() { return registrar_; }
+  AppShortcutManager* shortcut_manager() { return shortcut_manager_; }
   WebAppUiManager* ui_manager() { return ui_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
 
@@ -144,6 +146,7 @@ class PendingAppManager {
   void OnAppSynchronized(ExternalInstallSource source, const GURL& app_url);
 
   AppRegistrar* registrar_ = nullptr;
+  AppShortcutManager* shortcut_manager_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
 

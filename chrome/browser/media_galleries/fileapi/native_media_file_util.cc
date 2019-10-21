@@ -22,9 +22,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "storage/browser/blob/shareable_file_reference.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_operation_context.h"
-#include "storage/browser/fileapi/native_file_util.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/file_system_operation_context.h"
+#include "storage/browser/file_system/native_file_util.h"
 #include "url/gurl.h"
 
 namespace {

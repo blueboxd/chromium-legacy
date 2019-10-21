@@ -44,7 +44,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 using content::BrowserThread;
 

@@ -46,7 +46,8 @@ void WebAppInstallManager::InstallWebAppFromManifest(
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppFromManifest(
       contents, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -62,7 +63,8 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppFromManifestWithFallback(
       contents, force_shortcut_app, install_source, std::move(dialog_callback),
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -77,7 +79,8 @@ void WebAppInstallManager::InstallWebAppFromInfo(
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppFromInfo(
       std::move(web_application_info), for_installable_site, install_source,
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -92,7 +95,8 @@ void WebAppInstallManager::InstallWebAppWithParams(
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), finalizer(),
+      data_retriever_factory_.Run());
   task->InstallWebAppWithParams(
       web_contents, install_params, install_source,
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
@@ -121,7 +125,8 @@ void WebAppInstallManager::InstallWebAppFromSync(
 #endif
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), finalizer(),
+      data_retriever_factory_.Run());
 
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons,
@@ -139,7 +144,8 @@ void WebAppInstallManager::UpdateWebAppFromInfo(
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
-      profile(), finalizer(), data_retriever_factory_.Run());
+      profile(), shortcut_manager(), finalizer(),
+      data_retriever_factory_.Run());
 
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::UpdateWebAppFromInfo, base::Unretained(task.get()),

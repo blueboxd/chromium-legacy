@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "url/gurl.h"
 
 namespace arc {

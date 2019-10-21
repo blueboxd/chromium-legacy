@@ -25,11 +25,13 @@ extern const base::Feature kEvDetailsInPageInfo;
 
 extern const base::Feature kExtensionsToolbarMenu;
 
-extern const base::Feature kUseTextForUpdateButton;
+extern const base::Feature kMixBrowserTypeTabs;
 
 extern const base::Feature kNewTabstripAnimation;
 
 extern const base::Feature kProfileMenuRevamp;
+
+extern const base::Feature kProminentDarkModeActiveTabTitle;
 
 extern const base::Feature kScrollableTabStrip;
 
@@ -44,7 +46,7 @@ extern const base::Feature kTabHoverCardImages;
 
 extern const base::Feature kTabOutlinesInLowContrastThemes;
 
-extern const base::Feature kProminentDarkModeActiveTabTitle;
+extern const base::Feature kUseTextForUpdateButton;
 
 extern const base::Feature kWebFooterExperiment;
 

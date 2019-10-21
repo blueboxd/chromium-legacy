@@ -7,7 +7,7 @@ See https://wicg.github.io/native-file-system/ for the spec for this API.
 
 ## Related directories
 
-[`//storage/browser/fileapi/`](../../../storage/browser/fileapi) contains the
+[`//storage/browser/file_system/`](../../../storage/browser/file_system) contains the
 backend this API is built on top of,
 [`blink/renderer/modules/native_file_system`](../../../third_party/blink/renderer/modules/native_file_system)
 contains the renderer side implementation and

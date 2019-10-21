@@ -431,7 +431,9 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
   const LayoutUnit available_free_space = remaining_free_space;
   LayoutUnit initial_position =
       FlexLayoutAlgorithm::InitialContentPositionOffset(
-          available_free_space, justify_content, line_items.size());
+          algorithm->StyleRef(), available_free_space, justify_content,
+          line_items.size());
+
   main_axis_offset += initial_position;
   sum_justify_adjustments += initial_position;
   LayoutUnit max_descent;  // Used when align-items: baseline.
@@ -593,10 +595,8 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
     return false;
 
   // webkit-box treats min-size: auto as 0.
-  if (StyleRef().Display() == EDisplay::kWebkitBox ||
-      StyleRef().Display() == EDisplay::kWebkitInlineBox) {
+  if (StyleRef().IsDeprecatedWebkitBox())
     return false;
-  }
 
   return !child.ShouldApplySizeContainment() &&
          MainAxisOverflowForChild(child) == EOverflow::kVisible;
@@ -633,8 +633,9 @@ void FlexLayoutAlgorithm::AlignFlexLines(LayoutUnit cross_axis_content_extent) {
   for (const FlexLine& line : flex_lines_)
     available_cross_axis_space -= line.cross_axis_extent;
 
-  LayoutUnit line_offset = InitialContentPositionOffset(
-      available_cross_axis_space, align_content, flex_lines_.size());
+  LayoutUnit line_offset =
+      InitialContentPositionOffset(StyleRef(), available_cross_axis_space,
+                                   align_content, flex_lines_.size());
   for (FlexLine& line_context : flex_lines_) {
     line_context.cross_axis_offset += line_offset;
 
@@ -754,9 +755,16 @@ ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
 
 // static
 LayoutUnit FlexLayoutAlgorithm::InitialContentPositionOffset(
+    const ComputedStyle& style,
     LayoutUnit available_free_space,
     const StyleContentAlignmentData& data,
     unsigned number_of_items) {
+  if (available_free_space <= 0 && style.IsDeprecatedWebkitBox() &&
+      style.ResolvedIsColumnFlexDirection()) {
+    // -webkit-box with vertical orientation and no available spaces positions
+    // relative to the start regardless of ContentPosition.
+    return LayoutUnit();
+  }
   if (data.GetPosition() == ContentPosition::kFlexEnd)
     return available_free_space;
   if (data.GetPosition() == ContentPosition::kCenter)

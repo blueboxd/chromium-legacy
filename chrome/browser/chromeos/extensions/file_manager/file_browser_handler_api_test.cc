@@ -29,7 +29,7 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 namespace utils = extension_function_test_utils;

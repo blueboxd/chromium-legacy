@@ -20,7 +20,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/base/video_codecs.h"
@@ -45,7 +44,6 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
 
   static std::unique_ptr<VideoDecoderPipeline::DecoderInterface> Create(
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       GetFramePoolCB get_pool);
 
@@ -90,21 +88,10 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   };
 
   VaapiVideoDecoder(
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       GetFramePoolCB get_pool);
   ~VaapiVideoDecoder() override;
 
-  // Initialize the VAAPI video decoder on the decoder thread.
-  void InitializeTask(const VideoDecoderConfig& config,
-                      InitCB init_cb,
-                      OutputCB output_cb);
-  // Destroy the VAAPI video decoder on the decoder thread.
-  void DestroyTask(base::WaitableEvent* event);
-
-  // Queue a decode task on the decoder thread. If the decoder is currently
-  // waiting for input buffers decoding will be started.
-  void QueueDecodeTask(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
   // Schedule the next decode task in the queue to be executed.
   void ScheduleNextDecodeTask();
   // Try to decode a single input buffer on the decoder thread.
@@ -138,15 +125,9 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   // tasks have been executed and all frames have been output.
   void FlushTask();
 
-  // Reset the decoder on the decoder thread. This will abort any pending decode
-  // task. The |reset_cb| will be passed to ResetDoneTask() and called when
-  // resetting has completed.
-  void ResetTask(base::OnceClosure reset_cb);
-  // Called on the decoder thread once resetting is done. Executes |reset_cb|.
+  // Called when resetting the decoder is done, executes |reset_cb|.
   void ResetDoneTask(base::OnceClosure reset_cb);
 
-  // Called on decoder thread to schedule |decode_cb| on the client task runner.
-  void RunDecodeCB(DecodeCB decode_cb, DecodeStatus status);
   // Change the current |state_| to the specified |state| on the decoder thread.
   void SetState(State state);
 
@@ -188,10 +169,8 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
-  SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 
   base::WeakPtr<VaapiVideoDecoder> weak_this_;

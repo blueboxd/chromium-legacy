@@ -202,23 +202,6 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompleted(
   std::move(callback).Run(app_id, InstallResultCode::kSuccessNewInstall);
 }
 
-bool WebAppInstallFinalizer::CanCreateOsShortcuts() const {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WebAppInstallFinalizer::CreateOsShortcuts(
-    const AppId& app_id,
-    bool add_to_desktop,
-    CreateOsShortcutsCallback callback) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), false /* shortcuts_created */));
-}
-
 bool WebAppInstallFinalizer::CanRevealAppShim() const {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();

@@ -45,7 +45,9 @@ mojom::BatteryInfoPtr MakeBatteryInfo() {
       2 /* cycle_count */, 12.9 /* voltage_now */,
       "battery_vendor" /* vendor */, "serial_number" /* serial_number */,
       5.275 /* charge_full_design */, 5.292 /* charge_full */,
-      11.55 /* voltage_min_design */, 51785890 /* manufacture_date_smart */);
+      11.55 /* voltage_min_design */, 51785890 /* manufacture_date_smart */,
+      /*temperature smart=*/981729, /*model_name=*/"battery_model",
+      /*charge_now=*/5.123);
 }
 
 mojom::CachedVpdInfoPtr MakeCachedVpdInfo() {

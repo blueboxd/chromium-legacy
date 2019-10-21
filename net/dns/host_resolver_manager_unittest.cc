@@ -6202,33 +6202,6 @@ TEST_F(HostResolverManagerTest, ResolveLocalHostname) {
   EXPECT_FALSE(ResolveLocalHostname("foo.localhoste", &addresses));
 }
 
-TEST_F(HostResolverManagerDnsTest, ResolveDnsOverHttpsServerName) {
-  MockDnsClientRuleList rules;
-  rules.emplace_back(
-      "dns.example2.com", dns_protocol::kTypeA, false /* secure */,
-      MockDnsClientRule::Result(MockDnsClientRule::OK), false /* delay */);
-  rules.emplace_back(
-      "dns.example2.com", dns_protocol::kTypeAAAA, false /* secure */,
-      MockDnsClientRule::Result(MockDnsClientRule::OK), false /* delay */);
-  CreateResolver();
-  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
-
-  DnsConfigOverrides overrides;
-  std::vector<DnsConfig::DnsOverHttpsServerConfig> doh_servers = {
-      DnsConfig::DnsOverHttpsServerConfig("https://dns.example.com/",
-                                          true /*  use_post */),
-      DnsConfig::DnsOverHttpsServerConfig(
-          "https://dns.example2.com/dns-query{?dns}", false /* use_post */)};
-  overrides.dns_over_https_servers = doh_servers;
-  overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
-  resolver_->SetDnsConfigOverrides(overrides);
-
-  ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("dns.example2.com", 80), NetLogWithSource(), base::nullopt,
-      request_context_.get(), host_cache_.get()));
-  ASSERT_THAT(response.result_error(), IsOk());
-}
-
 TEST_F(HostResolverManagerDnsTest, AddDnsOverHttpsServerAfterConfig) {
   DestroyResolver();
   test::ScopedMockNetworkChangeNotifier notifier;

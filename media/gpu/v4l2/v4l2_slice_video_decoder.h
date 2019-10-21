@@ -21,7 +21,6 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "media/base/video_frame_layout.h"
@@ -46,7 +45,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // ensure V4L2SliceVideoDecoder is available on the device. It will be
   // determined in Initialize().
   static std::unique_ptr<VideoDecoderPipeline::DecoderInterface> Create(
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       GetFramePoolCB get_pool_cb);
 
@@ -67,7 +65,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   bool ChangeResolution(gfx::Size pic_size,
                         gfx::Rect visible_rect,
                         size_t num_output_frames) override;
-  void RunDecodeCB(DecodeCB cb, DecodeStatus status) override;
   void OutputFrame(scoped_refptr<VideoFrame> frame,
                    const gfx::Rect& visible_rect,
                    base::TimeDelta timestamp) override;
@@ -76,7 +73,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   friend class V4L2SliceVideoDecoderTest;
 
   V4L2SliceVideoDecoder(
-      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       scoped_refptr<V4L2Device> device,
       GetFramePoolCB get_pool_cb);
@@ -110,10 +106,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
     SEQUENCE_CHECKER(sequence_checker_);
   };
 
-  // Initialize on decoder thread.
-  void InitializeTask(const VideoDecoderConfig& config,
-                      InitCB init_cb,
-                      const OutputCB& output_cb);
   // Setup format for input queue.
   bool SetupInputFormat(uint32_t input_format_fourcc);
 
@@ -137,15 +129,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
       const gfx::Size& size,
       const gfx::Rect& visible_rect);
 
-  // Destroy on decoder thread.
-  void DestroyTask(base::WaitableEvent* event);
-  // Reset on decoder thread.
-  void ResetTask(base::OnceClosure closure);
-
-  // Enqueue |buffer| to be decoded. |decode_cb| will be called once |buffer|
-  // is no longer used.
-  void EnqueueDecodeTask(scoped_refptr<DecoderBuffer> buffer,
-                         V4L2SliceVideoDecoder::DecodeCB decode_cb);
   // Start streaming V4L2 input and output queues. Attempt to start
   // |device_poll_thread_| before starting streaming.
   bool StartStreamV4L2Queue();
@@ -168,11 +151,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   GetFramePoolCB get_pool_cb_;
   DmabufVideoFramePool* frame_pool_ = nullptr;
 
-  // Client task runner. All public methods of
+  // Decoder task runner. All public methods of
   // VideoDecoderPipeline::DecoderInterface are executed at this task runner.
-  const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
-  // Thread to communicate with the device on. Most of internal methods and data
-  // members are manipulated on this thread.
   const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   // State of the instance.
@@ -192,7 +172,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
 
   BitstreamIdGenerator bitstream_id_generator_;
 
-  SEQUENCE_CHECKER(client_sequence_checker_);
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 
   // |weak_this_| must be dereferenced and invalidated on

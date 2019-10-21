@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
+#include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
@@ -40,10 +41,13 @@ class WebAppInstallManagerTest : public WebAppTest {
 
     registrar_ = std::make_unique<TestAppRegistrar>();
 
+    shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
+
     install_finalizer_ = std::make_unique<TestInstallFinalizer>();
 
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
-    install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
+    install_manager_->SetSubsystems(registrar_.get(), shortcut_manager_.get(),
+                                    install_finalizer_.get());
 
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
 
@@ -79,6 +83,7 @@ class WebAppInstallManagerTest : public WebAppTest {
 
  private:
   std::unique_ptr<TestAppRegistrar> registrar_;
+  std::unique_ptr<TestAppShortcutManager> shortcut_manager_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<TestInstallFinalizer> install_finalizer_;
 

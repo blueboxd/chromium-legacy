@@ -32,12 +32,14 @@ class WebContents;
 
 namespace web_app {
 
+class AppShortcutManager;
 class InstallFinalizer;
 class WebAppDataRetriever;
 
 class WebAppInstallTask : content::WebContentsObserver {
  public:
   WebAppInstallTask(Profile* profile,
+                    AppShortcutManager* shortcut_manager,
                     InstallFinalizer* install_finalizer,
                     std::unique_ptr<WebAppDataRetriever> data_retriever);
   ~WebAppInstallTask() override;
@@ -180,6 +182,7 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
 
+  AppShortcutManager* shortcut_manager_;
   InstallFinalizer* install_finalizer_;
   Profile* const profile_;
 

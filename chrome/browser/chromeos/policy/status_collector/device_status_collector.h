@@ -28,8 +28,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/runtime_probe/runtime_probe.pb.h"
-#include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
@@ -149,17 +147,10 @@ class DeviceStatusCollector : public StatusCollector,
   // Gets the TpmStatusInfo and passes it to TpmStatusReceiver.
   using TpmStatusFetcher = base::RepeatingCallback<void(TpmStatusReceiver)>;
 
-  // Format of the function that asynchronously receives ProbeResult / sampled
-  // data.
-  using ProbeDataReceiver = base::OnceCallback<void(
-      const base::Optional<runtime_probe::ProbeResult>&,
-      const base::circular_deque<std::unique_ptr<SampledData>>&)>;
-  // Gets the ProbeResult/sampled data and passes it to ProbeDataReceiver.
-  using ProbeDataFetcher = base::RepeatingCallback<void(ProbeDataReceiver)>;
-
   // Format of the function that asynchronously receives data from cros_healthd.
-  using CrosHealthdDataReceiver =
-      base::OnceCallback<void(chromeos::cros_healthd::mojom::TelemetryInfoPtr)>;
+  using CrosHealthdDataReceiver = base::OnceCallback<void(
+      chromeos::cros_healthd::mojom::TelemetryInfoPtr,
+      const base::circular_deque<std::unique_ptr<SampledData>>&)>;
   // Gets the data from cros_healthd and passes it to CrosHealthdDataReceiver.
   using CrosHealthdDataFetcher =
       base::RepeatingCallback<void(CrosHealthdDataReceiver)>;
@@ -240,7 +231,7 @@ class DeviceStatusCollector : public StatusCollector,
   // Callbacks used during sampling data collection, that allows to pass
   // additional data using partial function application.
   using SamplingProbeResultCallback =
-      base::OnceCallback<void(base::Optional<runtime_probe::ProbeResult>)>;
+      base::OnceCallback<void(chromeos::cros_healthd::mojom::TelemetryInfoPtr)>;
   using SamplingCallback = base::OnceCallback<void()>;
 
   // Clears the cached hardware resource usage.
@@ -296,11 +287,11 @@ class DeviceStatusCollector : public StatusCollector,
   // Callback invoked to update our cpu usage information.
   void ReceiveCPUStatistics(const std::string& statistics);
 
-  // Callback for RuntimeProbe that samples probe live data. |callback| will
+  // Callback for CrosHealthd that samples probe live data. |callback| will
   // be called once all sampling is finished.
   void SampleProbeData(std::unique_ptr<SampledData> sample,
                        SamplingProbeResultCallback callback,
-                       base::Optional<runtime_probe::ProbeResult> result);
+                       chromeos::cros_healthd::mojom::TelemetryInfoPtr result);
 
   // Callback triggered from PowerManagedClient that samples battery discharge
   // rate. |callback| will be called once all sampling is finished.
@@ -321,14 +312,11 @@ class DeviceStatusCollector : public StatusCollector,
   // cros_healthd and passes it to |callback|.
   void FetchCrosHealthdData(CrosHealthdDataReceiver callback);
 
-  // ProbeDataReceiver interface implementation, fetches data from
-  // RuntimeProbe passes it to |callback| via OnProbeDataFetched().
-  void FetchProbeData(ProbeDataReceiver callback);
-
-  // Callback for RuntimeProbe that performs final sampling and
+  // Callback for CrosHealthd that performs final sampling and
   // actually invokes |callback|.
-  void OnProbeDataFetched(ProbeDataReceiver callback,
-                          base::Optional<runtime_probe::ProbeResult> reply);
+  void OnProbeDataFetched(
+      CrosHealthdDataReceiver callback,
+      chromeos::cros_healthd::mojom::TelemetryInfoPtr reply);
 
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();
@@ -403,8 +391,6 @@ class DeviceStatusCollector : public StatusCollector,
 
   TpmStatusFetcher tpm_status_fetcher_;
 
-  ProbeDataFetcher probe_data_fetcher_;
-
   EMMCLifetimeFetcher emmc_lifetime_fetcher_;
 
   StatefulPartitionInfoFetcher stateful_partition_info_fetcher_;
@@ -415,9 +401,6 @@ class DeviceStatusCollector : public StatusCollector,
 
   // Power manager client. Used to listen to power changed events.
   chromeos::PowerManagerClient* const power_manager_;
-
-  // Runtime probe client. Used to fetch hardware data.
-  chromeos::RuntimeProbeClient* const runtime_probe_;
 
   // The most recent CPU readings.
   uint64_t last_cpu_active_ = 0;

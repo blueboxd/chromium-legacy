@@ -1261,8 +1261,8 @@ LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
       MainAxisExtentForChild(child);
 
   LayoutUnit offset = FlexLayoutAlgorithm::InitialContentPositionOffset(
-      available_space, FlexLayoutAlgorithm::ResolvedJustifyContent(StyleRef()),
-      1);
+      StyleRef(), available_space,
+      FlexLayoutAlgorithm::ResolvedJustifyContent(StyleRef()), 1);
   if (StyleRef().ResolvedIsRowReverseFlexDirection() ||
       StyleRef().ResolvedIsColumnReverseFlexDirection())
     offset = available_space - offset;
@@ -1516,7 +1516,7 @@ void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
   // we place the children starting from the end of the flexbox.
   LayoutUnit main_axis_offset = LogicalHeight() - FlowAwareContentInsetEnd();
   main_axis_offset -= FlexLayoutAlgorithm::InitialContentPositionOffset(
-      available_free_space, justify_content, children.size());
+      StyleRef(), available_free_space, justify_content, children.size());
 
   for (wtf_size_t i = 0; i < children.size(); ++i) {
     FlexItem& flex_item = children[i];

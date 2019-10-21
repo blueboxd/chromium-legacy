@@ -395,6 +395,8 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     }
 
     request_->SetExtraRequestHeaders(extra_request_headers);
+    // Disable secure DNS for any DoH server hostname lookups to avoid deadlock.
+    request_->SetDisableSecureDns(true);
     // Bypass proxy settings and certificate-related network fetches (currently
     // just OCSP and CRL requests) to avoid deadlock. AIA requests and the
     // Negotiate scheme for HTTP authentication may also cause deadlocks, but

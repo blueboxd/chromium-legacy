@@ -28,6 +28,7 @@ namespace web_app {
 enum class InstallResultCode;
 class InstallFinalizer;
 class AppRegistrar;
+class AppShortcutManager;
 
 // TODO(loyso): Rework this interface. Unify the API and merge similar
 // InstallWebAppZZZZ functions.
@@ -125,7 +126,9 @@ class InstallManager {
   explicit InstallManager(Profile* profile);
   virtual ~InstallManager();
 
-  void SetSubsystems(AppRegistrar* registrar, InstallFinalizer* finalizer);
+  void SetSubsystems(AppRegistrar* registrar,
+                     AppShortcutManager* shortcut_manager,
+                     InstallFinalizer* finalizer);
 
   // Loads |web_app_url| in a new WebContents and determines if it is
   // installable. Returns the WebContents and whether the app is installable or
@@ -136,6 +139,7 @@ class InstallManager {
  protected:
   Profile* profile() { return profile_; }
   AppRegistrar* registrar() { return registrar_; }
+  AppShortcutManager* shortcut_manager() { return shortcut_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
 
  private:
@@ -143,6 +147,7 @@ class InstallManager {
   WebAppUrlLoader url_loader_;
 
   AppRegistrar* registrar_ = nullptr;
+  AppShortcutManager* shortcut_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
 };
 

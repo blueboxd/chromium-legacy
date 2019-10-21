@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//components/arc/mojom/file_system.mojom"
-public_headers = [ "//storage/browser/fileapi/watcher_manager.h" ]
+public_headers = [ "//storage/browser/file_system/watcher_manager.h" ]
 public_deps = [
   "//storage/browser",
 ]

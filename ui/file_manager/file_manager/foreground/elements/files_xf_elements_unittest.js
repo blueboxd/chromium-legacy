@@ -55,21 +55,75 @@ async function testDisplayPanelChangingPanelTypes(done) {
   const panelItem = displayPanel.addPanelItem('testpanel');
   panelItem.panelType = panelItem.panelTypeProgress;
 
+  // Setup the panel item signal (click) callback.
+  /** @type {?string} */
+  let signal = null;
+  panelItem.signalCallback = (name) => {
+    assert(typeof name === 'string');
+    signal = name;
+  };
+
   // Verify the panel item indicator is progress.
-  assertTrue(
-      panelItem.indicator === 'progress',
+  assertEquals(
+      panelItem.indicator, 'progress',
       'Wrong panel indicator, got ' + panelItem.indicator);
+
+  // Check cancel signal from the panel from a click.
+  /** @type {!HTMLElement} */
+  const cancel = assert(panelItem.secondaryButton);
+  cancel.click();
+  assertEquals(
+      signal, 'cancel', 'Expected signal name "cancel". Got ' + signal);
 
   // Change the panel item to an error panel.
   panelItem.panelType = panelItem.panelTypeError;
 
   // Verify the panel item indicator is set to error.
-  assertTrue(
-      panelItem.indicator === 'status',
+  assertEquals(
+      panelItem.indicator, 'status',
       'Wrong panel indicator, got ' + panelItem.indicator);
-  assertTrue(
-      panelItem.status === 'failure',
+  assertEquals(
+      panelItem.status, 'failure',
       'Wrong panel status, got ' + panelItem.status);
+
+  // Check dismiss signal from the panel from a click.
+  /** @type {!HTMLElement} */
+  let dismiss = assert(panelItem.secondaryButton);
+  dismiss.click();
+  assertEquals(
+      signal, 'dismiss', 'Expected signal name "dismiss". Got ' + signal);
+
+  // Change the panel type to a done panel.
+  panelItem.panelType = panelItem.panelTypeDone;
+
+  // Verify the panel item indicator is set to done.
+  assertEquals(
+      panelItem.indicator, 'status',
+      'Wrong panel indicator, got ' + panelItem.indicator);
+  assertEquals(
+      panelItem.status, 'success',
+      'Wrong panel status, got ' + panelItem.status);
+
+  // Check the dimiss signal from the panel from a click.
+  signal = 'none';
+  dismiss = assert(panelItem.primaryButton);
+  dismiss.click();
+  assertEquals(
+      signal, 'dismiss', 'Expected signal name "dismiss". Got ' + signal);
+
+  // Change the type to a summary panel.
+  panelItem.panelType = panelItem.panelTypeSummary;
+
+  // Verify the panel item indicator is largeprogress.
+  assertEquals(
+      panelItem.indicator, 'largeprogress',
+      'Wrong panel indicator, got ' + panelItem.indicator);
+
+  // Check no signal emitted from the summary panel from a click.
+  const expand = assert(panelItem.primaryButton);
+  signal = 'none';
+  expand.click();
+  assertEquals(signal, 'none', 'Expected no signal. Got ' + signal);
 
   done();
 }
@@ -101,7 +155,7 @@ async function testFilesDisplayPanelSummaryPanel(done) {
   // Confirm multiple progress panels cause creation of a summary panel.
   const summaryContainer = displayPanel.shadowRoot.querySelector('#summary');
   let summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
-  assertTrue(summaryPanelItem.panelType === summaryPanelItem.panelTypeSummary);
+  assertEquals(summaryPanelItem.panelType, summaryPanelItem.panelTypeSummary);
 
   // Confirm the expected height of the summary panel.
   bounds = summaryPanelItem.getBoundingClientRect();
@@ -119,10 +173,10 @@ async function testFilesDisplayPanelSummaryPanel(done) {
   let panelToRemove = displayPanel.findPanelItemById('testpanel1');
   displayPanel.removePanelItem(panelToRemove);
   summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
-  assertTrue(summaryPanelItem === null);
+  assertEquals(summaryPanelItem, null);
 
   // Confirm the reference to the removed panel item is gone.
-  assertTrue(displayPanel.findPanelItemById('testpanel1') === null);
+  assertEquals(displayPanel.findPanelItemById('testpanel1'), null);
 
   // Add another panel item and confirm the expanded state persists by
   // checking the panel container is not hidden and there is a summary panel.
@@ -130,7 +184,7 @@ async function testFilesDisplayPanelSummaryPanel(done) {
   progressPanel.panelType = progressPanel.panelTypeProgress;
   assertFalse(panelContainer.hasAttribute('hidden'));
   summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
-  assertTrue(summaryPanelItem.panelType === summaryPanelItem.panelTypeSummary);
+  assertEquals(summaryPanelItem.panelType, summaryPanelItem.panelTypeSummary);
 
   done();
 }

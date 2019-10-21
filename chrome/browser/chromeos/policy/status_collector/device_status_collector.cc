@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <limits>
 #include <set>
@@ -91,7 +92,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using base::Time;
@@ -123,10 +124,6 @@ const char kCPUTempFilePattern[] = "temp*_input";
 
 // The location where storage device statistics are read from.
 const char kStorageInfoPath[] = "/var/log/storage_info.txt";
-
-// Generic device name when reported from runtime_probe. Used to filter out
-// data for components.
-const char kGenericDeviceName[] = "generic";
 
 // The location where stateful partition info is read from.
 const char kStatefulPartitionPath[] = "/home/.shadow";
@@ -571,12 +568,6 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         &DeviceStatusCollectorState::OnCrosHealthdDataReceived, this));
   }
 
-  void FetchProbeData(const policy::DeviceStatusCollector::ProbeDataFetcher&
-                          probe_data_fetcher) {
-    probe_data_fetcher.Run(
-        base::BindOnce(&DeviceStatusCollectorState::OnProbeDataReceived, this));
-  }
-
   void FetchEMMCLifeTime(
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
           emmc_lifetime_fetcher) {
@@ -613,7 +604,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
 
   void OnCPUTempInfoReceived(
       const std::vector<em::CPUTempInfo>& cpu_temp_info) {
-    // Only one of OnProbeDataReceived and OnCPUTempInfoReceived should be
+    // Only one of OnCrosHealthdDataReceived or OnCPUTempInfoReceived should be
     // called.
     DCHECK(response_params_.device_status->cpu_temp_infos_size() == 0);
 
@@ -660,11 +651,24 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         tpm_status_struct.boot_lockbox_finalized);
   }
 
-  // Stores the contents of |probe_result| to |response_params_|.
+  // Stores the contents of |probe_result| and |samples| to |response_params_|.
   void OnCrosHealthdDataReceived(
-      chromeos::cros_healthd::mojom::TelemetryInfoPtr probe_result) {
+      chromeos::cros_healthd::mojom::TelemetryInfoPtr probe_result,
+      const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
     // Make sure we edit the state on the right thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    // Only one of OnCrosHealthdDataReceived or OnCPUTempInfoReceived should be
+    // called.
+    DCHECK_EQ(response_params_.device_status->cpu_temp_infos_size(), 0);
+
+    // Store CPU measurement samples.
+    for (const std::unique_ptr<SampledData>& sample_data : samples) {
+      for (auto kv : sample_data->cpu_samples) {
+        response_params_.device_status->mutable_cpu_temp_infos()->Add(
+            std::move(kv.second));
+      }
+    }
 
     if (probe_result.is_null())
       return;
@@ -689,71 +693,40 @@ class DeviceStatusCollectorState : public StatusCollectorState {
           response_params_.device_status->mutable_system_status();
       system_status_out->set_vpd_sku_number(vpd_info->sku_number);
     }
-  }
-
-  // Note that we use proto3 syntax for ProbeResult, so missing fields will
-  // have default values.
-  void OnProbeDataReceived(
-      const base::Optional<runtime_probe::ProbeResult>& probe_result,
-      const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
-    // Make sure we edit the state on the right thread.
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    // Only one of OnProbeDataReceived and OnCPUTempInfoReceived should be
-    // called.
-    DCHECK(response_params_.device_status->cpu_temp_infos_size() == 0);
-
-    // Store CPU measurement samples.
-    for (const std::unique_ptr<SampledData>& sample_data : samples) {
-      for (auto it = sample_data->cpu_samples.begin();
-           it != sample_data->cpu_samples.end(); it++) {
-        auto* new_info = response_params_.device_status->add_cpu_temp_infos();
-        *new_info = it->second;
-      }
-    }
-
-    if (!probe_result.has_value())
-      return;
-    if (probe_result.value().error() !=
-        runtime_probe::RUNTIME_PROBE_ERROR_NOT_SET) {
-      return;
-    }
-    if (probe_result.value().battery_size() > 0) {
-      em::PowerStatus* const power_status =
+    const auto& battery_info = probe_result->battery_info;
+    if (!battery_info.is_null()) {
+      em::PowerStatus* const power_status_out =
           response_params_.device_status->mutable_power_status();
-      for (const auto& battery : probe_result.value().battery()) {
-        if (battery.name() != kGenericDeviceName)
-          continue;
-        em::BatteryInfo* const battery_info = power_status->add_batteries();
-        battery_info->set_serial(battery.values().serial_number());
-        battery_info->set_manufacturer(battery.values().manufacturer());
-        battery_info->set_cycle_count(battery.values().cycle_count_smart());
-        // uAh to mAh
-        battery_info->set_design_capacity(
-            battery.values().charge_full_design() / 1000);
-        battery_info->set_full_charge_capacity(battery.values().charge_full() /
-                                               1000);
-        // uV to mV:
-        battery_info->set_design_min_voltage(
-            battery.values().voltage_min_design() / 1000);
-        if (battery.values().manufacture_date_smart() > 0) {
-          // manufacture_date in (((year-1980) * 16 + month) * 32 + day) format.
-          int remainder = battery.values().manufacture_date_smart();
-          int day = remainder % 32;
-          remainder /= 32;
-          int month = remainder % 16;
-          remainder /= 16;
-          int year = remainder + 1980;
-          // set manufacture_date in yyyy-mm-dd format.
-          battery_info->set_manufacture_date(
-              base::StringPrintf("%04d-%02d-%02d", year, month, day));
-        }
+      em::BatteryInfo* const battery_info_out =
+          power_status_out->add_batteries();
+      battery_info_out->set_serial(battery_info->serial_number);
+      battery_info_out->set_manufacturer(battery_info->vendor);
+      battery_info_out->set_cycle_count(battery_info->cycle_count);
+      // Convert Ah to mAh:
+      battery_info_out->set_design_capacity(
+          std::lround(battery_info->charge_full_design * 1000));
+      battery_info_out->set_full_charge_capacity(
+          std::lround(battery_info->charge_full * 1000));
+      // Convert V to mV:
+      battery_info_out->set_design_min_voltage(
+          std::lround(battery_info->voltage_min_design * 1000));
+      if (battery_info->manufacture_date_smart > 0) {
+        // manufacture_date in (((year-1980) * 16 + month) * 32 + day) format.
+        int remainder = battery_info->manufacture_date_smart;
+        int day = remainder % 32;
+        remainder /= 32;
+        int month = remainder % 16;
+        remainder /= 16;
+        int year = remainder + 1980;
+        // set manufacture_date in yyyy-mm-dd format.
+        battery_info_out->set_manufacture_date(
+            base::StringPrintf("%04d-%02d-%02d", year, month, day));
+      }
 
-        for (const std::unique_ptr<SampledData>& sample_data : samples) {
-          auto it = sample_data->battery_samples.find(battery.name());
-          if (it != sample_data->battery_samples.end())
-            battery_info->add_samples()->CheckTypeAndMergeFrom(it->second);
-        }
+      for (const std::unique_ptr<SampledData>& sample_data : samples) {
+        auto it = sample_data->battery_samples.find(battery_info->model_name);
+        if (it != sample_data->battery_samples.end())
+          battery_info_out->add_samples()->CheckTypeAndMergeFrom(it->second);
       }
     }
   }
@@ -828,9 +801,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
       stateful_partition_info_fetcher_(stateful_partition_info_fetcher),
       cros_healthd_data_fetcher_(cros_healthd_data_fetcher),
-      power_manager_(chromeos::PowerManagerClient::Get()),
-      runtime_probe_(
-          chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()) {
+      power_manager_(chromeos::PowerManagerClient::Get()) {
   // protected fields of `StatusCollector`.
   max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
   max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;
@@ -854,10 +825,6 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (tpm_status_fetcher_.is_null())
     tpm_status_fetcher_ = base::BindRepeating(&ReadTpmStatus);
-
-  if (probe_data_fetcher_.is_null())
-    probe_data_fetcher_ = base::BindRepeating(
-        &DeviceStatusCollector::FetchProbeData, weak_factory_.GetWeakPtr());
 
   if (emmc_lifetime_fetcher_.is_null())
     emmc_lifetime_fetcher_ = base::BindRepeating(&ReadDiskLifeTimeEstimation);
@@ -1216,12 +1183,15 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
   sample->timestamp = timestamp;
 
   if (report_power_status_) {
-    runtime_probe::ProbeRequest request;
-    request.add_categories(runtime_probe::ProbeRequest::battery);
-    runtime_probe_->ProbeCategories(
-        request, base::BindOnce(&DeviceStatusCollector::SampleProbeData,
-                                weak_factory_.GetWeakPtr(), std::move(sample),
-                                SamplingProbeResultCallback()));
+    std::vector<chromeos::cros_healthd::mojom::ProbeCategoryEnum>
+        categories_to_probe = {
+            chromeos::cros_healthd::mojom::ProbeCategoryEnum::kBattery};
+    chromeos::cros_healthd::ServiceConnection::GetInstance()
+        ->ProbeTelemetryInfo(
+            categories_to_probe,
+            base::BindOnce(&DeviceStatusCollector::SampleProbeData,
+                           weak_factory_.GetWeakPtr(), std::move(sample),
+                           SamplingProbeResultCallback()));
   } else {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
@@ -1236,30 +1206,29 @@ void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {
 void DeviceStatusCollector::SampleProbeData(
     std::unique_ptr<SampledData> sample,
     SamplingProbeResultCallback callback,
-    base::Optional<runtime_probe::ProbeResult> result) {
+    chromeos::cros_healthd::mojom::TelemetryInfoPtr result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!result.has_value())
-    return;
-  if (result.value().error() != runtime_probe::RUNTIME_PROBE_ERROR_NOT_SET)
+
+  if (result.is_null())
     return;
 
-  for (const auto& battery : result.value().battery()) {
-    if (battery.name() != kGenericDeviceName)
-      continue;
-    enterprise_management::BatterySample battery_sample;
-    battery_sample.set_timestamp(sample->timestamp.ToJavaTime());
-    // Convert uV to mV
-    battery_sample.set_voltage(battery.values().voltage_now() / 1000);
-    // Convert uAh to mAh
-    battery_sample.set_remaining_capacity(battery.values().charge_now() / 1000);
-    // Convert 0.1 Kelvin to Celsius
-    battery_sample.set_temperature(
-        (battery.values().temperature_smart() - 2731) / 10);
-    sample->battery_samples[battery.name()] = battery_sample;
-  }
+  const auto& battery = result->battery_info;
+  enterprise_management::BatterySample battery_sample;
+  battery_sample.set_timestamp(sample->timestamp.ToJavaTime());
+  // Convert V to mV:
+  battery_sample.set_voltage(std::lround(battery->voltage_now * 1000));
+  // Convert Ah to mAh:
+  battery_sample.set_remaining_capacity(
+      std::lround(battery->charge_now * 1000));
+  // Convert 0.1 Kelvin to Celsius:
+  battery_sample.set_temperature((battery->temperature_smart - 2731) / 10);
+  sample->battery_samples[battery->model_name] = battery_sample;
+
   SamplingCallback completion_callback;
-  if (!callback.is_null())
-    completion_callback = base::BindOnce(std::move(callback), result);
+  if (!callback.is_null()) {
+    completion_callback =
+        base::BindOnce(std::move(callback), std::move(result));
+  }
 
   // PowerManagerClient::Observer::PowerChanged can be called as a result of
   // power_manager_->RequestStatusUpdate() as well as for other reasons,
@@ -1339,39 +1308,27 @@ void DeviceStatusCollector::FetchCrosHealthdData(
       ProbeCategoryEnum::kCachedVpdData};
   if (report_storage_status_)
     categories_to_probe.push_back(ProbeCategoryEnum::kNonRemovableBlockDevices);
-
-  chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
-      categories_to_probe, std::move(callback));
-}
-
-void DeviceStatusCollector::FetchProbeData(ProbeDataReceiver callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  runtime_probe::ProbeRequest request;
   if (report_power_status_)
-    request.add_categories(runtime_probe::ProbeRequest::battery);
+    categories_to_probe.push_back(ProbeCategoryEnum::kBattery);
 
-  // Note that we could send a probe request without any categories. The reason
-  // for that is that the OnProbeDataFetched callback also samples CPU
-  // temperature independently of querying runtime_probe. Since cros_healthd is
-  // replacing runtime_probe in DeviceStatusCollector, it doesn't make sense to
-  // refactor the runtime_probe code to fix this oddity at the moment.
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
   auto completion_callback =
       base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
                      weak_factory_.GetWeakPtr(), std::move(callback));
 
-  runtime_probe_->ProbeCategories(
-      request, base::BindOnce(&DeviceStatusCollector::SampleProbeData,
-                              weak_factory_.GetWeakPtr(), std::move(sample),
-                              std::move(completion_callback)));
+  chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
+      categories_to_probe,
+      base::BindOnce(&DeviceStatusCollector::SampleProbeData,
+                     weak_factory_.GetWeakPtr(), std::move(sample),
+                     std::move(completion_callback)));
 }
 
 void DeviceStatusCollector::OnProbeDataFetched(
-    ProbeDataReceiver callback,
-    base::Optional<runtime_probe::ProbeResult> reply) {
+    CrosHealthdDataReceiver callback,
+    chromeos::cros_healthd::mojom::TelemetryInfoPtr reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::move(callback).Run(reply, sampled_data_);
+  std::move(callback).Run(std::move(reply), sampled_data_);
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {
@@ -1698,7 +1655,6 @@ bool DeviceStatusCollector::GetHardwareStatus(
 
   if (report_power_status_ || report_storage_status_) {
     state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
-    state->FetchProbeData(probe_data_fetcher_);
     state->FetchCrosHealthdData(cros_healthd_data_fetcher_);
   } else {
     // Sample CPU temperature in a background thread.

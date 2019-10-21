@@ -11,8 +11,8 @@
 #include "base/files/scoped_file.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/io_buffer.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
-#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/file_system/file_stream_reader.h"
+#include "storage/browser/file_system/file_system_context.h"
 
 namespace arc {
 

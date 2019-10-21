@@ -24,7 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/mojom/file_system.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 
 using content::BrowserThread;
 

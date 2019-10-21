@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -60,9 +61,11 @@ std::string ExtractQueryValueForName(const GURL& url, const std::string& name) {
 
 WebAppInstallTask::WebAppInstallTask(
     Profile* profile,
+    AppShortcutManager* shortcut_manager,
     InstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppDataRetriever> data_retriever)
     : data_retriever_(std::move(data_retriever)),
+      shortcut_manager_(shortcut_manager),
       install_finalizer_(install_finalizer),
       profile_(profile) {}
 
@@ -541,11 +544,11 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
       &WebAppInstallTask::OnShortcutsCreated, weak_ptr_factory_.GetWeakPtr(),
       std::move(web_app_info), app_id);
 
-  if (add_to_applications_menu && install_finalizer_->CanCreateOsShortcuts()) {
+  if (add_to_applications_menu && shortcut_manager_->CanCreateShortcuts()) {
     // TODO(ortuno): Make adding a shortcut to the applications menu independent
     // from adding a shortcut to desktop.
-    install_finalizer_->CreateOsShortcuts(app_id, add_to_desktop,
-                                          std::move(create_shortcuts_callback));
+    shortcut_manager_->CreateShortcuts(app_id, add_to_desktop,
+                                       std::move(create_shortcuts_callback));
   } else {
     std::move(create_shortcuts_callback).Run(false /* created_shortcuts */);
   }

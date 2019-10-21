@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_clock_override.h"
 #include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,17 +52,17 @@ class CrOSActionRecorderTest : public testing::Test {
   }
 
   void SetLogWithHash() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        app_list_features::kEnableCrOSActionRecorder,
-        {{"CrOSActionRecorderType", "1"}});
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ash::switches::kEnableCrOSActionRecorder,
+        ash::switches::kCrOSActionRecorderWithHash);
 
     CrOSActionRecorder::GetCrosActionRecorder()->SetCrOSActionRecorderType();
   }
 
   void SetLogWithoutHash() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        app_list_features::kEnableCrOSActionRecorder,
-        {{"CrOSActionRecorderType", "2"}});
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ash::switches::kEnableCrOSActionRecorder,
+        ash::switches::kCrOSActionRecorderWithoutHash);
 
     CrOSActionRecorder::GetCrosActionRecorder()->SetCrOSActionRecorderType();
   }
@@ -103,7 +103,6 @@ class CrOSActionRecorderTest : public testing::Test {
   base::FilePath profile_path_;
   int64_t save_internal_secs_ = 0;
   base::ScopedMockClockOverride time_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::DEFAULT,
       base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};

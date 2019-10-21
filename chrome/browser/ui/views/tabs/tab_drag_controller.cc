@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -2197,8 +2198,17 @@ bool TabDragController::CanAttachTo(gfx::NativeWindow window) {
   if (other_browser->profile() != browser->profile())
     return false;
 
-  // Browser type (e.g. NORMAL vs APP) must be the same.
-  return other_browser->type() == browser->type();
+  // Unless we allow Feature mix-browser-type-tabs, ensure that
+  // browser types and app names are the same.
+  if (!base::FeatureList::IsEnabled(features::kMixBrowserTypeTabs)) {
+    if (other_browser->type() != browser->type() ||
+        (browser->is_type_app() &&
+         browser->app_name() != other_browser->app_name())) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void TabDragController::SetDeferredTargetTabstrip(

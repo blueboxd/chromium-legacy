@@ -15,10 +15,10 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "storage/browser/fileapi/file_system_backend.h"
-#include "storage/browser/fileapi/file_system_quota_util.h"
-#include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
-#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
+#include "storage/browser/file_system/file_system_backend.h"
+#include "storage/browser/file_system/file_system_quota_util.h"
+#include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
+#include "storage/browser/file_system/task_runner_bound_observer_list.h"
 
 namespace sync_file_system {
 

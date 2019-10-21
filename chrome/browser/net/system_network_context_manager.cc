@@ -668,9 +668,10 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   chrome::GetDefaultUserDataDirectory(&config->user_data_path);
   content::GetNetworkService()->SetCryptConfig(std::move(config));
 #endif
-#if defined(OS_MACOSX)
-  content::GetNetworkService()->SetEncryptionKey(
-      OSCrypt::GetRawEncryptionKey());
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  std::string key = OSCrypt::GetRawEncryptionKey();
+  DCHECK(!key.empty());
+  content::GetNetworkService()->SetEncryptionKey(key);
 #endif
 
   // Asynchronously reapply the most recently received CRLSet (if any).

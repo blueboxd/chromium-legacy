@@ -51,9 +51,6 @@ class V4L2VideoDecoderBackend {
     virtual bool ChangeResolution(gfx::Size pic_size,
                                   gfx::Rect visible_rect,
                                   size_t num_output_frames) = 0;
-    // Call the decode callback and count the number of pending callbacks.
-    virtual void RunDecodeCB(VideoDecoder::DecodeCB cb,
-                             DecodeStatus status) = 0;
     // Convert the frame and call the output callback.
     virtual void OutputFrame(scoped_refptr<VideoFrame> frame,
                              const gfx::Rect& visible_rect,
@@ -65,8 +62,7 @@ class V4L2VideoDecoderBackend {
   virtual bool Initialize() = 0;
 
   // Schedule |buffer| to be processed, with bitstream ID |bitstream_id|.
-  // The backend must call V4L2SliceVideoDecoder::RunDecodeCB() with |decode_cb|
-  // as argument once the buffer is not used anymore.
+  // The backend must call |decode_cb| once the buffer is not used anymore.
   virtual void EnqueueDecodeTask(scoped_refptr<DecoderBuffer> buffer,
                                  VideoDecoder::DecodeCB decode_cb,
                                  int32_t bitstream_id) = 0;

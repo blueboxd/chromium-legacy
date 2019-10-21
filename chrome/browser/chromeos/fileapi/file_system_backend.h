@@ -15,8 +15,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "storage/browser/fileapi/file_system_backend.h"
-#include "storage/browser/fileapi/task_runner_bound_observer_list.h"
+#include "storage/browser/file_system/file_system_backend.h"
+#include "storage/browser/file_system/task_runner_bound_observer_list.h"
 #include "storage/common/fileapi/file_system_types.h"
 
 namespace storage {

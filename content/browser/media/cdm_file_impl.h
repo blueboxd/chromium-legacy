@@ -17,7 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/mojo/mojom/cdm_storage.mojom.h"
-#include "storage/browser/fileapi/async_file_util.h"
+#include "storage/browser/file_system/async_file_util.h"
 #include "url/origin.h"
 
 namespace storage {

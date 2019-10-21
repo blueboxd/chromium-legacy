@@ -331,7 +331,6 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
-#include "components/os_crypt/os_crypt.h"
 #endif
 
 #if defined(OS_WIN)
@@ -343,6 +342,10 @@
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "components/os_crypt/os_crypt.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -729,9 +732,12 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_MACOSX)
   confirm_quit::RegisterLocalState(registry);
-  OSCrypt::RegisterLocalPrefs(registry);
   QuitWithAppsController::RegisterPrefs(registry);
   system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  OSCrypt::RegisterLocalPrefs(registry);
 #endif
 
 #if defined(OS_WIN)

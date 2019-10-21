@@ -60,20 +60,6 @@ void TestInstallFinalizer::UninstallExternalWebApp(
 void TestInstallFinalizer::UninstallWebApp(const AppId& app_url,
                                            UninstallWebAppCallback callback) {}
 
-bool TestInstallFinalizer::CanCreateOsShortcuts() const {
-  return true;
-}
-
-void TestInstallFinalizer::CreateOsShortcuts(
-    const AppId& app_id,
-    bool add_to_desktop,
-    CreateOsShortcutsCallback callback) {
-  ++num_create_os_shortcuts_calls_;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), true /* shortcuts_created */));
-}
-
 bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
   return true;
 }

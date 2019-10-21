@@ -5,7 +5,7 @@ filesystem related APIs.
 
 ## Related directories
 
-[`//storage/browser/fileapi/`](../../../storage/browser/fileapi) contains the
+[`//storage/browser/file_system/`](../../../storage/browser/file_system) contains the
 rest of the browser side implementation, while
 [`blink/renderer/modules/filesystem`](../../../third_party/blink/renderer/modules/filesystem)
 contains the renderer side implementation and

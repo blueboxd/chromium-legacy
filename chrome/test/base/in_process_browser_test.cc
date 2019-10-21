@@ -257,10 +257,14 @@ void InProcessBrowserTest::SetUp() {
 
   SetScreenInstance();
 
-  // Always use a mocked password storage if OS encryption is used (which is
-  // when anything sensitive gets stored, including Cookies). Without this on
-  // Mac, many tests will hang waiting for a user to approve KeyChain access.
+  // Use a mocked password storage if OS encryption is used that might block or
+  // prompt the user (which is when anything sensitive gets stored, including
+  // Cookies). Without this on Mac and Linux, many tests will hang waiting for a
+  // user to approve KeyChain/kwallet access. On Windows this is not needed as
+  // OS APIs never block.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
   OSCryptMocker::SetUp();
+#endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService::set_state_for_testing(
@@ -322,7 +326,9 @@ void InProcessBrowserTest::TearDown() {
           ->Skipped())
     return;
   BrowserTestBase::TearDown();
+#if defined(OS_MACOSX) || defined(OS_LINUX)
   OSCryptMocker::TearDown();
+#endif
   ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(nullptr);
 
 #if defined(OS_CHROMEOS)

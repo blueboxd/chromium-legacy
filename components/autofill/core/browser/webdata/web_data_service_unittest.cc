@@ -30,6 +30,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/webdata/common/web_data_results.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -96,6 +97,8 @@ class WebDataServiceTest : public testing::Test {
  protected:
   void SetUp() override {
     base::FilePath path(WebDatabase::kInMemoryPath);
+    // OSCrypt is used for encryption of credit card data in this test.
+    OSCryptMocker::SetUp();
 
     // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
     // not single-threaded; it's also possible the various uses of this below
@@ -119,6 +122,7 @@ class WebDataServiceTest : public testing::Test {
     wds_ = nullptr;
     wdbs_ = nullptr;
     task_environment_.RunUntilIdle();
+    OSCryptMocker::TearDown();
   }
 
   base::test::TaskEnvironment task_environment_;

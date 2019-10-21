@@ -20,7 +20,7 @@
 #include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "storage/browser/fileapi/watcher_manager.h"
+#include "storage/browser/file_system/watcher_manager.h"
 
 class BrowserContextKeyedServiceFactory;
 class GURL;

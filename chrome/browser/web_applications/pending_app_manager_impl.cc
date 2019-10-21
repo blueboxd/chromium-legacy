@@ -96,9 +96,9 @@ void PendingAppManagerImpl::ReleaseWebContents() {
 std::unique_ptr<PendingAppInstallTask>
 PendingAppManagerImpl::CreateInstallationTask(
     ExternalInstallOptions install_options) {
-  return std::make_unique<PendingAppInstallTask>(profile_, registrar(),
-                                                 ui_manager(), finalizer(),
-                                                 std::move(install_options));
+  return std::make_unique<PendingAppInstallTask>(
+      profile_, registrar(), shortcut_manager(), ui_manager(), finalizer(),
+      std::move(install_options));
 }
 
 std::unique_ptr<PendingAppRegistrationTaskBase>

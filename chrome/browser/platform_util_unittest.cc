@@ -29,7 +29,7 @@
 #include "content/public/common/content_client.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/common/fileapi/file_system_types.h"
 #else

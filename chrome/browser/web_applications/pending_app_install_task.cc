@@ -17,6 +17,7 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -49,11 +50,13 @@ void PendingAppInstallTask::CreateTabHelpers(
 PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
     AppRegistrar* registrar,
+    AppShortcutManager* shortcut_manger,
     WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
     ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
+      shortcut_manager_(shortcut_manger),
       install_finalizer_(install_finalizer),
       ui_manager_(ui_manager),
       externally_installed_app_prefs_(profile_->GetPrefs()),
@@ -236,8 +239,8 @@ void PendingAppInstallTask::OnWebAppInstalled(bool is_placeholder,
   // TODO(ortuno): Make adding a shortcut to the applications menu independent
   // from adding a shortcut to desktop.
   if (install_options_.add_to_applications_menu &&
-      install_finalizer_->CanCreateOsShortcuts()) {
-    install_finalizer_->CreateOsShortcuts(
+      shortcut_manager_->CanCreateShortcuts()) {
+    shortcut_manager_->CreateShortcuts(
         app_id, install_options_.add_to_desktop,
         base::BindOnce(
             [](base::ScopedClosureRunner scoped_closure,

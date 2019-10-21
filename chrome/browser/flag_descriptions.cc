@@ -1273,6 +1273,11 @@ const char kMimeHandlerViewInCrossProcessFrameDescription[] =
     "Loads the MimeHandlerView (the extension viewer for certain MIME types "
     "such as PDF) in a cross-process frame as opposed to a BrowserPlugin.";
 
+const char kMixBrowserTypeTabsName[] = "Mix browser type tabs";
+const char kMixBrowserTypeTabsDescription[] =
+    "Allows tabs to be dragged between any browsers that support tabs, "
+    "including apps";
+
 const char kMixedContentSiteSettingName[] =
     "Blockable mixed content switch as site setting";
 const char kMixedContentSiteSettingDescription[] =

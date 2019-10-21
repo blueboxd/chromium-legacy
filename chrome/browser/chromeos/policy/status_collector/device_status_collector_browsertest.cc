@@ -86,8 +86,8 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/core/embedder/embedder.h"
-#include "storage/browser/fileapi/external_mount_points.h"
-#include "storage/browser/fileapi/mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/mount_points.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -359,35 +359,35 @@ em::StatefulPartitionInfo GetFakeStatefulPartitionInfo(
 void GetEmptyCrosHealthdData(
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
   chromeos::cros_healthd::mojom::TelemetryInfoPtr empty_info;
-  std::move(receiver).Run(std::move(empty_info));
+  base::circular_deque<std::unique_ptr<policy::SampledData>> empty_samples;
+  std::move(receiver).Run(std::move(empty_info), empty_samples);
 }
 
 void GetFakeCrosHealthdData(
-    const std::string& sku_number,
-    const std::string& path,
-    int size,
-    const std::string& type,
-    uint8_t manufacturer_id,
-    const std::string& name,
-    int serial,
+    const chromeos::cros_healthd::mojom::BatteryInfo& battery_info,
+    const chromeos::cros_healthd::mojom::CachedVpdInfo& cached_vpd_info,
+    const chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo&
+        storage_info,
+    const em::CPUTempInfo& cpu_sample,
+    const em::BatterySample& battery_sample,
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
-  chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr vector_init[] =
-      {chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo::New(
-          path, size, type, manufacturer_id, name, serial)};
+  std::vector<chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>
+      storage_vector;
+  storage_vector.push_back(storage_info.Clone());
+  base::Optional<std::vector<
+      chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>>
+      block_device_info(std::move(storage_vector));
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
-      chromeos::cros_healthd::mojom::BatteryInfo::New(), /* battery_info */
-      base::Optional<std::vector<
-          chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>>(
-          std::vector<
-              chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>{
-              std::make_move_iterator(std::begin(vector_init)),
-              std::make_move_iterator(
-                  std::end(vector_init))}), /* block_device_info */
-      chromeos::cros_healthd::mojom::CachedVpdInfo::New(
-          sku_number) /* vpd_info */
-  );
+      battery_info.Clone(), std::move(block_device_info),
+      cached_vpd_info.Clone());
 
-  std::move(receiver).Run(fake_info.Clone());
+  auto sample = std::make_unique<policy::SampledData>();
+  sample->cpu_samples[cpu_sample.cpu_label()] = cpu_sample;
+  sample->battery_samples[battery_info.model_name] = battery_sample;
+  base::circular_deque<std::unique_ptr<policy::SampledData>> samples;
+  samples.push_back(std::move(sample));
+
+  std::move(receiver).Run(fake_info.Clone(), samples);
 }
 
 }  // namespace
@@ -2399,13 +2399,64 @@ TEST_F(DeviceStatusCollectorTest, TestStatefulPartitionInfo) {
 TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   // Create a fake response from cros_healthd and populate it with some
   // arbitrary values.
+
+  // Cached VPD test values.
   constexpr char kFakeSkuNumber[] = "fake_sku_number";
-  constexpr char kFakePath[] = "fake_path";
-  constexpr int kFakeSize = 123;
-  constexpr char kFakeType[] = "fake_type";
-  constexpr uint8_t kFakeManfid = 2;
-  constexpr char kFakeName[] = "fake_name";
-  constexpr int kFakeSerial = 789;
+
+  // Storage test values.
+  constexpr char kFakeStoragePath[] = "fake_storage_path";
+  constexpr int kFakeStorageSize = 123;
+  constexpr char kFakeStorageType[] = "fake_storage_type";
+  constexpr uint8_t kFakeStorageManfid = 2;
+  constexpr char kFakeStorageName[] = "fake_storage_name";
+  constexpr int kFakeStorageSerial = 789;
+
+  // Battery test values.
+  constexpr int kFakeCycleCount = 3;
+  constexpr int kExpectedVoltageNow = 12574;                        // (mV)
+  constexpr double kFakeVoltageNow = kExpectedVoltageNow / 1000.0;  // (V)
+  constexpr char kFakeBatteryVendor[] = "fake_battery_vendor";
+  constexpr char kFakeBatterySerial[] = "fake_battery_serial";
+  constexpr int kExpectedChargeFullDesign = 5275;  // (mAh)
+  constexpr double kFakeChargeFullDesign =
+      kExpectedChargeFullDesign / 1000.0;                           // (Ah)
+  constexpr int kExpectedChargeFull = 5292;                         // (mAh)
+  constexpr double kFakeChargeFull = kExpectedChargeFull / 1000.0;  // (Ah)
+  constexpr int kExpectedVoltageMinDesign = 11550;                  // (mV)
+  constexpr double kFakeVoltageMinDesign =
+      kExpectedVoltageMinDesign / 1000.0;  // (V)
+  constexpr int kFakeManufactureDateSmart = 19718;
+  constexpr int kFakeTemperatureSmart = 3004;
+  constexpr char kFakeBatteryModel[] = "fake_battery_model";
+  constexpr int kExpectedChargeNow = 5281;                        // (mAh)
+  constexpr double kFakeChargeNow = kExpectedChargeNow / 1000.0;  // (Ah)
+
+  // CPU Temperature test values.
+  constexpr char kFakeCpuLabel[] = "fake_cpu_label";
+  constexpr int kFakeCpuTemp = 91832;
+  constexpr int kFakeCpuTimestamp = 912;
+
+  chromeos::cros_healthd::mojom::BatteryInfo battery_info(
+      kFakeCycleCount, kFakeVoltageNow, kFakeBatteryVendor, kFakeBatterySerial,
+      kFakeChargeFullDesign, kFakeChargeFull, kFakeVoltageMinDesign,
+      kFakeManufactureDateSmart, kFakeTemperatureSmart, kFakeBatteryModel,
+      kFakeChargeNow);
+  chromeos::cros_healthd::mojom::CachedVpdInfo cached_vpd_info(kFakeSkuNumber);
+  chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo storage_info(
+      kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
+      kFakeStorageName, kFakeStorageSerial);
+
+  // Create a fake sample to test with.
+  em::CPUTempInfo fake_cpu_temp_sample;
+  fake_cpu_temp_sample.set_cpu_label(kFakeCpuLabel);
+  fake_cpu_temp_sample.set_cpu_temp(kFakeCpuTemp);
+  fake_cpu_temp_sample.set_timestamp(kFakeCpuTimestamp);
+  em::BatterySample fake_battery_sample;
+  // Convert from V to mV.
+  fake_battery_sample.set_voltage(kExpectedVoltageNow);
+  // Convert from Ah to mAh.
+  fake_battery_sample.set_remaining_capacity(kExpectedChargeNow);
+  fake_battery_sample.set_temperature(kFakeTemperatureSmart);
 
   RestartStatusCollector(
       base::BindRepeating(&GetEmptyVolumeInfo),
@@ -2415,9 +2466,9 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
       base::BindRepeating(&GetEmptyStatefulPartitionInfo),
-      base::BindRepeating(&GetFakeCrosHealthdData, kFakeSkuNumber, kFakePath,
-                          kFakeSize, kFakeType, kFakeManfid, kFakeName,
-                          kFakeSerial));
+      base::BindRepeating(&GetFakeCrosHealthdData, battery_info,
+                          cached_vpd_info, storage_info, fake_cpu_temp_sample,
+                          fake_battery_sample));
 
   // If neither kReportDevicePowerStatus nor kReportDeviceStorageStatus are set,
   // expect that the data from cros_healthd isn't present in the protobuf.
@@ -2426,6 +2477,7 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceStorageStatus, false);
   GetStatus();
+  EXPECT_FALSE(device_status_.has_power_status());
   EXPECT_FALSE(device_status_.has_storage_status());
   EXPECT_FALSE(device_status_.has_system_status());
 
@@ -2436,20 +2488,45 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceStorageStatus, true);
   GetStatus();
+
+  // Check that the CPU temperature samples are stored correctly.
+  ASSERT_EQ(device_status_.cpu_temp_infos_size(), 1);
+  const auto& cpu_sample = device_status_.cpu_temp_infos(0);
+  EXPECT_EQ(cpu_sample.cpu_label(), kFakeCpuLabel);
+  EXPECT_EQ(cpu_sample.cpu_temp(), kFakeCpuTemp);
+  EXPECT_EQ(cpu_sample.timestamp(), kFakeCpuTimestamp);
+
+  // Verify the battery data.
+  ASSERT_TRUE(device_status_.has_power_status());
+  ASSERT_EQ(device_status_.power_status().batteries_size(), 1);
+  const auto& battery = device_status_.power_status().batteries(0);
+  EXPECT_EQ(battery.serial(), kFakeBatterySerial);
+  EXPECT_EQ(battery.manufacturer(), kFakeBatteryVendor);
+  EXPECT_EQ(battery.design_capacity(), kExpectedChargeFullDesign);
+  EXPECT_EQ(battery.full_charge_capacity(), kExpectedChargeFull);
+  EXPECT_EQ(battery.cycle_count(), kFakeCycleCount);
+  EXPECT_EQ(battery.design_min_voltage(), kExpectedVoltageMinDesign);
+  EXPECT_EQ(battery.manufacture_date(), "2018-08-06");
+
+  // Verify the battery sample data.
+  ASSERT_EQ(battery.samples_size(), 1);
+  const auto& battery_sample = battery.samples(0);
+  EXPECT_EQ(battery_sample.voltage(), kExpectedVoltageNow);
+  EXPECT_EQ(battery_sample.remaining_capacity(), kExpectedChargeNow);
+  EXPECT_EQ(battery_sample.temperature(), kFakeTemperatureSmart);
+
+  // Verify the storage data.
   ASSERT_TRUE(device_status_.has_storage_status());
   ASSERT_EQ(device_status_.storage_status().disks_size(), 1);
   const auto& disk = device_status_.storage_status().disks(0);
-  ASSERT_TRUE(disk.has_size());
-  EXPECT_EQ(disk.size(), kFakeSize);
-  ASSERT_TRUE(disk.has_type());
-  EXPECT_EQ(disk.type(), kFakeType);
-  ASSERT_TRUE(disk.has_manufacturer());
-  EXPECT_EQ(disk.manufacturer(), base::NumberToString(kFakeManfid));
-  ASSERT_TRUE(disk.has_model());
-  EXPECT_EQ(disk.model(), kFakeName);
-  ASSERT_TRUE(disk.has_serial());
-  EXPECT_EQ(disk.serial(), base::NumberToString(kFakeSerial));
-  ASSERT_TRUE(device_status_.system_status().has_vpd_sku_number());
+  EXPECT_EQ(disk.size(), kFakeStorageSize);
+  EXPECT_EQ(disk.type(), kFakeStorageType);
+  EXPECT_EQ(disk.manufacturer(), base::NumberToString(kFakeStorageManfid));
+  EXPECT_EQ(disk.model(), kFakeStorageName);
+  EXPECT_EQ(disk.serial(), base::NumberToString(kFakeStorageSerial));
+
+  // Verify the Cached VPD.
+  ASSERT_TRUE(device_status_.has_system_status());
   EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
 }
 

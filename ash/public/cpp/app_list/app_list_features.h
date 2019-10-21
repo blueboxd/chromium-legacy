@@ -81,10 +81,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kScalableAppList;
 // non empty queries.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlSearchRanking;
 
-// Enables CrOSActionRecorder which records some user actions.
-// Should be only enabled for users that joined the experiment.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableCrOSActionRecorder;
-
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
@@ -104,12 +100,10 @@ bool ASH_PUBLIC_EXPORT IsAggregatedMlAppRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsScalableAppListEnabled();
 bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
-bool ASH_PUBLIC_EXPORT IsCrOSActionRecorderEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();
 std::string ASH_PUBLIC_EXPORT AppSearchResultRankerPredictorName();
-int ASH_PUBLIC_EXPORT GetCrOSActionRecorderType();
 
 }  // namespace app_list_features
 

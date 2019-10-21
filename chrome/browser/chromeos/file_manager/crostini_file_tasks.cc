@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "extensions/browser/entry_info.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/layout.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/codec/png_codec.h"

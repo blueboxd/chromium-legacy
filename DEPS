@@ -179,7 +179,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '2bf23ea84e4f071c18f01b94748f3be7dccc4019',
+  'angle_revision': '68591effc086ae99611e5c5f7db46960f99a3bc6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -862,7 +862,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '73206e3b84780af68437dd35e875001120d06faa',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'ff30294118086d516a195c906fadf781f5d7d5f7',
       'condition': 'checkout_linux',
   },
 

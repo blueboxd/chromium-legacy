@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <windows.h>
@@ -132,6 +133,7 @@ AutofillIeToolbarImportTest::AutofillIeToolbarImportTest() {
 }
 
 void AutofillIeToolbarImportTest::SetUp() {
+  OSCryptMocker::SetUp();
   temp_hkcu_hive_key_.Create(HKEY_CURRENT_USER,
                              kUnitTestUserOverrideSubKey,
                              KEY_ALL_ACCESS);
@@ -145,6 +147,7 @@ void AutofillIeToolbarImportTest::TearDown() {
   temp_hkcu_hive_key_.Close();
   RegKey key(HKEY_CURRENT_USER, kUnitTestRegistrySubKey, KEY_ALL_ACCESS);
   key.DeleteKey(L"");
+  OSCryptMocker::TearDown();
 }
 
 TEST_F(AutofillIeToolbarImportTest, TestAutofillImport) {

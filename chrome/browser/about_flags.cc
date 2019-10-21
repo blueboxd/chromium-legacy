@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/base_switches.h"
@@ -1357,15 +1358,15 @@ const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
 };
 
 #if defined(OS_CHROMEOS)
-const FeatureEntry::FeatureParam kCrOSActionRecorderLogWithHash[] = {
-    {"CrOSActionRecorderType", "1"}};
-const FeatureEntry::FeatureParam kCrOSActionRecorderLogWithoutHash[] = {
-    {"CrOSActionRecorderType", "2"}};
-const FeatureEntry::FeatureVariation kCrOSActionRecorderVariations[] = {
-    {"Log with Hash", kCrOSActionRecorderLogWithHash,
-     base::size(kCrOSActionRecorderLogWithHash), nullptr},
-    {"Log without Hash", kCrOSActionRecorderLogWithoutHash,
-     base::size(kCrOSActionRecorderLogWithoutHash), nullptr}};
+const FeatureEntry::Choice kEnableCrOSActionRecorderChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {ash::switches::kCrOSActionRecorderWithHash,
+     ash::switches::kEnableCrOSActionRecorder,
+     ash::switches::kCrOSActionRecorderWithHash},
+    {ash::switches::kCrOSActionRecorderWithoutHash,
+     ash::switches::kEnableCrOSActionRecorder,
+     ash::switches::kCrOSActionRecorderWithoutHash},
+};
 #endif  // defined(OS_CHROMEOS)
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -4672,13 +4673,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-cros-action-recorder",
      flag_descriptions::kEnableCrOSActionRecorderName,
      flag_descriptions::kEnableCrOSActionRecorderDescription, kOsCrOS,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         app_list_features::kEnableCrOSActionRecorder,
-         kCrOSActionRecorderVariations,
-         "CrOSActionRecorderTypeVariations")},
+     MULTI_VALUE_TYPE(kEnableCrOSActionRecorderChoices)},
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
+    {"mix-browser-type-tabs", flag_descriptions::kMixBrowserTypeTabsName,
+     flag_descriptions::kMixBrowserTypeTabsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kMixBrowserTypeTabs)},
+
     {"mixed-content-setting", flag_descriptions::kMixedContentSiteSettingName,
      flag_descriptions::kMixedContentSiteSettingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMixedContentSiteSetting)},

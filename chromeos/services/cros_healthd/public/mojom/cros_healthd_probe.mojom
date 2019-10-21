@@ -38,6 +38,13 @@ struct BatteryInfo {
   // http://sbs-forum.org/specs/sbdat110.pdf. The value is calculated by
   // ((year-1980) * 512 + month * 32 + day).
   int64 manufacture_date_smart;
+  // Temperature in 0.1°K as Smart Battery Temperature defined in
+  // http://sbs-forum.org/specs/sbdat110.pdf
+  uint64 temperature_smart;
+  // Model name.
+  string model_name;
+  // Current battery charge (Ah)
+  double charge_now;
 };
 
 // Information related to a specific non-removable block device.

@@ -387,6 +387,7 @@ class FlexLayoutAlgorithm {
                                         const ComputedStyle& child_style);
 
   static LayoutUnit InitialContentPositionOffset(
+      const ComputedStyle& style,
       LayoutUnit available_free_space,
       const StyleContentAlignmentData&,
       unsigned number_of_items);

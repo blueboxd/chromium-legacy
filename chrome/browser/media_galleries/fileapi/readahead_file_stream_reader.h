@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
+#include "storage/browser/file_system/file_stream_reader.h"
 
 // Wraps a source FileStreamReader with a readahead buffer.
 class ReadaheadFileStreamReader : public storage::FileStreamReader {

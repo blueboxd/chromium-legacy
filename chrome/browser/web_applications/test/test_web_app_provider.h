@@ -20,6 +20,7 @@ class BrowserContext;
 namespace web_app {
 
 class AppRegistrar;
+class AppShortcutManager;
 class InstallFinalizer;
 class PendingAppManager;
 class SystemWebAppManager;
@@ -58,6 +59,7 @@ class TestWebAppProvider : public WebAppProvider {
       std::unique_ptr<SystemWebAppManager> system_web_app_manager);
   void SetWebAppPolicyManager(
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
+  void SetShortcutManager(std::unique_ptr<AppShortcutManager> shortcut_manager);
 
  private:
   void CheckNotStarted() const;

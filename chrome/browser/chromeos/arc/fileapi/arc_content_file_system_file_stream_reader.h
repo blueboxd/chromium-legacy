@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "net/base/completion_once_callback.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
+#include "storage/browser/file_system/file_stream_reader.h"
 #include "url/gurl.h"
 
 namespace base {

@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
 
 class Profile;
 
@@ -22,12 +23,21 @@ struct ShortcutInfo;
 // web_app_extension_shortcut.(h|cc) and
 // platform_apps/shortcut_manager.(h|cc) to the AppShortcutManager, so web app
 // shortcuts can be managed in an extensions agnostic way.
+// Manages OS shortcuts for web applications.
 class AppShortcutManager {
  public:
   explicit AppShortcutManager(Profile* profile);
   virtual ~AppShortcutManager();
 
   void SetSubsystems(AppRegistrar* registrar);
+
+  // virtual for testing.
+  virtual bool CanCreateShortcuts() const;
+
+  // virtual for testing.
+  virtual void CreateShortcuts(const AppId& app_id,
+                               bool add_to_desktop,
+                               CreateShortcutsCallback callback);
 
   // The result of a call to GetShortcutInfo.
   using GetShortcutInfoCallback =

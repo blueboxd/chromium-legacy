@@ -14,7 +14,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/extensions_api_client.h"

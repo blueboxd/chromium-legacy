@@ -43,7 +43,7 @@
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/file_system/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 

@@ -106,11 +106,19 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
   }
 
   if (!base::Contains(input_config.preferred_storage_types,
-                      VideoFrame::STORAGE_DMABUFS) ||
+                      VideoFrame::STORAGE_DMABUFS) &&
+      !base::Contains(input_config.preferred_storage_types,
+                      VideoFrame::STORAGE_GPU_MEMORY_BUFFER)) {
+    VLOGF(2) << "VaapiImageProcessor supports Dmabuf-backed or GpuMemoryBuffer"
+             << " based VideoFrame only for input";
+    return nullptr;
+  }
+  if (!base::Contains(output_config.preferred_storage_types,
+                      VideoFrame::STORAGE_DMABUFS) &&
       !base::Contains(output_config.preferred_storage_types,
-                      VideoFrame::STORAGE_DMABUFS)) {
-    VLOGF(2) << "VaapiImageProcessor supports Dmabuf-backed VideoFrame only "
-             << "for both input and output";
+                      VideoFrame::STORAGE_GPU_MEMORY_BUFFER)) {
+    VLOGF(2) << "VaapiImageProcessor supports Dmabuf-backed or GpuMemoryBuffer"
+             << " based VideoFrame only for output";
     return nullptr;
   }
 
@@ -124,6 +132,12 @@ std::unique_ptr<VaapiImageProcessor> VaapiImageProcessor::Create(
       base::BindRepeating(&ReportToUMA, error_cb, VaIPFailure::kVaapiVppError));
   if (!vaapi_wrapper) {
     VLOGF(1) << "Failed to create VaapiWrapper";
+    return nullptr;
+  }
+
+  // Size is irrelevant for a VPP context.
+  if (!vaapi_wrapper->CreateContext(gfx::Size())) {
+    VLOGF(1) << "Failed to create context for VPP";
     return nullptr;
   }
 

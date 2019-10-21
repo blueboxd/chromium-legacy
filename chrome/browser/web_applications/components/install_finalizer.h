@@ -31,8 +31,6 @@ class InstallFinalizer {
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
   using UninstallWebAppCallback = base::OnceCallback<void(bool uninstalled)>;
-  using CreateOsShortcutsCallback =
-      base::OnceCallback<void(bool shortcuts_created)>;
 
   struct FinalizeOptions {
     WebappInstallSource install_source = WebappInstallSource::COUNT;
@@ -58,10 +56,6 @@ class InstallFinalizer {
   virtual void UninstallWebApp(const AppId& app_id,
                                UninstallWebAppCallback) = 0;
 
-  virtual bool CanCreateOsShortcuts() const = 0;
-  virtual void CreateOsShortcuts(const AppId& app_id,
-                                 bool add_to_desktop,
-                                 CreateOsShortcutsCallback callback) = 0;
   // |virtual| for testing.
   virtual bool CanAddAppToQuickLaunchBar() const;
   virtual void AddAppToQuickLaunchBar(const AppId& app_id);

@@ -214,7 +214,8 @@ void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
   install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
-  install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
+  install_manager_->SetSubsystems(registrar_.get(), shortcut_manager_.get(),
+                                  install_finalizer_.get());
   manifest_update_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                           install_manager_.get());
   pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),

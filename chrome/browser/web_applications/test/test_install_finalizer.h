@@ -34,10 +34,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
                                UninstallWebAppCallback callback) override;
   void UninstallWebApp(const AppId& app_id,
                        UninstallWebAppCallback callback) override;
-  bool CanCreateOsShortcuts() const override;
-  void CreateOsShortcuts(const AppId& app_id,
-                         bool add_to_desktop,
-                         CreateOsShortcutsCallback callback) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
   bool CanReparentTab(const AppId& app_id,
@@ -66,7 +62,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
     return uninstall_external_web_app_urls_;
   }
 
-  int num_create_os_shortcuts_calls() { return num_create_os_shortcuts_calls_; }
   int num_reparent_tab_calls() { return num_reparent_tab_calls_; }
   int num_reveal_appshim_calls() { return num_reveal_appshim_calls_; }
   int num_add_app_to_quick_launch_bar_calls() {
@@ -86,7 +81,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   base::Optional<InstallResultCode> next_result_code_;
   std::map<GURL, bool> next_uninstall_external_web_app_results_;
 
-  int num_create_os_shortcuts_calls_ = 0;
   int num_reparent_tab_calls_ = 0;
   int num_reveal_appshim_calls_ = 0;
   int num_add_app_to_quick_launch_bar_calls_ = 0;

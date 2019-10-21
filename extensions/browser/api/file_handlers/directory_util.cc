@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "net/base/filename_util.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/extensions_api_client.h"

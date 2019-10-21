@@ -166,7 +166,6 @@ static void ReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  // This key is used for uniquely identifying v8::Private.
   static int private_property_key;
   V8PrivateProperty::GetSymbol(
       info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#readonlyTestInterfaceEmptyAttribute")
@@ -2484,7 +2483,6 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  // This key is used for uniquely identifying v8::Private.
   static int private_property_key;
   V8PrivateProperty::GetSymbol(
       info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
@@ -2505,7 +2503,6 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
   if (cpp_value && DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  // This key is used for uniquely identifying v8::Private.
   static int private_property_key;
   V8PrivateProperty::GetSymbol(
       info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
@@ -4067,7 +4064,6 @@ static void SameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  // This key is used for uniquely identifying v8::Private.
   static int private_property_key;
   V8PrivateProperty::GetSymbol(
       info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#sameObjectAttribute")
@@ -4103,7 +4099,6 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
-  // This key is used for uniquely identifying v8::Private.
   static int private_property_key;
   V8PrivateProperty::GetSymbol(
       info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#saveSameObjectAttribute")

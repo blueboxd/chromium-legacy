@@ -1412,6 +1412,8 @@ bool VaapiWrapper::CreateContext(const gfx::Size& size) {
   // (non-null) IDs until the signature gets updated.
   constexpr VASurfaceID* empty_va_surfaces_ids_pointer = nullptr;
   constexpr size_t empty_va_surfaces_ids_size = 0u;
+  // TODO(hiroh): VA_PROGRESSIVE might not ought to be set in VPP case. Think
+  // about removing it if something wrong happens or it turns out to be wrong.
   const VAStatus va_res =
       vaCreateContext(va_display_, va_config_id_, size.width(), size.height(),
                       VA_PROGRESSIVE, empty_va_surfaces_ids_pointer,
@@ -1923,6 +1925,19 @@ bool VaapiWrapper::BlitSurface(
     const scoped_refptr<VASurface>& va_surface_src,
     const scoped_refptr<VASurface>& va_surface_dest) {
   base::AutoLock auto_lock(*va_lock_);
+
+  if (va_buffers_.empty()) {
+    DCHECK_NE(VA_INVALID_ID, va_context_id_);
+    // Create a buffer for VPP if it has not been created.
+    VABufferID buffer_id;
+    VAStatus va_res = vaCreateBuffer(
+        va_display_, va_context_id_, VAProcPipelineParameterBufferType,
+        sizeof(VAProcPipelineParameterBuffer), 1, nullptr, &buffer_id);
+    VA_SUCCESS_OR_RETURN(va_res, "Couldn't create buffer", false);
+    DCHECK_NE(buffer_id, VA_INVALID_ID);
+    va_buffers_.emplace(buffer_id);
+  }
+
   DCHECK_EQ(va_buffers_.size(), 1u);
   VABufferID buffer_id = *va_buffers_.begin();
   {
@@ -2043,25 +2058,6 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
                      required_attribs.empty() ? nullptr : &required_attribs[0],
                      required_attribs.size(), &va_config_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
-
-  if (mode != kVideoProcess)
-    return true;
-
-  // Creates context and buffer here in the case of kVideoProcess.
-  constexpr size_t kIrrelevantWidth = 0;
-  constexpr size_t kIrrelevantHeight = 0;
-  va_res = vaCreateContext(va_display_, va_config_id_, kIrrelevantWidth,
-                           kIrrelevantHeight, 0, NULL, 0, &va_context_id_);
-  VA_SUCCESS_OR_RETURN(va_res, "Couldn't create context", false);
-
-  VABufferID buffer_id;
-  va_res = vaCreateBuffer(
-      va_display_, va_context_id_, VAProcPipelineParameterBufferType,
-      sizeof(VAProcPipelineParameterBuffer), 1, NULL, &buffer_id);
-  VA_SUCCESS_OR_RETURN(va_res, "Couldn't create buffer", false);
-  DCHECK_NE(buffer_id, VA_INVALID_ID);
-  va_buffers_.emplace(buffer_id);
-
   return true;
 }
 

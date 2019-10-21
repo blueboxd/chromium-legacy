@@ -554,10 +554,14 @@ void CrostiniPackageService::StartQueuedOperation(
                                    PackageOperationStatus::SUCCEEDED, 100);
     }
 
-    // Clean up memory.
-    if (uninstall_queue.empty()) {
+    // As recursive calls to StartQueuedOperation might delete |uninstall_queue|
+    // and invalidate |uninstall_queue_iter| we must look it up again.
+    uninstall_queue_iter = queued_uninstalls_.find(container_id);
+    if (uninstall_queue_iter != queued_uninstalls_.end() &&
+        uninstall_queue_iter->second.empty()) {
+      // Clean up memory.
       queued_uninstalls_.erase(uninstall_queue_iter);
-      // Invalidates uninstall_queue.
+      // Invalidates |uninstall_queue_iter|.
     }
     return;
   }
@@ -590,10 +594,15 @@ void CrostiniPackageService::StartQueuedOperation(
                        weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
                        std::move(callback)));
 
-    // Clean up memory.
-    if (install_queue.empty()) {
+    // InstallLinuxPackage shouldn't be able to recursively call this method,
+    // but as future proofing consider |install_queue_iter| to be invalidated
+    // anyway.
+    install_queue_iter = queued_installs_.find(container_id);
+    if (install_queue_iter != queued_installs_.end() &&
+        install_queue_iter->second.empty()) {
+      // Clean up memory.
       queued_installs_.erase(install_queue_iter);
-      // Invalidates install_queue.
+      // Invalidates |install_queue_iter|.
     }
     return;
   }

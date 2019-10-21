@@ -3031,26 +3031,6 @@ DnsConfig::SecureDnsMode HostResolverManager::GetEffectiveSecureDnsMode(
   } else if (config) {
     secure_dns_mode = config->secure_dns_mode;
   }
-
-  // If the query name matches one of the DoH server names, downgrade to OFF to
-  // avoid infinite recursion.
-  // TODO(crbug.com/985589): Add a URLRequest-level parameter to skip DoH that
-  // can be set when a URLRequest to a DoH server is built, and use this
-  // parameters to set |secure_dns_mode_override| in ResolveHostParameters. This
-  // improvement will prevent us from unnecessarily skipping DoH when a
-  // connection to the DoH server has been established but the query happens to
-  // be for a DoH server hostname.
-  if (config) {
-    for (auto& server : config->dns_over_https_servers) {
-      if (hostname.compare(
-              GURL(GetURLFromTemplateWithoutParameters(server.server_template))
-                  .host()) == 0) {
-        secure_dns_mode = DnsConfig::SecureDnsMode::OFF;
-        break;
-      }
-    }
-  }
-
   return secure_dns_mode;
 }
 

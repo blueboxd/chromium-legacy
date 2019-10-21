@@ -19,7 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "storage/browser/fileapi/quota/quota_reservation.h"
+#include "storage/browser/file_system/quota/quota_reservation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 

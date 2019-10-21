@@ -87,7 +87,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   // Function signature for creating VideoDecoder.
   using CreateVDFunc = std::unique_ptr<DecoderInterface> (*)(
       scoped_refptr<base::SequencedTaskRunner>,
-      scoped_refptr<base::SequencedTaskRunner>,
       base::RepeatingCallback<DmabufVideoFramePool*()>);
   using GetCreateVDFunctionsCB =
       base::RepeatingCallback<base::queue<CreateVDFunc>(CreateVDFunc)>;
@@ -129,6 +128,12 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   void Destroy() override;
   void DestroyTask();
 
+  void InitializeTask(const VideoDecoderConfig& config,
+                      InitCB init_cb,
+                      const OutputCB& output_cb);
+  void ResetTask(base::OnceClosure closure);
+  void DecodeTask(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb);
+
   void CreateAndInitializeVD(base::queue<CreateVDFunc> create_vd_funcs,
                              VideoDecoderConfig config);
   void OnInitializeDone(base::queue<CreateVDFunc> create_vd_funcs,
@@ -140,10 +145,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   void OnFrameConverted(scoped_refptr<VideoFrame> frame);
   void OnError(const std::string& msg);
 
-  static void OnFrameDecodedThunk(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      base::Optional<base::WeakPtr<VideoDecoderPipeline>> pipeline,
-      scoped_refptr<VideoFrame> frame);
   void OnFrameDecoded(scoped_refptr<VideoFrame> frame);
 
   // Call |client_flush_cb_| with |status| if we need.
@@ -157,8 +158,8 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
   SEQUENCE_CHECKER(client_sequence_checker_);
 
-  // The decoder task runner and its sequence checker. |decoder_| should post
-  // time-consuming task and call |frame_pool_|'s methods on this task runner.
+  // The decoder task runner and its sequence checker. Call |decoder_|'s,
+  // |frame_pool_|'s, and |frame_converter_|'s methods on this task runner.
   const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 
@@ -190,9 +191,13 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder {
   // Set to true when any unexpected error occurs.
   bool has_error_ = false;
 
+  base::WeakPtr<VideoDecoderPipeline> client_weak_this_;
+  base::WeakPtr<VideoDecoderPipeline> decoder_weak_this_;
+
   // The weak pointer of this, bound to |client_task_runner_|.
-  base::WeakPtr<VideoDecoderPipeline> weak_this_;
-  base::WeakPtrFactory<VideoDecoderPipeline> weak_this_factory_{this};
+  base::WeakPtrFactory<VideoDecoderPipeline> client_weak_this_factory_{this};
+  // The weak pointer of this, bound to |decoder_task_runner_|.
+  base::WeakPtrFactory<VideoDecoderPipeline> decoder_weak_this_factory_{this};
 };
 
 }  // namespace media

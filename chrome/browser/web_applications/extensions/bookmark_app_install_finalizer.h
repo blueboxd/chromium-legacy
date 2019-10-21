@@ -41,10 +41,6 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                                UninstallWebAppCallback callback) override;
   void UninstallWebApp(const web_app::AppId& app_id,
                        UninstallWebAppCallback) override;
-  bool CanCreateOsShortcuts() const override;
-  void CreateOsShortcuts(const web_app::AppId& app_id,
-                         bool add_to_desktop,
-                         CreateOsShortcutsCallback callback) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const web_app::AppId& app_id) override;
   bool CanUserUninstallFromSync(const web_app::AppId& app_id) const override;

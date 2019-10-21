@@ -16,8 +16,12 @@ struct Environment {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static Environment env;
-  FuzzedDataProvider data_provider(data, size);
 
+  constexpr size_t kMaxSize = 1 << 16;
+  if (size > kMaxSize)
+    return 0;
+
+  FuzzedDataProvider data_provider(data, size);
   const query_parser::MatchingAlgorithm matching_alg =
       data_provider.ConsumeEnum<query_parser::MatchingAlgorithm>();
   const base::string16 query16 = base::UTF8ToUTF16(

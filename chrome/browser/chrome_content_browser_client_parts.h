@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/file_system/file_system_context.h"
 
 namespace base {
 class CommandLine;

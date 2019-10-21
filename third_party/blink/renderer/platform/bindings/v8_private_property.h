@@ -149,7 +149,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */          \
                                                 InterfaceName, KeyName)( \
       v8::Isolate * isolate) {                                           \
-    /* This key is used for uniquely identifying v8::Private. */         \
     static int private_property_key;                                     \
     return GetSymbol(                                                    \
         isolate, &private_property_key,                                  \
@@ -191,7 +190,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // This is a hack for PopStateEvent to get the same private property of
   // History, named State.
   static Symbol GetHistoryStateSymbol(v8::Isolate* isolate) {
-    // This key is used for uniquely identifying v8::Private.
     static int private_property_key;
     return GetSymbol(isolate, &private_property_key, "History#State");
   }
@@ -202,7 +200,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
 
   // Returns a Symbol to access a private property. Symbol instances from same
   // |key|s are guaranteed to access the same property. |desc| is a description
-  // of the property.
+  // of the property. By defining the key as the address of a static variable,
+  // the key is unique for each private property.
   static Symbol GetSymbol(v8::Isolate* isolate, void* key, const char* desc) {
     V8PrivateProperty* private_prop =
         V8PerIsolateData::From(isolate)->PrivateProperty();

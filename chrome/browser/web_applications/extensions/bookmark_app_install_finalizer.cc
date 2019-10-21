@@ -170,20 +170,6 @@ void BookmarkAppInstallFinalizer::UninstallWebApp(
       FROM_HERE, base::BindOnce(std::move(callback), uninstalled));
 }
 
-bool BookmarkAppInstallFinalizer::CanCreateOsShortcuts() const {
-  return CanBookmarkAppCreateOsShortcuts();
-}
-
-void BookmarkAppInstallFinalizer::CreateOsShortcuts(
-    const web_app::AppId& app_id,
-    bool add_to_desktop,
-    CreateOsShortcutsCallback callback) {
-  const Extension* app = GetEnabledExtension(app_id);
-  DCHECK(app);
-  BookmarkAppCreateOsShortcuts(profile_, app, add_to_desktop,
-                               std::move(callback));
-}
-
 bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
 #if defined(OS_MACOSX)
   return true;

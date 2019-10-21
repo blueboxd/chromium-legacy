@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/test/test_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
@@ -133,13 +134,17 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
         &controller().sync_bridge(), icon_manager_.get());
+    shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
+
     install_finalizer_->SetSubsystems(&registrar(), ui_manager_.get());
+    shortcut_manager_->SetSubsystems(&registrar());
 
     auto data_retriever = std::make_unique<TestDataRetriever>();
     data_retriever_ = data_retriever.get();
 
     install_task_ = std::make_unique<WebAppInstallTask>(
-        profile(), install_finalizer_.get(), std::move(data_retriever));
+        profile(), shortcut_manager_.get(), install_finalizer_.get(),
+        std::move(data_retriever));
 
     controller().Init();
 
@@ -172,6 +177,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     install_finalizer_.reset();
     ui_manager_.reset();
     icon_manager_.reset();
+    shortcut_manager_.reset();
 
     test_registry_controller_.reset();
 
@@ -330,11 +336,13 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   WebAppRegistrar& registrar() { return controller().registrar(); }
+  TestAppShortcutManager& test_shortcut_manager() { return *shortcut_manager_; }
 
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallTask> install_task_;
   std::unique_ptr<TestWebAppUiManager> ui_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
+  std::unique_ptr<TestAppShortcutManager> shortcut_manager_;
 
   // Owned by install_task_:
   TestFileUtils* file_utils_ = nullptr;
@@ -741,7 +749,7 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
 
   InstallWebAppFromManifestWithFallback();
 
-  EXPECT_EQ(1, test_install_finalizer().num_create_os_shortcuts_calls());
+  EXPECT_EQ(1u, test_shortcut_manager().num_create_shortcuts_calls());
   EXPECT_EQ(1, test_install_finalizer().num_reparent_tab_calls());
   EXPECT_EQ(1, test_install_finalizer().num_reveal_appshim_calls());
   EXPECT_EQ(1,
@@ -758,7 +766,7 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
   EXPECT_TRUE(result.app_id.empty());
   EXPECT_EQ(InstallResultCode::kFailedUnknownReason, result.code);
 
-  EXPECT_EQ(0, test_install_finalizer().num_create_os_shortcuts_calls());
+  EXPECT_EQ(0u, test_shortcut_manager().num_create_shortcuts_calls());
   EXPECT_EQ(0, test_install_finalizer().num_reparent_tab_calls());
   EXPECT_EQ(0, test_install_finalizer().num_reveal_appshim_calls());
   EXPECT_EQ(0,
@@ -1080,7 +1088,8 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
                                              /*scope=*/GURL{});
 
   auto install_task = std::make_unique<WebAppInstallTask>(
-      guest_profile, install_finalizer_.get(), std::move(data_retriever));
+      guest_profile, shortcut_manager_.get(), install_finalizer_.get(),
+      std::move(data_retriever));
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithParams(

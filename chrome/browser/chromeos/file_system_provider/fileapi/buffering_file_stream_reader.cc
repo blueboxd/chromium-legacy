@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "storage/browser/fileapi/file_system_backend.h"
+#include "storage/browser/file_system/file_system_backend.h"
 
 namespace chromeos {
 namespace file_system_provider {

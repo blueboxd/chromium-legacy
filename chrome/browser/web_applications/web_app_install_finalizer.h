@@ -34,10 +34,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void UninstallExternalWebApp(const GURL& app_url,
                                UninstallWebAppCallback callback) override;
   void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback) override;
-  bool CanCreateOsShortcuts() const override;
-  void CreateOsShortcuts(const AppId& app_id,
-                         bool add_to_desktop,
-                         CreateOsShortcutsCallback callback) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
   bool CanUserUninstallFromSync(const AppId& app_id) const override;

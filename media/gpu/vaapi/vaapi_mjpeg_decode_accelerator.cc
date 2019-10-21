@@ -163,6 +163,12 @@ bool VaapiMjpegDecodeAccelerator::Initialize(
     return false;
   }
 
+  // Size is irrelevant for a VPP context.
+  if (!vpp_vaapi_wrapper_->CreateContext(gfx::Size())) {
+    VLOGF(1) << "Failed to create context for VPP";
+    return false;
+  }
+
   gpu_memory_buffer_support_ = std::make_unique<gpu::GpuMemoryBufferSupport>();
 
   if (!decoder_thread_.Start()) {

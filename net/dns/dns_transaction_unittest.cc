@@ -770,6 +770,7 @@ class DnsTransactionTestBase : public testing::Test {
     EXPECT_TRUE(server_found);
 
     EXPECT_EQ(PRIVACY_MODE_ENABLED, request->privacy_mode());
+    EXPECT_TRUE(request->disable_secure_dns());
 
     std::string accept;
     EXPECT_TRUE(request->extra_request_headers().GetHeader("Accept", &accept));

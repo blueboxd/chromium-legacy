@@ -396,8 +396,7 @@ bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
         // Current decode request is finished processing.
         if (current_decode_request_) {
           DCHECK(current_decode_request_->decode_cb);
-          client_->RunDecodeCB(std::move(current_decode_request_->decode_cb),
-                               DecodeStatus::OK);
+          std::move(current_decode_request_->decode_cb).Run(DecodeStatus::OK);
           current_decode_request_ = base::nullopt;
         }
 
@@ -469,7 +468,7 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
       case OutputRequest::kFlushFence:
         DCHECK(output_request_queue_.empty());
         DVLOGF(2) << "Flush finished.";
-        client_->RunDecodeCB(std::move(flush_cb_), DecodeStatus::OK);
+        std::move(flush_cb_).Run(DecodeStatus::OK);
         resume_decode = true;
         break;
 
@@ -539,18 +538,18 @@ void V4L2StatelessVideoDecoderBackend::ClearPendingRequests(
     output_request_queue_.pop();
 
   if (flush_cb_)
-    client_->RunDecodeCB(std::move(flush_cb_), status);
+    std::move(flush_cb_).Run(status);
 
   // Clear current_decode_request_ and decode_request_queue_.
   if (current_decode_request_) {
-    client_->RunDecodeCB(std::move(current_decode_request_->decode_cb), status);
+    std::move(current_decode_request_->decode_cb).Run(status);
     current_decode_request_ = base::nullopt;
   }
 
   while (!decode_request_queue_.empty()) {
     auto request = std::move(decode_request_queue_.front());
     decode_request_queue_.pop();
-    client_->RunDecodeCB(std::move(request.decode_cb), status);
+    std::move(request.decode_cb).Run(status);
   }
 }
 

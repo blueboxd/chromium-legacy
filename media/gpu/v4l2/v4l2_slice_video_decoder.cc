@@ -42,10 +42,9 @@ constexpr uint32_t kSupportedInputFourccs[] = {
 // static
 std::unique_ptr<VideoDecoderPipeline::DecoderInterface>
 V4L2SliceVideoDecoder::Create(
-    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     GetFramePoolCB get_pool_cb) {
-  DCHECK(client_task_runner->RunsTasksInCurrentSequence());
+  DCHECK(decoder_task_runner->RunsTasksInCurrentSequence());
   DCHECK(get_pool_cb);
 
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
@@ -55,8 +54,7 @@ V4L2SliceVideoDecoder::Create(
   }
 
   return base::WrapUnique<VideoDecoderPipeline::DecoderInterface>(
-      new V4L2SliceVideoDecoder(std::move(client_task_runner),
-                                std::move(decoder_task_runner),
+      new V4L2SliceVideoDecoder(std::move(decoder_task_runner),
                                 std::move(device), std::move(get_pool_cb)));
 }
 
@@ -73,36 +71,20 @@ SupportedVideoDecoderConfigs V4L2SliceVideoDecoder::GetSupportedConfigs() {
 }
 
 V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
-    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     scoped_refptr<V4L2Device> device,
     GetFramePoolCB get_pool_cb)
     : device_(std::move(device)),
       get_pool_cb_(std::move(get_pool_cb)),
-      client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(std::move(decoder_task_runner)),
       weak_this_factory_(this) {
-  DETACH_FROM_SEQUENCE(client_sequence_checker_);
-  DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
+
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 V4L2SliceVideoDecoder::~V4L2SliceVideoDecoder() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  VLOGF(2);
-
-  // We need this event to synchronously destroy this instance.
-  // TODO(akahuang): Remove this event by manipulating this instance only on one
-  // sequence.
-  base::WaitableEvent event;
-  decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2SliceVideoDecoder::DestroyTask, weak_this_,
-                                base::Unretained(&event)));
-  event.Wait();
-}
-
-void V4L2SliceVideoDecoder::DestroyTask(base::WaitableEvent* event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(2);
 
@@ -124,34 +106,20 @@ void V4L2SliceVideoDecoder::DestroyTask(base::WaitableEvent* event) {
   }
 
   weak_this_factory_.InvalidateWeakPtrs();
-
-  event->Signal();
 }
 
 void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                        InitCB init_cb,
                                        const OutputCB& output_cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DCHECK(config.IsValidConfig());
-
-  decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecoder::InitializeTask, weak_this_, config,
-                     std::move(init_cb), std::move(output_cb)));
-}
-
-void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
-                                           InitCB init_cb,
-                                           const OutputCB& output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DCHECK(config.IsValidConfig());
   DCHECK(state_ == State::kUninitialized || state_ == State::kDecoding);
   DVLOGF(3);
 
   // Reset V4L2 device and queue if reinitializing decoder.
   if (state_ != State::kUninitialized) {
     if (!StopStreamV4L2Queue()) {
-      client_task_runner_->PostTask(FROM_HERE,
-                                    base::BindOnce(std::move(init_cb), false));
+      std::move(init_cb).Run(false);
       return;
     }
 
@@ -163,8 +131,7 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     device_ = V4L2Device::Create();
     if (!device_) {
       VLOGF(1) << "Failed to create V4L2 device.";
-      client_task_runner_->PostTask(FROM_HERE,
-                                    base::BindOnce(std::move(init_cb), false));
+      std::move(init_cb).Run(false);
       return;
     }
 
@@ -185,8 +152,7 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
       !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc)) {
     VLOGF(1) << "Failed to open device for profile: " << profile
              << " fourcc: " << FourccToString(input_format_fourcc);
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -196,8 +162,7 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
       (caps.capabilities & kCapsRequired) != kCapsRequired) {
     VLOGF(1) << "ioctl() failed: VIDIOC_QUERYCAP, "
              << "caps check failed: 0x" << std::hex << caps.capabilities;
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -208,8 +173,7 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
   if (!input_queue_ || !output_queue_) {
     VLOGF(1) << "Failed to create V4L2 queue.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
@@ -217,46 +181,40 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   backend_ = std::make_unique<V4L2StatelessVideoDecoderBackend>(
       this, device_, frame_pool_, profile, decoder_task_runner_);
   if (!backend_->Initialize()) {
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
   // Setup input format.
   if (!SetupInputFormat(input_format_fourcc)) {
     VLOGF(1) << "Failed to setup input format.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
   if (!SetCodedSizeOnInputQueue(config.coded_size())) {
     VLOGF(1) << "Failed to set coded size on input queue";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
   // Setup output format.
   if (!SetupOutputFormat(config.coded_size(), config.visible_rect())) {
     VLOGF(1) << "Failed to setup output format.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
   if (input_queue_->AllocateBuffers(kNumInputBuffers, V4L2_MEMORY_MMAP) == 0) {
     VLOGF(1) << "Failed to allocate input buffer.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
+    std::move(init_cb).Run(false);
     return;
   }
 
   // Call init_cb
   output_cb_ = output_cb;
   SetState(State::kDecoding);
-  client_task_runner_->PostTask(FROM_HERE,
-                                base::BindOnce(std::move(init_cb), true));
+  std::move(init_cb).Run(true);
 }
 
 bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
@@ -377,15 +335,6 @@ V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat(
 }
 
 void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DVLOGF(3);
-
-  decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2SliceVideoDecoder::ResetTask, weak_this_,
-                                std::move(closure)));
-}
-
-void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
@@ -404,22 +353,11 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
       return;
   }
 
-  client_task_runner_->PostTask(FROM_HERE, std::move(closure));
+  std::move(closure).Run();
 }
 
 void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                    DecodeCB decode_cb) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-
-  decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecoder::EnqueueDecodeTask, weak_this_,
-                     std::move(buffer), std::move(decode_cb)));
-}
-
-void V4L2SliceVideoDecoder::EnqueueDecodeTask(
-    scoped_refptr<DecoderBuffer> buffer,
-    V4L2SliceVideoDecoder::DecodeCB decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_NE(state_, State::kUninitialized);
 
@@ -584,13 +522,6 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
   }
 }
 
-void V4L2SliceVideoDecoder::RunDecodeCB(DecodeCB cb, DecodeStatus status) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-
-  client_task_runner_->PostTask(FROM_HERE,
-                                base::BindOnce(std::move(cb), status));
-}
-
 void V4L2SliceVideoDecoder::OutputFrame(scoped_refptr<VideoFrame> frame,
                                         const gfx::Rect& visible_rect,
                                         base::TimeDelta timestamp) {
@@ -614,9 +545,7 @@ void V4L2SliceVideoDecoder::OutputFrame(scoped_refptr<VideoFrame> frame,
 
     frame = std::move(wrapped_frame);
   }
-
-  client_task_runner_->PostTask(FROM_HERE,
-                                base::BindOnce(output_cb_, std::move(frame)));
+  output_cb_.Run(std::move(frame));
 }
 
 void V4L2SliceVideoDecoder::SetState(State new_state) {

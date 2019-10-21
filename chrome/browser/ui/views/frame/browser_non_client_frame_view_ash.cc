@@ -84,9 +84,12 @@ bool IsV1AppBackButtonEnabled() {
 // Returns true if the header should be painted so that it looks the same as
 // the header used for packaged apps.
 bool UsePackagedAppHeaderStyle(const Browser* browser) {
-  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
-  return (!browser->is_type_normal() && browser->is_trusted_source()) ||
-         browser->deprecated_is_app();
+  if (browser->is_type_normal() ||
+      (browser->is_type_popup() && !browser->is_trusted_source())) {
+    return false;
+  }
+
+  return !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
 }
 
 }  // namespace

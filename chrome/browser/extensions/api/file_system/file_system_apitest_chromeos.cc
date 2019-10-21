@@ -33,7 +33,7 @@
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
-#include "storage/browser/fileapi/external_mount_points.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "ui/base/ui_base_types.h"
 
 // TODO(michaelpg): Port these tests to app_shell: crbug.com/505926.

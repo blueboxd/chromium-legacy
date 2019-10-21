@@ -14,8 +14,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
+#include "storage/browser/file_system/file_system_context.h"
+#include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "url/origin.h"
 

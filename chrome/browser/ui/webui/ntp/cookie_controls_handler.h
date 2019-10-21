@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_NTP_COOKIE_CONTROLS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_NTP_COOKIE_CONTROLS_HANDLER_H_
 
+#include <memory>
+
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -13,6 +15,11 @@ class Profile;
 
 namespace base {
 class ListValue;
+class Value;
+}  // namespace base
+
+namespace policy {
+class PolicyChangeRegistrar;
 }
 
 // Handles requests for prefs::kCookieControlsMode retrival/update.
@@ -45,7 +52,12 @@ class CookieControlsHandler : public content::WebUIMessageHandler {
   // changed.
   void OnThirdPartyCookieBlockingChanged();
 
+  void OnThirdPartyCookieBlockingPolicyChanged(const base::Value* previous,
+                                               const base::Value* current);
+
   PrefChangeRegistrar pref_change_registrar_;
+
+  std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieControlsHandler);
 };

@@ -4,15 +4,20 @@
 
 #include "chrome/browser/ui/webui/ntp/cookie_controls_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/values.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 
 CookieControlsHandler::CookieControlsHandler() {}
@@ -43,10 +48,19 @@ void CookieControlsHandler::OnJavascriptAllowed() {
       prefs::kBlockThirdPartyCookies,
       base::Bind(&CookieControlsHandler::OnThirdPartyCookieBlockingChanged,
                  base::Unretained(this)));
+  policy_registrar_ = std::make_unique<policy::PolicyChangeRegistrar>(
+      profile->GetProfilePolicyConnector()->policy_service(),
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  policy_registrar_->Observe(
+      policy::key::kBlockThirdPartyCookies,
+      base::BindRepeating(
+          &CookieControlsHandler::OnThirdPartyCookieBlockingPolicyChanged,
+          base::Unretained(this)));
 }
 
 void CookieControlsHandler::OnJavascriptDisallowed() {
   pref_change_registrar_.RemoveAll();
+  policy_registrar_.reset();
 }
 
 void CookieControlsHandler::HandleCookieControlsToggleChanged(
@@ -86,6 +100,12 @@ void CookieControlsHandler::OnThirdPartyCookieBlockingChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
   FireWebUIListener("third-party-cookie-blocking-changed",
                     base::Value(ShouldHideCookieControlsUI(profile)));
+}
+
+void CookieControlsHandler::OnThirdPartyCookieBlockingPolicyChanged(
+    const base::Value* previous,
+    const base::Value* current) {
+  OnThirdPartyCookieBlockingChanged();
 }
 
 bool CookieControlsHandler::ShouldHideCookieControlsUI(const Profile* profile) {

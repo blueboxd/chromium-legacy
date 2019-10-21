@@ -456,6 +456,12 @@ VaapiJpegEncodeAccelerator::Initialize(
     return PLATFORM_FAILURE;
   }
 
+  // Size is irrelevant for a VPP context.
+  if (!vpp_vaapi_wrapper->CreateContext(gfx::Size())) {
+    VLOGF(1) << "Failed to create context for VPP";
+    return PLATFORM_FAILURE;
+  }
+
   encoder_task_runner_ =
       base::CreateSingleThreadTaskRunner({base::ThreadPool(), base::MayBlock(),
                                           base::TaskPriority::USER_BLOCKING});

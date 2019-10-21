@@ -54,8 +54,10 @@ InstallManager::InstallManager(Profile* profile) : profile_(profile) {}
 InstallManager::~InstallManager() = default;
 
 void InstallManager::SetSubsystems(AppRegistrar* registrar,
+                                   AppShortcutManager* shortcut_manager,
                                    InstallFinalizer* finalizer) {
   registrar_ = registrar;
+  shortcut_manager_ = shortcut_manager;
   finalizer_ = finalizer;
 }
 

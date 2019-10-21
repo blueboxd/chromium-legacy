@@ -20,7 +20,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/common/manifest_handlers/file_handler_info.h"
-#include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "ui/base/window_open_disposition.h"
